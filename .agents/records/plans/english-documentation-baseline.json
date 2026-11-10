@@ -1,7 +1,7 @@
 {
   "baseline": "a4e44769715c0577fb0a4c13b2d14ad998ddd8e1",
   "sourceTree": "0cf397fc3f7a13e51d3bc7c97e4df697fbff02c4",
-  "status": "InventoryOnly",
+  "status": "PartialReview",
   "productMarkdownCount": 437,
   "projectCount": 249,
   "files": [
@@ -10,8 +10,8 @@
       "sha256": "c0fb0961bd03019e921d4bf6c7be88c8353f6c1f792d3c1b366f3cf98ae1f3d9",
       "bytes": 591,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/README.md"
     },
     {
       "source": ".agents/records/acceptance/AI_PIPELINE_CI_CLOSURE_2026_11_06.md",
@@ -402,8 +402,8 @@
       "sha256": "9eeb8dd07eb60d242fdfdb1eeb60c795192c52580b55e77b0531021d3df389c6",
       "bytes": 4756,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/acceptance/README.md"
     },
     {
       "source": ".agents/records/acceptance/REPOSITORY_HYGIENE_ACCEPTANCE_2026_10_25.md",
@@ -434,8 +434,8 @@
       "sha256": "2a5e5ff5203fd926bf3dec8b099f44f2306b6b7df2b1d8d37bee7d47cfb02bfe",
       "bytes": 6801,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/acceptance/current.md"
     },
     {
       "source": ".agents/records/acceptance/docs-agent/README.md",
@@ -858,8 +858,8 @@
       "sha256": "94ecfa75556ba308eacc5c37dddd567111254a77f5a6b75986ea2278114a0dd7",
       "bytes": 268,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/decisions/README.md"
     },
     {
       "source": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
@@ -1194,8 +1194,8 @@
       "sha256": "cc9982cfe1e696cd084d2408fa2373052af437be2cf485a5c9190c5469359bed",
       "bytes": 4427,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/history/README.md"
     },
     {
       "source": ".agents/records/history/RENDER_CANVAS_ACCEPTANCE_2026_09_26.md",
@@ -1490,8 +1490,8 @@
       "sha256": "b6e9ecf4517a25694a441d68d1369b0aeae2265aa7026e30b6b9a51ad632d97b",
       "bytes": 11389,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/open-items.md"
     },
     {
       "source": ".agents/records/plans/AI_PIPELINE_IMPLEMENTATION.md",
@@ -1522,8 +1522,8 @@
       "sha256": "8e1b7672ffa852797ecf3fa5c61fbd9de2297bc7bb0ab6bcb4bf42834c8ef5f7",
       "bytes": 455,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/records/plans/README.md"
     },
     {
       "source": ".agents/records/plans/docs-agent-migration.json",
@@ -1554,152 +1554,152 @@
       "sha256": "5cb218fb1b6107b6433dedd87c18511ff63ae7b2d65e1bda74f528dc3e412c53",
       "bytes": 2334,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/README.md"
     },
     {
       "source": ".agents/rulebook/architecture.md",
       "sha256": "056831bee60e77b34a7684db6464b07ee2f03cc8e8cf70e8f0d332fb53d0161f",
       "bytes": 9914,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/architecture.md"
     },
     {
       "source": ".agents/rulebook/coding.md",
       "sha256": "4bae162bc5589105baf0a86edd82db2f76b794c6c563137ae760dd090ed19a98",
       "bytes": 16790,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/coding.md"
     },
     {
       "source": ".agents/rulebook/coverage.json",
       "sha256": "65ec309c80cc937dd3486d6a0ea9c7175818d1ae4447307655f50c133f2777c5",
       "bytes": 171930,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/coverage.json"
     },
     {
       "source": ".agents/rulebook/delivery.md",
       "sha256": "f6571bbd288649d2d071163bd2921af0fee9a01e3f03b297f2048256dfbae2a8",
       "bytes": 1703,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/delivery.md"
     },
     {
       "source": ".agents/rulebook/documentation.md",
       "sha256": "970acd4cba651fb9c5274feb092b718d21a3bd44a14791c1c01456e6ed4fd463",
       "bytes": 8594,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/documentation.md"
     },
     {
       "source": ".agents/rulebook/domains/build-native.md",
       "sha256": "0a7b497425e742997485fb0876aebeba17a31c6c3a1d4411e9c30094184e1b80",
       "bytes": 16576,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/domains/build-native.md"
     },
     {
       "source": ".agents/rulebook/domains/editor.md",
       "sha256": "0fa96cdd3e1ec876071b7001ba4c5fda24eaae244b1f148dd70de62dc7ab7ae3",
       "bytes": 20538,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/domains/editor.md"
     },
     {
       "source": ".agents/rulebook/domains/identity-reload.md",
       "sha256": "b6d4a916f6c84a19f6c6d714af2907c6cd0c959614bdda1bbe59fe81a4ab5de0",
       "bytes": 9080,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/domains/identity-reload.md"
     },
     {
       "source": ".agents/rulebook/domains/plugins.md",
       "sha256": "5b650dae2abaf20c9e0c702b327694a4d4da5f360b6524cbe4f1201276e80175",
       "bytes": 3051,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/domains/plugins.md"
     },
     {
       "source": ".agents/rulebook/domains/rendering.md",
       "sha256": "b4116cb9687077cb8f5e8d2f2a6e15a966c5d96edc4d3f91ab13214afdc6deb3",
       "bytes": 4753,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/domains/rendering.md"
     },
     {
       "source": ".agents/rulebook/domains/scripting.md",
       "sha256": "7f8ed1c3e96335d1fb87e890a8b2290977a5f248915a200808d50760819e698c",
       "bytes": 1331,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/domains/scripting.md"
     },
     {
       "source": ".agents/rulebook/validation.md",
       "sha256": "f1bba65a8166230f0bd62ea3d843512d63eb83b6979c596c88c60c1c63f69f08",
       "bytes": 4740,
       "kind": "rule",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/rulebook/validation.md"
     },
     {
       "source": ".agents/skills/inno-api-docs/SKILL.md",
       "sha256": "0f10b78879daaace3fa480522be8454653d08fedacc9045ff456327ad8c4977c",
       "bytes": 1010,
       "kind": "skill",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/skills/inno-api-docs/SKILL.md"
     },
     {
       "source": ".agents/skills/inno-change/SKILL.md",
       "sha256": "a7ac14f9246d87fc30b720abfa54b8efda2529503b2cf6224297ba54e9b34a5d",
       "bytes": 932,
       "kind": "skill",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/skills/inno-change/SKILL.md"
     },
     {
       "source": ".agents/skills/inno-delivery/SKILL.md",
       "sha256": "e4d2feb4d603ad3d64a36b0130e80164873520884b81a09891e0a097a3f128c3",
       "bytes": 961,
       "kind": "skill",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/skills/inno-delivery/SKILL.md"
     },
     {
       "source": ".agents/skills/inno-verify/SKILL.md",
       "sha256": "0031179948190a4be51731c75a65774a963194f620e44f66958747dcbb4e942a",
       "bytes": 920,
       "kind": "skill",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": ".agents/skills/inno-verify/SKILL.md"
     },
     {
       "source": "AGENTS.md",
       "sha256": "a202b8c7155adf31512321e598e884f49e581798997cc5725fcddd44b088bd61",
       "bytes": 3268,
       "kind": "entry",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": "AGENTS.md"
     },
     {
       "source": "CONTRIBUTING.md",
       "sha256": "6001e560e0e2608c3b849312741c3296307dfe6b4aa2dbbcc2fa3f091e2397c5",
       "bytes": 864,
       "kind": "entry",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishWorkflow",
+      "target": "CONTRIBUTING.md"
     },
     {
       "source": "README.md",

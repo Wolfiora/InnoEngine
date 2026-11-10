@@ -21,10 +21,10 @@ public sealed class ValidationDocumentationTests
         using var repository = new ValidationRepository();
         repository.Write("tests/Native.Tests/Native.Tests.csproj", ValidationRepository.Project(
             "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>native</InnoValidationLayer><InnoTestNativeProduct>editor</InnoTestNativeProduct></PropertyGroup>"));
-        repository.Write(path, "before");
+        repository.Write(path, policyInput ? "{\"units\":[],\"review\":\"before\"}" : "before");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare agent document and native sentinel");
-        repository.Write(path, "after!");
+        repository.Write(path, policyInput ? "{\"units\":[],\"review\":\"after!\"}" : "after!");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
@@ -35,6 +35,17 @@ public sealed class ValidationDocumentationTests
         JsonElement instructions = checks.Single(check => check.GetProperty("id").GetString() == "instructions");
         Assert.Equal(policyInput, instructions.GetProperty("inputs").EnumerateArray().Any(input => input.GetString() == path));
         Assert.DoesNotContain(plan.RootElement.GetProperty("inputSets").GetProperty("tooling").EnumerateArray(), input => input.GetString() == path);
+    }
+
+    [Fact]
+    public async Task MalformedRuleRegistryCannotProduceAPlan()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write(".agents/rulebook/coverage.json", "not a registry");
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+        Assert.Contains(".agents/rulebook/coverage.json", failure.Message);
+        Assert.IsAssignableFrom<JsonException>(failure.InnerException);
+        Assert.False(File.Exists(repository.PathOf("artifacts/plan/plan.json")));
     }
 
     [Fact]

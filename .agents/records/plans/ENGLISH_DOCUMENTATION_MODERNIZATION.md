@@ -33,8 +33,8 @@ Status: implementation in progress. This record does not certify completion.
 | Full migration inventory | Captured; review pending | 686 inventoried files, 437 product Markdown pages, 249 baseline projects; individual dispositions still require review |
 | English content and website | In progress | Initial task pages and Astro/Starlight build work; Pages Actions configuration exists, but no deployment or complete coverage is claimed |
 | Query core and immutable snapshots | In progress | Independent library and Build route implemented; 14 snapshot regressions pass. Old validator/catalog consumers remain to migrate |
-| English rules and workflow | In progress | Root instructions, CONTRIBUTING and four skills are English. Eight complete rule units have reviewed clause mappings; remaining units and cross-repository documentation-rule ownership are outstanding |
-| Incremental validation and CI/CD | Pending | No new certification claimed |
+| English rules and workflow | In progress | Root instructions, CONTRIBUTING and four skills are English. All 58 complete units are English, including 57 reviewed translations preserving all 241 original rule identities. Cross-repository documentation-rule ownership remains outstanding |
+| Incremental validation and CI/CD | In progress | Actual tooling input closures and explicit failure prerequisites implemented; 49 planning regressions and focused execution tests pass. Full CI/CD certification remains outstanding |
 | Legacy removal and final acceptance | Pending | Old content remains until verified migration |
 
 ## Current decisions
@@ -58,7 +58,7 @@ Cross-repository GitHub App installation/credentials, branch protection, and Pag
 - `Inno.Tooling.Documentation.Tests`: 13 passed, no skips; TRX under `artifacts/acceptance/english-documentation/query-tests/documentation-snapshots-03.trx`.
 - First test failure is preserved in `documentation-snapshots.trx`: two assertions incorrectly treated `InvalidDataException` as an `IOException` subclass. The negative fixtures now assert the exact appropriate exception for missing/cyclic includes and path escape; the rejection behavior was retained.
 - Build entry compilation passed with zero warnings and errors. Agent-document checks and whole-repository source architecture checks passed. Compiled API, full Wiki coverage, Native and product verification were not represented as passing.
-- Rule loader still verifies all 241 original rules and 58 complete units. Root instructions are 4,141 bytes. Detailed rule translation has not yet started.
+- Rule loader still verifies all 241 original rules and 58 complete units. Root instructions are 4,141 bytes. This initial observation predates the complete translation recorded below.
 - Website static/type checks and three Markdown link tests passed. Initial browser inspection verified home navigation and Missing search; the complete visual/accessibility matrix remains outstanding.
 - Pages uses custom Actions at `https://wolfiora.github.io/InnoEngine.Docs/`. Configuration is not deployment. No current website certification is claimed.
 - The system .NET host lacks the required runtime. The existing user-local SDK at `C:/Users/23842/.dotnet/dotnet.exe` was selected without modifying global settings or installing another SDK.
@@ -67,7 +67,7 @@ Cross-repository GitHub App installation/credentials, branch protection, and Pag
 
 ## Remaining work at this checkpoint
 
-The implementation is intentionally incomplete: full English content and API migration; exact source/reference binding and export; source-validation evidence status; explicit remote snapshot preparation; common parser and validator migration; full rule translation/mapping; precise validation dependency refinement; paired PR and App setup; actual CI/Pages/draft-release acceptance; old documentation/query removal; comparable performance samples; full visual review and final migration reconciliation. The previous product documentation remains until its reviewed destinations and callers are migrated.
+The implementation is intentionally incomplete: full English content and API migration; exact source/reference binding and export; source-validation evidence status; explicit remote snapshot preparation; common parser and validator migration; cross-repository rule authority; precise validation dependency refinement; paired PR and App setup; actual CI/Pages/draft-release acceptance; old documentation/query removal; comparable performance samples; full visual review and final migration reconciliation. The previous product documentation remains until its reviewed destinations and callers are migrated.
 
 ## Clause preservation and real query follow-up
 
@@ -76,3 +76,14 @@ The implementation is intentionally incomplete: full English content and API mig
 - A real CLI query exposed Markdig inline containers being used as titles. Extracting plain heading text fixed task ranking. Fourteen documentation snapshot tests passed in `documentation-snapshots-06.trx`; a rebuilt Build entry returned the Console presentation task first for `Console presentation`.
 - The explicit refresh published 20 pages under snapshot `7a1bfa613d31dea914313074af8889f090c65dcfca044720d05289de072d5f36`. The source API status remains Unverified. This is a representative content slice, not full migration acceptance.
 - C-drive free space was approximately 45.9 GB at this checkpoint. Rule-test fixtures were cleaned by their existing guarded ownership cleanup. No adjacent workspace or shared cache was removed.
+
+## Complete English rules and validation dependencies
+
+- All 58 units are English. The 57 translated units preserve original source hashes, all 241 rule identities, every nonblank clause, nested indentation and the separately approved addition. The full rule regression suite passed. Semantic review is recorded in the linked decision; hashes are change detection, not a substitute for that review.
+- Active record indexes, current acceptance and the open-item ledger are English. Historical dated reports and evidence remain original; two incoming links were updated for the translated current headings without changing historical conclusions.
+- Validation now blocks only explicitly dependent work after a check failure. Independent contexts continue; aggregate failure, cancellation and input integrity remain enforced. Builds explicitly depend on instruction and architecture policy checks.
+- Tool source inputs follow the evaluated validation project reference closure. Tool binary inputs follow actual assembly references instead of every DLL beside the CLI. Specific translation review records remain policy inputs; arbitrary records do not become global tool inputs.
+- Six focused dependency/environment tests passed, followed by all 49 planning regressions (5 m 33 s). Documentation classification tests initially passed six cases and failed one assertion expecting the base JSON exception instead of its concrete subtype. The planner now reports an actionable InvalidDataException with the original JSON exception; the negative test passed on its explicit retry. First-failure TRX remains retained.
+- Project manifest JSON now uses deterministic LF on Windows and Unix. Three project reference export tests passed. The Build entry compiled with zero warnings and errors.
+- One overlapping local test/build invocation caused two output-file copy retries while the prior test host held the assembly; the subsequent build succeeded. Test host execution and output mutation must remain sequential for this output directory.
+- Local TRX files are under artifacts/acceptance/english-documentation/query-tests. These checks do not certify Native products, Windows/macOS CI, paired PRs or publication.

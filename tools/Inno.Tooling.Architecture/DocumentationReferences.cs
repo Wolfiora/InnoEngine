@@ -71,7 +71,7 @@ public static class DocumentationReferences
             throw new InvalidDataException("Source-project inventory is empty.");
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(Path.GetFullPath(output), JsonSerializer.SerializeToUtf8Bytes(projects,
-            new JsonSerializerOptions { WriteIndented = true }));
+            new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }));
         Console.WriteLine($"Exported {projects.Count} source projects. API surfaces and source validation remain unverified.");
         return 0;
     }

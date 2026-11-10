@@ -1,10 +1,10 @@
-# 验收记录
+# Acceptance records
 
-[记录首页](../README.md) · [当前问题](../open-items.md) · [当前验收](../acceptance/current.md)
+[Records](../README.md) · [Open work](../open-items.md) · [Current acceptance](../acceptance/current.md)
 
-- [Logo、默认字体图标与署名](LOGO_BRANDING_2026_11_07.md)：空心图标、v2 原稿与移除内置图片的修订；本轮证据与初版历史分别记录。
+- [Logo, default font icons and attribution](LOGO_BRANDING_2026_11_07.md): outlined icons, v2 artwork and removal of embedded images; current and original evidence are recorded separately.
 
-每份记录只证明其明确列出的输入、提交、环境与执行范围；历史通过不能提升为当前通过。原始附件保持字节，未能随 Git 历史取得的旧附件入口由迁移清单单独说明。
+Each record establishes only its stated inputs, commit, environment and execution scope. Historical passes do not certify current inputs. Preserve original attachment bytes; the migration inventory separately identifies historical attachment links unavailable from Git.
 
 - [ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md](ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md)
 - [ATOMIC_FILE_PUBLICATION_ACCEPTANCE_2026_10_29.md](ATOMIC_FILE_PUBLICATION_ACCEPTANCE_2026_10_29.md)
@@ -54,4 +54,4 @@
 - [WINDOWS_VULKAN_EXIT_FAILURE_2026_10_20.md](WINDOWS_VULKAN_EXIT_FAILURE_2026_10_20.md)
 - [current.md](current.md)
 
-- [文档与 Agent 信息架构阶段验收](DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md)
+- [Previous documentation and agent information-architecture acceptance](DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md)

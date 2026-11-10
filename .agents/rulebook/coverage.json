@@ -11,7 +11,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "style"
+      "unit": "style",
+      "translatedHash": "619bdc60de5e116996897c86ebd06284331a38e36dec8f1362e53616f9ad7fef"
     },
     {
       "id": "1.2",
@@ -21,7 +22,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "style"
+      "unit": "style",
+      "translatedHash": "2acbd5f71f6e0b3a57bc47e5611f6422106ff61340977f67f89962f3a49b77a3"
     },
     {
       "id": "1.3",
@@ -31,7 +33,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "style"
+      "unit": "style",
+      "translatedHash": "99e629ab7c8595b0bb3bffb29440446cbd1b4e3a4f272d58b784a1eb0855581a"
     },
     {
       "id": "2.1",
@@ -41,7 +44,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "ec60fa8773db69f2d94c5e28c5901b9ce970d29f6002af8e2da7079b5b4b0b56"
     },
     {
       "id": "2.2",
@@ -51,7 +55,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "93840a0814cc3a178726e86b61586d956121c64a4d595b91a60420ed80470b3b"
     },
     {
       "id": "2.3",
@@ -61,7 +66,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "a68bfd544c316dd8bd4140f7eaa5a16ce35adb1d0d0afcc885249f509ede18b4"
     },
     {
       "id": "2.4",
@@ -71,7 +77,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "e65985a0124327bb5ac46f97c457fd9c8b6678a6df1abf6ed312f65deeaf708e"
     },
     {
       "id": "2.5",
@@ -81,7 +88,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "c1fb02fbe518037ebdb862c96b2a42034e86f230c99fea894caee80f23f2290f"
     },
     {
       "id": "2.6",
@@ -91,7 +99,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "7eb5975ceb7bb9091a8d1b602e78a93e5bd4e2406777c26d8596810568640a99"
     },
     {
       "id": "2.7",
@@ -101,7 +110,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "91ea145a10ba903fb71233bc29bc0a1edff9378d31569b1b5cc5e889e041a351"
     },
     {
       "id": "2.8",
@@ -111,7 +121,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "naming"
+      "unit": "naming",
+      "translatedHash": "aa807bb8015d7800fe77d0bada936898d50c066e8adb761d41f493812f0c4453"
     },
     {
       "id": "3.1",
@@ -121,7 +132,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "members"
+      "unit": "members",
+      "translatedHash": "fe50f60ab778c20cc0d21a6ad0822b8d1d74fb9878eca124ed11172b8171c8ee"
     },
     {
       "id": "3.2",
@@ -131,7 +143,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "members"
+      "unit": "members",
+      "translatedHash": "84739f16c81513c858158016ff5eb127eb0a32313a8f8e08611418c8062fa91c"
     },
     {
       "id": "3.3",
@@ -141,7 +154,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "members"
+      "unit": "members",
+      "translatedHash": "26bf77b12ee406168444733e6cda0634672562df93b7fe79929b10b2572f16b4"
     },
     {
       "id": "4.1",
@@ -151,7 +165,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "encapsulation"
+      "unit": "encapsulation",
+      "translatedHash": "61d23811216ed1dce965f002ac5cc7b1d8b9548eb5a048459f4c103a7d9f6e4e"
     },
     {
       "id": "4.2",
@@ -161,7 +176,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "encapsulation"
+      "unit": "encapsulation",
+      "translatedHash": "4b9c7f47bf61bc389e0925ac64026e38a90b588f4e47155d88dea7256d216eaf"
     },
     {
       "id": "4.3",
@@ -171,7 +187,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "encapsulation"
+      "unit": "encapsulation",
+      "translatedHash": "31b9db7d408e5d0fcd307fd1b9574f67716e904f53a9ca7f51475058312b360a"
     },
     {
       "id": "5.1",
@@ -181,7 +198,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "xml"
+      "unit": "xml",
+      "translatedHash": "beac146b517f48ed476a18e9aa7f2fdab6820f3b4fe0541a84f7260f58c8c9d7"
     },
     {
       "id": "5.2",
@@ -191,7 +209,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "xml"
+      "unit": "xml",
+      "translatedHash": "2d5ddf314df4b45cfc643bbb67ee8f27f0d473a331e3430a7c21efe94762a9bf"
     },
     {
       "id": "5.3",
@@ -201,7 +220,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "xml"
+      "unit": "xml",
+      "translatedHash": "88c9235f5140174c3ba6859d2daea92448b59fd05a49db081cf9cbda38dd7a90"
     },
     {
       "id": "5.4",
@@ -211,7 +231,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "xml"
+      "unit": "xml",
+      "translatedHash": "ead7747e86c87d719e3f7d10f04baf07c58081893fc8eef642e3667041e763e1"
     },
     {
       "id": "5.5",
@@ -221,7 +242,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "xml"
+      "unit": "xml",
+      "translatedHash": "7a58317c4532181f9281b4245b89cf89416e5c7f789ba0d4a89909ba300d0c4b"
     },
     {
       "id": "6.1",
@@ -231,7 +253,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "errors"
+      "unit": "errors",
+      "translatedHash": "b00524a3be4313da355adf562e233fc3f040313649c6608e091bae13d0eaf4e2"
     },
     {
       "id": "6.2",
@@ -241,7 +264,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "errors"
+      "unit": "errors",
+      "translatedHash": "397927257f1a6166ae6e517a14b27d64adeaf1f1114445342e8eece6f6e4f56b"
     },
     {
       "id": "6.3",
@@ -251,7 +275,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "errors"
+      "unit": "errors",
+      "translatedHash": "454b07214dc2ad21ecf0626da999dc93ac75863293ff9267ba6186a0c05aba58"
     },
     {
       "id": "7.1",
@@ -261,7 +286,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-naming"
+      "unit": "identity-naming",
+      "translatedHash": "2713b77ce0dc27d740dee0e57723fa3d23d3d680decd110a02a647f3cc645fc7"
     },
     {
       "id": "7.2",
@@ -271,7 +297,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-naming"
+      "unit": "identity-naming",
+      "translatedHash": "d420312b557f9c342f653da36246a2d21c4e3207e3da9a3a40b6a3fc64e40659"
     },
     {
       "id": "7.3",
@@ -281,7 +308,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-naming"
+      "unit": "identity-naming",
+      "translatedHash": "2804cc91a2b24bc15e9da3dd4221dcb713b9ff097b7122029bebd75b0825201c"
     },
     {
       "id": "8.1",
@@ -333,7 +361,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "93b916cb653dafbe1ac6b1541318c6d2a99b4ded5430651fb234f09c1180d095"
     },
     {
       "id": "10.2",
@@ -343,7 +372,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "d885e29cfc85d40947d57fd971a252a8188390c7c2c1c0a3882343cc277292d6"
     },
     {
       "id": "10.3",
@@ -353,7 +383,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "a58db9c776f2a269ddc19ae2b0dca051b7decf63ddec38627a5e85c24084dc6f"
     },
     {
       "id": "10.4",
@@ -363,7 +394,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "b8797541d6389bd1e41e1ce9fe2ebdd00c5a5de4f3f052d127e1deeb1bb6bc4e"
     },
     {
       "id": "10.5",
@@ -373,7 +405,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "860205ee7cc7104f0b7870e716ce87c6a55794010451e58d244618cb4e1fe81f"
     },
     {
       "id": "10.6",
@@ -383,7 +416,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "7174f703b0a255c6b67e6e0eb62f06f435f8d62ba8140d6ad8e1eccfb66450bc"
     },
     {
       "id": "10.7",
@@ -393,7 +427,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "c850a0f9751d00ab4c72006c8412ca36f84e9eb97cd16a42fbf7f99db8b6988c"
     },
     {
       "id": "10.8",
@@ -403,7 +438,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "d284c4be4bd867dacb5232fe688e3d342ce37b8b27ae0538532b06e56c76bf60"
     },
     {
       "id": "10.9",
@@ -413,7 +449,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "75206b141137df2f81699e6643bc8e496c70b9d89b394e01bb93017a3caa0538"
     },
     {
       "id": "10.10",
@@ -423,7 +460,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "61dd28ec15b54946f7a6e16a616a700c68254f65b288b2c71f56b59251a7256b"
     },
     {
       "id": "10.11",
@@ -433,7 +471,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "directories"
+      "unit": "directories",
+      "translatedHash": "f1e2390738b878c94984a774ba27f7ce1dfe9304624b4f14238b10ee17ad9d29"
     },
     {
       "id": "11.1",
@@ -443,7 +482,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "e087be9cfd2eeb17a2c72f63a24b7aa673672b83193afe20ee2217c9b9f5e87a"
     },
     {
       "id": "11.2",
@@ -453,7 +493,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "cc08880907c077e40ef8bdc501254fbbe9022842760fac1e7e32a52c0ca6f3af"
     },
     {
       "id": "11.3",
@@ -463,7 +504,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "514fe3da1bab404bab0253872340f8dd6ed56cfb6a23d67b7bb36a3deb9c712c"
     },
     {
       "id": "11.4",
@@ -473,7 +515,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "566befb1f6e4c94807f6585888028019b0c8432b86b72b781295bc5359ef68be"
     },
     {
       "id": "11.5",
@@ -483,7 +526,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "f85f2d2ad085f23b258020732abb8034becd84c5964ae41c00d977df176afe47"
     },
     {
       "id": "11.6",
@@ -493,7 +537,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "ff9bfa908630fcb2084bb98403c1d19e70163d171069b4f880acdef651435362"
     },
     {
       "id": "11.7",
@@ -503,7 +548,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "5ae53f3449101c75753f1d4f1a259267adf4ce383492782fcd10de7c815f3de6"
     },
     {
       "id": "11.8",
@@ -513,7 +559,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "2cc05fd8785c66d75571462f5888b9990c8720bf6f6a402708e0b83cb784f6dc"
     },
     {
       "id": "11.9",
@@ -523,7 +570,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "3d9951ef1257c276f5d3a96b0e7c482bc8986fe597fdd2e990c73d1cf1e36282"
     },
     {
       "id": "11.10",
@@ -533,7 +581,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "wiki"
+      "unit": "wiki",
+      "translatedHash": "58fad6bddd9ff0a3400450ce71641e40827a76bbdb53c19e0e035ebd21926bb9"
     },
     {
       "id": "12.1",
@@ -620,7 +669,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "b5559064539f4b6b66250bfdf2e6d88dc318169e195c3b687e0735829633031b"
     },
     {
       "id": "13.2",
@@ -630,7 +680,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "39faedb7db5aab968faf5d85d5e00e3ce311a714928a0c0e187c7219ffed2d10"
     },
     {
       "id": "13.3",
@@ -640,7 +691,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "dd03d5a1ab0cc5f3b2c34f8f04f1763797fd42d79621c86ffef90dfceafc926b"
     },
     {
       "id": "13.4",
@@ -650,7 +702,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "32d84d8fac657689afe63348ff0f5e41562769c11bd91a1d17e2beaf27850d97"
     },
     {
       "id": "13.5",
@@ -660,7 +713,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "fa2bf21fbe0202b247506afd72d2cafb390661d703060b1b1e56c2afb4dfc095"
     },
     {
       "id": "13.6",
@@ -670,7 +724,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "96288472fe332b65829a9c6502eede3ddfdf9708aded8e000a855062d2261bcc"
     },
     {
       "id": "13.7",
@@ -680,7 +735,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-projects"
+      "unit": "editor-projects",
+      "translatedHash": "3f91286809466021084655a592bad37b159faca5722312122300f29dfed86e38"
     },
     {
       "id": "14.1",
@@ -690,7 +746,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "f1564be509a447142575c7444c71599d53f5e20b9a4c805c358575d5d13bcc78"
     },
     {
       "id": "14.2",
@@ -700,7 +757,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "790f7c69224b7ea64c5a0a1373b7a14b082c74ae3549aae36a6c28604ded12a8"
     },
     {
       "id": "14.3",
@@ -710,7 +768,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "5d944a27c3f73de2bd90576fdb16ec02ec43f96f87f011b13b9e4be7fcb33077"
     },
     {
       "id": "14.4",
@@ -720,7 +779,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "db8e4b6285cbc3f2db01c93c779205af7e79d0d183558548ddfa6b23eff5cc43"
     },
     {
       "id": "14.5",
@@ -730,7 +790,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "25300dddd17b788ff48a0592f39143241cfad86a73aa8d589947f59dc8630714"
     },
     {
       "id": "14.6",
@@ -740,7 +801,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "65fb119594d3e326fc2bb92d94600560f43a866c2118677e28721cf475b735ff"
     },
     {
       "id": "14.7",
@@ -750,7 +812,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "481ee912c2eb7d1469ccfa29593223c284a5cfee137eeed7e0e00ae3db19c177"
     },
     {
       "id": "14.8",
@@ -760,7 +823,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "cae6ec6b47f8f1ce871a5663c92db9336433bb4b8b91b33c12be418d81e42a83"
     },
     {
       "id": "14.9",
@@ -770,7 +834,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "1c9714e407adcaa31fb97d2a9f3cac2df6f9bfa0e90fdf14d43bd4a7b08da6f5"
     },
     {
       "id": "14.10",
@@ -780,7 +845,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "a47795754591c1f7d048d40fe777c5ea13139d09d90f5ed5975b87947c1ececd"
     },
     {
       "id": "14.11",
@@ -790,7 +856,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "45b8afb771f26069f27b34ba44bdbd20205c2326d0b51f2e7726138dbe758a8a"
     },
     {
       "id": "14.12",
@@ -800,7 +867,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "6788b28fc30cfdf61c3bfcc1908275d0fefb87d4d7dfc090048307bf5a0eada3"
     },
     {
       "id": "14.13",
@@ -810,7 +878,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "9da5caecada51f64b5e3aee43cbca9a0211a16a9d8d53ba8579e7d66d8e7635e"
     },
     {
       "id": "14.14",
@@ -820,7 +889,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "f0e84b1b52daa6d016be5554dc787ce3d317b8a661ab91fc2fed8c3507dc1ece"
     },
     {
       "id": "14.15",
@@ -830,7 +900,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "8084285b098674b7da1c0d669a65e729be5d82a42ef0ae513f99e065b5a02a04"
     },
     {
       "id": "14.16",
@@ -840,7 +911,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "79e84e819e757a783d8c88259ec68709db4c48ed616162650ff5d9f9b2b8c9ae"
     },
     {
       "id": "14.17",
@@ -850,7 +922,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-state"
+      "unit": "editor-state",
+      "translatedHash": "f25581ebde68849f22ca41e7f5740243e79236682060ba13ecd38681383d33d5"
     },
     {
       "id": "15.1",
@@ -860,7 +933,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "no-legacy"
+      "unit": "no-legacy",
+      "translatedHash": "5598f61c60c7e528aa02dddc381a65b16b9c29b41dd113d1e7a205ed1c3cd834"
     },
     {
       "id": "15.2",
@@ -870,7 +944,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "no-legacy"
+      "unit": "no-legacy",
+      "translatedHash": "308cdac10ffa559063cfb6e676b0aafdd0aa0827d8f0daab0a80ed7c832f9ee5"
     },
     {
       "id": "15.3",
@@ -880,7 +955,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "no-legacy"
+      "unit": "no-legacy",
+      "translatedHash": "79de0f9bd4ab824161b9dce0d0a277e5424cbeababd377095c2eb9d60e0fcd70"
     },
     {
       "id": "15.4",
@@ -890,7 +966,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "no-legacy"
+      "unit": "no-legacy",
+      "translatedHash": "2b64330331a1ee8039cbf370adf831b23896ac47b39d1ac2c7d4517f146d36b8"
     },
     {
       "id": "15.5",
@@ -900,7 +977,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "no-legacy"
+      "unit": "no-legacy",
+      "translatedHash": "c7468bc8577b9e9f5bdb1c9b7d59dbe4b1acdea283c247666e84d11e0d5b5c02"
     },
     {
       "id": "15.6",
@@ -910,7 +988,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "no-legacy"
+      "unit": "no-legacy",
+      "translatedHash": "c77319428a2d92e4f9b97d80f76706cb83559b267cf2b10d12a8530e19fa264c"
     },
     {
       "id": "16.1",
@@ -942,7 +1021,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "c4b79e930d63306c74e4971ee30aebe894d8a63c1e1c8c63a548637e1ce2e098"
     },
     {
       "id": "17.2",
@@ -952,7 +1032,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "6884e80117b1b268d6ccc90625c90b76fc1f7cef3d809241e60103628fdfedf3"
     },
     {
       "id": "17.3",
@@ -962,7 +1043,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "41a700e5ca6457dfb3b993750452ad8f61e764fe78b965cb510408f3ffdda786"
     },
     {
       "id": "17.4",
@@ -972,7 +1054,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "916437cbafc25fe06d0bdee7041d760172ae5fffbe54dadb1c5ba54c8d54c3f5"
     },
     {
       "id": "17.5",
@@ -982,7 +1065,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "ae883035d12008e913974ca35a0867231c2088c1a8ae62901566f021cc18ccdb"
     },
     {
       "id": "17.6",
@@ -992,7 +1076,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "303882022ebcf8c451e2066059ec9db1d0750ae31690e8e0d4be4eebf569e768"
     },
     {
       "id": "17.7",
@@ -1002,7 +1087,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "8f1bcb3b34247ece9e813fb2629cf73ca156a91a65b48d8d01d0bf42754d0440"
     },
     {
       "id": "17.8",
@@ -1012,7 +1098,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "f55f5fbf29d1d956319ce9c0290eb74dc8066464aaeb19aa047d0af2ad95bac3"
     },
     {
       "id": "17.9",
@@ -1022,7 +1109,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "rendering"
+      "unit": "rendering",
+      "translatedHash": "5b4a800ce70b35064669ae0b2cc88c49d8a2a282717b0e150359a383f9da6b3e"
     },
     {
       "id": "18.1",
@@ -1197,7 +1285,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "96e1a4c1f7b1276a60dded704ccb43f726c58f86c99b06fb62c81a191ec78d1f"
     },
     {
       "id": "20.2",
@@ -1207,7 +1296,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "99cd52450ef209e62d9b1df287979ed26fd21732f487649198a6d2e68cf53902"
     },
     {
       "id": "20.3",
@@ -1217,7 +1307,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "ce9dd22d95b882852ac19d5bdc44feb0d4b1a7b622ff2ee54226edb48d07135e"
     },
     {
       "id": "20.4",
@@ -1227,7 +1318,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "43793c651d33494c2fca6270495afddf406398e15f21897b5e5d0c78b92c20e4"
     },
     {
       "id": "20.5",
@@ -1237,7 +1329,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "82d65edcf81d1ebab2f7445cfa727c37a2fa6515c7e8401499ea049bb1fc0471"
     },
     {
       "id": "20.6",
@@ -1247,7 +1340,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "643d446e16b807fb946ce67a8e30bb8fa902dadda34e6209c76b922fe1724b38"
     },
     {
       "id": "20.7",
@@ -1257,7 +1351,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "7c4e21bb14ba0d418ef4bda4c9d861566f4440aec7dc9e80491f2cb49cae9cfe"
     },
     {
       "id": "20.8",
@@ -1267,7 +1362,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "4f660e19e473ed31e64beb070c3f3e2ed7c4954a7492677ec27b73e09942e56f"
     },
     {
       "id": "20.9",
@@ -1277,7 +1373,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "0ede328f6a2f73b21505f069bdfa56c0a8aeb2f9e8ad69d91e25353f6b21e25d"
     },
     {
       "id": "20.10",
@@ -1287,7 +1384,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "identity-reload"
+      "unit": "identity-reload",
+      "translatedHash": "28b538f56b4ec97bc42ffe5979ecc30ee356ebb96d6b9188d41d01b52ecf3324"
     },
     {
       "id": "21.1",
@@ -1297,7 +1395,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "601a49a2801a6609c14b3059e972139dc73c4cab54e7fa4c3e551173232c74b8"
     },
     {
       "id": "21.2",
@@ -1307,7 +1406,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "4dd627fa435109d5532f0aec4b4e087503378c5a03ca4d8f80f15bb80429ba4c"
     },
     {
       "id": "21.3",
@@ -1317,7 +1417,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "bd95a93492c285b77af96ddb96b379bac6adae61891528a4f9c58b13d03ed6c5"
     },
     {
       "id": "21.4",
@@ -1327,7 +1428,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "5e83c73b6bb8440c2039d7b0961b946b8efb122076a9a319cb6299aae81fda5f"
     },
     {
       "id": "21.5",
@@ -1337,7 +1439,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "fd5c6a6cde29106b250246e87a8cefac8b065e49e2324c313da280b1adcbc103"
     },
     {
       "id": "21.6",
@@ -1347,7 +1450,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "eeddbcb38d649a9925df85e272adfd61bb5d3224bd09379256550f2c5d670cbf"
     },
     {
       "id": "21.7",
@@ -1357,7 +1461,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "ce369b79a7e86ba1ec735801712b3209da7406c2eb97567c9b2da689ff960c09"
     },
     {
       "id": "21.8",
@@ -1367,7 +1472,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "1282710a648b2c4ce6f358c0d742353f9d0411f2cb038224d986a2ef48115f44"
     },
     {
       "id": "21.9",
@@ -1377,7 +1483,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "architecture"
+      "unit": "architecture",
+      "translatedHash": "078b288e1bfce8f69a0336108fed302b9640b776b8264c532755cc10f562f2f2"
     },
     {
       "id": "22.1",
@@ -1387,7 +1494,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "core-reuse"
+      "unit": "core-reuse",
+      "translatedHash": "3a0267e4d2d341ec997e02e6c0ce7d2bab535e93cb4c478da1a6b8bf2f059d6c"
     },
     {
       "id": "22.2",
@@ -1397,7 +1505,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "core-reuse"
+      "unit": "core-reuse",
+      "translatedHash": "5f82bceb744a6fb021aea81059457bf115a54f4b388adb979bde1db0755d10f9"
     },
     {
       "id": "23.1",
@@ -1407,7 +1516,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "2e5009668d2b80970bc549bfd3b689fb956a9cbc8f6e46a17a8a993088ce1b4c"
     },
     {
       "id": "23.2",
@@ -1417,7 +1527,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "e46c450ce7289e844808b05542a5405de9c3cc5223da703962351a2e8977ed03"
     },
     {
       "id": "23.3",
@@ -1427,7 +1538,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "9259801cd440e5cc5b6b5cd2fed583eedacd34d58d7996ce25a85593eb4737f3"
     },
     {
       "id": "23.4",
@@ -1437,7 +1549,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "e1769de8f4cfb3964abe3c2337c13ebc543581c165c1db1b9602c1b1daed3002"
     },
     {
       "id": "23.5",
@@ -1447,7 +1560,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "0037d6a15be093a1b084de5f680f593450f1e932905c775bb4f8822fdb307be5"
     },
     {
       "id": "23.6",
@@ -1457,7 +1571,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "0d0d8f06fb572349230c1faca233dc503361e135e9adb9d3b429d3f973601201"
     },
     {
       "id": "23.7",
@@ -1467,7 +1582,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "26d1fd9f48b300d262bf87e7122e38c49037aef35b791538082963a728ebab00"
     },
     {
       "id": "23.8",
@@ -1477,7 +1593,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "formatting"
+      "unit": "formatting",
+      "translatedHash": "0bac228dd3b888345ff647461b01c6ad677caf65942c708d325d28739e3058d0"
     },
     {
       "id": "24.1",
@@ -1487,7 +1604,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "10244dc31c8640f6338ea9fda49ed04d9b88f275d78a5d1ac0d9921647a6fc24"
     },
     {
       "id": "24.2",
@@ -1497,7 +1615,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "a945b0383eb161ec90c28bcac8c42671649e0075ea4cfac4a64896aeaa1025e0"
     },
     {
       "id": "24.3",
@@ -1507,7 +1626,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "9a17d7b49fd799e072b6a9bc74ac804bab28a0b409d5c94355753fc174b07947"
     },
     {
       "id": "24.4",
@@ -1517,7 +1637,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "2f686f33426418cf4f0f9eec5367effccd701e63d4c694cb7d6d15db75ced0da"
     },
     {
       "id": "24.5",
@@ -1527,7 +1648,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "8f0b47e959d0ede256c2c32cee6900ec3bf5e3d1a4b12238517767a4eff4a805"
     },
     {
       "id": "24.6",
@@ -1537,7 +1659,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "7cfd8c31799dd63abed0ed504917ff8314fcb6d63f452138228af79921b580e7"
     },
     {
       "id": "24.7",
@@ -1547,7 +1670,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "editor-layout"
+      "unit": "editor-layout",
+      "translatedHash": "426d40ba0085d6926ea69ecd5ef43299ae49bc34da5f6f6b5e5ca9dcdca8e08c"
     },
     {
       "id": "25.1",
@@ -1557,7 +1681,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "6f3541d92930adac22f939113bedc1be29b6dcd0b0256d342d4426a1cd3f31dc"
     },
     {
       "id": "25.2",
@@ -1567,7 +1692,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "48ac069968aebbff6d00744c92c6b5c1c47cd81503c31164b1e49962a34a6394"
     },
     {
       "id": "25.3",
@@ -1577,7 +1703,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "5ca44339f245dfdeecb8cb02b274bd3d830327330c73814987e11c93f2429800"
     },
     {
       "id": "25.4",
@@ -1587,7 +1714,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "00aae0b2ecff9452b6ed1bddfb1dc00a6b0aa126dafb52b3b2b71fabf3b7a72b"
     },
     {
       "id": "25.5",
@@ -1597,7 +1725,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "4ae5ee3546730297ce1e27aeddf37b00703842a3fa13f3780e65e520c495016f"
     },
     {
       "id": "25.6",
@@ -1607,7 +1736,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "5e19b875c132a28b4329330254028c2514adafa89b1721a0836adc7bb523bbcb"
     },
     {
       "id": "25.7",
@@ -1617,7 +1747,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "build-host"
+      "unit": "build-host",
+      "translatedHash": "bb30e559aad2e6a87f7859cfcb4defc3eecb0d2f2b8071011d4a10db773697e2"
     },
     {
       "id": "26.1",
@@ -1627,7 +1758,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "solution"
+      "unit": "solution",
+      "translatedHash": "0483b55fccc5f6d01514232acd1f02e3f183882b5577f3b00d9926260bd982a6"
     },
     {
       "id": "26.2",
@@ -1637,7 +1769,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "solution"
+      "unit": "solution",
+      "translatedHash": "795bb85622bc01870e1e65eccb18705c1218060ae36969d3b6b356499e658d40"
     },
     {
       "id": "26.3",
@@ -1647,7 +1780,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "solution"
+      "unit": "solution",
+      "translatedHash": "8db8f6984ea6d97e8089f27c6d194ed044c67bdf33f61d890a137fdba29101fe"
     },
     {
       "id": "26.4",
@@ -1657,7 +1791,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "solution"
+      "unit": "solution",
+      "translatedHash": "58bd97d696b2fb242b9115ed807e9f25c231ee908b2d99a46b3187d29e8747ee"
     },
     {
       "id": "26.5",
@@ -1667,7 +1802,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "solution"
+      "unit": "solution",
+      "translatedHash": "ea5a66ec42e2b16e5433a1bb9ac555169660b9be567d296b7ad8fb6425c98c19"
     },
     {
       "id": "26.6",
@@ -1677,7 +1813,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "solution"
+      "unit": "solution",
+      "translatedHash": "7ddcc1494b4e535474a0bd52ebe4f29e8063b9a84fa51409a8618a561e7dea15"
     },
     {
       "id": "27.1",
@@ -1687,7 +1824,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "a3c3d40432341948da3425111919483a71dd9a670453a779ce14988de2c86b27"
     },
     {
       "id": "27.2",
@@ -1697,7 +1835,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "799b62a6394cc3d00628d0011a636ee7132d70faf3b87a2ad91dd2ebbb26fe6b"
     },
     {
       "id": "27.3",
@@ -1707,7 +1846,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "b275fdd63312c343487ef5900b754569044bdefa162e7984ff45a3ec6ac9d121"
     },
     {
       "id": "27.4",
@@ -1717,7 +1857,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "e6801a9f0117cbeb680dfcda3d3becfa769e2dfa867fa33426faea40f37d2ae8"
     },
     {
       "id": "27.5",
@@ -1727,7 +1868,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "e3eb98850d4fc6b9d1f10314f59ff960d02fcc31805fb8c1806e4871da6a2cee"
     },
     {
       "id": "27.6",
@@ -1737,7 +1879,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "7abc730bed80f7182f50a2fa2d800ec1a7ff4c7f93c10603a7f9db78d1ecf0a7"
     },
     {
       "id": "27.7",
@@ -1747,7 +1890,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "5295573eccd283d7ebe32cbc6a81a9d7de00cc5c69053fd80c864f87ba200db1"
     },
     {
       "id": "27.8",
@@ -1757,7 +1901,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "content-frame"
+      "unit": "content-frame",
+      "translatedHash": "1ebf3f605999863b058ea2e0842296ae13c048c5c2913da0e05fab43b2a207d3"
     },
     {
       "id": "28.1",
@@ -1767,7 +1912,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "1ccc62336920d8d206c660bb69253fc729a50009f5183994d8f51e997f81a733"
     },
     {
       "id": "28.2",
@@ -1777,7 +1923,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "e07c444e54ad0706b8d60f18ea4251134de8da429be5becd82f620b34e9cf3c3"
     },
     {
       "id": "28.3",
@@ -1787,7 +1934,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "d4e895af3df576a50c336831087da0154a6a61c49435523ab21d1c38719aab82"
     },
     {
       "id": "28.4",
@@ -1797,7 +1945,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "f298d49d33a65277f5984042f0db3612a2ca869dade024d0d9f35414d598feb2"
     },
     {
       "id": "28.5",
@@ -1807,7 +1956,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "cc05be97176ef293898bc6e19032c1d524212f4072c437cde90d72971f79b18a"
     },
     {
       "id": "28.6",
@@ -1817,7 +1967,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "df72d5380faf70912ec865e14811a77f0fc2549269872aa8bd9b47989cbdeb9f"
     },
     {
       "id": "28.7",
@@ -1827,7 +1978,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "6adab6f1f34ef19fdd6e7b53cebc19f7c644791c9b9c3ae1dd3832d18570fdfb"
     },
     {
       "id": "28.8",
@@ -1837,7 +1989,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "6ec84e13d26475f76db8a7cb32da00e07c29c3c112810af53e982217410c0065"
     },
     {
       "id": "28.9",
@@ -1847,7 +2000,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "cc2c00b11df385e07035448fffcf8d681df96acd8382ec0e1558f5d61ed8f0f3"
     },
     {
       "id": "28.10",
@@ -1857,7 +2011,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "e51ebcaf4adffa66818e1fd80078f4b77797905a7bc1b34cf6e2be8289b159e9"
     },
     {
       "id": "28.11",
@@ -1867,7 +2022,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "4b3ba100cd3a0a89254d79cdd4d493856dfa800f804636a44ba8849cdd82d4ca"
     },
     {
       "id": "28.12",
@@ -1877,7 +2033,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "ba4580a371549e2c475316965ddc62910ef7c48a76d4ed19937b4ad6ff97d989"
     },
     {
       "id": "28.13",
@@ -1887,7 +2044,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "1d6604b2c73f03940f77f447e9dd42a9bfec9ef056d70190985378c7ee76d2bf"
     },
     {
       "id": "28.14",
@@ -1897,7 +2055,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "38ad850bf1f51ee335adcf4b28bac58eb15636a54d7d90b2d5ce1d04ba4e0ebe"
     },
     {
       "id": "28.15",
@@ -1907,7 +2066,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "999168f0eebea40a7f0a0c41fdb26eea4b45a29e467ae42450117a3c18e769bc"
     },
     {
       "id": "28.16",
@@ -1917,7 +2077,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "7e606e087f9376f10f2fb4cb2ab487372c83fb64d3f39fcce62806b806b80028"
     },
     {
       "id": "28.17",
@@ -1927,7 +2088,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "8e56582f7971f183cf862b5dfa4b238440064196565221baad83cc0a096c76d5"
     },
     {
       "id": "28.18",
@@ -1937,7 +2099,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "770fb60453044c83021640675b4db0b4b0d66d24e76025e3bae9c3022b1fb3c2"
     },
     {
       "id": "28.19",
@@ -1947,7 +2110,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "a5d16ebffec8484bdd8e48ddf07eb6f9010296c0d3d03506894434e5ad90b20a"
     },
     {
       "id": "28.20",
@@ -1957,7 +2121,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "80284b4568ad4e28bf6d275ef21ccd35b92160cbad4d4832749532bd55caf1a1"
     },
     {
       "id": "28.21",
@@ -1967,7 +2132,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "01c97c9490d373912aa39f72eb12078aefb786893fdf19d8d1f867575b37aea4"
     },
     {
       "id": "28.22",
@@ -1977,7 +2143,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "1e1554ca14b8f1c1c792b2ecc51e5a22d04b4db18e731de88befcee8d23444bd"
     },
     {
       "id": "28.23",
@@ -1987,7 +2154,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "dc1b482f4aab5734dd96ca96d2d3831385aae7c4886d7cd76388459e689bae4f"
     },
     {
       "id": "28.24",
@@ -1997,7 +2165,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "f1bd1a5d08935b55441ccf2c4708d8841d92a9f5a6b80a5698e1a47d1519fb25"
     },
     {
       "id": "28.25",
@@ -2007,7 +2176,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "7f8759274527c9b1b1ead5bf64427baf9aec1dcb42e3902fac73ab250ff7ff03"
     },
     {
       "id": "28.26",
@@ -2017,7 +2187,8 @@
       "disposition": "preserved",
       "check": "architecture + semantic review",
       "reviewer": "implementing owner",
-      "unit": "platform-products"
+      "unit": "platform-products",
+      "translatedHash": "af63d3d2ab4dd248aea2c3f8eb82cec97a485bc066d80430c680c7c87c5da3f8"
     },
     {
       "id": "29.1",
@@ -2027,7 +2198,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "fe2f86b126dc556658b3d98510c367c9b0d0e1cdadbbde575b452615d2dd5b9f"
     },
     {
       "id": "29.2",
@@ -2037,7 +2209,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "8bc7f52cde6311fb50418b498c44debfbd02a9e5072a2002d3c4ce6f78133a06"
     },
     {
       "id": "29.3",
@@ -2047,7 +2220,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "ad3910305ee11b6cc3c301f641715d36d27bf349ea279be1690f4137dd73b6d7"
     },
     {
       "id": "29.4",
@@ -2057,7 +2231,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "229dcf70819f94d7a8291b75d8cbfdb623e6c6e39b36db4f37726d8c1fb43f8f"
     },
     {
       "id": "29.5",
@@ -2067,7 +2242,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "452e40de8c98a748c939e30115ca9962a497cb38c20ebc931cbc691240e59ecd"
     },
     {
       "id": "29.6",
@@ -2077,7 +2253,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "88fe122ded5a5662f59de6cb274cf44aeea96fd79acea3c3d8ddb8160b0f9882"
     },
     {
       "id": "29.7",
@@ -2087,7 +2264,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "49a91d8ef3552a254e865b8629a5e296fbbdd3f9808a30932cb3af1179682abc"
     },
     {
       "id": "29.8",
@@ -2097,7 +2275,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "94d8980e98c8bce72f4cc50106880b725f8a4dc62f9fefa0d08047bd816c451c"
     },
     {
       "id": "29.9",
@@ -2107,7 +2286,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "6d5a1d919c9a6d1c0ab3d783e344175cabaf1b7696b2280051dee36b64204ec3"
     },
     {
       "id": "29.10",
@@ -2117,7 +2297,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "c932db0ddc349b2623393bc3be6ecee78b5b949dd6ffbe790994736f0caf7aa4"
     },
     {
       "id": "29.11",
@@ -2127,7 +2308,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "93cd250c40b90c2dac1407b7622fa51b291b959f2576e2a09d48fc04c2ae4a7b"
     },
     {
       "id": "29.12",
@@ -2137,7 +2319,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "fa6f1d36700726347605104c6b97cce1e94833efd072d50b39f17d96687c380c"
     },
     {
       "id": "29.13",
@@ -2147,7 +2330,8 @@
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
-      "unit": "backend-build"
+      "unit": "backend-build",
+      "translatedHash": "c718e498d894d8502a6e4f66a5896eaa1683c6fcf81cb18d27e39a9007126bd3"
     },
     {
       "id": "30.1",
@@ -2464,7 +2648,34 @@
         "style"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "0e2214dc4aedf0d4b00f1e7a6d0729343611cb5ffc8ef8b8ad153ef8755e8826",
+            "targetHash": "a54583ae86207c636bb8c0e702652683096299c4b22f2b1a86ac3fd1f05c86a1"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "0438048c6c19d09a17302f8833d072eee0bc1dbbea42ef63792c8e182acdd9b6",
+            "targetHash": "619bdc60de5e116996897c86ebd06284331a38e36dec8f1362e53616f9ad7fef"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "7548a57f38c92debf7c5fbb29b5f477132cd9dc587bb166ecafd996d2529e745",
+            "targetHash": "2acbd5f71f6e0b3a57bc47e5611f6422106ff61340977f67f89962f3a49b77a3"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "4c955118aec3a46bfc2136417987f168069fe06a1991534daeea48f6e032490b",
+            "targetHash": "99e629ab7c8595b0bb3bffb29440446cbd1b4e3a4f272d58b784a1eb0855581a"
+          }
+        ]
+      }
     },
     {
       "id": "encapsulation",
@@ -2480,7 +2691,34 @@
         "public-api"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "21c4ee238927515fe775b303abdd8b7d2c087f71aebd8e2585058e42c09fca84",
+            "targetHash": "b1ff182ee1efb760ecd40ea10fa1df91ff9262cb2c609b9ce028f747a2ca3ad8"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "b41c9ac4a02994caca07eae9f9f88b1a04a54588576dc83b210317d72f54f76f",
+            "targetHash": "61d23811216ed1dce965f002ac5cc7b1d8b9548eb5a048459f4c103a7d9f6e4e"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "c99a1440e54ed1f02f47977ef854a48b8e3ba1ad66f80b02acea7285a1ac5bc3",
+            "targetHash": "4b9c7f47bf61bc389e0925ac64026e38a90b588f4e47155d88dea7256d216eaf"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "da4c375502ff67444749d190568441619c09ceecf1a2cb8afffb691b326f9bca",
+            "targetHash": "31b9db7d408e5d0fcd307fd1b9574f67716e904f53a9ca7f51475058312b360a"
+          }
+        ]
+      }
     },
     {
       "id": "directories",
@@ -2495,7 +2733,74 @@
         "new-boundary"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "3384c9ea100daae62385d0fc5cedd92e11d5df4992b2360b1f6e87ff1f833efc",
+            "targetHash": "8c36723587c0454b397357de2571e3e2437f21947df7a74d9cb87a2a43bb5e4e"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "5f0ecb345e2161c7505f72636b3869f4b2f5d36c854a4cdf080a365154dced3b",
+            "targetHash": "93b916cb653dafbe1ac6b1541318c6d2a99b4ded5430651fb234f09c1180d095"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "cf4346c90282c6ab53c2e461e575b9d72eb07351721701f75db9577cf9736121",
+            "targetHash": "d885e29cfc85d40947d57fd971a252a8188390c7c2c1c0a3882343cc277292d6"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "68be7e5cbe335410234b361ddc9a1d2a470d52a2efeec1cc51df20b1104df9fb",
+            "targetHash": "a58db9c776f2a269ddc19ae2b0dca051b7decf63ddec38627a5e85c24084dc6f"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "baf67bc8327069fca81f39fdd43a48c48942ad117e14c21a07d5d3ac3a2cf785",
+            "targetHash": "b8797541d6389bd1e41e1ce9fe2ebdd00c5a5de4f3f052d127e1deeb1bb6bc4e"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "826058d66069113fdd2ddf34145f9a3cfcd007cbf94058820e4b16c739492a7e",
+            "targetHash": "860205ee7cc7104f0b7870e716ce87c6a55794010451e58d244618cb4e1fe81f"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "994b998db615f982f3bec7be1d89e09f1c23f503c0919cc3d6e206713b2bd91e",
+            "targetHash": "7174f703b0a255c6b67e6e0eb62f06f435f8d62ba8140d6ad8e1eccfb66450bc"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "aa4a2e04b024bba81ec11150d13eac13d2e640c7e908177c8e7a9d3a6221572e",
+            "targetHash": "c850a0f9751d00ab4c72006c8412ca36f84e9eb97cd16a42fbf7f99db8b6988c"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "3725c7f1220801b602870d097eb30b8101fe29c3d0f0dbcc25b9706b3d7b9ffd",
+            "targetHash": "d284c4be4bd867dacb5232fe688e3d342ce37b8b27ae0538532b06e56c76bf60"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "22e3056d5cffccb699ab9f877c922098768541bf4f1f38f09d241ab128799ef9",
+            "targetHash": "75206b141137df2f81699e6643bc8e496c70b9d89b394e01bb93017a3caa0538"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "b44cca91ac82e75c8eebc27fb13765fd4b7e7a77a7a8df68c6aae6f9b4d66e05",
+            "targetHash": "61dd28ec15b54946f7a6e16a616a700c68254f65b288b2c71f56b59251a7256b"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "163b6b3e30a395ad2deb4ac88fa58052e5b17073729b41c31e1b56f91a2606a3",
+            "targetHash": "f1e2390738b878c94984a774ba27f7ce1dfe9304624b4f14238b10ee17ad9d29"
+          }
+        ]
+      }
     },
     {
       "id": "no-legacy",
@@ -2510,7 +2815,49 @@
         "new-boundary"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "a2da8bd11d5151d3ff856399dd88c86cfc2e4a3bf66cfaa095b39183a90f5536",
+            "targetHash": "91d7b048836348b136a12a876a8aab4149b9137d2593c659883ebeaab0b888e5"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "ca3db635c67a5e06af1fc552d2d14673df5219117c438670b2bb80261308e997",
+            "targetHash": "5598f61c60c7e528aa02dddc381a65b16b9c29b41dd113d1e7a205ed1c3cd834"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "cd95d65721a19bed59819a9dfb3218039fbf58ce5532b9516c3db44984c7d452",
+            "targetHash": "308cdac10ffa559063cfb6e676b0aafdd0aa0827d8f0daab0a80ed7c832f9ee5"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "e42ad938b23b8d9430521e0e67abcefb208494d08e4c19a53d5a45acd4e0d76b",
+            "targetHash": "79de0f9bd4ab824161b9dce0d0a277e5424cbeababd377095c2eb9d60e0fcd70"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "2b8f8939ec19c4de68cd0c8460a2366d20cdd71d6049839e54eb77572fd9cb28",
+            "targetHash": "2b64330331a1ee8039cbf370adf831b23896ac47b39d1ac2c7d4517f146d36b8"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "2126318b976262755e90da066ca6efa95c95318fbafd150e1eff03f6b1d8578c",
+            "targetHash": "c7468bc8577b9e9f5bdb1c9b7d59dbe4b1acdea283c247666e84d11e0d5b5c02"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "5586fdaa422ec00e446f3499402e7672a9cd07466802b5c0d8e9cf8b2e2665cc",
+            "targetHash": "c77319428a2d92e4f9b97d80f76706cb83559b267cf2b10d12a8530e19fa264c"
+          }
+        ]
+      }
     },
     {
       "id": "architecture",
@@ -2529,7 +2876,64 @@
         "ownership"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "1d0e28ee4c9fa6b7570ea77acc93de9df2171ad572be65d1ab3150def8ff1719",
+            "targetHash": "ea65daf30a811da2ec7dc7dedd847b681176f502810a4eeab08ec0810c491e4d"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "0ee4a1381219a58a864b2d34e63490bc76b41a6d3a91f162d10b545296301eb4",
+            "targetHash": "601a49a2801a6609c14b3059e972139dc73c4cab54e7fa4c3e551173232c74b8"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "b8fcd9e15d3ebd1fe14864d7337caf534fe5be36043c761b9da98aaf817f10ff",
+            "targetHash": "4dd627fa435109d5532f0aec4b4e087503378c5a03ca4d8f80f15bb80429ba4c"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "3ae787b3f7492f78c4d175c1afeb3440f337470bc957514fd541e334ca7a6791",
+            "targetHash": "bd95a93492c285b77af96ddb96b379bac6adae61891528a4f9c58b13d03ed6c5"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "f0646b2f9c636d6649ae60527b2a3171e98f1667369d7bca95825102773f09f3",
+            "targetHash": "5e83c73b6bb8440c2039d7b0961b946b8efb122076a9a319cb6299aae81fda5f"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "fc03e6bc382adbe5a20029ffbb9d84bf52481670141c960b6ee9daa7188efc37",
+            "targetHash": "fd5c6a6cde29106b250246e87a8cefac8b065e49e2324c313da280b1adcbc103"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "114ac52f6a6a08e00af88d925c557453cc899572151d6638fe5e6b485b98d7f1",
+            "targetHash": "eeddbcb38d649a9925df85e272adfd61bb5d3224bd09379256550f2c5d670cbf"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "1f55a6c4e2413d61a0c260b94b1379c3ba5381dd3fddb553d5068f8784585b6d",
+            "targetHash": "ce369b79a7e86ba1ec735801712b3209da7406c2eb97567c9b2da689ff960c09"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "10a2bfdf68c81051d2f8b0fbab24495a609c1771531462fbf9868e9bef0bc320",
+            "targetHash": "1282710a648b2c4ce6f358c0d742353f9d0411f2cb038224d986a2ef48115f44"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "bab9bd3ed3aa17a1a152fa893a422014284ab69be0c24b7aa6576647c333335b",
+            "targetHash": "078b288e1bfce8f69a0336108fed302b9640b776b8264c532755cc10f562f2f2"
+          }
+        ]
+      }
     },
     {
       "id": "core-reuse",
@@ -2545,7 +2949,29 @@
         "ownership"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "1d1f7d4337cb7b3557772df8bd5c15ffa860c75c2437d323fd40a229bc7e0efc",
+            "targetHash": "5110ab1c16365bf82455f7973b4d4d795f677f395ae9f9df7fd052958fd6b57e"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "6fa5cc593dbe1d5fe96ff5e177c49a6b4feecd18f9cec91e80e7dcbec482cef8",
+            "targetHash": "3a0267e4d2d341ec997e02e6c0ce7d2bab535e93cb4c478da1a6b8bf2f059d6c"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "43025970366c56e171047fa7cc31fb9ad071cd667dfba68297c36756f02e73cb",
+            "targetHash": "5f82bceb744a6fb021aea81059457bf115a54f4b388adb979bde1db0755d10f9"
+          }
+        ]
+      }
     },
     {
       "id": "solution",
@@ -2561,7 +2987,49 @@
         "solution"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "4065ae4b625383e39bdc3924fc4a77e9eb8858b53a3ae6ae65343eba51e5ab7b",
+            "targetHash": "30135c42cba5ba64d85f4bed5b342cfc6fb42aaa9b2ecfcd95c6ec654a76629a"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "bb60b33ba54c7336e9799166c01b4052d126a112d4722915e3904b66fc4b5ab0",
+            "targetHash": "0483b55fccc5f6d01514232acd1f02e3f183882b5577f3b00d9926260bd982a6"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "96c711350d8ff162324062dfb4b49240d44be6a667a5fd42a42bf590c3a5e3ef",
+            "targetHash": "795bb85622bc01870e1e65eccb18705c1218060ae36969d3b6b356499e658d40"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "fac2752dd3f41f02a5029638af0b428b76cd57c54b1e806d7075b11720f6e4d3",
+            "targetHash": "8db8f6984ea6d97e8089f27c6d194ed044c67bdf33f61d890a137fdba29101fe"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "24eb6050ce21ea7ff4821e7c8829d4beeed5e4ffa67e27dbff16f278a535ae78",
+            "targetHash": "58bd97d696b2fb242b9115ed807e9f25c231ee908b2d99a46b3187d29e8747ee"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "557d3320b8ef8a82bfa2902a8aebd9d3645b7084fef20ec6932baa3c00b35c77",
+            "targetHash": "ea5a66ec42e2b16e5433a1bb9ac555169660b9be567d296b7ad8fb6425c98c19"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "25a9c3360ddadcf3681147ed90c1d86a63205a903b3dddde86992c1866b32e79",
+            "targetHash": "7ddcc1494b4e535474a0bd52ebe4f29e8063b9a84fa51409a8618a561e7dea15"
+          }
+        ]
+      }
     },
     {
       "id": "naming",
@@ -2577,7 +3045,59 @@
         "naming"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "a2ecd34c1a38ff4e0cdb6b62b29b72798eca5e7d8200ecee596a0810ef2cdb97",
+            "targetHash": "c03ed48491913faf71c543a24a31ffca134b16b52e0474d4e89d7e6e14477ead"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "23ed7825005c55de7bab25a13ad15e4d6f9003fa963e9dc6c8f83f25aa156aba",
+            "targetHash": "ec60fa8773db69f2d94c5e28c5901b9ce970d29f6002af8e2da7079b5b4b0b56"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "7146fd46302f8cb642df8c5543f331a66155d896ac1e73a902b4225731cefb22",
+            "targetHash": "93840a0814cc3a178726e86b61586d956121c64a4d595b91a60420ed80470b3b"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "1254fc0af71afb409b4898cd71bc434108cda6aff826f68e79fed35a059b7a43",
+            "targetHash": "a68bfd544c316dd8bd4140f7eaa5a16ce35adb1d0d0afcc885249f509ede18b4"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "c7d1597e6822b378b28cff3f9a6360068544ad29df7f7118e736d012ffb58230",
+            "targetHash": "e65985a0124327bb5ac46f97c457fd9c8b6678a6df1abf6ed312f65deeaf708e"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "de1e8fc2ce15a3e73e3f8a940abf54b6279a7d557154acb8298b5e688b8d82b0",
+            "targetHash": "c1fb02fbe518037ebdb862c96b2a42034e86f230c99fea894caee80f23f2290f"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "00238457aa080323c071fbab13a30fba20d564883baf55386c4e2b878f67da94",
+            "targetHash": "7eb5975ceb7bb9091a8d1b602e78a93e5bd4e2406777c26d8596810568640a99"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "4dd1a89dc1b7a7b4354e70948fc01c4ae5993733201c0ff5bf7f4713a5abefcd",
+            "targetHash": "91ea145a10ba903fb71233bc29bc0a1edff9378d31569b1b5cc5e889e041a351"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "779100086672741a3bd94e2b881aa35d8217edd739afdd017731e3983cff3a3f",
+            "targetHash": "aa807bb8015d7800fe77d0bada936898d50c066e8adb761d41f493812f0c4453"
+          }
+        ]
+      }
     },
     {
       "id": "members",
@@ -2593,7 +3113,64 @@
         "members"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "aeb83b2e3122df1174d2c41aea66196c503afe2be00362b0bb36455d2c95f535",
+            "targetHash": "085917a9e331374bdbffe0ab1b23a54a59b4a786efbd15cb1e6211b58ae5e819"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "155b573531fa878aa6c0186be8cb195d0df3cdcfeb74ae9ef7426d4de92344b9",
+            "targetHash": "fe50f60ab778c20cc0d21a6ad0822b8d1d74fb9878eca124ed11172b8171c8ee"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "21745673b0f5b00b93e217086d16c7cfb6032c6072c4a8a21d105e98b157afce",
+            "targetHash": "ff288d2db1925c5d45c15b8e615ae98de4fd532318df01077cd63da01c538e42"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "1013fa4a85db1b26be138b031f945ea3898e6408263acc3f8fea609270dbc4e5",
+            "targetHash": "974c2d1b934e4a8bf03e45c29cd7986379f5004432d6b221abf110ab1a0086dc"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "2be3e9229479242eb71723a3dc5b8fd0db9c7c77bfc06734362afb2177fef038",
+            "targetHash": "699a9572ad5560136fa23325e5c7463536eb0183ee14165e6cbe882dd9ad841e"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "15180fb47b019f533b39b45e4a634ef50ef086c781beb94a9d1171104d4f5fb6",
+            "targetHash": "5cf1e4657f622cfc45de3ab16fff72f5aa3633d483405f433ab89b3c0ae93d41"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "c00132896f827af44bcf3278f821645a1f0abe390cfaf5937bca68de30091b17",
+            "targetHash": "662c636b28489a240e62e4e4ff0eb0bf67ccc2b9f8b94ed461cd2ea88fa8bfec"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "96bac172645be96150f5d526df8293fb2e45ace5d28f1aa833e97cb8a3207b8a",
+            "targetHash": "23eca0ed30fbc3112f9912c8000b3a7e6f84dc4e30995e7618d995520476968f"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "42c62c7d7814e5d5233bdf69c66252172ddb30d91cadd2d789f390959fac14ed",
+            "targetHash": "84739f16c81513c858158016ff5eb127eb0a32313a8f8e08611418c8062fa91c"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "6a0621716390e0c953ed9eed37545093931c0c1eaf280210e4c8312a6981ac9e",
+            "targetHash": "26bf77b12ee406168444733e6cda0634672562df93b7fe79929b10b2572f16b4"
+          }
+        ]
+      }
     },
     {
       "id": "xml",
@@ -2611,7 +3188,69 @@
         "documentation"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "7a3b010f1f556a0a4785fa2e0690d44e293735d9be73d684a173591be07c5793",
+            "targetHash": "7e1614602f9fe181223680359ab1f5bd48a8eb13c3df4636a7aa391e35d523fb"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "6b3170a223fbeeaa9708f03854dd47d7601bcc74996a78b9d7ec626f11fbc9d1",
+            "targetHash": "beac146b517f48ed476a18e9aa7f2fdab6820f3b4fe0541a84f7260f58c8c9d7"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "d612096e688a5c09d76a1b76f752ad16fb46152762b19175c5d3cd60ebec09df",
+            "targetHash": "c41cdb59a1d92c4bf77c05f55c2a0f4e8b120e04c75c0bfe4b4ed9114c2dbee0"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "7f1ffd3ababd147eefcbf539f98b37a7b1f72c71d90bbf1fb67063aaedfbd7ea",
+            "targetHash": "8d3a7e677d859685df4887afe75f337b6580c13a1f6d0ad8fad977762e900b50"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "8506f6d7df6456cc94e41eb26b73a779e56f702613304ca390a1ef7335a3a459",
+            "targetHash": "081c51b97a049870a642efb380e6f0c8f7f599f345b23bd7374ca3451eda903a"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "e1028d8d116d4bdf5be75dfb3ddbdb695cb8ed7635b7fa715004fe6a57545d75",
+            "targetHash": "db70458ea56d2cf1058f3dfdb653e179190cece63fcc31eeb175e8eb0d60cf17"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "d7c0d0b86975a71c9a0e05f68035490cd17dee25a52f1ee0de47b8f3e516984a",
+            "targetHash": "948a3d51f81a8080165a9873f3047e95d622f66af4c5f026f680691ffd35958b"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "53a79b0ffff61e3c64fadd0822b5eaf64d9d86c64f03abc4f10662923ebec648",
+            "targetHash": "2d5ddf314df4b45cfc643bbb67ee8f27f0d473a331e3430a7c21efe94762a9bf"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "230cd76be9c06b7b0154b24b64777add074d6436884be6cba68c8ebd6ebd887c",
+            "targetHash": "88c9235f5140174c3ba6859d2daea92448b59fd05a49db081cf9cbda38dd7a90"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "0771e910c76a4d4fe8240049d51a9777a9ca6d429b972d2b7f37c3915cfa24f6",
+            "targetHash": "ead7747e86c87d719e3f7d10f04baf07c58081893fc8eef642e3667041e763e1"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "59a8922dc82b328b1745c0f3b91fc0db931b0eb3fd0e3c26fdf6b18bd3f38ced",
+            "targetHash": "7a58317c4532181f9281b4245b89cf89416e5c7f789ba0d4a89909ba300d0c4b"
+          }
+        ]
+      }
     },
     {
       "id": "errors",
@@ -2629,7 +3268,34 @@
         "ownership"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "6282b05e7b7c40379cabb5455a04cc3cc13d17b37590554705a48af0d4f9c168",
+            "targetHash": "f633ab87a742f490f6844c5a76ade2c82788cf7614cf8940efc494ece6359aec"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "0980b1aadfe2ac68f2408411a4c8faa47d4827bfcab4626fa364d341f1c740fa",
+            "targetHash": "b00524a3be4313da355adf562e233fc3f040313649c6608e091bae13d0eaf4e2"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "76b50f93158d312ca2fdf09d100930fdac90a842695d5d71982bc1e62d47187c",
+            "targetHash": "397927257f1a6166ae6e517a14b27d64adeaf1f1114445342e8eece6f6e4f56b"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "4976e70e627ac2a6a257fa2480583a521c47ebccadf5a58e480b1da5512e369a",
+            "targetHash": "454b07214dc2ad21ecf0626da999dc93ac75863293ff9267ba6186a0c05aba58"
+          }
+        ]
+      }
     },
     {
       "id": "identity-naming",
@@ -2643,7 +3309,34 @@
         "identity-naming"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "94f2925d0a44f1b14240ee545aee5a3bd93c870898c4c93a12080cfb8de69f8d",
+            "targetHash": "2bcd9bb11b125445662ce6cb27bf034526113842a3865910a96d7abc9580c79c"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "5b08d747721d1fff4043b5b4cdcc9ff5a2012f5b2dc38d6cc15d1005115c3458",
+            "targetHash": "2713b77ce0dc27d740dee0e57723fa3d23d3d680decd110a02a647f3cc645fc7"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "4ade080ca04bd3a8af8c5cc2a079c0d7c576063df419672c0beec9f8e88c58eb",
+            "targetHash": "d420312b557f9c342f653da36246a2d21c4e3207e3da9a3a40b6a3fc64e40659"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "714ca4b88d20ad2f599c3e8c7287cb819db79eeaef3377ce67c9590515568ca8",
+            "targetHash": "2804cc91a2b24bc15e9da3dd4221dcb713b9ff097b7122029bebd75b0825201c"
+          }
+        ]
+      }
     },
     {
       "id": "formatting",
@@ -2659,7 +3352,104 @@
         "formatting"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "15ffb0266967a20a678fa44d3a1a861394fd38c234e1994ac49f3c842d4a9377",
+            "targetHash": "cb43e57656d394eecb667b5a91bf099d57955790fcb3ec79047c13c41c087a9f"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "a7180c7b2a595dffc271bbf430dad6da72ac8dbabaa7a713ac746d3be7bdcbd9",
+            "targetHash": "2e5009668d2b80970bc549bfd3b689fb956a9cbc8f6e46a17a8a993088ce1b4c"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "31891a8a828b1709293b0f1f3d81067b15c1e35e0a9e8b2f6ef6149a56f0c635",
+            "targetHash": "e46c450ce7289e844808b05542a5405de9c3cc5223da703962351a2e8977ed03"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "95e12ed427e31ee89b53ebdd3551f8b671bb56c5d8d85a7c141127c989abfcda",
+            "targetHash": "9259801cd440e5cc5b6b5cd2fed583eedacd34d58d7996ce25a85593eb4737f3"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "8338542136dae7aa818b9446f5050658f3e1e89402c0c97e9d4f5abcc8b7d0cd",
+            "targetHash": "e1769de8f4cfb3964abe3c2337c13ebc543581c165c1db1b9602c1b1daed3002"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "41874671f58ef7bc6285d79b4539b0d61ea6e5787d16732d3e2493d84b043ba2",
+            "targetHash": "0037d6a15be093a1b084de5f680f593450f1e932905c775bb4f8822fdb307be5"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "19ef285a86c7baaf07c63b9a8fc5cd74742cfdc2048821333f3cf14a22acb7c9",
+            "targetHash": "0d0d8f06fb572349230c1faca233dc503361e135e9adb9d3b429d3f973601201"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "e37bcae5aa76b76e6688c78103d6163a25fc73ed080c760964579585038c086c",
+            "targetHash": "26d1fd9f48b300d262bf87e7122e38c49037aef35b791538082963a728ebab00"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "00ab8e1bf5ec15ca8c2df55c202cfcd4172b471b8fb6ee80cfa15a58bcbaf1bc",
+            "targetHash": "0bac228dd3b888345ff647461b01c6ad677caf65942c708d325d28739e3058d0"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "71d91f2dd249257949dd61c65bcc8ce6de0858dd093b4ce579a994233d78b1b1",
+            "targetHash": "9a29e75e154d9dc75e58f929fab1f2395c4421445636ba3ba09c02ffecf3eb58"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "0d3623254a13451a943b452751857f006364093dcc0d75d2f55ca78a5af96c6b",
+            "targetHash": "0d3623254a13451a943b452751857f006364093dcc0d75d2f55ca78a5af96c6b"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "220a360337c27b13b8b71061abce48e28d1e15b2be35f926d7b5073d2469bab6",
+            "targetHash": "220a360337c27b13b8b71061abce48e28d1e15b2be35f926d7b5073d2469bab6"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "bd72eb58404a8ec9c955888629d584dd75f8fc9c16ec823e28b7c8b33582f20a",
+            "targetHash": "bd72eb58404a8ec9c955888629d584dd75f8fc9c16ec823e28b7c8b33582f20a"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "292a1cee656bf17bbba7105dd15078649bbea67e2c0595da61ecdf76cd982017",
+            "targetHash": "292a1cee656bf17bbba7105dd15078649bbea67e2c0595da61ecdf76cd982017"
+          },
+          {
+            "ordinal": 15,
+            "sourceHash": "abfa59370983ca52fbab3823eb970ba6f336b6cdb702d15fb183e6cdcb5e4661",
+            "targetHash": "abfa59370983ca52fbab3823eb970ba6f336b6cdb702d15fb183e6cdcb5e4661"
+          },
+          {
+            "ordinal": 16,
+            "sourceHash": "d726209c4b79b93a897f315bfe110bb25769be2eb1743210c8240ba3db71845a",
+            "targetHash": "d726209c4b79b93a897f315bfe110bb25769be2eb1743210c8240ba3db71845a"
+          },
+          {
+            "ordinal": 17,
+            "sourceHash": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2",
+            "targetHash": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2"
+          },
+          {
+            "ordinal": 18,
+            "sourceHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5",
+            "targetHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5"
+          }
+        ]
+      }
     },
     {
       "id": "wiki",
@@ -2683,7 +3473,69 @@
         "documentation"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "29dd21456d3528c0aad4b35e725528a51737d4655ded222cd7ca16ec0559ab25",
+            "targetHash": "b7f909e062f751affaff3e8cd4d7c98ea53a3cbc8f37a17959e3b0640fdc57a9"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "96ccf044ebe34361538ac4c3dac0fd3d2b7c9db5ad532b3e7837d04945d57363",
+            "targetHash": "e087be9cfd2eeb17a2c72f63a24b7aa673672b83193afe20ee2217c9b9f5e87a"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "824b508de366ea12fd61e4d9654921f3caebb1bd6a482c8bfc82949010f8bb31",
+            "targetHash": "cc08880907c077e40ef8bdc501254fbbe9022842760fac1e7e32a52c0ca6f3af"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "103c5e61c0f120534a56a37d455c285452c869f8e2ce24a72806cd9a1ad4f16b",
+            "targetHash": "514fe3da1bab404bab0253872340f8dd6ed56cfb6a23d67b7bb36a3deb9c712c"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "2568dc23c50d9799f22535715a1d496259248c52318d5280129d71d928a350af",
+            "targetHash": "566befb1f6e4c94807f6585888028019b0c8432b86b72b781295bc5359ef68be"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "5534ff06531b8f0e4dcede3a7409924a894a57e11848043c894a891cc226419e",
+            "targetHash": "f85f2d2ad085f23b258020732abb8034becd84c5964ae41c00d977df176afe47"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "d84e481c7e94dccb3d7646f58403de71f291ddf796eb607f6762b5a8cd1d077a",
+            "targetHash": "ff9bfa908630fcb2084bb98403c1d19e70163d171069b4f880acdef651435362"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "8905a7d3ff5e3dc12c838f074a7eed0664d76a6695e44ff5a1f99d4f6b60f4a8",
+            "targetHash": "5ae53f3449101c75753f1d4f1a259267adf4ce383492782fcd10de7c815f3de6"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "0e1d603608acd5aa204278ec1a5b69fc0e271ede6c8edb77edf667a1b3868b9b",
+            "targetHash": "2cc05fd8785c66d75571462f5888b9990c8720bf6f6a402708e0b83cb784f6dc"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "06dbaecfd67f1807ce241fa928a76e1b9da9fc66c5e19457f8ee84e843d95c44",
+            "targetHash": "3d9951ef1257c276f5d3a96b0e7c482bc8986fe597fdd2e990c73d1cf1e36282"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "f91ef9d6d4abc6129c4ed63429a5786c8f63324d43544bc62422f4d51bd17cd9",
+            "targetHash": "58fad6bddd9ff0a3400450ce71641e40827a76bbdb53c19e0e035ebd21926bb9"
+          }
+        ]
+      }
     },
     {
       "id": "tests",
@@ -2987,7 +3839,54 @@
         "editor-projects"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "e96d1c62c661cb5454c99143fb5f1a6cc8fd33daf956ec7a820ef4b755e71c7b",
+            "targetHash": "10d2588f823c1749153de1f3e501e661e1b4ca29c4e20fd176f84957f3f8e96a"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "9443cafc9093dae4fd32a2c037d02de87486add1e4cc1b52377cd1f94a125619",
+            "targetHash": "b5559064539f4b6b66250bfdf2e6d88dc318169e195c3b687e0735829633031b"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "4f5e5aed6897ace5c4b6cbfdb87904d6a6a8929cd0df981f479cee26ffd96743",
+            "targetHash": "39faedb7db5aab968faf5d85d5e00e3ce311a714928a0c0e187c7219ffed2d10"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "84cc6095ce04a31a8beeb1661912a58b8de562db0624475248f755b77a0e20e9",
+            "targetHash": "dd03d5a1ab0cc5f3b2c34f8f04f1763797fd42d79621c86ffef90dfceafc926b"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "5fe6ec264db83e6748ca0ae5daa13968f80aac8d6d005ee4e2ded8e32199491d",
+            "targetHash": "32d84d8fac657689afe63348ff0f5e41562769c11bd91a1d17e2beaf27850d97"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "bb394f03ce7c3962d38eb892f3240eeca07f7582563dfaaa56a128c5f9956757",
+            "targetHash": "fa2bf21fbe0202b247506afd72d2cafb390661d703060b1b1e56c2afb4dfc095"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "f03c8af813a56eea5cf54f57b7a6cbe268261de47a5d1c06c63facc942081797",
+            "targetHash": "96288472fe332b65829a9c6502eede3ddfdf9708aded8e000a855062d2261bcc"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "ea83c11a5783a0e4674ddbf18b0bd8d13ae741d859ba8d18ad3ac2d57309dead",
+            "targetHash": "3f91286809466021084655a592bad37b159faca5722312122300f29dfed86e38"
+          }
+        ]
+      }
     },
     {
       "id": "editor-state",
@@ -3001,7 +3900,104 @@
         "editor-state"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "21913b4af529f3333c80fce2614de58bcee1cee8301d3a6965c3f557b10a4afa",
+            "targetHash": "b60c90ea3d239c0efad54377f869482807600201f2b530e5a717c685c69afad6"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "802beca59c3c5542e350400d5553b4376e4fd603b93289346cddac56db95287f",
+            "targetHash": "f1564be509a447142575c7444c71599d53f5e20b9a4c805c358575d5d13bcc78"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "ab15e73721074f5f58250e7e325e01403f065f8bf3ef26057fd9d4c287a2871f",
+            "targetHash": "790f7c69224b7ea64c5a0a1373b7a14b082c74ae3549aae36a6c28604ded12a8"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "4ab9e48bd4ad307a8eaf797efe07f0383ca83d3cf7a28f5f5c976ffcc21b71ec",
+            "targetHash": "5d944a27c3f73de2bd90576fdb16ec02ec43f96f87f011b13b9e4be7fcb33077"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "f439cf9fc6e91c8205613454bef02d000df1f466bce557863dcdb89daa5467ea",
+            "targetHash": "db8e4b6285cbc3f2db01c93c779205af7e79d0d183558548ddfa6b23eff5cc43"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "5e625d5ffdba8dc2fa694a43c0e2d06993f973f21f2582fa12e3613ea1f4bd6f",
+            "targetHash": "25300dddd17b788ff48a0592f39143241cfad86a73aa8d589947f59dc8630714"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "8f1386ba061db6235bb1f467ac5ff571974533e5ce32362da4692176d8f1d544",
+            "targetHash": "65fb119594d3e326fc2bb92d94600560f43a866c2118677e28721cf475b735ff"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "c886a65a41f603a5bea7387efe60e2af979dbdd589945ec485b82c5473f3d972",
+            "targetHash": "481ee912c2eb7d1469ccfa29593223c284a5cfee137eeed7e0e00ae3db19c177"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "11a421a9a00cf21080803c70bc4740cc226479a4c9adb1f5592e82eebd5e8550",
+            "targetHash": "cae6ec6b47f8f1ce871a5663c92db9336433bb4b8b91b33c12be418d81e42a83"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "80fd966faab70b6d56473c56b0bbffeaca4831ee75830e7195a4a7f8fc46262b",
+            "targetHash": "1c9714e407adcaa31fb97d2a9f3cac2df6f9bfa0e90fdf14d43bd4a7b08da6f5"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "6d61fb5dcecd2a282ec55c91f551fbf012adce132bdae2589a134bfeadd3d70d",
+            "targetHash": "a47795754591c1f7d048d40fe777c5ea13139d09d90f5ed5975b87947c1ececd"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "1e309e4880134bdf98872c3601eb16261a30b08ce818ce2919acb47877ffd8ed",
+            "targetHash": "45b8afb771f26069f27b34ba44bdbd20205c2326d0b51f2e7726138dbe758a8a"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "89047a47e41186f278ab244de7f51ef84f5a4fc8e33999fa99e84eda365a4b1c",
+            "targetHash": "6788b28fc30cfdf61c3bfcc1908275d0fefb87d4d7dfc090048307bf5a0eada3"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "ced6359a37b15683302c590a140cf9f9c5b8ce14a4583b80ab64082e9a164735",
+            "targetHash": "9da5caecada51f64b5e3aee43cbca9a0211a16a9d8d53ba8579e7d66d8e7635e"
+          },
+          {
+            "ordinal": 15,
+            "sourceHash": "aa037a2eb62bc515463abef944986e311e5889fa1ee4bc031884fb591c405d61",
+            "targetHash": "f0e84b1b52daa6d016be5554dc787ce3d317b8a661ab91fc2fed8c3507dc1ece"
+          },
+          {
+            "ordinal": 16,
+            "sourceHash": "38878299c8a97469089022a237b2896e3699d76cff0af54d8c2a21e8a68f453c",
+            "targetHash": "8084285b098674b7da1c0d669a65e729be5d82a42ef0ae513f99e065b5a02a04"
+          },
+          {
+            "ordinal": 17,
+            "sourceHash": "d17b7484e2d5247bc6ed1dc891fa65149977f5d341c2079801f746c646c97843",
+            "targetHash": "79e84e819e757a783d8c88259ec68709db4c48ed616162650ff5d9f9b2b8c9ae"
+          },
+          {
+            "ordinal": 18,
+            "sourceHash": "b8459066a743985e3556a91a0e8e30de69fbc32d33d2de7aa13e127e635f14ad",
+            "targetHash": "f25581ebde68849f22ca41e7f5740243e79236682060ba13ecd38681383d33d5"
+          }
+        ]
+      }
     },
     {
       "id": "editor-layout",
@@ -3015,7 +4011,54 @@
         "editor-layout"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "0cc5f006ef001013725d7dfc893c2e4a3316801789d35046c34165d263d1ca74",
+            "targetHash": "b3d8d55da1736c8f726d1e953bc299dc44b4a601b75d871e860290eac0f5b761"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "a78da5ad23986a44349374372658a6557ee2d9976628b07e933721594fc468fb",
+            "targetHash": "10244dc31c8640f6338ea9fda49ed04d9b88f275d78a5d1ac0d9921647a6fc24"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "ff8188e23b8af5d3991c935b771b773a59598b7babf864d5b944150c0e013e27",
+            "targetHash": "a945b0383eb161ec90c28bcac8c42671649e0075ea4cfac4a64896aeaa1025e0"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "d2f1efe96013a971a0f435d8592204bebbe86ec48abb5f4bb537ad6b12f3e7d4",
+            "targetHash": "9a17d7b49fd799e072b6a9bc74ac804bab28a0b409d5c94355753fc174b07947"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "3376fbba35db3b14186fad6856628170c46b5ea568ec4da85d68e13a360df83e",
+            "targetHash": "2f686f33426418cf4f0f9eec5367effccd701e63d4c694cb7d6d15db75ced0da"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "102fc73957d8dcc7555e9f021d87b707da29f344e4b6715357256318c6944ead",
+            "targetHash": "8f0b47e959d0ede256c2c32cee6900ec3bf5e3d1a4b12238517767a4eff4a805"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "9aa7299366b57f5a1b1b5ca963563c742683e3fb6380dacb2af72d6e1d99fc1d",
+            "targetHash": "7cfd8c31799dd63abed0ed504917ff8314fcb6d63f452138228af79921b580e7"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "a60a708374ddcfa25bb62fbd311ec7a8bb959a60e3d74fc03ccb28777eefae77",
+            "targetHash": "426d40ba0085d6926ea69ecd5ef43299ae49bc34da5f6f6b5e5ca9dcdca8e08c"
+          }
+        ]
+      }
     },
     {
       "id": "editor-acceptance",
@@ -3052,7 +4095,69 @@
         "reload"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "7efd6f55cdc573ede6dbd3da88c1e062e81a9d08206e8eb6a08d33cf391c8744",
+            "targetHash": "461d9cd3c4b4965f945d82df383799cef81636ca050fec38fa4cc4fe823090e3"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "d04589d0ce99484f813001832e92a2f8411d2d1a4bc64aaff8175fa1e1475e0b",
+            "targetHash": "96e1a4c1f7b1276a60dded704ccb43f726c58f86c99b06fb62c81a191ec78d1f"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "975f6da00e76191fdb166d04c732a9d0acc77828f65b1d270c6aa94bd0b0d07a",
+            "targetHash": "99cd52450ef209e62d9b1df287979ed26fd21732f487649198a6d2e68cf53902"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "5c2f32dc18a4142ae2b41e7f0191688430deb3942f8d653c058ca5fb09ae9380",
+            "targetHash": "ce9dd22d95b882852ac19d5bdc44feb0d4b1a7b622ff2ee54226edb48d07135e"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "811e0a9fda7f7c75556ae181360e3af2a2c4a57ddf60a74bab1d17eabed0b896",
+            "targetHash": "43793c651d33494c2fca6270495afddf406398e15f21897b5e5d0c78b92c20e4"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "92829893c198c28c5c8f6d5fb3542e80f592ee4c6b362826cc9965d23506bb79",
+            "targetHash": "82d65edcf81d1ebab2f7445cfa727c37a2fa6515c7e8401499ea049bb1fc0471"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "63e109baa64f062a988a244a78754cf21234b8d3478124c99a0f3a5b131a4f3d",
+            "targetHash": "643d446e16b807fb946ce67a8e30bb8fa902dadda34e6209c76b922fe1724b38"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "da38afa634e638869a4aa17188dd56e7762b25c0d33026205f91a9df4fee53ee",
+            "targetHash": "7c4e21bb14ba0d418ef4bda4c9d861566f4440aec7dc9e80491f2cb49cae9cfe"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "54c7a14b2e0f3011f82089ee72b14d27f8963883d6ee166fcbc0e6deda1414d2",
+            "targetHash": "4f660e19e473ed31e64beb070c3f3e2ed7c4954a7492677ec27b73e09942e56f"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "1b7d6605e20bbfa15843a42196d806ce2b1d06b97b9c7d678304cc474ed022c2",
+            "targetHash": "0ede328f6a2f73b21505f069bdfa56c0a8aeb2f9e8ad69d91e25353f6b21e25d"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "036d942ebff4f22a51c0b0ccd9addc19f374304a7554e9992a545162b92395ae",
+            "targetHash": "28b538f56b4ec97bc42ffe5979ecc30ee356ebb96d6b9188d41d01b52ecf3324"
+          }
+        ]
+      }
     },
     {
       "id": "scripting",
@@ -3193,7 +4298,64 @@
         "rendering"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "5932ea2fb64b334a2f80454b87bae12abbc4f754261284548020c888ab21f19d",
+            "targetHash": "2daee5dc2000d60570098fa21495cc91b822bc6ea9375919f518aaeba72e0ae2"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "ee5e8af526141af2cb7ee6ab91b439e48d714da2c1f8e832da7553ef22c503a6",
+            "targetHash": "c4b79e930d63306c74e4971ee30aebe894d8a63c1e1c8c63a548637e1ce2e098"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "656c7f1ead45a3c2d3163ae94c6f0c49657a07676f798b0615deb70769a5103e",
+            "targetHash": "6884e80117b1b268d6ccc90625c90b76fc1f7cef3d809241e60103628fdfedf3"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "1ea202115e8e050c1713a7233da99ad2bc40b4dd94cb29d5cbf5e7061bdec892",
+            "targetHash": "41a700e5ca6457dfb3b993750452ad8f61e764fe78b965cb510408f3ffdda786"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "db8d1cd54f08743dd4298fd3d5411a31e8444aadbb26a42dcd8b3f5b27a8fd63",
+            "targetHash": "916437cbafc25fe06d0bdee7041d760172ae5fffbe54dadb1c5ba54c8d54c3f5"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "71eadeb9ec2aa3ec64d0f246f13251317f05bb6bbcc44f1aeab3f5433d01d2ac",
+            "targetHash": "ae883035d12008e913974ca35a0867231c2088c1a8ae62901566f021cc18ccdb"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "f899f36c3b77d92fcc886d9b7d293b9881feeca684e86924773830af0b4b372f",
+            "targetHash": "303882022ebcf8c451e2066059ec9db1d0750ae31690e8e0d4be4eebf569e768"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "6cbbcfde884e75e96c1efa01bc4eba9521b988dd0539a50971e71a34c7a6717a",
+            "targetHash": "8f1bcb3b34247ece9e813fb2629cf73ca156a91a65b48d8d01d0bf42754d0440"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "7ede213dd1659d4ad6f51ee6eb413609ada0db844ff03f38311bef69b2e77cb1",
+            "targetHash": "f55f5fbf29d1d956319ce9c0290eb74dc8066464aaeb19aa047d0af2ad95bac3"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "0e9ff540e001733230ba91a68544e1305ee617702ac64afa50608e05971e14db",
+            "targetHash": "5b4a800ce70b35064669ae0b2cc88c49d8a2a282717b0e150359a383f9da6b3e"
+          }
+        ]
+      }
     },
     {
       "id": "content-frame",
@@ -3207,7 +4369,59 @@
         "content-frame"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "b828af239b13805714c4ff0893b3ac805dcbe968cbddc152e9b83a7fba2df93c",
+            "targetHash": "9d3d49609e700b227a88cf6d080046723da6080ddd5603ed1ac6124a55ca927a"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "9cc6e95f7ea461fd696de07ce76f8797c96ed41f0433e310e1af26582805b22b",
+            "targetHash": "a3c3d40432341948da3425111919483a71dd9a670453a779ce14988de2c86b27"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "7603640023e8356e822dbdca1f0bce8573039862e61d8e8926b0acd6611b9494",
+            "targetHash": "799b62a6394cc3d00628d0011a636ee7132d70faf3b87a2ad91dd2ebbb26fe6b"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "aa8f68717a46b2a24105079cfff00c2955062fc80da10d8005ef3611bd7d997d",
+            "targetHash": "b275fdd63312c343487ef5900b754569044bdefa162e7984ff45a3ec6ac9d121"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "b95630e0b3deb0b2d09de1f2ce037457354b9e319ebd2f39c8106174275eb320",
+            "targetHash": "e6801a9f0117cbeb680dfcda3d3becfa769e2dfa867fa33426faea40f37d2ae8"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "8e6c8256ca3966575e246bf2c4986d105214afbb19a069bbf83c3e0b40de379d",
+            "targetHash": "e3eb98850d4fc6b9d1f10314f59ff960d02fcc31805fb8c1806e4871da6a2cee"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "2c398b51c32d526e1b9337797dc9d7a06302c34f25f22fb2806075bca491c99a",
+            "targetHash": "7abc730bed80f7182f50a2fa2d800ec1a7ff4c7f93c10603a7f9db78d1ecf0a7"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "1eda47cd0c85d1ffa678dd58baa94224f78967bdd53aeb22c46f5b551bb403f8",
+            "targetHash": "5295573eccd283d7ebe32cbc6a81a9d7de00cc5c69053fd80c864f87ba200db1"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "ee7ed4698848793ab73e52bd3e73fd8c709f75028df195bbe876b70e0f648a28",
+            "targetHash": "1ebf3f605999863b058ea2e0842296ae13c048c5c2913da0e05fab43b2a207d3"
+          }
+        ]
+      }
     },
     {
       "id": "build-host",
@@ -3222,7 +4436,54 @@
         "native"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "f6321c47ec82e2ff39f1ca03bedcc8dd4ecb43acb812077b709241a61ecbc40d",
+            "targetHash": "5dd7f241116e94ec54013b739e2fc8b0b889bd2e08dcf2f3df1d6dd3e3db8da1"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "b19118c564bf7869a979959cb5942e88df5ab3a54f541061adb140aa316ba10c",
+            "targetHash": "6f3541d92930adac22f939113bedc1be29b6dcd0b0256d342d4426a1cd3f31dc"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "c7c3e1e13e6ec6f3600f6355d31a4a8d755f43369274baf9acfbe21440e8a0d6",
+            "targetHash": "48ac069968aebbff6d00744c92c6b5c1c47cd81503c31164b1e49962a34a6394"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "2ce9b85e57802b8c2a31c4cc3d0c8235b69068b7d46a7e5277978472f4de88d7",
+            "targetHash": "5ca44339f245dfdeecb8cb02b274bd3d830327330c73814987e11c93f2429800"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "8b73963b3c9f46a9705c77b3a0a00ab19c234e26eaffd223d6fc0b2e932f603a",
+            "targetHash": "00aae0b2ecff9452b6ed1bddfb1dc00a6b0aa126dafb52b3b2b71fabf3b7a72b"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "df22738791386899274f61f777a931262733f8a48f1744208c042fea57880d80",
+            "targetHash": "4ae5ee3546730297ce1e27aeddf37b00703842a3fa13f3780e65e520c495016f"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "b2d018fd842124e7109ad0973e6e907e908ea05c3d29d2ff0bbde4cc7abc8e4e",
+            "targetHash": "5e19b875c132a28b4329330254028c2514adafa89b1721a0836adc7bb523bbcb"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "224ccdec3ed83d364b31ccbc614ca441b1dc8b66d1985e44e5c5d615342d7a67",
+            "targetHash": "bb30e559aad2e6a87f7859cfcb4defc3eecb0d2f2b8071011d4a10db773697e2"
+          }
+        ]
+      }
     },
     {
       "id": "platform-products",
@@ -3237,7 +4498,149 @@
         "native"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "e4a5c69d79d1b3df103fccdd30a962295bcbaa9abcd77f19244d699c651fc8a3",
+            "targetHash": "283faab72abcd7c6e59e24926ed39bc73668e8cf3d3e9476350c1b3f834b3165"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "bbd068ddf45b8a55440546f88432f08f1bc7a2b94ed6aca1d4f72c53a59c15f8",
+            "targetHash": "1ccc62336920d8d206c660bb69253fc729a50009f5183994d8f51e997f81a733"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "38365fab9c07d85ea81c40cd0d181f0549b781dea9c48bdfeb0559a24a02c607",
+            "targetHash": "e07c444e54ad0706b8d60f18ea4251134de8da429be5becd82f620b34e9cf3c3"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "1e3f7d9acc0b4f337cc02dc2fe79d66ccda45221c943c14cf71f91de709ad989",
+            "targetHash": "d4e895af3df576a50c336831087da0154a6a61c49435523ab21d1c38719aab82"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "e584940bd16fa8ff45182ea7674910860e3a03209a16703f1b06a98866620b01",
+            "targetHash": "f298d49d33a65277f5984042f0db3612a2ca869dade024d0d9f35414d598feb2"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "a1d364c82b7a1c3cb16f56bd1aae66832cb7b15706a9a2c5206ba3fdaa79a886",
+            "targetHash": "cc05be97176ef293898bc6e19032c1d524212f4072c437cde90d72971f79b18a"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "875e20eacd91a77fba60d63920f357e4e7d1a3e3ae2c1f9f830da1fd8b8000a7",
+            "targetHash": "df72d5380faf70912ec865e14811a77f0fc2549269872aa8bd9b47989cbdeb9f"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "6af5d2f1a1c1f5083c4e8da9c181963e99d54ea38a9563da8747ea5fbcaab5e0",
+            "targetHash": "6adab6f1f34ef19fdd6e7b53cebc19f7c644791c9b9c3ae1dd3832d18570fdfb"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "dbfa9fbd4fa122d1eb9ea53bd5d523239d856d17a436e8df8616730f411e6a95",
+            "targetHash": "6ec84e13d26475f76db8a7cb32da00e07c29c3c112810af53e982217410c0065"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "c02df2b6b87a837d2297dead8bd588d68b1e0b158f265aa2f720331fb975487a",
+            "targetHash": "cc2c00b11df385e07035448fffcf8d681df96acd8382ec0e1558f5d61ed8f0f3"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "91e9b473ace4cf03421e9e288264dbc1c14ede8d85b92a96436ade4f1831095b",
+            "targetHash": "e51ebcaf4adffa66818e1fd80078f4b77797905a7bc1b34cf6e2be8289b159e9"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "a80250da185512ce2c8cd8d97ae37f7e29f823e844cfb499659b0e89502d3ae3",
+            "targetHash": "4b3ba100cd3a0a89254d79cdd4d493856dfa800f804636a44ba8849cdd82d4ca"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "627102228e1d72789f8c8c31687375dbeedb3e7c275a879eeed503ceaf1203d6",
+            "targetHash": "ba4580a371549e2c475316965ddc62910ef7c48a76d4ed19937b4ad6ff97d989"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "86fc3f18e3017b563ef8b55f15576986538a7e01dc9f61b869e698a24ee7cbfa",
+            "targetHash": "1d6604b2c73f03940f77f447e9dd42a9bfec9ef056d70190985378c7ee76d2bf"
+          },
+          {
+            "ordinal": 15,
+            "sourceHash": "a5945bfa41a6b678b345609c3fb7753aa2aa3a183b9ebc7d11427caeaa0ab25c",
+            "targetHash": "38ad850bf1f51ee335adcf4b28bac58eb15636a54d7d90b2d5ce1d04ba4e0ebe"
+          },
+          {
+            "ordinal": 16,
+            "sourceHash": "a4e99ab18a653cd24bc57f0d7df13d1dfb5778cdbf0a59aee49002ac93b77915",
+            "targetHash": "999168f0eebea40a7f0a0c41fdb26eea4b45a29e467ae42450117a3c18e769bc"
+          },
+          {
+            "ordinal": 17,
+            "sourceHash": "0afee409eaa98d08d8e1a0334b61183523ae221b3f3b86f59d9607e0babec762",
+            "targetHash": "7e606e087f9376f10f2fb4cb2ab487372c83fb64d3f39fcce62806b806b80028"
+          },
+          {
+            "ordinal": 18,
+            "sourceHash": "09969edea363049274eb103b0f3ed28431ee6c029070d88a2de8e287f5f0ceeb",
+            "targetHash": "8e56582f7971f183cf862b5dfa4b238440064196565221baad83cc0a096c76d5"
+          },
+          {
+            "ordinal": 19,
+            "sourceHash": "066a20c7fa263bec6fb1bf35b123412cdc19b984fe121365b77d5eb4e8bd7fe2",
+            "targetHash": "770fb60453044c83021640675b4db0b4b0d66d24e76025e3bae9c3022b1fb3c2"
+          },
+          {
+            "ordinal": 20,
+            "sourceHash": "f6b7f455387f2ffe8b272441fe9ccd7c6fb793a640332c7889ec4b963ceec35f",
+            "targetHash": "a5d16ebffec8484bdd8e48ddf07eb6f9010296c0d3d03506894434e5ad90b20a"
+          },
+          {
+            "ordinal": 21,
+            "sourceHash": "96a1de39674aff5c38eee8057c697e37d7b1a34051133b3471bb96ff56933c6c",
+            "targetHash": "80284b4568ad4e28bf6d275ef21ccd35b92160cbad4d4832749532bd55caf1a1"
+          },
+          {
+            "ordinal": 22,
+            "sourceHash": "2530d325d5dbe1448fda7a6e246d71380bddcb95a48162a33cf8950573e8b381",
+            "targetHash": "01c97c9490d373912aa39f72eb12078aefb786893fdf19d8d1f867575b37aea4"
+          },
+          {
+            "ordinal": 23,
+            "sourceHash": "85f424ca1b9c5b3d21b925ef469a1a515c31f2ed651a82a92a208258f55e961a",
+            "targetHash": "1e1554ca14b8f1c1c792b2ecc51e5a22d04b4db18e731de88befcee8d23444bd"
+          },
+          {
+            "ordinal": 24,
+            "sourceHash": "1121c4faa7c7e120a90135449a220ec60b622d7831ad68c2c621d96fc0e7efcd",
+            "targetHash": "dc1b482f4aab5734dd96ca96d2d3831385aae7c4886d7cd76388459e689bae4f"
+          },
+          {
+            "ordinal": 25,
+            "sourceHash": "b61c0f0e7f3be551ed431b43a76b62991a811b2b51bafee0af5ebdb39d320a59",
+            "targetHash": "f1bd1a5d08935b55441ccf2c4708d8841d92a9f5a6b80a5698e1a47d1519fb25"
+          },
+          {
+            "ordinal": 26,
+            "sourceHash": "1193087c674adcad2e28e80da089bca39d1bb083e175c00c46e3bfac2e21f07a",
+            "targetHash": "7f8759274527c9b1b1ead5bf64427baf9aec1dcb42e3902fac73ab250ff7ff03"
+          },
+          {
+            "ordinal": 27,
+            "sourceHash": "780f84046cc74eea6834fe6397421a5e76f32bc030c29b2d0a7e66ac18155bb1",
+            "targetHash": "af63d3d2ab4dd248aea2c3f8eb82cec97a485bc066d80430c680c7c87c5da3f8"
+          }
+        ]
+      }
     },
     {
       "id": "backend-build",
@@ -3252,7 +4655,84 @@
         "native"
       ],
       "reviewer": "implementing owner",
-      "check": "Test-AgentRules.ps1 + semantic review"
+      "check": "Test-AgentRules.ps1 + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "0b0c54c567bd05ce35312c32ae5d319d22543f554671f078b2bf33bfb7bec768",
+            "targetHash": "5c94c310b27e6a9df124ef8dd9d80d81ce0b2337516f75634906f6613f916fcc"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "1184ebc811c53110f9b93a156ddbfe721a06e84ff561b7b170de4b8a4f09c7d1",
+            "targetHash": "fe2f86b126dc556658b3d98510c367c9b0d0e1cdadbbde575b452615d2dd5b9f"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "24e7a817f0f579805afd40f5ed16f6c767153b6ebd44dacee9c627313443d019",
+            "targetHash": "8bc7f52cde6311fb50418b498c44debfbd02a9e5072a2002d3c4ce6f78133a06"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "930fcd222b949ce695b267388f8203bd798c04c174217146304ffc68ac90e511",
+            "targetHash": "ad3910305ee11b6cc3c301f641715d36d27bf349ea279be1690f4137dd73b6d7"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "464eade4d3d14b2b800c761c2c5e26c77a22a4351b5ceebcd1f112dd3cfdfc2a",
+            "targetHash": "229dcf70819f94d7a8291b75d8cbfdb623e6c6e39b36db4f37726d8c1fb43f8f"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "47a490a8d8506b2fb25cf4e48407c8654b2cbc143c272e53e509ecaeb52dbbb5",
+            "targetHash": "452e40de8c98a748c939e30115ca9962a497cb38c20ebc931cbc691240e59ecd"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "77c7d40f8caca628be02ac2147345e04132df08185765da27e5d6e823ac61f1c",
+            "targetHash": "88fe122ded5a5662f59de6cb274cf44aeea96fd79acea3c3d8ddb8160b0f9882"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "dca2a1bf003d9c82f5c57956cc315bd20cfe11d5c9c52caf2aa2c3c06a6ac852",
+            "targetHash": "49a91d8ef3552a254e865b8629a5e296fbbdd3f9808a30932cb3af1179682abc"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "1ea3f833bf68f4009d0a8baf5b54744de3b51c97d38370e47e41a34bc31a0f96",
+            "targetHash": "94d8980e98c8bce72f4cc50106880b725f8a4dc62f9fefa0d08047bd816c451c"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "db9846f1d6d8462e20d840a76c3fd2271e2cb1c171ab6a3c3dab8373c31d5e6b",
+            "targetHash": "6d5a1d919c9a6d1c0ab3d783e344175cabaf1b7696b2280051dee36b64204ec3"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "4417ce20429062015905ffbe98b19a0d31908960f6d5863c80c27fd2b7644ea3",
+            "targetHash": "c932db0ddc349b2623393bc3be6ecee78b5b949dd6ffbe790994736f0caf7aa4"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "167343d8d3372823fd6a5c09a919f63b5bd1524b4cb1b6229f516f4eb6a7044f",
+            "targetHash": "93cd250c40b90c2dac1407b7622fa51b291b959f2576e2a09d48fc04c2ae4a7b"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "d03b95720e5346978f818d1cee320f8eb0576eb915431635b925dd83b318f5bd",
+            "targetHash": "fa6f1d36700726347605104c6b97cce1e94833efd072d50b39f17d96687c380c"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "d8360e8265f5088a3def25af85805151c7aebd7a508d09cc919f19f5e24d666b",
+            "targetHash": "c718e498d894d8502a6e4f66a5896eaa1683c6fcf81cb18d27e39a9007126bd3"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-0",
@@ -3267,7 +4747,24 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "9c59de057b27b99349948ddfcd688fc59906fa79587ce29428c2787f948f0fd2",
+            "targetHash": "9c3e7f891fe5b00f62469b1bbb2543dbb748fd248b39b051c6d9c657c1a274c3"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "2cbe9059c50549861b8ece9ad35ec1bd5c87886fc01da521d2bbc9d73c39132c",
+            "targetHash": "a1736a899605f9dbe302d2891ebd2d871f84c5448be3624cf7a130be9bb38d7e"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-1",
@@ -3282,7 +4779,64 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "6ee4ceec96bb3b6021f4893cd90edd04e72e3f2a46c786e8c934a3aed28745ba",
+            "targetHash": "c3b767fc362bc09f11a826fc31139b772fff0314e8ec76b496a93913ba19836e"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "888b98a8bcffd2623bb63ec661c3cd24dbad4c62c070b538d82f2fa31b4fc7a3",
+            "targetHash": "64e2901909af165f76cab1149c9729bf5bcd046394d18b8453443d6789927cf3"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "4bfd2941b7773db394a6e661183b975a55a81a195a7f4c0b7f5cf23ab8d46908",
+            "targetHash": "805254701ebf725180887414b642cf5e776d5259d41745703749de26000d1622"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "b9e40ee1518b1f41589718f6deff2b2b2e0a34fa42a35852c61f2468ab94e9ab",
+            "targetHash": "b3bd1bce40cf14e041e29ad28d4f6fe7736feb5f574892f12db012d2aaf36fed"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "357681e6e42d804f722960eeeef8732b5b052faa63e9e30343b0ce9007005768",
+            "targetHash": "6f707239dafc252e4194421f344ead08c03e7600efc08da7138a3011285c712c"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "e49798a40cb8b13ff6773073397a318a21e0bf1377c6626dcb52f0d0dffb12c7",
+            "targetHash": "54d5f693ea07a0cc986c422d463ce2630b3944b65e9f48dc7bad2268b8477b0b"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "6e973c36089850c8e3825c98e606a7fd2478bf31ad160f14ab3cc8a5bc7190ec",
+            "targetHash": "830f24ed78a6178f864b21c4382c777d4b584f754c4040a62980f1142cc347e9"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "35029df979fea84e4c4c21691c32bb5d52bd2bb0694d7b66bfdcfc4330d08bca",
+            "targetHash": "de628dddce646380f858186a822e5cf0f6dec0b9b81a13b3e3567e2f8b2ca8d8"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "efa3f684a3deb795b6859bb7bbb45378f93375ca97b48a9eac2bf112ec4c9b45",
+            "targetHash": "efb6880f1350a328c366a5f3476e3614b3c2cfb94200a6bebafb7d73d10f6a2e"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "36132fa3b63f3460abdb38ffba3fa44c161e713f1778bc7098b5035f0d0d4979",
+            "targetHash": "76828e0fe061b761c00c0afee82e308909dc0a93a5dc7fc75218d37362c2b61b"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-2",
@@ -3297,7 +4851,79 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "2a1db15f2cf52f0f95bc16796ed368d13d5838d938507cc3ff64e3e1233d4aeb",
+            "targetHash": "c03ed48491913faf71c543a24a31ffca134b16b52e0474d4e89d7e6e14477ead"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "bdf2562bd82aeca96c2e749eae7385269480302e400cf043a29caed25ab7a013",
+            "targetHash": "7033c5e9966f88a09eef43b70046fcaba63af49c2d66f2c555172631ffbb0483"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "b8ec48555607bc6202126c5db642f11cf898151fb6f2aa19d2e28aea19d7e532",
+            "targetHash": "b8ec48555607bc6202126c5db642f11cf898151fb6f2aa19d2e28aea19d7e532"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "8c142212a767f020c0c49c9fa73da04642b8a45cc773ce37b88c16f5b12135be",
+            "targetHash": "9bd93d6d6eddb2c2c5f3dcdabf0cea833ca4a75ae0d1db7c7811d2ada13c5a17"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "53f170c754c5ea5453b8cb79d9019b84a7fb5939925733b1a510b0eb7cdbb890",
+            "targetHash": "d0bf6bef623f2c3066f21253b127d345da2bb450060e83cbe718209afc8dbe99"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "f2387cfd9284c5446d0273c02585de39adb41f5a87724febef62afaff75e7f80",
+            "targetHash": "56d0aaa53ebcc644f9ff8e3084a166d11bab6d2d309f039f6d2845eec14c08d5"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "b836ebbeb1d666671b5b0828c56021c81ee90969fe7cfabbf2a1864dd60a8142",
+            "targetHash": "8ff1928b68a5ea3677710c81ba93f0d11865b2a89e4033debaaee5eedea8998d"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "797dd7a782adab46721f3bafbad4449d81309d115bad776e8dcfe4245a68f91b",
+            "targetHash": "918169dc34a2e6b2624075a83435d358d9e647db5c6a49afb18c74dd1138fa30"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "6fe5493740a39c129e316e6b968189f6a0fca8e9eaeb33f67f87363162772025",
+            "targetHash": "516b102cbcd19e64756bad14c8f563fbdee107f8603527b1a32fac07a90781a0"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "21b1cc15fb6a6b576235cf883e1c564c05d1bb3cbc8dc4521b5a197cf1da9c92",
+            "targetHash": "948e70960b87fad036e3c3cc3bd3be41ef6483e5d6700881294c16057f3e003e"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "6138673c0e4ba945c4e799b186de33e5a3fbaf717b943b50f09bab13a92b3ce1",
+            "targetHash": "507463a0be7e145d3f1c01bdc6e848ba6aba319421cd7348f0638211896c5e68"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "f3605ef5c893175dea12dc1d5fec5be85610daa8dff0216a97141fb38237f3e4",
+            "targetHash": "b780ea7e5182b22d9f876df497d2b7bd18c9352e3204e88572905ffd8a352666"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "f664f1d02435ef0cc33073dc7e99243f89fa35f277f14670d35d1d1fa60652bd",
+            "targetHash": "326a3d166f7f239af5e4343769a8bd7cdc16df6eaba52a089ed215e726ead1f4"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-3",
@@ -3312,7 +4938,24 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "1c05e9d5a84367951b498cf424b39205dc042ca24765082f22c146b3cd2e0f5e",
+            "targetHash": "085917a9e331374bdbffe0ab1b23a54a59b4a786efbd15cb1e6211b58ae5e819"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "b7fac7e1f5d412eb64b7953d09480a04c5ce1e256a675068988567fb44008f2b",
+            "targetHash": "4eb75ae22ebc4298fd09b3b02348405d6a87de46539040119f92bf9e32025676"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-4",
@@ -3327,7 +4970,134 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "0e76f3ec6ab88ecacea8579a89e848cac5555e3d7b546b734c8a20628db371ce",
+            "targetHash": "4a2da7db79ead93d57d95876f924519b97cd1cff017efa8aff275b8024f8e034"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "2ee4f49742f6165c3cbc004f70d87949fba5945273f77a4257992799bae9ff3d",
+            "targetHash": "24a130c6bd5708b80471b734547ee13a8384ec0da55c2e130e750a6b8e2333f8"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "7b781b0b3e782bf4608ac199db45d88f618981d240b45e0c85d94357c52dd401",
+            "targetHash": "c3143d67c5398ea03b77854dc74b687f15c3a0840f7c2f85433dd035ff4e9bcc"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "ec46d88bee70f83eb0dc91ce75626ee524818848362c23cd4a48f318b96ec0de",
+            "targetHash": "7243e5afe7052dc0ffa66bb70f6a022f0a7979fced37c737e47b754ae4602997"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "7b401a21c5881f5e4633f28ed91ef6ebbc3f6a90fb11de9c49d4d6a54cc867d0",
+            "targetHash": "382cbf673499ba493964ec4d57a581dab6fdad314136a81da37ef4a355655aee"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "3efb123634905ffca53f8592c946d99019a174281756210be994ba742c6adb19",
+            "targetHash": "6551c78cd40bda9a80cd187bfe51a45cb00adc39cba8029ce0a9965a5f027b91"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "274a3245c966d81da7150fb9cd7810a513ea70eb0239d0ea8a27669c752d11a5",
+            "targetHash": "ce05cd5e1e3172c2ad00e82cdd7851d56ba1f89370c557651b8b9016f164d09a"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "603ccd47e936b6aded57cc5163f0905d06bff9a8ac7f683caf5bb9c70e8d6ce7",
+            "targetHash": "8bffc74725c719931ade1768d30efaed8656cbb09aec835d951a61bfe8bb5efe"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "0d3623254a13451a943b452751857f006364093dcc0d75d2f55ca78a5af96c6b",
+            "targetHash": "0d3623254a13451a943b452751857f006364093dcc0d75d2f55ca78a5af96c6b"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "f622329f717c750ffc8fe0c409c66fa73310880df12ffbe59e4c61894c82f979",
+            "targetHash": "f622329f717c750ffc8fe0c409c66fa73310880df12ffbe59e4c61894c82f979"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "914a3311bff3058d48f38512053c30becd2c879d3fce2c49685b0860271b0957",
+            "targetHash": "914a3311bff3058d48f38512053c30becd2c879d3fce2c49685b0860271b0957"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "d10cd75e7bd08a8208c43ce168bebe074524bbffe48afc9d71dde27c2e493403",
+            "targetHash": "d10cd75e7bd08a8208c43ce168bebe074524bbffe48afc9d71dde27c2e493403"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96",
+            "targetHash": "021fb596db81e6d02bf3d2586ee3981fe519f275c0ac9ca76bbcf2ebb4097d96"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "0ac850e1c2f83e6715c147d174c7a1cf26eda3641174777c64df44750429116a",
+            "targetHash": "0ac850e1c2f83e6715c147d174c7a1cf26eda3641174777c64df44750429116a"
+          },
+          {
+            "ordinal": 15,
+            "sourceHash": "72228e1f698045d5aeeb03d7bfc662ab8dc7fb72d9aa4886b289c16f48dd0dc3",
+            "targetHash": "72228e1f698045d5aeeb03d7bfc662ab8dc7fb72d9aa4886b289c16f48dd0dc3"
+          },
+          {
+            "ordinal": 16,
+            "sourceHash": "1939dcba42b25000ce9c4da51afabcfe974a692854c93acdd82e049643e1537b",
+            "targetHash": "1939dcba42b25000ce9c4da51afabcfe974a692854c93acdd82e049643e1537b"
+          },
+          {
+            "ordinal": 17,
+            "sourceHash": "d90b324832055af883f20cc746cf7b7f5058bb4e8da84be3d4d21110df0be2f2",
+            "targetHash": "d90b324832055af883f20cc746cf7b7f5058bb4e8da84be3d4d21110df0be2f2"
+          },
+          {
+            "ordinal": 18,
+            "sourceHash": "e4f59d270c7614ec7acd35091e519264454f5fa7b53f83e87f8646d59095736a",
+            "targetHash": "e4f59d270c7614ec7acd35091e519264454f5fa7b53f83e87f8646d59095736a"
+          },
+          {
+            "ordinal": 19,
+            "sourceHash": "f5303ae6a3201ea52e30701cabe7f1bb4a4a0d66c2bb299f83981c8f77ac8b54",
+            "targetHash": "f5303ae6a3201ea52e30701cabe7f1bb4a4a0d66c2bb299f83981c8f77ac8b54"
+          },
+          {
+            "ordinal": 20,
+            "sourceHash": "263d2b59db8ede9334d008264c0886d9038cc330bdc872c4e92300d558ec3df5",
+            "targetHash": "263d2b59db8ede9334d008264c0886d9038cc330bdc872c4e92300d558ec3df5"
+          },
+          {
+            "ordinal": 21,
+            "sourceHash": "e0ac073295c3369afb71ba1437a0357153a4216453a8014091267b720f7370b7",
+            "targetHash": "e0ac073295c3369afb71ba1437a0357153a4216453a8014091267b720f7370b7"
+          },
+          {
+            "ordinal": 22,
+            "sourceHash": "28d86778615f6af47bb1bc4f40face756749768e5111f114cfa234a5060c25af",
+            "targetHash": "28d86778615f6af47bb1bc4f40face756749768e5111f114cfa234a5060c25af"
+          },
+          {
+            "ordinal": 23,
+            "sourceHash": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2",
+            "targetHash": "d10b36aa74a59bcf4a88185837f658afaf3646eff2bb16c3928d0e9335e945d2"
+          },
+          {
+            "ordinal": 24,
+            "sourceHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5",
+            "targetHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-5",
@@ -3338,7 +5108,20 @@
       "sourceHash": "ace556d3813740e6a4e788f488e34cb5fc4442a4b15f50db0349e7effaffc237",
       "approvedAddition": {
         "approval": "User request on 2026-11-08: prohibit global:: in handwritten C# and record the rule in coding.md.",
-        "hash": "11daf5b535242c204be26f40eebc86a38ae7449501f035ab867d8d5416cce465"
+        "hash": "11daf5b535242c204be26f40eebc86a38ae7449501f035ab867d8d5416cce465",
+        "translation": {
+          "language": "en",
+          "source": "a31375a5:.agents/rulebook/coding.md",
+          "approval": "User-approved English modernization; original addition obligation unchanged",
+          "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+          "lines": [
+            {
+              "ordinal": 1,
+              "sourceHash": "11daf5b535242c204be26f40eebc86a38ae7449501f035ab867d8d5416cce465",
+              "targetHash": "650503dd2742a9729f9656bce96b02aa7be14c4cd444e1ec66980b112cec23e6"
+            }
+          ]
+        }
       },
       "requires": [],
       "paths": [],
@@ -3346,7 +5129,39 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "fbdca3db6661bced81495cda5ab5cbae231a4b5bf041af1e5e5db5db097bcf51",
+            "targetHash": "1d66628f237692fd7eb91aa99b97689102ec1e66f351fbb47239255603c2ba22"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "fc3d8f40ca5efadb2e73ba60e9fa39d574e9e5ca26f5ba3bd5a3bf632bb8e9be",
+            "targetHash": "6febeef0a913a94c550bd0adc41f2319ad1b81cdc9a9f9484a69607679731f01"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "17689d3c29320cec885899230bf2de2bb068e4b999dd65a6a71f73cb56c27b95",
+            "targetHash": "a2da9948d1f1df8239206ffd810b15b5d281518b56270f6789431e7907d286bd"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "609c51fe9f58dfc022b8b46ccb07d81ff7b50198fbd437d6d5264a992dee2e8d",
+            "targetHash": "8c4ad7175c28810e07380f44f456cbdaf70d3a0ffbc67c7dc46814570b963f64"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "9a10ed4f1319e1f1c9e5f49254d8543c84b4a88ea1eb56d24ec09085cee00bb5",
+            "targetHash": "cac9e75375e991ba6f79925bd252e37a77e23f64349d7438ad732e8aa75441b2"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-6",
@@ -3361,7 +5176,54 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "28df84f81a5dfe455793038b671cb6954bda75c1ba6c3db0f4fe70c099f0be9a",
+            "targetHash": "dbfc49026f38704b938dfa5e4ee6d27265d8d0d3c5949e11cb1fc88e11e634fd"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "808fef544f6eeb0692319a5307f51c9e3d94da9a0e44f481cd7a9d16b8977410",
+            "targetHash": "5fd8e3d6275ee4949ad3fddf759091bb26f7934569be267ad0e9bc4915ff21b4"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "8280fb67fa4af7ea095815754ead7fa4bad07e0c3729b1ed0f9321ea5cd0356a",
+            "targetHash": "508202489b9d14acb588f15af344c6cc8e321dd6614c6892df8db70ec1a5edd5"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "39192fce16e032f167aee1ed11ad7dec675f603262a30f8147b1a82a5016553c",
+            "targetHash": "c85850ef42775ee52c6317810c7c4f632f88d9e4da7b7918f10fc5346438d924"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "3bea06883794548590673be3eed3dd909fef101220e5e3dc0ace842b07ac71a9",
+            "targetHash": "9e7e606d78a67bd8faaaaa0107c0bf3aa011dccbbb0797def4b8c429974f52bd"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "b094db2f3bc93173e6e7a9c067a5d34538d49bec0c02917dde5f0053d6a24e6f",
+            "targetHash": "b375e2dce7a8d47cc7f5eba34fe45329f01d66abc7c950910c5fe4663bf892eb"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "7e3eecabc11656d7e5abfc6dc3011b78a1ac5f14fc012cccd8f4e30f6cc411fc",
+            "targetHash": "8e83f08594761e24aea8de252a64d011c5a80b5cfd2bbfbdfd63950f1bb52631"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "cedc1d7fcc2fec17fbc1e0b3bad7a1f563457dddf5c6e838b339c69846ea48b2",
+            "targetHash": "6e1d70097b436467ad7b11e9c030a1c66e44341e42424f1a1122ad39456a1b3d"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-7",
@@ -3376,7 +5238,44 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "a0be6f683d72d53b7dbdb50f1ea58c120ae27921bab335e18dc4f0cf2a0ae759",
+            "targetHash": "20b6887d47f797c8cda7f622c4eb5ed19cd240fc6b5a010993024525911fb2eb"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "439ae488bcad7c90069d1ba1573168d46b2bbd3db295423faa4526dd316114fb",
+            "targetHash": "9e9a4898d4cabe4380e34343c28a1952c39d28d1a0d91adc874d96be9a323ba7"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "895935c86d3690478a0b128d60d8c75beeaa42b5ae0a90f9f2611293ae16b5ac",
+            "targetHash": "6172e1fc7d4ffd1f8824660c37c26c3eb5e5b4f5217b9b59e42af22d0d0b033d"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "543a61005388c162a545099c929ce8cc0bfb8f57dddfb6db3a5629009ee0c4ab",
+            "targetHash": "30c3fcad6f1d5853aaafea7b6bb38938613b1079cd89d04e401bc74e371fa4f4"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "af90858955c2025436dea38d3968a317354062610603afcea883900f13b00671",
+            "targetHash": "f86f503a20af95d32ed0a1c1cfd2c1ec38de12a517287269669a92fdb41381ed"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "d86060325fb1e93c57affac20326b65e3a7b7bae570d0768322fecba214c7d76",
+            "targetHash": "978dbe01188d211a623edaab5207e0b392ce678db45f0a3cd99820dac69d456c"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-8",
@@ -3391,7 +5290,49 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "5a3060e58c3176f0ad032bcf05c2a61a6e6a1100771e62224af05cdba9a9c35d",
+            "targetHash": "97a965239f9b9cb2d4a2928ad1266593ea14dd80ffd7c6cf72ad08bd752f9812"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "820e84a3e882c755dfef876948ca415d23dab182a0ed8bdb8780bb9af5985322",
+            "targetHash": "c4b93d73d5f678510d0b71a9e0aa6c132047d2a659603d56c710c7008c9266e7"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "e4031dca31bf985203ae2dc7eb0be455441aa84a163bcdfaa4fa80cc849d7ce8",
+            "targetHash": "71ee4ef1f14d78af5b5d1dd0dc818e0e810fd2303c27146d8b504a47847aa075"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "8a23e7a0fc35d7915d1dee1d92499e98b1d625fed50dde8907e0f1db41b98146",
+            "targetHash": "cb94773c52926d4a30066f41eebf25a52db646ab74384e3d673a7fe5269d9a2d"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "cee15864cd70f7788fcf2fc10b2992d12538c0738963d2ee7d39b0dc03c38751",
+            "targetHash": "56585f625eade9a3997dfd2cd253202e1074fb7a07da09ea9ceb5f7db3b99481"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "4aa10716eaa5a957775b3381cd6c89235bd9d93bbc44889b797388f7f947e362",
+            "targetHash": "42a086ec659e97e860628d94db20f02bc6ca99bd7e146a7fd97f465bb538dc9d"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "1917b9a45ffbb5a811b8fc2c0bd8d175000437f4abe2fb023ee5c7978fa74fa9",
+            "targetHash": "ecc11744af3860cf39bfdd0445ab85bd6a08d1a7e36bdabf1732ebd787f95d89"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-9",
@@ -3406,7 +5347,39 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "46701af87ced263bc9ba88b638e831be8ab548a125880e9da94da358420927ff",
+            "targetHash": "374d39163bb3453b09ef9a8aff3458c199626c053c37cc4bd7d1118996553dfd"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "09bb496a44962878b1968f10d1c2ffd7b1ae2180a179e310511f7e126d32ffb9",
+            "targetHash": "245170dac1c6e605793a3e5f1a0f783c7da5e7b3dc7911bdb4af8a1c3e5ff2d2"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "d6d85ea546d42ff6228e5eae5091f92f53430e4d226d2a2c710b25e2ca89ec40",
+            "targetHash": "f2cf8678e0d35bb701ae3de1abff76f47b3a8a1a4103697a8b0b6fbea1424bc3"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "dd9c8dbb7c46aa487e28832506b06a9d60d935bf168752a6d7b614cb4411bddf",
+            "targetHash": "0511a208309a0ada60d6a1f824d360043b4f06a2d1b3d282e69936a4e8e95726"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "6b1d171d2c1a30f944d6761a9f7c704e648aa5695d6693904c7d66cfd54a979f",
+            "targetHash": "ac9ffd7becab6e3b5f8f1387c411d716f80fbfa855b37d300aa8058ee1d9f734"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-10",
@@ -3421,7 +5394,44 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "8727ea6ef780080d7aaf1e686b97ae9c27cbc77c6738bf40b3dc90734f08499a",
+            "targetHash": "2414828088d78c4c1db1edcc3f14b4d337ee3775544a8d52b5572e9dbcdc16a7"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "6bf5070507e2c81f797dca6bbdc175dc084fb3dff82f4904e5690b352bef406a",
+            "targetHash": "3ddf6d9facb84fe0e55c53e7efdbfb68f49aa7196e95ee1926be2afab2aa4f0a"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "9d95106a201cd6f93d7038e125693d3d332b7f3a9e43ddb13dd7382ed19359bd",
+            "targetHash": "16a31eb9f1c0d61bb7da2f3f559bc8476b226ec5f56ef0ce62c522dcf044760a"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "cbf14ae59bb4d7d1af66ed784d042431cf68249374af00b5a27e944c615fc8a2",
+            "targetHash": "9e967b6413a72ea84ab0916612ae5a774159301d92f7621a2ebe143d1c8dd793"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "3a058cc62e35dc737f7064017cdf2be132ea48e2e890540a62e22883d2ff0552",
+            "targetHash": "3fb2d4c98b5b1a933d87dec7fc5640eeb61d21ead07b183d2724e80b4dbaa66c"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "6a1aa914078b5971014d6d53a29225406e536c34075e6c38f8fa5ea664712f9f",
+            "targetHash": "ffd3073f7bb56d6e85c581ef3f1324bbfc28e05e738356b10532a372b15e7130"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-11",
@@ -3436,7 +5446,39 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "c390f8074d8045a88ec9c80245ad8917901d74200e1e0ac86d29314aeda5bae5",
+            "targetHash": "6c24e27d56a00fecffe47a3438882019ed6257cb69e7e45adec87e3ec61f545d"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "a82d7df0d23579b739375a0ebb94c728f1c9e52fe70a28993cc9b1cbec588dbd",
+            "targetHash": "94b519aa68b716ba1a3cb0245777b6f9cd6bd493b714276b74233243af170509"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "78f38c229d8a58637157daa7e1e9495f2c5370725b207e80990992a830ab2d78",
+            "targetHash": "836785d545bb812a24c82f0782178d41aba1012a1eaac86af97d5beeefa9cf10"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "4d7bfdea52a075ad764ad61e829998d15cb043024df34a553588139cf220f614",
+            "targetHash": "493ed144d74bd63118eeb76ee47011d562e6fa31b7dc8661d92e797060539a81"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "1abf05950ed4306d0f04641f8440751c8ce59124b7a985559eb4fb27df47d360",
+            "targetHash": "b0eb9b00dd364555cd55569bce2b769ba5918a225284ae93a904f48f14f4900c"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-12",
@@ -3451,7 +5493,59 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "67a8e3894c349182da7fb29e4abf36e61b9c93819ab04d5200faec4d5855a8b7",
+            "targetHash": "7dee3f6b7aa992240115ac1f48c28f2cf3602e483345d3c341bda23e443db508"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "22d9b218bba744ff2523a49dc07bec67e477329787f5bd09541188302a191b00",
+            "targetHash": "2bc40cffd8c5cbfc1ee12d7bd57fd2d2dd148b4d3e7629a388960a73a701a146"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "a9908bebb4829633ed2362e2542a418a8c3653f6b1903416d949e79e3039dcca",
+            "targetHash": "0179901db9208077def1353dd6f20501968fca7a2ef4c5b9b6b74ff18926be2a"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "d2b82519aca9fdb58ccb243cc529de4007ff9d2974258306d39614c10d2b765b",
+            "targetHash": "89a0be93616b990368b9b70310ecfeee95829843e488f281c5dbb78c20874883"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "c68852cc4067cac36b6b87a5f9aff6ef036ab886916a9bb4ff2f0cbc9c8728af",
+            "targetHash": "e7362ad4e73f04dd63d35bc01d358e3684e7a70a7fd058822e6fd28b395af24b"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "76fc467dc8eade03577e3a109c96302a5f77b5c2933c44bdc3371d429d31f5ca",
+            "targetHash": "b2e3c0757d797d93b4d779037d211b10eb4f7abdae9e807d9566efdea5a6c215"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "9acba233e90d643b858cc8e6830fb17437888a1af533b51859584817b8ce8eaa",
+            "targetHash": "39e8ce468554d0e68d510364db43502aadf1df6fdfac109faa2bf7932c859cf9"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "33e0aed50227158e1f6a8aec7a1fd8b49c9dadf0209d7a87113402edb25b3674",
+            "targetHash": "bf09a964b4030f20eb08d660514796ed4134477001ab149845ecc4804fdac696"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "af73502abd2e29fd481d7b17de471abeed43dd517b649126994301d5be6df770",
+            "targetHash": "947326cd21100e3a028a48637d83b38a41e746521a2e82720a8b77c57d688112"
+          }
+        ]
+      }
     },
     {
       "id": "csharp-standard-13",
@@ -3466,7 +5560,29 @@
         "csharp-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "d75b96d35705577c153ef7e83211a9e108cb6b23b349d2c3214af1eddb0620e2",
+            "targetHash": "029ff0cbfc2449fbf83e64b5417e96fa07ef32576eb5c2107c5c66679fe78112"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "ed9d423a413c1b8457d9c1fb5632a4df807e941b8a25c1e4e401429b7e05f242",
+            "targetHash": "e4bbf6abd499436019554d319f4b0834fb4b2eba164893b6c6f12a53713b5360"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "197344a969f727c21e8e0593ba064020bc18ca030a1a46ce90d3c60287cf09b4",
+            "targetHash": "866d72c6ce11cc5b02052ac52ee11b6010cc8133e37a15641152aeffad55106f"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-0",
@@ -3481,7 +5597,24 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "d40f3ce7191cebf3bc675fb594a4d8b0d29a638d2e3382dd7d0e48a1d2741b90",
+            "targetHash": "bfb5d3ff9b354b0c01a9916b2cb23dcdedc0b077c6b0d8dffed2e5e906d3a8f3"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "c14e2113564984dc2fd1f306c11ca7e8eea93037ba33f2798edcf342c142bf51",
+            "targetHash": "dda0f207813397cbcdea5e62ef2cd2b77966ef0dffe4e57ecaf350d2808a57b9"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-1",
@@ -3496,7 +5629,29 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "1490aa516834dc13b8bcbff59e07e23e8800a65f5823162c78be02baadf71534",
+            "targetHash": "086594ddf0a6b3e662adbe5773987abd6fc5575bface84163f26fd0e9b1f2ab6"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "3ad78594488a55898157dd4797129137e2d9490d878880ac4ab400db68dc1b2c",
+            "targetHash": "51fc2bb90b08ef5348ba65deb3d223b446d476c77fa393682c779b6a092753cc"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "b0821299063f116b6132c9ee23659cba0b6f3254f9104e69e33cf9677e07203d",
+            "targetHash": "e1af2f77ce196b8f5a834d718bbc3f9d88fb453093a3af100638f904cfb5a213"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-2",
@@ -3511,7 +5666,34 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "c75987175eb7af167bb6d11e6ff2694bdaa7e8b0de11cb2c8c4244fd129cd12f",
+            "targetHash": "2ea15628c7ef541beceed02a0f14c90aed483d196a1d3578f6823c1756abcdac"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "136d19292806db2f5054d6c1bd11df0679805d5c21fd298c3815a20498a801bf",
+            "targetHash": "5ec00f2370d8647181e8cef957c70981b99251a067b0ee0db99b0b4cf260c031"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "3b0b7137ff392ff0bf8bd7d13053824b6d85875abc0d96b90518329f42bc5a8d",
+            "targetHash": "6d53cd3faf326924fb5c730ba24f2770df44494f89d764954406cedf06ddcfef"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "9e87bff673c6b685be8d82a195390ebaaed9455c58fe9e215c1c0ec736653930",
+            "targetHash": "7422c46f261edc4d8da8e4ae471f53322d791f6bbf8bb2fbe9f0917cfd085944"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-3",
@@ -3526,7 +5708,44 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "32ca6ef85f16922dea70bd0df1c91600b78c3f3b25d6ba933c480a3f7660b64a",
+            "targetHash": "0d19ab46319785768005536313f02bd3b9b779aaed82eeac5bf7a7f796ad3ef1"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "b3c3173b9e01c60896c1d8663b98cfe7912069446dd380db236e5a0f56be743d",
+            "targetHash": "fe81134cac575566520515b6a628b674e81ad37d4444b8ea9520b158c804cb0b"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "aaa9eb0ee1c76bec522e75eb80314defee804c0ec89088a73b0fce1c0bf9b9ae",
+            "targetHash": "82f4a2988289b8be37d30fd4962f80666458697ad5f5e82f98d6abae24266ff3"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "7eb1b49b258e57073a3bef9842e0ec5335e5aaa38778b3b4c76cb0f9a7770af7",
+            "targetHash": "e3339f0925f02590dd58073983a32a6af2284a7a95f9e4d69f7f2b0b106392ad"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "0bbd408781d09bfc0d64c6f2a6df025088bae87dbd29ddb62361b6950f17b73a",
+            "targetHash": "34dfc71a9367f078b9002bfd06eb995d65163794c66949947e08512052c0d6e7"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "ca0d12775c803373493ae4a660f8a9bc2e270f87ee07dc3aae8c5b11012e1948",
+            "targetHash": "682c848319352ffed13444f5f62ba034c7d635a0109a0b1fdc3d87819589bb91"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-4",
@@ -3541,7 +5760,29 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "582f4d8d820f9789c0759812e43f499e78d55389cee09ec843a3760f6aed5cb5",
+            "targetHash": "793761fe962922ec048d78b5f4d412834858b2891394a7084d7136587afeaab1"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "82d25bfdf970603898c23530491d9ac39565466989ebe6100984e1033f9249a3",
+            "targetHash": "de748bade3a4c1bf762baab60b169a655241d9e6c17c4037d8bc6e331ea10fbd"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "b8ce7eb8b2e27687c7efb77ed24f530c539b8fde25d71d0f42d1a395eaf45cb3",
+            "targetHash": "43aa30aea59b4f89b0abd187ff612529af822af3aafb1d91e1772cb840146f72"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-5",
@@ -3556,7 +5797,24 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "11202eb25b2d933c909c1e250f7f0c27c8984ed7eb906cec3a7ea1fe48521f38",
+            "targetHash": "0393b0d89369b9c9d23f38fbcd8c7cb08f43813d8842531efba62012e35f1820"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "9582c6a1e89590bebf7a314b634ae5e0ad35ff98d0d750b5f68ae3e44016e448",
+            "targetHash": "4e8a61ec46504b19d54adae78e3e46350086e62481e0ecf103c9855aa0db6c02"
+          }
+        ]
+      }
     },
     {
       "id": "documentation-standard-6",
@@ -3571,7 +5829,59 @@
         "documentation-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "7d1a463d62b40dc279f0bcbb2dda6de62d2bdc39fbe1fdab514604c19afbcf46",
+            "targetHash": "0afdbca3b62d1ce5fad3f9d8184f02b40121cec74fdd5d1587f4057598e26088"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "74fa08a7c5cc7a9aec4a1272ad757e830dc7f82446cf7fdb993502ae84ffcc89",
+            "targetHash": "176c3c4d5bb6d085aaa832d61e2fc8ffac2be895b209d8d6f71a8dd7d27de4f9"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "a86daf878310539249a382b48f28d4fe3b31268843ca189c2234e597b47d7105",
+            "targetHash": "191aaef958229a4f3a6e94de19556abdb8a00ecaa7f84a8c94cc5d96e0c18577"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "6c7b0020590849ccd7372ced6bec75da43ab66d7cbe801784c796e42b65ed3be",
+            "targetHash": "a7bf7dadaa989f736b8125232199994636753916bcb00b00b4f52e2eb06ab916"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "572982ca2711b2329ac43f26715debbe332f66f9da0c002ad1ecbef2f4cf74c2",
+            "targetHash": "9c204fb12c066c622c8639bc493491101667825c4b0fb4829c55589027b4a789"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "a9ca4f5ff5cefd378615f369f1872e4145ecafa56f49de0e0819da0394886a4a",
+            "targetHash": "94cdef254b9cc6e6e326ba56a78331269be132a22439bf704f80c6d36b8b766a"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "9e6859773c8903f1faabbec92a00af4d43fbb98a75318b4a6698497aba77ea04",
+            "targetHash": "0eee93772d0ebd12ec350181e71ea6fd776d483418652e936dc6a656469e0b64"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "5b0a1e6316db48e961ae73b98b9edae1108ef3c22bbcfded5f9160ad077e4e6b",
+            "targetHash": "d2a5c84282697f34e56aadfe92dd982430035cf22d664d2b2798e81cf2caf626"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "683c506dd23c61a8865fcc8f1fb27bbcd47b571dac371fbfc4fa52e9246581d0",
+            "targetHash": "75791ca99a4523517bd8c2dec4691a46c9b69ea56114a68da8e8d39d74910f64"
+          }
+        ]
+      }
     },
     {
       "id": "editor-standard-9",
@@ -3586,7 +5896,54 @@
         "editor-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "5af98fc5b27946f97187c485b563377c31523556261a5d2346fb8f09a29d2799",
+            "targetHash": "fa23fd44069153ae245075f69cd2d116dd324260c576d5a72b8e64c4cce943cb"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "e717be6d5789b75e8ce9724168fb8971c064679e6bf305b4657422a6628f54b7",
+            "targetHash": "7fd65ebce34528e4ca1598cbff466ba08bfa9deb93776e1d733cb191b72dbea9"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "adeb7ebcfafb194e366c14d212168c1a5633539633a7eab2cd86d3781f4f1759",
+            "targetHash": "87d7b4a837c8a2dc7dd0b777f4eccdb1134d0c7ef7a8c9a0deb9866abac18e5e"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "eac23233cbb4786fdae140082b570cc12e764a48ef1e733700b4b1bd22759191",
+            "targetHash": "a2871f5a9803c9d3e0c79679ad168ba003919989ec2a89c391666dd1a17f76ee"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "a664f27eb75c84c851228c926669120b741f02b72d2a7453588e638cdb3d0d3b",
+            "targetHash": "a419dd1995ce54e54488816847bb232ce673cee425fb6d34473be2ac5419821a"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "26e63d5c69c966096cfbfbd0a0344fdd888ac3f0f7a952e40c339ff0b14903c9",
+            "targetHash": "db0b23498dfc1f364cf1a7863d16794a67af9dc33d261a57644d6084907baa60"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "5d9634441c3bfab383b60433d289f61c0b98f8ae0d5198e803a65646e7bc83ca",
+            "targetHash": "6335d97df8a916f7c17a96c968312734fedb7571c388356748251ed838c4e4db"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "fa5277e42773bb18e65ac6dcaaa84e3aca868f550fe1cc91c4a3f4dd35304604",
+            "targetHash": "efcb36d339f46b11a8300001c41a0be5ad1bfb7d0ce799f6ba825652d6ff3f00"
+          }
+        ]
+      }
     },
     {
       "id": "editor-standard-10",
@@ -3601,7 +5958,69 @@
         "editor-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "9c7f0fc7ede41cbd678aa63129f224e66b66798813dbeb627b8d5445064d89d1",
+            "targetHash": "8c475aa3008a17c3b04e9c6bdd360b8ee1ed13fc04c2e90e4ca945ae9211b16e"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "27f5731a0a5e6300a028317ae933dc693e81d6a513748732dc3894f2454306ac",
+            "targetHash": "a74ad8c29936557f40687f1e5afcaa578a45a9f695a767af818dd764cd7776c3"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "cb59ebd9f3f8ceec16bcb3db3bf03ae9b3225d90e6b110ba46e11a8b0da4cf43",
+            "targetHash": "563026fb39be04a8a7620b98daaff86e87d2c2ffbc4003eeed2bad09d3fa0e91"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "a738608b6f36855f4a4e0ac506656159da8122aa195dbb035cd509bfc99ebe4f",
+            "targetHash": "fb974820251d971ebeae65d596af0d1fb09fa46009538ddd9a296093ad47f725"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "126c515920613f1a133b2d8bea796af15c7880f146e43061eb755d972e5a8cec",
+            "targetHash": "e23e4974bbccc05a4bde3885b3e0cb7f74ebc5d3b9c2790b5908a81b84b642da"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "0387b218d3e368b207621ec75610231f308a1f8635d497840f260baddb707a40",
+            "targetHash": "5785c31ba9c268ed8948f437a00e66f1c8242ea90cb3882fa0136f2d294dc24c"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "80f00da15617b31fdcec378d9e38c64a682359355b3f3a6992f1fc85c1da45f6",
+            "targetHash": "7c275c2732c7b1f8d3a1ccaf146cb07ed9f62cbe817d598c3aaa76692a1abfe9"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "1933c293314efdc4770be33e561aad8c17619280f1d022a6d8c5ae68a85bb420",
+            "targetHash": "45cdb5335658bc92f8c6efd9c779018cdc2c95702baf1671ca9612e2c57633ed"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "0c174ab5ae307ead9852705a9cef5562be2eeaa41f5d19ae1a38dcec1d0c1b15",
+            "targetHash": "d5d87e25f5cf3360f97dcc04cec0c8360c14149bb3959e123989c1b35ecfa72d"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "3219506ec257d9873272709f5f0391df074edf5faad9c5ffea530d8d408672d7",
+            "targetHash": "4e61230cf5c5564db81131acbbedc835f91c5dc7c5c53028aabdc381cfc20e31"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "3701e24bc7049221695ba62bebd6c39e0a8d8b5f88e3f8d75d6830f22df23f00",
+            "targetHash": "53c7cd04856398d348b8880b0ea0a86e3c4e2be3e4f5d59a57da9fe290ccc7dc"
+          }
+        ]
+      }
     },
     {
       "id": "identity-standard-12",
@@ -3616,7 +6035,89 @@
         "identity-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "9c5ea9f5d15d225b698f982b3db4b7d83fa4f3c8640e97f4698bf5181b2a6cda",
+            "targetHash": "eb11f4b9d27b79b45bb4e736120814109c26e3183d3fc2663550008271354aeb"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "c816a06c4a8be6d812578b6f7383cbf8dee59b91225444f8d590c9fbd7c0701e",
+            "targetHash": "edf62c7da90bb4ac368c0eb9aa7836ef688e87fe4121b53b2a2a5bf560f3b33a"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "b9d2f3b86842dae33a41867b197836afe6233c4241829e1204b3848f508dfb3d",
+            "targetHash": "6f06cff5253ced9abe30a33f6a2289b114867c6a1d833aacd60c9f078e9d73de"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "050fd62a5c1de4d1d901303d6aa89ea5555acefb49640f67e6d33f18efd8676a",
+            "targetHash": "2af2caa9ddee739bacb662a9da9be5808dc27cff7db5aa6d871a6c2dbee8b92a"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "ad4fafc213ed296ebdb6c0f7951ba5bee9c20b2d8c36e931174f69cb268754a0",
+            "targetHash": "77bd1af2dd50b9811ee9a43b8fa89b78214a702f05f2e05671579b287140b839"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "0366bdf3d76726d6b207a0895ce5cdceab1476e0716bb4f77483ae5b8c2fc6be",
+            "targetHash": "407623152ef87ea249c2e6a6b1d73a7594155903c6b0deabb1152d687ea00363"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "839ac57e01a117bf8b9f9115fcc63b68cdb48a227cf8f7da9c1da75c1b6bc792",
+            "targetHash": "b1be478f727cbb95f56154f35988d3c1bdff3bd8052bc2b4e49dc5fd73f81316"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "23292ba0a0bd516469687f53b6cbf8a084e1e894da78103eecd697ddef20d0f2",
+            "targetHash": "32c267afbe380e5b790d4262e221dfdf60b96b49e74d7a2e2cc9ac897c0880a5"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "0ca89e6798245ba4d58d1ddafbdefae6dfa475a5ec3ae0731e85a2614ab1428e",
+            "targetHash": "c98316cffcb8d38ebffb7f3fa83931223dd430e36623c0b2eb5084c3bed2ceec"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "4a9430fac11ba3904d0df22cfe6d6236ffa3e75c17d4580529d5309b43221412",
+            "targetHash": "d1a826dba8450aa3875725dd824cfc603b648142da6156c6f754f3930eb970d1"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "425536a1d8ec21ca9166d6d955545547c278c57c1b856ee726fef42f2dcba724",
+            "targetHash": "cf51c14d13ee05e86fcfa183611564a97ea7e62bc736671feec8dbc2bb9f234c"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "b2ae179032fdd003eeec23502dde2fe85b0ec8c940cdf3325d9d2011f1996d39",
+            "targetHash": "f0cda63fca605ec854c588ad13773864383df3bdb7fa3615acc7a652401b288c"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "30cd85d0831091e93eeecae70e77f41fa71b5d51e10d7ba09e5f3d137f4e35c0",
+            "targetHash": "e0cb3f486f36dafdaa1af82c873edabc66594166cf01222174212c225e9870c6"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "8965297f5daa9c1ed2ddb4ea9da55733de7e760843f0ead75acf3ee5ed96dff3",
+            "targetHash": "feb7abcfe22b598e3403569e7da1b986a91255b421645cc68b2ce721e56c1097"
+          },
+          {
+            "ordinal": 15,
+            "sourceHash": "5ad2da98723f1a021b09ae6b718fa20466a9a4562f3441bf085156641d69302a",
+            "targetHash": "2f91feccc5de9a2f71268e187151f6141ccf2fbfffab0f3f1a1aa3df89e47688"
+          }
+        ]
+      }
     },
     {
       "id": "identity-standard-13",
@@ -3631,7 +6132,249 @@
         "identity-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "2d5d7e2789f297edbf3431970c66f4895d44a6ba990657615c61668b3e3c3230",
+            "targetHash": "4a9909a8648625c07cc29fca118c1eb68e2ebd471093d018537ab1a77dcf1ada"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "121c3630353bfa5ef6e5eec92867689bcf301155caa15d5d7d3a0def0cdf0c83",
+            "targetHash": "121c3630353bfa5ef6e5eec92867689bcf301155caa15d5d7d3a0def0cdf0c83"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "7f4691ce35276b1ab3344d5fafd462bef2c1168e87b5ce2f658212c5e3c46764",
+            "targetHash": "e84459a6b63dfd8935786b6d6ac2d3d46231268b78721514ce19a34b0bad6dc2"
+          },
+          {
+            "ordinal": 4,
+            "sourceHash": "310728c2e9b7e5045fc21bdbd258950a29e16f3e4333b41bca9e18e1d75429ec",
+            "targetHash": "aeb2e4b1813c86971cb5ec22701e78cfe5a7265db39b4badf6fb12f761b5048f"
+          },
+          {
+            "ordinal": 5,
+            "sourceHash": "294874ede85f308d3a57cdc5c61c4a8d58f883db8396573db69d37f2fce3fdc6",
+            "targetHash": "111f4a5e339808d2ef2ba90e52e18c4bdcad56cb34407c5d1b2f598ff9da20cb"
+          },
+          {
+            "ordinal": 6,
+            "sourceHash": "b5a54418a805c5d19628b3bb41620ae7984aff74707011b0ff7b26817619a9f7",
+            "targetHash": "ebc11ba5eb3869ba2e92c60f26a8ed56ba63d5976815d276cf29a0594236fe56"
+          },
+          {
+            "ordinal": 7,
+            "sourceHash": "7d6268ef94d331e07152a34feaec74d997d2591fc3bcf0859ad7441c97124672",
+            "targetHash": "25d354aca3c2968421169defb0070c4807ee7eea23265d2094302c6c83da1f02"
+          },
+          {
+            "ordinal": 8,
+            "sourceHash": "3e7172a4a728597dd8cb9ab3d95502a6e6aa04b14387428d0412c1dc194afd3f",
+            "targetHash": "3e7172a4a728597dd8cb9ab3d95502a6e6aa04b14387428d0412c1dc194afd3f"
+          },
+          {
+            "ordinal": 9,
+            "sourceHash": "b1e8c4885217c846af9e269228df9a91b681e9842c03f619cb79459f768ba8a2",
+            "targetHash": "0ec8b03880b690e25ececf4d4eafd5d87218a55cbd3267e95b339b16da6864c8"
+          },
+          {
+            "ordinal": 10,
+            "sourceHash": "11693d0aa493bf2b38a8ba48cecf90c8da625b5303761d4eb1023fee5a8dc20d",
+            "targetHash": "a567b2b46121035e43203a571dc9cfa163686da28807c480e91d94b2ed594de8"
+          },
+          {
+            "ordinal": 11,
+            "sourceHash": "067f6a4b5afaf0f316fccd7118d272cfeab684c39eae99f082e8e8e8c5c5b752",
+            "targetHash": "4c4894d90154253b9bc02bdf06d74e1ef73bb73604ec6927b9f44c6852456948"
+          },
+          {
+            "ordinal": 12,
+            "sourceHash": "39d9e1dcc09b54a0b7501746d1153790ed7d02e86acbb9c30581120a3f9cc9b9",
+            "targetHash": "9bedabda2ade55f06ae87212a403a2026199d5d4b2646e3db1a6b417bbb01043"
+          },
+          {
+            "ordinal": 13,
+            "sourceHash": "2448e92a9031555d4baf576686eb804b35b3ca8b678217e4a6a2dc43741062ff",
+            "targetHash": "91efd14b79286c2b2764ae164684a4a463cbcb19804d82a236e5e43c3ecd2b1c"
+          },
+          {
+            "ordinal": 14,
+            "sourceHash": "b9cef8bf99cd4bd9293438f3d1baf3a101e7d78992112f2bdda74956c32c7c4c",
+            "targetHash": "ef83b11427026a6cd408313dcc87e2223516202e5e874b8e200bcb2581077278"
+          },
+          {
+            "ordinal": 15,
+            "sourceHash": "a0659b75c00466135f6ba3e21d24e832f9899f98807e0480992fc30569d0268d",
+            "targetHash": "54b1807fe77912fe4778e593cad96559e31346a291e43c48fff24e8993e9fc00"
+          },
+          {
+            "ordinal": 16,
+            "sourceHash": "b4a313791c1fbca2c1410d1d5b1190af4087723ec1b6c1c4ba776298d6dd6228",
+            "targetHash": "b4a313791c1fbca2c1410d1d5b1190af4087723ec1b6c1c4ba776298d6dd6228"
+          },
+          {
+            "ordinal": 17,
+            "sourceHash": "dc676b42859915c826f8bbaef6511998f7aedbd6e332565faeda17fc33ec6320",
+            "targetHash": "dc676b42859915c826f8bbaef6511998f7aedbd6e332565faeda17fc33ec6320"
+          },
+          {
+            "ordinal": 18,
+            "sourceHash": "926eeba6058ff5b18954fc1a5707376a2670dfb439ee5b00660e2dc6cb6716f5",
+            "targetHash": "926eeba6058ff5b18954fc1a5707376a2670dfb439ee5b00660e2dc6cb6716f5"
+          },
+          {
+            "ordinal": 19,
+            "sourceHash": "87a08ffe9a6f80e34a71c7691fddda770a89a4c249637d50683f5fd9534ee360",
+            "targetHash": "87a08ffe9a6f80e34a71c7691fddda770a89a4c249637d50683f5fd9534ee360"
+          },
+          {
+            "ordinal": 20,
+            "sourceHash": "f783399583a877391438dfa759912922fec0c63faa2024e8d1481138653d12b8",
+            "targetHash": "f783399583a877391438dfa759912922fec0c63faa2024e8d1481138653d12b8"
+          },
+          {
+            "ordinal": 21,
+            "sourceHash": "06969734222d809a6bfa8531289fc6a29de47247e8fdd6fa94e2fd64b1546eb1",
+            "targetHash": "06969734222d809a6bfa8531289fc6a29de47247e8fdd6fa94e2fd64b1546eb1"
+          },
+          {
+            "ordinal": 22,
+            "sourceHash": "85b028d477ba8186e3a1a1e86aa949f9cc514ec0e1b6da2eec77f94033a6ce8c",
+            "targetHash": "85b028d477ba8186e3a1a1e86aa949f9cc514ec0e1b6da2eec77f94033a6ce8c"
+          },
+          {
+            "ordinal": 23,
+            "sourceHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5",
+            "targetHash": "f1b901847390b0ed7e374e7c1e464ec17b46a427c487a5ad6cbd2906405083d5"
+          },
+          {
+            "ordinal": 24,
+            "sourceHash": "03a8f641293904182090dd83b0a17a3dfc171f6cd2c15957da45a8b076878181",
+            "targetHash": "1303393cadec1612b995355e5a40bc2d3a9b8ac2580f533e44b02a4089293f43"
+          },
+          {
+            "ordinal": 25,
+            "sourceHash": "6d188a3a6b6f3ef3e9b54b90bbe8644afbb67a687a79793cc6478b78603aa4f5",
+            "targetHash": "09912f1d65e2e610cfc42c00d91a3b6f4f85d9fdc7df631b83322a3e096e1500"
+          },
+          {
+            "ordinal": 26,
+            "sourceHash": "1c72b28b05f6ffc0914a1a90674cdd0045c93ebef464fc64ac56f22468e3e786",
+            "targetHash": "200de7b94ffea3c65e469bc80592ad6aef00823ce6417b42a8bb000d66a49625"
+          },
+          {
+            "ordinal": 27,
+            "sourceHash": "00b254fb327db3f20efe1a71793957730f23bc28137eb8b7d84ac13642973c58",
+            "targetHash": "4a82ef9729ac15aa5d830ea8363c60cb18ea4105c259f0a956afcd2b2c8aded7"
+          },
+          {
+            "ordinal": 28,
+            "sourceHash": "68ad0d01f982e6f258cac64e466967775b67fb658f5c4803fe83fdb4f89fa4a7",
+            "targetHash": "d7c285ced0bd38d6306e187158110f4435e2f9d65439a738c674e77e05ea84f9"
+          },
+          {
+            "ordinal": 29,
+            "sourceHash": "ab54461d0f419b5a54b388ee2f8ae558aa50522b1b7409733a40e249482815fd",
+            "targetHash": "749d441b3e4bf1282bb0eba1ba8c894c075748520d8e9819b5922a0d5b8cd8b3"
+          },
+          {
+            "ordinal": 30,
+            "sourceHash": "a92c88c9f2d32dcfc7079078c6f520dcd494093bf77d7718aaed6b8c05aea81f",
+            "targetHash": "1cc12481c05844706b89f202b2c0abea50fd58196f8e42738478767fb8be7107"
+          },
+          {
+            "ordinal": 31,
+            "sourceHash": "383d635bd2c50f69f8402d18ff659964e3542968acf4a696767b7e14567c2560",
+            "targetHash": "383d635bd2c50f69f8402d18ff659964e3542968acf4a696767b7e14567c2560"
+          },
+          {
+            "ordinal": 32,
+            "sourceHash": "4420df8991446fc486e7a15201beac3670db325f891d3406ef68de47b8ae9175",
+            "targetHash": "e8cb10a4cfa091f65833f4e557d3bd0a948b42ad05bafbf520cf64f900a1f6ce"
+          },
+          {
+            "ordinal": 33,
+            "sourceHash": "dc394083646ddca9b59bc602979b82c9a7601e58443ed3178f62685b913e9bfd",
+            "targetHash": "adbe063776c0c7581a8fb0350ec7b34363b05ee21dc2bccbb4e4d0da8ca3255c"
+          },
+          {
+            "ordinal": 34,
+            "sourceHash": "107c645619abff8e4c7bab6e8dcdc509eb523116e0645b9edcefe32c24a85664",
+            "targetHash": "f8c3e071c5d109730dbed376c09d86717dbae2f116fb7c8409edbb685914dfd5"
+          },
+          {
+            "ordinal": 35,
+            "sourceHash": "9c1ff26b58f1aaed263ff9c98b59b8caf9be4ca1e8f0d93c86bc1beac7a8f0d5",
+            "targetHash": "0594ec9f6fcf6b9421151b7408c86fd959b392e50aaf51201501f188d11679ff"
+          },
+          {
+            "ordinal": 36,
+            "sourceHash": "8604d20bfd06096c3800ad1d302f3332768f2ec2dd5793a424a9ef8848da2478",
+            "targetHash": "da578b5f559f8e63531ac1f9c1c7c0a3d8b1c63f3bd37a4cb5ca2ef5aaade878"
+          },
+          {
+            "ordinal": 37,
+            "sourceHash": "3efae27b85314dbccde928e8d3d71d8422709e3d27c4c4c645a31c3afcd245e6",
+            "targetHash": "e05965b4a4f34a9e91ce0af5cd091dd952e1626b1e996b358c866f6c5b43841e"
+          },
+          {
+            "ordinal": 38,
+            "sourceHash": "ad5c2ad9efab6172d1e2f263d289676a177762baf550116294df1b2e774a807f",
+            "targetHash": "e6fbeb18d3c8250d44fad79efe44f8444474637ab3a57daaec81e3431bb370f1"
+          },
+          {
+            "ordinal": 39,
+            "sourceHash": "a132d925134321e599d9d68386a39ade207c5503c74771527b229bad355d3750",
+            "targetHash": "a132d925134321e599d9d68386a39ade207c5503c74771527b229bad355d3750"
+          },
+          {
+            "ordinal": 40,
+            "sourceHash": "dafc8e4178e8bc68d10c60e30fe31d5948545d193dae91f7c268d88dfd73eb3f",
+            "targetHash": "4f3d9ee0de38fe960cc014e3815d3a490431d298024b58691fd64d72e1a53f47"
+          },
+          {
+            "ordinal": 41,
+            "sourceHash": "b9b88b4903de2a4accb4e7da6473959549b95d551f0696cc93f0f6a2e471404f",
+            "targetHash": "bbac5c3d97ddc122d55990238d81f83ad58064be0fb5ed550cc5e0918d773d7e"
+          },
+          {
+            "ordinal": 42,
+            "sourceHash": "98352764e4558c4c9f1739549f460ee16a5dda5eceaef4822f74f5c19fc12e92",
+            "targetHash": "d2f49afd9d4d5d48812f5b1ec10e27c0ef47e71b77aeafe832cc65d91d2b158e"
+          },
+          {
+            "ordinal": 43,
+            "sourceHash": "1d48b746a8b9e9fa2d48acb1a9534ce39920a78d0e1bd86c318b4644dc1df800",
+            "targetHash": "a5df5ad75cab8084f01adb5892e6bee37d44252c268378904d3f2e8a5dc49b25"
+          },
+          {
+            "ordinal": 44,
+            "sourceHash": "f3567ea7df9e453b4acbb77fdd07e4a51dcdff58b296cefc59da16e09cc6558a",
+            "targetHash": "6f6e4a48bea92ec1aaf81c62c3b046e3e91c9443a311913d7cca92da5371a902"
+          },
+          {
+            "ordinal": 45,
+            "sourceHash": "76b5d63c88fbc109ac4dfd2ef13b245d508d9f9c087d7f0f25306813cec8571a",
+            "targetHash": "d3b7e0955f44f49b0861b496a4a0f9566c2528cbfd69416aaab81fb98aeedf24"
+          },
+          {
+            "ordinal": 46,
+            "sourceHash": "8868b837dc0ce140e59552d8ea9da27f6e547cd5c6e3ea230dba383183ea809b",
+            "targetHash": "2cea3a29070d526beba0ae632a20eff47dcd8b6371cdbf56d3343e01a26110c8"
+          },
+          {
+            "ordinal": 47,
+            "sourceHash": "b43c2af4e54526ac8aa49e43f8052e982e12c879d495e25e489769c0a2fe6d38",
+            "targetHash": "74b669208c873e54245e57f53da423d6cf8d8bde2d064ff8fc2ae69eca7b383c"
+          }
+        ]
+      }
     },
     {
       "id": "identity-standard-14",
@@ -3646,7 +6389,29 @@
         "identity-standard"
       ],
       "reviewer": "implementing owner",
-      "check": "full source section preservation + semantic review"
+      "check": "full source section preservation + semantic review",
+      "translation": {
+        "language": "en",
+        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
+        "lines": [
+          {
+            "ordinal": 1,
+            "sourceHash": "44bdb92c728dc030c682de99ff55c7bc2d3d706281979361e7371da1cd2ebaa3",
+            "targetHash": "daf36302d83833a011268b63658437a5369ec3880cfeb7fd46f6507b405ee6c8"
+          },
+          {
+            "ordinal": 2,
+            "sourceHash": "f544a9fdbe99713a38cdea11f261d92f159d385ab391e56f4ba63ff0f894bb33",
+            "targetHash": "e9240abee48d7f0b44e532ca09189d067de00eb65291e0f93b5dc5139b899457"
+          },
+          {
+            "ordinal": 3,
+            "sourceHash": "a44c25b5b54146e969cf15d3c187987f9973af96a0e6b44a690f9c9b97c68549",
+            "targetHash": "8d749a1372a89f5cb497a3a9719c7109b3a6430bafeffbc964ee2f158cd77291"
+          }
+        ]
+      }
     }
   ],
   "routes": [

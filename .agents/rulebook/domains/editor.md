@@ -1,52 +1,52 @@
-# domains/editor
+# Editor
 
-按完整规则单元加载；路由与来源见 [规则登记](../coverage.json)。
+Load complete rule units. The [registry](../coverage.json) owns routing and provenance.
 
 <!-- rule-unit: editor-projects -->
 <a id="editor-projects"></a>
-## 13. Editor 项目组织与引用边界
-- `src/composition/editor` 中每个项目的业务源码统一使用与 `.csproj`/程序集名称完全相同的命名空间；功能目录只负责组织文件，不追加到命名空间。例如 `Inno.Editor.Inspection/PropertyDrawing` 中的类型仍使用 `namespace Inno.Editor.Inspection;`。
-- 可复用的 InspectionDrawer、PropertyDrawer、Registry 与 serialized property renderer 统一属于 `Inno.Editor.Inspection`；业务 Panel 只在自身项目中实现具体 Drawer，不得为了扩展检查显示而引用 `Inno.Editor.Panel.Inspector`。
-- 唯一命名空间例外是 `Inno.Editor.ImGui/Widgets`：其中所有类型使用 `namespace Inno.Editor.ImGui.ImGuiWidget;`。
-- `Inno.Editor.ImGui/Widgets` 只允许 `ImGuiWidget.*.cs` 文件。Widget 的 presentation、options、result 与私有状态应收口到对应的 `ImGuiWidget.<Feature>.cs`，不得创建独立的 Widget helper 文件。
-- Editor 项目内部按可独立理解的功能建立目录（如 `Interactions`、`Documents`、`Zoom`、`PropertyDrawing`）；同一功能内的 Action、Menu、DragDrop、Runtime 与 Presentation 不得仅按类型角色机械拆成多个细碎目录。禁止使用含义模糊的 `Internal` 目录，访问级别由 C# 声明表达，不由目录名表达。
-- Editor `.csproj` 的 `ProjectReference` 必须按公开 API 边界分组：第一个 `ItemGroup` 只放未出现在任何 public/protected API 中的实现依赖，并逐项设置 `PrivateAssets="compile"`；第二个 `ItemGroup` 只放公开签名、公开基类或公开接口实际泄漏的依赖。没有使用的引用应直接删除。
-- `ProjectReference` 是否公开必须根据真实 API 签名判断，不能因为运行时会使用某程序集就默认向下游传递。调整公开类型、基类、参数、返回值或属性后，应同步复核引用分组。
+## 13. Editor projects and reference boundaries
+- Business source in each project under `src/composition/editor` uses a namespace exactly matching its csproj/assembly name. Feature directories organize files without adding namespace segments. For example, types under Inno.Editor.Inspection/PropertyDrawing still use namespace Inno.Editor.Inspection.
+- Reusable InspectionDrawers, PropertyDrawers, Registries and serialized-property renderers belong to Inno.Editor.Inspection. Business Panels implement specific Drawers in their own projects and must not reference Inno.Editor.Panel.Inspector merely to extend inspection presentation.
+- The sole namespace exception is Inno.Editor.ImGui/Widgets: all its types use namespace Inno.Editor.ImGui.ImGuiWidget.
+- Inno.Editor.ImGui/Widgets contains only ImGuiWidget.*.cs files. Each widget's presentation, options, results and private state belong together in ImGuiWidget.<Feature>.cs. Do not create separate Widget helper files.
+- Organize Editor project directories by independently understandable capabilities, such as Interactions, Documents, Zoom and PropertyDrawing. Do not mechanically scatter one feature's Actions, Menus, DragDrop, Runtime and Presentation into tiny type-role directories. Ambiguous Internal directories are prohibited; C# declarations, not directory names, express accessibility.
+- Group Editor csproj ProjectReferences by public API boundary: the first ItemGroup contains only implementation dependencies absent from all public/protected APIs, each with PrivateAssets="compile"; the second contains only dependencies actually exposed through public signatures, base classes or interfaces. Remove unused references.
+- Determine public reference visibility from actual API signatures, not merely runtime assembly use. Recheck the groups after changing public types, base classes, parameters, returns or properties.
 <!-- /rule-unit: editor-projects -->
 
 <!-- rule-unit: editor-state -->
 <a id="editor-state"></a>
-## 14. Editor History 与 Workspace 状态
-- 可逆 Editor 数据修改统一进入 `EditorInteractions.history`；不要在 Panel 中维护第二套 Undo 栈，也不要把简单 `inverse Action` 当作通用模型。
-- Feature Module 先完成领域修改，再用 `RecordApplied(name, EditorHistoryChange)` 记录；History payload 只能保存 stable protocol kind、persistent ID、Stable Type ID、路径、索引、标量和中立序列化 bytes，禁止捕获 runtime 对象、插件 `Type`、extension 实例或来自 collectible ALC 的委托。
-- 每个 reload-safe 协议必须声明 `[EditorHistoryHandler(kind)]`。Handler 的 `Query` 只检查当前 generation 可用性；`Apply` 必须在失败时回滚本次部分修改。Handler Registry 与其他 Editor Registry 一起候选构建和原子切换。
-- `RecordValue`、委托式 `Execute` 与派生 `EditorHistoryOperation` 只允许 Host-only 兼容流程；这些 runtime-bound entry 会在 extension generation 改变时截断，不得用于 EditorScripts 或 Scene/Asset 等长期记录。
-- 稳定 `mergeKey` 只用于同一个逻辑值的连续输入；布尔开关、创建、删除和排序不得合并。多步骤修改使用 `BeginTransaction`，但每个 child 仍必须独立原子化。
-- Undo/Redo 失败时必须保持操作位于原栈，禁止移动指针或覆盖新状态。新操作必须释放 Redo 分支；被淘汰或清除的 operation 必须释放其文件、对象或插件代际引用。
-- 大 payload 使用 `EditorHistoryOptions` 自动溢出到 `<Project>/Library/Editor/History`；History 受 entry、resident bytes 与 disk bytes 三重预算限制，缓存不进入 `editor.ini`、Asset metadata 或 Scene 序列化。
-- 保存、打开、选择等纯工作流操作默认不进入数据 Undo；它们只有在确实修改项目数据时才记录对应的数据部分。
-- 跨启动的项目语义状态直接属于 Module/Panel；它们使用 Attribute 中必填、稳定且全局唯一的 ID，并通过 protected `Capture(EditorState)` / `Restore(EditorState)` hooks 参与持久化。扩展只调用参数对象的 `Get` / `Set`，不得在公开或 protected API 中暴露 JSON 实现。未 override Capture 的类型不进入状态 IO；不得恢复独立 Workspace interface、reader/writer 或第二个状态 ID。持久值只允许可重新解析的中立数据。
-- `editor.ini` 是统一且可读的项目级 Editor settings 文档：标准 ImGui section 保存 layout；每个 Module/Panel 分别使用 `[InnoEditor][Module.<id>]` / `[InnoEditor][Panel.<id>]`；Panel 开关使用 `[InnoEditor][Panels]`。禁止用 Base64 或单一 opaque payload 包装全部 Workspace。Undo 栈、dirty Scene 内容、runtime 引用和编译中间态不得持久化。
-- 新项目的默认 layout 由标准 Host 的嵌入资源提供，Core 只接收中立初始文档并复用 Core IO 原子写入。仅文件不存在时初始化，不能覆盖已有或刻意留空的 `editor.ini`；模板不得带入示例场景、Asset ID、插件状态、Selection、History 或临时弹窗。
-- Editor Selection 是当前 session 的瞬时交互状态，不得写入 `editor.ini`。Workspace 可以保存可独立解释的导航位置、已打开文档和 active document，但启动后不得自动恢复 Asset、Scene、GameObject、Component 或 System selection。
-- Editor 正常退出时必须先捕获全部有状态的 Module/Panel，再捕获最新 ImGui layout，最后在 Module 停止和 Scene 卸载前强制原子写入一次完整 `editor.ini`。运行期间仍可节流保存，但不能把它当作退出保存的替代品。
-- Editor Scene 修改统一进入 `Inno.Editor.Scene.SceneEdits`。普通属性只保存单 property bytes；Component/System 保存 element identity/type/index/state；GameObject 删除保存最小 subtree；层级只保存受影响 placement；禁止为小修改序列化或恢复完整 Scene。
-- Module/Panel 状态恢复必须容忍缺失 Asset、损坏 payload 和脚本类型尚未进入 TypeCache。候选未完整准备好前不得破坏当前可编辑状态。
-- 有状态的 Module/Panel 必须先成功执行一次 protected `Restore`，之后才允许 `Capture` 覆盖磁盘 section。扩展 Registry 在启动或脚本激活期间可能重入刷新；恢复协调器必须按 Module/Panel 实例弱跟踪 `restoring/restored` 状态，禁止重入回调，也不能因为实例被新 snapshot 保留就误判其已经恢复。
-- Scene Workspace 恢复时必须区分“源文件确实缺失”和“Asset Source Index 尚未完成首轮对账”。物理源仍存在时应保留 pending scene setup 并重试，不能用暂时为空的运行时 Scene 集合覆盖项目设置。Editor 允许没有任何已加载 Scene，不得为恢复、启动或删除最后一个 Scene 隐式创建 Untitled Scene。
+## 14. Editor History and Workspace state
+- Reversible Editor data changes use EditorInteractions.history. Do not keep another Undo stack in a Panel or treat a simple inverse Action as the general model.
+- Feature Modules apply the domain change first, then record it with RecordApplied(name, EditorHistoryChange). History payloads contain only stable protocol kinds, persistent IDs, Stable Type IDs, paths, indexes, scalars and neutral serialized bytes. They must not capture runtime objects, Plugin Types, extension instances or collectible-ALC delegates.
+- Every reload-safe protocol declares [EditorHistoryHandler(kind)]. Handler Query only checks current-generation availability; Apply rolls back partial modifications on failure. Its Registry participates in candidate construction and atomic switching with the other Editor Registries.
+- RecordValue, delegate-based Execute and derived EditorHistoryOperation are permitted only for Host-only compatibility workflows. These runtime-bound entries are truncated when extension generations change and must not serve EditorScripts or long-lived Scene/Asset records.
+- Stable mergeKeys apply only to continuous input for the same logical value. Do not merge boolean toggles, creation, deletion or ordering. Use BeginTransaction for multiple steps, with each child independently atomic.
+- Failed Undo/Redo leaves the operation on its original stack without moving pointers or overwriting new state. New operations release the Redo branch. Evicted/cleared operations release their files, objects and Plugin-generation references.
+- EditorHistoryOptions automatically spills large payloads to <Project>/Library/Editor/History. Entry, resident-byte and disk-byte budgets all constrain History. Its cache does not enter editor.ini, Asset metadata or Scene serialization.
+- Pure workflows such as saving, opening and selection do not enter data Undo by default. Record only the data portion when they actually modify Project data.
+- Cross-startup Project semantic state belongs directly to Modules/Panels. Their Attributes require stable, globally unique IDs, and protected Capture(EditorState)/Restore(EditorState) hooks participate in persistence. Extensions use only Get/Set on the parameter object, without exposing JSON implementations in public/protected APIs. Types that do not override Capture do not enter state IO. Do not restore separate Workspace interfaces, readers/writers or second state IDs. Persistent values must be neutral and resolvable again.
+- editor.ini is the unified readable Project-level Editor settings document. Standard ImGui sections store layout; each Module/Panel uses [InnoEditor][Module.<id>] or [InnoEditor][Panel.<id>]; Panel switches use [InnoEditor][Panels]. Do not wrap the entire Workspace in Base64 or one opaque payload. Do not persist Undo stacks, dirty Scene content, runtime references or compilation intermediate state.
+- The standard Host's embedded resource supplies a new Project's default layout. Core receives a neutral initial document and reuses Core IO atomic writing. Initialize only when the file does not exist; do not overwrite an existing or deliberately empty editor.ini. Templates contain no example Scenes, Asset IDs, Plugin state, Selection, History or temporary popups.
+- Editor Selection is transient interaction state for the current session and must not enter editor.ini. Workspace may save independently meaningful navigation positions, open documents and active documents. Startup must not automatically restore Asset, Scene, GameObject, Component or System selection.
+- Normal Editor shutdown captures every stateful Module/Panel, then the latest ImGui layout, then forces one atomic write of the complete editor.ini before stopping Modules or unloading Scenes. Throttled runtime saves remain allowed but do not replace shutdown saving.
+- All Editor Scene edits use Inno.Editor.Scene.SceneEdits. Ordinary properties store only one property's bytes; Components/Systems store element identity/type/index/state; GameObject deletion stores the minimal subtree; hierarchy changes store only affected placements. Do not serialize or restore an entire Scene for small edits.
+- Module/Panel restoration tolerates missing Assets, damaged payloads and script types not yet present in TypeCache. Do not destroy the current editable state before the candidate is fully prepared.
+- A stateful Module/Panel must successfully complete protected Restore once before Capture may overwrite its disk section. Extension Registry refresh may reenter during startup/script activation. The restoration coordinator weakly tracks restoring/restored state per instance, prevents reentrant callbacks and does not assume an instance retained in a new snapshot has already been restored.
+- Scene Workspace restoration distinguishes an actually missing source file from an Asset Source Index awaiting its first reconciliation. If physical source still exists, retain pending Scene setup and retry. Do not overwrite Project settings with a temporarily empty runtime Scene collection. Editor permits no loaded Scenes; restoration, startup and deletion of the last Scene must not implicitly create an Untitled Scene.
 <!-- /rule-unit: editor-state -->
 
 <!-- rule-unit: editor-layout -->
 <a id="editor-layout"></a>
-## 24. Editor 表单与滚动约束
+## 24. Editor forms and scrolling
 
-- 每个可视区域只能指定一个滚动 owner。父 Panel/Modal、布局 Child 与内容 Child 不得同时为同一方向生成滚动条；承载填满区域的可滚动 Child 时，父容器必须禁用对应滚动。
-- 所有左侧 label、右侧 input 的 Editor 字段复用 `ImGuiWidget.SetupPropertyColumns()` 与 `PropertyLabel()`，按 2:3 分配可用宽度；有操作列时先扣除操作列。label 必须在自身列换行，行高随内容增长。
-- 禁止以固定 label 像素宽度、无条件 scrollbar flag、虚假的 content size 或额外嵌套滚动 Child 修补布局。修改表单、Panel、Popup 后要在小窗口、长文本与不同 zoom 下验证 `ScrollMaxX/ScrollMaxY` 只在内容确实溢出时为正。
-- Editor 下拉选择器统一使用 `BeginBoundedCombo` / `EndBoundedCombo` 或 `BeginMenuSelector` / `EndMenuSelector`；弹层从触发控件下边缘向下展开，宽度受所属窗口限制，高度同时受所属窗口剩余空间和窗口高度比例限制。不要直接用原生 Combo 的自动翻转定位。
-- Popup 尺寸约束统一在 Widget 边界做像素对齐：上限向下取整，内容所需尺寸向上取整，防止 ImGui 截断小数 padding 后产生假溢出。回归必须覆盖 85%、90%、110% 等非整像素缩放；不能只测试整数或半整数 padding，也不能用 `NoScrollbar` 隐藏问题。
-- 自绘命中区域除了矩形包含关系，还必须确认所属 ImGui window 是当前可交互的前景窗口；被浮动窗口、Popup 或 Modal 遮挡时不得触发底层 Panel 的关闭、画布手势或游戏输入。平台事件仍使用 `Inno.Core.Events`，ImGui 只决定可见 UI 的命中与焦点；Play Session 使用独立 Input backend 接收经 Game View 焦点策略筛选的事件，不建立第二个事件总线。
-- 树行的 disclosure、正文与叠加按钮必须各自拥有独立命中区域；原生 TreeNode 不得以整行 SpanFullWidth/AllowOverlap 覆盖自绘正文。回归同时覆盖鼠标先悬停与移动/按下发生在同一帧、正文双击、箭头展开及叠加按钮，不能依赖额外一帧悬停才能点击。
+- Each visible region has one scrolling owner. Parent Panel/Modal, layout Child and content Child must not produce scrollbars in the same direction for the same content. A parent hosting a fill-area scrollable Child disables the corresponding scrolling.
+- Editor fields with labels on the left and inputs on the right reuse ImGuiWidget.SetupPropertyColumns() and PropertyLabel(), dividing available width 2:3 after deducting any action column. Labels wrap within their own column and row height grows with content.
+- Do not patch layouts with fixed label-pixel widths, unconditional scrollbar flags, fictitious content sizes or extra nested scrolling Children. After form/Panel/Popup changes, verify at small window sizes, with long text and at different zoom levels that ScrollMaxX/ScrollMaxY are positive only for actual overflow.
+- Editor dropdowns use BeginBoundedCombo/EndBoundedCombo or BeginMenuSelector/EndMenuSelector. Popups open downward from the triggering control's bottom edge. Their width is bounded by the owning window; height is bounded by both remaining window space and a proportion of window height. Do not directly use native Combo automatic flipped placement.
+- Align Popup size constraints to pixels at the Widget boundary: floor upper bounds and ceil required content sizes to prevent false overflow when ImGui truncates fractional padding. Regressions cover fractional zoom such as 85%, 90% and 110%, not only integer/half-integer padding. Do not conceal failures with NoScrollbar.
+- Custom hit regions check both rectangle containment and whether their owning ImGui window is the currently interactive foreground window. Floating windows, Popups and Modals must block underlying Panel close actions, canvas gestures and game input. Platform events still use Inno.Core.Events; ImGui determines visible-UI hits/focus only. Play Sessions have an independent Input backend receiving events filtered by Game View focus policy, without a second event bus.
+- Tree-row disclosure controls, text and overlay buttons each own an independent hit region. Native TreeNodes must not cover custom text using full-row SpanFullWidth/AllowOverlap. Regressions cover prior hover and same-frame move/press, text double-click, arrow expansion and overlay buttons. Clicking must not require an extra hover frame.
 <!-- /rule-unit: editor-layout -->
 
 <!-- rule-unit: editor-acceptance -->
@@ -77,39 +77,39 @@
 
 <!-- rule-unit: editor-standard-9 -->
 <a id="editor-standard-9"></a>
-## 交付与验收
+## Delivery and acceptance
 
-变更必须同步源码、调用方、项目引用、公开 XML、Wiki 和适用测试。使用真实公开契约与可替换边界，不使用 IVT、私有反射或测试后门。
+Changes update source, callers, project references, public XML, documentation and applicable tests together. Use real public contracts and replaceable boundaries, without IVT, private reflection or test backdoors.
 
-Build 入口的统一 `validate` 计划编排既有 xUnit/VSTest 和真实产品旅程，分别记录领域、公共契约、集成、Native、产品与性能证据。契约、工作流、视觉和生命周期断言随实际依赖选择，不按多个 profile 重复构建同一工程。每次保留 SDK、源码身份、TRX 和结果摘要；空发现或隔离进程零执行不能视为成功。产品验收使用实际平台声明的 renderer 与启动期望；共享入口不内嵌 backend 名称作为默认断言。稳定的 `--artifacts-path` 与独立 `--output` 分别指定构建 owner 和运行日志。隔离入口的 `-TemporaryDirectory` 可显式指定较短临时根；默认保留操作系统 TEMP/TMP，不隐式嵌套到深层结果目录，普通与隔离进程使用同一临时 owner。
+The Build entry's unified validate plan orchestrates existing xUnit/VSTest and real product journeys, recording domain, public-contract, integration, Native, product and performance evidence separately. Select contract, workflow, visual and lifecycle assertions through actual dependencies, without rebuilding the same project for multiple profiles. Retain SDK, source identity, TRX and summaries for each execution. Empty discovery or zero isolated-process execution is not success. Product acceptance uses the actual platform-declared renderer and startup expectations; shared entries do not embed backend names as default assertions. Stable --artifacts-path and independent --output select the build owner and run logs respectively. Isolated entries may explicitly select a shorter temporary root with -TemporaryDirectory; otherwise retain OS TEMP/TMP rather than nesting it implicitly in deep result paths. Ordinary and isolated processes use the same temporary owner.
 
-Settings 的一次 Apply 复用单一 History transaction，所有 dirty owner 成功后才接受新基线。失败先尝试回滚并保留草稿；可恢复的文件/校验错误在窗口内反馈并记录完整诊断。History 完整性丢失后禁止继续 Apply，不能把错误吞掉后重试。打开的设置窗口借用当前 generation 的编辑对象，使用现有 admission guard 延迟 reload，关闭后恢复许可；不为此建立另一套状态恢复或 History 系统。
+One Settings Apply reuses one History transaction and accepts a new baseline only after every dirty owner succeeds. On failure, attempt rollback first and retain drafts. Show recoverable file/validation failures in the window with complete diagnostics. Lost History integrity prevents further Apply; do not swallow errors and retry. Open settings windows borrow the current generation's editable objects and use the existing admission guard to defer reload, restoring admission on close. Do not create another restoration or History system.
 
-验收编排从正式 Editor 入口取得实际 Native target、tool target 和产品属性，不全局覆盖 `InnoTestNativeProduct`。需要原生部署的测试工程声明自己的产品及目标；纯契约测试不会因传递引用包含 Native 程序集而自动承担完整产品准备。普通执行、隔离发现和隔离执行使用相同的 SDK 输入。
+Acceptance orchestration obtains actual Native target, tool target and product properties from the official Editor entry, without globally overriding InnoTestNativeProduct. Tests requiring native deployment declare their own products/targets. Pure contract tests do not automatically prepare a complete product merely because their transitive references include a Native assembly. Ordinary execution, isolated discovery and isolated execution use the same SDK inputs.
 
-原生借用验证与纯值转换必须按实际契约区分：`EditorDrawList` 每次操作验证原窗口、帧、Context 和线程；颜色转换保留既有 Session／Context／线程准入。颜色格式的饱和、取整及非有限值行为通过实际原生 oracle 验证，不用普通数值相等推断所有边界一致。
+Distinguish native-borrow verification from pure value conversion according to actual contracts. Every EditorDrawList operation validates its original window, frame, Context and thread. Color conversion retains existing Session/Context/thread admission. Verify saturation, rounding and nonfinite color behavior against the actual native oracle; ordinary numeric equality does not establish agreement at every boundary.
 
-`EditorUiInput` 的 Control/Super 表示物理修饰键，不继承原生控件内部的快捷键归一化。呈现边界依据当前 Context 的键盘配置还原这些值，列表选择复用同一快照语义，平台仍通过 `EditorKeyboardPolicy` 选择 primary modifier。原生文本控件继续使用该 Context 的输入习惯；测试必须显式声明自己的键盘配置，并覆盖 Control/Super 与两种原生模式的组合，不能依赖 runner 的默认值。
+EditorUiInput Control/Super values mean physical modifiers, not native controls' internal shortcut normalization. The presentation boundary reconstructs them from the current Context's keyboard configuration. List selection reuses those snapshot semantics; platforms still choose primary modifiers through EditorKeyboardPolicy. Native text controls retain that Context's input conventions. Tests explicitly declare their keyboard configuration and cover Control/Super combined with both native modes rather than relying on runner defaults.
 
-最终报告分别评价架构、组织、状态与生命周期、抽象、复用、样式、扩展、交互、Undo/Redo、菜单和颗粒度；每项列出证据与限制。目录整齐、测试数量或正常启动不能代替视觉、输入、重复 reload、资源收敛和成对性能验收。
+Final reports separately assess architecture, organization, state/lifetimes, abstraction, reuse, style, extensibility, interaction, Undo/Redo, menus and granularity, with evidence and limitations for each. Neat directories, test counts or successful startup do not replace visual/input acceptance, repeated reload, resource convergence and paired performance measurements.
 <!-- /rule-unit: editor-standard-9 -->
 
 <!-- rule-unit: editor-standard-10 -->
 <a id="editor-standard-10"></a>
-## 动态 Modal 的状态与尺寸
+## Dynamic Modal state and size
 
-- 窗口尺寸、换行和绘制使用本帧同一快照，不依赖上一条消息的高度。
-- 准备只读取和测量；实际动作由原领域 owner 校验 operation 后执行。禁止双次绘制回调测量。
-- 统一 metrics 表达 padding、item spacing、按钮高度和字体尺度。业务 Modal 不通过额外空行、固定大高度或零散数字补偿布局。
-- 消息与详情共用一个正文滚动 owner，操作行保持可达。Child 不重复承担父窗口已经提供的外层 padding。
-- 明确区分声明尺寸、自适应尺寸及用户调整尺寸；部分指定尺寸也必须得到正确解释。
-- 当前帧内容增长、缩短、空文本、动作变化及非整数尺度都属于必要回归。
+- Window size, wrapping and drawing use one snapshot for the current frame, never the previous message's height.
+- Preparation only reads and measures. The original domain owner verifies the operation before executing actions. Do not invoke drawing callbacks twice for measurement.
+- Unified metrics express padding, item spacing, button height and font scale. Business Modals do not compensate with extra blank lines, fixed oversized heights or scattered numbers.
+- Messages and details share one body scrolling owner, with actions remaining reachable. Children do not duplicate outer padding already supplied by the parent window.
+- Distinguish declared, content-sized and user-resized dimensions. Partially specified dimensions must also be interpreted correctly.
+- Regressions cover same-frame content growth/shrinkage, empty text, changed actions and fractional scale.
 
-### 按职责选择 CI 验收
+### Select CI acceptance by responsibility
 
-Engine CI 根据完整 Git 变更集合及实际 SDK 依赖选择检查，不能按 issue 编号或为了节省时间临时跳过失败项。Editor 领域、呈现、工作流与生命周期按执行前提隔离；所选产品保留真实原生 smoke 和产品旅程。Release、NativeAOT 还原、Player Support Pack 与完整功能矩阵属于显式完整验收；build、native、reload 等相关变更提前选择相应深层检查，周验收增加冷构建、十轮热缓存和长期运行。未知 owner 或无法推导的共同输入必须产生可见诊断并保守扩大范围，手动工作流支持完整验收。
+Engine CI selects checks from the complete Git change set and actual SDK dependencies, not issue numbers or temporary omission of failures to save time. Isolate Editor domain, presentation, workflow and lifecycle tests by execution prerequisites. Selected products retain actual native smoke and product journeys. Release, NativeAOT restore, Player Support Packs and complete functional matrices belong to explicit full acceptance. Build, Native and reload changes select corresponding deep checks earlier; weekly acceptance adds cold builds, ten warm-cache rounds and long runs. Unknown owners or uninferable shared inputs produce visible diagnostics and conservative expansion. Manual workflows support full acceptance.
 
-`Inno.Tooling.Validation` 是唯一计划 owner，不改变生产构建的完整性要求。移动文件同时覆盖旧、新 owner，PR 使用实际合并候选与 merge base，本地包含 staged、unstaged、untracked；选择理由与排除项写入计划。有限范围通过不等于完整产品或设备矩阵通过；必要环境不可用、缺少结果或必要测试为空必须失败或阻塞。
+Inno.Tooling.Validation is the sole plan owner and does not weaken production-build integrity. Moves cover old and new owners; PRs use actual merge candidates and merge bases; local plans include staged, unstaged and untracked files. Record selection reasons and exclusions. A bounded pass is not a complete product/device matrix pass. Unavailable required environments, missing results and empty required tests fail or block.
 
-廉价架构规则保持全仓执行；编译元数据和 Wiki 示例按真实依赖准备，批量图由架构、测试和文档共同消费。项目引用、imports、源码、资源和生成输入变化均进入影响分析，SDK、TFM 与共同构建机制不能按文本相似度判为无影响。日志目录、报告、commit/push 和会话恢复不是重复验收的依据；仅输入、工具、环境与产物一致的确定性证据可以复用。
+Cheap architecture rules remain repository-wide. Prepare compilation metadata and documentation examples from actual dependencies, sharing the batch graph across architecture, tests and documentation. Impact analysis includes project references, imports, source, resources and generated inputs. Text similarity cannot declare SDK/TFM/shared-build changes irrelevant. Log directories, reports, commits/pushes and session recovery do not justify repeated acceptance. Reuse only deterministic evidence with matching inputs, tools, environments and artifacts.
 <!-- /rule-unit: editor-standard-10 -->

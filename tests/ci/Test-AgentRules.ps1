@@ -33,6 +33,10 @@ function Get-RuleLines([string]$value) {
     # Every nonblank line participates, including headings, examples and nested requirements.
     return @($value.Replace("`r`n", "`n").Trim() -split "`n" | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
+function Normalize-RuleLine([string]$value) {
+    # Indentation expresses nested Markdown obligations and code examples; preserve it.
+    return [regex]::Replace($value, '(\]\()[^)]+(\))', '$1<relocated>$2')
+}
 function Test-Translation($unit, [string]$source, [string]$target) {
     $translation = $unit.translation
     if ($translation.language -cne 'en' -or [string]::IsNullOrWhiteSpace($translation.approval) -or
@@ -48,8 +52,8 @@ function Test-Translation($unit, [string]$source, [string]$target) {
     }
     for ($index = 0; $index -lt $sourceLines.Count; $index++) {
         $line = $translation.lines[$index]
-        if ($line.ordinal -ne $index + 1 -or $line.sourceHash -cne (Get-Hash (Normalize-Links $sourceLines[$index])) -or
-            $line.targetHash -cne (Get-Hash (Normalize-Links $targetLines[$index]))) {
+        if ($line.ordinal -ne $index + 1 -or $line.sourceHash -cne (Get-Hash (Normalize-RuleLine $sourceLines[$index])) -or
+            $line.targetHash -cne (Get-Hash (Normalize-RuleLine $targetLines[$index]))) {
             throw "Changed or unmapped translation clause: $($unit.id) line $($index + 1)"
         }
     }
@@ -72,8 +76,18 @@ foreach ($unit in $manifest.units) {
     if ($unit.PSObject.Properties.Name -contains 'approvedAddition') {
         $parts = [regex]::Split($body, '(?m)^<!-- approved-addition -->\r?$')
         if ($parts.Count -ne 2 -or [string]::IsNullOrWhiteSpace($parts[1]) -or
-            [string]::IsNullOrWhiteSpace($unit.approvedAddition.approval) -or
-            (Get-Hash $parts[1].Replace("`r`n", "`n").Trim()) -cne $unit.approvedAddition.hash) {
+            [string]::IsNullOrWhiteSpace($unit.approvedAddition.approval)) {
+            throw "Invalid approved rule addition: $($unit.id)"
+        }
+        if ($unit.approvedAddition.PSObject.Properties.Name -contains 'translation') {
+            $additionOriginal = Read-Source $unit.approvedAddition.translation.source
+            $additionOriginal = [regex]::Match($additionOriginal, $pattern).Groups[1].Value
+            $additionParts = [regex]::Split($additionOriginal, '(?m)^<!-- approved-addition -->\r?$')
+            if ($additionParts.Count -ne 2 -or (Get-Hash $additionParts[1].Replace("`r`n", "`n").Trim()) -cne $unit.approvedAddition.hash) {
+                throw "Invalid approved addition source: $($unit.id)"
+            }
+            Test-Translation @{ id = $unit.id + '/addition'; translation = $unit.approvedAddition.translation } $additionParts[1] $parts[1]
+        } elseif ((Get-Hash $parts[1].Replace("`r`n", "`n").Trim()) -cne $unit.approvedAddition.hash) {
             throw "Invalid approved rule addition: $($unit.id)"
         }
         $preservedBody = $parts[0]
@@ -109,7 +123,7 @@ foreach ($section in [regex]::Matches($original, '(?ms)^## (\d+)\. .*?(?=^## \d+
         foreach ($replacement in $manifest.pathReplacements) { $expected = $expected.Replace($replacement.old, $replacement.current) }
         if ($row.disposition -eq 'preserved') {
             if ($units[$row.unit].PSObject.Properties.Name -contains 'translation') {
-                $mapping = @($units[$row.unit].translation.lines | Where-Object sourceHash -CEQ (Get-Hash (Normalize-Links $expected)))
+                $mapping = @($units[$row.unit].translation.lines | Where-Object sourceHash -CEQ (Get-Hash (Normalize-RuleLine $expected)))
                 if ($mapping.Count -ne 1 -or $row.translatedHash -cne $mapping[0].targetHash) { throw "Rule translation was lost: $id" }
             } elseif (-not (Normalize-Links $bodies[$row.unit]).Contains((Normalize-Links $expected), [StringComparison]::Ordinal)) { throw "Rule was lost: $id" }
         } elseif ($number -ne 8 -or $row.disposition -ne 'superseded-by-approved-plan') { throw "Unapproved replacement: $id" }

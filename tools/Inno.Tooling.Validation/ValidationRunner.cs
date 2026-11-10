@@ -65,12 +65,13 @@ internal static class ValidationRunner
                 status = "Blocked";
                 detail = "Validation was canceled before this required check completed.";
             }
-            else if (check.prerequisites.Any(prerequisite => !results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused"))
-                || (check.context is not null && !(check.kind == "test" && tested.Contains(contextId))
-                    && results.Any(static result => result.status is "Failed" or "Blocked")))
+            else if (check.prerequisites.Any(prerequisite => !results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused")))
             {
                 status = "Blocked";
-                detail = "A required preceding check did not pass; dependent work was not executed.";
+                detail = "Required prerequisites did not pass: " + string.Join(", ", check.prerequisites
+                    .Select(prerequisite => (id: prerequisite, status: results.SingleOrDefault(result => result.id == prerequisite)?.status ?? "Missing"))
+                    .Where(static prerequisite => prerequisite.status is not ("Passed" or "Reused"))
+                    .Select(static prerequisite => prerequisite.id + " (" + prerequisite.status + ")")) + ". Dependent work was not executed.";
             }
             else if (check.reusable && previous is { completed: true } && previous.environment == plan.environment && old is { status: "Passed" or "Reused" }
                 && old.inputIdentity == identity && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))

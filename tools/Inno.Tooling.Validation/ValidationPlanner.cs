@@ -201,10 +201,12 @@ internal static class ValidationPlanner
         }
 
         string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith(".agents/rulebook/", StringComparison.Ordinal)
-            || path == "tests/ci/Test-AgentRules.ps1").Order(StringComparer.Ordinal).ToArray();
-        string[] toolingInputs = inputs.Keys.Where(static path => path.StartsWith("tools/", StringComparison.Ordinal)
-            || path.StartsWith("build/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
-            || path is "global.json" or "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets" or "InnoEngine.sln").ToArray();
+            || path == "tests/ci/Test-AgentRules.ps1").Concat(RuleReviewInputs()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        var toolingOwners = new HashSet<string>(StringComparer.Ordinal);
+        AddToolOwner("tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj");
+        string[] toolingInputs = CapturedInputs(toolingOwners.SelectMany(owner => byPath[owner].inputs)
+            .Concat(inputs.Keys.Where(static path => path is "global.json" or "Directory.Build.props" or "Directory.Build.targets"
+                or "Directory.Solution.targets" or "InnoEngine.sln"))).Order(StringComparer.Ordinal).ToArray();
         var inputSets = projects.ToDictionary(static project => project.path,
             project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)), StringComparer.Ordinal);
         inputSets.Add("tooling", toolingInputs);
@@ -391,6 +393,16 @@ internal static class ValidationPlanner
             int index
         ) => new KeyValuePair<string, int>(context, index + 1))
             .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
+        // Policy and architecture govern compilation; unrelated documentation/contract failures do not.
+        // Cold acceptance is a native preparation prerequisite, not a global stop for managed checks.
+        checks = checks.Select(check => check with
+        {
+            prerequisites = check.prerequisites
+                .Concat(check.kind == "build" ? ["instructions", "architecture"] : Array.Empty<string>())
+                .Concat(extended && check.context is not (null or "managed") && check.kind != "cold-inputs"
+                    ? ["cold-inputs"] : Array.Empty<string>())
+                .Distinct(StringComparer.Ordinal).ToArray()
+        }).ToList();
         ValidationCheck[] execution = checks.OrderBy(check => check.kind == "cold-inputs" ? -1 : check.kind == "release-bundle" ? int.MaxValue
                 : check.context is null ? 0 : phases.GetValueOrDefault(check.context, phases.Count + 1))
             .ThenBy(static check => check.kind switch { "build" => 0, "api" => 1, "wiki" => 2, "test" => 3, _ => 4 }).ToArray();
@@ -405,6 +417,51 @@ internal static class ValidationPlanner
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
+
+        void AddToolOwner(string path)
+        {
+            // A consumer/fixture may execute a prebuilt tool without containing its source project.
+            // Its actual binary closure is still captured by ValidationEnvironment.
+            if (!byPath.TryGetValue(path, out ValidationProject? project) || !toolingOwners.Add(path))
+                return;
+            foreach (string reference in project.references)
+                AddToolOwner(reference);
+        }
+
+        IEnumerable<string> RuleReviewInputs()
+        {
+            const string C_REGISTRY = ".agents/rulebook/coverage.json";
+            if (!inputs.ContainsKey(C_REGISTRY) || inputs[C_REGISTRY] == "missing")
+                yield break;
+            using JsonDocument registry = ReadRegistry();
+            foreach (JsonElement unit in registry.RootElement.GetProperty("units").EnumerateArray())
+            {
+                if (unit.TryGetProperty("translation", out JsonElement translation))
+                    yield return ReviewPath(translation);
+                if (unit.TryGetProperty("approvedAddition", out JsonElement addition)
+                    && addition.TryGetProperty("translation", out translation))
+                    yield return ReviewPath(translation);
+            }
+
+            string ReviewPath(JsonElement translation)
+            {
+                string path = translation.GetProperty("review").GetString()!.Split('#', 2)[0];
+                ValidationInputs.Resolve(root, path);
+                return path;
+            }
+
+            JsonDocument ReadRegistry()
+            {
+                try
+                {
+                    return JsonDocument.Parse(File.ReadAllBytes(ValidationInputs.Resolve(root, C_REGISTRY)));
+                }
+                catch (JsonException failure)
+                {
+                    throw new InvalidDataException("Rule registry is invalid: " + C_REGISTRY, failure);
+                }
+            }
+        }
 
         bool ChangedTestClosure(ValidationProject project)
         {

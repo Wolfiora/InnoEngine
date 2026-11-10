@@ -1,8 +1,8 @@
-# 历史记录
+# Historical records
 
-[记录首页](../README.md) · [当前问题](../open-items.md) · [当前验收](../acceptance/current.md)
+[Records](../README.md) · [Open work](../open-items.md) · [Current acceptance](../acceptance/current.md)
 
-每份记录只证明其明确列出的输入、提交、环境与执行范围；历史通过不能提升为当前通过。原始附件保持字节，未能随 Git 历史取得的旧附件入口由迁移清单单独说明。
+Each record establishes only its stated inputs, commit, environment and execution scope. Historical passes do not certify current inputs. Preserve original attachment bytes; the migration inventory separately identifies historical attachment links unavailable from Git.
 
 - [ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)
 - [ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md](ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
@@ -52,4 +52,4 @@
 - [WEB_HOST_REFACTOR_PLAN.md](WEB_HOST_REFACTOR_PLAN.md)
 - [WEB_PLAYER_ACCEPTANCE_2026_10_01.md](WEB_PLAYER_ACCEPTANCE_2026_10_01.md)
 
-[历史问题记录](issues/README.md)
+[Historical issue records](issues/README.md)

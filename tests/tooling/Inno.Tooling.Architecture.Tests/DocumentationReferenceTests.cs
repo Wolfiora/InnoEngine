@@ -31,6 +31,7 @@ public sealed class DocumentationReferenceTests : IDisposable
         Assert.Empty(inventory.RootElement[0].GetProperty("surfaces").EnumerateArray());
         Assert.True(inventory.RootElement[1].GetProperty("isTest").GetBoolean());
         byte[] original = File.ReadAllBytes(output);
+        Assert.DoesNotContain((byte)'\r', original);
         DocumentationReferences.ExportProjects(["--engine-root", m_root, "--output", output]);
         Assert.Equal(original, File.ReadAllBytes(output));
     }

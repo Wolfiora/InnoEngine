@@ -112,18 +112,26 @@ try {
     }
     [IO.File]::WriteAllText($translationPath, $originalTranslation)
     [IO.File]::WriteAllText($registry, $originalRegistry)
+    $nestedRulePath = Join-Path $fixture '.agents/rulebook/coding.md'
+    $nestedRuleText = [IO.File]::ReadAllText($nestedRulePath)
+    [IO.File]::WriteAllText($nestedRulePath, $nestedRuleText.Replace('  - Types and members', '- Types and members'))
+    $failure = ''
+    try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
+    [IO.File]::WriteAllText($nestedRulePath, $nestedRuleText)
+    if (-not $failure.Contains('Changed or unmapped translation clause')) { throw 'Nested rule indentation lost its provenance protection.' }
     $additionUnit = ($originalRegistry | ConvertFrom-Json).units | Where-Object id -CEQ 'csharp-standard-5'
     $additionPath = Join-Path $fixture $additionUnit.path
     $originalAddition = [IO.File]::ReadAllText($additionPath)
     $loaded = @(& $entry -Rules $additionUnit.id -ShowInstructions) -join "`n"
-    if (-not $loaded.Contains('手写 C# 代码禁止使用 `global::`')) { throw 'Approved addition was not loaded.' }
+    if (-not $loaded.Contains('Handwritten C# must not use `global::`')) { throw 'Approved addition was not loaded.' }
     foreach ($scenario in @('changed-addition', 'missing-addition', 'missing-approval', 'changed-baseline')) {
         [IO.File]::WriteAllText($registry, $originalRegistry)
         [IO.File]::WriteAllText($additionPath, $originalAddition)
         $expected = 'Invalid approved rule addition'
         switch ($scenario) {
             'changed-addition' {
-                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('手写 C# 代码禁止使用', '手写 C# 代码允许使用'))
+                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('Handwritten C# must not use', 'Handwritten C# may use'))
+                $expected = 'Changed or unmapped translation clause'
             }
             'missing-addition' {
                 [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('<!-- approved-addition -->', ''))
@@ -134,8 +142,8 @@ try {
                 [IO.File]::WriteAllText($registry, ($copy | ConvertTo-Json -Depth 50))
             }
             'changed-baseline' {
-                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('- 每个文件显式声明普通 using。', ''))
-                $expected = 'Lost nested requirements, examples or prose'
+                [IO.File]::WriteAllText($additionPath, $originalAddition.Replace('- Explicitly declare ordinary using directives in every file.', ''))
+                $expected = 'Incomplete translation coverage'
             }
         }
         $failure = ''
