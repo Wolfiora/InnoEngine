@@ -21,7 +21,7 @@ Logo 设计：[xdzzyq](https://github.com/XDzzzzzZyq)。PNG、单色字形、ICO
 
 1. 当前原图可见边界为 x=39.32…472.68、y=21.04…490.96。SVG 原稿不改写；仅导出 PNG 时在内存中采用正方形 viewBox `5.376 5.376 501.248 501.248`，使 512px PNG 上下留白为 16px。
 2. 空心版 `logo-edge.svg` 采用已确认预览的四块外轮廓（原坐标 y=16.62…486.55）。每块向内偏移 14 个 SVG 单位，相邻偏移直线相交形成尖角，内轮廓反向绕行；四对内外轮廓共八个 contour。轮廓使用 nonzero 填充规则，四块内部为空；不引入原稿填色面之间的分界线。`logo-edge.svg` 已保存展开后的精确坐标，仅作设计参考，不再作为当前字体源稿。
-3. 扫描全部默认正文、Font Awesome 和补充 CJK 字体的 Unicode cmap。首个共同空闲的 BMP 私用区码点为 **U+E000**，固定映射到 `innoengine`；后续更新保持这个码点并检查冲突。
+3. 扫描全部默认正文和 Font Awesome 字体的 Unicode cmap。首个共同空闲的 BMP 私用区码点为 **U+E000**，固定映射到 `innoengine`；后续更新保持这个码点并检查冲突。
 4. 字体 family 为 `InnoEngine Icons`，style 为 `Regular`，units/em=512，advance width=512，ascender=459，descender=-75，line gap=0。纵向度量参考当前 Font Awesome Solid。
 5. 当前字体消费 `logo-fill-simple.svg` 的四条 polyline；每条按隐式闭合填充。源可见边界为 x=39.48…472.84、y=21.04…490.96；应用 `s=480/469.92`、`x'=256+(x-256)*s`、`y'=432+(21.04-y)*s`。TrueType 取整并去除重合点后为四个同向 contour、24 个点，可见边界 (35,-48)…(477,432)，左侧 bearing=35，advance width=512。细节实心版 `logo-fill.svg` 使用 y=20.88 起点和 60 个点；空心版 `logo-edge.svg` 使用 `s=480/469.93`、`y'=432+(16.62-y)*s` 和八个内外 contour，二者仅作参考。运行时沿用 14px 图标加载尺寸。
 6. 保留 `.notdef` 和 `innoengine` 两个 glyph。字体 designer 为 `xdzzyq`，designer URL 为上述 GitHub 地址；不添加未经提供的授权声明。

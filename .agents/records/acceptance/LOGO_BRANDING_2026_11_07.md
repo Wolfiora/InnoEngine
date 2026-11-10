@@ -2,6 +2,14 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 2026-11-11 移除内置语言补充字体
+
+按用户最新要求，在 `logo`、基线 `8ee4ab383812d9d9c5db25ed66b0d6c1846482ae` 上删除内置 Noto 字体、来源和许可、后端部署条目、自动合并代码及 Context 固定缓冲区。默认只配置英文界面正文与图标，自定义字体不再被自动追加语言字形。既有 `RegisterFontStyle`、游戏 `FontAsset`、`ITextService` 和 `ITextBackend` 保留，语言资源与字体选择由项目负责；没有新增 Core、平台分支或兼容路径。历史验收中的中文覆盖描述仅代表当时输入，不再是当前默认能力。
+
+保留四种样式、不同缩放、Logo／原有图标及 Context 退休断言；补充默认无自动语言字形和自定义字体注册、缺失文件、首次帧后拒绝注册的回归。仅删除随功能移除而失效的补充字体缺失／损坏检查。当前 ImGui 原生项目 93 项普通测试及 1 项独立进程测试全部通过，无跳过；生产与测试闭包正常构建 0 警告、0 错误。首次定向执行在普通测试通过后因临时 SDK JSON 导出格式错误未能发现隔离用例，修正导出后完整重跑，最终结果位于 `artifacts/validation/english-font-native-tests-final`，构建与执行日志为 `artifacts/branding-work/english-font-native-build.log`、`english-font-tests-final.log`。
+
+源码架构、文档链接／归属、受影响后端的编译 API 和 Wiki 契约均通过，日志为 `english-font-source.log`、`english-font-docs.log`、`english-font-api.log`、`english-font-wiki.log`。实际后端和测试部署目录中已无补充字体，剩余 7 份 TTF 与正式源文件哈希逐项相同；当前资源、生产源码、测试及使用文档无已删除功能引用。统一计划 `artifacts/validation/english-font-plan/plan.json` 因已删除的外部字体资源不再属于当前 SDK 项而保守选择 324 项必需检查，未修改或削弱选择规则。本地完成上述受影响 owner 验证，没有将其算作完整计划通过；按用户明确要求不等待长时间远端 CI，Windows/macOS 完整计划、Release 与发行验收仍由 PR 的后续 CI 提供证据。
+
 ## 2026-11-10 字体迁移与合并后 CI 复查
 
 按用户要求在 `logo` 分支先快进到已合并的 master `9d336f486076c8fa9e903c9ce7f1b5b6a414584f`，先完成字体迁移，再修复 CI。8 份字体及已有来源和许可原样迁入 `assets/fonts`，由 ImGui SDL3 后端的 MSBuild 链接维持产品内 `BuiltIn/Fonts`、`BuiltIn/Icons` 路径；源码与实际构建部署的 8 份字体哈希逐项相同。资源仍由后端拥有，没有 Core、平台中立接口或源码目录 fallback。
