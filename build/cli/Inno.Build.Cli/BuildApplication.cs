@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Tooling.Architecture;
 using Inno.Tooling.Validation;
+using DocumentationCommand = Inno.Tooling.Documentation.DocumentationCommand;
 
 namespace Inno.Build.Cli;
 
