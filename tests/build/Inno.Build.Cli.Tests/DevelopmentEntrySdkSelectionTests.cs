@@ -4,10 +4,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Cli;
-using Inno.Build.Toolchains;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Cli.Tests;
 
 public sealed class DevelopmentEntrySdkSelectionTests
 {

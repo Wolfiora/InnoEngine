@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 using Inno.Build.Cli;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Cli.Tests;
 
-[Collection("Build pipeline serialization")]
 public sealed class ProjectCommandSourceTests
 {
     [Fact]
@@ -23,7 +22,7 @@ public sealed class ProjectCommandSourceTests
         {
             Console.SetError(errors);
             int result = await BuildApplication.Run(
-                ["scripts", "--engine-root", owner, "--tools-target", "unresolved-tools",
+                ["scripts", "--engine-root", owner,
                     "--project", project, "--output", output],
                 CancellationToken.None);
 

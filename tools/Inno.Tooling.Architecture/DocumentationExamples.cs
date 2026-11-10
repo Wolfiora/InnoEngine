@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -132,7 +133,9 @@ public static class DocumentationExamples
                 compilation = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(trees).WithAssemblyName("DocumentationExample")
                     .WithOptions(compilation.Options.WithOutputKind(output));
                 errors.AddRange(compilation.GetDiagnostics(cancellationToken)
-                    .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error).Select(static diagnostic => diagnostic.ToString()));
+                    .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
+                    .Select(static diagnostic => diagnostic.Id + ": " + diagnostic.GetMessage(CultureInfo.InvariantCulture)
+                        + " (" + diagnostic.Location.GetLineSpan() + ")"));
                 status = errors.Count == 0 ? "Passed" : "Failed";
             }
             catch (Exception failure) when (failure is IOException or InvalidDataException or InvalidOperationException or JsonException)

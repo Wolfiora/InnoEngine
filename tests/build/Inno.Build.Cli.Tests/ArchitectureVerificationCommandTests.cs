@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 using Xunit;
 using Inno.Build.Cli;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Cli.Tests;
 
-[Collection("Build pipeline serialization")]
 public sealed class ArchitectureVerificationCommandTests
 {
     [Fact]

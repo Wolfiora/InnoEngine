@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Inno.Build.Cli;
 using Xunit;
 
-namespace Inno.Build.Tests;
+namespace Inno.Build.Cli.Tests;
 
 public sealed class DevelopmentEntryCommandTests
 {

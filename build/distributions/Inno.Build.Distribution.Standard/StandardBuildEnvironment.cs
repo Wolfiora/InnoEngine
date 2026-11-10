@@ -39,10 +39,31 @@ public static class StandardBuildEnvironment
         string? dotnetHost = null
     ) {
         BuildHostDescriptor buildHost = StandardBuildHosts.Capture();
-        string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-            ?? CurrentRuntimeHost("dotnet" + buildHost.services.executableExtension);
-        host = ToolchainEnvironment.ResolveExecutable(host);
+        string host = ResolveManagedHost(dotnetHost);
         return new BuildCompositionContext(host, applicationDirectory, buildHost, toolsTarget);
+    }
+
+    /// <summary>
+    /// Resolves the managed SDK executable without selecting a native tool target or preparing a product.
+    /// </summary>
+    /// <param name="dotnetHost">
+    /// Explicit executable, or null to use DOTNET_HOST_PATH and then the currently loaded runtime's installation.
+    /// Normal executable discovery is used only when there is no shared runtime installation.
+    /// </param>
+    /// <returns>
+    /// The absolute existing managed SDK executable selected for this operation.
+    /// </returns>
+    /// <exception cref="FileNotFoundException">
+    /// The selected SDK executable is unavailable.
+    /// </exception>
+    /// <exception cref="PlatformNotSupportedException">
+    /// No standard execution host is registered for this system and processor.
+    /// </exception>
+    public static string ResolveManagedHost(string? dotnetHost = null)
+    {
+        string host = dotnetHost ?? Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
+            ?? CurrentRuntimeHost("dotnet" + StandardBuildHosts.Capture().services.executableExtension);
+        return ToolchainEnvironment.ResolveExecutable(host);
     }
 
     private static string CurrentRuntimeHost(string executable)

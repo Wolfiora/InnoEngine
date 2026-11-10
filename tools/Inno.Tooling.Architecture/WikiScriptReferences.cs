@@ -28,7 +28,7 @@ internal sealed class WikiScriptReferences
     internal IReadOnlyList<MetadataReference> GetReferences(bool editor)
     {
         if (m_runtime is null || (editor && m_editor is null))
-            throw new InvalidOperationException("Logical script examples require explicit current --wiki-runtime-reference and, for Editor scripts, --wiki-editor-reference inputs.");
+            throw new InvalidOperationException("Logical script examples require explicit current Inno.ScriptApi.Runtime references and, for Editor scripts, Inno.ScriptApi.Editor references.");
         return editor ? [m_runtime, m_editor!] : [m_runtime];
     }
 
