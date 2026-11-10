@@ -156,3 +156,15 @@ Docs commit 41e0ee4 separates captured API source provenance from a new document
 ## Task heading ranking
 
 The Input task journey exposed a ranking defect: omitting punctuation and the word "and" from a task title placed an assembly overview and a large API index ahead of the task itself. Ranking now compares normalized heading terms and removes the unconditional project-page bonus. Exact symbol, project and alias paths remain; each hit explains its actual match. All 31 existing documentation tests passed. The new fixture first failed because it overwrote its shared ownership heading; retaining that necessary fixture contract made its focused retry pass. Both results are preserved. Actual prepared-site query acceptance follows this committed implementation; no engine or Native preparation is added to reads.
+
+## Input, Storage and Audio content checkpoints
+
+Docs commit bf2a8b6 maps sixteen additional baseline pages across Input, Storage and Audio. Their 744 exact declarations retain original identifiers and signature hashes. Real Runtime-script examples passed for frame input, complete-value storage, audio playback and mixer configuration. The combined site has 3,648 pages and 8,230 bound declarations, all passing canonical source/rendered projection. There are 25 project entries out of 252; this is not complete engine coverage. Required cutover, source certification and remote pipeline acceptance remain open.
+
+Five prepared Input task searches all returned the task first, with a 788.3154 ms median including process startup and a 4,250-byte five-result response. Raw samples remain in Docs INPUT_QUERY_2026_11_11.json. The Storage/Audio site build took 58.65 s including 35.65 s Pagefind work; this is separate from local read-only queries. Desktop/mobile/tablet inspections retained visible use contracts and independently scrolling signatures.
+
+## Parsed-page and query identity separation
+
+The former full query-source identity also keyed parsed pages, so a ranking-only edit reparsed every Markdown file. Page models now have a distinct ownership file and parser identity. A hash-verified older query manifest can supply page payloads only when parser, content and payload identities match. Current catalog validation and index construction still run; ordinary OpenAsync rejects incompatible query or parser generations. No compatibility forwarding API was added.
+
+All 32 existing query tests passed. Both new old-generation cases initially failed because the manually constructed fixture omitted its generation lease file. Adding the fixture's own lease retained the exact invalid-schema assertions; both focused cases passed. They verify zero parsing/no payload rewrite for a query-only change, fresh parsing for a parser change, and a usable current snapshot after preparation. First-failure and corrected TRX files remain in the acceptance owner. CLI compilation and real catalog refresh are recorded with the committed implementation separately.

@@ -23,6 +23,9 @@ public static class DocumentationStore
     // Snapshot format compatibility is a parser/index protocol, not a compilation artifact identity.
     // MVID includes build provenance and can differ between adapters compiling identical parser sources.
     internal static string schema { get; } = CreateSchemaIdentity();
+    private static string parserSchema { get; } = CreateSchemaIdentity(
+        "DocumentationMarkdown.cs", "DocumentationPage.cs", "DocumentationCodeBlockInfo.cs",
+        "DocumentationExampleContext.cs", "Inno.Tooling.Documentation.csproj");
 
     /// <summary>
     /// Explicitly scans a Docs checkout and publishes a consistent generation using reusable parsed pages.
@@ -41,6 +44,7 @@ public static class DocumentationStore
     /// </param>
     /// <returns>
     /// The published snapshot identity and the number of parsed and reused pages; source API remains unverified.
+    /// Query-only changes rebuild the index while reusing pages whose parser, source and payload identities match.
     /// </returns>
     /// <exception cref="IOException">
     /// Inputs change during preparation, paths escape ownership, or a reference, contract or inclusion is invalid.
@@ -79,7 +83,7 @@ public static class DocumentationStore
             throw new InvalidDataException("Project manifest does not match the engine binding.");
         DocumentationProject[] projects = Deserialize<DocumentationProject[]>(projectBytes);
         DocumentationManifest? previous = TryReadCurrent(output);
-        var reusable = previous?.schema == schema
+        var reusable = previous?.parserSchema == parserSchema
             ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
             : new Dictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
         var pages = new List<DocumentationPage>();
@@ -91,7 +95,7 @@ public static class DocumentationStore
             cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
             string text = File.ReadAllText(path);
-            string key = DocumentationMarkdown.Hash(schema + "\n" + relative + "\n" + text);
+            string key = DocumentationMarkdown.Hash(parserSchema + "\n" + relative + "\n" + text);
             string directory = Path.Combine(output, "pages", key);
             string payload = PathBoundary.RequireUnlinkedPath(output, Path.Combine(directory, "page.json"));
             string lease = Path.Combine(output, "leases", key + ".lock");
@@ -145,7 +149,7 @@ public static class DocumentationStore
         })).ToArray();
         var symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
             page.metadata.owners.Single(), page.metadata.apiSurface!, symbol.id, page.metadata.uid, symbol.anchor))).ToArray();
-        var manifest = new DocumentationManifest("", schema, binding, entries, projects, search, symbols);
+        var manifest = new DocumentationManifest("", schema, parserSchema, binding, entries, projects, search, symbols);
         string identity = DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest, json));
         manifest = manifest with { identity = identity };
         string generation = Path.Combine(output, "generations", identity);
@@ -257,12 +261,13 @@ public static class DocumentationStore
         => PathBoundary.EnumerateFiles(content).Where(static path => path.EndsWith(".md", StringComparison.Ordinal))
             .OrderBy(path => Path.GetRelativePath(content, path).Replace('\\', '/'), StringComparer.Ordinal).ToArray();
 
-    private static string CreateSchemaIdentity()
+    private static string CreateSchemaIdentity(params string[] selectedInputs)
     {
         var assembly = typeof(DocumentationStore).Assembly;
         string[] sources = assembly.GetManifestResourceNames().Where(static name => name.StartsWith("DocumentationSource/", StringComparison.Ordinal))
+            .Where(name => selectedInputs.Length == 0 || selectedInputs.Contains(name["DocumentationSource/".Length..], StringComparer.Ordinal))
             .Order(StringComparer.Ordinal).ToArray();
-        if (sources.Length == 0)
+        if (sources.Length == 0 || (selectedInputs.Length != 0 && sources.Length != selectedInputs.Length))
             throw new InvalidDataException("Documentation tooling lacks its authored query protocol inputs.");
         var inputs = new List<string>();
         foreach (string source in sources)
@@ -277,11 +282,13 @@ public static class DocumentationStore
 
     private static DocumentationManifest ReadManifest(
         string output,
-        string identity
+        string identity,
+        bool requireCurrentSchema = true
     ) {
         string path = PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "generations", identity, "manifest.json"));
         DocumentationManifest manifest = Deserialize<DocumentationManifest>(File.ReadAllBytes(path));
-        if (manifest.identity != identity || manifest.schema != schema
+        if (manifest.identity != identity
+            || (requireCurrentSchema && (manifest.schema != schema || manifest.parserSchema != parserSchema))
             || DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest with { identity = "" }, json)) != identity)
             throw new InvalidDataException("Documentation snapshot integrity or schema mismatch; explicitly rebuild its index.");
         return manifest;
@@ -296,7 +303,9 @@ public static class DocumentationStore
                 return null;
             string identity = Deserialize<string>(File.ReadAllBytes(pointer));
             RequireHash(identity, "snapshot");
-            return ReadManifest(output, identity);
+            // A verified older query generation can still supply matching immutable parsed-page payloads.
+            // It is never exposed through OpenAsync until the current catalog and index have been rebuilt.
+            return ReadManifest(output, identity, requireCurrentSchema: false);
         }
         catch (JsonException) { return null; }
         catch (InvalidDataException) { return null; }

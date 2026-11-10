@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -197,6 +198,40 @@ public sealed class DocumentationSnapshotTests : IDisposable
         DocumentationResult confirmed = await DocumentationStore.IndexAsync(m_root, source, cache, cancellation.Token);
         Assert.Equal(initial.snapshot, confirmed.snapshot);
         Assert.Equal(timestamp, File.GetLastWriteTimeUtc(manifest));
+    }
+
+    [Theory]
+    [InlineData(false, "parsed 0, reused 2")]
+    [InlineData(true, "parsed 2, reused 0")]
+    public async Task QueryChangesReuseParsedPagesButParserChangesRequireFreshParsing(
+        bool changeParser,
+        string expectedWork
+    ) {
+        DocumentationResult initial = await IndexAsync();
+        string manifestPath = Path.Combine(cache, "generations", initial.snapshot, "manifest.json");
+        JsonNode manifest = JsonNode.Parse(File.ReadAllText(manifestPath))!;
+        manifest["schema"] = "prior-query-implementation";
+        if (changeParser)
+            manifest["parserSchema"] = "prior-parser-implementation";
+        manifest["identity"] = "";
+        string previousIdentity = Hash(JsonSerializer.SerializeToUtf8Bytes(manifest));
+        manifest["identity"] = previousIdentity;
+        string previousDirectory = Path.Combine(cache, "generations", previousIdentity);
+        Directory.CreateDirectory(previousDirectory);
+        File.WriteAllBytes(Path.Combine(previousDirectory, "manifest.json"), JsonSerializer.SerializeToUtf8Bytes(manifest));
+        File.WriteAllBytes(Path.Combine(cache, "leases", previousIdentity + ".lock"), []);
+        File.WriteAllBytes(Path.Combine(cache, "current.json"), JsonSerializer.SerializeToUtf8Bytes(previousIdentity));
+        string[] payloads = Directory.GetFiles(Path.Combine(cache, "pages"), "page.json", SearchOption.AllDirectories);
+        var timestamps = payloads.ToDictionary(static path => path, File.GetLastWriteTimeUtc, StringComparer.Ordinal);
+
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationStore.OpenAsync(cache));
+        DocumentationResult refreshed = await IndexAsync();
+        Assert.Contains(expectedWork, refreshed.message);
+        Assert.Equal(initial.snapshot, refreshed.snapshot);
+        if (!changeParser)
+            Assert.All(payloads, path => Assert.Equal(timestamps[path], File.GetLastWriteTimeUtc(path)));
+        using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
+        Assert.Equal("Found", (await current.QueryAsync(new("read", "probe"))).status);
     }
 
     [Fact]
