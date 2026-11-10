@@ -311,7 +311,7 @@ Player build 可以比 Editor 更严格：runtime closure 中 required reference
 - 新 source 使用不同 persistent ID 时就是新 Asset，不按文件名或路径偷偷接管旧引用。
 - 路径只用于定位 source；rename/move 后引用仍由 persistent ID 成立。
 
-当前 `AssetPipeline.Delete` 删除源与 `.imeta`，并在 `Library` 保留引用 tombstone；因此同时丢弃 Library 后，不能把“仍可恢复原 persistent ID”当作已经实现的保证。需要恢复原身份时应保留原 source 与 `.imeta`；新 source 不得按同名路径接管。独立的 durable tombstone 改进要求保留于 [未完成项](../../.agents/records/open-items.md#持久删除身份的既有缺口)，本次文档整理不修改删除行为。
+当前 `AssetPipeline.Delete` 删除源与 `.imeta`，并在 `Library` 保留引用 tombstone；因此同时丢弃 Library 后，不能把“仍可恢复原 persistent ID”当作已经实现的保证。需要恢复原身份时应保留原 source 与 `.imeta`；新 source 不得按同名路径接管。独立的 durable tombstone 改进要求保留于 [未完成项](../../.agents/records/open-items.md#durable-deletion-identity)，本次文档整理不修改删除行为。
 
 ## 七、恢复事务
 

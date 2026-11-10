@@ -3914,8 +3914,8 @@
       "sha256": "e114c0f1170e1e81af1a285fbc91b18cb0aee0ceb6ff1334ae80f0eb6a308bec",
       "bytes": 1001,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "Wolfiora/InnoEngine.Docs/content/en/getting-started/first-editor-session.md"
     },
     {
       "source": "docs/getting-started/first-project.md",
@@ -3930,8 +3930,8 @@
       "sha256": "643b77f4a157e6396ceff12674fbd11a60f75bae2f026d46fd6492bd12270678",
       "bytes": 882,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "Wolfiora/InnoEngine.Docs/content/en/getting-started/prerequisites.md"
     },
     {
       "source": "docs/modules/README.md",
@@ -4506,8 +4506,8 @@
       "sha256": "47c501202e4d171b769e9485d40ab5a87cf3c15dd5358350350f2af34cb4f333",
       "bytes": 8487,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "Wolfiora/InnoEngine.Docs/content/en/api/projects/inno-editor-panel-logging.md"
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Panel.SceneView.md",
