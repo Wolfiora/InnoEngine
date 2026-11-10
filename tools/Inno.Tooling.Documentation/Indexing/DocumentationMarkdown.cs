@@ -60,6 +60,14 @@ internal static class DocumentationMarkdown
         if (sections.Select(static section => section.anchor).Distinct(StringComparer.Ordinal).Count() != sections.Count)
             throw new InvalidDataException("Duplicate section identity: " + path);
         string[] html = document.Descendants<HtmlBlock>().Select(block => text[block.Span.Start..(block.Span.End + 1)]).ToArray();
+        foreach (string fragment in html.Concat(document.Descendants<HtmlInline>().Select(static inline => inline.Tag)))
+        {
+            // Ordinary documentation has no executable HTML surface. Layout belongs to the website theme.
+            string remaining = Regex.Replace(fragment, @"<!--(?:(?!-->)[\s\S])*-->", string.Empty);
+            remaining = Regex.Replace(remaining, "<a id=\"api-[a-f0-9]+\">|</a>", string.Empty);
+            if (!string.IsNullOrWhiteSpace(remaining))
+                throw new InvalidDataException("Documentation permits only comments and explicit API anchors as HTML: " + path);
+        }
         var rows = new Dictionary<string, TableRow>(StringComparer.Ordinal);
         foreach (TableRow row in document.Descendants<TableRow>())
         foreach (Match anchor in Regex.Matches(text[row.Span.Start..(row.Span.End + 1)], "id=\"(?<id>api-[a-f0-9]+)\""))

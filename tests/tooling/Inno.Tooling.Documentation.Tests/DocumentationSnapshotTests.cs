@@ -84,6 +84,21 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Theory]
+    [InlineData("<script>alert('unexpected')</script>")]
+    [InlineData("A <img src=x onerror=alert(1)> side effect.")]
+    [InlineData("<a id=\"api-deadbeef\" onclick=\"alert(1)\"></a>")]
+    [InlineData("<!-- harmless comment --><iframe src=\"https://example.com\"></iframe>")]
+    public async Task ExecutableOrPresentationHtmlCannotReplaceThePublishedSnapshot(string html)
+    {
+        DocumentationResult initial = await IndexAsync();
+        Write("content/en/unsafe.md", Page("unsafe", "Unsafe", html));
+        await Assert.ThrowsAsync<InvalidDataException>(() => IndexAsync());
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        Assert.Equal(initial.snapshot, snapshot.identity);
+        Assert.Equal("Missing", (await snapshot.QueryAsync(new("read", "unsafe"))).status);
+    }
+
+    [Theory]
     [InlineData("[Missing](absent.md)", typeof(InvalidDataException))]
     [InlineData("[Missing](probe.md#absent)", typeof(InvalidDataException))]
     [InlineData("[Escape](../../../outside.md)", typeof(IOException))]
