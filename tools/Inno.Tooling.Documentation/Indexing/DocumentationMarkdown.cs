@@ -73,6 +73,7 @@ internal static class DocumentationMarkdown
         foreach (Match anchor in Regex.Matches(text[row.Span.Start..(row.Span.End + 1)], "id=\"(?<id>api-[a-f0-9]+)\""))
             if (!rows.TryAdd(anchor.Groups["id"].Value, row))
                 throw new InvalidDataException("Duplicate API anchor: " + path);
+        FencedCodeBlock[] fences = document.Descendants<FencedCodeBlock>().ToArray();
         var symbols = new List<DocumentationSymbol>();
         foreach (string block in html)
         foreach (Match marker in Regex.Matches(block, @"<!-- api: (?<id>\S+) (?<hash>[a-f0-9]{64}) -->"))
@@ -85,16 +86,24 @@ internal static class DocumentationMarkdown
             string declaration = row is null ? text[section.start..section.end] : text[row.Span.Start..(row.Span.End + 1)];
             string[] code = row is not null
                 ? row.Descendants<CodeInline>().Select(static item => item.Content).ToArray()
-                : document.Descendants<FencedCodeBlock>()
+                : fences
                     .Where(item => item.Span.Start >= section.start && item.Span.End < section.end && item.Info == "csharp")
                     .Select(static item => item.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n')).ToArray();
             symbols.Add(new(id, marker.Groups["hash"].Value, anchor, section.anchor, declaration, code));
         }
         string[] includes = html.SelectMany(block => Regex.Matches(block, @"<!-- api-include: (?<path>[^\r\n]+?) -->")
             .Select(static marker => marker.Groups["path"].Value)).ToArray();
+        DocumentationCodeBlockInfo[] codeBlocks = fences.Select(block =>
+        {
+            string code = block.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n');
+            string identity = Hash(code);
+            string? section = sections.LastOrDefault(candidate => candidate.start <= block.Span.Start)?.anchor;
+            return new DocumentationCodeBlockInfo(block.Info ?? "", code, identity, block.Line + 1, section,
+                symbols.Where(symbol => symbol.signatureIdentity == identity).Select(static symbol => symbol.id).ToArray());
+        }).ToArray();
         return new(path, Hash(text), HeadingText(headings.Single(static heading => heading.Level == 1)),
             text, facts, sections, symbols, includes, document.Descendants<LinkInline>()
-                .Where(static link => link.Url is not null).Select(static link => link.Url!).Distinct(StringComparer.Ordinal).ToArray());
+                .Where(static link => link.Url is not null).Select(static link => link.Url!).Distinct(StringComparer.Ordinal).ToArray(), codeBlocks);
 
         string HeadingText(HeadingBlock heading)
             => Markdown.ToPlainText(text[heading.Span.Start..(heading.Span.End + 1)], S_PIPELINE).Trim();

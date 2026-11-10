@@ -123,3 +123,10 @@ The canonical Markdown boundary now rejects executable and presentation HTML in 
 
 Search terms now contain each section's own content and owner metadata instead of duplicating every symbol on its type page into every section. Exact XML identifiers retain their direct symbol lookup. The focused regression passed (documentation-section-search.trx), proving that a member-name query does not return unrelated sibling sections. Large SDL reference measurements follow separately; this change does not certify the remaining content migration.
 
+
+## Native documentation migration checkpoint
+
+Docs commit c55dcb9cb9f0244dabed5de1a329e2a07f0f200e maps 17 baseline SDL3/LibraryLoading pages without removing any of their 6,370 ordinal symbol identities or changing signatures. English shared contracts, original SDL license bytes, exact source XML and member-family pages preserve ownership and ABI limits. The combined 3,357-page site passed all rendered-anchor and bound-declaration comparisons (6,412 symbols including Identity), eight reference-writer tests and fourteen link/projection tests. Source API remains Unverified; other project coverage, platform execution, pairing, publication and legacy cutover are still required.
+
+Five prepared Console search observations had a 667.1395 ms median including CLI startup, returning 4,611 bytes and the correct task first. The first large index and catalog publication took 67.329 seconds for 3,044 parsed plus 313 reused pages. These are current observations, not a controlled pre-migration comparison. No Native preparation ran for reference/site work. The latest measured C-drive free space was 41.69 GiB. A previously rejected cleanup of owned example bin/obj remains unexecuted; no alternate deletion mechanism was attempted.
+

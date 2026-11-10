@@ -38,6 +38,10 @@ namespace Inno.Tooling.Documentation;
 /// <param name="includes">
 /// Source-relative API includes, validated for ownership, existence and cycles.
 /// </param>
+/// <param name="codeBlocks">
+/// Canonical fenced code for example selection and declaration comparison, without reparsing Markdown.
+/// Compilation contexts and execution evidence belong to the validation caller.
+/// </param>
 public sealed record DocumentationPageInfo(
     string id,
     string path,
@@ -49,5 +53,6 @@ public sealed record DocumentationPageInfo(
     IReadOnlyDictionary<string, int> sections,
     IReadOnlyDictionary<string, DocumentationSymbolInfo> symbols,
     IReadOnlyList<string> contracts,
-    IReadOnlyList<string> includes
+    IReadOnlyList<string> includes,
+    IReadOnlyList<DocumentationCodeBlockInfo> codeBlocks
 );

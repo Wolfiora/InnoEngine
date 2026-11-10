@@ -20,7 +20,8 @@ internal sealed record DocumentationPage(
     IReadOnlyList<DocumentationSection> sections,
     IReadOnlyList<DocumentationSymbol> symbols,
     IReadOnlyList<string> includes,
-    IReadOnlyList<string> links
+    IReadOnlyList<string> links,
+    IReadOnlyList<DocumentationCodeBlockInfo> codeBlocks
 );
 
 internal sealed record DocumentationSection(

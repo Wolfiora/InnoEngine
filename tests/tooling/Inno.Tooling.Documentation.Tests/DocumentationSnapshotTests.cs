@@ -66,16 +66,26 @@ public sealed class DocumentationSnapshotTests : IDisposable
     [Fact]
     public async Task CatalogPreservesSectionDeclarationsWithoutTreatingExamplesAsCertification()
     {
+        const string C_DECLARATION = "public string? Read(string key = \"default\");";
         Write("content/en/api.md", Page("probe-api", "Probe API",
-            "## Read\n\n<!-- api: " + C_SYMBOL + " " + new string('a', 64)
-            + " -->\n\n```csharp\npublic string? Read(string key = \"default\");\n```\n\nThe caller retains ownership.\n"
+            "## Read\n\n<!-- api: " + C_SYMBOL + " " + Hash(Encoding.UTF8.GetBytes(C_DECLARATION))
+            + " -->\n\n```csharp\n" + C_DECLARATION + "\n```\n\nThe caller retains ownership.\n"
             + "\n## Other task\n\n```csharp\nUnrelatedExample();\n```\n",
             "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\ncontracts: [probe#ownership]\n"));
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        DocumentationSymbolInfo symbol = Assert.Single(catalog.pages, page => page.id == "probe-api").symbols[C_SYMBOL];
+        DocumentationPageInfo page = Assert.Single(catalog.pages, page => page.id == "probe-api");
+        DocumentationSymbolInfo symbol = page.symbols[C_SYMBOL];
         Assert.Equal("public string? Read(string key = \"default\");", Assert.Single(symbol.code));
+        Assert.Equal(2, page.codeBlocks.Count);
+        Assert.Equal(C_SYMBOL, Assert.Single(page.codeBlocks[0].declarationSymbols));
+        Assert.Equal(C_DECLARATION, page.codeBlocks[0].text);
+        Assert.Empty(page.codeBlocks[1].declarationSymbols);
+        Assert.Equal("UnrelatedExample();", page.codeBlocks[1].text);
+        Assert.Equal("other-task", page.codeBlocks[1].section);
+        Assert.Equal("csharp", page.codeBlocks[1].language);
+        Assert.True(page.codeBlocks[1].line > page.codeBlocks[0].line);
         Assert.Equal("Unverified", catalog.sourceApiStatus);
         DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"));
         Assert.Contains("caller retains ownership", Assert.Single(result.hits).text);

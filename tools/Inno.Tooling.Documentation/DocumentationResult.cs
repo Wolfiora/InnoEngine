@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Inno.Tooling.Documentation;
 
@@ -35,4 +36,12 @@ public sealed record DocumentationResult(
     IReadOnlyList<DocumentationHit> hits,
     IReadOnlyList<DocumentationContinuation> continuations,
     DocumentationRequest? nextRequest = null
-);
+) {
+    /// <summary>
+    /// Gets measured preparation phases in milliseconds, or null for an ordinary read.
+    /// Total and PagePreparation are inclusive; MarkdownParsing and OwnerRegistration are subsets
+    /// of PagePreparation. These observations are not performance or execution certificates.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, double>? timingsMilliseconds { get; init; }
+}

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -52,6 +54,11 @@ public static class DocumentationStore
         string cacheRoot,
         CancellationToken cancellationToken = default
     ) {
+        var total = Stopwatch.StartNew();
+        var phase = Stopwatch.StartNew();
+        var timings = new Dictionary<string, double>(StringComparer.Ordinal);
+        double parsingMilliseconds = 0;
+        double registrationMilliseconds = 0;
         string root = Path.GetFullPath(documentationRoot);
         string content = PathBoundary.RequireUnlinkedPath(root, Path.Combine(root, "content", "en"));
         string output = PathBoundary.RequireUnlinkedPath(Path.GetFullPath(workspaceRoot), Path.GetFullPath(cacheRoot));
@@ -78,6 +85,7 @@ public static class DocumentationStore
         var pages = new List<DocumentationPage>();
         var entries = new SortedDictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
         int parsed = 0;
+        RecordPhase("SetupAndLockWait");
         foreach (string path in EnumerateContent(content))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -100,18 +108,25 @@ public static class DocumentationStore
             }
             if (page is null)
             {
+                long started = Stopwatch.GetTimestamp();
                 page = DocumentationMarkdown.Parse(relative, text);
+                parsingMilliseconds += Stopwatch.GetElapsedTime(started).TotalMilliseconds;
                 bytes = JsonSerializer.SerializeToUtf8Bytes(page, json);
                 cancellationToken.ThrowIfCancellationRequested();
                 AtomicFile.WriteAllBytes(payload, bytes);
                 parsed++;
             }
+            long registrationStarted = Stopwatch.GetTimestamp();
             publisher.Record(directory, lease, [], null, null);
+            registrationMilliseconds += Stopwatch.GetElapsedTime(registrationStarted).TotalMilliseconds;
             pages.Add(page);
             entries.Add(relative, new(page.metadata.uid, key, DocumentationMarkdown.Hash(bytes!), page.metadata));
         }
         if (pages.Count == 0)
             throw new InvalidDataException("The selected Docs checkout has no content. Prepare a documentation source before querying.");
+        RecordPhase("PagePreparation");
+        timings.Add("MarkdownParsing", parsingMilliseconds);
+        timings.Add("OwnerRegistration", registrationMilliseconds);
         // The source manifest supplies project facts; authored page metadata supplies each canonical entry.
         projects = projects.Select(project => project with
         {
@@ -119,6 +134,7 @@ public static class DocumentationStore
                 .Select(static page => page.metadata.uid).SingleOrDefault()
         }).ToArray();
         DocumentationCatalog.Validate(root, pages, projects);
+        RecordPhase("CatalogValidation");
         var search = pages.SelectMany(page => page.sections.Select(section =>
         {
             string body = DocumentationMarkdown.OwnText(page, section);
@@ -134,6 +150,7 @@ public static class DocumentationStore
         manifest = manifest with { identity = identity };
         string generation = Path.Combine(output, "generations", identity);
         string generationLease = Path.Combine(output, "leases", identity + ".lock");
+        RecordPhase("IndexProjection");
         // Recheck actual contents, including additions and same-length timestamp-preserving edits.
         string[] current = EnumerateContent(content).Select(path => Path.GetRelativePath(root, path).Replace('\\', '/')).ToArray();
         if (!current.SequenceEqual(entries.Keys, StringComparer.Ordinal)
@@ -142,15 +159,32 @@ public static class DocumentationStore
             || !File.ReadAllBytes(projectPath).SequenceEqual(projectBytes))
             throw new IOException("Documentation inputs changed during preparation. The previous snapshot remains selected; refresh a stable source.");
         cancellationToken.ThrowIfCancellationRequested();
+        RecordPhase("FreshnessValidation");
         if (previous?.identity == identity)
-            return new("Indexed", identity, "Unverified", $"Confirmed {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. Existing generation retained without rewriting its manifest.", [], []);
+            return Finish($"Confirmed {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. Existing generation retained without rewriting its manifest.");
         using FileLease publishing = await FileLease.AcquireAsync(generationLease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         AtomicFile.WriteAllBytes(Path.Combine(generation, "manifest.json"), JsonSerializer.SerializeToUtf8Bytes(manifest, json));
         publisher.Record(generation, generationLease, entries.Values.Select(page => Path.Combine(output, "pages", page.key)).ToArray(),
             "documentation", null, cancellationToken);
         // Cancellation is observed before this commit point; selection cannot expose a partial generation.
         AtomicFile.WriteAllBytes(Path.Combine(output, "current.json"), JsonSerializer.SerializeToUtf8Bytes(identity));
-        return new("Indexed", identity, "Unverified", $"Published {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. No source API verification was performed.", [], []);
+        return Finish($"Published {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. No source API verification was performed.");
+
+        void RecordPhase(string name)
+        {
+            timings.Add(name, phase.Elapsed.TotalMilliseconds);
+            phase.Restart();
+        }
+
+        DocumentationResult Finish(string message)
+        {
+            RecordPhase("Publication");
+            timings.Add("Total", total.Elapsed.TotalMilliseconds);
+            return new("Indexed", identity, "Unverified", message, [], [])
+            {
+                timingsMilliseconds = new ReadOnlyDictionary<string, double>(timings)
+            };
+        }
     }
 
     /// <summary>

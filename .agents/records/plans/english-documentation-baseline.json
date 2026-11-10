@@ -2538,8 +2538,9 @@
       "sha256": "b187584c12e091ceea33dea4e578a3d0f184a680b2e28b93cc9d1b93399026a3",
       "bytes": 11096,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Interop/README.md",
@@ -2842,128 +2843,144 @@
       "sha256": "dfdfd197224bf916c077c31bc1043a3236e7f7286c16f106e0de877c4b9cd805",
       "bytes": 197236,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-02.md",
       "sha256": "becf65cd88a3139f890c2cd2ec3beb9cd0fccb748d7fdf4088aa93439d29400f",
       "bytes": 218893,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-03.md",
       "sha256": "cb7dd418bb900d62f3515a2ce35481855221678f3f2505870be6a2bc94c922c8",
       "bytes": 202723,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-04.md",
       "sha256": "62f21c0b5cfdabe416e85022e62cbcdd277580506c42724a91a5915c6f90b588",
       "bytes": 213584,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-05.md",
       "sha256": "c0d89a425316f3d2a52377cfe918f2db0a452736b12b17bd51ce8b48984cae4e",
       "bytes": 224973,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-06.md",
       "sha256": "5ceb542d434126504ef0233e0d956b11156e5a0c76d178bb9a665123d731316d",
       "bytes": 189735,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-07.md",
       "sha256": "22f07884754af405b0ef0db67b7883ac924b021a3399322a4cc2b3cc3b1d3356",
       "bytes": 199565,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-08.md",
       "sha256": "bedb9916c1b9fc9f8c718c263c6880807974368e44284f01e36657b4402fcf14",
       "bytes": 185960,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-09.md",
       "sha256": "b07bb70ed1869f30633efb8fa0452bf22f7e6b1cd20d81f222df8552344a595f",
       "bytes": 180309,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-10.md",
       "sha256": "b765be8b1398076e49bec985b68a89c4799189e46520176c7aeaec9e86b3c1a1",
       "bytes": 326445,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-11.md",
       "sha256": "b2d11801542f7af391c78f342c72a4cc91df64b91a31cfedb898c5e5f8ab0455",
       "bytes": 491386,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-12.md",
       "sha256": "f64edb3b602b20a443a66738d298b493ac7ddd797f35eb69115f840bad98f51a",
       "bytes": 457281,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-13.md",
       "sha256": "41d714e91bac06097126b4176dbe3e2d2a431932543529e2615ea00186d697e6",
       "bytes": 521374,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-14.md",
       "sha256": "f8bc3ec369116d540a9a75e6dab0c97628eec74904dec3d2d4ac11b78286ee74",
       "bytes": 206299,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/README.md",
       "sha256": "3bf213fc781fb2587d6b0a5e218037c7b13296b2f68b94c38b720ce16bce68bb",
       "bytes": 762,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.md",
       "sha256": "266d25a6eaf16d49cc6b878d44b6b65d69c3e56b324b4617178d52d7f0e441f9",
       "bytes": 3728,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
     },
     {
       "source": "docs/backends/Sdl3/README.md",
