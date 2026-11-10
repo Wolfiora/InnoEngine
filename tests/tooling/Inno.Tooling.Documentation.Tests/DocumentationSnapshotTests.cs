@@ -98,6 +98,23 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Equal("Missing", (await snapshot.QueryAsync(new("read", "unsafe"))).status);
     }
 
+    [Fact]
+    public async Task AMemberNameDoesNotPolluteEveryOtherSectionOnItsTypePage()
+    {
+        Write("content/en/api.md", Page("probe-api", "Probe API",
+            "## ReadOnly\n\n<!-- api: M:Inno.Probe.ReadOnly " + new string('a', 64)
+            + " -->\n\n```csharp\npublic void ReadOnly();\n```\n\nRead the current value.\n"
+            + "\n## WriteOnly\n\n<!-- api: M:Inno.Probe.WriteOnly " + new string('b', 64)
+            + " -->\n\n```csharp\npublic void WriteOnly();\n```\n\nWrite a replacement value.\n",
+            "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        DocumentationResult result = await snapshot.QueryAsync(new("search", "WriteOnly"));
+        Assert.Equal("writeonly", Assert.Single(result.hits).section);
+        DocumentationResult exact = await snapshot.QueryAsync(new("search", "M:Inno.Probe.WriteOnly"));
+        Assert.Equal("M:Inno.Probe.WriteOnly", Assert.Single(exact.hits).symbol);
+    }
+
     [Theory]
     [InlineData("[Missing](absent.md)", typeof(InvalidDataException))]
     [InlineData("[Missing](probe.md#absent)", typeof(InvalidDataException))]

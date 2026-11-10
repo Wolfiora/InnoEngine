@@ -123,7 +123,7 @@ public static class DocumentationStore
         {
             string body = DocumentationMarkdown.OwnText(page, section);
             string terms = section.title + " " + body + " " + string.Join(' ', page.metadata.aliases)
-                + " " + string.Join(' ', page.metadata.owners) + " " + string.Join(' ', page.symbols.Select(static symbol => symbol.id));
+                + " " + string.Join(' ', page.metadata.owners);
             return new DocumentationSearchEntry(page.metadata.uid, section.anchor, section.title,
                 body[..Math.Min(body.Length, 320)], DocumentationMarkdown.Tokens(terms));
         })).ToArray();

@@ -118,3 +118,8 @@ The canonical catalog now includes a symbol's signature identity and visible C# 
 The full Core Identity narrative review found three source XML inaccuracies/omissions: omitted Register overrides retain the object's existing persistent ID; count observes weak registry entries rather than proving every object is live; and Register/Unregister expose null/conflict failures. XML now describes these existing behaviors, and RuntimeIdentity explicitly distinguishes equality from liveness. No implementation or public signature changed. The English project, task and type pages preserve these constraints.
 
 The canonical Markdown boundary now rejects executable and presentation HTML in ordinary content, allowing only inert comments and explicit API anchors. Layout remains in the website theme. All 25 snapshot tests passed, including script/image-handler/iframe cases that preserve the previous immutable generation. This prevents imported API prose from introducing an executable HTML surface.
+
+## Large reference search isolation
+
+Search terms now contain each section's own content and owner metadata instead of duplicating every symbol on its type page into every section. Exact XML identifiers retain their direct symbol lookup. The focused regression passed (documentation-section-search.trx), proving that a member-name query does not return unrelated sibling sections. Large SDL reference measurements follow separately; this change does not certify the remaining content migration.
+
