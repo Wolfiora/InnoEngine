@@ -6,6 +6,8 @@
 
 普通 .NET 10 可执行项目。项目求值时选择 WindowsX64 或 MacOSArm64 Editor 的 ProjectReference，Program 在原始主线程直接调用对应组合的公开 Run。共同 Editor、服务和后端仍由所属类库维护。
 
+Windows 入口可执行文件通过 `<ApplicationIcon>` 嵌入 `assets/branding/logo.ico`。Explorer、任务管理器和 SDL 任务栏窗口读取同一图标资源，因此不需要在窗口创建后另行设置图标。macOS 的 `dotnet publish -r osx-arm64` 在 publish 目录旁生成 `InnoEngine.Editor.app`，把 `assets/branding/logo.icns` 放入 `Contents/Resources` 并写入 `Info.plist` 的 `CFBundleIconFile`；`<ApplicationIcon>` 在 macOS 不参与。macOS bundle 目标与 `Info.plist` 模板由 `platforms/MacOSArm64` 提供，入口只通过通用 `InnoDevelopmentEditorTargets` 导入。品牌资源见[品牌资源](../../../assets/branding/README.md)。
+
 入口与平台产品使用正常项目构建。修改 C# 源码后再次运行，SDK 编译受影响的依赖；程序不在启动过程中调用 MSBuild，也不加载另一份预构建 Editor。
 
 入口通过 SDK 的本地构建属性和 `ProjectReference` metadata 明确拥有所选平台产品的构建闭包。即使外层 Solution 调度器关闭引用构建或排除产品作为独立构建根，正常入口 Build 仍由 SDK 构建其真实依赖。Design-time 保留外层的引用构建策略，不启动产品 Native 准备；没有 IDE 专用入口、任务或输出目录。
@@ -20,6 +22,16 @@ dotnet run --configuration Release --project entry/InnoEngine.Editor/InnoEngine.
 ```
 
 无目录参数时打开原生项目目录选择窗口；取消正常退出。原生对话框取消的限制见[产品启动](../../platform/PRODUCT_STARTUP.md)。首次构建需要当前平台工具链，之后复用匹配的支持缓存。
+
+### macOS 应用包
+
+在 macOS 上执行 Release publish 时，`CreateMacOSEditorApplicationBundle` 在 publish 目录旁生成 `InnoEngine.Editor.app`：
+
+```sh
+dotnet publish entry/InnoEngine.Editor/InnoEngine.Editor.csproj -c Release -r osx-arm64
+```
+
+默认输出位于 `entry/InnoEngine.Editor/bin/Release/net10.0/osx-arm64/InnoEngine.Editor.app`。包内 `Contents/MacOS` 是完整 publish 输出，`Contents/Resources/logo.icns` 来自 `assets/branding`，`Contents/Info.plist` 声明 `CFBundleExecutable`、`CFBundleIconFile=logo.icns` 和稳定标识 `io.innoengine.editor`。目标与模板由 `platforms/MacOSArm64/build/Inno.Build.MacOSArm64` 拥有，只在 macOS 且 RID 为 `osx-*` 时运行；不执行代码签名或公证，正式分发需要另行处理。默认 framework-dependent；分发给未安装 .NET 10 的机器时增加 `--self-contained true`。日常 `dotnet run`/Rider 仍运行裸可执行文件，不读取该包。
 
 ## API、所有权与失败
 
