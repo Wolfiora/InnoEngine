@@ -102,6 +102,10 @@ public sealed class DocumentationSnapshot : IDisposable
     /// <summary>
     /// Searches, reads, resolves symbols or resources, or reports binding status without mutating the index.
     /// </summary>
+    /// <remarks>
+    /// Equally ranked multiword heading matches prefer task guides. Exact symbol and identifier searches
+    /// retain their reference priority; excerpts still require explicit contract reads.
+    /// </remarks>
     /// <param name="request">
     /// A structured operation against this snapshot. Search excerpts are never returned as complete contracts.
     /// </param>
@@ -231,7 +235,8 @@ public sealed class DocumentationSnapshot : IDisposable
         var ranked = selected!.Select(index => m_manifest.search[index])
             .Where(entry => Scope(m_manifest.pages[m_paths[entry.pageId]].metadata, request))
             .Select(entry => (entry, match: Score(entry, request.value, tokens)))
-            .OrderByDescending(static pair => pair.match.score).ThenBy(static pair => pair.entry.pageId, StringComparer.Ordinal)
+            .OrderByDescending(static pair => pair.match.score).ThenByDescending(static pair => pair.match.taskGuide)
+            .ThenBy(static pair => pair.entry.pageId, StringComparer.Ordinal)
             .ThenBy(static pair => pair.entry.section, StringComparer.Ordinal).ToArray();
         var hits = new List<DocumentationHit>();
         foreach (var pair in ranked.Skip(request.offset).Take(request.limit))
@@ -256,7 +261,7 @@ public sealed class DocumentationSnapshot : IDisposable
             .ToDictionary(static group => group.Key,
                 static group => group.Select(static pair => pair.index).Distinct().ToArray(), StringComparer.Ordinal);
 
-    private (int score, string reason) Score(
+    private (int score, bool taskGuide, string reason) Score(
         DocumentationSearchEntry entry,
         string query,
         string[] tokens
@@ -267,6 +272,8 @@ public sealed class DocumentationSnapshot : IDisposable
         bool exactHeading = entry.title.Equals(query, StringComparison.OrdinalIgnoreCase);
         bool exactProject = metadata.owners.Contains(query, StringComparer.OrdinalIgnoreCase);
         bool exactAlias = metadata.aliases.Contains(query, StringComparer.OrdinalIgnoreCase);
+        bool taskGuide = tokens.Length > 1 && query.Trim().Any(char.IsWhiteSpace) && matched == tokens.Length
+            && metadata.kind is "how-to" or "tutorial";
         int score = (exactHeading ? 100 : 0)
             + (entry.title.Contains(query, StringComparison.OrdinalIgnoreCase) ? 60 : 0)
             + (exactAlias ? 80 : 0) + (exactProject ? 90 : 0)
@@ -277,7 +284,7 @@ public sealed class DocumentationSnapshot : IDisposable
             : matched == tokens.Length ? "All query terms in heading"
             : matched > 0 ? "Heading and indexed body terms"
             : "Indexed body terms";
-        return (score, reason);
+        return (score, taskGuide, reason);
     }
 
     private async Task<DocumentationResult> SymbolAsync(

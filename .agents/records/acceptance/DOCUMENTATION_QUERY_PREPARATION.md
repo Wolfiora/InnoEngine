@@ -12,6 +12,14 @@ The first new test compilation failed because the modulo selector needed parenth
 
 The existing Build CLI compiled successfully with zero warnings and errors in 44.90 seconds, using SDK 10.0.402 and at most four managed workers. This was a managed tooling build; no Native preparation was invoked. Query performance after rebinding is recorded separately rather than inferred from this implementation change.
 
+## Natural task ranking, 2026-11-11
+
+The Scene migration exposed an equal-score search result: `instantiate prefab` returned an API member before the actual task guide because the final tie-breaker was page identity. Keyword scoring remains unchanged; equally ranked multiword heading matches now prefer how-to/tutorial pages. Exact symbol lookup still uses the direct symbol map, single identifiers retain reference ordering, and body-only task mentions do not outrank stronger headings. No parser, network operation, extra content scan or per-query index publication was added.
+
+All 37 documentation regressions pass with zero skipped tests. The added public-contract test checks natural task order, the next page of results, an exact identifier, an exact qualified symbol, body-only noise and unchanged persisted cache bytes. TRX: `artifacts/acceptance/english-documentation/query-task-ranking/task-ranking.trx`. The original observed search remains in the Docs artifact `scene-query-prefab.json`; the actual migrated corpus is checked after rebuilding the shared tool.
+
+The existing Build CLI compiled with zero warnings/errors in 46.28 seconds on the same SDK and bounded managed build. This prepares the changed shared query library for real CLI callers; no Native producer ran. The previous native-context over-selection evidence below remains applicable and is not recertified by this focused build.
+
 ## Remaining validation-selection problem
 
 The unified plan against the two changed source/test files selected 11 owners and 24 checks. It still propagates through Architecture, Validation, Build and Editor.Hosting test consumers and creates a native context through their product references. The recorded plan is `artifacts/acceptance/english-documentation/query-lazy-plan/plan.json`; planning evaluated the graph but did not execute those native checks.

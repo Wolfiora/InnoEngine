@@ -514,6 +514,33 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task NaturalTaskTiesPreferGuidesWhileIdentifiersKeepReferencePriority()
+    {
+        const string C_PREFAB_SYMBOL = "M:Inno.Probe.InstantiatePrefab";
+        Write("content/en/prefab-api.md", Page("a-prefab-api", "Prefab API",
+            "## InstantiatePrefab\n\n<!-- api: " + C_PREFAB_SYMBOL + " " + new string('a', 64)
+            + " -->\n\n```csharp\npublic void InstantiatePrefab();\n```\n\nCreate an owned instance.\n",
+            "kind: api\nowners: [Inno.Probe]\napiSurface: host-runtime\n"));
+        Write("content/en/prefab-task.md", Page("z-prefab-task", "Instantiate a prefab in its owning scene",
+            "Supply the current scene and asset.\n", "kind: how-to\nowners: [Inno.Probe]\n"));
+        Write("content/en/body-only.md", Page("a-body-only", "Other task", "Instantiate a prefab.\n",
+            "kind: tutorial\nowners: [Inno.Probe]\n"));
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        Dictionary<string, string> before = Files();
+        DocumentationResult task = await snapshot.QueryAsync(new("search", "instantiate prefab", "Inno.Probe", limit: 1));
+        Assert.Equal("z-prefab-task", Assert.Single(task.hits).pageId);
+        Assert.Equal("Excerpt", task.hits[0].completeness);
+        DocumentationResult next = await snapshot.QueryAsync(Assert.IsType<DocumentationRequest>(task.nextRequest));
+        Assert.Equal("a-prefab-api", Assert.Single(next.hits).pageId);
+        DocumentationResult identifier = await snapshot.QueryAsync(new("search", "InstantiatePrefab"));
+        Assert.Equal("a-prefab-api", identifier.hits[0].pageId);
+        DocumentationResult exact = await snapshot.QueryAsync(new("search", C_PREFAB_SYMBOL));
+        Assert.Equal(C_PREFAB_SYMBOL, Assert.Single(exact.hits).symbol);
+        Assert.Equal(before.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
+    }
+
+    [Fact]
     public async Task StructuredPaginationAndExactSymbolSearchNeedNoConsoleParsing()
     {
         Write("content/en/second.md", Page("second", "Ownership details", "Borrow the lease; observe the ownership contract.\n"));
