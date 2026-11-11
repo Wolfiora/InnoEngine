@@ -2099,200 +2099,219 @@
       "sha256": "340a730b004ac0ac532b25d34c4db6980706cab70c853ced96b62e6c113168ef",
       "bytes": 1647,
       "kind": "entry",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "EnglishEntryAwaitingExternalDocumentationCutover",
+      "target": "README.md"
     },
     {
       "source": "assets/branding/LICENSE.txt",
       "sha256": "c51b43add199e9d3381ea4eace1071843f63b64d90366b8c06b5efb2d6eaadc6",
       "bytes": 1722,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/LICENSE.txt"
     },
     {
       "source": "assets/branding/README.md",
       "sha256": "3d302b79bafa6c7a8da5bff1c025480cc1a7b54c8256e4b0fdf6f43314b26e23",
       "bytes": 5442,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "EnglishAssetProvenanceRetainedWithOwner",
+      "target": "assets/branding/README.md"
     },
     {
       "source": "assets/branding/logo-edge.svg",
       "sha256": "06891297c378043c27fdb9ebd5a6ffcae6ba5f0c3f9fede59467d575ba5ada03",
       "bytes": 2120,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo-edge.svg"
     },
     {
       "source": "assets/branding/logo-fill-simple.svg",
       "sha256": "4c65588effa45432593deee9381b977d0c2611b134de7fd5b0e7d78c2cb5f6ec",
       "bytes": 614,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo-fill-simple.svg"
     },
     {
       "source": "assets/branding/logo-fill.svg",
       "sha256": "212335dd63f2046f26e056b90570c1dcb2cfc88deca9ed4ae56954f99c1289de",
       "bytes": 1265,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo-fill.svg"
     },
     {
       "source": "assets/branding/logo.icns",
       "sha256": "4b459a8ff599934e9f23d465608b890a66cbf3ec6aca5765813dcf1e210d71d4",
       "bytes": 218035,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo.icns"
     },
     {
       "source": "assets/branding/logo.ico",
       "sha256": "e1e3fca214dedbe2cfb9e424e3ad0c37ece41d6e30cd391db5a16fd5f49fee49",
       "bytes": 41302,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo.ico"
     },
     {
       "source": "assets/branding/logo.png",
       "sha256": "2656f31f52669a51345928718b18d8bb94f2a239d5ee8e93f754e32359e60aa9",
       "bytes": 14373,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo.png"
     },
     {
       "source": "assets/branding/logo.svg",
       "sha256": "666f3ff13ce7b90596166e48bf08a0b2d531447fcc0b802cbf09dc38afc8f0dd",
       "bytes": 2037,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/branding/logo.svg"
     },
     {
       "source": "assets/fonts/JetBrainsMono-Bold.ttf",
       "sha256": "5590990c82e097397517f275f430af4546e1c45cff408bde4255dad142479dcb",
       "bytes": 277828,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/JetBrainsMono-Bold.ttf"
     },
     {
       "source": "assets/fonts/JetBrainsMono-BoldItalic.ttf",
       "sha256": "4039d5ce0ed225bf9c8b2c8c6436290ae2f356b7e90d70fa666227238324aa3b",
       "bytes": 279832,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/JetBrainsMono-BoldItalic.ttf"
     },
     {
       "source": "assets/fonts/JetBrainsMono-Italic.ttf",
       "sha256": "9d0a1f7a708e6af183f1193b7e81d40da294f5c67682c085d8401c60aac8ded4",
       "bytes": 276840,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/JetBrainsMono-Italic.ttf"
     },
     {
       "source": "assets/fonts/JetBrainsMono-Regular.ttf",
       "sha256": "a0bf60ef0f83c5ed4d7a75d45838548b1f6873372dfac88f71804491898d138f",
       "bytes": 273900,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/JetBrainsMono-Regular.ttf"
     },
     {
       "source": "assets/fonts/LICENSE-JetBrainsMono.txt",
       "sha256": "30f0c136e3c88e422d0791acd97238870f9054a9729bc34cf2ff0d4ed8cac4ad",
       "bytes": 4399,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/LICENSE-JetBrainsMono.txt"
     },
     {
       "source": "assets/fonts/README.md",
       "sha256": "fd73bc554168e33ea14baaecdabcd5669d6a158b18ef4eeb8be8ef6ea746dd6b",
       "bytes": 2339,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "EnglishAssetProvenanceRetainedWithOwner",
+      "target": "assets/fonts/README.md"
     },
     {
       "source": "assets/fonts/icons/FA-Regular-400.ttf",
       "sha256": "557e6966ad8dba7352ac6d350c1546b685b13d68db26f09cba45cadd660d45db",
       "bytes": 68064,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/icons/FA-Regular-400.ttf"
     },
     {
       "source": "assets/fonts/icons/FA-Solid-900.ttf",
       "sha256": "af19d135d3a935b3ebfbd80320716ffe1202052c5f68dc2c5f1abc57005ac605",
       "bytes": 426112,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/icons/FA-Solid-900.ttf"
     },
     {
       "source": "assets/fonts/icons/InnoEngine-Icons.ttf",
       "sha256": "c2d311693b1a31a7ed84bed2c6435533b7b0f0cea5758c54a3255109fb379b9e",
       "bytes": 1460,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/icons/InnoEngine-Icons.ttf"
     },
     {
       "source": "assets/fonts/icons/LICENSE-FontAwesome.txt",
       "sha256": "9b914eae88817d63b576eab5aafde7068c7a1abae125d7cdfb034f1da43a9afc",
       "bytes": 7427,
       "kind": "asset-or-provenance",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "OriginalAssetOrLicenseBytesPreserved",
+      "target": "assets/fonts/icons/LICENSE-FontAwesome.txt"
     },
     {
       "source": "docs/README.md",
       "sha256": "297075db73d100c0f97f3725be309404203a9cd30793dc869e5dfd64e17cdd2f",
       "bytes": 1123,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/index.md"
+      ]
     },
     {
       "source": "docs/architecture/README.md",
       "sha256": "4579b1bbde3d26fd5ddef086455b7aadbd919f1a64e40923a0a6a017dc3e518b",
       "bytes": 538,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/overview.md"
+      ]
     },
     {
       "source": "docs/architecture/build-and-cache.md",
       "sha256": "db67a55045528b7d9c51a2bf9401be4d4ed8c13c8727c3c31b8b2bc4357d25dc",
       "bytes": 15158,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/build-artifacts.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/native-preparation.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/task-hosts.md"
+      ]
     },
     {
       "source": "docs/architecture/editor-ui.md",
       "sha256": "26d7086c88e9b24fc26c36e42a3c6052ab8161c766664d3d5648ddc7a248084a",
       "bytes": 18262,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/editor-ui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/editor-panels.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/editor-actions.md"
+      ]
     },
     {
       "source": "docs/architecture/identity-and-reload.md",
       "sha256": "808cbb05fdeeb737482cd952c506714fcd5e8bed811d152f3c832015d1cdf9b8",
       "bytes": 45361,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/identity-and-recovery.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/references/resolve-missing.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/reference-recovery.md"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-recheck-day-2026-10-02.png",
@@ -2469,32 +2488,51 @@
       "sha256": "91331c24a2bab61cb26a400db7e2314ec0a33b320fe1ff7b3e9c18cf35c40b62",
       "bytes": 37288,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/overview.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/render-frame.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md"
+      ]
     },
     {
       "source": "docs/architecture/ownership.md",
       "sha256": "3ed701769a897fc41b28d09e7705aa6a359c5ed20f8f2757c8229644f0146477",
       "bytes": 1657,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/ownership.md"
+      ]
     },
     {
       "source": "docs/architecture/platform-and-products.md",
       "sha256": "f24d7f3af998c53558cf203f2fcef4af7dc037aec941d729da9c277f4c3edddb",
       "bytes": 25204,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/select-target.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/native-preparation.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/platforms.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/native-bindings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/assets/read-content-pack.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/render-frame.md"
+      ]
     },
     {
       "source": "docs/architecture/web-player.md",
       "sha256": "f9041dc4903e2840e2b08038243a82c62002093f87d3ee62448dbe1bd422c861",
       "bytes": 4549,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/publish-player.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/assets/read-content-pack.md"
+      ]
     },
     {
       "source": "docs/backends/Bgfx/Inno.Adapter.Rendering.Bgfx.md",
@@ -2638,8 +2676,17 @@
       "sha256": "91a72ab7351dbb0dc1e01e62ee1032ebaf9aa36e7dfaccb8f4a34c63f6df6b12",
       "bytes": 2268,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/bgfx-shaders.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/testing/inno-adapter-rendering-bgfx-tests.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-rendering-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains-bgfx-shaders.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains-bgfx-tools.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-native-bgfx.md"
+      ]
     },
     {
       "source": "docs/backends/DotNet/Inno.Adapter.Modules.DotNet.md",
@@ -2679,8 +2726,15 @@
       "sha256": "ad5141cec66690498255a9ee8f677f3b8f2e0343cfb0a80f3d9d48c94148ba3b",
       "bytes": 519,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/dotnet-modules.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/dotnet-serialization.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/dotnet-publishing.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-modules-dotnet.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-serialization-dotnet.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-managed-dotnet.md"
+      ]
     },
     {
       "source": "docs/backends/FileSystem/Inno.Adapter.Content.FileSystem.md",
@@ -2707,8 +2761,12 @@
       "sha256": "3f4d89618c1bbfca4d31a01c588685be98924413873de0719b05bbd64ae8a070",
       "bytes": 471,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/file-content-cache.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-content-filesystem.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-storage-filesystem.md"
+      ]
     },
     {
       "source": "docs/backends/ImGui/Inno.Adapter.Presentation.ImGui.Bgfx.md",
@@ -3109,16 +3167,27 @@
       "sha256": "2a3d89f98853951fbd2933062fd445eada7a932047751350d84285a8a43e18b6",
       "bytes": 1542639,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "RetiredGeneratedBindingReferenceByUserScopeAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-native-imguizmo.md"
+      ]
     },
     {
       "source": "docs/backends/ImGui/README.md",
       "sha256": "c67d298168d106c036efb19ae66a5dac5f9d60e26469b170ef751d67a1df71b4",
       "bytes": 1177,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/imgui-context.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/imgui-rendering.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-presentation-imgui-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-presentation-imgui-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains-imgui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains-imguizmo.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-native-imgui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-native-imguizmo.md"
+      ]
     },
     {
       "source": "docs/backends/Interop/Inno.Native.LibraryLoading.md",
@@ -3137,8 +3206,11 @@
       "sha256": "e0498fd4b91cd6fc947d11e5dc931bee84deeec650865e03481d2a5ae8e1e671",
       "bytes": 383,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-native-libraryloading.md"
+      ]
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Adapter.Audio.MiniAudio.md",
@@ -3468,8 +3540,10 @@
       "sha256": "c94bd454c15b66a5e65456082ba0dfe75205a4719d9c771ad75c6601e90df9f7",
       "bytes": 559,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/index.md"
+      ]
     },
     {
       "source": "docs/backends/RmlUi/Inno.Adapter.UI.RmlUi.Authoring.md",
@@ -3747,8 +3821,13 @@
       "sha256": "0c4828cc24bed4c42f8f8cd454c0566248dab0439afa333a44f956762727100d",
       "bytes": 896,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/backends/sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-platform-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-native-sdl3.md"
+      ]
     },
     {
       "source": "docs/backends/Text/Inno.Adapter.Text.FreeTypeHarfBuzz.md",
@@ -3822,24 +3901,30 @@
       "sha256": "32280bc50734a12bfa876341f09ac560ae5c7c65e813bc88d5ba0946f9f3d489",
       "bytes": 571,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/index.md"
+      ]
     },
     {
       "source": "docs/development/adding-platform.md",
       "sha256": "e89ccb124bdb047ebbb9eaf230e6151c7426a299a39da66b502d26d3ad9056d1",
       "bytes": 14717,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/platforms.md"
+      ]
     },
     {
       "source": "docs/development/build/DEPENDENCY_SUBMISSION.md",
       "sha256": "ea08a9dac7da4aef46f69995e88f09c3eb1b9c22befdf241657ee60edf12645d",
       "bytes": 3494,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/dependencies.md"
+      ]
     },
     {
       "source": "docs/development/build/Inno.Build.Bindings.md",
@@ -4044,24 +4129,43 @@
       "sha256": "f638938e4ec619490491544ddcca56f24d945505b5f965a2cea4263297ed0f29",
       "bytes": 668,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/development-entries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-bindings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-cli.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-distribution-standard.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-managed.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-products-standard.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-supportpacks-core.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-taskhosting.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-tasks.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-toolchains.md"
+      ]
     },
     {
       "source": "docs/development/building.md",
       "sha256": "3091cd77d0a9f31614469046636201346b09f3f7d086b8ec3d78fea38d2fd92b",
       "bytes": 1524,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/development-entries.md"
+      ]
     },
     {
       "source": "docs/development/documentation.md",
       "sha256": "a8053b000ea3e7677d99ada0296ace52e60d815c21739bc29b94e879d0cb2075",
       "bytes": 2976,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/documentation-queries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/example-validation.md"
+      ]
     },
     {
       "source": "docs/development/entry/InnoEngine.Build.md",
@@ -4092,24 +4196,35 @@
       "sha256": "c0ac1d0a5ccd5147e8c3144bf6ca64caf7b7152ec7f511e4160697b8adc20e5d",
       "bytes": 3167,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/development-entries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/innoengine-build.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/innoengine-editor.md"
+      ]
     },
     {
       "source": "docs/development/native-bindings.md",
       "sha256": "a2b2e4067125cce2d8c32d8f7e14bc8a62df8db7580f340be37ca18f976d4da5",
       "bytes": 5388,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/native-bindings.md"
+      ]
     },
     {
       "source": "docs/development/testing.md",
       "sha256": "ba6057b03c55e02ee8fd200592a4e9ecdeaac3e1cd8eac71f5463ad98e7aecee",
       "bytes": 4011,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/validate-change.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/testing/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/product-journeys.md"
+      ]
     },
     {
       "source": "docs/development/testing/Inno.Adapter.Audio.MiniAudio.Tests.md",
@@ -5013,16 +5128,25 @@
       "sha256": "f474479ab2142ddc82f372e85e60bcba0c7dae8a0fa384289a8bcebdcbf665da",
       "bytes": 170,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/documentation-queries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/validate-change.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-tooling-architecture.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-tooling-validation.md"
+      ]
     },
     {
       "source": "docs/getting-started/README.md",
       "sha256": "66f9ae6e408dfa25277d7061e292420bc73e2e910a73c430fd0bdabe03966099",
       "bytes": 546,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/getting-started/prerequisites.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/getting-started/first-editor-session.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/getting-started/first-project.md"
+      ]
     },
     {
       "source": "docs/getting-started/first-editor-session.md",
@@ -5037,8 +5161,10 @@
       "sha256": "18d7dbad99d13233e52836ee99dd167864d49f4e24b1bfef5383317cfeb7a3fa",
       "bytes": 1348,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/getting-started/first-project.md"
+      ]
     },
     {
       "source": "docs/getting-started/prerequisites.md",
@@ -5053,8 +5179,11 @@
       "sha256": "7ffde752eab3cfbc6cd97aae6e96fc7a60a383cc5e670bc638df5f8842fad404",
       "bytes": 534,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/index.md"
+      ]
     },
     {
       "source": "docs/modules/animation/Inno.Animation.Assets.md",
@@ -5654,8 +5783,28 @@
       "sha256": "d3705f0060cc9ebc28b132402763d636d939d20fb8f2b94bfb9112eb46a68d41",
       "bytes": 2052,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/overview.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/register-identity.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-execution.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-diagnostics.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-logging.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-mathematics.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-identity.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-serialization.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-serialization-generators.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-collections.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-events.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-layers.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-io.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-input.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-jobs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-coroutines.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-graphs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-core-settings.md"
+      ]
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Annotations.md",
@@ -6105,8 +6254,44 @@
       "sha256": "068d280f71e4088af84a167d37ffb88bf29e60d0145fc6b16655b755beb5a7e2",
       "bytes": 9038,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/editor-ui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/editor-panels.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/editor-actions.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/editor-history.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/editor-state.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-core.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-annotations.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-interactions.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-playmode.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-audio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-scene.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-imgui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-graph.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-rendering.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-inspection.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-scripting.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-exporting.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-filebrowser.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-workbench.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-hierarchy.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-inspector.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-logging.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-stats.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-sceneview.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-gameview.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-shaders.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-assets.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-panel-shadereditor.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-hosting.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-assets-imgui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-shaders-imgui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-graph-imgui.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-diagnostics.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Catalogs.md",
@@ -6198,8 +6383,16 @@
       "sha256": "7de89041238ac4239a800bb9d9fdfeb0199ca8ecc95ab9f41843a8450cc5fd48",
       "bytes": 893,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/extensions/find-types.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/lifecycle-layers.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-extensibility-catalogs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-extensibility-modules.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-extensibility-types.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-extensibility-reload.md"
+      ]
     },
     {
       "source": "docs/modules/input/Inno.Adapter.Input.md",
@@ -6279,8 +6472,14 @@
       "sha256": "a03893bcbc86f712f949eaa45a98cb7e0178d3dc558b41214ad7731e3bc06ef3",
       "bytes": 707,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/plugins/install.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/plugin-host.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/plugin-packages.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-plugins.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-plugins-authoring.md"
+      ]
     },
     {
       "source": "docs/modules/references/Inno.References.md",
@@ -6313,8 +6512,12 @@
       "sha256": "50e9121bb4d4cc0d9191da5d8c5e3cea2a6faf5e3843298a3b8a26f35ab37e27",
       "bytes": 517,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/manual/references/resolve-missing.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/extending/reference-recovery.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-references.md"
+      ]
     },
     {
       "source": "docs/modules/rendering/Inno.Adapter.Rendering.Authoring.md",
@@ -7003,8 +7206,18 @@
       "sha256": "46b60ed916332398b7e5479255e700ab9c5ba2d1dfa1a17a96fda5dd074c96c3",
       "bytes": 1092,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/select-target.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-storage-browserwasm32.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-browserwasm32.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-player-browserwasm32.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-browserwasm32-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-browserwasm32-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-browserwasm32-bgfx-runtime.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-browserwasm32-build.md"
+      ]
     },
     {
       "source": "docs/platform/Inno.Adapter.Platform.md",
@@ -7159,24 +7372,46 @@
       "sha256": "ec363e202ea529ed7d994bd2ffb6a0c626372ff3620730bdcd7da9953784beff",
       "bytes": 1108,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/select-target.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-macosarm64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-macosarm64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-platform-macosarm64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-player-macosarm64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-macosarm64-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-macosarm64-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-macosarm64-bgfx-runtime.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-macosarm64-build.md"
+      ]
     },
     {
       "source": "docs/platform/PRODUCT_STARTUP.md",
       "sha256": "7f9ec525e417f59c130104c1506541bed0e50f499505bd0a484e56b6e3af58e4",
       "bytes": 10028,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/development-entries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/contributing/support-packs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/publish-player.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/architecture/native-preparation.md"
+      ]
     },
     {
       "source": "docs/platform/README.md",
       "sha256": "f89c8e0a3ff3c66e9f7d3cd8f0ebdeebc52c2fbf5215fc8aeda0b36147dceb32",
       "bytes": 1246,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/index.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-platform.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-platform.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-adapter-presentation.md"
+      ]
     },
     {
       "source": "docs/platform/Windows/Inno.Build.Windows.Host.md",
@@ -7194,8 +7429,11 @@
       "sha256": "38c7e2866e2c1d5564929122163cd52fca22a1ed8320764ae94d13ded329ebd6",
       "bytes": 189,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/select-target.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-windows-host.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Build.WindowsX64.md",
@@ -7290,8 +7528,19 @@
       "sha256": "cfe126bf37726247ad8777451087f46732a586998ff244b0ff54900993c734f2",
       "bytes": 1088,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/select-target.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/platforms/product-composition.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-build-windowsx64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-editor-windowsx64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-platform-windowsx64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-player-windowsx64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-windowsx64-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-windowsx64-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-windowsx64-bgfx-runtime.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/f9b495d3a09d18e50b014e950e52e11db12e46ec/content/en/api/projects/inno-integration-windowsx64-build.md"
+      ]
     }
   ],
   "projects": [

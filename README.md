@@ -21,4 +21,4 @@ InnoEngine combines shared mechanisms for assets, scenes, scripting and resource
 
 APIs and project data evolve together during active development. Product support and device validation are separate; consult the linked acceptance records for the relevant commit and environment.
 
-[Apache License 2.0](LICENSE) applies to the engine source code. [Bundled fonts](assets/fonts/README.md#许可证) retain their respective licenses. The [Logo and derived icon font](assets/branding/LICENSE.txt) have a separate license permitting use only with InnoEngine.
+[Apache License 2.0](LICENSE) applies to the engine source code. [Bundled fonts](assets/fonts/README.md#licenses) retain their respective licenses. The [Logo and derived icon font](assets/branding/LICENSE.txt) have a separate license permitting use only with InnoEngine.
