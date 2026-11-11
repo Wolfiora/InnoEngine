@@ -77,6 +77,44 @@ public sealed class ValidationDocumentationTests
     }
 
     [Fact]
+    public async Task SharedHostAndScriptExamplesUseOnePreparedContextWithoutPromotingUnrelatedExamples()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("Product.props", "<Project />");
+        repository.Write("entry/InnoEngine.Build/InnoEngine.Build.csproj", ValidationRepository.Project());
+        repository.Write("src/Independent/Independent.csproj", ValidationRepository.Project());
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoProductId>editor</InnoProductId><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare independently prepared example owners");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/script.md", ValidationDocumentationFixture.Page("Example", "```csharp\nint value = 1;\n```\n", "runtime-script"));
+        docs.Write("content/en/host.md", ValidationDocumentationFixture.Page("Example", "```csharp\nint value = 1;\n```\n", "host")
+            .Replace("uid: task-example", "uid: task-host", StringComparison.Ordinal));
+        docs.Write("content/en/shared.md", ValidationDocumentationFixture.Page("Other", "```csharp\nint value = 1;\n```\n", "host")
+            .Replace("exampleProjects: [Other]", "exampleProjects: [Other, Example]", StringComparison.Ordinal));
+        docs.Write("content/en/independent.md", ValidationDocumentationFixture.Page("Independent", "```csharp\nint value = 1;\n```\n", "host"));
+        using JsonDocument plan = await docs.PlanAsync(await docs.IndexAsync(), baseline);
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement native = checks.Single(check => check.GetProperty("id").GetString() == "documentation-examples:native");
+        Assert.Equal(new[] { "task-example", "task-host", "task-other" }, native.GetProperty("documentation").GetProperty("pages").EnumerateArray().Select(page => page.GetString()).Order().ToArray());
+        JsonElement managed = checks.Single(check => check.GetProperty("id").GetString() == "documentation-examples:managed");
+        Assert.Equal("task-independent", Assert.Single(managed.GetProperty("documentation").GetProperty("pages").EnumerateArray()).GetString());
+        foreach (string owner in new[] { "Example", "Other", "Independent" })
+            Assert.Equal(owner == "Independent" ? "managed" : "native", checks.Single(check => check.GetProperty("id").GetString() == $"build:src/{owner}/{owner}.csproj").GetProperty("context").GetString());
+        var preceding = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+        foreach (JsonElement check in checks)
+        {
+            if (check.GetProperty("exclusion").ValueKind == JsonValueKind.Null)
+                Assert.All(check.GetProperty("prerequisites").EnumerateArray(), prerequisite => Assert.Contains(prerequisite.GetString()!, preceding));
+            preceding.Add(check.GetProperty("id").GetString()!);
+        }
+    }
+
+    [Fact]
     public async Task MissingExternalSnapshotCannotFallBackToAnOldWikiTree()
     {
         using var repository = new ValidationRepository();

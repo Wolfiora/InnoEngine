@@ -122,7 +122,7 @@ internal static class ValidationPlanner
                 documentationOwners.Add(documentation.owners[owner].path);
         var scriptPages = examplePages.Where(static page => page.examples?.mode is "runtime-script" or "editor-script")
             .Select(static page => page.id).ToHashSet(StringComparer.Ordinal);
-        var scriptDocumentOwners = examplePages.Where(page => scriptPages.Contains(page.id))
+        var nativeDocumentOwners = examplePages.Where(page => scriptPages.Contains(page.id))
             .SelectMany(static page => page.examples!.projects).Select(owner => documentation!.owners[owner].path).ToHashSet(StringComparer.Ordinal);
         bool scriptExamples = scriptPages.Count != 0;
         if (scriptExamples)
@@ -148,6 +148,19 @@ internal static class ValidationPlanner
         foreach (ValidationProject project in projects.Where(static project => project.layer == "domain"))
             if (nativeOwners.Contains(project.path))
                 throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
+        // All owners of an executable example share its evaluated output context, including Host
+        // examples that reuse an owner selected by a script example. Unrelated pages stay managed.
+        do
+        {
+            expanded = false;
+            foreach (DocumentationPageInfo page in examplePages)
+            {
+                string[] owners = (page.examples?.projects ?? []).Select(name => documentation!.owners[name].path).ToArray();
+                if (owners.Any(owner => nativeOwners.Contains(owner) || nativeDocumentOwners.Contains(owner)))
+                    foreach (string owner in owners)
+                        expanded |= nativeDocumentOwners.Add(owner);
+            }
+        } while (expanded);
         var contexts = new Dictionary<string, ValidationContext>(StringComparer.Ordinal)
         {
             ["managed"] = new(new Dictionary<string, string>
@@ -169,7 +182,7 @@ internal static class ValidationPlanner
                         ? "Select the required external documentation snapshot before preparing native inputs."
                         : "Selected owners require unavailable pinned native sources. Prepare these inputs explicitly, then generate a new plan.",
                     nativeOwners.Where(owner => !executionExclusions.ContainsKey(owner) && (affected.Contains(owner) || documentationOwners.Contains(owner)))
-                        .Concat(scriptDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+                        .Concat(nativeDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
                     documentation is null ? new(StringComparer.Ordinal) : unavailable.ToDictionary(static path => path,
                         path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
             JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
@@ -241,7 +254,7 @@ internal static class ValidationPlanner
         foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
         {
             bool native = nativeOwners.Contains(project.path);
-            string context = native || scriptDocumentOwners.Contains(project.path) ? "native" : "managed";
+            string context = native || nativeDocumentOwners.Contains(project.path) ? "native" : "managed";
             Dictionary<string, ValidationProject> selectedGraph = context == "native" ? nativeProjects : byPath;
             var closure = new HashSet<string>(StringComparer.Ordinal);
             Visit(selectedGraph[project.path]);
@@ -425,7 +438,7 @@ internal static class ValidationPlanner
                 .SelectMany(reference => reference.projects.Where(name => selected.owners.TryGetValue(name, out ValidationDocumentation.Owner? owner)
                         && owners.Contains(owner.path))
                     .Select(name => (reference, name, path: selected.owners[name].path)))
-                .GroupBy(item => (context: nativeOwners.Contains(item.path) || scriptDocumentOwners.Contains(item.path) ? "native" : "managed", item.reference.configuration, item.reference.target));
+                .GroupBy(item => (context: nativeOwners.Contains(item.path) || nativeDocumentOwners.Contains(item.path) ? "native" : "managed", item.reference.configuration, item.reference.target));
             foreach (var group in captures)
             {
                 string[] paths = group.Select(static item => item.path).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
@@ -444,7 +457,8 @@ internal static class ValidationPlanner
                 checks.Add(new("documentation-api-missing:" + owner, "documentation-missing", owner,
                     "Required source API capture is absent for the selected configuration and target.", "any", ["documentation"], ["@" + owner], false, null));
             foreach (var group in examplePages.GroupBy(page => scriptPages.Contains(page.id)
-                || (page.examples?.projects ?? []).Any(name => nativeOwners.Contains(selected.owners[name].path)) ? "native" : "managed"))
+                || (page.examples?.projects ?? []).Any(name => nativeOwners.Contains(selected.owners[name].path)
+                    || nativeDocumentOwners.Contains(selected.owners[name].path)) ? "native" : "managed"))
             {
                 string[] paths = group.SelectMany(static page => page.examples?.projects ?? []).Select(name => selected.owners[name].path)
                     .Distinct(StringComparer.Ordinal).ToArray();
