@@ -235,6 +235,10 @@ public static class DocumentationStore
     /// <param name="cancellationToken">
     /// Cancels reading lease acquisition and manifest loading.
     /// </param>
+    /// <param name="sourceEvidence">
+    /// Explicit certificate authenticated during preparation, or null for an unverified session.
+    /// A certificate must cover the exact source tree and every protected API reference.
+    /// </param>
     /// <returns>
     /// A caller-owned query session. Dispose it after the final query to release its generation reading lease.
     /// </returns>
@@ -248,7 +252,8 @@ public static class DocumentationStore
         string cacheRoot,
         string? snapshot = null,
         string? expectedSourceTree = null,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        DocumentationEvidence? sourceEvidence = null
     ) {
         string output = Path.GetFullPath(cacheRoot);
         PathBoundary.RequireUnlinkedPath(output, output);
@@ -264,7 +269,8 @@ public static class DocumentationStore
         {
             DocumentationManifest manifest = ReadManifest(output, identity);
             cancellationToken.ThrowIfCancellationRequested();
-            return new(output, manifest, reading, expectedSourceTree);
+            sourceEvidence?.RequireMatch(manifest);
+            return new(output, manifest, reading, expectedSourceTree, sourceEvidence);
         }
         catch
         {

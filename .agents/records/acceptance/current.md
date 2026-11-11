@@ -8,6 +8,8 @@ The English documentation and workflow modernization is **incomplete**. Existing
 
 ## Current local evidence
 
+- [Explicit source certificates](DOCUMENTATION_SOURCE_CERTIFICATES_2026_11_12.md) adds source-comparison receipts, complete-coverage certification and immutable evidence selection. Local protocol and query cases pass; real complete source certification remains outstanding.
+
 - [Canonical documentation cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md) removes the old product tree and Wiki/query implementations. Fifty query tests, 38 targeted Architecture tests, rule/source/agent-link checks and the full 454-file disposition audit passed locally. Source certification and hosted publication remain separate.
 
 - [Complete baseline dispositions](DOCUMENTATION_DISPOSITIONS_2026_11_11.md) verifies all 454 original product files against exact Git identities and their declared destinations or retirements; eleven negative/positive audit contracts pass. This is separate from source/API certification and physical legacy cutover.

@@ -38,6 +38,13 @@ public sealed record DocumentationResult(
     DocumentationRequest? nextRequest = null
 ) {
     /// <summary>
+    /// Gets the independently authenticated source certificate identity, or null without matching evidence.
+    /// Source verification does not turn an excerpt into a complete contract or certify device behavior.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? sourceEvidenceIdentity { get; init; }
+
+    /// <summary>
     /// Gets measured preparation phases in milliseconds, or null for an ordinary read.
     /// Total and PagePreparation are inclusive; MarkdownParsing and OwnerRegistration are subsets
     /// of PagePreparation. These observations are not performance or execution certificates.

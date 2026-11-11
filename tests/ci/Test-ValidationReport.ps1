@@ -78,6 +78,10 @@ foreach ($check in $checks) {
         }
     }
 }
+$sourceApi = if ($null -ne $documentation) {
+    @( & (Join-Path $PSScriptRoot 'Get-DocumentationSourceReceipt.ps1') -Plan $plan -Evidence $evidence `
+        -Pairing $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+} else { @() }
 [pscustomobject]@{
     commit = $ExpectedCommit
     tree = $plan.tree
@@ -86,6 +90,7 @@ foreach ($check in $checks) {
     planIdentity = $identity
     resultsIdentity = (Get-FileHash -LiteralPath $ResultsPath -Algorithm SHA256).Hash.ToLowerInvariant()
     documentation = $documentation
+    sourceApi = @($sourceApi)
     required = @($checks | Where-Object { $null -eq $_.exclusion }).Count
     passed = @($results | Where-Object status -CEQ 'Passed').Count
     reused = @($results | Where-Object status -CEQ 'Reused').Count

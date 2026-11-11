@@ -44,6 +44,7 @@ if ($Stage -eq 'Plan') {
             --snapshot $snapshot.snapshot --source-tree $sourceTree --format json)
         if ($LASTEXITCODE -ne 0) { throw 'Documentation does not bind the actual engine merge-candidate tree.' }
         $catalog = $catalogOutput -join "`n" | ConvertFrom-Json
+        $catalogOutput -join "`n" | Set-Content -LiteralPath (Join-Path $output 'documentation-catalog.json') -Encoding utf8NoBOM
         if ($catalog.repository -cne 'https://github.com/Wolfiora/InnoEngine' -or $catalog.sourceTree -cne $sourceTree `
             -or $catalog.snapshot -cne $snapshot.snapshot -or $catalog.contentIdentity -cnotmatch '^[a-f0-9]{64}$') {
             throw 'Canonical documentation binding does not identify this engine candidate.'

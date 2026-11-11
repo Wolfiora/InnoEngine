@@ -22,6 +22,7 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly DocumentationManifest m_manifest;
     private readonly FileLease m_reading;
     private readonly string? m_expectedSourceTree;
+    private readonly DocumentationEvidence? m_sourceEvidence;
     private readonly Dictionary<string, string> m_paths;
     private readonly Lazy<Dictionary<string, int[]>> m_terms;
     private readonly Dictionary<string, DocumentationSymbolReference[]> m_symbols;
@@ -80,9 +81,9 @@ public sealed class DocumentationSnapshot : IDisposable
         }
         string contentIdentity = DocumentationMarkdown.Hash(string.Join('\n', pages.Select(static page => page.path + "\0" + page.contentIdentity)));
         return new(identity, contentIdentity, m_manifest.binding.repository, m_manifest.binding.revision,
-            sourceTree, m_manifest.binding.toolingRevision, "Unverified",
+            sourceTree, m_manifest.binding.toolingRevision, m_sourceEvidence is null ? "Unverified" : "Verified",
             m_manifest.projects.ToDictionary(static project => project.name, static project => project.entry, StringComparer.Ordinal), pages,
-            m_manifest.references!);
+            m_manifest.references!) { sourceEvidenceIdentity = m_sourceEvidence?.identity };
     }
 
     /// <summary>
@@ -138,12 +139,14 @@ public sealed class DocumentationSnapshot : IDisposable
         string cache,
         DocumentationManifest manifest,
         FileLease reading,
-        string? expectedSourceTree
+        string? expectedSourceTree,
+        DocumentationEvidence? sourceEvidence
     ) {
         m_cache = cache;
         m_manifest = manifest;
         m_reading = reading;
         m_expectedSourceTree = expectedSourceTree;
+        m_sourceEvidence = sourceEvidence;
         m_paths = manifest.pages.ToDictionary(static pair => pair.Value.pageId, static pair => pair.Key, StringComparer.Ordinal);
         m_symbols = manifest.symbols.GroupBy(static symbol => symbol.id, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
@@ -182,6 +185,17 @@ public sealed class DocumentationSnapshot : IDisposable
     public async Task<DocumentationResult> QueryAsync(
         DocumentationRequest request,
         CancellationToken cancellationToken = default
+    ) {
+        DocumentationResult result = await QueryCoreAsync(request, cancellationToken).ConfigureAwait(false);
+        return m_sourceEvidence is null || result.status == "Mismatched" ? result : result with
+        {
+            sourceApiStatus = "Verified", sourceEvidenceIdentity = m_sourceEvidence.identity
+        };
+    }
+
+    private async Task<DocumentationResult> QueryCoreAsync(
+        DocumentationRequest request,
+        CancellationToken cancellationToken
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(request);

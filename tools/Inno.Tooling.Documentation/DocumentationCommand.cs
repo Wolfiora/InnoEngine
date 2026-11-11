@@ -20,6 +20,7 @@ public static class DocumentationCommand
     /// index, search, read, symbol, resource, status or catalog followed by engine-root, cache-root, docs-root,
     /// snapshot, source-tree, query, page, project, surface, section, id, offset, limit and format as applicable.
     /// Index requires docs-root. Read-only commands reject docs-root rather than implicitly refreshing mutable content.
+    /// Reads optionally accept evidence-file and evidence-sha256 selected by an authenticated preparation boundary.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels preparation or reading while preserving the previous complete generation.
@@ -58,7 +59,7 @@ public static class DocumentationCommand
         for (int index = 1; index < arguments.Length; index += 2)
         {
             string key = arguments[index];
-            if ((key is not ("--engine-root" or "--cache-root" or "--format" or "--snapshot" or "--source-tree") && Array.IndexOf(specific, key) < 0)
+            if ((key is not ("--engine-root" or "--cache-root" or "--format" or "--snapshot" or "--source-tree" or "--evidence-file" or "--evidence-sha256") && Array.IndexOf(specific, key) < 0)
                 || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown, duplicate or incomplete documentation option: " + key);
         }
@@ -67,6 +68,9 @@ public static class DocumentationCommand
             throw new ArgumentException("Documentation format must be text or json.");
         string root = Path.GetFullPath(options.GetValueOrDefault("--engine-root", Directory.GetCurrentDirectory()));
         string cache = Path.GetFullPath(options.GetValueOrDefault("--cache-root", Path.Combine(root, "artifacts", "documentation-query")));
+        bool evidence = options.ContainsKey("--evidence-file");
+        if (evidence != options.ContainsKey("--evidence-sha256") || operation == "index" && evidence)
+            throw new ArgumentException("Source evidence requires both a certificate file and independently trusted SHA-256 on a prepared-snapshot read.");
         DocumentationResult result;
         if (operation == "index")
         {
@@ -76,8 +80,11 @@ public static class DocumentationCommand
         }
         else
         {
+            DocumentationEvidence? sourceEvidence = evidence
+                ? await DocumentationEvidence.ReadAsync(Required("--evidence-file"), Required("--evidence-sha256"), cancellationToken).ConfigureAwait(false)
+                : null;
             using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, options.GetValueOrDefault("--snapshot"),
-                options.GetValueOrDefault("--source-tree"), cancellationToken).ConfigureAwait(false);
+                options.GetValueOrDefault("--source-tree"), cancellationToken, sourceEvidence).ConfigureAwait(false);
             if (operation == "catalog")
             {
                 DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);

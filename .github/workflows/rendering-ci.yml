@@ -225,16 +225,23 @@ jobs:
             exit 0
           }
           if ($env:SHOULD_RUN -cne 'true') { throw 'Cadence selection did not produce an explicit decision.' }
+          $catalogPaths = [Collections.Generic.List[string]]::new()
           $receipts = foreach ($platform in @('windows-2022', 'macos-15')) {
             $available = @(Get-ChildItem artifacts/validation/received -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
             $selected = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $available -Name "validation-$platform" -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
             $directory = $selected.directory
+            $catalogPaths.Add("$directory/documentation-catalog.json")
             $receipt = ./tests/ci/Test-ValidationReport.ps1 -PlanPath "$directory/plan.json" -ResultsPath "$directory/results.json" `
               -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION `
               -DocumentationPairingPath "$directory/documentation-pairing.json"
             [pscustomobject]@{ platform = $platform; receipt = $receipt }
           }
           $receipts | ConvertTo-Json -Depth 10 | Set-Content artifacts/validation/certification.json
+          $source = ./tests/ci/New-DocumentationSourceCertificate.ps1 -CertificationPath artifacts/validation/certification.json `
+            -CatalogPaths $catalogPaths.ToArray() -OutputDirectory artifacts/validation/source-certification `
+            -ProducerOrigin "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT"
+          "source-certified=$(($source.status -ceq 'Passed').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "Source API certification: $($source.status). Missing obligations: $($source.missing.Count)." >> $env:GITHUB_STEP_SUMMARY
           $full = @($receipts | Where-Object { -not $_.receipt.full }).Count -eq 0
           "full=$($full.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           foreach ($receipt in $receipts) {
@@ -265,3 +272,19 @@ jobs:
           path: artifacts/validation/certification.json
           if-no-files-found: error
           retention-days: 30
+      - name: Retain source certification diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: documentation-source-status-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/source-certification/source-certification-status.json
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Retain complete source certification
+        if: steps.reconcile.outputs.source-certified == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: documentation-source-certification-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/source-certification/source-certificate.json
+          if-no-files-found: error
+          retention-days: 90

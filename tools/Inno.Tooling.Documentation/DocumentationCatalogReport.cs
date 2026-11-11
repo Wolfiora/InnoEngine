@@ -47,4 +47,9 @@ public sealed record DocumentationCatalogReport(
     IReadOnlyDictionary<string, string?> projects,
     IReadOnlyList<DocumentationPageInfo> pages,
     IReadOnlyList<DocumentationReferenceInfo> references
-);
+) {
+    /// <summary>
+    /// Gets the matching trusted source certificate identity, or null for an unverified catalog.
+    /// </summary>
+    public string? sourceEvidenceIdentity { get; init; }
+}
