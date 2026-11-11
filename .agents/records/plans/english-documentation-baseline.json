@@ -4356,8 +4356,11 @@
       "sha256": "35c668b9a955793d380897e1fa5597c02c192c9ec2fc3970d57a70dd0f01a9e3",
       "bytes": 18714,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/manual/execution/run-coroutines.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/api/projects/inno-core-coroutines.md"
+      ]
     },
     {
       "source": "docs/modules/core/Inno.Core.Diagnostics.md",
@@ -4416,8 +4419,12 @@
       "sha256": "310f8e0e7c0d1c83e10dc9b39e9e4c6da11c04aa47de9fd89206e7f5aa0079ba",
       "bytes": 28696,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/manual/execution/own-async-work.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/architecture/execution-and-retirement.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/api/projects/inno-core-execution.md"
+      ]
     },
     {
       "source": "docs/modules/core/Inno.Core.Graphs.md",
@@ -4492,8 +4499,11 @@
       "sha256": "10f460b09943bc92195d4bd5b93b1c82a6924bdd5477a7b0b23334d22b23ce3e",
       "bytes": 21687,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/manual/execution/schedule-frame-jobs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/0785f46a79913f8a972996a299511ba64cad1a52/content/en/api/projects/inno-core-jobs.md"
+      ]
     },
     {
       "source": "docs/modules/core/Inno.Core.Layers.md",
