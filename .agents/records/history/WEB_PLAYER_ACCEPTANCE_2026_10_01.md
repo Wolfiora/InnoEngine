@@ -26,7 +26,7 @@ Browser Support Pack 只包含目标引擎引用、wasm32 原生 archive、Brows
 | 架构与编译 | `Inno.Tooling.Architecture` 通过；Browser Player Debug 构建在排除不支持的 MiniAudio 绑定后为 0 警告、0 错误。 |
 | 桌面回归 | Windows Player Release 构建 0 警告、0 错误；重新发布 `windows-x64` Support Pack 后，FlappyBird 的正式 Windows Build CLI 导出也完成原子提交，退出码 0。 |
 
-![刷新后显示 Best: 1](../../../docs/architecture/images/flappybird-web-best-after-refresh.png)
+![刷新后显示 Best: 1](visual-evidence/flappybird-web-best-after-refresh.png)
 
 ## 颜色与光照回归验收
 
@@ -70,17 +70,17 @@ FlappyBird 只注册一个 Rendering2D 模型，Canvas 作为该模型中的 dra
 
 修复前（第 6 次正式产物）：
 
-![修复前星光与暗部接近黑色](../../../docs/architecture/images/flappybird-web-night-before.png)
+![修复前星光与暗部接近黑色](visual-evidence/flappybird-web-night-before.png)
 
 最新 Web 夜景：
 
-![修复后星星与光照](../../../docs/architecture/images/flappybird-web-night-after.png)
+![修复后星星与光照](visual-evidence/flappybird-web-night-after.png)
 
-![夜晚游玩](../../../docs/architecture/images/flappybird-web-night-playing.png)
+![夜晚游玩](visual-evidence/flappybird-web-night-playing.png)
 
 桌面参考：
 
-![Windows 夜景参考](../../../docs/architecture/images/flappybird-windows-night-reference.png)
+![Windows 夜景参考](visual-evidence/flappybird-windows-night-reference.png)
 
 ## 平台与运行约束
 

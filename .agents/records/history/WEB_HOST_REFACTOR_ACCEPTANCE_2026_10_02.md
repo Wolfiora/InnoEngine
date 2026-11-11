@@ -64,13 +64,13 @@
 - 浏览器运行异常为 0；有 316 条 warning（两次加载合计）：310 条 BGFX WebGL capability probe，4 条 SwiftShader queue/performance，2 条 MiniAudio ScriptProcessor 弃用提示。未隐藏警告、禁用扩展或修改 extern。它们是本轮仍可见的第三方/验证环境限制，不能宣称 console 完全干净。
 - 验证用服务器和浏览器由 harness finally 关闭，当前没有留下本轮本地网页游戏。
 
-![白天](../../../docs/architecture/images/flappybird-refactor-day.png)
+![白天](visual-evidence/flappybird-refactor-day.png)
 
-![夜景星光与鸟身光晕](../../../docs/architecture/images/flappybird-refactor-night.png)
+![夜景星光与鸟身光晕](visual-evidence/flappybird-refactor-night.png)
 
-![实际得分](../../../docs/architecture/images/flappybird-refactor-scored.png)
+![实际得分](visual-evidence/flappybird-refactor-scored.png)
 
-![刷新后 Best 1](../../../docs/architecture/images/flappybird-refactor-after-refresh.png)
+![刷新后 Best 1](visual-evidence/flappybird-refactor-after-refresh.png)
 
 ## 验证记录
 

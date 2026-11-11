@@ -10,1544 +10,1937 @@
       "sha256": "c0fb0961bd03019e921d4bf6c7be88c8353f6c1f792d3c1b366f3cf98ae1f3d9",
       "bytes": 591,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/README.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/README.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/README.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/AI_PIPELINE_CI_CLOSURE_2026_11_06.md",
       "sha256": "fc4da4215145f82bf8d3aa39187c16c150d94c417b125793714454930f8f5196",
       "bytes": 47114,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/AI_PIPELINE_CI_CLOSURE_2026_11_06.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md",
       "sha256": "41653e8c60faa9a9f3f30e4578a838f89d1ed070c503a098d6e9fc482443f8f0",
       "bytes": 12073,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/ATOMIC_FILE_PUBLICATION_ACCEPTANCE_2026_10_29.md",
       "sha256": "7285a4a70d9fea9815e654f739e0db6fb347e1893d28c36241b3d2c28fe418e2",
       "bytes": 5591,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/ATOMIC_FILE_PUBLICATION_ACCEPTANCE_2026_10_29.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BGCS301_BROWSER_AGGREGATE_ABI.md",
       "sha256": "c7ffcb5d71bcde4545215e8a40bf992d378e98d767b1c035f9ba8c429a2b2870",
       "bytes": 4707,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BGCS301_BROWSER_AGGREGATE_ABI.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BGCS410_ANONYMOUS_SYSTEM_RECORD_REPRO.md",
       "sha256": "4c6176a728b408a1c8c3d0c51d352a98f76b0c265551eda192ddb7cf5ac39412",
       "bytes": 5851,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BGCS410_ANONYMOUS_SYSTEM_RECORD_REPRO.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BGCS410_ANONYMOUS_TYPE_DEFECT_HANDOFF.md",
       "sha256": "dafa2281a5f48b73ef282d1ac28b6b38e11b54d894cfe23ab1d56bd582ae5a0b",
       "bytes": 21049,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BGCS410_ANONYMOUS_TYPE_DEFECT_HANDOFF.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BGCS410_CONSUMER_ACCEPTANCE_2026_10_24.md",
       "sha256": "7020ce54c73fdc862920ef8653b98c90b007a32ee747305e68d3720fde6eb9f8",
       "bytes": 16749,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BGCS410_CONSUMER_ACCEPTANCE_2026_10_24.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BGCS411_CONSUMER_ACCEPTANCE_2026_10_24.md",
       "sha256": "311714ec324496333a78a2f4d33e4d92a5d0bc1fbc99a3e0057f3826685f25c3",
       "bytes": 5437,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BGCS411_CONSUMER_ACCEPTANCE_2026_10_24.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md",
       "sha256": "ebc448996df562dc56591cc4a5d98f42775a6d2364cf1056f849489c5a53510a",
       "bytes": 15771,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md",
       "sha256": "f302824eebf48cd18224489b04802ed532c88b2738afda875a373234291525d4",
       "bytes": 26781,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BUILD_COST_TOOL_HOST_DISK_CLOSURE_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BUILD_ENTRY_CACHE_WIKI_REFINEMENT_ACCEPTANCE.md",
       "sha256": "520afcf050f65a28467a27c3222b2810d2bcbb97f8c1539a53cbb69d54956b69",
       "bytes": 50605,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BUILD_ENTRY_CACHE_WIKI_REFINEMENT_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/BUILD_ENTRY_CACHE_WIKI_REMEDIATION_2026_10_12.md",
       "sha256": "d7c01f6df464603cf85585bfd0c912bcf0d6fe7062e135ff02cea87ae42d39ce",
       "bytes": 9004,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/BUILD_ENTRY_CACHE_WIKI_REMEDIATION_2026_10_12.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/CURRENT_ARCHITECTURE_REVIEW_2026_10_12.md",
       "sha256": "4a7fbe087f48a7bc5f570b05e36e3446814d80ed6593aa5eae8d886584d1976a",
       "bytes": 16168,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/CURRENT_ARCHITECTURE_REVIEW_2026_10_12.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/CURRENT_ENGINE_OPEN_ITEMS_2026_10_15.md",
       "sha256": "6dd8db6aa086245d9d5df441c5ab78afa43f1c332aa7bfd8ba98dbb348d73978",
       "bytes": 17602,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/CURRENT_ENGINE_OPEN_ITEMS_2026_10_15.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/CURRENT_FRAMEWORK_REVIEW_2026_10_14.md",
       "sha256": "8b3e7ca3badc2ba14bb90dc2a80c5ab4cc8e719ac30c080936a3daf4475aed7f",
       "bytes": 14110,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/CURRENT_FRAMEWORK_REVIEW_2026_10_14.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/DISK_CLEANUP_20261013.md",
       "sha256": "1a63befd9e1e65725dc093a8b366a299bf1c7aaaac843e3ce25eab003a337ff7",
       "bytes": 6376,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/DISK_CLEANUP_20261013.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md",
       "sha256": "b5190b5c99bf5c12973d98158f4d0e8d263d023fac027f61a74ac29e7307f886",
       "bytes": 6119,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecordLinksRepaired",
+      "target": [
+        ".agents/records/acceptance/DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_DEFAULT_LAYOUT_ACCEPTANCE_2026_10_29.md",
       "sha256": "e2a675c9ce66fca99f5e23388c1f8c8570cefd3dc478748acb621c2bc968d9f2",
       "bytes": 5663,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_DEFAULT_LAYOUT_ACCEPTANCE_2026_10_29.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_ACCEPTANCE_2026_10_27.md",
       "sha256": "80a95c5811ffe69c39e9458e7b0e1100e6b4af9a17321ffbd00e2e944df350c2",
       "bytes": 17275,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_ACCEPTANCE_2026_10_27.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_CAPTURE_TAIL_ACCEPTANCE_2026_10_30.md",
       "sha256": "6d814559a58580d643355148ea0f2e8c5fb74425464efde579ce4d038bac70ae",
       "bytes": 3947,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_CAPTURE_TAIL_ACCEPTANCE_2026_10_30.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_CLOSURE_ACCEPTANCE_2026_10_28.md",
       "sha256": "adde83b455560ca048ab199a31e52cb30bfcd09eb7fb8618073b9c267429d974",
       "bytes": 38376,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_CLOSURE_ACCEPTANCE_2026_10_28.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md",
       "sha256": "674c7578f0bdb3099a957396c8a14e902143c0b7efb16020bbf6041f557ad2c5",
       "bytes": 21247,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_OWNER_ACCEPTANCE_2026_10_29.md",
       "sha256": "8ea44ec62aa0771e341ab9321fb1109aba5d2d4181362e7616343d6913253b54",
       "bytes": 21335,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_OWNER_ACCEPTANCE_2026_10_29.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_PACKAGE_PROBE_ACCEPTANCE_2026_10_30.md",
       "sha256": "07d29782ad583e12e91394d20077f8f9b199f6128a569378e403d6d833e24fe0",
       "bytes": 3074,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_PACKAGE_PROBE_ACCEPTANCE_2026_10_30.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md",
       "sha256": "64dc6b83fa905ce8dd0a3dd4929fa0db821c0c88cbd848965e87f794f10a6522",
       "bytes": 22275,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_PLAN_REVIEW_2026_10_27.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_SCRIPT_PUBLICATION_ACCEPTANCE_2026_10_30.md",
       "sha256": "b350d73021ddc3f727ffd288894511694ed632e32ea4caf8a194e8f05324dccc",
       "bytes": 6226,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_SCRIPT_PUBLICATION_ACCEPTANCE_2026_10_30.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/EDITOR_UI_SNAPSHOT_ACCEPTANCE_2026_10_29.md",
       "sha256": "a873c4060d729226aa0f5b7972bea8f4c8a2f67f3ed9a2461772b8deb62953a6",
       "bytes": 9577,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/EDITOR_UI_SNAPSHOT_ACCEPTANCE_2026_10_29.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md",
       "sha256": "1fa41523e7a66d5aa528bd3d262a5b1bbc6fe6aa797023fc3fba0f77cf67b240",
       "bytes": 9779,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/ENTRY_PROJECT_BUILD_SIMPLIFICATION_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/FINAL_PLATFORM_RELOAD_NUGET_ACCEPTANCE.md",
       "sha256": "640a5b2ab5143e4941d1329047911ce7cee8da0c9041e4bca2a8cad6c3f00e39",
       "bytes": 9889,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/FINAL_PLATFORM_RELOAD_NUGET_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md",
       "sha256": "6eb67c20a84e57e4e9c5f4de06f9cd170faf780e2b6ca9dcbb82de7e089f4532",
       "bytes": 39774,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/FULL_ENGINE_AUDIT_2026_10_24.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/ISSUE58_DYNAMIC_MODAL_ACCEPTANCE.md",
       "sha256": "aaf19bcd8b5b4a0ec66f23d7ab6bd7d23082a93378c3dad8dbe84cf082cce55b",
       "bytes": 15040,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/ISSUE58_DYNAMIC_MODAL_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/ISSUE58_MODAL_PERFORMANCE.json",
       "sha256": "540a30d57bac747ac04d1571264c1d76813fb0f9cc6f92cf17a472e68e422eb1",
       "bytes": 159790,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/ISSUE58_MODAL_PERFORMANCE.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/ISSUE58_MODAL_PERFORMANCE_PROBE.cs.txt",
       "sha256": "d2ee2c80023edc53e3c0519cb74d08e6ff9d53eb215e1f8141caff12a5dafe2b",
       "bytes": 8411,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/ISSUE58_MODAL_PERFORMANCE_PROBE.cs.txt"
+      ]
     },
     {
       "source": ".agents/records/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md",
       "sha256": "a4990e96c54a8607e516d589fd5947950e47900b4eca02ac6a8967b5f655672c",
       "bytes": 24987,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/LOCAL_BOUNDARY_REFINEMENT_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/LOGO_BRANDING_2026_11_07.md",
       "sha256": "52897506cd0b2d734437faf3cb9caff2c0bda65b6ea3ac7c3b294f4245e0589b",
       "bytes": 32323,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecordLinksRepaired",
+      "target": [
+        ".agents/records/acceptance/LOGO_BRANDING_2026_11_07.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/MACOS_ARM64_BGCS301_ACCEPTANCE.md",
       "sha256": "74840615ea78bd6413eea8a3c9999a052f029bd049275e4325423175cac88cb1",
       "bytes": 13974,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/MACOS_ARM64_BGCS301_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/MSBUILD_FOUNDATION_IDENTITY_2026_11_02.md",
       "sha256": "d13d48ee10dcc0d828ced6932b60360e40e07a2a30bc4d18139e25e1d208a1f0",
       "bytes": 4972,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/MSBUILD_FOUNDATION_IDENTITY_2026_11_02.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/MSBUILD_IDE_TASK_LOADING_2026_10_21.md",
       "sha256": "ae302d9093e1a05acff8caac1b1d22019064e9b5d4da57403df8555327081be5",
       "bytes": 12840,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/MSBUILD_IDE_TASK_LOADING_2026_10_21.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/NET10_BGCS301_CONTINUATION_2026_10_21.md",
       "sha256": "fd9807385c6851f7090ebb46bdcb2fdad5a8bd6bff62c7ae74a4b9ac03a88ee4",
       "bytes": 10385,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/NET10_BGCS301_CONTINUATION_2026_10_21.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/NET10_BGCS301_FINAL_ACCEPTANCE_2026_10_20.md",
       "sha256": "997c59fa238a79a437867f1a3d036fac82ba4dfbb8b838aa2da6995b31f1cebc",
       "bytes": 9719,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/NET10_BGCS301_FINAL_ACCEPTANCE_2026_10_20.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/NET10_BGCS301_PROGRESS_2026_10_20.md",
       "sha256": "acecdc52934e65bf1d91f35fab4383e628102510de984bd5f60c50fca598c575",
       "bytes": 23969,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/NET10_BGCS301_PROGRESS_2026_10_20.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/NET10_BGCS3_PROGRESS_2026_10_20.md",
       "sha256": "578595e3703f6e4a3ce1756ca6619171ff53b3fb54098936085ee7a3789b09ec",
       "bytes": 11350,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/NET10_BGCS3_PROGRESS_2026_10_20.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/NET10_CSHARP14.md",
       "sha256": "527ae3ac8cdf8af351b07fed55861ef70b361b8459a6a493e5e8b60cec3f0594",
       "bytes": 9540,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/NET10_CSHARP14.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/NET10_NON_BGCS_ACCEPTANCE_2026_10_18.md",
       "sha256": "e242661072b36f6fd33a46b275671be30617dae74692d027c1af2e08fc6b2fea",
       "bytes": 10255,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/NET10_NON_BGCS_ACCEPTANCE_2026_10_18.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/PLATFORM_OWNERSHIP_CACHE_ACCEPTANCE_2026_10_22.md",
       "sha256": "52e1574c547e78095c3ccbf3c9182b55e3516693cbbe72b59dd9c9187ee55b36",
       "bytes": 32639,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/PLATFORM_OWNERSHIP_CACHE_ACCEPTANCE_2026_10_22.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/PLATFORM_OWNERSHIP_CACHE_FILE_TREE_2026_10_22.md",
       "sha256": "cdcc81a0a8bb5428b4f38e301f30e905ef80c6b8545a92073b2a6d528bf10456",
       "bytes": 48359,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/PLATFORM_OWNERSHIP_CACHE_FILE_TREE_2026_10_22.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md",
       "sha256": "ef4ef9d0ba5c231dee840d9a8d71e29943119d481093620338b562a5c7855360",
       "bytes": 5167,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/PLUGIN_EVENTS_IDENTITY_ACCEPTANCE_2026_10_22.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md",
       "sha256": "c6fc9fb8a4e0a8f680ede3d2fc035c64a747f21f06f5d68445f598ad799505ca",
       "bytes": 14755,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/PRIORITY_FIX_ACCEPTANCE_2026_10_25.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/README.md",
       "sha256": "9eeb8dd07eb60d242fdfdb1eeb60c795192c52580b55e77b0531021d3df389c6",
       "bytes": 4756,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/acceptance/README.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/acceptance/README.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/acceptance/README.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/REPOSITORY_HYGIENE_ACCEPTANCE_2026_10_25.md",
       "sha256": "fadf61848dd7e268fc2f4e6e78a7b60403253f89d574b1620000f6f1aaf8101a",
       "bytes": 11861,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/REPOSITORY_HYGIENE_ACCEPTANCE_2026_10_25.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md",
       "sha256": "d2f5d88984dd1d1d87bd238c27bee793752523c4516eac17fa40f67fb4178d9a",
       "bytes": 6897,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/WINDOWS_VULKAN_EXIT_FAILURE_2026_10_20.md",
       "sha256": "6842071053d17491696de22590ea228d1f0dfaa3c01e1588b3c5c868fca3e4d6",
       "bytes": 4919,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/WINDOWS_VULKAN_EXIT_FAILURE_2026_10_20.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/current.md",
       "sha256": "2a5e5ff5203fd926bf3dec8b099f44f2306b6b7df2b1d8d37bee7d47cfb02bfe",
       "bytes": 6801,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/acceptance/current.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/acceptance/current.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/acceptance/current.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/README.md",
       "sha256": "4446e9db879fd5028ca03537abaef46e39381ce1ca02bd6ba9c8013554486c98",
       "bytes": 1048,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/docs-agent/README.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/checks.json",
       "sha256": "2ded6f795b93456e7b82594e83e79eeb5c328435db21bd6ef93af361575cc034",
       "bytes": 1690,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/checks.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/console-search.json",
       "sha256": "5a80caf003da935fc5bcf78bcc2cfac57bc5c2c474aca08bf4507e072c7ae8b3",
       "bytes": 3659,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/console-search.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/final-tree.txt",
       "sha256": "7e30c82d5d3209ad69d0de6c6142c0b201d4987ccfb075ce325a7a92c166e82a",
       "bytes": 37661,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/final-tree.txt"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/identity-symbol.json",
       "sha256": "868ea2cdd25a3a952150360823af2a020cf11116253036aa960dca2b51149e5b",
       "bytes": 7975,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/identity-symbol.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/input-snapshot.json",
       "sha256": "d0b81ff0c5f15a4dbd3cd2b77b1512a7308a5a31628ef41d0cc99bc629e6ae9a",
       "bytes": 91679,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/input-snapshot.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/merged-api-rows.json",
       "sha256": "0f092ac1298ee07a9dff1bf61e3bd000f262dc6d6901f5f1e17167c60216f61b",
       "bytes": 12158,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/merged-api-rows.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/migration-audit.json",
       "sha256": "3494b382ab2e51bef91e18d185398603189c2cfbc5599e31ae0fe26eeebc3ba1",
       "bytes": 289,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/migration-audit.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/project-coverage.json",
       "sha256": "d108ba758004dadae7cd4361bde49596108e1d9f176ef86e01dbe22b2b77f5df",
       "bytes": 43879,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/project-coverage.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/query-performance-contended.json",
       "sha256": "52e8168a7edc7487d4720450b739eac747e6e13ff5fde0edc2f7fed8c4ade517",
       "bytes": 23201,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/query-performance-contended.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/query-performance.json",
       "sha256": "0bdb08f13950a060378e480a142238e9beb11a7cf2cc41d2724e9243e07736bc",
       "bytes": 23415,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/query-performance.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/selected-api.json",
       "sha256": "2feda6f57af287b4d220d5789baffd3b4c4415e95ebf76110d59b7c64391c8a5",
       "bytes": 618032,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/selected-api.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/selected-examples.json",
       "sha256": "51b2e7bb435890c8417a1a0204413c396b127b58284309b9a81f8fb22cb176e3",
       "bytes": 1122,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/selected-examples.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/docs-agent/toolchains-read.json",
       "sha256": "1679b9f79c0028f7a941fe6cda5d4bc5ca9311efe28c7194e8d15065b3b332d0",
       "bytes": 5594,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/docs-agent/toolchains-read.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/.gitattributes",
       "sha256": "a6e93a6c30def3ddc4be06636e4643c263acc73639eaa9ccaac064a710e5a9d8",
       "bytes": 162,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/.gitattributes"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/README.md",
       "sha256": "f78f220f5919f429880df9c8de469b0f89bcd8055c1861642c5cd6376867e987",
       "bytes": 1507,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/README.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/absolute-inspection-measurements.json",
       "sha256": "767f55d8544f99556b177348ebd688f5c53cb612a23be187a87bab3efd504299",
       "bytes": 38106,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/absolute-inspection-measurements.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/bgcs-package-integrity.json",
       "sha256": "d83025144881a4e7c5564659e7badc592e18f6f3d48fe9129fc3874feddf695b",
       "bytes": 1094,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/bgcs-package-integrity.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/cold-warm-publications.json",
       "sha256": "8b25c6941006501cf23386b378f59be5233846459ad6ddf92de3015d5904b7c4",
       "bytes": 215793,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/cold-warm-publications.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/current-ui.png",
       "sha256": "707eb8d5a0ddf2aac4d60b9f7ecae5c68d1699e00f60fbecda2a5b1852b39e67",
       "bytes": 215290,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/current-ui.png"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/delivery-wiki-examples.json",
       "sha256": "6c71b7d8cb35fd7106ed0a77b2e2fd0dfb0bca92fd6a3a2660d046f1c309cbfe",
       "bytes": 46556,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/delivery-wiki-examples.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/delivery-wiki-result.json",
       "sha256": "04b974039d6f978fee1028cd2e50ba15430585a0ad3a6be7022a5b8b33493d66",
       "bytes": 769,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/delivery-wiki-result.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/environment.json",
       "sha256": "a99e55bdc6b6d0d8b095c0fa383f01974eb2498461705061b45e625c9a81d2a7",
       "bytes": 2875,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/environment.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/file-tree.md",
       "sha256": "dd106474c3f2f6afaf9551ba4890258d94882eb238b16dde68b9fa8b90e8070c",
       "bytes": 5748,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/file-tree.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/gpu-context-observations.json",
       "sha256": "7fd89e42b57af47f614876ed8ac3edc1d86848c84b88375c8c4f0d7027713af4",
       "bytes": 9773,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/gpu-context-observations.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/graph-tail-protocol.json",
       "sha256": "6324bdae08c59f1a6f1e720a06fb5721e6685e2a9e29460193202d06417fa29e",
       "bytes": 713,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/graph-tail-protocol.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/graph-tail-summary.json",
       "sha256": "c34fff55878a619d7ba013e2d6aa31d00aa8f3002bae502ac55e7248e2d5cb41",
       "bytes": 11531,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/graph-tail-summary.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/issue-map.json",
       "sha256": "10a5dd071bb680feb821544ccb7753a20d4b48f04099e4a3d8fe2b0330535757",
       "bytes": 24767,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/issue-map.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/local-acceptance.json",
       "sha256": "1b6a7b401b094446f6361502975e41f40cc0cb4cfea4258a007ffe78963a727e",
       "bytes": 117785,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/local-acceptance.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/manifest.json",
       "sha256": "53fb3d96a1add58a08f29bb3f65cfcec0bfa2ec1a3e1c55e76ed32ee8eeb69e5",
       "bytes": 10852,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/manifest.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/original-plan-requirements.csv",
       "sha256": "28455042820db7d21fab14cd09b3e2a273a760a16419cd4a93ea11c86abb5357",
       "bytes": 192631,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/original-plan-requirements.csv"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/original-plan-source.json",
       "sha256": "3faad8cf8b21757e84c4c63b8de34c9dfd181745e9775e22aa9aa14cf1878d1e",
       "bytes": 433,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/original-plan-source.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/original-ui.png",
       "sha256": "0efe2ec81d6e10ab0652e72368aafecbfc12f612353e0dfa71757450b91274fe",
       "bytes": 216695,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/original-ui.png"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/ownership-review.md",
       "sha256": "f637eecd20ebe13bada78944d7381e09ad0a2d641a1a04fe6f83bed95ba6ac9f",
       "bytes": 13479,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/ownership-review.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/performance-review.json",
       "sha256": "6ec484e7f455b4bb347acc7c3d3627314a390cdac76a361a84f8654c44798d9d",
       "bytes": 9294,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/performance-review.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/performance-summary.json",
       "sha256": "bda0af282ada8860b38cf871ded6d7b9cc61bef7314da24cf306830984e0bb75",
       "bytes": 150629,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/performance-summary.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/raw-commands-measurements.json",
       "sha256": "78e70470237d68ddd257e1ad49bce4bd9099fb49d03062af756a6c8453622425",
       "bytes": 57115,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/raw-commands-measurements.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/raw-graph-tail-measurements.json",
       "sha256": "96844d1d880a25e82ccbd54dd000ab394944859a4a79b56dfbeb65a628eece14",
       "bytes": 65583,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/raw-graph-tail-measurements.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/raw-input-measurements.json",
       "sha256": "ebf6b75eff1c10400320837fae825f301d2345da3b13962ea162663bd0c35fae",
       "bytes": 49367,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/raw-input-measurements.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/raw-product-measurements.json",
       "sha256": "e7b42ffeff19ebfd558fe7cb8bab2bcd0d9ff3554ddd9091ba8f88bbc86e1ed9",
       "bytes": 17664,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/raw-product-measurements.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/raw-static-measurements.json",
       "sha256": "b50e6cbcb4018e5eaf09cb2033ba9f1a74ea0c542372e3db2169bc9db29ef9a2",
       "bytes": 55806,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/raw-static-measurements.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/source-inventory.json",
       "sha256": "38f1346d01e037c06eece4ac5c0da45fb237d768f2ec5d6082e4bc6edf07f66d",
       "bytes": 19088,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/source-inventory.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/test-cases.csv",
       "sha256": "5ddd02d7c5152655773ffd2a9509b009e82af46a91d4606dede70d89aab4d086",
       "bytes": 584376,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/test-cases.csv"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/visual-content-review.json",
       "sha256": "74a2c807569b09caca5c3b4d6b8e9043b309fe43552c2dadb507d4094eb37673",
       "bytes": 1776,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/visual-content-review.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/volume-after-maintenance.json",
       "sha256": "bf9d661b6f80dd855cf219d9e1a326a9a88c79559fc9c3f70089f2b3bd07532b",
       "bytes": 166,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/volume-after-maintenance.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/volume-before-maintenance.json",
       "sha256": "ad4dbd921eeec03ffd6c78f2da2a12e20dd4a07f60f2c37c206c0210b25e72c2",
       "bytes": 166,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/volume-before-maintenance.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-2026-10-30/wiki-result.json",
       "sha256": "90a5964bacbf0fcdd7a8785594f26af13bdeca26c507b425e72ecafd3b47342a",
       "bytes": 216,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-2026-10-30/wiki-result.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-performance-2026-10-28/README.md",
       "sha256": "131063b1954089e861cf2631e0b57058799d18d393d534af8220cc4ce942d0c8",
       "bytes": 1865,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/acceptance/editor-ui-performance-2026-10-28/README.md"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-performance-2026-10-28/frames.json",
       "sha256": "bda12634b07400b53062f48e3c374aaa7e7e825b141cc2bec856c450a429f1c1",
       "bytes": 53812,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-performance-2026-10-28/frames.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-performance-2026-10-28/identity.json",
       "sha256": "aa8dd4622a16f0916da8a470c43d8e21539a759ca6555baac27ba2fa0228cce8",
       "bytes": 394,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-performance-2026-10-28/identity.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-performance-2026-10-28/menus.json",
       "sha256": "915272e1701ddab22ab7069e1aa90d337c07b822fd7df21eae3173691e02b1c3",
       "bytes": 20596,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-performance-2026-10-28/menus.json"
+      ]
     },
     {
       "source": ".agents/records/acceptance/editor-ui-performance-2026-10-28/summary.json",
       "sha256": "94a1f624010b4244a366b7669fd7b3e8b595e793617fd82f37a863b397b97ca0",
       "bytes": 2615,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/acceptance/editor-ui-performance-2026-10-28/summary.json"
+      ]
     },
     {
       "source": ".agents/records/decisions/README.md",
       "sha256": "94ecfa75556ba308eacc5c37dddd567111254a77f5a6b75986ea2278114a0dd7",
       "bytes": 268,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/decisions/README.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/decisions/README.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/decisions/README.md"
+      ]
     },
     {
       "source": ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md",
       "sha256": "ba2f081a590bce8cd02a181f597a4a979c72e41ac922a70d1a3ee29463371cdc",
       "bytes": 27000,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md"
+      ]
     },
     {
       "source": ".agents/records/history/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md",
       "sha256": "e40dcc940ebf32546a28ff7826677b37833c504798bb9fe8e478f02ae0b24459",
       "bytes": 67833,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md"
+      ]
     },
     {
       "source": ".agents/records/history/BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md",
       "sha256": "faeec9918265140fdc45fb53599302b2a95a14aaa0b2c46c899327ad613f6a59",
       "bytes": 15322,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/history/BACKEND_PLATFORM_INTEGRATION_HANDOFF.md",
       "sha256": "f9cbfd93709c594fc2a573f78ffba4d27dced492b58139b9c2ce51725341fb5a",
       "bytes": 3234,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BACKEND_PLATFORM_INTEGRATION_HANDOFF.md"
+      ]
     },
     {
       "source": ".agents/records/history/BACKEND_PLATFORM_INTEGRATION_PLAN.md",
       "sha256": "cf9d6cce358fdc8facc47428137e050159fd42fd3af50405bb9e41a3b288baed",
       "bytes": 10552,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BACKEND_PLATFORM_INTEGRATION_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md",
       "sha256": "f701574c5f6654a15914ec28bbf908611b0c1eaa20eaf2cecc7216de05fd14ac",
       "bytes": 25599,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/history/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md",
       "sha256": "8338a99b9238f0e0ab2ebde510e5a6e5f2cd93fb1987350eb31dcc40d32cbdfc",
       "bytes": 40216,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/BUILD_COST_TOOL_HOST_DISK_CLOSURE_PLAN.md",
       "sha256": "8c3ac20899421b95de7c85f4f6fb59e5de2f9b96ef19195a5a45e78ff49df891",
       "bytes": 6494,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BUILD_COST_TOOL_HOST_DISK_CLOSURE_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/BUILD_ENTRY_CACHE_WIKI_REFINEMENT_PLAN.md",
       "sha256": "c14fb1106309fcb3aa871451e3384b8da5e118a0b8f7f43eeedebb1348e3457c",
       "bytes": 11238,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/BUILD_ENTRY_CACHE_WIKI_REFINEMENT_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/CURRENT_ISSUES_SNAPSHOT_2026_10_11.md",
       "sha256": "390b724cb4b2ed395817d98519c57739ccb92c56df2ddf3388340782b5d72f58",
       "bytes": 14560,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/CURRENT_ISSUES_SNAPSHOT_2026_10_11.md"
+      ]
     },
     {
       "source": ".agents/records/history/DEVELOPMENT_ENTRY_ACCEPTANCE_2026_10_10.md",
       "sha256": "407411e8bc84d4fdaf5084b6db4307d372759179bd57ed7fe58f104db4ed142c",
       "bytes": 9772,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/DEVELOPMENT_ENTRY_ACCEPTANCE_2026_10_10.md"
+      ]
     },
     {
       "source": ".agents/records/history/DOCS_MIGRATED_STATUS_NOTES.md",
       "sha256": "936816717a60cc090fdc900b3fc494731a96123a701f9bc7784fe85eec165568",
       "bytes": 2112,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/DOCS_MIGRATED_STATUS_NOTES.md"
+      ]
     },
     {
       "source": ".agents/records/history/EDITOR_NATIVE_BUILD_ACCEPTANCE_2026_10_06.md",
       "sha256": "729480fb60de2e4b04048109d88677f633443c82744e11d048b806b67ced706c",
       "bytes": 7775,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/EDITOR_NATIVE_BUILD_ACCEPTANCE_2026_10_06.md"
+      ]
     },
     {
       "source": ".agents/records/history/EDITOR_PREPARED_STARTUP_ACCEPTANCE_2026_10_10.md",
       "sha256": "db7149ed4c9758101f753397fd07aa9dde636a42d6ceb488f1b6ec88aca4cd1c",
       "bytes": 9203,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/EDITOR_PREPARED_STARTUP_ACCEPTANCE_2026_10_10.md"
+      ]
     },
     {
       "source": ".agents/records/history/EDITOR_STARTUP_VIEWPORT_ACCEPTANCE_2026_10_10.md",
       "sha256": "654d205ec5be8069239daaaf5172fc1f137af293c732c630ade89fe568e234d9",
       "bytes": 7599,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/EDITOR_STARTUP_VIEWPORT_ACCEPTANCE_2026_10_10.md"
+      ]
     },
     {
       "source": ".agents/records/history/EDITOR_UI_CLOSURE_PLAN.md",
       "sha256": "7c946cbc210702499f1a24e75cd873da0c97f6ab930c17b1a31154a2726aac34",
       "bytes": 16751,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/EDITOR_UI_CLOSURE_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/EDITOR_UI_IMPLEMENTATION_PLAN.md",
       "sha256": "c14458abc1ec8b817d4d6e30c8d0865a2b869d7ded90c0ac3f394a34da86b98e",
       "bytes": 4388,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/EDITOR_UI_IMPLEMENTATION_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/ENGINE_ARCHITECTURE_AUDIT_2026_09_07.md",
       "sha256": "9b2e3f7ecdb9d6b2d36388fe184ad0cd4ac0c56fbd2c1357b649131cea6343a0",
       "bytes": 75706,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ENGINE_ARCHITECTURE_AUDIT_2026_09_07.md"
+      ]
     },
     {
       "source": ".agents/records/history/ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md",
       "sha256": "4720b24887c73f5b92222ff0a884f7655f6c69da6b5da36af50148656e9fbe09",
       "bytes": 14379,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md"
+      ]
     },
     {
       "source": ".agents/records/history/ENGINE_CLOSURE_CONTINUATION_2026_09_07.md",
       "sha256": "f6fe6e67f7f6d6cf16e79ca5b61d72e38406b0ee678531ac72e63138e28fd4ce",
       "bytes": 71291,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ENGINE_CLOSURE_CONTINUATION_2026_09_07.md"
+      ]
     },
     {
       "source": ".agents/records/history/ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md",
       "sha256": "dc8e8eb1e75006800f40d43f6be3964790784260f7ebcc9eac8d442fc42daf7d",
       "bytes": 19614,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md"
+      ]
     },
     {
       "source": ".agents/records/history/ENGINE_CONSOLIDATION_IMPLEMENTATION.md",
       "sha256": "304e907a95a9fac6c5cba9681cb2ed36342a1c30b2cb43bcfb29225d95ace12f",
       "bytes": 26021,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ENGINE_CONSOLIDATION_IMPLEMENTATION.md"
+      ]
     },
     {
       "source": ".agents/records/history/ENGINE_DIAGNOSTIC_ISOLATION_2026_09_08.md",
       "sha256": "51698bf13bf7766a58c6cc102c52845fed876dc321b3c031e61868a37c367b9f",
       "bytes": 1126,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/ENGINE_DIAGNOSTIC_ISOLATION_2026_09_08.md"
+      ]
     },
     {
       "source": ".agents/records/history/FINAL_PLATFORM_RELOAD_NUGET_PLAN.md",
       "sha256": "38969f5c534fef41ce671deb990d3517524c6bf8c3aebf28cccc758eae71aee3",
       "bytes": 5994,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/FINAL_PLATFORM_RELOAD_NUGET_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/FINAL_PLATFORM_RELOAD_NUGET_STAGE16_CHECKPOINTS.md",
       "sha256": "6c5bc6543d96e58ab3a6287661a95c43e602da1f1699e4a5d3287a89f72dbfe7",
       "bytes": 20767,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/FINAL_PLATFORM_RELOAD_NUGET_STAGE16_CHECKPOINTS.md"
+      ]
     },
     {
       "source": ".agents/records/history/IDENTITY_RECOVERY_NOTE_2026_09_07.md",
       "sha256": "999606b2038f32775eb1c54a612df7542d11f76c9e5f6779c2630faaeebd7f4f",
       "bytes": 466,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/IDENTITY_RECOVERY_NOTE_2026_09_07.md"
+      ]
     },
     {
       "source": ".agents/records/history/IDENTITY_REFERENCE_RELOAD_STANDARD_SNAPSHOT_2026_10_12.md",
       "sha256": "3a1fa151ff2d45526ec53b2a2df2be134ed9803225291ab1125af974dd768bd1",
       "bytes": 58680,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/IDENTITY_REFERENCE_RELOAD_STANDARD_SNAPSHOT_2026_10_12.md"
+      ]
     },
     {
       "source": ".agents/records/history/LOCAL_BOUNDARY_REFINEMENT_PLAN.md",
       "sha256": "84575890ee632ba02ea5545e9e9746f43373729eab75faa525279dff66e84bdb",
       "bytes": 3845,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/LOCAL_BOUNDARY_REFINEMENT_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_BOUNDARY_CLOSEOUT_ACCEPTANCE_2026_10_08.md",
       "sha256": "14576d86dc853709a34d30a642267c7e305cf95b44dc7204c65721ede246f20d",
       "bytes": 16449,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_BOUNDARY_CLOSEOUT_ACCEPTANCE_2026_10_08.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_BOUNDARY_CLOSEOUT_PLAN_2026_10_08.md",
       "sha256": "fa882372d94dfcfb08b91333b775986a2b486766e320170993e82426404cb289",
       "bytes": 4816,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_BOUNDARY_CLOSEOUT_PLAN_2026_10_08.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md",
       "sha256": "100e9efdf7dd2080f9e47b91110ffbdf55dfb4d1c034d0c8a52eb4cf1be02b4f",
       "bytes": 17128,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md",
       "sha256": "b3c6b69ceee47ba5cf711582e6cd6dfca54c47c5eb8d22476cc693f84e712932",
       "bytes": 41058,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_OWNERSHIP_REFACTOR_PLAN.md",
       "sha256": "d1457d42ca2224de6b5f461cf982051bc865e27b893391007c463b1f9d5c6c59",
       "bytes": 20225,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_OWNERSHIP_REFACTOR_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_RUNTIME_ACCEPTANCE.md",
       "sha256": "07f06104911218744551c850beb3a82341c8c72cfe89aa44b76812730475bec8",
       "bytes": 15705,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_RUNTIME_ACCEPTANCE.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_RUNTIME_PLAN_AUDIT.md",
       "sha256": "69488384183d9bd5608f8c7d3eeac0c9ca11f395a9453201092e89ed95b18ea1",
       "bytes": 10123,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_RUNTIME_PLAN_AUDIT.md"
+      ]
     },
     {
       "source": ".agents/records/history/PLATFORM_RUNTIME_REFACTOR_PLAN.md",
       "sha256": "7c2f68370b5ed986149dcec9addc52717c83fa268750154e122728c05c67172b",
       "bytes": 58712,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PLATFORM_RUNTIME_REFACTOR_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/PRECOMMIT_BGCS_AUDIT_2026_10_02.md",
       "sha256": "943145bc64a63bd30cabc354105491c0d58a4318d4e7bb99e8ad7cb7a30f82b8",
       "bytes": 11391,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PRECOMMIT_BGCS_AUDIT_2026_10_02.md"
+      ]
     },
     {
       "source": ".agents/records/history/PRECOMMIT_FULL_AUDIT_2026_10_02.md",
       "sha256": "ce136ec607c6a2d184108c2cf4de22690b6a2f697e63b4c22f50a5ed3a3e0575",
       "bytes": 13230,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PRECOMMIT_FULL_AUDIT_2026_10_02.md"
+      ]
     },
     {
       "source": ".agents/records/history/PRECOMMIT_RECHECK_ACCEPTANCE_2026_10_02.md",
       "sha256": "375d4c7f211f0ece604957b0a251df7f9a8d825d75db42577c7e2f18558d4dbd",
       "bytes": 11427,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecordLinksRepaired",
+      "target": [
+        ".agents/records/history/PRECOMMIT_RECHECK_ACCEPTANCE_2026_10_02.md"
+      ]
     },
     {
       "source": ".agents/records/history/PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md",
       "sha256": "af51bd0cea684727c9115d3bebe4bd437cebc45ce0089b9d2f4a6b4db99ced83",
       "bytes": 15013,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecordLinksRepaired",
+      "target": [
+        ".agents/records/history/PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md"
+      ]
     },
     {
       "source": ".agents/records/history/PRECOMMIT_SAMPLE_AUDIT_2026_10_03.md",
       "sha256": "e1b5a9bca04e31873c3f8b532a94ff2e69f4082fb16770898974a1cd5e4b6fee",
       "bytes": 11976,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/PRECOMMIT_SAMPLE_AUDIT_2026_10_03.md"
+      ]
     },
     {
       "source": ".agents/records/history/README.md",
       "sha256": "cc9982cfe1e696cd084d2408fa2373052af437be2cf485a5c9190c5469359bed",
       "bytes": 4427,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/history/README.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/history/README.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/history/README.md"
+      ]
     },
     {
       "source": ".agents/records/history/RENDER_CANVAS_ACCEPTANCE_2026_09_26.md",
       "sha256": "b051b964c6d8989e7989061550d7ca23e70a89dd0a2bf1c909ea077149a5e4cf",
       "bytes": 9620,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/RENDER_CANVAS_ACCEPTANCE_2026_09_26.md"
+      ]
     },
     {
       "source": ".agents/records/history/SOLUTION_CLEANUP_ACCEPTANCE_2026_10_05.md",
       "sha256": "ad4685ca6b23a5a2eb67f8bd79e60008a52981efb75283841663370077dc3f7c",
       "bytes": 4756,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/SOLUTION_CLEANUP_ACCEPTANCE_2026_10_05.md"
+      ]
     },
     {
       "source": ".agents/records/history/SOLUTION_CLEANUP_ACCEPTANCE_2026_10_07.md",
       "sha256": "35286bf4e157776366863f5dd1d9b48a25b07e5d69efbd5d2fda63873a951b27",
       "bytes": 7643,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/SOLUTION_CLEANUP_ACCEPTANCE_2026_10_07.md"
+      ]
     },
     {
       "source": ".agents/records/history/WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md",
       "sha256": "02840c597322f648e471e29ecb0bc867b6bd91b8a96937477571714540c5f956",
       "bytes": 15306,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecordLinksRepaired",
+      "target": [
+        ".agents/records/history/WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md"
+      ]
     },
     {
       "source": ".agents/records/history/WEB_HOST_REFACTOR_PLAN.md",
       "sha256": "d66f428cde780ef4c1b69be97c2f5ea52fff3a5fbb5bee95860d0447028955a6",
       "bytes": 2458,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/WEB_HOST_REFACTOR_PLAN.md"
+      ]
     },
     {
       "source": ".agents/records/history/WEB_PLAYER_ACCEPTANCE_2026_10_01.md",
       "sha256": "ce8327ed53aff4d94ddd343d258d0845a77fee80519631b64bed802d58e91d4b",
       "bytes": 13487,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecordLinksRepaired",
+      "target": [
+        ".agents/records/history/WEB_PLAYER_ACCEPTANCE_2026_10_01.md"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/canvas-gizmo-selection.png",
       "sha256": "5641712004239b762843342f83668adbf667b9e82687a418ba4b67ba52a6a7a9",
       "bytes": 1096972,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/canvas-gizmo-selection.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-font-b.png",
       "sha256": "12b6b5d9a671ecaca17a3a99d23d873f603584add56cefa1ed738267599b0556",
       "bytes": 93370,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-font-b.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-font-none.png",
       "sha256": "2901c731d0ee7eaf82798c84b1ced30ef9d392e5194c7dd18f0ae69a63218674",
       "bytes": 89603,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-font-none.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-font-restored.png",
       "sha256": "f4b7bad46f58ed3a10e9651fa3208264a1a9ad6bd94814c0be48a68b72c7eeb2",
       "bytes": 93386,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-font-restored.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-game.png",
       "sha256": "b5363e556ac52307c6be999ec342291c3e79af6174b81da72f4c10a10c0e9187",
       "bytes": 89556,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-editor-game.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-icon-selection.png",
       "sha256": "42abc8e24336a01712082cf94573f2a099a4b65f9650923e43847d0a62a9c863",
       "bytes": 123673,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-icon-selection.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-material-empty-parameters.png",
       "sha256": "a68c380db3ac627e41821eb7eb4d2d42539d1feada6a3b1a09d2a989dd40018c",
       "bytes": 124678,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-material-empty-parameters.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-material-inspector.png",
       "sha256": "8a2b260458a1012f96f76fdd53fb963456bc70eff33f7095e90cdace5e698e26",
       "bytes": 111248,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-material-inspector.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-player-click.png",
       "sha256": "01fcd77f133941305c50b7b36c8977a9d83a10bbd6126f88f6331f23cf522ee8",
       "bytes": 28777,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-player-click.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-player.png",
       "sha256": "babb7785ae5c675fa940d1bfdce972db7cef533ef28eed537f8700810fbcd277",
       "bytes": 29207,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-player.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-plugin-sample-edit.png",
       "sha256": "a2875e77edde4029c931191043228620c769821f73635a0cb7ba2bfa522f46d5",
       "bytes": 88203,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-plugin-sample-edit.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-plugin-sample-play.png",
       "sha256": "d552962214d33e4dda2ac09d6337e01e2efcfd2c7b0802fff2c8d06fb1a0ee9d",
       "bytes": 90079,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-plugin-sample-play.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-plugin-sample-readonly.png",
       "sha256": "aa886f675c384f424567065bec38240f7deeec1480172a5cb006141d9e68a8e9",
       "bytes": 119595,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-plugin-sample-readonly.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-scene-zoom.png",
       "sha256": "90fa5503448b16b69ea163467171eb22ad114c4e9836a32e5635261334d2b368",
       "bytes": 90197,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-scene-zoom.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/final-shader-preview.png",
       "sha256": "c98288bd2d17a952f05bc305f24746e58b33f46d58a0d9b81e7cedaf1103d01b",
       "bytes": 147846,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/final-shader-preview.png"
+      ]
     },
     {
       "source": ".agents/records/history/evidence/render-canvas-2026-09-26/game-and-scene.png",
       "sha256": "72822db549f237efe6f90cf2e0912e0c2df44a37abdddd126732a188339cf781",
       "bytes": 982312,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/evidence/render-canvas-2026-09-26/game-and-scene.png"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-08-31-architecture-remediation-master-plan.md",
       "sha256": "b85b29195425aa23b10faa8feab28ab0d08c1c8bbb0a2eb6c642c8ab167f42bb",
       "bytes": 29140,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-08-31-architecture-remediation-master-plan.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-08-31-build-boundary-and-layering-decisions.md",
       "sha256": "d2f891069ca1dc70260c957399fdd06412ec6ee6a55a3b6917cd0098ddd6a937",
       "bytes": 6067,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-08-31-build-boundary-and-layering-decisions.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-08-31-complete-issue-register.md",
       "sha256": "e28c315b026618245a40701e19e5e00aeb421553038e9ab04a1cb4c74d814d9b",
       "bytes": 67778,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-08-31-complete-issue-register.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-08-31-full-architecture-audit.md",
       "sha256": "661c71398f9a80655008cdf18fb3607a0498bd28dbec62c4f61e4304a466b694",
       "bytes": 24064,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-08-31-full-architecture-audit.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-11-material-graph-dual-asset-path.md",
       "sha256": "c1d46133eb67c6182c1f408769189130b142607b953bfa95db5b7bf9b149fe82",
       "bytes": 982,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-11-material-graph-dual-asset-path.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-11-unified-shader-implementation.md",
       "sha256": "1f0336465ff1f7f85a9b33fe5cc4a7684bb1cf3d7cf7d0198219a1c48dc48c05",
       "bytes": 29118,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-11-unified-shader-implementation.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-12-shader-authoring-completion-plan.md",
       "sha256": "faafd01367fe1ea2259d941ef2f668cc1c886346272a8b96f43d00971100305b",
       "bytes": 28718,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-12-shader-authoring-completion-plan.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-12-shader-authoring-execution.md",
       "sha256": "02c86c07e2b875bc3ad4139d75d67117d02100a1571be4744b45fd8789538531",
       "bytes": 12998,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-12-shader-authoring-execution.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-12-shader-drafts-and-console.md",
       "sha256": "5ce57e868d6df05f2428696739f3cb5d34be8d2f8b49d1f2b7999ab28fec0043",
       "bytes": 6382,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-12-shader-drafts-and-console.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-13-scene-scope-plugin-retirement.md",
       "sha256": "5c13cc10423f0f69609afbd2dfda882f585c5bb014d875581b2fb347b74c9376",
       "bytes": 4807,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-13-scene-scope-plugin-retirement.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-13-shader-authoring-validation.md",
       "sha256": "6a24d1ff890a3cd0ac63d507356fbcd97a95b1078e651dd7bfa9d3a39d41a1f6",
       "bytes": 9885,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-13-shader-authoring-validation.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-13-shader-target-import-lifecycle.md",
       "sha256": "52a93b530738f8ef10b91377f686867bf03f33a3c6fb050367e23572cecdf58d",
       "bytes": 5508,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-13-shader-target-import-lifecycle.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/2026-09-14-shader-editor-authoring-experience.md",
       "sha256": "01b55646e6f61ba74e81cbf601f864a39b11467f260f451bc2a727bbc6d82415",
       "bytes": 9082,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/2026-09-14-shader-editor-authoring-experience.md"
+      ]
     },
     {
       "source": ".agents/records/history/issues/README.md",
       "sha256": "038823612c40846d901c4ea61548a2caf723b50cead56b40d817aef08a33b12a",
       "bytes": 3337,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/history/issues/README.md"
+      ]
     },
     {
       "source": ".agents/records/open-items.md",
       "sha256": "b6e9ecf4517a25694a441d68d1369b0aeae2265aa7026e30b6b9a51ad632d97b",
       "bytes": 11389,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/open-items.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/open-items.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/open-items.md"
+      ]
     },
     {
       "source": ".agents/records/plans/AI_PIPELINE_IMPLEMENTATION.md",
       "sha256": "3170294473bf5a8e748f645e7c10716ee8f44bb8fca439d169cc04784f8ae05d",
       "bytes": 26419,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/plans/AI_PIPELINE_IMPLEMENTATION.md"
+      ]
     },
     {
       "source": ".agents/records/plans/DOCS_AGENT_INFORMATION_ARCHITECTURE.md",
       "sha256": "3db33f1ed0dc119a08d22eb77c159ab5439324893098cc65a20e85a5b4e974e7",
       "bytes": 1034,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/plans/DOCS_AGENT_INFORMATION_ARCHITECTURE.md"
+      ]
     },
     {
       "source": ".agents/records/plans/LOGO_BRANDING.md",
       "sha256": "cc09744795f488a6ddc63b6a8598f782b12511d228fd71677a9235bdc93b5aa1",
       "bytes": 7586,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalRecord",
+      "target": [
+        ".agents/records/plans/LOGO_BRANDING.md"
+      ]
     },
     {
       "source": ".agents/records/plans/README.md",
       "sha256": "8e1b7672ffa852797ecf3fa5c61fbd9de2297bc7bb0ab6bcb4bf42834c8ef5f7",
       "bytes": 455,
       "kind": "historical-or-active-record",
-      "disposition": "ReviewedEnglishWorkflow",
-      "target": ".agents/records/plans/README.md"
+      "disposition": "ReviewedEnglishRecordNavigation",
+      "target": [
+        ".agents/records/plans/README.md",
+        "https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/plans/README.md"
+      ]
     },
     {
       "source": ".agents/records/plans/docs-agent-migration.json",
       "sha256": "d3413a28e94342003392c098ad616612ea9fd7435d2f1f3fd9ce8263dfc79f89",
       "bytes": 534011,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/plans/docs-agent-migration.json"
+      ]
     },
     {
       "source": ".agents/records/plans/docs-agent-page-review.json",
       "sha256": "43fd6e81e000cc6165924c909a4fe9309dd84cebd4360f4e74e8f0242b9b3678",
       "bytes": 445137,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/plans/docs-agent-page-review.json"
+      ]
     },
     {
       "source": ".agents/records/plans/docs-agent-unavailable-history.json",
       "sha256": "3f66cfbdccf50c4c734e5d77506f9430ecdf627de8591ce9b05dbaf8e1cd63e3",
       "bytes": 23418,
       "kind": "historical-or-active-record",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/plans/docs-agent-unavailable-history.json"
+      ]
     },
     {
       "source": ".agents/rulebook/README.md",
@@ -1906,136 +2299,170 @@
       "sha256": "635bf781d1d2776a0482f654a09a912f2abc65713e135ed9f2c5a32991126198",
       "bytes": 145149,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-recheck-day-2026-10-02.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-recheck-game-over-2026-10-02.png",
       "sha256": "d3d63f4f95c821e2752a4726bbca8cacd30a4439cbbf8008b3229de815efbb28",
       "bytes": 138736,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-recheck-game-over-2026-10-02.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-recheck-night-2026-10-02.png",
       "sha256": "b162c72cbfaaa98ca7fa4f71370c6550042979635edbd99372874bba626de65c",
       "bytes": 85859,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-recheck-night-2026-10-02.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-refactor-after-refresh.png",
       "sha256": "6af6e9144a39ebf072a92d7ef96a5d1d233e44c7d4b98ec42948a5bafac7ce54",
       "bytes": 48540,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-refactor-after-refresh.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-refactor-day.png",
       "sha256": "f7ef149c901344d11441bf2af8c98bc956b6b6206b84f04b4ec0835f382305b1",
       "bytes": 160098,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-refactor-day.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-refactor-night.png",
       "sha256": "7d08cd41921bb81bdf167c81198814a1d53833ed3cb8c55ad03fa72fa26cb16f",
       "bytes": 83468,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-refactor-night.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-refactor-scored.png",
       "sha256": "9fb72a32edde87c213ec817b152482b4ffcb6c595cbc14855a7a74c577c9ada0",
       "bytes": 71045,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-refactor-scored.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-repair-day-2026-10-02.png",
       "sha256": "1f9f1c3ccada95fbe8760b66346b575b30e7e887e275ccfab13e69aaa11bf7a6",
       "bytes": 145799,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-repair-day-2026-10-02.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-repair-game-over-2026-10-02.png",
       "sha256": "b3ff51263ea4f4cf8f2cddda466fab49cfccb3e720cd2d03b6f5fc0791796d6f",
       "bytes": 140721,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-repair-game-over-2026-10-02.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-repair-night-2026-10-02.png",
       "sha256": "1f382a5fbcfd2ce22fc1c4f4d488aca0973fc74dee24a2f26d6a3ae6c26964e0",
       "bytes": 86145,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-repair-night-2026-10-02.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-web-best-after-refresh.png",
       "sha256": "a1bedae1435f9407b48d086515580e6df1e228c8a39676e741499c337770ef66",
       "bytes": 75890,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-web-best-after-refresh.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-web-day-after.png",
       "sha256": "b2682128ecb4f09eaaff2d89b921f17320fa977b8c347c8986a3fee4b061df2c",
       "bytes": 71648,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-web-day-after.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-web-night-after.png",
       "sha256": "aa20fa9ea62db11ce8c3b6457be996e5037f94039d51c067ef3f1df3a8de0e25",
       "bytes": 43212,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-web-night-after.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-web-night-before.png",
       "sha256": "e6c4b394c019b84fe99a1a77329ba79133ebf2314b12843fe92bb6cc01dc15af",
       "bytes": 29735,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-web-night-before.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-web-night-game-over.png",
       "sha256": "e0ca0903c54b562054636181b87d73b741fae2c020a6e53de80e8a0bcc9fa80d",
       "bytes": 38054,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-web-night-game-over.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-web-night-playing.png",
       "sha256": "a35f1b7df499703f15a15d8104092684c9c644201a4a5a6eb74244688ef12948",
       "bytes": 31395,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-web-night-playing.png"
+      ]
     },
     {
       "source": "docs/architecture/images/flappybird-windows-night-reference.png",
       "sha256": "7b776573aa8c87990a7ded2713b6d666256cb2b91b44e6d50c5d9cff46bfcd60",
       "bytes": 58956,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "PreservedHistoricalEvidence",
+      "target": [
+        ".agents/records/history/visual-evidence/flappybird-windows-night-reference.png"
+      ]
     },
     {
       "source": "docs/architecture/overview.md",

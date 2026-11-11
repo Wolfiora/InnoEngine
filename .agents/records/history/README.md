@@ -4,6 +4,8 @@
 
 Each record establishes only its stated inputs, commit, environment and execution scope. Historical passes do not certify current inputs. Preserve original attachment bytes; the migration inventory separately identifies historical attachment links unavailable from Git.
 
+[Historical visual evidence](visual-evidence/README.md) retains the original Browser/Windows screenshots outside product documentation.
+
 - [ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md](ARCHITECTURE_CLEANUP_ACCEPTANCE_2026_10_06.md)
 - [ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md](ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md)
 - [BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)

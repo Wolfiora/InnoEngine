@@ -126,8 +126,8 @@ Gameplay 自动控制在白天运行，以可见鸟 sprite 的颜色定位发出
 上游 ScriptProcessorNode 弃用提示和 SwiftShader render-pass 性能提示。
 这些没有进入本轮八项源码修正；报告没有把 runtime error 为 0 写成浏览器 warning 为 0，也没有声称可听音频或硬件 GPU 性能通过。
 
-截图：[白天](../../../docs/architecture/images/flappybird-repair-day-2026-10-02.png)、[夜间](../../../docs/architecture/images/flappybird-repair-night-2026-10-02.png)、
-[Score/Best 1](../../../docs/architecture/images/flappybird-repair-game-over-2026-10-02.png)。
+截图：[白天](visual-evidence/flappybird-repair-day-2026-10-02.png)、[夜间](visual-evidence/flappybird-repair-night-2026-10-02.png)、
+[Score/Best 1](visual-evidence/flappybird-repair-game-over-2026-10-02.png)。
 
 ## 证据位置
 
