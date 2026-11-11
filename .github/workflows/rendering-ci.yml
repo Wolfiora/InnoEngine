@@ -19,10 +19,15 @@ on:
         description: Require cold native input, ten warm samples and extended lifecycle acceptance
         type: boolean
         default: false
+      documentation_revision:
+        description: Exact InnoEngine.Docs candidate commit; blank uses the engine PR metadata
+        type: string
+        required: false
 
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 concurrency:
   group: engine-validation-${{ github.workflow }}-${{ github.ref }}
@@ -42,9 +47,11 @@ jobs:
       run: ${{ steps.select.outputs.run }}
       full: ${{ steps.select.outputs.full }}
       extended: ${{ steps.select.outputs.extended }}
+      documentation: ${{ steps.documentation.outputs.revision }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - id: select
         shell: pwsh
@@ -54,6 +61,35 @@ jobs:
         run: |
           ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
             -Commit $env:CANDIDATE_COMMIT -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL
+      - name: Select the immutable documentation candidate before matrix preparation
+        id: documentation
+        if: steps.select.outputs.run == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_COMMIT: ${{ github.sha }}
+          DOCUMENTATION_REVISION: ${{ inputs.documentation_revision }}
+        run: |
+          New-Item -ItemType Directory -Path artifacts/validation/candidate -Force | Out-Null
+          try {
+            $candidate = ./tests/ci/Get-DocumentationCandidate.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
+              -ExpectedCommit $env:CANDIDATE_COMMIT -ExplicitRevision $env:DOCUMENTATION_REVISION
+            $candidate | ConvertTo-Json -Depth 4 | Set-Content artifacts/validation/candidate/selection.json
+          } catch {
+            @{ commit = $env:CANDIDATE_COMMIT; status = 'Blocked'; reason = $_.Exception.Message } |
+              ConvertTo-Json | Set-Content artifacts/validation/candidate/failure.json
+            throw
+          }
+          "revision=$($candidate.revision)" >> $env:GITHUB_OUTPUT
+          "Documentation candidate: $($candidate.repository)@$($candidate.revision), engine tree $($candidate.engineTree). Source certification remains required." >> $env:GITHUB_STEP_SUMMARY
+      - name: Retain candidate selection and first failure
+        if: always() && steps.select.outputs.run == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: documentation-candidate-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/candidate/
+          if-no-files-found: error
+          retention-days: 30
 
   validation:
     needs: cadence
@@ -69,6 +105,13 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          persist-credentials: false
+      - name: Check out the selected documentation without executing its scripts
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Wolfiora/InnoEngine.Docs
+          ref: ${{ needs.cadence.outputs.documentation }}
+          path: artifacts/documentation-source
           persist-credentials: false
       - name: Fetch pinned native sources without unrelated submodule history
         shell: pwsh
@@ -90,11 +133,13 @@ jobs:
           FORCE_FULL: ${{ needs.cadence.outputs.full }}
           EXTENDED: ${{ needs.cadence.outputs.extended }}
           VALIDATION_PLATFORM: ${{ matrix.os }}
+          DOCUMENTATION_REVISION: ${{ needs.cadence.outputs.documentation }}
         run: |
           $baseline = $env:BASE_REVISION
           if ($baseline -match '^0+$') { $baseline = $env:EXPECTED_COMMIT; $env:FORCE_FULL = 'true' }
           ./tests/ci/Invoke-ValidationCi.ps1 -Stage Plan -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT `
-            -Full:($env:FORCE_FULL -eq 'true') -Extended:($env:EXTENDED -eq 'true')
+            -Full:($env:FORCE_FULL -eq 'true') -Extended:($env:EXTENDED -eq 'true') `
+            -DocumentationRoot artifacts/documentation-source -DocumentationRevision $env:DOCUMENTATION_REVISION
       - name: Restore immutable candidates for publisher verification
         id: native-cache
         if: steps.plan.outputs.native == 'true' && needs.cadence.outputs.extended != 'true'
