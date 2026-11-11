@@ -5024,56 +5024,85 @@
       "sha256": "cf0991ae57e60af70c4ab4761162fd79dd3e160697a069a91d35a1d0d5af228a",
       "bytes": 13363,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/extending/static-type-catalogs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-catalogs.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Modules.md",
       "sha256": "db3480f9ee2a9b47aa8f922bc8e796fa18abd59931aee2d9d964b4c7903f1b5e",
       "bytes": 7183,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/extending/module-sources.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-modules.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Modules/api.md",
       "sha256": "75cbdf536308a399e66c6d51e3faa1a2029cbd44927788f7937d391b1e5c3d14",
       "bytes": 78384,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/extending/module-sources.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-modules.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Reload.md",
       "sha256": "617d6a35b8a26347d31a3fab6ee7b8908a041f53e898b1ea1fb2512474e45882",
       "bytes": 5611,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/manual/extensions/diagnose-reload.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-reload.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Reload/api.md",
       "sha256": "a23d8bde2174cd0079dda24c17cca67a243d843f9604e44e4df47f2547484c7e",
       "bytes": 31657,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/manual/extensions/diagnose-reload.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-reload.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Types.md",
       "sha256": "e5545f6e4f27a2ceebc11380af220ac74b4b18049339ddc103a4821b2c31b1b3",
       "bytes": 18111,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/manual/extensions/find-types.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/extending/type-registries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-types.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/Inno.Extensibility.Types/api.md",
       "sha256": "189ad9f563cc1b4d8fd8d0b67b63cf7b86b5180dabdf8f331c40e192ab75638f",
       "bytes": 49657,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/manual/extensions/find-types.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/extending/type-registries.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/architecture/generation-publication.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/bbdde3536dc8c3a63000d2f0dbfbbba61f0273b2/content/en/api/projects/inno-extensibility-types.md"
+      ]
     },
     {
       "source": "docs/modules/extensibility/README.md",
