@@ -26,6 +26,11 @@ public sealed class DiagnosticHub
     /// <summary>
     /// Occurs when a diagnostic presentation sink fails and is quarantined.
     /// </summary>
+    /// <remarks>
+    /// Observers execute synchronously during publication. Without an observer, or when an observer
+    /// throws, the current implementation reports to standard error; a failure of that secondary
+    /// writer can propagate. Unregistration or quarantine does not dispose the presentation sink.
+    /// </remarks>
     public event Action<Exception>? sinkFailed;
 
     /// <summary>
