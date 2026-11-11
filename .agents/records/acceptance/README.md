@@ -6,6 +6,8 @@
 
 Each record establishes only its stated inputs, commit, environment and execution scope. Historical passes do not certify current inputs. Preserve original attachment bytes; the migration inventory separately identifies historical attachment links unavailable from Git.
 
+- [English migration CI candidate 42934085309](CI_42934085309.md): actual macOS failures, partial passing evidence, timing attribution and Windows runner communication loss.
+
 - [ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md](ARCHITECTURE_BGCS_CORE_REUSE_2026_10_21.md)
 - [ATOMIC_FILE_PUBLICATION_ACCEPTANCE_2026_10_29.md](ATOMIC_FILE_PUBLICATION_ACCEPTANCE_2026_10_29.md)
 - [BGCS301_BROWSER_AGGREGATE_ABI.md](BGCS301_BROWSER_AGGREGATE_ABI.md)

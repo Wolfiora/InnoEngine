@@ -38,6 +38,14 @@ if ($TemporaryDirectory) {
     $assemblyEnvironment += $tempEnvironment
 }
 $checks = [System.Collections.Generic.List[object]]::new()
+$stageClock = [Diagnostics.Stopwatch]::new()
+$stageStarted = [DateTimeOffset]::MinValue
+
+function Start-Check([string]$Stage, [string]$Identity) {
+    $script:stageStarted = [DateTimeOffset]::UtcNow
+    $script:stageClock.Restart()
+    Write-Host "Test stage starting: $Stage | $Identity"
+}
 
 function Add-CheckResult(
     [string]$Stage,
@@ -56,6 +64,8 @@ function Add-CheckResult(
         diagnostic = $Diagnostic
         owner = $Owner
         contracts = @($Contracts)
+        startedUtc = $stageStarted.ToString('o')
+        seconds = $stageClock.Elapsed.TotalSeconds
     })
     ConvertTo-Json -InputObject @($checks.ToArray()) -Depth 4 |
         Set-Content -LiteralPath (Join-Path $resultsRoot 'execution-summary.json') -Encoding utf8
@@ -81,6 +91,7 @@ if ($Target) {
 }
 
 # Process-global Native state and deliberately retained Faulted owners require separate hosts.
+Start-Check 'Shared' $solutionPath
 try {
     & $Dotnet test $solutionPath --configuration $Configuration `
         --no-build --no-restore --disable-build-servers -m:1 -nr:false `
@@ -114,6 +125,7 @@ $projects = @($selectedProjects | ForEach-Object {
 })
 
 foreach ($project in $projects) {
+    Start-Check 'Discovery' $project.FullName
     try {
         $matches = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName })
         $targetPath = @($matches[0].Properties.TargetPath)
@@ -141,6 +153,7 @@ foreach ($project in $projects) {
     foreach ($name in $names) {
         # A failed independent contract does not prevent the remaining isolated hosts from running.
         $caseFilter = "($isolatedFilter)&(FullyQualifiedName=$name)"
+        Start-Check 'Isolated' $name
         try {
             $reportName = 'isolated-' + [Guid]::NewGuid().ToString('N') + '.trx'
             & $Dotnet test $assembly --filter $caseFilter `

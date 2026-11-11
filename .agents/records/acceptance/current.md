@@ -7,7 +7,7 @@ The English documentation and workflow modernization is **incomplete**. Existing
 ## Current local evidence
 
 - Independent documentation-query tooling and the Build CLI route are implemented. Fourteen snapshot/query regressions pass, covering explicit preparation, stable reads, corruption, moves, includes, contracts, ambiguity, continuations and concurrent publication.
-- The source-project exporter discovers 251 projects from the shared engine inventory. Three regressions pass; API surfaces remain unextracted rather than inferred from names.
+- The current source-project inventory contains 252 projects. The external Docs candidate has 63 authoritative project entries and 12,920 bound declarations across 5,399 pages; the remaining 189 project entries and complete source certification are unfinished. These counts describe migrated content, not an overall completion percentage.
 - All 58 registered rule units have English bodies; 57 have reviewed translation mappings and one was already English. All 241 original rule identities remain registered. Rule-provenance, routing, complete-unit budgets and negative translation tests pass.
 - The Docs repository has a working Astro/Starlight representative slice, local production output and initial home/search inspection. Complete page/API migration, visual acceptance, CI and Pages deployment are outstanding.
 - Validation now records explicit prerequisites rather than blocking every context after an unrelated failure. Tool source inputs follow evaluated references; tool binary identities follow actual assembly references. Focused regressions and unresolved validation details are recorded in the implementation ledger.
@@ -18,7 +18,7 @@ Local evidence files are retained under artifacts/acceptance/english-documentati
 
 Wolfiora/InnoEngine.Docs exists publicly, uses main and has Pages custom-Actions configuration and a required Documentation validation check. These settings are not a deployed or certified website. Repository-level Actions secrets/variables were empty when checked. Organization Actions-secret metadata access returned HTTP 403; an appropriately installed GitHub App and credentials remain unverified setup requirements.
 
-No new Windows/macOS full matrix, paired-PR publication, actual Pages deployment or draft-release certification is claimed. No formal engine release or automatic merge is authorized by this summary.
+The first remote migration candidate completed unsuccessfully: [CI run 42934085309](CI_42934085309.md) records the macOS old-Wiki migration failures and Windows runner communication loss. No passing Windows/macOS full matrix, paired-PR publication, actual Pages deployment or draft-release certification is claimed. No formal engine release or automatic merge is authorized by this summary.
 
 ## Preserved earlier evidence
 
