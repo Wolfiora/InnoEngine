@@ -91,7 +91,8 @@ public static class DocumentationReferences
             if (models.IsExcludedProduct(directory))
                 throw new InvalidDataException("Selected API project is outside the requested product target: " + project);
             var compilation = models.GetCompilation(directory)
-                ?? throw new InvalidDataException("Selected API compilation is unavailable: " + project);
+                ?? throw new InvalidDataException("Selected API compilation is unavailable: " + project
+                    + (failures.Count == 0 ? string.Empty : "\n" + string.Join('\n', failures)));
             var symbols = WikiApiCoverageValidator.Capture(root, project, null, compilation, failures, cancellationToken);
             inventory.Add(new { project = Path.GetRelativePath(root, project).Replace('\\', '/'),
                 name = Path.GetFileNameWithoutExtension(project), symbols });
