@@ -5283,8 +5283,11 @@
       "sha256": "a43207a3b01520877dfd8a6cfef5fd94cc0c3cd2120b07c186fce31885e7e17d",
       "bytes": 5355,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-editor-panel-gameview.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/manual/editor/game-view.md"
+      ]
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Panel.Hierarchy.md",
@@ -5316,16 +5319,22 @@
       "sha256": "5b34de7eddb2e4e93f017ae131b3d86e471cd6fe29b4c946d054e7dd8ad160fa",
       "bytes": 6361,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-editor-panel-sceneview.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/manual/editor/scene-view.md"
+      ]
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Panel.Settings.md",
       "sha256": "660baf18226bc13d056ef91425806d7cc97cd7689b583afc6678374fc0d69366",
       "bytes": 8987,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-editor-panel-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/manual/editor/settings.md"
+      ]
     },
     {
       "source": "docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md",
@@ -5439,8 +5448,11 @@
       "sha256": "0dd52ff3bbe3cc288b3308763955c520dd2503ab1123b4ee42f37fd8ee5bd8c7",
       "bytes": 7871,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-editor-workbench.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/manual/editor/appearance.md"
+      ]
     },
     {
       "source": "docs/modules/editor/README.md",
@@ -6350,40 +6362,60 @@
       "sha256": "9f135909b430cf2ff300c2976eb310ec8d56d0e69ce7f751d2c9b9a2a2815765",
       "bytes": 32011,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-adapter-platform.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/extending/presentation-context.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/Inno.Adapter.Platform/api.md",
       "sha256": "3439be0b3b995fde1506bfddbde73024f61aac309f599438c84ed398ed89cc0d",
       "bytes": 1208,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-adapter-platform.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/extending/presentation-context.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/Inno.Adapter.Presentation.md",
       "sha256": "a15e61e08d401421fa3a6c8da2ed15dfb6a57284fecf37cfa3c3bf01fa66431e",
       "bytes": 31633,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-adapter-presentation.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/extending/presentation-context.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/Inno.Adapter.Presentation/api.md",
       "sha256": "f7ae3e11eede731f5cfb7f7b9d27066ba8680c3afc120e3ecc8e45037f27a390",
       "bytes": 2121,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-adapter-presentation.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/extending/presentation-context.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/Inno.Platform.md",
       "sha256": "e9057b448ccccb875461a122205d0cce6e43294d46c11dcc0a2fff4f1ff8ef95",
       "bytes": 16619,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/api/projects/inno-platform.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/extending/presentation-context.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/cd03413fdaa9e5c8edcabe9836e273c1759cf2d0/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Build.MacOSArm64.md",
