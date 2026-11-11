@@ -46,6 +46,11 @@ public static class DocumentationStore
     /// The published snapshot identity and the number of parsed and reused pages; source API remains unverified.
     /// Query-only changes rebuild the index while reusing pages whose parser, source and payload identities match.
     /// </returns>
+    /// <remarks>
+    /// Independent page preparation uses at most four workers and retains each page's exclusive lease.
+    /// Catalog validation and generation publication occur only after all workers finish. Worker parsing
+    /// and registration timing totals can overlap; PagePreparation reports their enclosing wall time.
+    /// </remarks>
     /// <exception cref="IOException">
     /// Inputs change during preparation, paths escape ownership, or a reference, contract or inclusion is invalid.
     /// </exception>
@@ -61,8 +66,8 @@ public static class DocumentationStore
         var total = Stopwatch.StartNew();
         var phase = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
-        double parsingMilliseconds = 0;
-        double registrationMilliseconds = 0;
+        long parsingTicks = 0;
+        long registrationTicks = 0;
         string root = Path.GetFullPath(documentationRoot);
         string content = PathBoundary.RequireUnlinkedPath(root, Path.Combine(root, "content", "en"));
         string output = PathBoundary.RequireUnlinkedPath(Path.GetFullPath(workspaceRoot), Path.GetFullPath(cacheRoot));
@@ -86,20 +91,28 @@ public static class DocumentationStore
         var reusable = previous?.parserSchema == parserSchema
             ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
             : new Dictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
-        var pages = new List<DocumentationPage>();
+        string[] sources = EnumerateContent(content).ToArray();
+        var prepared = new (DocumentationPage page, DocumentationPageReference reference)[sources.Length];
         var entries = new SortedDictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
         int parsed = 0;
         RecordPhase("SetupAndLockWait");
-        foreach (string path in EnumerateContent(content))
+        // Each content-addressed page has its own output and lease. Keep publication serialized,
+        // bound filesystem pressure, and drain all preparation before validating the complete catalog.
+        await Parallel.ForEachAsync(Enumerable.Range(0, sources.Length), new ParallelOptions
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
+            CancellationToken = cancellationToken
+        }, async (index, cancellation) =>
+        {
+            cancellation.ThrowIfCancellationRequested();
+            string path = sources[index];
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
             string text = File.ReadAllText(path);
             string key = DocumentationMarkdown.Hash(parserSchema + "\n" + relative + "\n" + text);
             string directory = Path.Combine(output, "pages", key);
             string payload = PathBoundary.RequireUnlinkedPath(output, Path.Combine(directory, "page.json"));
             string lease = Path.Combine(output, "leases", key + ".lock");
-            using FileLease pageWriting = await FileLease.AcquireAsync(lease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            using FileLease pageWriting = await FileLease.AcquireAsync(lease, Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
             DocumentationPage? page = null;
             byte[]? bytes = null;
             if (reusable.TryGetValue(key, out DocumentationPageReference? known) && File.Exists(payload))
@@ -114,23 +127,29 @@ public static class DocumentationStore
             {
                 long started = Stopwatch.GetTimestamp();
                 page = DocumentationMarkdown.Parse(relative, text);
-                parsingMilliseconds += Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+                Interlocked.Add(ref parsingTicks, Stopwatch.GetTimestamp() - started);
                 bytes = JsonSerializer.SerializeToUtf8Bytes(page, json);
-                cancellationToken.ThrowIfCancellationRequested();
+                cancellation.ThrowIfCancellationRequested();
                 AtomicFile.WriteAllBytes(payload, bytes);
-                parsed++;
+                Interlocked.Increment(ref parsed);
             }
             long registrationStarted = Stopwatch.GetTimestamp();
-            publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellationToken);
-            registrationMilliseconds += Stopwatch.GetElapsedTime(registrationStarted).TotalMilliseconds;
-            pages.Add(page);
-            entries.Add(relative, new(page.metadata.uid, key, DocumentationMarkdown.Hash(bytes!), page.metadata));
+            publisher.EnsureImmutableRegistration(directory, lease, [], null, cancellation);
+            Interlocked.Add(ref registrationTicks, Stopwatch.GetTimestamp() - registrationStarted);
+            prepared[index] = (page, new(page.metadata.uid, key, DocumentationMarkdown.Hash(bytes!), page.metadata));
+        }).ConfigureAwait(false);
+        var pages = new List<DocumentationPage>(prepared.Length);
+        foreach (var item in prepared)
+        {
+            pages.Add(item.page);
+            entries.Add(item.page.path, item.reference);
         }
         if (pages.Count == 0)
             throw new InvalidDataException("The selected Docs checkout has no content. Prepare a documentation source before querying.");
         RecordPhase("PagePreparation");
-        timings.Add("MarkdownParsing", parsingMilliseconds);
-        timings.Add("OwnerRegistration", registrationMilliseconds);
+        // Worker totals overlap; PagePreparation is the elapsed wall time, not their sum.
+        timings.Add("MarkdownParsing", parsingTicks * 1000d / Stopwatch.Frequency);
+        timings.Add("OwnerRegistration", registrationTicks * 1000d / Stopwatch.Frequency);
         // The source manifest supplies project facts; authored page metadata supplies each canonical entry.
         projects = projects.Select(project => project with
         {

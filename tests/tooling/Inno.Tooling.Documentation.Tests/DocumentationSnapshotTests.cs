@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Tooling.Documentation.Tests;
@@ -346,6 +347,8 @@ public sealed class DocumentationSnapshotTests : IDisposable
     [Fact]
     public async Task ConcurrentWritersAndReadersPublishConsistentGenerations()
     {
+        for (int index = 0; index < 24; index++)
+            Write($"content/en/task-{index}.md", Page($"task-{index}", $"Task {index}", $"Original content {index}.\n"));
         DocumentationResult[] results = await Task.WhenAll(Enumerable.Range(0, 3).Select(_ => IndexAsync()));
         Assert.Single(results.Select(result => result.snapshot).Distinct());
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
@@ -356,6 +359,53 @@ public sealed class DocumentationSnapshotTests : IDisposable
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => DocumentationStore.IndexAsync(m_root, source, cache, cancellation.Token));
         Assert.Equal(pointer, File.ReadAllBytes(Path.Combine(cache, "current.json")));
+    }
+
+    [Fact]
+    public async Task CancelingPreparationWithAProtectedPageRetainsThePublishedGeneration()
+    {
+        DocumentationResult initial = await IndexAsync();
+        string pointer = Path.Combine(cache, "current.json");
+        byte[] selected = File.ReadAllBytes(pointer);
+        string[] payloads = Directory.GetFiles(Path.Combine(cache, "pages"), "page.json", SearchOption.AllDirectories);
+        string protectedPage = payloads.Single(path => JsonNode.Parse(File.ReadAllText(path))!["path"]!.GetValue<string>() == "content/en/probe.md");
+        string key = Path.GetFileName(Path.GetDirectoryName(protectedPage)!);
+        using DocumentationSnapshot reader = await DocumentationStore.OpenAsync(cache);
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        for (int index = 0; index < 24; index++)
+            Write($"content/en/new-{index}.md", Page($"new-{index}", $"New {index}", "New generation content.\n"));
+        using (await FileLease.AcquireAsync(Path.Combine(cache, "leases", key + ".lock"), Timeout.InfiniteTimeSpan, cancellation.Token))
+        {
+            Task<DocumentationResult> preparation = DocumentationStore.IndexAsync(m_root, source, cache, cancellation.Token);
+            try
+            {
+                while (Directory.GetFiles(Path.Combine(cache, "pages"), "page.json", SearchOption.AllDirectories).Length == payloads.Length)
+                {
+                    Assert.False(preparation.IsCompleted, "Preparation ended before publishing any independent page payload.");
+                    await Task.Delay(10, cancellation.Token);
+                }
+                Assert.False(preparation.IsCompleted);
+                cancellation.Cancel();
+                await Assert.ThrowsAnyAsync<OperationCanceledException>(() => preparation);
+                Assert.Equal(selected, File.ReadAllBytes(pointer));
+                DocumentationResult retained = await reader.QueryAsync(new("read", "probe-api"));
+                Assert.Equal("Partial", retained.status);
+                Assert.Equal(initial.snapshot, retained.snapshot);
+                Assert.Contains(retained.continuations, item => item.pageId == "probe" && item.section == "ownership");
+            }
+            finally
+            {
+                cancellation.Cancel();
+                try { await preparation; }
+                catch (OperationCanceledException) { /* Drain every worker before releasing the protected page. */ }
+            }
+        }
+        DocumentationResult resumed = await IndexAsync();
+        Assert.NotEqual(initial.snapshot, resumed.snapshot);
+        using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
+        Assert.Equal(26, (await current.ExportCatalogAsync()).pages.Count);
+        Assert.Equal("Missing", (await reader.QueryAsync(new("read", "new-23"))).status);
+        Assert.Equal("Found", (await current.QueryAsync(new("read", "new-23"))).status);
     }
 
     private Task<DocumentationResult> IndexAsync() => DocumentationStore.IndexAsync(m_root, source, cache);
