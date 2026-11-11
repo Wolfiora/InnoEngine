@@ -35,6 +35,10 @@ The previous source/XML review found AssetPipeline.Delete removes source and met
 
 ## Missing or limited acceptance
 
+### Collection handle identity observations
+
+The documentation review of `IndexedObjectStore.Keys.cs` and `IndexedObjectStore.cs` found that `Clear` resets key IDs, while key validity checks the store, numeric ID and key type without a separate reset epoch. Recreating a key of the same type can therefore make an old key look valid again. `RemoveKey` also removes by numeric ID without using the owner check applied by normal key queries/updates. These are source-review findings, not newly executed failure reproductions. Product behavior remains unchanged in this documentation migration. Callers must discard keys after Clear and use only the exact owning store; a separate owner-scoped runtime fix and regression are needed before claiming durable stale/foreign-key rejection.
+
 ### Text and Animation cleanup observations
 
 The English documentation review observed that TextRuntime marks itself disposed, attempts each face release and artifact disposal, clears its font map, and then disposes the backend while collecting failures. Animation's binding snapshot similarly clears provider state after collecting disposal failures. These current paths do not provide the deferred retry ownership used by Audio retirement. Product runtime behavior was not changed in this documentation task, and no new failure scenario was executed. A separate owner-scoped review is needed before claiming retryable cleanup for these services.

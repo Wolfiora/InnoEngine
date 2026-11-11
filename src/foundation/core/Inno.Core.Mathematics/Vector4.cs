@@ -134,7 +134,7 @@ public struct Vector4 : IEquatable<Vector4>
     ) =>
         SimdMath.Dot4(a.x, a.y, a.z, a.w, b.x, b.y, b.z, b.w);
     /// <summary>
-    /// Interpolates linearly between two values without clamping the interpolation factor.
+    /// Interpolates linearly after clamping the interpolation factor to [0, 1].
     /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
