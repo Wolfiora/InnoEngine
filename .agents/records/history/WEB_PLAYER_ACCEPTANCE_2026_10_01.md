@@ -1,8 +1,8 @@
 # Web Player 实现与验收（2026-10-01）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [Web 架构](../../../docs/architecture/web-player.md) · Browser Build target（历史位置 `../../../docs/platform/Browser/Inno.Build.Browser.md`，当前不可用）
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [Web 架构](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/web-player.md) · Browser Build target（历史位置 `../../../docs/platform/Browser/Inno.Build.Browser.md`，当前不可用）
 
-> 本页保留宿主重构之前的验收证据；其中独立 Browser Native 项目、BrowserAdapterCatalog、旧 CLI 与共享 Host 平台分支已经被当前重构删除。当前架构见 [Web 宿主边界](../../../docs/architecture/web-player.md)。以下历史运行结果不代替本轮重构验收。
+> 本页保留宿主重构之前的验收证据；其中独立 Browser Native 项目、BrowserAdapterCatalog、旧 CLI 与共享 Host 平台分支已经被当前重构删除。当前架构见 [Web 宿主边界](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/web-player.md)。以下历史运行结果不代替本轮重构验收。
 
 ## 交付边界
 

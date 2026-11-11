@@ -38,9 +38,7 @@ public static partial class ArchitectureValidator
     /// </summary>
     /// <param name="arguments">
     /// The optional repository path, configuration, XML maintenance flag, explicit SDK, evaluated graph output,
-    /// and Wiki inventories with explicitly selected runtime and editor script reference assemblies.
-    /// --wiki-target limits product compilation to that explicit target; shared Wiki checks remain complete.
-    /// --wiki-contracts-only checks signatures and examples; repository structure and links require separate documentation evidence.
+    /// selected API owners and an optional prepared SDK snapshot. Product documentation is validated by the docs command group.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels owned SDK evaluation processes and drains them before returning.
@@ -58,7 +56,7 @@ public static partial class ArchitectureValidator
     /// The caller cancels evaluated SDK project inspection.
     /// </exception>
     /// <exception cref="InvalidDataException">
-    /// A selected Wiki script reference is not the declared logical API assembly.
+    /// A prepared SDK snapshot or evaluated source contract is invalid.
     /// </exception>
     public static int Execute(
         string[] arguments,
@@ -66,21 +64,11 @@ public static partial class ArchitectureValidator
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
         bool expandXml = false;
-        bool wiki = false;
         bool sourceOnly = false;
         bool metadataOnly = false;
-        bool wikiOnly = false;
-        bool wikiContractsOnly = false;
-        bool documentationOnly = false;
         bool agentDocumentsOnly = false;
-        var wikiPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         string? sdkSnapshot = null;
         var apiProjects = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        string? wikiInventoryPath = null;
-        string? wikiExamplesPath = null;
-        string? wikiRuntimeReference = null;
-        string? wikiEditorReference = null;
-        string? wikiTarget = null;
         string configuration = "Debug";
         bool selectedConfiguration = false;
         string? dotnetHost = null;
@@ -92,22 +80,8 @@ public static partial class ArchitectureValidator
             string argument = arguments[index];
             if (argument == "--expand-xml" && !expandXml)
                 expandXml = true;
-            else if (argument == "--wiki" && !wiki)
-                wiki = true;
-            else if (argument == "--wiki-only" && !wikiOnly)
-                wikiOnly = true;
-            else if (argument == "--wiki-contracts-only" && !wiki && !wikiOnly)
-            {
-                wiki = true;
-                wikiOnly = true;
-                wikiContractsOnly = true;
-            }
-            else if (argument == "--documentation-only" && !documentationOnly)
-                documentationOnly = true;
             else if (argument == "--agent-documents-only" && !agentDocumentsOnly)
                 agentDocumentsOnly = true;
-            else if (argument == "--wiki-page" && index + 1 < arguments.Length)
-                wikiPages.Add(arguments[++index]);
             else if (argument == "--source-only" && !sourceOnly)
                 sourceOnly = true;
             else if (argument == "--metadata-only" && !metadataOnly)
@@ -116,16 +90,6 @@ public static partial class ArchitectureValidator
                 apiProjects.Add(arguments[++index].Replace('\\', '/'));
             else if (argument == "--sdk-snapshot" && sdkSnapshot is null && index + 1 < arguments.Length)
                 sdkSnapshot = File.ReadAllText(arguments[++index]);
-            else if (argument == "--wiki-api" && wikiInventoryPath is null && index + 1 < arguments.Length)
-                wikiInventoryPath = arguments[++index];
-            else if (argument == "--wiki-examples" && wikiExamplesPath is null && index + 1 < arguments.Length)
-                wikiExamplesPath = arguments[++index];
-            else if (argument == "--wiki-runtime-reference" && wikiRuntimeReference is null && index + 1 < arguments.Length)
-                wikiRuntimeReference = arguments[++index];
-            else if (argument == "--wiki-editor-reference" && wikiEditorReference is null && index + 1 < arguments.Length)
-                wikiEditorReference = arguments[++index];
-            else if (argument == "--wiki-target" && wikiTarget is null && index + 1 < arguments.Length)
-                wikiTarget = arguments[++index];
             else if (argument == "--dotnet" && dotnetHost is null && index + 1 < arguments.Length)
                 dotnetHost = arguments[++index];
             else if (argument == "--project-graph" && projectGraphPath is null && index + 1 < arguments.Length)
@@ -147,17 +111,12 @@ public static partial class ArchitectureValidator
                 paths.Add(argument);
             else
                 throw new ArgumentException(
-                    "Usage: verify [engine-root] [--configuration Debug|SourceDebug|Release] [--expand-xml] [--dotnet SDK] [--artifacts-path directory] [--project-graph output.json] [--wiki] [--wiki-target targetId] [--wiki-api inventory.json] [--wiki-examples examples.json] [--wiki-runtime-reference assembly.dll] [--wiki-editor-reference assembly.dll]",
+                    "Usage: verify [engine-root] [--configuration Debug|SourceDebug|Release] [--expand-xml] [--source-only|--metadata-only|--agent-documents-only] [--api-project project.csproj] [--dotnet SDK] [--artifacts-path directory] [--project-graph output.json] [--sdk-snapshot input.json]",
                     nameof(arguments)
                 );
         }
         if ((projectGraphPath is not null || artifactsPath is not null) && dotnetHost is null)
             throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
-        if ((wikiOnly || wikiPages.Count != 0 || wikiInventoryPath is not null || wikiExamplesPath is not null
-            || wikiRuntimeReference is not null || wikiEditorReference is not null || wikiTarget is not null) && !wiki)
-            throw new ArgumentException("Wiki API inventory requires --wiki validation.", nameof(arguments));
-        if (wikiTarget is not null && (dotnetHost is null || string.IsNullOrWhiteSpace(wikiTarget)))
-            throw new ArgumentException("Target-scoped Wiki compilation requires a nonempty target and an explicit --dotnet SDK.", nameof(arguments));
         string repositoryRoot = ResolveRepositoryRoot(paths);
         foreach (string project in apiProjects)
         {
@@ -166,8 +125,8 @@ public static partial class ArchitectureValidator
                 || !selected.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) || !File.Exists(selected))
                 throw new ArgumentException($"The selected API owner is not a repository project: {project}", nameof(arguments));
         }
-        if (sourceOnly && (metadataOnly || apiProjects.Count != 0 || wiki) || wikiOnly && (metadataOnly || apiProjects.Count != 0))
-            throw new ArgumentException("Source-only validation cannot claim compiled API or Wiki evidence.", nameof(arguments));
+        if (sourceOnly && (metadataOnly || apiProjects.Count != 0))
+            throw new ArgumentException("Source-only validation cannot claim compiled API evidence.", nameof(arguments));
         if (expandXml)
         {
             int changedFileCount = ExpandXmlDocumentation(repositoryRoot);
@@ -177,65 +136,21 @@ public static partial class ArchitectureValidator
         List<string> failures = [];
         if (agentDocumentsOnly)
         {
-            if (wiki || sourceOnly || metadataOnly || documentationOnly || dotnetHost is not null)
+            if (sourceOnly || metadataOnly || apiProjects.Count != 0 || dotnetHost is not null)
                 throw new ArgumentException("Agent document checks do not claim product or SDK validation.");
             AgentDocumentValidator.Validate(repositoryRoot, failures);
             foreach (string failure in failures)
                 Console.Error.WriteLine(failure);
             return failures.Count == 0 ? 0 : 1;
         }
-        if (documentationOnly)
-        {
-            if (wiki || sourceOnly || metadataOnly || apiProjects.Count != 0 || dotnetHost is not null)
-                throw new ArgumentException("Documentation structure validation does not claim SDK, API or example evidence.", nameof(arguments));
-            WikiProjectCoverageValidator.Validate(repositoryRoot, failures);
-            WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
-            WikiLinkValidator.Validate(repositoryRoot, failures);
-            if (failures.Count == 0)
-                _ = DocumentationCommand.GetProjectDocuments(repositoryRoot);
-            foreach (string failure in failures)
-                Console.Error.WriteLine(failure);
-            return failures.Count == 0 ? 0 : 1;
-        }
-        HashSet<string>? selectedPages = wikiPages.Count == 0 ? null : wikiPages.Select(page => Path.GetFullPath(page, repositoryRoot))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        if (selectedPages is not null && selectedPages.Any(page => !File.Exists(page)
-                || !page.StartsWith(Path.Combine(repositoryRoot, "docs") + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
-            throw new ArgumentException("Every selected Wiki page must exist inside the repository docs owner.", nameof(arguments));
-        IReadOnlyList<WikiProjectPage> pages = wiki ? WikiProjectCoverageValidator.Validate(repositoryRoot, failures) : [];
-        if (wiki && selectedPages is not null)
-        {
-            IReadOnlyDictionary<string, string> ownership = Documentation.DocumentationCatalog.Read(repositoryRoot, pages).owners;
-            var selectedOwners = selectedPages.Select(page => Path.GetRelativePath(repositoryRoot, page).Replace('\\', '/'))
-                .Where(ownership.ContainsKey).Select(page => ownership[page]).ToHashSet(StringComparer.Ordinal);
-            foreach (var pair in ownership.Where(pair => selectedOwners.Contains(pair.Value)))
-                selectedPages.Add(Path.GetFullPath(Path.Combine(repositoryRoot, pair.Key)));
-        }
-        IReadOnlyList<WikiProjectPage> selectedProjectPages = selectedPages is null ? pages
-            : pages.Where(page => selectedPages.Contains(Path.GetFullPath(page.page))).ToArray();
-        WikiProjectReferences? evaluatedReferences = dotnetHost is null ? null
-            : new WikiProjectReferences(repositoryRoot, configuration, dotnetHost, wikiTarget, artifactsPath,
-                apiProjects.Count != 0 ? apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot)).ToHashSet(StringComparer.OrdinalIgnoreCase)
-                    : selectedPages is null || !wikiOnly ? null
-                        : selectedProjectPages.Select(static page => Path.GetFullPath(page.project)).ToHashSet(StringComparer.OrdinalIgnoreCase), sdkSnapshot);
+        DocumentationProjectReferences? evaluatedReferences = dotnetHost is null ? null
+            : new DocumentationProjectReferences(repositoryRoot, configuration, dotnetHost, target: null, artifactsPath,
+                apiProjects.Count == 0 ? null : apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot))
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase), sdkSnapshot);
         var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
             evaluatedReferences, cancellationToken, failures);
         var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
-        if (wiki)
-        {
-            if (!wikiContractsOnly)
-            {
-                WikiContentBoundaryValidator.Validate(repositoryRoot, failures);
-                WikiLinkValidator.Validate(repositoryRoot, failures);
-            }
-            WikiApiCoverageValidator.Validate(repositoryRoot, selectedProjectPages, documentationModels,
-                wikiInventoryPath, failures, cancellationToken);
-            WikiExampleValidator.Validate(repositoryRoot, pages, documentationModels,
-                new WikiScriptReferences(wikiRuntimeReference, wikiEditorReference),
-                evaluatedReferences,
-                wikiExamplesPath, failures, cancellationToken, selectedPages);
-        }
-        if (!metadataOnly && !wikiOnly)
+        if (!metadataOnly)
         foreach (string rootName in S_PRODUCTION_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
@@ -245,7 +160,7 @@ public static partial class ArchitectureValidator
             ValidateSources(repositoryRoot, root, failures, documentationModels, sourceTrees, sourceOnly);
         }
 
-        if (!metadataOnly && !wikiOnly)
+        if (!metadataOnly)
         {
             UsingPolicyValidator.Validate(repositoryRoot, failures, sourceTrees);
             ValidateProjectReferences(repositoryRoot, failures);
@@ -254,10 +169,10 @@ public static partial class ArchitectureValidator
             ArchitectureRules.Validate(repositoryRoot, failures);
         }
         IReadOnlyDictionary<string, string>? outputs = null;
-        if (dotnetHost is not null && !wikiOnly)
+        if (dotnetHost is not null)
             outputs = MSBuildProjectGraphValidator.ValidateAsync(repositoryRoot, configuration, dotnetHost, artifactsPath,
                 projectGraphPath, failures, cancellationToken, sdkSnapshot, apiProjects.Count == 0 ? null : apiProjects).GetAwaiter().GetResult();
-        if (!sourceOnly && !wikiOnly)
+        if (!sourceOnly)
             PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures, outputs,
                 apiProjects.Count == 0 ? null : apiProjects, evaluatedReferences, cancellationToken);
         if (metadataOnly)
@@ -271,8 +186,6 @@ public static partial class ArchitectureValidator
         if (failures.Count == 0)
         {
             Console.WriteLine(sourceOnly ? "InnoEngine source architecture validation passed; compiled API evidence is separate."
-                : wikiContractsOnly ? "InnoEngine selected Wiki contracts passed; repository structure and links require separate evidence."
-                : wikiOnly ? "InnoEngine selected Wiki validation passed; source and compiled API evidence are separate."
                 : metadataOnly ? "InnoEngine selected compiled API validation passed." : "InnoEngine architecture validation passed.");
             return 0;
         }

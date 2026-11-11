@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace Inno.Tooling.Architecture;
 
@@ -16,6 +18,14 @@ internal static class RepositorySourceInventory
         foreach (string owner in new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" })
             foreach (string project in Files(Path.Combine(root, owner), "*.csproj"))
                 yield return project;
+    }
+
+    internal static bool IsDeclaredTestProject(string project)
+    {
+        XElement? declaration = XDocument.Load(project).Descendants("IsTestProject").LastOrDefault();
+        // Only explicit unconditional test runners exempt their public test methods; support libraries retain API contracts.
+        return declaration?.Attribute("Condition") is null && declaration?.Parent?.Attribute("Condition") is null
+            && declaration?.Value.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     internal static IEnumerable<string> Files(

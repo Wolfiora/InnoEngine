@@ -17,7 +17,7 @@ internal static class PublicApiBoundaryValidator
         ICollection<string> failures,
         IReadOnlyDictionary<string, string>? evaluatedOutputs = null,
         IReadOnlySet<string>? selectedProjects = null,
-        WikiProjectReferences? evaluatedReferences = null,
+        DocumentationProjectReferences? evaluatedReferences = null,
         CancellationToken cancellationToken = default
     ) {
         Project[] projects = new[] { "entry", "src", "backends", "platforms", "build" }

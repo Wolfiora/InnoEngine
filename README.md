@@ -12,10 +12,10 @@ InnoEngine combines shared mechanisms for assets, scenes, scripting and resource
 
 | Start here | Find |
 | --- | --- |
-| [Get started](docs/getting-started/README.md) | Host prerequisites, first Editor session and project workflow |
-| [Documentation](docs/README.md) | Design, implementation, usage and API contracts |
-| [Architecture](docs/architecture/README.md) | Module responsibilities, dependency direction and ownership |
-| [Development](docs/development/README.md) | Building, validation, local documentation queries and platform extensions |
+| [Get started](https://github.com/Wolfiora/InnoEngine.Docs/tree/docs-modernization/content/en/getting-started) | Host prerequisites, first Editor session and project workflow |
+| [Documentation](https://github.com/Wolfiora/InnoEngine.Docs/tree/docs-modernization/content/en) | English task manuals, design explanations and API contracts |
+| [Architecture](https://github.com/Wolfiora/InnoEngine.Docs/tree/docs-modernization/content/en/architecture) | Module responsibilities, dependency direction and ownership |
+| [Development](https://github.com/Wolfiora/InnoEngine.Docs/tree/docs-modernization/content/en/contributing) | Building, validation, local documentation queries and platform extensions |
 | [Contributing](CONTRIBUTING.md) | The shared development rules for humans and agents |
 | [Acceptance and limitations](.agents/records/acceptance/current.md) | Exact evidence scopes and outstanding checks |
 

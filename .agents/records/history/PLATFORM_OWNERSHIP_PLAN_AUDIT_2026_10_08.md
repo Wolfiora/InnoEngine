@@ -1,6 +1,6 @@
 # 平台归属计划、Solution 与启动方式复核
 
-[架构索引](../../../docs/architecture/README.md) · [完整计划](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md) · [原实施验收](PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md) · [产品启动](../../../docs/platform/PRODUCT_STARTUP.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [完整计划](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md) · [原实施验收](PLATFORM_OWNERSHIP_REFACTOR_ACCEPTANCE.md) · [产品启动](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md)
 
 ## 1. 结论与用户问题
 
@@ -194,7 +194,7 @@ SDL 的系统句柄、BGFX 的能力及 SDK/compiler 参数属于实现边界，
 
 ## 7. 启动与提交建议
 
-实际命令、IDE 参数及六个入口的区别见[产品启动](../../../docs/platform/PRODUCT_STARTUP.md)。
+实际命令、IDE 参数及六个入口的区别见[产品启动](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md)。
 当前开发路径为 `Inno.Editor.Windows` → 明确 Build → 传 Samples/FlappyBird 目录；
 Player 经 game 导出，macOS 在对应机器执行，Web 使用 HTTP 页面宿主。
 

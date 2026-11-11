@@ -1,10 +1,10 @@
 # 历史快照：Identity / Missing / Reload 规范与旧执行记录
 
-归档于 2026-10-12。以下保留归档前内容；其中阶段状态与历史测试不是当前验收结论。当前规范见 [Wiki](../../../docs/architecture/identity-and-reload.md)。
+归档于 2026-10-12。以下保留归档前内容；其中阶段状态与历史测试不是当前验收结论。当前规范见 [Wiki](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md)。
 
 # InnoEngine Identity、可恢复引用与热重载强制标准
 
-[架构治理](../../../docs/architecture/README.md) · [完整项目架构 Overview](../../../docs/architecture/overview.md) · [Wiki 首页](../../../docs/README.md)
+[架构治理](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [完整项目架构 Overview](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md)
 
 > 最初审计快照：2026-09-06。强制不变量持续生效，历史缺口与拟议 API 不是当前实现状态；实际收口以 [2026-09-08 实现交付与集中验收](ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md) 为准。
 > 文中“必须”和“禁止”是架构约束；“当前实现”与“当前缺口”来自本次源码审计。

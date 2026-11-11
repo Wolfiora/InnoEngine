@@ -1,6 +1,6 @@
 # 提交前第四轮复核与 BGCS 修改说明（2026-10-02）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [上轮全范围复核](PRECOMMIT_FULL_AUDIT_2026_10_02.md) · [当前问题入口](../open-items.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [上轮全范围复核](PRECOMMIT_FULL_AUDIT_2026_10_02.md) · [当前问题入口](../open-items.md)
 
 ## 范围和结论
 

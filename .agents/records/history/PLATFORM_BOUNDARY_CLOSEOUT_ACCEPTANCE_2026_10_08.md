@@ -1,6 +1,6 @@
 # 平台边界收口、静态图还原与补充验收
 
-[架构索引](../../../docs/architecture/README.md) · [本轮计划](PLATFORM_BOUNDARY_CLOSEOUT_PLAN_2026_10_08.md) · [发现记录](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md) · [平台扩展](../../../docs/development/adding-platform.md) · [产品启动](../../../docs/platform/PRODUCT_STARTUP.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [本轮计划](PLATFORM_BOUNDARY_CLOSEOUT_PLAN_2026_10_08.md) · [发现记录](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md) · [平台扩展](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md) · [产品启动](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md)
 
 ## 当前执行状态
 
@@ -156,7 +156,7 @@ Rendering2D 首次使用本次 runner 的 600 帧设置时，只运行约 5 秒�
 没有空 Folder、游离项目、无 owner 源码或迁移遗留空目录。
 217 项当前 MSBuild 有效引用图与仓库架构验证均通过。
 六个生产可执行入口符合白名单；五个平台产品采用显式构建，Solution 的 `not built` 不表示废弃。
-实际入口与启动方式见[产品启动指南](../../../docs/platform/PRODUCT_STARTUP.md)。
+实际入口与启动方式见[产品启动指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md)。
 
 ### 最终发布与运行矩阵
 

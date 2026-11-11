@@ -317,7 +317,7 @@ public static class DocumentationReferences
                 throw new InvalidDataException("Duplicate source-project identity: " + name);
             // API surfaces require evaluated extraction; inventory must never invent them from a project name.
             projects.Add(new { name, path = Path.GetRelativePath(root, project).Replace('\\', '/'), entry = (string?)null,
-                surfaces = Array.Empty<string>(), isTest = WikiProjectCoverageValidator.IsDeclaredTestProject(project) });
+                surfaces = Array.Empty<string>(), isTest = RepositorySourceInventory.IsDeclaredTestProject(project) });
         }
         if (projects.Count == 0)
             throw new InvalidDataException("Source-project inventory is empty.");
@@ -349,7 +349,7 @@ public static class DocumentationReferences
             selected.Add(absolute);
         }
         var failures = new List<string>();
-        var references = new WikiProjectReferences(root, configuration, Path.GetFullPath(dotnet), target,
+        var references = new DocumentationProjectReferences(root, configuration, Path.GetFullPath(dotnet), target,
             artifactsPath is null ? null : Path.GetFullPath(artifactsPath), selectedProjects: selected, sdkSnapshot: sdkSnapshot);
         var models = new DocumentationSourceModels(root, configuration, references, cancellationToken, failures);
         var inventory = new List<ApiProject>();
@@ -362,7 +362,7 @@ public static class DocumentationReferences
             var compilation = models.GetCompilation(directory)
                 ?? throw new InvalidDataException("Selected API compilation is unavailable: " + project
                     + (failures.Count == 0 ? string.Empty : "\n" + string.Join('\n', failures)));
-            var symbols = WikiApiCoverageValidator.Capture(root, project, null, compilation, failures, cancellationToken);
+            var symbols = DocumentationApiExtractor.Capture(root, project, null, compilation, failures, cancellationToken);
             inventory.Add(new(Path.GetRelativePath(root, project).Replace('\\', '/'), Path.GetFileNameWithoutExtension(project), symbols));
         }
         if (failures.Count != 0)
@@ -388,6 +388,6 @@ public static class DocumentationReferences
     private sealed record ApiProject(
         string project,
         string name,
-        IReadOnlyList<WikiApiCoverageValidator.WikiApiEntry> symbols
+        IReadOnlyList<DocumentationApiExtractor.DocumentationApiEntry> symbols
     );
 }

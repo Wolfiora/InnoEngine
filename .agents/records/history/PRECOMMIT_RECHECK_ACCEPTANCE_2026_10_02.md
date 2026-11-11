@@ -1,6 +1,6 @@
 # 提交前再次核查与补充修复（2026-10-02）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [上一轮八项修复](PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md) · [当前问题入口](../open-items.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [上一轮八项修复](PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md) · [当前问题入口](../open-items.md)
 
 后续的目录安全、导出退休、输入边界与封装检查见[最新全范围复核](PRECOMMIT_FULL_AUDIT_2026_10_02.md)。
 本页统计保留为该轮验证证据。

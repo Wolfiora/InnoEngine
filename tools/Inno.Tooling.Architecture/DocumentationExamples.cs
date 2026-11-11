@@ -90,7 +90,7 @@ public static class DocumentationExamples
         var requested = groups.Where(static group => group.page.examples is not null)
             .SelectMany(static group => group.page.examples!.projects)
             .Where(projects.ContainsKey).Select(name => projects[name]).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var sdk = new WikiProjectReferences(root, configuration, Path.GetFullPath(options["--dotnet"]),
+        var sdk = new DocumentationProjectReferences(root, configuration, Path.GetFullPath(options["--dotnet"]),
             options.GetValueOrDefault("--target"), options.TryGetValue("--artifacts-path", out string? artifacts) ? Path.GetFullPath(artifacts) : null,
             selectedProjects: requested, sdkSnapshot: options.TryGetValue("--sdk-snapshot", out string? graphPath)
                 ? await File.ReadAllTextAsync(graphPath, cancellationToken).ConfigureAwait(false) : null);
@@ -118,7 +118,7 @@ public static class DocumentationExamples
                 }
                 else
                 {
-                    var scripts = new WikiScriptReferences(options.GetValueOrDefault("--runtime-reference"),
+                    var scripts = new DocumentationScriptReferences(options.GetValueOrDefault("--runtime-reference"),
                         options.GetValueOrDefault("--editor-reference"));
                     bool editor = context.mode == "editor-script";
                     IReadOnlyList<MetadataReference> references = scripts.GetReferences(editor);

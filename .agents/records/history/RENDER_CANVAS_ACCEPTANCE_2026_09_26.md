@@ -1,6 +1,6 @@
 # 渲染、Canvas 与插件样例验收记录（2026-09-26）
 
-[架构治理](../../../docs/architecture/README.md) · [渲染运行时](../../../docs/modules/rendering/Inno.Rendering.Runtime.md) · [样例导入](../../../docs/modules/assets/Inno.Assets.Pipeline.md)
+[架构治理](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [渲染运行时](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/rendering/Inno.Rendering.Runtime.md) · [样例导入](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/assets/Inno.Assets.Pipeline.md)
 
 ## 结论
 

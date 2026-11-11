@@ -19,7 +19,7 @@ namespace Inno.Tooling.Documentation.Indexing;
 internal static class DocumentationMarkdown
 {
     // Changes to parsing, tokenization or cached contracts must change this schema identity.
-    internal const string C_SCHEMA = "inno-doc/2;markdig/1.5.1;yaml/16.3.0;tokens/1";
+    internal const string C_SCHEMA = "inno-doc/3;markdig/1.5.1;yaml/16.3.0;tokens/1";
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder()
         .UseYamlFrontMatter().UsePipeTables().UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
         .UseGenericAttributes().Build();
@@ -81,6 +81,8 @@ internal static class DocumentationMarkdown
             if (!rows.TryAdd(anchor.Groups["id"].Value, row))
                 throw new InvalidDataException("Duplicate API anchor: " + path);
         FencedCodeBlock[] fences = document.Descendants<FencedCodeBlock>().ToArray();
+        if (fences.Any(static block => block.ClosingFencedCharCount == 0))
+            throw new InvalidDataException("Documentation contains an unclosed code fence: " + path);
         var symbols = new List<DocumentationSymbol>();
         foreach (string block in html)
         foreach (Match marker in Regex.Matches(block, @"<!-- api: (?<id>\S+) (?<hash>[a-f0-9]{64}) -->"))

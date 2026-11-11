@@ -1,6 +1,6 @@
 # Backend 运行接入与构建成本整改计划
 
-[架构索引](../../../docs/architecture/README.md) · [当前问题](../open-items.md) · [平台扩展指南](../../../docs/development/adding-platform.md) · [既有集成验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [当前问题](../open-items.md) · [平台扩展指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md) · [既有集成验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)
 
 ## 1. 状态、基线与完成定义
 

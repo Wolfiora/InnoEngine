@@ -1385,7 +1385,7 @@
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "identity-reload",
-      "translatedHash": "28b538f56b4ec97bc42ffe5979ecc30ee356ebb96d6b9188d41d01b52ecf3324"
+      "translatedHash": "ca4b44218ee5981e939f63225dbac05eb2c2bee9092f5f1a107e566e209d9919"
     },
     {
       "id": "21.1",
@@ -4154,7 +4154,7 @@
           {
             "ordinal": 11,
             "sourceHash": "036d942ebff4f22a51c0b0ccd9addc19f374304a7554e9992a545162b92395ae",
-            "targetHash": "28b538f56b4ec97bc42ffe5979ecc30ee356ebb96d6b9188d41d01b52ecf3324"
+            "targetHash": "ca4b44218ee5981e939f63225dbac05eb2c2bee9092f5f1a107e566e209d9919"
           }
         ]
       }
@@ -6442,13 +6442,6 @@
         "tests",
         "compilation",
         "review"
-      ]
-    },
-    {
-      "pattern": "^docs/",
-      "units": [
-        "wiki",
-        "xml"
       ]
     },
     {

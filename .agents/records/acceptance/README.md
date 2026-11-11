@@ -1,5 +1,7 @@
 # Acceptance records
 
+- [Canonical documentation cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md): physical legacy removal and preserved regression responsibilities.
+
 [Records](../README.md) · [Open work](../open-items.md) · [Current acceptance](../acceptance/current.md)
 
 - [Logo, default font icons and attribution](LOGO_BRANDING_2026_11_07.md): outlined icons, v2 artwork and removal of embedded images; current and original evidence are recorded separately.

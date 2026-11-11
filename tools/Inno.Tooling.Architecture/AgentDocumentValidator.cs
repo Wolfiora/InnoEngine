@@ -12,9 +12,9 @@ internal static class AgentDocumentValidator
         string root,
         ICollection<string> failures
     ) {
-        WikiLinkValidator.Validate(root, failures, ".agents");
+        AgentLinkValidator.Validate(root, failures, ".agents");
         foreach (string entry in new[] { "AGENTS.md", "CONTRIBUTING.md", "README.md" })
-            WikiLinkValidator.Validate(root, failures, entry);
+            AgentLinkValidator.Validate(root, failures, entry);
         foreach (string skill in RepositorySourceInventory.Files(Path.Combine(root, ".agents", "skills"), "SKILL.md"))
         {
             string text = File.ReadAllText(skill).Replace("\r\n", "\n");

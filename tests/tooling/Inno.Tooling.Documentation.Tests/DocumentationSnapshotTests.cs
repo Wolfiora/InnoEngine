@@ -45,6 +45,17 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task UnclosedFencesCannotReplaceThePublishedSnapshot()
+    {
+        DocumentationResult previous = await IndexAsync();
+        Write("content/en/fence.md", Page("fence", "Fence", "~~~cs\nint value = 1;\n"));
+        InvalidDataException error = await Assert.ThrowsAsync<InvalidDataException>(() => IndexAsync());
+        Assert.Contains("unclosed code fence", error.Message);
+        using DocumentationSnapshot retained = await DocumentationStore.OpenAsync(cache, previous.snapshot);
+        Assert.Equal(previous.snapshot, (await retained.ExportCatalogAsync()).snapshot);
+    }
+
+    [Fact]
     public async Task ReferencePayloadsRemainReadableAfterCheckoutChangesAndShareImmutableStorage()
     {
         const string C_REFERENCE = "reference/api/probe.json";
@@ -634,6 +645,82 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Equal(C_SYMBOL, exact.hits.Single().symbol);
         Assert.Equal("Excerpt", exact.hits.Single().completeness);
         Assert.Equal("Exact qualified symbol", exact.hits.Single().reason);
+    }
+
+    [Fact]
+    public async Task CommandReadsRequireExplicitPreparationAndNeverRefreshAuthoringInputs()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationCommand.ExecuteAsync(["index", "--engine-root", m_root]));
+        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationCommand.ExecuteAsync(["read", "--engine-root", m_root, "--docs-root", source, "--page", "probe"]));
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["index", "--engine-root", m_root, "--docs-root", source, "--cache-root", cache, "--format", "json"]));
+        Dictionary<string, string> prepared = Files();
+        Write("content/en/probe.md", "Invalid mutable authoring content cannot silently replace the selected snapshot.");
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["read", "--engine-root", m_root, "--cache-root", cache, "--page", "probe", "--format", "json"]));
+        Assert.Equal(2, await DocumentationCommand.ExecuteAsync(["read", "--engine-root", m_root, "--cache-root", cache, "--page", "missing", "--format", "json"]));
+        Assert.Equal(prepared.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
+    }
+
+    [Fact]
+    public async Task OrphanSymbolsAndDuplicateProjectIdentitiesCannotReplaceThePublishedGeneration()
+    {
+        DocumentationResult original = await IndexAsync();
+        string api = File.ReadAllText(Path.Combine(source, "content/en/api.md"));
+        Write("content/en/api.md", api.Replace("owners: [Inno.Probe]", "owners: []", StringComparison.Ordinal));
+        await Assert.ThrowsAsync<InvalidDataException>(() => IndexAsync());
+        Write("content/en/api.md", api);
+        JsonNode inventory = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/projects/catalog.json")))!;
+        inventory.AsArray().Add(inventory[0]!.DeepClone());
+        SetProjectInventory(inventory);
+        await Assert.ThrowsAnyAsync<ArgumentException>(() => IndexAsync());
+        using DocumentationSnapshot unchanged = await DocumentationStore.OpenAsync(cache);
+        Assert.Equal(original.snapshot, unchanged.identity);
+    }
+
+    [Fact]
+    public async Task AProjectMoveChangesTheSnapshotThroughItsExplicitInventoryWithoutSdkWork()
+    {
+        DocumentationResult previous = await IndexAsync();
+        JsonNode projects = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/projects/catalog.json")))!;
+        projects[0]!["path"] = "src/moved/Inno.Probe.csproj";
+        SetProjectInventory(projects);
+        DocumentationResult moved = await IndexAsync();
+        Assert.NotEqual(previous.snapshot, moved.snapshot);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, moved.snapshot);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        byte[] bytes = await snapshot.ReadReferenceAsync("reference/projects/catalog.json");
+        Assert.Contains("src/moved/Inno.Probe.csproj", Encoding.UTF8.GetString(bytes));
+        Assert.Equal("probe", catalog.projects["Inno.Probe"]);
+    }
+
+    [Fact]
+    public async Task LargePageReadsPreservePreambleAndNestedSectionsThroughExplicitContinuation()
+    {
+        string body = "---\nuid: long-contract\nkind: explanation\n---\nPreamble ownership contract.\n\n# First\nOwner contract.\n\n### Deep\n"
+            + new string('x', 18000) + "\n\n## Second\nRetirement contract.\n";
+        Write("content/en/long.md", body);
+        await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        var text = new StringBuilder();
+        DocumentationRequest? request = new("read", "long-contract");
+        do
+        {
+            DocumentationResult result = await snapshot.QueryAsync(request);
+            text.Append(Assert.Single(result.hits).text);
+            request = result.nextRequest;
+        } while (request is not null);
+        Assert.Equal(body, text.ToString());
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        Assert.Equal(new[] { "first", "deep", "second" }, catalog.pages.Single(page => page.id == "long-contract").sections.Keys);
+        Assert.Contains("Retirement contract.", (await snapshot.QueryAsync(new("read", "long-contract", section: "second"))).hits.Single().text);
+    }
+
+    private void SetProjectInventory(JsonNode projects)
+    {
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(projects);
+        Write("reference/projects/catalog.json", Encoding.UTF8.GetString(bytes));
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/engine.lock.json")))!;
+        binding["projectManifestIdentity"] = Hash(bytes);
+        Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
     private byte[] BindReference(
