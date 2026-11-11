@@ -6,6 +6,8 @@ The English documentation and workflow modernization is **incomplete**. Existing
 
 ## Current local evidence
 
+- [Complete baseline dispositions](DOCUMENTATION_DISPOSITIONS_2026_11_11.md) verifies all 454 original product files against exact Git identities and their declared destinations or retirements; eleven negative/positive audit contracts pass. This is separate from source/API certification and physical legacy cutover.
+
 - [Native source preflight](CI_NATIVE_PREFLIGHT_2026_11_11.md) removes unconditional source checkout and product-entry compilation from hosted classification. Seven planning regressions, nine real local-Git preparation cases and fifteen CI protocol cases pass. The managed bootstrap builds independently; real hosted execution remains outstanding.
 
 - [Immutable CI documentation candidates](CI_DOCUMENTATION_CANDIDATES_2026_11_11.md) records the hosted checkout wiring, nineteen local metadata/ancestry protocol cases and remaining live certification requirements. Candidate correspondence does not establish source compatibility or publication eligibility.
