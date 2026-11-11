@@ -39,6 +39,10 @@ The previous source/XML review found AssetPipeline.Delete removes source and met
 
 The English documentation review observed that TextRuntime marks itself disposed, attempts each face release and artifact disposal, clears its font map, and then disposes the backend while collecting failures. Animation's binding snapshot similarly clears provider state after collecting disposal failures. These current paths do not provide the deferred retry ownership used by Audio retirement. Product runtime behavior was not changed in this documentation task, and no new failure scenario was executed. A separate owner-scoped review is needed before claiming retryable cleanup for these services.
 
+### Diagnostic failure reporting and removed log sinks
+
+The Events/Diagnostics/Logging documentation review at c7c2e650 observed that DiagnosticHub's secondary Console.Error reporting can itself propagate, unlike LogRouter's protected fallback. LogRouter unregistration/quarantine removes a sink from later snapshots without disposing it, and an active batch can retain the earlier snapshot. XML and new task/reference prose now state these current boundaries. No runtime behavior was changed and no new failure reproduction was executed; review host release policies and diagnostic secondary-channel failure separately before claiming unconditional isolation or automatic release of removed sinks.
+
 | Scope | Boundary |
 | --- | --- |
 | macOS ARM64/Unix | No local physical Mac. Manual Metal, physical displays, volume variants and complete publication scenarios require their own evidence; automated CI is revision-specific. |

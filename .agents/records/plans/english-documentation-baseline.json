@@ -4358,32 +4358,52 @@
       "sha256": "6036e8160bed7994fa19fe76707b3c1cd99d89024be14924eb4796070daf730d",
       "bytes": 10054,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/manual/diagnostics/report-current-issues.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/projects/inno-core-diagnostics.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/types/core-diagnostics/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Diagnostics/api.md",
       "sha256": "6e39defc6b70ad695ca2078232c7fb10cf3ffd2abd0be8508c621c62fd05f173",
       "bytes": 40743,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/manual/diagnostics/report-current-issues.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/projects/inno-core-diagnostics.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/types/core-diagnostics/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Events.md",
       "sha256": "df282a7b86eb3786d1eb4dad9387be25fc62a838533f7a06e4e87a4ec1bdaae4",
       "bytes": 7351,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/manual/events/route-events.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/projects/inno-core-events.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/types/core-events/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Events/api.md",
       "sha256": "1ed5315f8633ea24673c8bd395c9a417f04df17a4661074bb89482f251ea6436",
       "bytes": 41646,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/manual/events/route-events.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/projects/inno-core-events.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/types/core-events/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Execution.md",
@@ -4470,16 +4490,26 @@
       "sha256": "7dbc17d63bb38fca3dff6e01845170f935bfc34b347dc1faaf529e75f85a9b33",
       "bytes": 9899,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/manual/diagnostics/write-logs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/projects/inno-core-logging.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/types/core-logging/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Logging/api.md",
       "sha256": "735f1c4c58058dbb08c911f2679f757341b43f105e7a1334ef008e940ee22331",
       "bytes": 50934,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/manual/diagnostics/write-logs.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/projects/inno-core-logging.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/34fcdbd8405b8b2c2ba26800ff818d246be28003/content/en/api/types/core-logging/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Mathematics.md",
