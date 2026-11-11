@@ -345,6 +345,49 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task FirstConcurrentQueriesShareSearchStateWithoutPublishingOrRetainingCancellation()
+    {
+        await IndexAsync();
+        Dictionary<string, string> before = Files();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            snapshot.QueryAsync(new("search", "ownership"), cancellation.Token));
+
+        var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task<DocumentationResult>[] queries = Enumerable.Range(0, 12).Select(index => Task.Run(async () =>
+        {
+            await start.Task;
+            return await snapshot.QueryAsync((index % 3) switch
+            {
+                0 => new("search", "ownership"),
+                1 => new("symbol", C_SYMBOL, "Inno.Probe", "host-runtime"),
+                _ => new("read", "probe", section: "ownership")
+            });
+        })).ToArray();
+        start.SetResult();
+        DocumentationResult[] results = await Task.WhenAll(queries);
+        for (int index = 0; index < results.Length; index++)
+        {
+            DocumentationResult result = results[index];
+            Assert.Equal(snapshot.identity, result.snapshot);
+            if (index % 3 == 1)
+            {
+                Assert.Equal(C_SYMBOL, Assert.Single(result.hits).symbol);
+                Assert.Equal("probe", Assert.Single(result.continuations).pageId);
+                Assert.Equal("ownership", result.continuations[0].section);
+            }
+            else
+            {
+                Assert.Equal("Found", result.status);
+                Assert.Contains(result.hits, hit => hit.pageId == "probe" && hit.section == "ownership");
+            }
+        }
+        Assert.Equal(before.OrderBy(pair => pair.Key), Files().OrderBy(pair => pair.Key));
+    }
+
+    [Fact]
     public async Task ConcurrentWritersAndReadersPublishConsistentGenerations()
     {
         for (int index = 0; index < 24; index++)

@@ -13,6 +13,7 @@ namespace Inno.Tooling.Documentation;
 /// <summary>
 /// Owns a protected immutable snapshot and answers transport-independent documentation requests.
 /// Concurrent queries are supported; the owner must finish them before disposing the session.
+/// Exact reads and symbol lookups do not initialize keyword-search postings.
 /// </summary>
 public sealed class DocumentationSnapshot : IDisposable
 {
@@ -22,7 +23,7 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly FileLease m_reading;
     private readonly string? m_expectedSourceTree;
     private readonly Dictionary<string, string> m_paths;
-    private readonly Dictionary<string, int[]> m_terms;
+    private readonly Lazy<Dictionary<string, int[]>> m_terms;
     private readonly Dictionary<string, DocumentationSymbolReference[]> m_symbols;
     private readonly ConcurrentDictionary<string, DocumentationPage> m_pages = new(StringComparer.Ordinal);
     private bool m_disposed;
@@ -95,12 +96,7 @@ public sealed class DocumentationSnapshot : IDisposable
         m_paths = manifest.pages.ToDictionary(static pair => pair.Value.pageId, static pair => pair.Key, StringComparer.Ordinal);
         m_symbols = manifest.symbols.GroupBy(static symbol => symbol.id, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
-        m_terms = manifest.search.SelectMany((
-            entry,
-            index
-        ) => entry.tokens.Select(token => (token, index)))
-            .GroupBy(static pair => pair.token, StringComparer.Ordinal)
-            .ToDictionary(static group => group.Key, static group => group.Select(static pair => pair.index).Distinct().ToArray(), StringComparer.Ordinal);
+        m_terms = new(() => CreateSearchPostings(manifest), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
     /// <summary>
@@ -224,10 +220,11 @@ public sealed class DocumentationSnapshot : IDisposable
         if (tokens.Length == 0)
             return Result("Empty", "No searchable terms.");
         IEnumerable<int>? selected = null;
+        Dictionary<string, int[]> terms = m_terms.Value;
         foreach (string token in tokens)
         {
             cancellation.ThrowIfCancellationRequested();
-            if (!m_terms.TryGetValue(token, out int[]? postings))
+            if (!terms.TryGetValue(token, out int[]? postings))
                 return Result("Empty", "No matching documentation. No content was inferred.");
             selected = selected is null ? postings : selected.Intersect(postings);
         }
@@ -249,6 +246,15 @@ public sealed class DocumentationSnapshot : IDisposable
             $"{ranked.Length} matching sections; offset {request.offset}, returned {hits.Count}. Search excerpts are navigation, not complete contracts.", hits)
             with { nextRequest = request.offset + hits.Count < ranked.Length ? request with { offset = request.offset + hits.Count } : null };
     }
+
+    private static Dictionary<string, int[]> CreateSearchPostings(DocumentationManifest manifest)
+        => manifest.search.SelectMany((
+            entry,
+            index
+        ) => entry.tokens.Select(token => (token, index)))
+            .GroupBy(static pair => pair.token, StringComparer.Ordinal)
+            .ToDictionary(static group => group.Key,
+                static group => group.Select(static pair => pair.index).Distinct().ToArray(), StringComparer.Ordinal);
 
     private (int score, string reason) Score(
         DocumentationSearchEntry entry,
