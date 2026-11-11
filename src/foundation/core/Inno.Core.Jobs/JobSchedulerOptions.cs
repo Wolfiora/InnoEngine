@@ -3,15 +3,16 @@ using System;
 namespace Inno.Core.Jobs;
 
 /// <summary>
-/// Defines worker-pool options for one isolated <see cref="JobScheduler"/>.
+/// Defines frame admission, main-thread queue limits and worker count for one isolated <see cref="JobScheduler"/>.
 /// </summary>
 public readonly struct JobSchedulerOptions
 {
     private const int DEFAULT_MAX_WORKER_THREADS = 64;
 
     /// <summary>
-    /// Number of worker threads.
-    /// Set to 0 to use <c>max(1, Environment.ProcessorCount - 1)</c>.
+    /// Gets the worker-pool thread count, clamped to 1 through 64 for positive values.
+    /// Zero selects <c>max(1, Environment.ProcessorCount - 1)</c>, also capped at 64.
+    /// Single-thread execution does not create workers or consume this setting.
     /// </summary>
     public int workerCount { get; init; }
 
