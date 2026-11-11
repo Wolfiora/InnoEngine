@@ -6173,48 +6173,66 @@
       "sha256": "0425abaa3633d1ccff8d8a490da187b80ef8f2d72a34f576e4d4686f52587d68",
       "bytes": 12201,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-adapter-storage-browserwasm32.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/application-data.md"
+      ]
     },
     {
       "source": "docs/platform/BrowserWasm32/Inno.Build.BrowserWasm32.md",
       "sha256": "356a4d3585fb7130f8455f9c25af9388000f49ed147ba5cadd0de54d4d2932e9",
       "bytes": 26577,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-build-browserwasm32.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.Runtime.md",
       "sha256": "acfb8c68a806c58f67492c99d9369f4cf2b5bb4b37585b5dce27c1a9f9dd30dd",
       "bytes": 5701,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-browserwasm32-bgfx-runtime.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Bgfx.md",
       "sha256": "1e040711749f6e57121a650c66364090139e5185d6eb00e43c1315fdfb3368b3",
       "bytes": 7091,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-browserwasm32-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Build.md",
       "sha256": "2486fdc23d9a4a8f810a2a603c2322c185f06669246f57c898a56aa627d28cd6",
       "bytes": 3557,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-browserwasm32-build.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/BrowserWasm32/Inno.Integration.BrowserWasm32.Sdl3.md",
       "sha256": "0923d9c0e99da2df0b0b6b156605ca24bfdd40d11fe94e744f27c6518f861010",
       "bytes": 7570,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-browserwasm32-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/BrowserWasm32/Inno.Player.BrowserWasm32.md",
@@ -6277,8 +6295,11 @@
       "sha256": "1a6a9ade1d9df551a55b4d40ff8d3e55129b5865a34bb0a3eb0d288f379755cc",
       "bytes": 22146,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-build-macosarm64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Editor.MacOSArm64.md",
@@ -6293,40 +6314,55 @@
       "sha256": "f1d8d9ce2c6f4e569454ada7d3d472cdc43d290ea89af4b977d6a52ece24dfcc",
       "bytes": 5591,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-macosarm64-bgfx-runtime.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Bgfx.md",
       "sha256": "e0eb78bdfc02a5128d8ff0a88ed9ca011e1d84c769c636d745eab52d65db2963",
       "bytes": 6545,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-macosarm64-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Build.md",
       "sha256": "6fa218b3e56943f114e84a4dec4cf63d8c4a1fa163fc3926a01c86027635724a",
       "bytes": 2826,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-macosarm64-build.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Integration.MacOSArm64.Sdl3.md",
       "sha256": "8c76f1aa7b018b602499b4b8435c866bcc3fbe10eeb703f8f9b7a54ebc888d9e",
       "bytes": 7401,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-macosarm64-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Platform.MacOSArm64.md",
       "sha256": "68e0913a3f3d8dcd745e6bfc7c835001b2495b5572066b9665128dad88303810",
       "bytes": 3279,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-platform-macosarm64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/application-data.md"
+      ]
     },
     {
       "source": "docs/platform/MacOSArm64/Inno.Player.MacOSArm64.md",
@@ -6365,8 +6401,11 @@
       "sha256": "86011cb7db24b1132c0e155acbeda7cbe2c52e47b2093b3843bd4e1b51a0c9d8",
       "bytes": 5459,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-build-windows-host.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/Windows/README.md",
@@ -6381,8 +6420,11 @@
       "sha256": "5d5d06fc8613010e311746b06b54572155fbb32bde8b5681bee1754cfdab3e39",
       "bytes": 19970,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-build-windowsx64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Editor.WindowsX64.md",
@@ -6397,40 +6439,55 @@
       "sha256": "985ae00aebb95be3374b5fde6559d8b437f288b7bfb67d3ca39426ba9d8ce3da",
       "bytes": 5593,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-windowsx64-bgfx-runtime.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Bgfx.md",
       "sha256": "081aad8242b38e18b74b84f31b880166238dd1f7be24430e77f12d6259b04130",
       "bytes": 6519,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-windowsx64-bgfx.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Build.md",
       "sha256": "dbea52cdc120b9cd1d5191903d3f5cc375d2c0700375c98c5da193ee1192dffb",
       "bytes": 2826,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-windowsx64-build.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/select-target.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Integration.WindowsX64.Sdl3.md",
       "sha256": "299bff1a019e48976fe6ee745385b0682ee86c43b8e85ba65c4fac43dce0d53f",
       "bytes": 7405,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-integration-windowsx64-sdl3.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/window-lifetime.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Platform.WindowsX64.md",
       "sha256": "1c722240b489488cf2fd6feec4969e4d4351fe262980141d74326c157596f722",
       "bytes": 3287,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedEnglishDocumentationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/api/projects/inno-platform-windowsx64.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/fd6d34183e5027d6f83d8fe85476f27d6aa403e4/content/en/platforms/application-data.md"
+      ]
     },
     {
       "source": "docs/platform/WindowsX64/Inno.Player.WindowsX64.md",
