@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory)][string]$PlanPath,
     [Parameter(Mandatory)][string]$ResultsPath,
     [Parameter(Mandatory)][string]$ExpectedCommit,
-    [Parameter(Mandatory)][string]$JobConclusion
+    [Parameter(Mandatory)][string]$JobConclusion,
+    [string]$DocumentationPairingPath
 )
 
 $ErrorActionPreference = 'Stop'
@@ -22,6 +23,24 @@ if ($plan.tree -cnotmatch '^[0-9a-f]{64}$' -or $evidence.tree -cne $plan.tree -o
 }
 $checks = @($plan.checks)
 $results = @($evidence.results)
+$documentation = $null
+if ($null -ne $plan.documentation) {
+    if (-not $DocumentationPairingPath) { throw 'External documentation certification requires its exact hosted pairing.' }
+    $documentation = Get-Content -LiteralPath $DocumentationPairingPath -Raw | ConvertFrom-Json
+    $catalogChecks = @($checks | Where-Object { $_.id -ceq 'documentation' -and $_.kind -ceq 'documentation' -and $null -eq $_.exclusion })
+    if ($catalogChecks.Count -ne 1 -or $documentation.engineCommit -cne $ExpectedCommit `
+        -or $documentation.engineTree -cnotmatch '^[a-f0-9]{40}$' -or $documentation.engineTree -cne $plan.documentation.sourceTree `
+        -or $documentation.documentationCommit -cnotmatch '^[a-f0-9]{40}$' `
+        -or $documentation.toolingRevision -cnotmatch '^[a-f0-9]{40}$' `
+        -or $documentation.documentationSnapshot -cnotmatch '^[a-f0-9]{64}$' `
+        -or $documentation.documentationSnapshot -cne $plan.documentation.snapshot `
+        -or $documentation.contentIdentity -cnotmatch '^[a-f0-9]{64}$' `
+        -or $documentation.contentIdentity -cne $catalogChecks[0].documentation.contentIdentity) {
+        throw 'The hosted documentation pairing does not match the reconciled source and content inputs.'
+    }
+} elseif ($DocumentationPairingPath) {
+    throw 'A documentation pairing cannot certify a plan without external documentation inputs.'
+}
 if ($checks.Count -eq 0 -or @($checks | Where-Object { $null -eq $_.exclusion }).Count -eq 0 -or $checks.Count -ne $results.Count) {
     throw 'The required plan is empty or results are missing or unplanned.'
 }
@@ -66,6 +85,7 @@ foreach ($check in $checks) {
     full = [bool]$plan.full
     planIdentity = $identity
     resultsIdentity = (Get-FileHash -LiteralPath $ResultsPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    documentation = $documentation
     required = @($checks | Where-Object { $null -eq $_.exclusion }).Count
     passed = @($results | Where-Object status -CEQ 'Passed').Count
     reused = @($results | Where-Object status -CEQ 'Reused').Count

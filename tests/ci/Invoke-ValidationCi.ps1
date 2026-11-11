@@ -119,8 +119,11 @@ if ($LASTEXITCODE -ne 0) { throw "Required validation failed; inspect the retain
     --plan (Join-Path $output 'plan.json') --evidence (Join-Path $output 'results.json') --output (Join-Path $output 'reconciliation') `
     *> (Join-Path $output 'evidence.log')
 if ($LASTEXITCODE -ne 0) { throw 'Completed evidence does not match the current inputs and outputs.' }
+$pairingArguments = if (Test-Path -LiteralPath (Join-Path $output 'documentation-pairing.json')) {
+    @{ DocumentationPairingPath = Join-Path $output 'documentation-pairing.json' }
+} else { @{} }
 & "$PSScriptRoot/Test-ValidationReport.ps1" -PlanPath (Join-Path $output 'plan.json') -ResultsPath (Join-Path $output 'results.json') `
-    -ExpectedCommit $ExpectedCommit -JobConclusion success | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $output 'receipt.json')
+    -ExpectedCommit $ExpectedCommit -JobConclusion success @pairingArguments | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $output 'receipt.json')
 $plan = Get-Content -LiteralPath (Join-Path $output 'plan.json') -Raw | ConvertFrom-Json
 if ($plan.full) {
     $bundle = @($plan.checks | Where-Object { $_.id -ceq 'release-bundle' -and $null -eq $_.exclusion })

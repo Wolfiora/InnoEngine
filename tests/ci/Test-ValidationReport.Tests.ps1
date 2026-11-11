@@ -27,9 +27,18 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
     if ($state.tamper) { Add-Content -LiteralPath $planFile -Value ' ' }
     $accepted = $false
     $diagnostic = ''
+    $pairingArguments = @{}
+    if ($null -ne $state.pairing) {
+        $pairingFile = Join-Path $directory 'documentation-pairing.json'
+        $state.pairing | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $pairingFile -Encoding utf8NoBOM
+        $pairingArguments.DocumentationPairingPath = $pairingFile
+    }
     try {
-        $null = & (Join-Path $PSScriptRoot 'Test-ValidationReport.ps1') -PlanPath $planFile -ResultsPath $resultFile `
-            -ExpectedCommit $state.expectedCommit -JobConclusion $state.conclusion
+        $receipt = & (Join-Path $PSScriptRoot 'Test-ValidationReport.ps1') -PlanPath $planFile -ResultsPath $resultFile `
+            -ExpectedCommit $state.expectedCommit -JobConclusion $state.conclusion @pairingArguments
+        if ($null -ne $state.pairing -and $receipt.documentation.documentationCommit -cne $state.pairing.documentationCommit) {
+            throw 'Certification lost the validated documentation candidate.'
+        }
         $accepted = $true
     } catch { $diagnostic = $_.Exception.Message }
     $cases.Add(@{ name = $Name; expectedAcceptance = $Accept; accepted = $accepted; diagnostic = $diagnostic })
@@ -88,4 +97,17 @@ Invoke-Case 'explicit-inapplicable' {
     $s.plan.checks += @{ id = 'foreign-device'; kind = 'products'; exclusion = 'Requires another explicit device environment.' }
     $s.evidence.results += @{ id = 'foreign-device'; status = 'NotApplicable'; inputIdentity = $hash; outputs = $null }
 } $true
+function Add-DocumentationPairing($State) {
+    $State.plan.documentation = @{ sourceTree = 'c' * 40; snapshot = 'd' * 64 }
+    $State.plan.checks += @{ id = 'documentation'; kind = 'documentation'; exclusion = $null; documentation = @{ contentIdentity = 'e' * 64 }; prerequisites = @() }
+    $State.evidence.results += @{ id = 'documentation'; status = 'Passed'; inputIdentity = $hash; outputs = @{} }
+    $State.pairing = @{ engineCommit = $commit; engineTree = 'c' * 40; documentationSnapshot = 'd' * 64
+        contentIdentity = 'e' * 64; documentationCommit = 'f' * 40; toolingRevision = $commit; sourceApiStatus = 'Unverified' }
+}
+Invoke-Case 'complete-documentation-pairing' { param($s) Add-DocumentationPairing $s } $true
+Invoke-Case 'missing-documentation-pairing' { param($s) Add-DocumentationPairing $s; $s.Remove('pairing') } $false
+Invoke-Case 'pairing-without-plan' { param($s) Add-DocumentationPairing $s; $s.plan.Remove('documentation') } $false
+foreach ($field in @('engineCommit', 'engineTree', 'documentationSnapshot', 'contentIdentity', 'documentationCommit', 'toolingRevision')) {
+    Invoke-Case "invalid-pairing-$field" { param($s) Add-DocumentationPairing $s; $s.pairing[$field] = 'invalid' } $false
+}
 Write-Output "Passed $($cases.Count) aggregate contract cases. Evidence: $run"

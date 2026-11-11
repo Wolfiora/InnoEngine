@@ -1,5 +1,6 @@
 # Acceptance records
 
+- [Documentation publication receipts](DOCUMENTATION_PUBLICATION_RECEIPTS_2026_11_12.md): reconciled source/content correspondence for artifact-only promotion.
 - [Missing source capture execution](CI_MISSING_REFERENCE_CAPTURE_2026_11_12.md): independent execution, prepared capture and retained blocked certification.
 - [Canonical documentation cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md): physical legacy removal and preserved regression responsibilities.
 

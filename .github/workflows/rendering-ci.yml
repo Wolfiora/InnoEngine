@@ -230,7 +230,8 @@ jobs:
             $selected = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $available -Name "validation-$platform" -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
             $directory = $selected.directory
             $receipt = ./tests/ci/Test-ValidationReport.ps1 -PlanPath "$directory/plan.json" -ResultsPath "$directory/results.json" `
-              -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION
+              -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION `
+              -DocumentationPairingPath "$directory/documentation-pairing.json"
             [pscustomobject]@{ platform = $platform; receipt = $receipt }
           }
           $receipts | ConvertTo-Json -Depth 10 | Set-Content artifacts/validation/certification.json
