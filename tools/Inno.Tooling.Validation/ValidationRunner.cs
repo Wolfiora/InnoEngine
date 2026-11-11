@@ -25,6 +25,7 @@ internal static class ValidationRunner
         DateTimeOffset started = DateTimeOffset.UtcNow;
         string planIdentity = ValidationInputs.PlanIdentity(plan);
         Directory.CreateDirectory(directory);
+        Console.WriteLine("Validation phase: acquire the selected workspace ownership and freeze current inputs.");
         using var workspace = plan.checks.Any(static check => check.kind == "build" && check.exclusion is null)
             ? await ValidationWorkspace.AcquireAsync(plan, cancellation).ConfigureAwait(false) : null;
         foreach (var context in plan.contexts)
@@ -46,6 +47,7 @@ internal static class ValidationRunner
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         foreach (ValidationCheck check in plan.checks)
         {
+            Console.WriteLine($"Validation check: {check.id}; kind={check.kind}; context={check.context ?? "none"}; owner={check.owner}.");
             string identity = ValidationInputs.CheckIdentity(plan, check, current);
             string contextId = check.context ?? "managed";
             string graphPath = Path.Combine(directory, contextId + "-sdk-graph.json");
