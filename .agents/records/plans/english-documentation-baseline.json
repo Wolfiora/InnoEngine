@@ -4434,16 +4434,28 @@
       "sha256": "00ed085a6831081b9035d29217f9942a21b088c33986e0d190207f085cfa89d4",
       "bytes": 24048,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/extending/persist-host-documents.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/extending/manage-process-output.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/projects/inno-core-io.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/types/core-io/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and applicable host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.IO/api.md",
       "sha256": "c9afc78bfb714f1ce6bbadfc5684040c9a1e072bbb843b4a1f72950fa21c976d",
       "bytes": 59580,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/extending/persist-host-documents.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/extending/manage-process-output.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/projects/inno-core-io.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/types/core-io/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and applicable host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Identity.md",
@@ -4556,16 +4568,28 @@
       "sha256": "8dbfbd4a41a9c671fc875996c2c6c45a8606187fdc2cdbd9a9c51301159ddb74",
       "bytes": 2469,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/manual/projects/read-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/extending/project-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/projects/inno-core-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/types/core-settings/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and applicable host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/Inno.Core.Settings/api.md",
       "sha256": "391c0283f4c65af8fe91298bc0938beb784c7508fd7a31d8af89d246d2be3f20",
       "bytes": 91681,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/manual/projects/read-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/extending/project-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/projects/inno-core-settings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/27967e5622a55c153a252d43d314af12dee55550/content/en/api/types/core-settings/index.md"
+      ],
+      "review": "Actual source narrative and unchanged declarations reviewed; source/rendered projection and applicable host/script examples passed locally. Source certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/core/README.md",
