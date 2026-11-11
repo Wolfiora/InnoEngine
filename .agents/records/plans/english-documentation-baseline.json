@@ -2186,8 +2186,11 @@
       "sha256": "8517a86de894cd0b54ee1898efe928f05836b39734825da4792bc3ab9b6343b6",
       "bytes": 5512,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/backends/dotnet-serialization.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/api/projects/inno-adapter-serialization-dotnet.md"
+      ]
     },
     {
       "source": "docs/backends/DotNet/Inno.Build.Managed.DotNet.md",
@@ -4598,24 +4601,41 @@
       "sha256": "247c4b3fdc895086cef99b084edd68bdd8412486d587f97a78ba02da5d7b10c2",
       "bytes": 7324,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/extending/serialization-metadata.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/api/projects/inno-core-serialization-generators.md"
+      ]
     },
     {
       "source": "docs/modules/core/Inno.Core.Serialization.md",
       "sha256": "7e98b0541c1ed059158516b3e07d3cb32649c19bcc22a36bf94b0f695dbab8e4",
       "bytes": 31403,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/manual/serialization/save-state.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/manual/serialization/restore-properties.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/manual/serialization/capture-snapshots.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/architecture/serialization.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/extending/serialization-converters.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/api/projects/inno-core-serialization.md"
+      ]
     },
     {
       "source": "docs/modules/core/Inno.Core.Serialization/api.md",
       "sha256": "9ac09361a386010353952d0e3195ebe4081656f47ce3b1573ac889e1c0348711",
       "bytes": 95076,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/manual/serialization/save-state.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/manual/serialization/restore-properties.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/manual/serialization/capture-snapshots.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/architecture/serialization.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/extending/serialization-converters.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/4e4cc8ac1266902f43fc4a24a2b3967f60a33d4c/content/en/api/projects/inno-core-serialization.md"
+      ]
     },
     {
       "source": "docs/modules/core/Inno.Core.Settings.md",
