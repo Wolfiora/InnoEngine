@@ -5153,24 +5153,37 @@
       "sha256": "24e3bc758f79d43984ac4b77ffc8337c5ef37d48856f2ff0a5fb8ca6559a1499",
       "bytes": 33909,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/plugins/install.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/plugins/troubleshoot.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/extending/plugin-host.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/api/projects/inno-plugins-authoring.md"
+      ]
     },
     {
       "source": "docs/modules/plugins/Inno.Plugins.Authoring/api.md",
       "sha256": "67268e498b476ccad90db30405ea0242ef5efc722b3f22729ada1035186b87ca",
       "bytes": 579,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/plugins/install.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/plugins/troubleshoot.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/extending/plugin-host.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/api/projects/inno-plugins-authoring.md"
+      ]
     },
     {
       "source": "docs/modules/plugins/Inno.Plugins.md",
       "sha256": "790a495e1071e3593d9a83b87795723dab2c30d17faaecc0df56e49ddf732140",
       "bytes": 5370,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/extending/plugin-packages.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/api/projects/inno-plugins.md"
+      ]
     },
     {
       "source": "docs/modules/plugins/README.md",
@@ -5185,16 +5198,26 @@
       "sha256": "dbc7a993568e8d230b77e40d1823fc66f3af7e23dfb2ecb771dc7d3feabcb7e5",
       "bytes": 7506,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/references/resolve-missing.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/references/read-content.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/extending/reference-recovery.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/api/projects/inno-references.md"
+      ]
     },
     {
       "source": "docs/modules/references/Inno.References/api.md",
       "sha256": "b9767094591cd2e5ed31fb77fa5c723b9e1dd8fc72332e890676f5c760a05b34",
       "bytes": 42529,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/references/resolve-missing.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/manual/references/read-content.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/extending/reference-recovery.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/75d342fffb2de8b92c138e5e7c81001de2c7b0bb/content/en/api/projects/inno-references.md"
+      ]
     },
     {
       "source": "docs/modules/references/README.md",
