@@ -2556,216 +2556,323 @@
       "sha256": "ff82af728f73f100fc8b8089f10eb95211e4f17bdfebe8194d7ca20195e04446",
       "bytes": 18817,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-adapter-audio-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Build.Toolchains.MiniAudio.md",
       "sha256": "ea7b7c7763b9a939c610ca69db23de24264334e73ddafbf60fc1f0f14aaefba9",
       "bytes": 6638,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-build-toolchains-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-01.md",
       "sha256": "a5d201899070227ba9815b42108da9a3cea0b5660e9cbf5811c0611140c731dd",
       "bytes": 66327,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-02.md",
       "sha256": "0be11adf738bd616490e25808d02a77f4350852b5777f95e59172e708abf9444",
       "bytes": 67339,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-03.md",
       "sha256": "96229e800470726cb376971047ec6ac4710f54e96f74d488c31cdb886205d9a7",
       "bytes": 70120,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-04.md",
       "sha256": "e0ccd00cd5c17d59df911450d13359245fe927b3acf52f1c3859c85a6449800a",
       "bytes": 70450,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-05.md",
       "sha256": "9e6609f409e7ab80b2e30cbd4fd979a82f107079afd26830b4a1b2bb55f35325",
       "bytes": 71221,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-06.md",
       "sha256": "728bec63f7bdc2f5ea86b325c0ccb5fbf4acec9ca0683333ae23a45cce014b70",
       "bytes": 66583,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-07.md",
       "sha256": "377ad3b1bd0022144b2ddd9e035fd4ee4fc454c2be019bbf209f955707f3dba7",
       "bytes": 67643,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-08.md",
       "sha256": "7a03b0aca632442348ea37ff2a6a9cb7bd3b0a86141f2b4d674f41a7bf7b0e38",
       "bytes": 64459,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-09.md",
       "sha256": "98228074f29857291101203b1ce6cd15d6e547c3539d50707a4cc737c5e0111e",
       "bytes": 65488,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-10.md",
       "sha256": "8f54d97702096a2f7ec1a1cd7c96db74162e72679eb64f8321f8c78bd865e93e",
       "bytes": 70314,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-11.md",
       "sha256": "e62ff5f43d707141c7cea30e6eb16f67f8546023d9dca648c8f7cefae8386807",
       "bytes": 63830,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-12.md",
       "sha256": "aa5e9a7b292e9fcd097865868b30a6fbc7ce12e8226dc2e36dfbc3e85648c236",
       "bytes": 68551,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-13.md",
       "sha256": "7a650c876ec4da956fa5e0fece946577201a9e2ab8d4a4d59aeef35db72ae10a",
       "bytes": 86578,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-14.md",
       "sha256": "c9a33f7dcc92c011773f961e961992c590c76d8afe8612329745db26315ad63a",
       "bytes": 96911,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-15.md",
       "sha256": "7535b819346380c5edcd5b75b35cb5a5ccc672bbe8de0248ff1f0c36af5a0c65",
       "bytes": 148412,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-16.md",
       "sha256": "e6267cc246ef52202f49548be1728d7d3d1e4aca80f2e8a50aae4a3443250247",
       "bytes": 94603,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-17.md",
       "sha256": "48daf15de00718418fe58cf99af26df5b4004fe79e6c0a942796eb2e0944677f",
       "bytes": 92491,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-18.md",
       "sha256": "a83dc110bca26a4ce82b099708349d19151a9cb0cf33d7b75fe5db8b5b078d76",
       "bytes": 99000,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-19.md",
       "sha256": "a73041b4ca97b174ab3c6162562eb3b5d73cd329fb188986d92fa9ed42385fb0",
       "bytes": 87594,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-20.md",
       "sha256": "f6778630f4e4bfe1626f048a61ad35a08970dff18f119b87c3e864999e0cf807",
       "bytes": 83492,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-21.md",
       "sha256": "29c9f5411a4f7ed05a7292313d8bce717f9aa7b967bbd109db908a9b76deb726",
       "bytes": 64380,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-22.md",
       "sha256": "1bb3f93a9ce8e81150b7f4010d075a2461e1294b89885196bba63c6136d6ac6d",
       "bytes": 62206,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/README.md",
       "sha256": "f51748da46d64e7f1b2ef080f2808e5c77f620c2ad76559019c9db948ea85e25",
       "bytes": 1076,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.md",
       "sha256": "56191f4e2c2d86a36ee92bab8ed523a0973750bbae89c6cb64c88e9c53e00a38",
       "bytes": 7489,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/MiniAudio/README.md",
       "sha256": "d5e81e021aaf2886f23b977acb08d3b63d366937c93f4ad19d5e25d42e777d89",
       "bytes": 939,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/README.md",
@@ -2996,40 +3103,69 @@
       "sha256": "c3517919b6e5fcf0635a01cc89cb1e153c66f726c096d62cf7189dac01488342",
       "bytes": 9421,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-adapter-text-freetypeharfbuzz.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/Text/Inno.Build.Toolchains.Text.md",
       "sha256": "6ee1cb312c210f9d232188aa78519fa8aecebe6de42a4aca1fda26361cd7335a",
       "bytes": 6786,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-build-toolchains-text.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/Text/Inno.Native.Text.md",
       "sha256": "fd8d093b934863cb95cd7a65d425e2f4cfab58672f608cc92db146e354f8983d",
       "bytes": 7282,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-text.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/Text/Inno.Native.Text/api.md",
       "sha256": "ccf5e4110808f9c9fdf434d10c0b9270d153a93088d27e4199bd2092b06cf20e",
       "bytes": 30745,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-text.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/backends/Text/README.md",
       "sha256": "952895f2a9c1880f91ee7fc78d09a665aeb3c825626d3e367759bb30d05ab5b1",
       "bytes": 971,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/development/README.md",
@@ -3967,40 +4103,64 @@
       "sha256": "ffd6262183e674e97c5d04aa76a47e53e85ecdd2a725a9f7ba11a2de835b10a0",
       "bytes": 5025,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/animation/play-clips.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/animation-bindings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-animation-assets.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/animation/Inno.Animation.Runtime.md",
       "sha256": "b228aee99a338d932dc51f70c3e359d8d4ce486ecd6670c3c853249a0c2f35ce",
       "bytes": 18246,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/animation/play-clips.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/animation-bindings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-animation-runtime.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/animation/Inno.Animation.md",
       "sha256": "3c7a7c3a79fd7291d84f0989359189a7d0d9b5ab84df8b1965fb0c2c730105bc",
       "bytes": 67089,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/animation/play-clips.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/animation-bindings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-animation.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/animation/Inno.Animation/api.md",
       "sha256": "fbfbe4b3e00a3df20374b82697e78c8c9265fd30f35df9e96bd06de818395e1b",
       "bytes": 1688,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/animation/play-clips.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/animation-bindings.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-animation.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/animation/README.md",
       "sha256": "f8de12f770d2afd99137aae54248e409db0a8bb807c3de54a0ec62e78b5c24ba",
       "bytes": 655,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/animation/play-clips.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/animation-bindings.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/assets/Inno.Assets.Pipeline.md",
@@ -5160,48 +5320,83 @@
       "sha256": "8a289b63a9973f800d0e6218de374d6ef78df4a7dd2909da0db6ccb3134edaff",
       "bytes": 14923,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-adapter-text.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/text/Inno.Text.Assets.md",
       "sha256": "62ce3c74310ba20fdfde608916fd5aea5d69a538c276f447d648f0cdbca11cb8",
       "bytes": 4170,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-text-assets.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/text/Inno.Text.Runtime.md",
       "sha256": "a732a671841b83b6dab2b6cb333ffbc2a93446ed78a6a0f4de4ef2082a248f05",
       "bytes": 8805,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-text-runtime.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/text/Inno.Text.md",
       "sha256": "47a3a0c679a0921d3db209c7dae5719e1744d7f50a73ebcf01fdaff2765c9c7a",
       "bytes": 2584,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-text.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/text/Inno.Text/api.md",
       "sha256": "50346d53ebc1de3a09e0bb054a38cd7cb011a42342a46dd5e42787beaac1b7f8",
       "bytes": 56209,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-text.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/text/README.md",
       "sha256": "f166a5bd8c31dfc971959f44ac26f7bf5f23521faf1d6f16b03204b67886a364",
       "bytes": 1097,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ReviewedDestinationAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md"
+      ],
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
     },
     {
       "source": "docs/modules/ui/Inno.Adapter.UI.md",
