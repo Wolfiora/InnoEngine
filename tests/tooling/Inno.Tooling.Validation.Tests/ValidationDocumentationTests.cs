@@ -1,8 +1,11 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Inno.Tooling.Documentation;
 using Xunit;
 
 namespace Inno.Tooling.Validation.Tests;
@@ -49,26 +52,103 @@ public sealed class ValidationDocumentationTests
     }
 
     [Fact]
-    public async Task ArbitrarilyNamedIncludedFragmentsSelectTheirActualOwnerAndExamples()
+    public async Task CanonicalFragmentOwnersSelectOnlyTheirDeclaredExampleContext()
     {
         using var repository = new ValidationRepository();
-        repository.Write("docs/README.md", "[Example](Example.md)");
-        repository.Write("docs/Example.md", "# Example\n<!-- api-include: contracts/behavior.md -->\n");
-        repository.Write("docs/contracts/behavior.md", "# Contract\nInitial guidance.");
-        repository.Git("add", ".");
-        repository.Git("commit", "-m", "Declare included behavior guidance");
-        repository.Write("docs/contracts/behavior.md", "# Contract\n```csharp\nint value = 1;\n```\n");
-        using JsonDocument plan = await repository.PlanAsync();
+        DocumentationResult snapshot = await PrepareDocumentationAsync(repository);
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        using JsonDocument plan = await repository.PlanAsync(documentationCache: repository.PathOf("artifacts/documentation"), documentationSnapshot: snapshot.snapshot);
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
         Assert.Contains(checks, check => check.GetProperty("kind").GetString() == "build"
             && check.GetProperty("owner").GetString() == "src/Example/Example.csproj");
         Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build"
             && check.GetProperty("owner").GetString() == "src/Other/Other.csproj");
-        JsonElement wiki = checks.Single(check => check.GetProperty("kind").GetString() == "wiki");
-        Assert.Contains(wiki.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "docs/Example.md");
-        Assert.Contains(wiki.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "docs/contracts/behavior.md");
-        File.Delete(repository.PathOf("docs/contracts/behavior.md"));
-        await Assert.ThrowsAsync<InvalidDataException>(() => repository.PlanAsync());
+        Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "wiki");
+        JsonElement examples = checks.Single(check => check.GetProperty("kind").GetString() == "documentation-examples");
+        Assert.Equal("task-fragment", Assert.Single(examples.GetProperty("documentation").GetProperty("pages").EnumerateArray()).GetString());
+        JsonElement api = checks.Single(check => check.GetProperty("kind").GetString() == "documentation-api");
+        Assert.Equal("src/Example/Example.csproj", Assert.Single(api.GetProperty("projects").EnumerateArray()).GetString());
+        Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
+        File.Delete(repository.PathOf("artifacts/docs-source/content/en/random/behavior.md"));
+        using JsonDocument retained = await repository.PlanAsync(documentationCache: repository.PathOf("artifacts/documentation"), documentationSnapshot: snapshot.snapshot);
+        Assert.Equal(snapshot.snapshot, retained.RootElement.GetProperty("documentation").GetProperty("snapshot").GetString());
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationStore.IndexAsync(repository.PathOf("."),
+            repository.PathOf("artifacts/docs-source"), repository.PathOf("artifacts/documentation")));
+    }
+
+    [Fact]
+    public async Task MissingExternalSnapshotCannotFallBackToAnOldWikiTree()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("docs/Example.md", "# Example\nOld guidance cannot certify the external candidate.");
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        using JsonDocument plan = await repository.PlanAsync();
+        JsonElement missing = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "documentation");
+        Assert.Equal("documentation-missing", missing.GetProperty("kind").GetString());
+        Assert.Equal(JsonValueKind.Null, missing.GetProperty("exclusion").ValueKind);
+        Assert.Contains("--docs-cache-root", missing.GetProperty("reason").GetString());
+        await Assert.ThrowsAsync<ArgumentException>(() => repository.PlanAsync(documentationCache: repository.PathOf("artifacts/documentation")));
+    }
+
+    [Fact]
+    public async Task CorruptPreparedReferenceCannotReachValidationExecution()
+    {
+        using var repository = new ValidationRepository();
+        var documentation = new ValidationDocumentationFixture(repository);
+        documentation.Initialize();
+        DocumentationResult indexed = await documentation.IndexAsync();
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        using JsonDocument plan = await documentation.PlanAsync(indexed);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(documentation.cache, indexed.snapshot);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        string identity = catalog.references.Single(reference => reference.model == "source-clr").identity;
+        File.WriteAllText(Path.Combine(documentation.cache, "references", identity, "reference.json"), "damaged immutable payload");
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
+        Assert.Contains("integrity mismatch", failure.Message);
+        Assert.False(File.Exists(repository.PathOf("artifacts/run/results.json")));
+    }
+
+    [Fact]
+    public async Task UnrelatedProsePreservesSelectedSourceReferenceInputs()
+    {
+        using var repository = new ValidationRepository();
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
+        using JsonDocument first = await docs.PlanAsync(baseline);
+        docs.Write("content/en/other-guide.md", ValidationDocumentationFixture.Page("Other", "Updated usage guidance."));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument next = await docs.PlanAsync(current, baseline);
+        JsonElement InitialApi(JsonDocument plan) => plan.RootElement.GetProperty("checks").EnumerateArray()
+            .Single(check => check.GetProperty("kind").GetString() == "documentation-api");
+        Assert.Equal(InitialApi(first).GetRawText(), InitialApi(next).GetRawText());
+        Assert.DoesNotContain(next.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("id").GetString() == "build:src/Other/Other.csproj");
+        Assert.NotEqual(baseline.snapshot, current.snapshot);
+    }
+
+    [Fact]
+    public async Task RemovingARequiredCaptureDoesNotBecomeAnEmptySuccessfulSelection()
+    {
+        using var repository = new ValidationRepository();
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        JsonNode facts = JsonNode.Parse(File.ReadAllBytes(repository.PathOf("artifacts/docs-source/reference/api/facts.json")))!;
+        JsonArray owners = facts["projects"]!.AsArray();
+        owners.Remove(owners.Single(owner => owner!["name"]!.GetValue<string>() == "Example"));
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(facts);
+        File.WriteAllBytes(repository.PathOf("artifacts/docs-source/reference/api/facts.json"), bytes);
+        JsonNode binding = JsonNode.Parse(File.ReadAllBytes(repository.PathOf("artifacts/docs-source/reference/engine.lock.json")))!;
+        binding["apiManifests"]![0]!["sha256"] = Convert.ToHexStringLower(SHA256.HashData(bytes));
+        docs.Write("reference/engine.lock.json", binding.ToJsonString());
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement missing = checks.Single(check => check.GetProperty("id").GetString() == "documentation-api-missing:src/Example/Example.csproj");
+        Assert.Equal("documentation-missing", missing.GetProperty("kind").GetString());
+        Assert.Equal(JsonValueKind.Null, missing.GetProperty("exclusion").ValueKind);
+        Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
     }
 
     [Fact]
@@ -79,5 +159,13 @@ public sealed class ValidationDocumentationTests
         using JsonDocument plan = await repository.PlanAsync();
         Assert.True(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains(plan.RootElement.GetProperty("diagnostics").EnumerateArray(), item => item.GetString()!.Contains(".agents/check.ps1", StringComparison.Ordinal));
+    }
+    private static async Task<DocumentationResult> PrepareDocumentationAsync(ValidationRepository repository)
+    {
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        docs.Write("content/en/Example.md", "---\nuid: project-example\nkind: project\nowners: [Example]\napiSurface: source-clr\n---\n# Example\n\nRead the declared contract.\n\n<!-- api-include: random/behavior.md -->\n");
+        docs.Write("content/en/random/behavior.md", "---\nuid: task-fragment\nkind: api\nowners: [Example]\napiSurface: source-clr\nexampleMode: host\nexampleProjects: [Example]\n---\n# Behavior\n\nDeclare a local value.\n\n```csharp\nint value = 1;\n```\n");
+        return await docs.IndexAsync();
     }
 }

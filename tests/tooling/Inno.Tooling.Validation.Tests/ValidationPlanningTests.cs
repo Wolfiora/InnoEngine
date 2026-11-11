@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 using Inno.Tooling.Validation;
+using Inno.Tooling.Documentation;
 using Xunit;
 
 namespace Inno.Tooling.Validation.Tests;
@@ -354,12 +355,18 @@ public sealed class ValidationPlanningTests
     public async Task DocumentationDoesNotSelectNativeOrManagedBuilds()
     {
         using var repository = new ValidationRepository();
-        repository.Write("docs/README.md", "# Changed documentation\n");
-        using JsonDocument plan = await repository.PlanAsync();
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/guide.md", ValidationDocumentationFixture.Page("Example", "Updated usage guidance."));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
         Assert.Empty(Owners(plan));
-        Assert.DoesNotContain(plan.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("kind").GetString() == "build");
-        JsonElement wiki = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("kind").GetString() == "wiki");
-        Assert.Contains(wiki.GetProperty("prerequisites").EnumerateArray(), prerequisite => prerequisite.GetString() == "documentation");
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
+        Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "documentation-examples");
+        Assert.Contains(checks, check => check.GetProperty("kind").GetString() == "documentation");
+        Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
     }
 
     [Theory]
@@ -381,23 +388,27 @@ public sealed class ValidationPlanningTests
         repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
             "<PropertyGroup><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
             + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
-        repository.Write("docs/Support.md", "# Support\n<!-- api-include: Support/guide.md -->\n");
-        repository.Write("docs/Support/guide.md", "# Guide\nOriginal execution instructions.\n");
+
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the test or support owner and its guide");
-        repository.Write("docs/Support/guide.md", "# Guide\nUpdated execution instructions.\n"
-            + (example ? "~~~csharp\nusing System;\nConsole.WriteLine(1);\n~~~\n" : "```powershell\ndotnet --info\n```\n"));
-        using JsonDocument plan = await repository.PlanAsync();
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/guide.md", ValidationDocumentationFixture.Page("Support", "Updated execution instructions.\n"
+            + (example ? "~~~csharp\nusing System;\nConsole.WriteLine(1);\n~~~\n" : "```powershell\ndotnet --info\n```\n"), example ? "host" : null));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
-        bool compilation = !test || example;
+        bool compilation = example;
         Assert.Equal(compilation, checks.Any(check => check.GetProperty("id").GetString() == "build:" + C_OWNER));
         Assert.Equal(compilation && native, plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
-        JsonElement wiki = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "wiki"));
-        Assert.Equal(compilation && native ? "native" : "managed", wiki.GetProperty("context").GetString());
-        Assert.Contains("docs/Support/guide.md", wiki.GetProperty("inputs").EnumerateArray().Select(static input => input.GetString()));
+        JsonElement[] examples = checks.Where(check => check.GetProperty("kind").GetString() == "documentation-examples").ToArray();
+        Assert.Equal(example ? 1 : 0, examples.Length);
+        if (example)
+            Assert.Equal(native ? "native" : "managed", examples[0].GetProperty("context").GetString());
         Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "test"
             && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
-        if (!test)
+        if (!test && example)
         {
             JsonElement api = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "api"));
             Assert.Contains(C_OWNER, api.GetProperty("projects").EnumerateArray().Select(static project => project.GetString()));
@@ -405,20 +416,25 @@ public sealed class ValidationPlanningTests
     }
 
     [Fact]
-    public async Task SourceSelectedWikiRequiresStructureEvidenceIncludingProjectAndLinkTargets()
+    public async Task SourceSelectedDocumentationRequiresCanonicalStructureAndOwnerInputs()
     {
         using var repository = new ValidationRepository();
-        repository.Write("docs/Example.md", "# Example\n");
         repository.Write("src/Example/Existing.cs", "namespace Example; public class Existing { }\n");
         repository.Git("add", ".");
-        repository.Git("commit", "-m", "Declare project documentation and link target");
+        repository.Git("commit", "-m", "Declare source contract");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult snapshot = await docs.IndexAsync();
         repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }\n");
-        using JsonDocument plan = await repository.PlanAsync();
-        JsonElement structure = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "documentation");
+        using JsonDocument plan = await docs.PlanAsync(snapshot);
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement structure = checks.Single(check => check.GetProperty("id").GetString() == "documentation");
         Assert.Contains(structure.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "src/Example/Example.csproj");
-        Assert.Contains(structure.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "src/Example/Existing.cs");
-        JsonElement wiki = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("kind").GetString() == "wiki");
-        Assert.Contains(wiki.GetProperty("prerequisites").EnumerateArray(), prerequisite => prerequisite.GetString() == "documentation");
+        Assert.DoesNotContain(structure.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "src/Example/Existing.cs");
+        JsonElement api = checks.Single(check => check.GetProperty("kind").GetString() == "documentation-api");
+        Assert.Contains(api.GetProperty("prerequisites").EnumerateArray(), prerequisite => prerequisite.GetString() == "documentation");
+        Assert.Contains(api.GetProperty("inputs").EnumerateArray(), input => input.GetString() == "@src/Example/Example.csproj");
+        Assert.Contains(plan.RootElement.GetProperty("inputSets").GetProperty("src/Example/Example.csproj").EnumerateArray(), input => input.GetString() == "src/Example/Existing.cs");
     }
 
     [Fact]
@@ -603,20 +619,22 @@ public sealed class ValidationPlanningTests
         repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
             "<PropertyGroup><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
             + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
-        const string C_OWNER = "backends/Example/native/Native/Native.csproj";
-        repository.Write(C_OWNER, ValidationRepository.Project("<PropertyGroup><BindGenGeneratedBindings>true</BindGenGeneratedBindings></PropertyGroup>"));
-        repository.Write("docs/Native.md", "<!-- api-include: Native/arbitrary-contract.md -->\n");
-        repository.Write("docs/Native/arbitrary-contract.md", "# Native contract\n");
+        const string C_OWNER = "backends/Example/runtime/Adapter/Adapter.csproj";
+        repository.Write("backends/Example/native/Native/Native.csproj", ValidationRepository.Project("<PropertyGroup><BindGenGeneratedBindings>true</BindGenGeneratedBindings></PropertyGroup>"));
+        repository.Write(C_OWNER, ValidationRepository.Project("<ItemGroup><ProjectReference Include=\"../../native/Native/Native.csproj\" /></ItemGroup>"));
         repository.Git("add", ".");
-        repository.Git("commit", "-m", "Declare a native project with split documentation");
-        repository.Write("docs/Native/arbitrary-contract.md", "# Native contract\nUpdated usage constraints.\n");
-        using JsonDocument plan = await repository.PlanAsync();
+        repository.Git("commit", "-m", "Declare a managed adapter with native prerequisites");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/arbitrary-contract.md", ValidationDocumentationFixture.Page("Adapter", "Use the managed adapter.\n\n```csharp\nint value = 1;\n```\n", "host"));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
-        JsonElement wiki = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "wiki"));
-        Assert.Equal("native", wiki.GetProperty("context").GetString());
-        Assert.Contains("docs/Native/arbitrary-contract.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
-        Assert.Contains("docs/Native.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
-        Assert.Contains("build:" + C_OWNER, wiki.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
+        JsonElement examples = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "documentation-examples"));
+        Assert.Equal("native", examples.GetProperty("context").GetString());
+        Assert.Equal("task-adapter", Assert.Single(examples.GetProperty("documentation").GetProperty("pages").EnumerateArray()).GetString());
+        Assert.Contains("build:" + C_OWNER, examples.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
     }
 
     [Fact]
@@ -636,7 +654,7 @@ public sealed class ValidationPlanningTests
     [Theory]
     [InlineData("```")]
     [InlineData("~~~")]
-    public async Task ScriptFragmentsKeepTheirWholeProjectDocumentationInTheProjectionContext(string fence)
+    public async Task ScriptFragmentsUseTheirExplicitProjectionContext(string fence)
     {
         using var repository = new ValidationRepository();
         repository.Write("Product.props", "<Project />");
@@ -646,21 +664,25 @@ public sealed class ValidationPlanningTests
             + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the script projection prerequisites");
-        repository.Write("docs/Example.md", "# Example\n<!-- api-include: Example/api.md -->\n");
-        repository.Write("docs/Example/api.md", "# API\n" + fence + "csharp\nusing InnoEngine;\n" + fence + "\n");
-        using JsonDocument plan = await repository.PlanAsync();
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/arbitrary-script.md", ValidationDocumentationFixture.Page("Example",
+            "Read the projected contract.\n\n" + fence + "csharp\nusing InnoEngine;\n" + fence + "\n", "runtime-script"));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
-        JsonElement wiki = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "wiki"));
-        Assert.Equal("native", wiki.GetProperty("context").GetString());
-        Assert.Contains("docs/Example.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
-        Assert.Contains("docs/Example/api.md", wiki.GetProperty("inputs").EnumerateArray().Select(item => item.GetString()));
+        JsonElement examples = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "documentation-examples"));
+        Assert.Equal("native", examples.GetProperty("context").GetString());
+        Assert.Equal("task-example", Assert.Single(examples.GetProperty("documentation").GetProperty("pages").EnumerateArray()).GetString());
         Assert.Equal("native", checks.Single(check => check.GetProperty("id").GetString() == "build:src/Example/Example.csproj")
             .GetProperty("context").GetString());
-        Assert.Contains("build:entry/InnoEngine.Build/InnoEngine.Build.csproj", wiki.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("build:entry/InnoEngine.Build/InnoEngine.Build.csproj", examples.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
+        Assert.Contains("build:entry/InnoEngine.Editor/InnoEngine.Editor.csproj", examples.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
     }
 
     [Fact]
-    public async Task ScriptWikiPreparesItsDeclaredProductEvenWithoutAProductionSourceChange()
+    public async Task ScriptExamplesPrepareTheirDeclaredProductWithoutAProductionSourceChange()
     {
         using var repository = new ValidationRepository();
         string properties = repository.PathOf("Product.props");
@@ -671,11 +693,15 @@ public sealed class ValidationPlanningTests
             + properties + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare product and build entry");
-        repository.Write("docs/Guide.md", "# Script guide\n```csharp\nusing InnoEngine;\n```\n");
-        using JsonDocument plan = await repository.PlanAsync();
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/script-guide.md", ValidationDocumentationFixture.Page("Example", "Use the editor API.\n\n```csharp\nusing InnoEngine;\n```\n", "editor-script"));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
         Assert.Empty(Owners(plan));
-        JsonElement wiki = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "wiki:native");
-        string[] prerequisites = wiki.GetProperty("prerequisites").EnumerateArray().Select(value => value.GetString()!).ToArray();
+        JsonElement examples = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "documentation-examples:native");
+        string[] prerequisites = examples.GetProperty("prerequisites").EnumerateArray().Select(value => value.GetString()!).ToArray();
         Assert.Contains("build:entry/InnoEngine.Build/InnoEngine.Build.csproj", prerequisites);
         Assert.Contains("build:entry/InnoEngine.Editor/InnoEngine.Editor.csproj", prerequisites);
         Assert.Equal("fixture-target", plan.RootElement.GetProperty("contexts").GetProperty("native").GetProperty("properties").GetProperty("InnoToolTarget").GetString());

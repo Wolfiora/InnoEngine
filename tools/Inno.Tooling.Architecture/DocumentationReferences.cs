@@ -93,7 +93,10 @@ public static class DocumentationReferences
     /// Required engine-root, dotnet, output and repeated reference options. All references must select the same
     /// source-clr configuration and target; their actual projects determine the batch, including empty public surfaces.
     /// An explicit cache-root and snapshot pair reads logical reference paths from that protected generation.
-    /// Otherwise reference paths select local files. Repeated project options restrict comparison to declared owners;
+    /// Otherwise reference paths select local files. An optional artifacts-path selects the prepared compile output owner.
+    /// An optional sdk-snapshot supplies one previously resolved SDK graph with matching properties and selected owners.
+    /// The caller owns its stable execution boundary and closing input checks; a supplied graph is not independent freshness evidence.
+    /// Repeated project options restrict comparison to declared owners;
     /// an absent owner is an error. Snapshot provenance is reported separately from source compatibility.
     /// </param>
     /// <param name="cancellationToken">
@@ -139,7 +142,7 @@ public static class DocumentationReferences
                 if (!selectedProjects.Add(arguments[index + 1]))
                     throw new ArgumentException("Duplicate source owner selection: " + arguments[index + 1]);
             }
-            else if (key is not ("--engine-root" or "--dotnet" or "--output" or "--cache-root" or "--snapshot")
+            else if (key is not ("--engine-root" or "--dotnet" or "--output" or "--cache-root" or "--snapshot" or "--artifacts-path" or "--sdk-snapshot")
                 || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown or duplicate reference validation option: " + key);
         }
@@ -215,7 +218,8 @@ public static class DocumentationReferences
                 expected.Remove(project);
         }
         IReadOnlyList<ApiProject> actual = CaptureApi(Path.GetFullPath(root), dotnet, configuration!, target,
-            expected.Keys, cancellationToken);
+            expected.Keys, cancellationToken, options.GetValueOrDefault("--artifacts-path"),
+            options.TryGetValue("--sdk-snapshot", out string? graphPath) ? await File.ReadAllTextAsync(graphPath, cancellationToken).ConfigureAwait(false) : null);
         var results = new List<object>();
         bool passed = true;
         foreach (ApiProject project in actual)
@@ -330,7 +334,9 @@ public static class DocumentationReferences
         string configuration,
         string? target,
         IEnumerable<string> requested,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        string? artifactsPath = null,
+        string? sdkSnapshot = null
     ) {
         string[] projects = RepositorySourceInventory.Projects(root).ToArray();
         var selected = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -343,7 +349,8 @@ public static class DocumentationReferences
             selected.Add(absolute);
         }
         var failures = new List<string>();
-        var references = new WikiProjectReferences(root, configuration, Path.GetFullPath(dotnet), target, selectedProjects: selected);
+        var references = new WikiProjectReferences(root, configuration, Path.GetFullPath(dotnet), target,
+            artifactsPath is null ? null : Path.GetFullPath(artifactsPath), selectedProjects: selected, sdkSnapshot: sdkSnapshot);
         var models = new DocumentationSourceModels(root, configuration, references, cancellationToken, failures);
         var inventory = new List<ApiProject>();
         foreach (string project in selected.Order(StringComparer.Ordinal))

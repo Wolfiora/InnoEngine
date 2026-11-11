@@ -26,7 +26,9 @@ public static class DocumentationExamples
     /// </summary>
     /// <param name="arguments">
     /// Required engine-root, cache-root, snapshot, dotnet and output options; optional repeated page identities,
-    /// configuration, target, runtime-reference and editor-reference. References must already exist.
+    /// configuration, target, artifacts-path, sdk-snapshot, runtime-reference and editor-reference. References must already exist.
+    /// A supplied resolved SDK snapshot must match the requested properties and contain every selected example owner.
+    /// Its caller maintains the stable execution boundary and verifies closing inputs; the graph alone does not certify freshness.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels reading, SDK inspection or compilation before atomic report publication.
@@ -62,7 +64,7 @@ public static class DocumentationExamples
                     throw new ArgumentException("Duplicate example page selection.");
             }
             else if (key is not ("--engine-root" or "--cache-root" or "--snapshot" or "--dotnet" or "--output"
-                or "--configuration" or "--target" or "--runtime-reference" or "--editor-reference")
+                or "--configuration" or "--target" or "--artifacts-path" or "--sdk-snapshot" or "--runtime-reference" or "--editor-reference")
                 || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown or duplicate example validation option: " + key);
         }
@@ -89,7 +91,9 @@ public static class DocumentationExamples
             .SelectMany(static group => group.page.examples!.projects)
             .Where(projects.ContainsKey).Select(name => projects[name]).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var sdk = new WikiProjectReferences(root, configuration, Path.GetFullPath(options["--dotnet"]),
-            options.GetValueOrDefault("--target"), selectedProjects: requested);
+            options.GetValueOrDefault("--target"), options.TryGetValue("--artifacts-path", out string? artifacts) ? Path.GetFullPath(artifacts) : null,
+            selectedProjects: requested, sdkSnapshot: options.TryGetValue("--sdk-snapshot", out string? graphPath)
+                ? await File.ReadAllTextAsync(graphPath, cancellationToken).ConfigureAwait(false) : null);
         var frozen = new Dictionary<string, FrozenReference>(StringComparer.OrdinalIgnoreCase);
         var results = new List<ExampleGroupResult>();
         foreach (var group in groups)

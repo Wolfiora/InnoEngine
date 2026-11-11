@@ -2,6 +2,12 @@
 
 Status: implementation in progress. This record does not certify completion.
 
+## External validation cutover checkpoint, 2026-11-11
+
+The unified planner and runner now consume explicit external documentation snapshots, canonical example contexts and selected per-owner source facts. Compiled API inspection and documentation checks share resolved SDK references, including consumer-selected property variants. Execution and standalone evidence reconciliation reject damaged snapshot payloads. Hosted preparation validates an exact clean Docs revision against the actual engine candidate tree without treating input pairing as source certification.
+
+[The bounded acceptance record](../acceptance/EXTERNAL_DOCUMENTATION_VALIDATION_2026_11_11.md) distinguishes 73 selection cases, 17 Architecture cases, overlapping real compilation regressions, 11 hosted planning protocol cases and five retention cases. It preserves the first failures and a diagnosed SDK pipe-drain stall. Hosted YAML candidate selection, trusted source certification, cross-platform runs, old standalone Wiki removal and actual publication remain unfinished. An unrelated Editor source edit from another session remains excluded from this work.
+
 ## Approved scope amendment, 2026-11-11
 
 The user requested faster delivery and explicitly excluded backend-native and generated binding API documentation. Product documentation covers engine services, managed adapters, extension contracts, script surfaces and tooling. Native implementation owners retain concise integration boundaries; full ABI/member reference and raw-binding examples are retired. This amendment changes documentation scope only: native correctness, ownership, deployment validation, legal provenance and engine API obligations remain. The existing bound project inventory records the scope, and generation/coverage checks reject native member-reference inputs. Historical evidence and original migration source hashes remain unchanged.

@@ -17,7 +17,7 @@ internal sealed class ValidationDependencyInputs(
     private readonly Dictionary<string, string[]> m_packages = new(StringComparer.Ordinal);
 
     internal static bool Required(ValidationCheck check)
-        => check.kind is "build" or "test" or "api" or "wiki" or "products" or "support-pack" or "release-bundle"
+        => check.kind is "build" or "test" or "api" or "documentation-api" or "documentation-examples" or "products" or "support-pack" or "release-bundle"
             && check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"));
 
     internal void Reset()

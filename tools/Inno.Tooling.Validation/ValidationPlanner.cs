@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Inno.Tooling.Architecture;
+using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation;
 
@@ -21,7 +22,10 @@ internal static class ValidationPlanner
         string artifacts,
         bool full,
         CancellationToken cancellation,
-        bool extended = false
+        bool extended = false,
+        string? documentationCache = null,
+        string? documentationSnapshot = null,
+        string? documentationBaseline = null
     ) {
         var elapsed = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
@@ -66,22 +70,11 @@ internal static class ValidationPlanner
         RecordStage("managed-graph");
         var affected = new HashSet<string>(StringComparer.Ordinal);
         var documentationOwners = new HashSet<string>(StringComparer.Ordinal);
-        string[] wikiPages = inputs.Keys.Where(static path => path.StartsWith("docs/", StringComparison.Ordinal)
-            && path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)).ToArray();
-        IReadOnlyDictionary<string, string> documentOwners = DocumentationCommand.GetProjectDocuments(root);
-        var selectedWikiPages = new HashSet<string>(StringComparer.Ordinal);
+        ValidationDocumentation.Selection? documentation = await ValidationDocumentation.CaptureAsync(documentationCache,
+            documentationSnapshot, byPath, cancellation, documentationBaseline).ConfigureAwait(false);
         var diagnostics = new List<string>();
         foreach (string change in changes)
         {
-            if (wikiPages.Contains(change, StringComparer.Ordinal) && inputs[change] != "missing")
-            {
-                selectedWikiPages.Add(change);
-                if (documentOwners.TryGetValue(change, out string? documentOwner))
-                {
-                    documentationOwners.Add(documentOwner);
-                    selectedWikiPages.UnionWith(documentOwners.Where(pair => pair.Value == documentOwner).Select(static pair => pair.Key));
-                }
-            }
             ValidationProject[] owners = projects.Where(project => project.inputs.Contains(change, StringComparer.Ordinal)
                 || change.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal)).ToArray();
             foreach (ValidationProject owner in owners)
@@ -120,25 +113,27 @@ internal static class ValidationPlanner
             else if (project.layer == "performance" && !deepNative && !changedTestExecutor && !ChangedTestClosure(project))
                 executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
         }
-        foreach (string page in wikiPages.Where(page => inputs[page] != "missing" && (full
-            || documentOwners.TryGetValue(page, out string? owner) && affected.Contains(owner) && !byPath[owner].test)))
-            selectedWikiPages.Add(page);
-        documentationOwners.RemoveWhere(owner => byPath[owner].test
-            && !selectedWikiPages.Any(page => documentOwners.GetValueOrDefault(page) == owner
-                && ValidationDocumentation.RequiresCompilation(Path.Combine(root, page))));
-        var scriptPages = selectedWikiPages.Where(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(root, page)))
-            .ToHashSet(StringComparer.Ordinal);
-        var scriptDocumentOwners = scriptPages.Where(documentOwners.ContainsKey).Select(page => documentOwners[page]).ToHashSet(StringComparer.Ordinal);
-        bool scriptWiki = scriptPages.Count != 0;
-        if (scriptWiki)
+        DocumentationPageInfo[] examplePages = documentation is null ? [] : ValidationDocumentation.SelectExamples(documentation, affected, full);
+        foreach (DocumentationPageInfo page in examplePages)
+        foreach (string owner in page.examples?.projects ?? [])
+            documentationOwners.Add(documentation!.owners[owner].path);
+        foreach (string owner in documentation?.changedReferenceOwners ?? new HashSet<string>())
+            if (documentation!.catalog.references.Any(reference => reference.model == "source-clr" && reference.projects.Contains(owner, StringComparer.Ordinal)))
+                documentationOwners.Add(documentation.owners[owner].path);
+        var scriptPages = examplePages.Where(static page => page.examples?.mode is "runtime-script" or "editor-script")
+            .Select(static page => page.id).ToHashSet(StringComparer.Ordinal);
+        var scriptDocumentOwners = examplePages.Where(page => scriptPages.Contains(page.id))
+            .SelectMany(static page => page.examples!.projects).Select(owner => documentation!.owners[owner].path).ToHashSet(StringComparer.Ordinal);
+        bool scriptExamples = scriptPages.Count != 0;
+        if (scriptExamples)
         {
             const string C_BUILD_ENTRY = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
             if (!byPath.ContainsKey(C_BUILD_ENTRY))
-                throw new InvalidDataException("Script Wiki examples require the existing Build entry and its evaluated projection closure.");
+                throw new InvalidDataException("Script documentation examples require the existing Build entry and its evaluated projection closure.");
             documentationOwners.Add(C_BUILD_ENTRY);
             const string C_EDITOR_ENTRY = "entry/InnoEngine.Editor/InnoEngine.Editor.csproj";
             if (!byPath.ContainsKey(C_EDITOR_ENTRY))
-                throw new InvalidDataException("Script Wiki examples require the declared Editor product and its public script closure.");
+                throw new InvalidDataException("Script documentation examples require the declared Editor product and its public script closure.");
             documentationOwners.Add(C_EDITOR_ENTRY);
         }
 
@@ -164,7 +159,7 @@ internal static class ValidationPlanner
         };
         Dictionary<string, ValidationProject> nativeProjects = byPath;
         string target = string.Empty;
-        if (scriptWiki || nativeOwners.Any(owner => !executionExclusions.ContainsKey(owner)
+        if (scriptExamples || nativeOwners.Any(owner => !executionExclusions.ContainsKey(owner)
             && (affected.Contains(owner) || documentationOwners.Contains(owner))))
         {
             string[] unavailable = inputs.Where(static pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)).Select(static pair => pair.Key).ToArray();
@@ -226,10 +221,12 @@ internal static class ValidationPlanner
             checks.Add(new("agent-documents", "agent-documents", ".agents", "Rule, skill and record structure and links; no product compilation.", "any", [],
                 inputs.Keys.Where(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md")
                     .Append("@tooling").Order(StringComparer.Ordinal).ToArray(), true, null));
-        if (changes.Any(static path => path.StartsWith("docs/", StringComparison.Ordinal)) || selectedWikiPages.Count != 0
-            || affected.Any(owner => !byPath[owner].test) || full)
-            checks.Add(new("documentation", "documentation", "docs", "Changed documentation or explicit full validation.", "any", [],
-                inputs.Keys.Order(StringComparer.Ordinal).ToArray(), true, null));
+        if (documentation is not null || affected.Any(owner => !byPath[owner].test) || full)
+            checks.Add(new("documentation", documentation is null ? "documentation-missing" : "documentation", "InnoEngine.Docs",
+                documentation is null ? "Required external documentation snapshot was not supplied. Pass --docs-cache-root and --docs-snapshot."
+                    : "Canonical external project entries and selected immutable reference payloads.", "any", [],
+                inputs.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal)).Append("@tooling").ToArray(), true, null,
+                documentation: documentation is null ? null : new([], [], documentation.catalog.contentIdentity, configuration, null)));
         if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || IsCiContractInput(path)
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)))
             checks.Add(new("ci-contracts", "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",
@@ -286,17 +283,8 @@ internal static class ValidationPlanner
                 apiOwners.Length == 0 ? "Only test implementations changed; their unchanged production dependencies have no affected API owner." : null,
                 group.Key, "contract", apiOwners));
         }
-        foreach (IGrouping<string, string> pages in selectedWikiPages.GroupBy(page =>
-            documentOwners.TryGetValue(page, out string? owner) && (nativeOwners.Contains(owner)
-                && (affected.Contains(owner) || documentationOwners.Contains(owner)) || scriptDocumentOwners.Contains(owner))
-                || scriptPages.Contains(page) ? "native" : "managed"))
-        {
-            ValidationCheck[] requiredBuilds = builds.Where(check => check.context == pages.Key
-                || scriptWiki && pages.Key == "native" && check.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj").ToArray();
-            checks.Add(new("wiki:" + pages.Key, "wiki", "docs", "Current public signatures and compilable examples in changed or affected project pages.",
-                "any", requiredBuilds.Select(static check => check.id).Append("documentation").ToArray(), pages.Concat(requiredBuilds.SelectMany(static check => check.inputs))
-                    .Distinct().Order(StringComparer.Ordinal).ToArray(), true, null, pages.Key));
-        }
+        if (documentation is not null)
+            AddDocumentationChecks();
         ValidationCheck? editorBuild = builds.SingleOrDefault(static check => check.owner == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
         if (editorBuild is not null)
             checks.Add(new("editor-products", "products", editorBuild.owner, "Real renderer startup, product workflows and native panel retirement for the affected Editor product.",
@@ -405,7 +393,7 @@ internal static class ValidationPlanner
         }).ToList();
         ValidationCheck[] execution = checks.OrderBy(check => check.kind == "cold-inputs" ? -1 : check.kind == "release-bundle" ? int.MaxValue
                 : check.context is null ? 0 : phases.GetValueOrDefault(check.context, phases.Count + 1))
-            .ThenBy(static check => check.kind switch { "build" => 0, "api" => 1, "wiki" => 2, "test" => 3, _ => 4 }).ToArray();
+            .ThenBy(static check => check.kind switch { "build" => 0, "api" => 1, "documentation-api" or "documentation-examples" => 2, "test" => 3, _ => 4 }).ToArray();
         var preceding = new HashSet<string>(StringComparer.Ordinal);
         foreach (ValidationCheck check in execution)
         {
@@ -414,7 +402,56 @@ internal static class ValidationPlanner
             preceding.Add(check.id);
         }
         return new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
-            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings);
+            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding);
+
+        void AddDocumentationChecks()
+        {
+            ValidationDocumentation.Selection selected = documentation!;
+            var owners = affected.Concat(selected.changedReferenceOwners.Select(owner => selected.owners[owner].path))
+                .Where(owner => !byPath[owner].test && !executionExclusions.ContainsKey(owner)
+                && (byPath[owner].productTarget.Length == 0 || byPath[owner].productTarget == target))
+                .Where(owner => selected.owners.GetValueOrDefault(Path.GetFileNameWithoutExtension(owner))?.nativeReference != true)
+                .ToHashSet(StringComparer.Ordinal);
+            var covered = new HashSet<string>(StringComparer.Ordinal);
+            var captures = selected.catalog.references.Where(reference => reference.model == "source-clr" && reference.configuration == configuration
+                && (reference.target is null || reference.target == target))
+                .SelectMany(reference => reference.projects.Where(name => selected.owners.TryGetValue(name, out ValidationDocumentation.Owner? owner)
+                        && owners.Contains(owner.path))
+                    .Select(name => (reference, name, path: selected.owners[name].path)))
+                .GroupBy(item => (context: nativeOwners.Contains(item.path) || scriptDocumentOwners.Contains(item.path) ? "native" : "managed", item.reference.configuration, item.reference.target));
+            foreach (var group in captures)
+            {
+                string[] paths = group.Select(static item => item.path).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+                covered.UnionWith(paths);
+                ValidationCheck[] required = builds.Where(check => paths.Contains(check.owner, StringComparer.Ordinal)).ToArray();
+                string[] references = group.Select(static item => item.reference.path).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+                string identity = ValidationInputs.Identity(group.Select(item => new KeyValuePair<string, string>(item.path,
+                    selected.sourceIdentities[item.reference.path + "\0" + item.name])));
+                checks.Add(new("documentation-api:" + group.Key.context + ":" + (group.Key.target ?? "default"), "documentation-api", "InnoEngine.Docs",
+                    "Selected owner declarations and XML from protected source reference payloads.", "any",
+                    required.Select(static check => check.id).Append("documentation").ToArray(),
+                    required.SelectMany(static check => check.inputs).Append("@tooling").Distinct(StringComparer.Ordinal).ToArray(), true, null,
+                    group.Key.context, "contract", paths, new(references, [], identity, configuration, group.Key.target)));
+            }
+            foreach (string owner in owners.Except(covered).Order(StringComparer.Ordinal))
+                checks.Add(new("documentation-api-missing:" + owner, "documentation-missing", owner,
+                    "Required source API capture is absent for the selected configuration and target.", "any", ["documentation"], ["@" + owner], false, null));
+            foreach (var group in examplePages.GroupBy(page => scriptPages.Contains(page.id)
+                || (page.examples?.projects ?? []).Any(name => nativeOwners.Contains(selected.owners[name].path)) ? "native" : "managed"))
+            {
+                string[] paths = group.SelectMany(static page => page.examples?.projects ?? []).Select(name => selected.owners[name].path)
+                    .Distinct(StringComparer.Ordinal).ToArray();
+                ValidationCheck[] required = builds.Where(check => paths.Contains(check.owner, StringComparer.Ordinal)
+                    || group.Key == "native" && scriptExamples && check.owner is "entry/InnoEngine.Build/InnoEngine.Build.csproj" or "entry/InnoEngine.Editor/InnoEngine.Editor.csproj").ToArray();
+                string[] pages = group.Select(static page => page.id).Order(StringComparer.Ordinal).ToArray();
+                checks.Add(new("documentation-examples:" + group.Key, "documentation-examples", "InnoEngine.Docs",
+                    "Canonical example blocks and their declared host or script context; no Markdown reparse or namespace guessing.", "any",
+                    required.Select(static check => check.id).Append("documentation").ToArray(),
+                    required.SelectMany(static check => check.inputs).Append("@tooling").Distinct(StringComparer.Ordinal).ToArray(), true, null,
+                    group.Key, "contract", paths, new([], pages, ValidationDocumentation.PageIdentity(group), configuration,
+                        group.Key == "native" ? target : null)));
+            }
+        }
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
 

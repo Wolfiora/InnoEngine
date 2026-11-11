@@ -68,6 +68,21 @@ Invoke-Case 'compiled-malformed-dependency-inputs' {
     $s.evidence.results[0].dependencyIdentity = 'version-only'
 } $false
 Invoke-Case 'failed-prerequisite' { param($s) $s.plan.checks[0].prerequisites = @('missing-build') } $false
+foreach ($kind in @('documentation-api', 'documentation-examples')) {
+    Invoke-Case "$kind-complete" {
+        param($s)
+        $s.plan.checks[0].kind = $kind
+        $s.plan.checks[0].inputs = @('@src/Example/Example.csproj', '@tooling')
+        $s.evidence.results[0].outputs = @{ 'bin/example' = $hash }
+        $s.evidence.results[0].dependencyIdentity = $hash
+    } $true
+    Invoke-Case "$kind-empty-outputs" {
+        param($s)
+        $s.plan.checks[0].kind = $kind
+        $s.plan.checks[0].inputs = @('@src/Example/Example.csproj', '@tooling')
+        $s.evidence.results[0].dependencyIdentity = $hash
+    } $false
+}
 Invoke-Case 'explicit-inapplicable' {
     param($s)
     $s.plan.checks += @{ id = 'foreign-device'; kind = 'products'; exclusion = 'Requires another explicit device environment.' }

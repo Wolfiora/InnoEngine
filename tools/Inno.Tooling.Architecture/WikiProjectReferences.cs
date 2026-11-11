@@ -46,11 +46,28 @@ internal sealed class WikiProjectReferences
         if (sdkSnapshot is not null)
         {
             using JsonDocument graph = JsonDocument.Parse(sdkSnapshot);
+            if (graph.RootElement.ValueKind != JsonValueKind.Array || graph.RootElement.GetArrayLength() == 0)
+                throw new InvalidDataException("A supplied SDK snapshot must contain the selected project contexts.");
             m_selectedProperties = graph.RootElement[0].GetProperty("GlobalProperties").EnumerateObject()
                 .ToDictionary(static property => property.Name, static property => property.Value.GetString()!, StringComparer.OrdinalIgnoreCase);
             if (m_selectedProperties.GetValueOrDefault("Configuration") != configuration
                 || artifactsPath is not null && m_selectedProperties.GetValueOrDefault("ArtifactsPath") != artifactsPath)
                 throw new InvalidDataException("Wiki snapshot properties do not match the requested configuration and output owner.");
+            bool resolved = graph.RootElement[0].GetProperty("Items").TryGetProperty("ReferencePath", out _);
+            foreach (JsonElement snapshot in graph.RootElement.EnumerateArray())
+            {
+                var properties = snapshot.GetProperty("GlobalProperties").EnumerateObject()
+                    .ToDictionary(static property => property.Name, static property => property.Value.GetString()!, StringComparer.OrdinalIgnoreCase);
+                if (properties.Count != m_selectedProperties.Count || properties.Any(property =>
+                    !m_selectedProperties.TryGetValue(property.Key, out string? value) || value != property.Value))
+                    throw new InvalidDataException("SDK snapshot roots do not share one effective property context.");
+                if (snapshot.GetProperty("Items").TryGetProperty("ReferencePath", out _) != resolved)
+                    throw new InvalidDataException("An SDK snapshot cannot mix resolved and unresolved reference contexts.");
+                if (resolved && !m_snapshots.TryAdd(Path.GetFullPath(snapshot.GetProperty("Path").GetString()!), snapshot.Clone()))
+                    throw new InvalidDataException("A resolved SDK snapshot repeats a project owner.");
+            }
+            if (resolved && selectedProjects is not null && selectedProjects.Any(project => !m_snapshots.ContainsKey(Path.GetFullPath(project))))
+                throw new InvalidDataException("A resolved SDK snapshot is missing a selected documentation owner.");
         }
     }
 

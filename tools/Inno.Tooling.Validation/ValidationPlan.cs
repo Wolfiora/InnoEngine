@@ -22,7 +22,8 @@ internal sealed record ValidationPlan(
     Dictionary<string, string[]> inputSets,
     Dictionary<string, ValidationContext> contexts,
     bool extended = false,
-    Dictionary<string, double>? planningSeconds = null
+    Dictionary<string, double>? planningSeconds = null,
+    ValidationDocumentationBinding? documentation = null
 );
 
 internal sealed record ValidationContext(
@@ -42,7 +43,23 @@ internal sealed record ValidationCheck(
     string? exclusion,
     string? context = null,
     string layer = "static",
-    string[]? projects = null
+    string[]? projects = null,
+    ValidationDocumentationCheck? documentation = null
+);
+
+internal sealed record ValidationDocumentationBinding(
+    string cacheRoot,
+    string snapshot,
+    string sourceTree,
+    string? baseline = null
+);
+
+internal sealed record ValidationDocumentationCheck(
+    string[] references,
+    string[] pages,
+    string contentIdentity,
+    string configuration,
+    string? target
 );
 
 internal sealed record ValidationResult(

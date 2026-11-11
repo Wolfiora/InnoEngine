@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using System.Linq;
@@ -27,6 +28,54 @@ public sealed class DocumentationReferenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ResolvedUnionSupportsIndependentSelectedSourceOwners()
+    {
+        Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00");
+        foreach (string name in new[] { "First", "Second" })
+        {
+            Write("src/" + name + "/" + name + ".csproj", """
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>
+                  <Target Name="RejectRepeatedResolution" BeforeTargets="ResolveReferences" Condition="Exists('no-resolve')">
+                    <Error Text="The union already owns its resolved reference snapshot." />
+                  </Target>
+                </Project>
+                """);
+            Write("src/" + name + "/Probe.cs", "namespace " + name + ";\n/// <summary>Supplies this source owner's public contract.</summary>\npublic sealed class Probe { }\n");
+        }
+        Write("projects.slnx", "<Solution><Project Path=\"src/First/First.csproj\" /><Project Path=\"src/Second/Second.csproj\" /></Solution>");
+        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        foreach (string argument in new[] { "restore", Path.Combine(m_root, "projects.slnx"), "--nologo", "-v:quiet", "-m:1", "-nr:false", "--disable-parallel" })
+            start.ArgumentList.Add(argument);
+        using (Process process = Process.Start(start)!)
+        {
+            Task<string> stdout = process.StandardOutput.ReadToEndAsync();
+            Task<string> stderr = process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            Assert.True(process.ExitCode == 0, await stdout + await stderr);
+        }
+        string[] projects = ["src/First/First.csproj", "src/Second/Second.csproj"];
+        string facts = Path.Combine(m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(["--engine-root", m_root, "--dotnet", host, "--output", facts,
+            ..projects.SelectMany(static project => new[] { "--project", project })]));
+        string graph = await ManagedProjectGraphCapture.CaptureAsync(m_root, host, projects.Select(project => Path.Combine(m_root, project)).ToArray(),
+            new Dictionary<string, string> { ["Configuration"] = "Debug" }, resolveReferences: true);
+        string graphPath = Path.Combine(m_root, "resolved.json");
+        await File.WriteAllTextAsync(graphPath, graph);
+        foreach (string name in new[] { "First", "Second" }) Write("src/" + name + "/no-resolve", "frozen");
+        foreach (string project in projects)
+        {
+            string output = Path.Combine(m_root, Path.GetFileNameWithoutExtension(project) + "-comparison.json");
+            Assert.Equal(0, await DocumentationReferences.ValidateApiAsync(["--engine-root", m_root, "--dotnet", host,
+                "--reference", facts, "--project", project, "--sdk-snapshot", graphPath, "--output", output]));
+            using JsonDocument report = JsonDocument.Parse(File.ReadAllBytes(output));
+            Assert.Equal(project, Assert.Single(report.RootElement.GetProperty("projects").EnumerateArray()).GetProperty("project").GetString());
+        }
+    }
+
+    [Fact]
     public async Task ApiExtractionNeedsNoWikiAndDoesNotBuildTheSelectedProduct()
     {
         const string C_PROJECT = "src/Inno.Probe/Inno.Probe.csproj";
@@ -35,6 +84,9 @@ public sealed class DocumentationReferenceTests : IDisposable
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
               <Target Name="RejectProductBuild" BeforeTargets="Build"><Error Text="Product build must never run during API extraction." /></Target>
+              <Target Name="RejectRepeatedReferenceCapture" BeforeTargets="ResolveReferences" Condition="Exists('no-resolve')">
+                <Error Text="A prepared reference graph must not invoke SDK reference resolution again." />
+              </Target>
             </Project>
             """);
         Write("src/Inno.Probe/Probe.cs", """
@@ -95,6 +147,23 @@ public sealed class DocumentationReferenceTests : IDisposable
             Assert.Equal("Passed", matched.RootElement.GetProperty("status").GetString());
             Assert.Equal("Unverified", matched.RootElement.GetProperty("sourceApiStatus").GetString());
         }
+        string graphPath = Path.Combine(m_root, "resolved-graph.json");
+        string graph = await ManagedProjectGraphCapture.CaptureAsync(m_root, host, [Path.Combine(m_root, C_PROJECT)],
+            new Dictionary<string, string> { ["Configuration"] = "Debug" }, resolveReferences: true);
+        await File.WriteAllTextAsync(graphPath, graph);
+        Write("src/Inno.Probe/no-resolve", "Reference resolution has already completed for this execution boundary.");
+        Assert.Equal(0, await DocumentationReferences.ValidateApiAsync([..comparisonArguments, "--sdk-snapshot", graphPath]));
+        JsonNode wrongContext = JsonNode.Parse(graph)!;
+        wrongContext[0]!["GlobalProperties"]!["Configuration"] = "Release";
+        await File.WriteAllTextAsync(graphPath, wrongContext.ToJsonString());
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationReferences.ValidateApiAsync([..comparisonArguments, "--sdk-snapshot", graphPath]));
+        JsonNode missingOwner = JsonNode.Parse(graph)!;
+        missingOwner[0]!["Path"] = Path.Combine(m_root, "src/Inno.Other/Inno.Other.csproj");
+        await File.WriteAllTextAsync(graphPath, missingOwner.ToJsonString());
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationReferences.ValidateApiAsync([..comparisonArguments, "--sdk-snapshot", graphPath]));
+        await File.WriteAllTextAsync(graphPath, "[]");
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationReferences.ValidateApiAsync([..comparisonArguments, "--sdk-snapshot", graphPath]));
+        File.Delete(Path.Combine(m_root, "src/Inno.Probe/no-resolve"));
         const string C_UNRELATED = "src/Inno.Unrelated/Inno.Unrelated.csproj";
         Write(C_UNRELATED, "<Project Sdk=\"Missing.Unrelated.Sdk\" />");
         JsonNode combined = JsonNode.Parse(File.ReadAllBytes(output))!;

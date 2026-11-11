@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Toolchains;
 using Inno.Tooling.Documentation;
 using Xunit;
 
@@ -30,6 +32,9 @@ public sealed class DocumentationExampleTests : IDisposable
               <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable></PropertyGroup>
               <Target Name="RejectRepeatedBuild" BeforeTargets="Build" Condition="Exists('no-build')">
                 <Error Text="Example validation must not build its product." />
+              </Target>
+              <Target Name="RejectRepeatedResolution" BeforeTargets="ResolveReferences" Condition="Exists('no-resolve')">
+                <Error Text="A prepared graph must not resolve its example references again." />
               </Target>
             </Project>
             """);
@@ -81,7 +86,12 @@ public sealed class DocumentationExampleTests : IDisposable
         Assert.Contains("Logical script examples", results["script"].GetProperty("errors")[0].GetString());
         Assert.Equal("Blocked", results["unspecified"].GetProperty("status").GetString());
         Assert.Equal("Unverified", report.RootElement.GetProperty("sourceApiStatus").GetString());
-        Assert.Equal(0, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "working"]));
+        string graphPath = Path.Combine(m_root, "resolved-graph.json");
+        string graph = await ManagedProjectGraphCapture.CaptureAsync(m_root, host, [Path.Combine(m_root, "src/Inno.Probe/Inno.Probe.csproj")],
+            new Dictionary<string, string> { ["Configuration"] = "Debug" }, resolveReferences: true);
+        await File.WriteAllTextAsync(graphPath, graph);
+        Write("src/Inno.Probe/no-resolve", "References are frozen for this execution boundary.");
+        Assert.Equal(0, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "working", "--sdk-snapshot", graphPath]));
     }
 
     [Fact]
