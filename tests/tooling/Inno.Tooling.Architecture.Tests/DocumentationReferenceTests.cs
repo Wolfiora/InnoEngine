@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Nodes;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -81,10 +83,72 @@ public sealed class DocumentationReferenceTests : IDisposable
             && symbol.GetProperty("kind").GetString() == "NamedType");
         Assert.Contains(symbols, symbol => symbol.GetProperty("id").GetString() == "M:Inno.Probe.Probe.OnRead"
             && symbol.GetProperty("containingType").GetString() == "T:Inno.Probe.Probe");
+        string comparison = Path.Combine(m_root, "comparison.json");
+        string[] comparisonArguments = ["--engine-root", m_root, "--dotnet", host, "--reference", output, "--output", comparison];
+        Assert.Equal(0, DocumentationReferences.ValidateApi(comparisonArguments));
+        using (JsonDocument matched = JsonDocument.Parse(File.ReadAllBytes(comparison)))
+        {
+            Assert.Equal("Passed", matched.RootElement.GetProperty("status").GetString());
+            Assert.Equal("Unverified", matched.RootElement.GetProperty("sourceApiStatus").GetString());
+        }
+        string source = File.ReadAllText(Path.Combine(m_root, "src/Inno.Probe/Probe.cs"));
+        Write("src/Inno.Probe/Probe.cs", source.Replace("Borrowed text.", "Caller must release the text lease.", StringComparison.Ordinal));
+        Assert.Equal(1, DocumentationReferences.ValidateApi(comparisonArguments));
+        Assert.Contains("Declaration, XML, constant, source or type relationships changed", File.ReadAllText(comparison));
+        Write("src/Inno.Probe/Probe.cs", "\n\n" + source);
+        Assert.Equal(0, DocumentationReferences.ValidateApi(comparisonArguments));
+        // Omitting a current overload is a real coverage failure, even when every retained signature matches.
+        byte[] fullReference = File.ReadAllBytes(output);
+        JsonNode omitted = JsonNode.Parse(fullReference)!;
+        omitted["projects"]![0]!["symbols"]!.AsArray().RemoveAt(1);
+        File.WriteAllText(output, omitted.ToJsonString());
+        Assert.Equal(1, DocumentationReferences.ValidateApi(comparisonArguments));
+        Assert.Contains("Missing current declaration", File.ReadAllText(comparison));
+        File.WriteAllBytes(output, fullReference);
+        byte[] firstFailure = File.ReadAllBytes(comparison);
+        Assert.Throws<OperationCanceledException>(() => DocumentationReferences.ValidateApi(comparisonArguments, new CancellationToken(true)));
+        Assert.Equal(firstFailure, File.ReadAllBytes(comparison));
         byte[] previous = File.ReadAllBytes(output);
         Write("src/Inno.Probe/Probe.cs", "namespace Inno.Probe; public class Probe { public MissingContract Read() => null; }");
         Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi(arguments));
         Assert.Equal(previous, File.ReadAllBytes(output));
+    }
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("[{\"project\":\"../escape.csproj\",\"name\":\"Escape\",\"symbols\":[]}]")]
+    [InlineData("[{\"project\":\"src/./Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]}]")]
+    [InlineData("[{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]},{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]}]")]
+    [InlineData("[{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[{\"id\":\"T:Probe\"},{\"id\":\"T:Probe\"}]}]")]
+    public void InvalidReferenceDiscoveryCannotReplaceEvidence(string projects)
+    {
+        Write("reference.json", "{\"model\":\"source-clr\",\"configuration\":\"Debug\",\"projects\":" + projects + "}");
+        Write("report.json", "first failure");
+        Exception? failure = Record.Exception(() => DocumentationReferences.ValidateApi([
+            "--engine-root", m_root, "--dotnet", "not-invoked", "--reference", Path.Combine(m_root, "reference.json"),
+            "--output", Path.Combine(m_root, "report.json")]));
+        Assert.NotNull(failure);
+        Assert.True(failure is InvalidDataException or IOException, failure.ToString());
+        Assert.Equal("first failure", File.ReadAllText(Path.Combine(m_root, "report.json")));
+    }
+
+    [Theory]
+    [InlineData("Release", null)]
+    [InlineData("Debug", "windows-x64")]
+    public void DifferentEvaluatedContextsCannotShareOneBatch(
+        string configuration,
+        string? target
+    ) {
+        const string C_PROJECTS = "[{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]}]";
+        Write("first.json", "{\"model\":\"source-clr\",\"configuration\":\"Debug\",\"projects\":" + C_PROJECTS + "}");
+        Write("second.json", "{\"model\":\"source-clr\",\"configuration\":" + JsonSerializer.Serialize(configuration)
+            + ",\"target\":" + JsonSerializer.Serialize(target) + ",\"projects\":" + C_PROJECTS + "}");
+        Write("report.json", "original result");
+        InvalidDataException failure = Assert.Throws<InvalidDataException>(() => DocumentationReferences.ValidateApi([
+            "--engine-root", m_root, "--dotnet", "not-invoked", "--reference", Path.Combine(m_root, "first.json"),
+            "--reference", Path.Combine(m_root, "second.json"), "--output", Path.Combine(m_root, "report.json")]));
+        Assert.Contains("separate evaluated batches", failure.Message);
+        Assert.Equal("original result", File.ReadAllText(Path.Combine(m_root, "report.json")));
     }
 
     [Fact]

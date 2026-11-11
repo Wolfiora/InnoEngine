@@ -102,7 +102,10 @@ public static class DocumentationStore
         {
             MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4),
             CancellationToken = cancellationToken
-        }, async (index, cancellation) =>
+        }, async (
+            int index,
+            CancellationToken cancellation
+        ) =>
         {
             cancellation.ThrowIfCancellationRequested();
             string path = sources[index];
