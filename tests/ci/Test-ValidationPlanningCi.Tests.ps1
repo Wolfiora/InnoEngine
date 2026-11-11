@@ -11,16 +11,24 @@ $cases = @(
     @{ name = 'stale-docs'; docs = 'stale'; reason = 'Documentation does not bind the actual engine merge-candidate tree.'; throws = $true },
     @{ name = 'wrong-docs-revision'; docs = 'wrong-revision'; reason = 'Documentation checkout is not the requested candidate.'; throws = $true },
     @{ name = 'dirty-docs'; docs = 'dirty'; reason = 'Hosted documentation candidate contains uncommitted inputs.'; throws = $true },
-    @{ name = 'wrong-docs-source'; docs = 'wrong-source'; reason = 'Canonical documentation binding does not identify this engine candidate.'; throws = $true }
+    @{ name = 'wrong-docs-source'; docs = 'wrong-source'; reason = 'Canonical documentation binding does not identify this engine candidate.'; throws = $true },
+    @{ name = 'native-preparation'; docs = 'matching'; prepare = 'once'; native = $true; throws = $false },
+    @{ name = 'native-still-blocked'; docs = 'matching'; prepare = 'again'; reason = 'Validation plan generation failed; no downstream stage can certify success.'; throws = $true },
+    @{ name = 'native-wrong-pin'; docs = 'matching'; prepare = 'wrong-pin'; reason = 'Requested source is not the current pinned gitlink: extern/Native'; throws = $true },
+    @{ name = 'native-before-docs'; prepare = 'once'; reason = 'Hosted preparation requires the explicitly bound documentation candidate.'; throws = $true }
 )
 $originalOutput = $env:GITHUB_OUTPUT
 $originalDirectory = (Get-Location).Path
+$originalProtocols = $env:GIT_ALLOW_PROTOCOL
+$env:GIT_ALLOW_PROTOCOL = 'file'
 try {
     foreach ($case in $cases) {
         $root = Join-Path $directory $case.name
         $scripts = Join-Path $root 'tests/ci'
         New-Item -ItemType Directory -Path $scripts -Force | Out-Null
-        Copy-Item -LiteralPath "$PSScriptRoot/Invoke-ValidationCi.ps1" -Destination $scripts
+        foreach ($script in @('Invoke-ValidationCi.ps1', 'Initialize-ValidationEntry.ps1', 'Prepare-ValidationSources.ps1')) {
+            Copy-Item -LiteralPath (Join-Path $PSScriptRoot $script) -Destination $scripts
+        }
         'fixture' | Set-Content (Join-Path $root 'source.txt')
         & git -C $root init -q
         if ($LASTEXITCODE -ne 0) { throw 'Cannot initialize the planning fixture.' }
@@ -67,6 +75,21 @@ if ($case.docs -and ($Arguments[[Array]::IndexOf($Arguments, '--docs-snapshot') 
     throw 'The frozen documentation selection was not forwarded to planning.'
 }
 $output = $Arguments[[Array]::IndexOf($Arguments, '--output') + 1]
+if ($case.prepare) {
+    $attempts = Join-Path $PSScriptRoot 'artifacts/planning-attempts.txt'
+    'plan' | Add-Content $attempts
+    $count = @(Get-Content $attempts).Count
+    if ($count -eq 1 -or $case.prepare -ceq 'again') {
+        $commit = (& git -C $PSScriptRoot rev-parse HEAD).Trim()
+        $pin = if ($case.prepare -ceq 'wrong-pin') { 'a' * 40 } else { $case.pin }
+        @{ status = 'Blocked'; kind = 'NativeSources'; root = $PSScriptRoot; commit = $commit
+            owners = @('src/Native/Native.csproj'); sources = @{ 'extern/Native' = $pin } } |
+            ConvertTo-Json -Depth 5 | Set-Content (Join-Path $output 'preparation.json')
+        $global:LASTEXITCODE = 2
+        return
+    }
+    if (-not (Test-Path (Join-Path $PSScriptRoot 'extern/Native/.git'))) { throw 'Planning continued without its requested source inputs.' }
+}
 $checks = @()
 if (-not $case.empty) {
     $checks += @{ id = 'instructions'; kind = 'instructions'; exclusion = $null }
@@ -77,6 +100,26 @@ if ($case.native) { $contexts.native = @{} }
 @{ checks = $checks; contexts = $contexts } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $output 'plan.json')
 $global:LASTEXITCODE = [int]$case.exit
 '@ | Set-Content $stub
+        if ($case.prepare) {
+            $source = Join-Path $root 'artifacts/source'
+            New-Item -ItemType Directory -Path $source -Force | Out-Null
+            'source fixture' | Set-Content (Join-Path $source 'source.txt')
+            & git -C $source init -q
+            & git -C $source add source.txt
+            & git -C $source -c user.name='Aaron Liao' -c user.email='hsuankailiao@gmail.com' commit -qm 'Source preparation fixture'
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot commit the source fixture.' }
+            $case.pin = (& git -C $source rev-parse HEAD).Trim()
+            $case | ConvertTo-Json | Set-Content (Join-Path $root 'case.json')
+            "artifacts/`ndocumentation/`noutputs.txt`nentry.dll`nfailure.log`n" | Set-Content (Join-Path $root '.gitignore')
+            & git -C $root config -f .gitmodules submodule.native.path extern/Native
+            & git -C $root config -f .gitmodules submodule.native.url $source.Replace('\', '/')
+            & git -C $root add .
+            & git -C $root update-index --add --cacheinfo "160000,$($case.pin),extern/Native"
+            & git -C $root -c user.name='Aaron Liao' -c user.email='hsuankailiao@gmail.com' commit -qm 'Complete hosted preparation fixture'
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot commit the hosted preparation fixture.' }
+            New-Item -ItemType Directory -Path (Join-Path $root 'extern/Native') -Force | Out-Null
+            $commit = (& git -C $root rev-parse HEAD).Trim()
+        }
         $env:GITHUB_OUTPUT = Join-Path $root 'outputs.txt'
         [IO.File]::WriteAllText($env:GITHUB_OUTPUT, '')
         $threw = $false
@@ -100,9 +143,18 @@ $global:LASTEXITCODE = [int]$case.exit
             if ($pairing.engineCommit -cne $commit -or $pairing.documentationCommit -cne $documentationRevision `
                 -or $pairing.sourceApiStatus -cne 'Unverified') { throw 'Candidate binding was lost or incorrectly promoted to source certification.' }
         }
+        if ($case.prepare) {
+            $attempts = @(Get-Content (Join-Path $root 'artifacts/planning-attempts.txt')).Count
+            $expectedAttempts = if ($case.prepare -ceq 'wrong-pin' -or -not $case.docs) { 1 } else { 2 }
+            if ($attempts -ne $expectedAttempts) { throw 'Source preparation must regenerate once and must never retry repeatedly until green.' }
+            if ($case.docs -and -not (Test-Path (Join-Path $root 'artifacts/validation/ci/initial-preparation.json'))) {
+                throw 'The first blocked preparation request was not retained.'
+            }
+        }
     }
 } finally {
     $env:GITHUB_OUTPUT = $originalOutput
+    $env:GIT_ALLOW_PROTOCOL = $originalProtocols
     Set-Location -LiteralPath $originalDirectory
 }
 Write-Output "Passed $($cases.Count) hosted planning protocol cases. SDK and source selection are validated separately. Evidence: $directory"

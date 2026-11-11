@@ -766,6 +766,53 @@ public sealed class ValidationPlanningTests
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(plan));
     }
 
+    [Theory]
+    [InlineData("plan", false)]
+    [InlineData("plan", true)]
+    [InlineData("run", false)]
+    [InlineData("run", true)]
+    [InlineData("full", false)]
+    [InlineData("full", true)]
+    public async Task MissingNativeSourcesProducePreparationRequirementsInsteadOfExecutableEvidence(string operation, bool documentation)
+    {
+        using var repository = new ValidationRepository();
+        const string C_OWNER = "src/Native/Native.csproj";
+        repository.Write(C_OWNER, ValidationRepository.Project("<PropertyGroup><InnoProductId>fixture</InnoProductId></PropertyGroup>"));
+        string revision = repository.Git("rev-parse", "HEAD");
+        repository.Git("update-index", "--add", "--cacheinfo", "160000," + revision + ",extern/Uninitialized");
+        repository.Git("add", C_OWNER);
+        repository.Git("commit", "-m", "Declare independently owned native inputs");
+        Directory.CreateDirectory(repository.PathOf("extern/Uninitialized"));
+        var docs = new ValidationDocumentationFixture(repository);
+        DocumentationResult? snapshot = null;
+        if (documentation)
+        {
+            docs.Initialize();
+            snapshot = await docs.IndexAsync();
+        }
+        repository.Write("src/Native/Changed.cs", "// An affected native owner requires explicit preparation.");
+        string output = repository.PathOf("artifacts/preflight");
+        int status = await ValidationCommand.ExecuteAsync([operation, "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--base", "HEAD", "--output", output,
+            ..snapshot is null ? Array.Empty<string>() : new[] { "--docs-cache-root", docs.cache, "--docs-snapshot", snapshot.snapshot! }]);
+
+        Assert.Equal(2, status);
+        using JsonDocument report = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "preparation.json")));
+        JsonElement preparation = report.RootElement;
+        Assert.Equal("Blocked", preparation.GetProperty("status").GetString());
+        Assert.Equal(documentation ? "NativeSources" : "Documentation", preparation.GetProperty("kind").GetString());
+        Assert.Equal(repository.Git("rev-parse", "HEAD"), preparation.GetProperty("commit").GetString());
+        Assert.Contains(C_OWNER, preparation.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()));
+        JsonElement sources = preparation.GetProperty("sources");
+        if (documentation)
+            Assert.Equal(revision, sources.GetProperty("extern/Uninitialized").GetString());
+        else
+            Assert.Empty(sources.EnumerateObject());
+        Assert.False(File.Exists(Path.Combine(output, "plan.json")));
+        Assert.False(File.Exists(Path.Combine(output, "results.json")));
+        Assert.False(Directory.Exists(repository.PathOf("extern/Uninitialized/.git")));
+    }
+
     [Fact]
     public async Task CachedSubmoduleStatusCannotCertifyMutatedNativeSource()
     {

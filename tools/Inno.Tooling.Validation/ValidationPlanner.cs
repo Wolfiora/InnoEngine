@@ -14,7 +14,7 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationPlanner
 {
-    internal static async Task<ValidationPlan> CreateAsync(
+    internal static async Task<ValidationPlanningResult> CreateAsync(
         string root,
         string baseline,
         string dotnet,
@@ -164,7 +164,14 @@ internal static class ValidationPlanner
         {
             string[] unavailable = inputs.Where(static pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)).Select(static pair => pair.Key).ToArray();
             if (unavailable.Length != 0)
-                throw new InvalidDataException("Required native source checkouts are unavailable: " + string.Join(", ", unavailable));
+                return new(null, new("Blocked", documentation is null ? "Documentation" : "NativeSources", root, commit, mergeBase,
+                    ValidationInputs.Identity(inputs), documentation is null
+                        ? "Select the required external documentation snapshot before preparing native inputs."
+                        : "Selected owners require unavailable pinned native sources. Prepare these inputs explicitly, then generate a new plan.",
+                    nativeOwners.Where(owner => !executionExclusions.ContainsKey(owner) && (affected.Contains(owner) || documentationOwners.Contains(owner)))
+                        .Concat(scriptDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
+                    documentation is null ? new(StringComparer.Ordinal) : unavailable.ToDictionary(static path => path,
+                        path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
             JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
                 Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
             if (development is null)
@@ -401,8 +408,8 @@ internal static class ValidationPlanner
                 throw new InvalidDataException($"Required prerequisites are missing or scheduled after '{check.id}'.");
             preceding.Add(check.id);
         }
-        return new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
-            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding);
+        return new(new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
+            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding), null);
 
         void AddDocumentationChecks()
         {

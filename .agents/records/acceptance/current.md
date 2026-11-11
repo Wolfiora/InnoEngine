@@ -6,6 +6,8 @@ The English documentation and workflow modernization is **incomplete**. Existing
 
 ## Current local evidence
 
+- [Native source preflight](CI_NATIVE_PREFLIGHT_2026_11_11.md) removes unconditional source checkout and product-entry compilation from hosted classification. Seven planning regressions, nine real local-Git preparation cases and fifteen CI protocol cases pass. The managed bootstrap builds independently; real hosted execution remains outstanding.
+
 - [Immutable CI documentation candidates](CI_DOCUMENTATION_CANDIDATES_2026_11_11.md) records the hosted checkout wiring, nineteen local metadata/ancestry protocol cases and remaining live certification requirements. Candidate correspondence does not establish source compatibility or publication eligibility.
 - [External documentation validation](EXTERNAL_DOCUMENTATION_VALIDATION_2026_11_11.md) records the ongoing planner/runner cutover, exact Docs snapshot selection, per-owner reference facts, shared resolved SDK graphs, bounded passing checks and the preserved old-fixture failure. Hosted pairing, full source certification and deployment remain outstanding.
 - [Protected reference snapshots](DOCUMENTATION_REFERENCE_SNAPSHOTS_2026_11_11.md) records 45 query/snapshot regressions, selected real source comparison and retirement protection. The committed Docs snapshot `54374a3e8077858e6db9bf2c36760595df6d81dac301bd7f6490e59b56caf817` contains 2,529 pages, 252 project entries and 12,272 selected declarations. These supersede the older inventory counts below; later uncommitted changes are not certified by that snapshot.

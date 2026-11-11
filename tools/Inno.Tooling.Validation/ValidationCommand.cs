@@ -28,7 +28,9 @@ public static class ValidationCommand
     /// Cancels child processes while retaining the first failure and completed diagnostics.
     /// </param>
     /// <returns>
-    /// Zero only when the requested operation succeeds and every required result is present and successful; otherwise one.
+    /// Zero when the requested operation succeeds, one for unsuccessful execution, or two when planning requires
+    /// explicitly prepared inputs. A blocked preparation report is written to preparation.json instead of producing
+    /// a new executable plan. The command never fetches native source inputs automatically.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// An operation or option is unknown, duplicated or missing its value.
@@ -65,12 +67,24 @@ public static class ValidationCommand
         if (options.ContainsKey("--plan") && (options.ContainsKey("--docs-cache-root") || options.ContainsKey("--docs-snapshot")
             || options.ContainsKey("--docs-base-snapshot")))
             throw new ArgumentException("A supplied plan already fixes its documentation selection; regenerate the plan to change it.");
-        ValidationPlan plan = options.TryGetValue("--plan", out string? planPath)
-            ? Read<ValidationPlan>(planPath)
-            : await ValidationPlanner.CreateAsync(root, options.GetValueOrDefault("--base", "HEAD"), dotnet,
+        ValidationPlan plan;
+        if (options.TryGetValue("--plan", out string? planPath))
+            plan = Read<ValidationPlan>(planPath);
+        else
+        {
+            ValidationPlanningResult selected = await ValidationPlanner.CreateAsync(root, options.GetValueOrDefault("--base", "HEAD"), dotnet,
                 options.GetValueOrDefault("--configuration", "Debug"), artifacts, full, cancellationToken, extended,
                 options.GetValueOrDefault("--docs-cache-root"), options.GetValueOrDefault("--docs-snapshot"),
                 options.GetValueOrDefault("--docs-base-snapshot")).ConfigureAwait(false);
+            if (selected.preparation is not null)
+            {
+                await File.WriteAllTextAsync(Path.Combine(output, "preparation.json"), JsonSerializer.Serialize(selected.preparation,
+                    new JsonSerializerOptions { WriteIndented = true }), cancellationToken).ConfigureAwait(false);
+                Console.WriteLine("Planning blocked: " + selected.preparation.reason + " No new executable plan was produced. " + output);
+                return 2;
+            }
+            plan = selected.plan ?? throw new InvalidDataException("Planning produced neither an executable plan nor explicit preparation requirements.");
+        }
         if (!Path.GetFullPath(plan.root).Equals(root, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
             throw new InvalidDataException("The supplied plan belongs to another workspace.");
         if (plan.checks.Length == 0 || plan.checks.Select(static check => check.id).Distinct(StringComparer.Ordinal).Count() != plan.checks.Length)
