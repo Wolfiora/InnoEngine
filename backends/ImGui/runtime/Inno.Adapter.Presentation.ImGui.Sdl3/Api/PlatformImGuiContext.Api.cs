@@ -29,16 +29,16 @@ public sealed partial class PlatformImGuiContext : IDisposable
     );
 
     /// <summary>
-    /// Registers or replaces a font face for a composable style in this context.
+    /// Registers or replaces a context-owned text face before the first frame, merging only the bundled icons.
     /// </summary>
     /// <param name="style">
-    /// The style represented by the font file.
+    /// The composable style represented by the supplied font.
     /// </param>
     /// <param name="filePath">
-    /// Path to a TrueType or OpenType font.
+    /// Path to a caller-provided TrueType or OpenType font containing the required language glyphs.
     /// </param>
     /// <param name="fontSizePixels">
-    /// Unscaled font size in pixels.
+    /// Positive, finite, unscaled font size in pixels.
     /// </param>
     /// <exception cref="InvalidOperationException">
     /// Thrown after the first ImGui frame has started.

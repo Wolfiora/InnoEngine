@@ -103,6 +103,18 @@ function Assert-JourneyEvidence([string]$Project, [string]$Scenario, [int]$Cycle
         if ($resources.Count -ne ($Cycles / 10 + 1) -or [int]$resources[0].'completed-cycles' -ne 0 -or [int]$resources[-1].'completed-cycles' -ne $Cycles) {
             throw 'The lifecycle run did not record its complete full-GC resource series.'
         }
+        $previousCollection = 0L
+        foreach ($sample in $resources) {
+            $collection = [long]$sample.'gc-index'
+            $heap = [long]$sample.'gc-heap-bytes'
+            $fragmented = [long]$sample.'gc-fragmented-bytes'
+            if ($collection -le $previousCollection -or [int]$sample.'gc-generation' -ne [GC]::MaxGeneration -or
+                $sample.'gc-compacted' -cne 'True' -or $sample.'gc-concurrent' -cne 'False' -or
+                $fragmented -lt 0 -or $heap -lt $fragmented -or [long]$sample.'managed-bytes-after-full-gc' -ne ($heap - $fragmented)) {
+                throw 'The lifecycle run did not record a fresh compacting full-GC snapshot with consistent live-memory bytes.'
+            }
+            $previousCollection = $collection
+        }
         $growth = [long]$resources[-1].'managed-bytes-after-full-gc' - [long]$resources[0].'managed-bytes-after-full-gc'
         if ($growth -gt 4MB) { throw "Panel lifecycle retained $growth bytes beyond its 4 MiB final live-memory budget." }
         if (@($resources | Where-Object { [long]$_.'pending-events' -ne 0 }).Count -ne 0) {
@@ -135,7 +147,7 @@ Copy-Item -LiteralPath (Join-Path $repository 'src/composition/editor/hosting/In
     -Destination (Join-Path $project 'editor.ini')
 $fixtures = Join-Path $project 'Assets/Acceptance'
 New-Item -ItemType Directory -Force -Path $fixtures | Out-Null
-$fixtureNames = if ($Scenario -eq 'Lifecycle') { @('PanelLifecycle.editor.cs') } else { @('WorkflowState.cs.txt', 'WorkflowJourney.editor.cs.txt') }
+$fixtureNames = if ($Scenario -eq 'Lifecycle') { @('ManagedMemorySample.editor.cs', 'PanelLifecycle.editor.cs') } else { @('WorkflowState.cs.txt', 'WorkflowJourney.editor.cs.txt') }
 foreach ($name in $fixtureNames) {
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot "fixtures/editor-ui/$name") -Destination (Join-Path $fixtures ($name -replace '\.txt$', ''))
 }

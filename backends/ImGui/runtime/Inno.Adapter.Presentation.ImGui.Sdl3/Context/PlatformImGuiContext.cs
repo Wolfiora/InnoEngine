@@ -42,7 +42,6 @@ public sealed unsafe partial class PlatformImGuiContext
     private TimeSpan m_lastFrameTime;
     private TimeSpan m_lastLiveResizeLockTime;
     private Action<PlatformImGuiContext>? m_releaseRegistration;
-    private byte[]? m_supplementalFontData;
     private IntPtr m_iniFilename;
     private uint m_liveResizeLockedWindowId;
     private uint m_mousePendingLeaveWindowId;
@@ -102,8 +101,7 @@ public sealed unsafe partial class PlatformImGuiContext
             io->MouseDrawCursor = 0;
             io->Fonts->RendererHasTextures = 1;
             ConfigureKeyRepeat(io);
-            m_supplementalFontData = ReadSupplementalFontData();
-            ConfigureFonts(m_context, io, m_supplementalFontData);
+            ConfigureFonts(m_context, io);
             ImGuiPackedColor.EnsureInitialized();
 
             UpdateDisplayMetrics(io);
@@ -118,8 +116,6 @@ public sealed unsafe partial class PlatformImGuiContext
             m_viewports?.Dispose();
             ImGuiFont.UnregisterContext(m_context);
             ImGuiNative.Raw.DestroyContext(m_context);
-            GC.KeepAlive(m_supplementalFontData);
-            m_supplementalFontData = null;
             if (renderer is null)
                 m_renderer?.Dispose();
             throw;
@@ -287,16 +283,16 @@ public sealed unsafe partial class PlatformImGuiContext
     }
 
     /// <summary>
-    /// Registers a named font style and its glyph ranges in the active ImGui font atlas.
+    /// Registers or replaces a context-owned text face before the first frame, merging only the bundled icons.
     /// </summary>
     /// <param name="style">
-    /// The style consumed by register font style; ownership remains with the caller unless explicitly stated otherwise.
+    /// The composable style represented by the supplied font.
     /// </param>
     /// <param name="filePath">
-    /// The file path text validated by the register font style operation.
+    /// Path to a caller-provided TrueType or OpenType font containing the required language glyphs.
     /// </param>
     /// <param name="fontSizePixels">
-    /// The font size pixels consumed by register font style; ownership remains with the caller unless explicitly stated otherwise.
+    /// Positive, finite, unscaled font size in pixels.
     /// </param>
     public partial void RegisterFontStyle(
         ImGuiFontStyle style,
@@ -323,7 +319,6 @@ public sealed unsafe partial class PlatformImGuiContext
 
         ResolveFontPaths(out _, out List<string> iconFontPaths);
         MergeIconFontsIntoCurrentBaseFont(io->Fonts, iconFontPaths);
-        MergeSupplementalFont(io->Fonts, m_supplementalFontData!);
         ImGuiFont.RegisterStyle(m_context, style, (nint)loadedFont);
         if (style == ImGuiFontStyle.Regular)
             io->FontDefault = loadedFont;
@@ -331,8 +326,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static void ConfigureFonts(
         ImGuiNativeContext* context,
-        ImGuiIO* io,
-        byte[] supplementalFontData
+        ImGuiIO* io
     ) {
         var fonts = io->Fonts;
         ImGuiNative.Raw.Clear(fonts);
@@ -350,7 +344,6 @@ public sealed unsafe partial class PlatformImGuiContext
             }
 
             MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
-            MergeSupplementalFont(fonts, supplementalFontData);
             styleFonts[GetFontStyle(fontPaths[i])] = (nint)loadedFont;
             if (i == preferredIndex)
             {
@@ -368,7 +361,6 @@ public sealed unsafe partial class PlatformImGuiContext
             if (defaultFont != null)
             {
                 MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
-                MergeSupplementalFont(fonts, supplementalFontData);
             }
         }
 
@@ -909,8 +901,6 @@ public sealed unsafe partial class PlatformImGuiContext
         m_renderer.Dispose();
         ImGuiFont.UnregisterContext(m_context);
         ImGuiNative.Raw.DestroyContext(m_context);
-        GC.KeepAlive(m_supplementalFontData);
-        m_supplementalFontData = null;
         if (m_iniFilename != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(m_iniFilename);

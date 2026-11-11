@@ -2,6 +2,40 @@
 
 [获批计划](../plans/LOGO_BRANDING.md) · [品牌资源](../../../assets/branding/README.md)
 
+## 2026-11-11 字体官方许可与独立品牌许可
+
+分支 `logo`，基线 `483bdee6f32ba076bf631be4632c1e725503eaad`。用户明确确认已取得 xdzzyq 的授权，但 Logo 仅允许随 InnoEngine 使用；新增 `assets/branding/LICENSE.txt` 覆盖 Logo 与衍生图标字体，保留作者归属，明确与源码 Apache-2.0、第三方字体 OFL 分开，不添加根 README 设计致谢。字体资源仍归 ImGui SDL3 后端部署，没有修改图片、字形、运行时 API、平台分层或资源生命周期。
+
+从字体 name 表确认 JetBrains Mono 2.304 和 Font Awesome Free 6.7.2，并逐一核对六份第三方 TTF 与官方版本的 Git blob；全部相同。官方许可分别取自 [JetBrains v2.304](https://github.com/JetBrains/JetBrainsMono/blob/v2.304/OFL.txt) 和 [Font Awesome 6.7.2](https://github.com/FortAwesome/Font-Awesome/blob/6.7.2/LICENSE.txt)，原样保存，Git blob 分别为 `8bee4148c1d54dbf5dae6d6c117fc80414266abb`、`e69c5e39a30ce8d112e012cac36289e77691a9b7`。`.gitattributes` 保留官方文本字节和原有空白，删除已移除补充字体的过期条目。Font Awesome 完整文件中的 SVG／JS 和代码条款未删改，文档明确本仓库 TTF 适用字体 OFL 条款。
+
+本机显式使用 SDK 10.0.402，复用生产源码未变的已验证原生依赖，构建受影响后端并发布成功，0 警告、0 错误。实际构建目录和发布目录均包含三份许可，内容 SHA-256 与源文件逐项相同；两处的七份 TTF 也逐项与源文件相同。日志为 `artifacts/branding-work/font-license-build.log`、`font-license-publish.log`，许可部署清单为 `font-license-deployment.json`。源码架构检查通过；文档与记录收尾检查见 `font-license-docs-final.log`、`font-license-agent-docs-final.log`。未新增与实现镜像的测试，未将此前字体回归冒充本次执行。
+
+统一计划 `artifacts/validation/font-license-plan/plan.json` 因 `.gitattributes` 为共享输入保守选择 249 个 owner、324 项必需检查，未削弱计划选择。当前证据仅覆盖本次许可来源、资源部署／发布、源码架构和文档；按用户要求不等待远端长时间 CI，不声明完整 Windows/macOS、Release 和发行矩阵已通过。历史验收继续保留原始输入及失败语境。
+
+## 2026-11-11 移除内置语言补充字体
+
+按用户最新要求，在 `logo`、基线 `8ee4ab383812d9d9c5db25ed66b0d6c1846482ae` 上删除内置 Noto 字体、来源和许可、后端部署条目、自动合并代码及 Context 固定缓冲区。默认只配置英文界面正文与图标，自定义字体不再被自动追加语言字形。既有 `RegisterFontStyle`、游戏 `FontAsset`、`ITextService` 和 `ITextBackend` 保留，语言资源与字体选择由项目负责；没有新增 Core、平台分支或兼容路径。历史验收中的中文覆盖描述仅代表当时输入，不再是当前默认能力。
+
+保留四种样式、不同缩放、Logo／原有图标及 Context 退休断言；补充默认无自动语言字形和自定义字体注册、缺失文件、首次帧后拒绝注册的回归。仅删除随功能移除而失效的补充字体缺失／损坏检查。当前 ImGui 原生项目 93 项普通测试及 1 项独立进程测试全部通过，无跳过；生产与测试闭包正常构建 0 警告、0 错误。首次定向执行在普通测试通过后因临时 SDK JSON 导出格式错误未能发现隔离用例，修正导出后完整重跑，最终结果位于 `artifacts/validation/english-font-native-tests-final`，构建与执行日志为 `artifacts/branding-work/english-font-native-build.log`、`english-font-tests-final.log`。
+
+源码架构、文档链接／归属、受影响后端的编译 API 和 Wiki 契约均通过，日志为 `english-font-source.log`、`english-font-docs.log`、`english-font-api.log`、`english-font-wiki.log`。实际后端和测试部署目录中已无补充字体，剩余 7 份 TTF 与正式源文件哈希逐项相同；当前资源、生产源码、测试及使用文档无已删除功能引用。统一计划 `artifacts/validation/english-font-plan/plan.json` 因已删除的外部字体资源不再属于当前 SDK 项而保守选择 324 项必需检查，未修改或削弱选择规则。本地完成上述受影响 owner 验证，没有将其算作完整计划通过；按用户明确要求不等待长时间远端 CI，Windows/macOS 完整计划、Release 与发行验收仍由 PR 的后续 CI 提供证据。
+
+## 2026-11-10 字体迁移与合并后 CI 复查
+
+按用户要求在 `logo` 分支先快进到已合并的 master `9d336f486076c8fa9e903c9ce7f1b5b6a414584f`，先完成字体迁移，再修复 CI。8 份字体及已有来源和许可原样迁入 `assets/fonts`，由 ImGui SDL3 后端的 MSBuild 链接维持产品内 `BuiltIn/Fonts`、`BuiltIn/Icons` 路径；源码与实际构建部署的 8 份字体哈希逐项相同。资源仍由后端拥有，没有 Core、平台中立接口或源码目录 fallback。
+
+字体阶段提交为 `e39e2b9c`。统一计划 `artifacts/validation/font-assets-plan/plan.json` 和结果 `font-assets-run/results.json` 已完成：47 项必需检查全部 Passed、60 项明确 NotApplicable，无 Failed 或 Blocked。输入 tree 为 `e178fe8b4a33d3e425e5b0bee55cd1a2cd8fcdf1488b7058c3958c469e6b4051`，环境身份为 `5ca4b34ee8d4f0647f6769ee16a0a67c0b04bd2f37bf9a0f265f230fd7363a60`，SDK 10.0.402。包括编译、API、Wiki、95 项 ImGui、433 项 PlayMode、99 项 Presentation、260 项 Scripting 必需用例和真实 Editor 启动／工作流／100 轮面板旅程；产品检查耗时 128.55 秒。自动缓存维护因时间预算推迟，没有退休产物；不将此范围冒充全量 Release 或 macOS 通过。
+
+合并前 [PR CI](https://github.com/Wolfiora/InnoEngine/actions/runs/42740936596) 与合并后 [master CI](https://github.com/Wolfiora/InnoEngine/actions/runs/42768759341) 的 Git tree 相同。后者 Windows 通过，macOS 首次失败为 `editor-products` 的面板内存观察：最终 `GC.GetTotalMemory(false)` 比基线增加 5,442,096 字节，超过 4 MiB；后面的 required-evidence 错误和 Release 等阻塞是该失败的后果。两轮 macOS 原始 TSV 都有上涨后回落的序列；成功轮中途同样越过门槛，场景、历史、选择和事件计数稳定。
+
+本机 .NET 10.0.13 的独立固定对象／堆碎片复现进一步证明旧估算值不能作为存活内存：释放 3,991,008 字节固定缓冲区后，同一完整 GC 快照的存活内存下降 3,993,888 字节，估算值反而上升 4,623,464 字节，足以误报 4 MiB 超限；增加压缩 GC 不能修复这个估算 API。原始复现和回归输出位于 `artifacts/branding-work/gc-observation-large.log`、`gc-snapshot-regression.log`、`product-journey-memory.log`。Mac 历史 artifact 的原始 ZIP 与 TSV 保留于 `artifacts/validation/macos-panel-retention`，不以仅重跑变绿解释问题。
+
+修复将采样留在普通 Editor 验收源码中，以同一完整 GC 快照的 `HeapSizeBytes - FragmentedBytes` 表示存活字节，保留估算值用于诊断。驱动核对 GC 身份、最高代、压缩／并发状态及字节一致性，原有 4 MiB、循环数、历史、事件、退出和退休断言全部保留。隔离回归编译真实采样文件，验证固定对象和回收、实际 8 MiB 保留，以及 25 种产品证据成功／失败协议，全部通过。
+
+CI 协议检查现在把旅程驱动及共享夹具纳入选择和证据身份；只改共享采样代码也不能复用旧 CI 协议结果。两个真实 SDK／Git 计划回归通过，日志为 `artifacts/branding-work/journey-input-regression.log`。使用已验收且生产输入未变的 Editor 产物，实际编译新旅程源码并执行 100 轮面板开关，11 轮完整采样、4 MiB 门槛和正常退出均通过，最终存活内存增长 730,272 字节；结果为 `artifacts/validation/font-ci-lifecycle/result.json` 和同目录 `Project/Library/Acceptance`。源码架构、文档结构／链接和 agent 记录检查通过。新的全量计划需要覆盖 Windows 和 macOS、Debug／Release 产品及打包，最终由 `logo` 到 `master` 的 PR 所关联 Engine CI 对确切提交执行；上述定向结果不替代远端全量证据。原始失败保留，不循环重跑旧提交直到绿色。
+
+补充交叉检查发现字体 Context 退休测试也以估算 API 判断 2 MiB 增长，现改用本测试私有的完整 GC 快照采样，保留弱引用回收、其他 Context 字体源和窗口存活断言。最初的跨项目源码链接被架构门禁拒绝，已撤销，未增加项目依赖或放宽规则。最终原生测试程序集构建 0 警告、0 错误，9 项字体覆盖／退休／内容失败测试全部通过，无跳过；日志为 `artifacts/branding-work/font-snapshot-final-build.log`、`font-snapshot-tests.log`，TRX 为 `font-snapshot-tests/font-snapshot.trx`。源码架构与文档检查重新通过。检索 `src`、`tests`、`tools`、`backends` 后，估算 API 只剩旅程诊断字段，不再决定验收门槛。远端全量证据以 [PR #82](https://github.com/Wolfiora/InnoEngine/pull/82) 的最终提交及对应 Engine CI 为准。
+
 ## 2026-11-10 复查发现：暖构建运行时依赖部署
 
 最终复核 `logo-alias-fixture-final-run` 的规则、文档、全部所选测试、Debug 产品、Release 编译和编译 API 均通过，但 Release smoke 失败，不能认证全量成功。首次产品日志报告缺少 `Inno.Editor.Annotations.dll`；依赖清单核对同时发现 `Inno.Editor.Diagnostics.dll` 缺失，后续 Support Pack、NativeAOT restore、发行归档被正确阻塞。日志保存在 `artifacts/validation/logo-alias-fixture-final-run/editor-release-products/Source/Logs/`。

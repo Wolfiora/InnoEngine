@@ -228,10 +228,10 @@ internal static class ValidationPlanner
             || affected.Any(owner => !byPath[owner].test) || full)
             checks.Add(new("documentation", "documentation", "docs", "Changed documentation or explicit full validation.", "any", [],
                 inputs.Keys.Order(StringComparer.Ordinal).ToArray(), true, null));
-        if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || path.StartsWith("tests/ci/", StringComparison.Ordinal)
+        if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || IsCiContractInput(path)
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)))
             checks.Add(new("ci-contracts", "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",
-                "any", [], inputs.Keys.Where(static path => path.StartsWith("tests/ci/", StringComparison.Ordinal)).Append("@tooling").ToArray(), true, null));
+                "any", [], inputs.Keys.Where(IsCiContractInput).Append("@tooling").ToArray(), true, null));
         foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
         {
             bool native = nativeOwners.Contains(project.path);
@@ -453,6 +453,11 @@ internal static class ValidationPlanner
     }
 
     private static string DirectoryOf(string project) => project[..(project.LastIndexOf('/') + 1)];
+
+    private static bool IsCiContractInput(string path)
+        => path.StartsWith("tests/ci/", StringComparison.Ordinal)
+            || path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal)
+            || path == "tests/Invoke-EditorUiProductJourney.ps1";
 
     private static bool IsDocumentation(string path)
         => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)

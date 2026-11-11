@@ -8,7 +8,6 @@ using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Native.ImGui;
 using Inno.Platform;
-using Inno.Testing.Processes;
 using Xunit;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using BackendFont = Inno.Adapter.Presentation.ImGui.ImGuiFont;
@@ -25,16 +24,15 @@ public sealed unsafe class FontCoverageTests
     [InlineData(1.5f)]
     [InlineData(2f)]
     [Trait("Acceptance", "Visual")]
-    public void EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource(float zoom)
+    public void EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(float zoom)
     {
-        string contract = nameof(FontCoverageTests) + "." + nameof(EveryTextFaceHasRealCjkGlyphsAndSharesOneOwnedSource) + "." + zoom.ToString(CultureInfo.InvariantCulture);
+        string contract = nameof(FontCoverageTests) + "." + nameof(EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback) + "." + zoom.ToString(CultureInfo.InvariantCulture);
         if (NativeWindowTestHost.RunIfRequired(contract))
             return;
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions { title = "Glyph coverage", width = 640, height = 480, visible = false });
         using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
         context.SetIniFile(null);
-        nint sharedData = 0;
         context.RenderFrame(() =>
         {
             NativeImGui.Raw.GetStyle()->FontScaleMain = zoom;
@@ -48,12 +46,12 @@ public sealed unsafe class FontCoverageTests
                     using BackendFontScope scope = BackendFont.PushStyle(style);
                     ImFont* font = NativeImGui.Raw.GetFont();
                     ImFontBaked* baked = NativeImGui.Raw.GetFontBaked();
-                    foreach (char value in "Aé资源漢字")
+                    foreach (char value in "Az09!?")
                     {
                         ImFontGlyph* glyph = NativeImGui.Raw.FindGlyphNoFallback(baked, value);
                         Assert.True(glyph is not null, $"Face {style} has no U+{(int)value:X4} glyph.");
                         Assert.Equal((uint)value, glyph->Codepoint);
-                        Assert.Equal(value is 'A' or 'é' ? 0u : 4u, glyph->SourceIdx);
+                        Assert.Equal(0u, glyph->SourceIdx);
                     }
                     ImFontGlyph* icon = NativeImGui.Raw.FindGlyphNoFallback(baked, 0xf0e2);
                     Assert.True(icon is not null);
@@ -63,14 +61,9 @@ public sealed unsafe class FontCoverageTests
                     Assert.Equal((uint)ImGuiIcon.Inno[0], logo->Codepoint);
                     Assert.Equal(3u, logo->SourceIdx);
                     Assert.True(logo->AdvanceX > 0 && logo->X1 > logo->X0 && logo->Y1 > logo->Y0);
-                    Assert.Equal(5, font->Sources.Size);
-                    ImFontConfig* supplemental = font->Sources.Data[4];
-                    Assert.Equal(16_437_364, supplemental->FontDataSize);
-                    Assert.Equal(0, supplemental->FontDataOwnedByAtlas);
-                    if (sharedData == 0)
-                        sharedData = (nint)supplemental->FontData;
-                    Assert.Equal(sharedData, (nint)supplemental->FontData);
-                    NativeImGui.TextUnformatted(ImGuiIcon.Inno + " Aé资源漢字 / undo");
+                    Assert.Equal(4, font->Sources.Size);
+                    Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6f22) is null);
+                    NativeImGui.TextUnformatted(ImGuiIcon.Inno + " English / undo");
                 }
             }
             finally
@@ -78,7 +71,6 @@ public sealed unsafe class FontCoverageTests
                 NativeImGui.End();
             }
         });
-        Assert.NotEqual((nint)0, sharedData);
     }
 
     [Fact]
@@ -130,65 +122,60 @@ public sealed unsafe class FontCoverageTests
         using var retained = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
         retained.SetIniFile(null);
         nint source = CaptureSource(retained);
-        long baseline = GC.GetTotalMemory(forceFullCollection: true);
+        long baseline = CollectLiveManagedBytes();
         var retired = new List<WeakReference<PlatformImGuiContext>>();
         for (int cycle = 0; cycle < 10; cycle++)
         {
             retired.Add(CreateAndRetire(application, source));
             Assert.Equal(source, CaptureSource(retained));
         }
-        GC.Collect();
-        GC.WaitForPendingFinalizers();
-        GC.Collect();
+        long after = CollectLiveManagedBytes();
         Assert.All(retired, reference => Assert.False(reference.TryGetTarget(out _)));
-        Assert.InRange(GC.GetTotalMemory(forceFullCollection: true) - baseline, long.MinValue, 2L * 1024 * 1024);
+        Assert.InRange(after - baseline, long.MinValue, 2L * 1024 * 1024);
         Assert.Single(application.GetWindows());
     }
 
-    [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public void RequiredBundledContentIsRejectedBeforeNativeUse(bool corrupt)
+    [Fact]
+    public void CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons()
     {
-        string owner = Path.Combine(Path.GetTempPath(), "InnoFontContent", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(owner);
-        try
-        {
-            foreach (string file in Directory.EnumerateFiles(AppContext.BaseDirectory, "*", SearchOption.AllDirectories))
-            {
-                string target = Path.Combine(owner, Path.GetRelativePath(AppContext.BaseDirectory, file));
-                Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-                File.Copy(file, target);
-            }
-            string font = Path.Combine(owner, "BuiltIn", "Fonts", "Supplemental", "NotoSansCJKsc-Regular.otf");
-            Assert.True(File.Exists(font));
-            if (corrupt)
-            {
-                using FileStream file = File.OpenWrite(font);
-                file.WriteByte(0);
-            }
-            else
-                File.Delete(font);
-            NativeProcessTestHost.Run(Path.Combine(owner, Path.GetFileName(typeof(FontCoverageTests).Assembly.Location)),
-                nameof(FontCoverageTests) + ".RejectOwnedContent." + corrupt);
-        }
-        finally
-        {
-            Directory.Delete(owner, recursive: true);
-        }
-    }
-
-    internal static void RejectOwnedContent(bool corrupt)
-    {
+        if (NativeWindowTestHost.RunIfRequired(nameof(FontCoverageTests) + "." + nameof(CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons)))
+            return;
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Font content failure", width = 320, height = 240, visible = false });
-        void Create() => application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer()).Dispose();
-        if (corrupt)
-            Assert.Throws<InvalidDataException>(Create);
-        else
-            Assert.Throws<FileNotFoundException>(Create);
-        Assert.Single(application.GetWindows());
-        Assert.False(BackendFont.IsAvailable(BackendFontStyle.Regular));
+        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Custom font", width = 320, height = 240, visible = false });
+        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        context.SetIniFile(null);
+        string fontPath = Path.Combine(AppContext.BaseDirectory, "BuiltIn", "Fonts", "JetBrainsMono-Bold.ttf");
+        Assert.Throws<FileNotFoundException>(() => context.RegisterFontStyle(BackendFontStyle.Regular, fontPath + ".missing"));
+        context.RegisterFontStyle(BackendFontStyle.Regular, fontPath, 24f);
+        context.RenderFrame(() =>
+        {
+            using BackendFontScope scope = BackendFont.PushStyle(BackendFontStyle.Regular);
+            ImFont* font = NativeImGui.Raw.GetFont();
+            ImFontBaked* baked = NativeImGui.Raw.GetFontBaked();
+            Assert.Equal(4, font->Sources.Size);
+            Assert.Equal(new FileInfo(fontPath).Length, font->Sources.Data[0]->FontDataSize);
+            Assert.Equal(24f, font->Sources.Data[0]->SizePixels);
+            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 'A') is not null);
+            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.Inno[0]) is not null);
+            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6f22) is null);
+        });
+        Assert.Throws<InvalidOperationException>(() => context.RegisterFontStyle(BackendFontStyle.Regular, fontPath));
+    }
+
+    private static long CollectLiveManagedBytes()
+    {
+        long previousIndex = GC.GetGCMemoryInfo(GCKind.FullBlocking).Index;
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
+        GCMemoryInfo snapshot = GC.GetGCMemoryInfo(GCKind.FullBlocking);
+        Assert.True(snapshot.Index > previousIndex);
+        Assert.Equal(GC.MaxGeneration, snapshot.Generation);
+        Assert.True(snapshot.Compacted);
+        Assert.False(snapshot.Concurrent);
+        Assert.InRange(snapshot.FragmentedBytes, 0, snapshot.HeapSizeBytes);
+        // Measure the same completed collection rather than an approximate allocation counter.
+        return checked(snapshot.HeapSizeBytes - snapshot.FragmentedBytes);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -210,8 +197,8 @@ public sealed unsafe class FontCoverageTests
         context.RenderFrame(() =>
         {
             using BackendFontScope scope = BackendFont.PushStyle(BackendFontStyle.Regular);
-            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(NativeImGui.Raw.GetFontBaked(), 0x6f22) is not null);
-            source = (nint)NativeImGui.Raw.GetFont()->Sources.Data[4]->FontData;
+            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(NativeImGui.Raw.GetFontBaked(), 'A') is not null);
+            source = (nint)NativeImGui.Raw.GetFont()->Sources.Data[0]->FontData;
         });
         Assert.NotEqual((nint)0, source);
         return source;

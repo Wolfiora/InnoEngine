@@ -23,13 +23,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="BuiltIn/**/*.*" CopyToOutputDirectory="PreserveNewest" />
-    <None Update="BuiltIn/Icons/FA-Regular-400.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="BuiltIn/Icons/FA-Solid-900.ttf">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="../../../../assets/fonts/*.ttf" Link="BuiltIn/Fonts/%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../../../assets/fonts/icons/*.ttf" Link="BuiltIn/Icons/%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../../../assets/fonts/LICENSE-JetBrainsMono.txt" Link="BuiltIn/Fonts/LICENSE-JetBrainsMono.txt"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../../../assets/fonts/icons/LICENSE-FontAwesome.txt" Link="BuiltIn/Icons/LICENSE-FontAwesome.txt"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <None Include="../../../../assets/branding/LICENSE.txt" Link="BuiltIn/Icons/LICENSE-InnoEngine.txt"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

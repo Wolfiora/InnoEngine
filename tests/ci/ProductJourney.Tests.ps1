@@ -7,8 +7,18 @@ $dotnet = if ($env:DOTNET_HOST_PATH) { $env:DOTNET_HOST_PATH } else { (Get-Comma
 $pwsh = (Get-Command pwsh).Source
 $null = New-Item -ItemType Directory -Path $root
 try {
+    Copy-Item -LiteralPath (Join-Path $repository 'tests/fixtures/editor-ui/ManagedMemorySample.editor.cs') -Destination $root
     [IO.File]::WriteAllText((Join-Path $root 'Fixture.csproj'), '<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings></PropertyGroup></Project>')
     [IO.File]::WriteAllText((Join-Path $root 'Program.cs'), @'
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using EditorUiAcceptance;
+
+if (args is ["memory-sampling"])
+{
+    VerifyMemorySampling();
+    return 0;
+}
 string project = args[0];
 string mode = Environment.GetEnvironmentVariable("INNO_JOURNEY_PROTOCOL_CASE")!;
 string scenario = Environment.GetEnvironmentVariable("INNO_JOURNEY_PROTOCOL_SCENARIO")!;
@@ -38,8 +48,17 @@ if (mode != "missing-evidence")
             new[] { "phase", "before-first-panel-draw", mode == "missing-preparation" ? "wrong" : "after-120-drawn-frames" });
         int count = mode == "missing-sample" ? cycles / 10 : cycles / 10 + 1;
         File.WriteAllLines(Path.Combine(evidence, "panel-lifecycle-resources.tsv"),
-            new[] { "completed-cycles\tmanaged-bytes-after-full-gc\tpending-events" }.Concat(
-                Enumerable.Range(0, count).Select(index => $"{index * 10}\t{(mode == "growth" && index == count - 1 ? 5 * 1024 * 1024 : 0)}\t{(mode == "pending-events" ? 1 : 0)}")));
+            new[] { "completed-cycles\tmanaged-bytes-after-full-gc\tpending-events\tgc-index\tgc-generation\tgc-compacted\tgc-concurrent\tgc-heap-bytes\tgc-fragmented-bytes\testimated-managed-bytes" }.Concat(
+                Enumerable.Range(0, count).Select(index =>
+                {
+                    long live = 16 * 1024 * 1024 + (mode == "growth" && index == count - 1 ? 5 * 1024 * 1024 : 0);
+                    long heap = live + 1024;
+                    long fragmented = mode == "negative-fragmentation" ? -1 : 1024;
+                    long estimated = mode == "estimate-drift" ? (index == 0 ? -8 * 1024 * 1024 : 16 * 1024 * 1024) : live;
+                    string collection = mode == "missing-gc" ? "" : (mode == "stale-gc" ? 1 : index + 1).ToString();
+                    if (mode == "inconsistent-live-memory") live++;
+                    return $"{index * 10}\t{live}\t{(mode == "pending-events" ? 1 : 0)}\t{collection}\t{(mode == "partial-gc" ? 1 : GC.MaxGeneration)}\t{mode != "uncompacted-gc"}\t{mode == "background-gc"}\t{heap}\t{fragmented}\t{estimated}";
+                })));
     }
 }
 if (mode == "wrong-notification")
@@ -48,9 +67,74 @@ if (mode == "wrong-notification")
     Thread.Sleep(30000);
 }
 return mode == "failed-process" ? 3 : mode == "canceled-process" ? 2 : 0;
+
+static void VerifyMemorySampling()
+{
+    ManagedMemorySample baseline = ManagedMemorySample.Capture();
+    long previousIndex = baseline.collectionIndex;
+    var pins = new List<GCHandle>();
+    long pinnedBytes = 0;
+    try
+    {
+        for (int round = 0; round < 12; round++)
+        {
+            pinnedBytes += Fragment(pins);
+            ManagedMemorySample sample = ManagedMemorySample.Capture();
+            if (sample.collectionIndex <= previousIndex || sample.liveBytes < 0)
+                throw new Exception("The collector returned a stale or invalid live-memory observation.");
+            previousIndex = sample.collectionIndex;
+        }
+        ManagedMemorySample pinned = ManagedMemorySample.Capture();
+        if (pinned.liveBytes - baseline.liveBytes < pinnedBytes - 128 * 1024)
+            throw new Exception("The snapshot failed to count the rooted pinned buffers.");
+        foreach (GCHandle pin in pins) pin.Free();
+        pins.Clear();
+        ManagedMemorySample released = ManagedMemorySample.Capture();
+        if (pinned.liveBytes - released.liveBytes < pinnedBytes - 128 * 1024)
+            throw new Exception("Released pinned buffers were still counted as live memory.");
+        Console.WriteLine($"Pinned/released: live growth={released.liveBytes - pinned.liveBytes}; estimated growth={released.estimatedBytes - pinned.estimatedBytes}; pinned bytes={pinnedBytes}");
+    }
+    finally
+    {
+        foreach (GCHandle pin in pins) pin.Free();
+    }
+    VerifyRetainedAllocation();
+    Console.WriteLine("Managed-memory sampling: fresh snapshots, pinned fragmentation, reclamation and an actual 8 MiB retention passed.");
+}
+
+[MethodImpl(MethodImplOptions.NoInlining)]
+static long Fragment(List<GCHandle> pins)
+{
+    long bytes = 0;
+    for (int index = 0; index < 2000; index++)
+    {
+        byte[] data = new byte[32 * 1024 + index % 1024];
+        if (index % 200 == 0)
+        {
+            pins.Add(GCHandle.Alloc(data, GCHandleType.Pinned));
+            bytes += data.Length;
+        }
+        GC.KeepAlive(data);
+    }
+    return bytes;
+}
+
+[MethodImpl(MethodImplOptions.NoInlining)]
+static void VerifyRetainedAllocation()
+{
+    ManagedMemorySample baseline = ManagedMemorySample.Capture();
+    byte[] retained = GC.AllocateUninitializedArray<byte>(8 * 1024 * 1024);
+    ManagedMemorySample held = ManagedMemorySample.Capture();
+    GC.KeepAlive(retained);
+    if (held.liveBytes - baseline.liveBytes <= 4 * 1024 * 1024)
+        throw new Exception("An actual retained 8 MiB allocation escaped the 4 MiB budget.");
+}
 '@)
     & $dotnet build (Join-Path $root 'Fixture.csproj') --configuration Debug --disable-build-servers -m:1 -nr:false *> (Join-Path $root 'build.log')
     if ($LASTEXITCODE -ne 0) { throw "Protocol fixture build failed:`n$(Get-Content (Join-Path $root 'build.log') -Raw)" }
+    & $dotnet (Join-Path $root 'bin/Debug/net10.0/Fixture.dll') memory-sampling *> (Join-Path $root 'memory-sampling.log')
+    if ($LASTEXITCODE -ne 0) { throw "Live-memory sampling failed:`n$(Get-Content (Join-Path $root 'memory-sampling.log') -Raw)" }
+    Get-Content (Join-Path $root 'memory-sampling.log')
     $cocoa = Join-Path $root 'CocoaFixture'
     if ($IsMacOS) {
         # Exercise the real AppKit quit transport without building an engine or installing a fake signal handler.
@@ -134,6 +218,14 @@ int main(int argc, const char *argv[])
         @{ name='extension-failure'; scenario='Workflows'; cycles=100; reason='The source extension failed: Original source failure' },
         @{ name='valid'; scenario='Lifecycle'; cycles=100; success=$true },
         @{ name='valid'; scenario='Lifecycle'; cycles=1000; success=$true },
+        @{ name='estimate-drift'; scenario='Lifecycle'; cycles=100; success=$true },
+        @{ name='missing-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
+        @{ name='stale-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
+        @{ name='partial-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
+        @{ name='uncompacted-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
+        @{ name='background-gc'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
+        @{ name='negative-fragmentation'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
+        @{ name='inconsistent-live-memory'; scenario='Lifecycle'; cycles=100; reason='fresh compacting full-GC snapshot' },
         @{ name='missing-cycle'; scenario='Lifecycle'; cycles=100; reason='must complete 100 open/close cycles' },
         @{ name='missing-preparation'; scenario='Lifecycle'; cycles=100; reason='record cold resource preparation separately' },
         @{ name='missing-sample'; scenario='Lifecycle'; cycles=100; reason='complete full-GC resource series' },
