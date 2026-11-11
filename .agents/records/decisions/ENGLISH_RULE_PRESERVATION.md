@@ -4,6 +4,10 @@ The approved English modernization plan changes the language of active requireme
 
 ## Review method
 
+### Approved scope amendment, 2026-11-11
+
+The user explicitly removed backend-native and generated binding API documentation from the modernization scope: documentation should cover the engine itself. This is an authorized scope change, not a translation claimed to preserve the superseded ABI reference requirement. Units `documentation-standard-2`, `documentation-standard-5`, `documentation-standard-6` and `wiki` now apply exact API coverage to engine APIs, including managed adapters and script projections. Native projects retain concise integration boundaries; no raw ABI member pages, binding tutorials or native member extraction are required for product documentation. Source XML policy, native implementation tests, architecture/ABI extraction capabilities, product deployment checks and legal provenance are unchanged. Original source hashes and all rule identities remain preserved; updated target hashes register the reviewed scope amendment. Earlier rows describing complete native reference preservation document the preceding translation checkpoint, not the current scope.
+
 Each translated unit has a line-by-line source-to-English correspondence in `coverage.json`. Nonblank lines include headings, nested requirements and examples. Each original numbered rule also identifies its translated clause. The selector validates complete correspondence, unchanged source identities, translated text identities and the existence of this review record before loading a unit.
 
 These checks detect missing or unregistered edits. They cannot prove a translation preserves meaning. The implementing owner must compare the source and destination clauses, including every prohibition, exception, prerequisite and failure obligation, before registering the mapping. Changing hashes alone is not a semantic review. Subsequent substantive rule changes require an explicit approved change and a new review; this translation mechanism does not authorize them.

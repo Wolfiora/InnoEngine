@@ -516,7 +516,7 @@
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "566befb1f6e4c94807f6585888028019b0c8432b86b72b781295bc5359ef68be"
+      "translatedHash": "899b6f9f0862475b13ab5c0b8e932f8e3331d53947d8d8c452c8ecb6ce98c0e4"
     },
     {
       "id": "11.5",
@@ -3476,7 +3476,7 @@
       "check": "Test-AgentRules.ps1 + semantic review",
       "translation": {
         "language": "en",
-        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "approval": "User-approved English modernization plan and explicit 2026-11-11 exclusion of backend-native/generated binding API documentation",
         "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
         "lines": [
           {
@@ -3502,7 +3502,7 @@
           {
             "ordinal": 5,
             "sourceHash": "2568dc23c50d9799f22535715a1d496259248c52318d5280129d71d928a350af",
-            "targetHash": "566befb1f6e4c94807f6585888028019b0c8432b86b72b781295bc5359ef68be"
+            "targetHash": "899b6f9f0862475b13ab5c0b8e932f8e3331d53947d8d8c452c8ecb6ce98c0e4"
           },
           {
             "ordinal": 6,
@@ -5669,7 +5669,7 @@
       "check": "full source section preservation + semantic review",
       "translation": {
         "language": "en",
-        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "approval": "User-approved English modernization plan and explicit 2026-11-11 exclusion of backend-native/generated binding API documentation",
         "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
         "lines": [
           {
@@ -5680,7 +5680,7 @@
           {
             "ordinal": 2,
             "sourceHash": "136d19292806db2f5054d6c1bd11df0679805d5c21fd298c3815a20498a801bf",
-            "targetHash": "5ec00f2370d8647181e8cef957c70981b99251a067b0ee0db99b0b4cf260c031"
+            "targetHash": "19361dcab2d94174e7762ed1ac914f4a426058e1dc81335df1bda83888ed6f40"
           },
           {
             "ordinal": 3,
@@ -5800,18 +5800,18 @@
       "check": "full source section preservation + semantic review",
       "translation": {
         "language": "en",
-        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "approval": "User-approved English modernization plan and explicit 2026-11-11 exclusion of backend-native/generated binding API documentation",
         "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
         "lines": [
           {
             "ordinal": 1,
             "sourceHash": "11202eb25b2d933c909c1e250f7f0c27c8984ed7eb906cec3a7ea1fe48521f38",
-            "targetHash": "0393b0d89369b9c9d23f38fbcd8c7cb08f43813d8842531efba62012e35f1820"
+            "targetHash": "7a1e9d36126ed9af0639496f1877a6dc30dce5af1fd2766f2c94a18f6e4e5f30"
           },
           {
             "ordinal": 2,
             "sourceHash": "9582c6a1e89590bebf7a314b634ae5e0ad35ff98d0d750b5f68ae3e44016e448",
-            "targetHash": "4e8a61ec46504b19d54adae78e3e46350086e62481e0ecf103c9855aa0db6c02"
+            "targetHash": "b64bb3f82e4b9bab3618f42da267d2f077d17973e0e4efb14df75e2806745fa9"
           }
         ]
       }
@@ -5832,7 +5832,7 @@
       "check": "full source section preservation + semantic review",
       "translation": {
         "language": "en",
-        "approval": "User-approved English Documentation, AI Workflow, and CI/CD Modernization plan",
+        "approval": "User-approved English modernization plan and explicit 2026-11-11 exclusion of backend-native/generated binding API documentation",
         "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
         "lines": [
           {
@@ -5863,12 +5863,12 @@
           {
             "ordinal": 6,
             "sourceHash": "a9ca4f5ff5cefd378615f369f1872e4145ecafa56f49de0e0819da0394886a4a",
-            "targetHash": "94cdef254b9cc6e6e326ba56a78331269be132a22439bf704f80c6d36b8b766a"
+            "targetHash": "bb4dc90c70e1f9f8599d697417104faf77fe77cc5f73681bdec826c7c62a8042"
           },
           {
             "ordinal": 7,
             "sourceHash": "9e6859773c8903f1faabbec92a00af4d43fbb98a75318b4a6698497aba77ea04",
-            "targetHash": "0eee93772d0ebd12ec350181e71ea6fd776d483418652e936dc6a656469e0b64"
+            "targetHash": "7930567cddc3fbbc030746f99b6e73f44a3ae3a30c1d5704215e24bbbcbc4671"
           },
           {
             "ordinal": 8,

@@ -8,7 +8,7 @@ Load complete rule units. The [registry](coverage.json) owns routing and provena
 - Product and API documentation belongs to InnoEngine.Docs under content/en/, entered through its task-oriented home page. The old engine docs/ tree is removed only after its content and callers migrate.
 - Organize documentation into About, Getting Started, Manual, Architecture, Extending, Platforms/Backends, API and Contributing. Every category has a useful landing page; assembly navigation is secondary.
 - Every actual csproj has one authoritative project entry, identified by source inventory and explicit owner metadata. Do not infer ownership from translated titles or filenames.
-- Project entries cover responsibility/boundaries, dependencies/initialization, all public APIs, important protected extension points for derived implementers, common workflows, compilable examples, errors/lifetimes/reload and related navigation.
+- Engine project entries cover responsibility/boundaries, dependencies/initialization, all public APIs, important protected extension points for derived implementers, common workflows, compilable examples, errors/lifetimes/reload and related navigation. Backend-native and generated binding APIs are excluded under the approved 2026-11-11 scope; their concise integration overviews do not create raw-binding API/example obligations.
 - API declarations and examples follow current source. Do not describe internal implementation as a stable public contract. Explicitly identify internal mechanisms when explaining them.
 - Adding, deleting, renaming or changing public API behavior updates the corresponding project entry and category navigation in the same paired change. New projects receive their authoritative entry and coverage registration.
 - Use relative Markdown links between content pages. Project entries provide category and home/related-page navigation. Page moves repair every incoming link.
@@ -37,7 +37,7 @@ Explain responsibility, a quick workflow, initialization and shutdown before API
 <a id="documentation-standard-2"></a>
 ## API reference and source
 
-Map public types, constructors, members, enum values and protected members usable by external derived types individually. Signatures preserve overloads, nullability, defaults and generic constraints; types also preserve inheritance, interfaces and delegate signatures. Synthesized public record members are in scope.
+Map engine public types, constructors, members, enum values and protected members usable by external derived types individually. Signatures preserve overloads, nullability, defaults and generic constraints; types also preserve inheritance, interfaces and delegate signatures. Synthesized public record members are in scope. Under the user-approved 2026-11-11 scope amendment, backend-native and generated binding APIs are excluded; managed engine adapters and script-projected engine APIs remain in scope.
 
 Each member describes declaration, behavior/results, usage constraints and failure information. Source links locate implementation but do not replace usage documentation. Resolve inheritdoc to the actual inherited contract, retaining local additions. Explain generated constants/members according to their real semantics without modifying generated source to add documentation.
 
@@ -66,9 +66,9 @@ Concrete third-party implementation names belong in their backend, Native, integ
 
 <!-- rule-unit: documentation-standard-5 -->
 <a id="documentation-standard-5"></a>
-## Large ABI references
+## Native implementation boundaries
 
-Each Native project retains one authoritative entry explaining initialization, borrowed addresses, callbacks, threads and shutdown order first. Complete ABI declarations may be split by type/function in that project's .Api directory and included explicitly with api-include for signature checks. An include resolves to one Markdown page within the selected documentation snapshot; cycles and path escapes fail. Moves repair incoming anchors without copying another API authority. Pagination does not establish individually reviewed function behavior. Missing native semantics must still be checked against the current facade/header and actual consumption.
+Each backend-native project retains only a concise engine integration overview with the initialization, ownership, callback, thread and shutdown constraints needed by engine consumers. Do not extract, generate or translate third-party ABI or raw binding type/member references or tutorials. The existing project inventory records this scope, without a second project list. Engine API includes still resolve within the selected snapshot; cycles and path escapes fail, and moves repair incoming anchors. Native correctness, implementation tests, deployment validation and legal provenance remain required. This replaces the former full ABI documentation obligation under the user-approved 2026-11-11 amendment.
 <!-- /rule-unit: documentation-standard-5 -->
 
 <!-- rule-unit: documentation-standard-6 -->
@@ -83,9 +83,9 @@ Documentation verification covers project entries, signature mappings, relative 
 
 Complete Host-example acceptance also supplies --dotnet, compiles against actual SDK ReferencePath and the current owning assembly, and records host-sdk status. SDK-free host checks are preliminary diagnostics only. Assemblies elsewhere in the repository do not establish an example's allowed references.
 
-With an SDK selected, API models enumerate actual Compile items and conditional symbols. Selected generated bindings/types, nested types and partial members enter the same inventory; obj or Generated placement is not an exclusion. Other targets' unselected generated files are excluded from the current contract. This extraction does not execute Roslyn source generators, replace post-generation assembly boundary checks or verify every product configuration.
+With an SDK selected, API models enumerate actual Compile items and conditional symbols. Selected engine generated types, nested types and partial members enter the same inventory; obj or Generated placement alone is not an exclusion. Backend-native and generated binding APIs are outside product documentation scope, and other targets' unselected generated files are outside the current contract. Documentation scope does not disable extraction capabilities needed by architecture or ABI tests. Extraction does not execute Roslyn source generators, replace post-generation assembly boundary checks or verify every product configuration.
 
-Native project entries distinguish managed initialization from generated ABI surfaces. Generated declarations without XML require review of their owning facades, generation configuration and real consumers, adding pointer-borrowing, release and thread restrictions rather than assuming managed-object lifetimes. Record generated-member counts separately from completed behavioral descriptions. Complete signature markers do not establish complete semantics.
+Native project overviews distinguish engine integration from generated ABI surfaces without reproducing their members. Review the actual facade and consumers to explain engine-facing borrowing, release and thread restrictions rather than assuming managed-object lifetimes. Do not count excluded native members as missing engine documentation or completed semantic review. Complete engine signature markers still do not establish complete semantics.
 
 Analyzers understand the project's actual C# language version. Unknown LangVersion values fail rather than guessing Preview. Prepare the selected project when target/configuration/reference output is missing. Do not substitute another configuration or DLLs that happen to exist elsewhere in the repository.
 

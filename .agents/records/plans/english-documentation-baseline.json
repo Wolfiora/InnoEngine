@@ -2122,40 +2122,55 @@
       "sha256": "d518a2b53aac9e2b663b349003af3524e7cd3cd5a088bbfd07adb0f3b562f31a",
       "bytes": 188723,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Bgfx/Inno.Native.Bgfx.Api/ABI-02.md",
       "sha256": "3b9bcbd43b778ad95986f07dc18bffb07e028ba02f7b2f2416bb5250d9d36be6",
       "bytes": 210210,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Bgfx/Inno.Native.Bgfx.Api/ABI-03.md",
       "sha256": "f8441cf7dde8860b5a737ac1ac289516c21ef16182f992ace2ab52ebe16872ee",
       "bytes": 190855,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Bgfx/Inno.Native.Bgfx.Api/ABI-04.md",
       "sha256": "1049020570a9407a6fa529ab17f032b15f1a515a01fd9ad43d380b26ed9206fa",
       "bytes": 245114,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Bgfx/Inno.Native.Bgfx.Api/README.md",
       "sha256": "c3313b99012137c44d2b3d01bdf3b26b7adcd6b8011bf1e53295433be613874c",
       "bytes": 382,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Bgfx/Inno.Native.Bgfx.md",
@@ -2278,232 +2293,319 @@
       "sha256": "7a9280246472afa915527a38249c35607b97d09d0a59029ef2aeed953b873131",
       "bytes": 94829,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-02.md",
       "sha256": "2864dedf02fad6f62cb789e403b317bfa5fedda472ae2e59fd4735c13fff0aa4",
       "bytes": 93917,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-03.md",
       "sha256": "77b4e300b7c3c9d9fd8df52c7481943eb8a33cb076e892a07e140c22dc88b5d2",
       "bytes": 95307,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-04.md",
       "sha256": "af2142e2d9e0cbbd20b66de5f0eb81b8411fdcb177a312ec3ab1dc67db3a9fe2",
       "bytes": 96281,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-05.md",
       "sha256": "6afc131a87173e4047fcf5c0378f81689124688496d00e577a2f37285525daac",
       "bytes": 89157,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-06.md",
       "sha256": "873a2666cbae69f048be250431f26a4a32af14129db5c55c0c0e2f7a5a1eefb2",
       "bytes": 96787,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-07.md",
       "sha256": "fec9652b9d8383a393befed5e07d8d40bd6de299ffef8bd21553693dc9b44cec",
       "bytes": 101010,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-08.md",
       "sha256": "1515dca1ef82efcb444f071a6fd5ee879c878b937b31bb101b06a80abe23ee20",
       "bytes": 97683,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-09.md",
       "sha256": "1cfc4ab2c4fe8d5a6bdfb7ae1ee0ac800749d21dcb306c99cd26804c37c1c0a4",
       "bytes": 95759,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-10.md",
       "sha256": "279050092da507b6eb22c451a5968e3df32bb548c83ce4044dc3ab9d6fc2446c",
       "bytes": 94332,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-11.md",
       "sha256": "34ca5b7f22356f22e60ab4362dc0666216a7ecde49be08b750cb9fd14705ef07",
       "bytes": 95495,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-12.md",
       "sha256": "68b05a6270bfbb8e1361535596ed643d840d6b77bde2b2349ec15e39b0d07764",
       "bytes": 96230,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-13.md",
       "sha256": "e4aaba2a61f6f89c8b02c7e62d789163298f797794702040e1033c5527f11798",
       "bytes": 95364,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-14.md",
       "sha256": "cedca437a3d619838b0d05aae194be68d61163f87f5c6f2abdb00f95e208ffe4",
       "bytes": 101796,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-15.md",
       "sha256": "6a49c9c24ea659d5ba3ec520af17c3e4b506a061af15f3884a52db8348d9e12a",
       "bytes": 104060,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-16.md",
       "sha256": "55caf145469d1415bd2477124288e220611de8eea29a64bb0964d493598fbb5b",
       "bytes": 104811,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-17.md",
       "sha256": "a72046f94f2523d66983d8fef81a8191a9889541268bc0ff0230015c8ef35a99",
       "bytes": 106350,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-18.md",
       "sha256": "cb4f703f6dae94f6495ec63ea17dbec9bf9bba864987f323453369db868715ea",
       "bytes": 115846,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-19.md",
       "sha256": "c2557960e90d75d3125f1768b9b508d85ee5ea457ad7c6ff9f6e7575a90b806b",
       "bytes": 117244,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-20.md",
       "sha256": "b6c83b1fd2271e709225f8a7474087cfa0fb5ab128cf157fbf8b769ab9b09940",
       "bytes": 115984,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-21.md",
       "sha256": "8a072b7caa659d91bf0216abcbd25301178b3ab2813938a381e05179fdefd401",
       "bytes": 119594,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-22.md",
       "sha256": "d4f64630ff4e69adb292c693501733819b29d0c35ac53bf1d4c8fe3adde7e8f2",
       "bytes": 114789,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-23.md",
       "sha256": "eae8f26050af399f438c7d8877c332ad26eea7301522667606838e510497b1a3",
       "bytes": 121253,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-24.md",
       "sha256": "056d118ec8877d91b895cd178dd508dad5508a10a68aedc2af477187e77ce23b",
       "bytes": 118479,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-25.md",
       "sha256": "5dbc67c2762dbe41d6b83d7b840cc1c1f27eaef86fe24a998c9094764d86b270",
       "bytes": 111452,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-26.md",
       "sha256": "5e83fde094d203bbdfad8efcc82bf2e2fcd47a4069a60fbed2860f6f55ff58db",
       "bytes": 97250,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-27.md",
       "sha256": "48a638a22eb9740ced7d6c3f67915bbe6d106d20954232427e42623539e55acc",
       "bytes": 91564,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/ABI-28.md",
       "sha256": "d88431328d42916896418c68b325da8edc7d211270b4e208d0da9b7546282c0c",
       "bytes": 5000,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.Api/README.md",
       "sha256": "946c75c43456672fee425321823d4f0a665bc83f83973564c9fc0f9547363af9",
       "bytes": 1310,
       "kind": "product-documentation",
-      "disposition": "PendingReview",
-      "target": null
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/ImGui/Inno.Native.ImGui.md",
@@ -2542,9 +2644,12 @@
       "sha256": "b187584c12e091ceea33dea4e578a3d0f184a680b2e28b93cc9d1b93399026a3",
       "bytes": 11096,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ReviewedIntegrationOverviewAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/content/en/api/projects/inno-native-libraryloading.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User-approved 2026-11-11 engine-only documentation scope; raw native API reference retired, integration boundaries retained."
     },
     {
       "source": "docs/backends/Interop/README.md",
@@ -2583,288 +2688,288 @@
       "sha256": "a5d201899070227ba9815b42108da9a3cea0b5660e9cbf5811c0611140c731dd",
       "bytes": 66327,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-02.md",
       "sha256": "0be11adf738bd616490e25808d02a77f4350852b5777f95e59172e708abf9444",
       "bytes": 67339,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-03.md",
       "sha256": "96229e800470726cb376971047ec6ac4710f54e96f74d488c31cdb886205d9a7",
       "bytes": 70120,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-04.md",
       "sha256": "e0ccd00cd5c17d59df911450d13359245fe927b3acf52f1c3859c85a6449800a",
       "bytes": 70450,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-05.md",
       "sha256": "9e6609f409e7ab80b2e30cbd4fd979a82f107079afd26830b4a1b2bb55f35325",
       "bytes": 71221,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-06.md",
       "sha256": "728bec63f7bdc2f5ea86b325c0ccb5fbf4acec9ca0683333ae23a45cce014b70",
       "bytes": 66583,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-07.md",
       "sha256": "377ad3b1bd0022144b2ddd9e035fd4ee4fc454c2be019bbf209f955707f3dba7",
       "bytes": 67643,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-08.md",
       "sha256": "7a03b0aca632442348ea37ff2a6a9cb7bd3b0a86141f2b4d674f41a7bf7b0e38",
       "bytes": 64459,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-09.md",
       "sha256": "98228074f29857291101203b1ce6cd15d6e547c3539d50707a4cc737c5e0111e",
       "bytes": 65488,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-10.md",
       "sha256": "8f54d97702096a2f7ec1a1cd7c96db74162e72679eb64f8321f8c78bd865e93e",
       "bytes": 70314,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-11.md",
       "sha256": "e62ff5f43d707141c7cea30e6eb16f67f8546023d9dca648c8f7cefae8386807",
       "bytes": 63830,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-12.md",
       "sha256": "aa5e9a7b292e9fcd097865868b30a6fbc7ce12e8226dc2e36dfbc3e85648c236",
       "bytes": 68551,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-13.md",
       "sha256": "7a650c876ec4da956fa5e0fece946577201a9e2ab8d4a4d59aeef35db72ae10a",
       "bytes": 86578,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-14.md",
       "sha256": "c9a33f7dcc92c011773f961e961992c590c76d8afe8612329745db26315ad63a",
       "bytes": 96911,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-15.md",
       "sha256": "7535b819346380c5edcd5b75b35cb5a5ccc672bbe8de0248ff1f0c36af5a0c65",
       "bytes": 148412,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-16.md",
       "sha256": "e6267cc246ef52202f49548be1728d7d3d1e4aca80f2e8a50aae4a3443250247",
       "bytes": 94603,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-17.md",
       "sha256": "48daf15de00718418fe58cf99af26df5b4004fe79e6c0a942796eb2e0944677f",
       "bytes": 92491,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-18.md",
       "sha256": "a83dc110bca26a4ce82b099708349d19151a9cb0cf33d7b75fe5db8b5b078d76",
       "bytes": 99000,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-19.md",
       "sha256": "a73041b4ca97b174ab3c6162562eb3b5d73cd329fb188986d92fa9ed42385fb0",
       "bytes": 87594,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-20.md",
       "sha256": "f6778630f4e4bfe1626f048a61ad35a08970dff18f119b87c3e864999e0cf807",
       "bytes": 83492,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-21.md",
       "sha256": "29c9f5411a4f7ed05a7292313d8bce717f9aa7b967bbd109db908a9b76deb726",
       "bytes": 64380,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/ABI-22.md",
       "sha256": "1bb3f93a9ce8e81150b7f4010d075a2461e1294b89885196bba63c6136d6ac6d",
       "bytes": 62206,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.Api/README.md",
       "sha256": "f51748da46d64e7f1b2ef080f2808e5c77f620c2ad76559019c9db948ea85e25",
       "bytes": 1076,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/MiniAudio/Inno.Native.MiniAudio.md",
       "sha256": "56191f4e2c2d86a36ee92bab8ed523a0973750bbae89c6cb64c88e9c53e00a38",
       "bytes": 7489,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ReviewedIntegrationOverviewAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/miniaudio.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-miniaudio.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/content/en/api/projects/inno-native-miniaudio.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User-approved 2026-11-11 engine-only documentation scope; raw native API reference retired, integration boundaries retained."
     },
     {
       "source": "docs/backends/MiniAudio/README.md",
@@ -2917,9 +3022,12 @@
       "sha256": "43919237fbd83013b9813080171c138999671beacb9517569a93d0324f2f9ff7",
       "bytes": 7162,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "https://github.com/Wolfiora/InnoEngine.Docs/blob/52929640f45020b2f762cc80d85492ac8954a14a/content/en/manual/ui/use-documents.md",
-      "review": "UI/RmlUi narrative reconciled with source; all declaration signatures retained. Full destination set and local projection evidence are recorded in Docs reference/provenance/ui-migration.json."
+      "disposition": "ReviewedIntegrationOverviewAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/content/en/api/projects/inno-native-ui.md"
+      ],
+      "review": "UI/RmlUi narrative reconciled with source; all declaration signatures retained. Full destination set and local projection evidence are recorded in Docs reference/provenance/ui-migration.json.",
+      "scopeAmendment": "User-approved 2026-11-11 engine-only documentation scope; raw native API reference retired, integration boundaries retained."
     },
     {
       "source": "docs/backends/RmlUi/Inno.Native.UI/api.md",
@@ -2960,144 +3068,192 @@
       "sha256": "dfdfd197224bf916c077c31bc1043a3236e7f7286c16f106e0de877c4b9cd805",
       "bytes": 197236,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-02.md",
       "sha256": "becf65cd88a3139f890c2cd2ec3beb9cd0fccb748d7fdf4088aa93439d29400f",
       "bytes": 218893,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-03.md",
       "sha256": "cb7dd418bb900d62f3515a2ce35481855221678f3f2505870be6a2bc94c922c8",
       "bytes": 202723,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-04.md",
       "sha256": "62f21c0b5cfdabe416e85022e62cbcdd277580506c42724a91a5915c6f90b588",
       "bytes": 213584,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-05.md",
       "sha256": "c0d89a425316f3d2a52377cfe918f2db0a452736b12b17bd51ce8b48984cae4e",
       "bytes": 224973,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-06.md",
       "sha256": "5ceb542d434126504ef0233e0d956b11156e5a0c76d178bb9a665123d731316d",
       "bytes": 189735,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-07.md",
       "sha256": "22f07884754af405b0ef0db67b7883ac924b021a3399322a4cc2b3cc3b1d3356",
       "bytes": 199565,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-08.md",
       "sha256": "bedb9916c1b9fc9f8c718c263c6880807974368e44284f01e36657b4402fcf14",
       "bytes": 185960,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-09.md",
       "sha256": "b07bb70ed1869f30633efb8fa0452bf22f7e6b1cd20d81f222df8552344a595f",
       "bytes": 180309,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-10.md",
       "sha256": "b765be8b1398076e49bec985b68a89c4799189e46520176c7aeaec9e86b3c1a1",
       "bytes": 326445,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-11.md",
       "sha256": "b2d11801542f7af391c78f342c72a4cc91df64b91a31cfedb898c5e5f8ab0455",
       "bytes": 491386,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-12.md",
       "sha256": "f64edb3b602b20a443a66738d298b493ac7ddd797f35eb69115f840bad98f51a",
       "bytes": 457281,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-13.md",
       "sha256": "41d714e91bac06097126b4176dbe3e2d2a431932543529e2615ea00186d697e6",
       "bytes": 521374,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/ABI-14.md",
       "sha256": "f8bc3ec369116d540a9a75e6dab0c97628eec74904dec3d2d4ac11b78286ee74",
       "bytes": 206299,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.Api/README.md",
       "sha256": "3bf213fc781fb2587d6b0a5e218037c7b13296b2f68b94c38b720ce16bce68bb",
       "bytes": 762,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ApprovedNativeApiRetirementAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User request 2026-11-11: backend-native and generated binding APIs do not require product documentation. Original source/hash preserved; physical legacy removal waits for validator cutover."
     },
     {
       "source": "docs/backends/Sdl3/Inno.Native.Sdl3.md",
       "sha256": "266d25a6eaf16d49cc6b878d44b6b65d69c3e56b324b4617178d52d7f0e441f9",
       "bytes": 3728,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
-      "target": "InnoEngine.Docs/reference/provenance/native-migration.json",
-      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e"
+      "disposition": "ReviewedIntegrationOverviewAwaitingCutover",
+      "target": [
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/content/en/api/projects/inno-native-sdl3.md"
+      ],
+      "documentationRevision": "c55dcb9cb9f0244dabed5de1a329e2a07f0f200e",
+      "scopeAmendment": "User-approved 2026-11-11 engine-only documentation scope; raw native API reference retired, integration boundaries retained."
     },
     {
       "source": "docs/backends/Sdl3/README.md",
@@ -3140,14 +3296,12 @@
       "sha256": "fd8d093b934863cb95cd7a65d425e2f4cfab58672f608cc92db146e354f8983d",
       "bytes": 7282,
       "kind": "product-documentation",
-      "disposition": "ReviewedDestinationAwaitingCutover",
+      "disposition": "ReviewedIntegrationOverviewAwaitingCutover",
       "target": [
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/manual/text/shape-text.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/backends/text.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/extending/text-backends.md",
-        "https://github.com/Wolfiora/InnoEngine.Docs/blob/8971f84b882b942e1201d0e317f6eabd0fc23b60/content/en/api/projects/inno-native-text.md"
+        "https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/content/en/api/projects/inno-native-text.md"
       ],
-      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open."
+      "review": "Declarations preserved and narrative reviewed; local projection passed. Source API certification and old-tree cutover remain open.",
+      "scopeAmendment": "User-approved 2026-11-11 engine-only documentation scope; raw native API reference retired, integration boundaries retained."
     },
     {
       "source": "docs/backends/Text/Inno.Native.Text/api.md",

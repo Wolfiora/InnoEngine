@@ -2,6 +2,12 @@
 
 Status: implementation in progress. This record does not certify completion.
 
+## Approved scope amendment, 2026-11-11
+
+The user requested faster delivery and explicitly excluded backend-native and generated binding API documentation. Product documentation covers engine services, managed adapters, extension contracts, script surfaces and tooling. Native implementation owners retain concise integration boundaries; full ABI/member reference and raw-binding examples are retired. This amendment changes documentation scope only: native correctness, ownership, deployment validation, legal provenance and engine API obligations remain. The existing bound project inventory records the scope, and generation/coverage checks reject native member-reference inputs. Historical evidence and original migration source hashes remain unchanged.
+
+Implemented in Docs commit `3d5991f45fe5f3ba1fa2789d3290e452f78ec876`: 4,327 generated native pages retired, eight actual native owners classified, and 4,524 engine declarations preserved across 812 pages. The [scope report](https://github.com/Wolfiora/InnoEngine.Docs/blob/3d5991f45fe5f3ba1fa2789d3290e452f78ec876/.agents/records/acceptance/ENGINE_ONLY_SCOPE_2026_11_11.md) records 34 passing regressions, source/rendered projection checks, the 28.19-second site build and five query samples (591.1751 ms median). Engine migration inventory marks 72 original ABI fragments as approved retirements awaiting legacy-validator cutover and five native project pages as retained integration overviews. Original hashes remain unchanged. Engine rule loading and negative provenance/routing regressions pass after the explicit amendment; all 241 rule identities and 58 units remain. Product/source execution, complete content coverage and remote deployment are not certified by these checks.
+
 ## Authorized baseline and ownership
 
 - Engine baseline: `a4e44769715c0577fb0a4c13b2d14ad998ddd8e1`, branch `ai-pipeline`.
