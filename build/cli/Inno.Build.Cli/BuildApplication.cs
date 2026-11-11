@@ -60,7 +60,7 @@ public static partial class BuildApplication
                     if (options.Length > 0 && options[0] == "export-api")
                         return DocumentationReferences.ExportApi(options[1..], cancellationToken);
                     if (options.Length > 0 && options[0] == "validate-api")
-                        return DocumentationReferences.ValidateApi(options[1..], cancellationToken);
+                        return await DocumentationReferences.ValidateApiAsync(options[1..], cancellationToken);
                     if (options.Length > 0 && options[0] == "validate-examples")
                         return await DocumentationExamples.ExecuteAsync(options[1..], cancellationToken);
                     return await DocumentationCommand.ExecuteAsync(options, cancellationToken);

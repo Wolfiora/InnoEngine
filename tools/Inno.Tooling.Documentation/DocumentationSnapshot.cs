@@ -25,6 +25,7 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly Dictionary<string, string> m_paths;
     private readonly Lazy<Dictionary<string, int[]>> m_terms;
     private readonly Dictionary<string, DocumentationSymbolReference[]> m_symbols;
+    private readonly Dictionary<string, DocumentationReferenceInfo> m_references;
     private readonly ConcurrentDictionary<string, DocumentationPage> m_pages = new(StringComparer.Ordinal);
     private bool m_disposed;
 
@@ -80,7 +81,57 @@ public sealed class DocumentationSnapshot : IDisposable
         string contentIdentity = DocumentationMarkdown.Hash(string.Join('\n', pages.Select(static page => page.path + "\0" + page.contentIdentity)));
         return new(identity, contentIdentity, m_manifest.binding.repository, m_manifest.binding.revision,
             sourceTree, m_manifest.binding.toolingRevision, "Unverified",
-            m_manifest.projects.ToDictionary(static project => project.name, static project => project.entry, StringComparer.Ordinal), pages);
+            m_manifest.projects.ToDictionary(static project => project.name, static project => project.entry, StringComparer.Ordinal), pages,
+            m_manifest.references!);
+    }
+
+    /// <summary>
+    /// Reads one complete, hash-verified project or API reference from this protected generation.
+    /// The original checkout is not consulted, and no SDK evaluation or network operation occurs.
+    /// </summary>
+    /// <param name="path">
+    /// Exact reference path reported by <see cref="ExportCatalogAsync"/>.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the selected payload read without changing publication.
+    /// </param>
+    /// <returns>
+    /// Caller-owned bytes of the recorded payload, without semantic certification.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The path is not a reference in this snapshot.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// The payload is absent or outside its owned boundary.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// The payload's bytes do not match the recorded content identity.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The snapshot does not match the caller's expected engine source tree.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The snapshot has released its reading protection.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The caller cancels the read.
+    /// </exception>
+    public async Task<byte[]> ReadReferenceAsync(
+        string path,
+        CancellationToken cancellationToken = default
+    ) {
+        ObjectDisposedException.ThrowIf(m_disposed, this);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (m_expectedSourceTree is not null && m_expectedSourceTree != sourceTree)
+            throw new InvalidOperationException("Cannot read references bound to a different source tree.");
+        if (!m_references.TryGetValue(path, out DocumentationReferenceInfo? reference))
+            throw new ArgumentException("Reference is absent from the selected snapshot: " + path, nameof(path));
+        DocumentationStore.RequireHash(reference.identity, "reference payload");
+        string file = PathBoundary.RequireUnlinkedPath(m_cache, Path.Combine(m_cache, "references", reference.identity, "reference.json"));
+        byte[] bytes = await File.ReadAllBytesAsync(file, cancellationToken).ConfigureAwait(false);
+        if (DocumentationMarkdown.Hash(bytes) != reference.identity)
+            throw new InvalidDataException("Documentation reference integrity mismatch: " + path);
+        return bytes;
     }
 
     internal DocumentationSnapshot(
@@ -96,6 +147,7 @@ public sealed class DocumentationSnapshot : IDisposable
         m_paths = manifest.pages.ToDictionary(static pair => pair.Value.pageId, static pair => pair.Key, StringComparer.Ordinal);
         m_symbols = manifest.symbols.GroupBy(static symbol => symbol.id, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
+        m_references = manifest.references!.ToDictionary(static reference => reference.path, StringComparer.Ordinal);
         m_terms = new(() => CreateSearchPostings(manifest), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 

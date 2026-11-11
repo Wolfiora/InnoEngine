@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
@@ -15,7 +16,18 @@ internal sealed record DocumentationBinding(
     string sourceTree,
     string projectManifest,
     string projectManifestIdentity,
-    string toolingRevision
+    string toolingRevision,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<DocumentationApiCapture>? apiManifests = null
+);
+
+internal sealed record DocumentationApiCapture(
+    string path,
+    string sha256,
+    string model,
+    string configuration,
+    string? target,
+    string sourceRevision,
+    string sourceTree
 );
 
 internal sealed record DocumentationManifest(
@@ -26,7 +38,8 @@ internal sealed record DocumentationManifest(
     IReadOnlyDictionary<string, DocumentationPageReference> pages,
     IReadOnlyList<DocumentationProject> projects,
     IReadOnlyList<DocumentationSearchEntry> search,
-    IReadOnlyList<DocumentationSymbolReference> symbols
+    IReadOnlyList<DocumentationSymbolReference> symbols,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<DocumentationReferenceInfo>? references = null
 );
 
 internal sealed record DocumentationSymbolReference(

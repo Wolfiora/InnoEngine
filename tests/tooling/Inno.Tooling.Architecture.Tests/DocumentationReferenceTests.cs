@@ -3,10 +3,14 @@ using System.IO;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Toolchains;
+using Inno.Tooling.Documentation;
 using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
@@ -85,28 +89,58 @@ public sealed class DocumentationReferenceTests : IDisposable
             && symbol.GetProperty("containingType").GetString() == "T:Inno.Probe.Probe");
         string comparison = Path.Combine(m_root, "comparison.json");
         string[] comparisonArguments = ["--engine-root", m_root, "--dotnet", host, "--reference", output, "--output", comparison];
-        Assert.Equal(0, DocumentationReferences.ValidateApi(comparisonArguments));
+        Assert.Equal(0, await DocumentationReferences.ValidateApiAsync(comparisonArguments));
         using (JsonDocument matched = JsonDocument.Parse(File.ReadAllBytes(comparison)))
         {
             Assert.Equal("Passed", matched.RootElement.GetProperty("status").GetString());
             Assert.Equal("Unverified", matched.RootElement.GetProperty("sourceApiStatus").GetString());
         }
+        const string C_UNRELATED = "src/Inno.Unrelated/Inno.Unrelated.csproj";
+        Write(C_UNRELATED, "<Project Sdk=\"Missing.Unrelated.Sdk\" />");
+        JsonNode combined = JsonNode.Parse(File.ReadAllBytes(output))!;
+        combined["projects"]!.AsArray().Add(JsonSerializer.SerializeToNode(new
+        {
+            project = C_UNRELATED, name = "Inno.Unrelated", symbols = Array.Empty<object>()
+        }));
+        byte[] frozen = JsonSerializer.SerializeToUtf8Bytes(combined);
+        string cache = Path.Combine(m_root, "artifacts", "documentation");
+        string documentation = PrepareDocumentation(frozen, C_PROJECT, C_UNRELATED);
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, documentation, cache);
+        Directory.Move(documentation, documentation + "-unavailable");
+        string[] preparedArguments = ["--engine-root", m_root, "--dotnet", host, "--cache-root", cache,
+            "--snapshot", indexed.snapshot!, "--reference", "reference/api/probe.json", "--project", C_PROJECT,
+            "--output", comparison];
+        Assert.Equal(0, await DocumentationReferences.ValidateApiAsync(preparedArguments));
+        using (JsonDocument matched = JsonDocument.Parse(File.ReadAllBytes(comparison)))
+        {
+            Assert.Equal(indexed.snapshot, matched.RootElement.GetProperty("documentationSnapshot").GetString());
+            Assert.Equal(new string('b', 40), matched.RootElement.GetProperty("documentationSourceTree").GetString());
+            JsonElement owner = Assert.Single(matched.RootElement.GetProperty("projects").EnumerateArray());
+            Assert.Equal(C_PROJECT, owner.GetProperty("project").GetString());
+            Assert.Equal(64, owner.GetProperty("referenceIdentity").GetString()!.Length);
+        }
+        byte[] protectedResult = File.ReadAllBytes(comparison);
+        string[] unknownOwner = preparedArguments.Select(argument => argument == C_PROJECT ? "src/Missing.csproj" : argument).ToArray();
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationReferences.ValidateApiAsync(unknownOwner));
+        Assert.Equal(protectedResult, File.ReadAllBytes(comparison));
+        string[] overwriteCache = preparedArguments.Select(argument => argument == comparison ? Path.Combine(cache, "current.json") : argument).ToArray();
+        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationReferences.ValidateApiAsync(overwriteCache));
         string source = File.ReadAllText(Path.Combine(m_root, "src/Inno.Probe/Probe.cs"));
         Write("src/Inno.Probe/Probe.cs", source.Replace("Borrowed text.", "Caller must release the text lease.", StringComparison.Ordinal));
-        Assert.Equal(1, DocumentationReferences.ValidateApi(comparisonArguments));
+        Assert.Equal(1, await DocumentationReferences.ValidateApiAsync(comparisonArguments));
         Assert.Contains("Declaration, XML, constant, source or type relationships changed", File.ReadAllText(comparison));
         Write("src/Inno.Probe/Probe.cs", "\n\n" + source);
-        Assert.Equal(0, DocumentationReferences.ValidateApi(comparisonArguments));
+        Assert.Equal(0, await DocumentationReferences.ValidateApiAsync(comparisonArguments));
         // Omitting a current overload is a real coverage failure, even when every retained signature matches.
         byte[] fullReference = File.ReadAllBytes(output);
         JsonNode omitted = JsonNode.Parse(fullReference)!;
         omitted["projects"]![0]!["symbols"]!.AsArray().RemoveAt(1);
         File.WriteAllText(output, omitted.ToJsonString());
-        Assert.Equal(1, DocumentationReferences.ValidateApi(comparisonArguments));
+        Assert.Equal(1, await DocumentationReferences.ValidateApiAsync(comparisonArguments));
         Assert.Contains("Missing current declaration", File.ReadAllText(comparison));
         File.WriteAllBytes(output, fullReference);
         byte[] firstFailure = File.ReadAllBytes(comparison);
-        Assert.Throws<OperationCanceledException>(() => DocumentationReferences.ValidateApi(comparisonArguments, new CancellationToken(true)));
+        await Assert.ThrowsAsync<OperationCanceledException>(() => DocumentationReferences.ValidateApiAsync(comparisonArguments, new CancellationToken(true)));
         Assert.Equal(firstFailure, File.ReadAllBytes(comparison));
         byte[] previous = File.ReadAllBytes(output);
         Write("src/Inno.Probe/Probe.cs", "namespace Inno.Probe; public class Probe { public MissingContract Read() => null; }");
@@ -120,11 +154,11 @@ public sealed class DocumentationReferenceTests : IDisposable
     [InlineData("[{\"project\":\"src/./Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]}]")]
     [InlineData("[{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]},{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[]}]")]
     [InlineData("[{\"project\":\"src/Probe.csproj\",\"name\":\"Probe\",\"symbols\":[{\"id\":\"T:Probe\"},{\"id\":\"T:Probe\"}]}]")]
-    public void InvalidReferenceDiscoveryCannotReplaceEvidence(string projects)
+    public async Task InvalidReferenceDiscoveryCannotReplaceEvidence(string projects)
     {
         Write("reference.json", "{\"model\":\"source-clr\",\"configuration\":\"Debug\",\"projects\":" + projects + "}");
         Write("report.json", "first failure");
-        Exception? failure = Record.Exception(() => DocumentationReferences.ValidateApi([
+        Exception? failure = await Record.ExceptionAsync(() => DocumentationReferences.ValidateApiAsync([
             "--engine-root", m_root, "--dotnet", "not-invoked", "--reference", Path.Combine(m_root, "reference.json"),
             "--output", Path.Combine(m_root, "report.json")]));
         Assert.NotNull(failure);
@@ -135,7 +169,7 @@ public sealed class DocumentationReferenceTests : IDisposable
     [Theory]
     [InlineData("Release", null)]
     [InlineData("Debug", "windows-x64")]
-    public void DifferentEvaluatedContextsCannotShareOneBatch(
+    public async Task DifferentEvaluatedContextsCannotShareOneBatch(
         string configuration,
         string? target
     ) {
@@ -144,11 +178,59 @@ public sealed class DocumentationReferenceTests : IDisposable
         Write("second.json", "{\"model\":\"source-clr\",\"configuration\":" + JsonSerializer.Serialize(configuration)
             + ",\"target\":" + JsonSerializer.Serialize(target) + ",\"projects\":" + C_PROJECTS + "}");
         Write("report.json", "original result");
-        InvalidDataException failure = Assert.Throws<InvalidDataException>(() => DocumentationReferences.ValidateApi([
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationReferences.ValidateApiAsync([
             "--engine-root", m_root, "--dotnet", "not-invoked", "--reference", Path.Combine(m_root, "first.json"),
             "--reference", Path.Combine(m_root, "second.json"), "--output", Path.Combine(m_root, "report.json")]));
         Assert.Contains("separate evaluated batches", failure.Message);
         Assert.Equal("original result", File.ReadAllText(Path.Combine(m_root, "report.json")));
+    }
+
+    [Theory]
+    [InlineData("--cache-root")]
+    [InlineData("--snapshot")]
+    public async Task IncompleteSnapshotSelectionDoesNotOpenLocalFiles(string option)
+    {
+        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationReferences.ValidateApiAsync([
+            "--engine-root", m_root, "--dotnet", "not-invoked", "--reference", "absent.json", "--output", "report.json",
+            option, "missing"]));
+    }
+
+    [Fact]
+    public async Task RetiringSnapshotsPreservesReferencePayloadsForActiveReaders()
+    {
+        const string C_SELECTED = "src/Inno.Probe/Inno.Probe.csproj";
+        const string C_UNRELATED = "src/Inno.Unrelated/Inno.Unrelated.csproj";
+        byte[] facts = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            model = "source-clr", configuration = "Debug", projects = new[]
+            {
+                new { project = C_SELECTED, name = "Inno.Probe", symbols = Array.Empty<object>() }
+            }
+        });
+        string documentation = PrepareDocumentation(facts, C_SELECTED, C_UNRELATED);
+        string cache = Path.Combine(m_root, "artifacts", "documentation");
+        DocumentationResult first = await DocumentationStore.IndexAsync(m_root, documentation, cache);
+        string payload = Path.Combine(cache, "references", Convert.ToHexStringLower(SHA256.HashData(facts)));
+        using (DocumentationSnapshot reader = await DocumentationStore.OpenAsync(cache, first.snapshot))
+        {
+            JsonNode changed = JsonNode.Parse(facts)!;
+            changed["sourceApiStatus"] = "Unverified";
+            PrepareDocumentation(JsonSerializer.SerializeToUtf8Bytes(changed), C_SELECTED, C_UNRELATED);
+            DocumentationResult second = await DocumentationStore.IndexAsync(m_root, documentation, cache);
+            Assert.NotEqual(first.snapshot, second.snapshot);
+            BuildCacheCleanupPlan retirement = BuildCacheCleanupPlan.Create(m_root,
+                BuildCacheOwnerCatalog.ReadOwners(m_root), new(0, 0), retireAll: true);
+            BuildCacheCleanupResult result = await retirement.ExecuteAsync();
+            Assert.Empty(result.failures);
+            Assert.DoesNotContain(payload, result.retired);
+            Assert.Equal(facts, await reader.ReadReferenceAsync("reference/api/probe.json"));
+        }
+        BuildCacheCleanupResult released = await BuildCacheCleanupPlan.Create(m_root,
+            BuildCacheOwnerCatalog.ReadOwners(m_root), new(0, 0), retireAll: true).ExecuteAsync();
+        Assert.Empty(released.failures);
+        Assert.Contains(payload, released.retired);
+        using DocumentationSnapshot current = await DocumentationStore.OpenAsync(cache);
+        Assert.NotEqual(facts, await current.ReadReferenceAsync("reference/api/probe.json"));
     }
 
     [Fact]
@@ -189,6 +271,34 @@ public sealed class DocumentationReferenceTests : IDisposable
         string output = Path.Combine(m_root, "projects.json");
         Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportProjects(["--engine-root", m_root, "--output", output]));
         Assert.False(File.Exists(output));
+    }
+
+    private string PrepareDocumentation(
+        byte[] facts,
+        string selected,
+        string unrelated
+    ) {
+        byte[] projects = JsonSerializer.SerializeToUtf8Bytes(new[]
+        {
+            new { name = "Inno.Probe", path = selected, entry = "probe", surfaces = new[] { "source-clr" } },
+            new { name = "Inno.Unrelated", path = unrelated, entry = "unrelated", surfaces = new[] { "source-clr" } }
+        });
+        string revision = new('a', 40);
+        string tree = new('b', 40);
+        Write("documentation/reference/projects/catalog.json", Encoding.UTF8.GetString(projects));
+        Write("documentation/reference/api/probe.json", Encoding.UTF8.GetString(facts));
+        Write("documentation/reference/engine.lock.json", JsonSerializer.Serialize(new
+        {
+            repository = "https://github.com/Wolfiora/InnoEngine", revision, sourceTree = tree, toolingRevision = revision,
+            projectManifest = "reference/projects/catalog.json", projectManifestIdentity = Convert.ToHexStringLower(SHA256.HashData(projects)),
+            apiManifests = new[] { new
+            {
+                path = "reference/api/probe.json", sha256 = Convert.ToHexStringLower(SHA256.HashData(facts)), model = "source-clr",
+                configuration = "Debug", sourceRevision = revision, sourceTree = tree
+            } }
+        }));
+        Write("documentation/content/en/probe.md", "---\nuid: probe\nkind: project\nowners: [Inno.Probe]\n---\n# Probe\n\nUse the declared source contract.\n");
+        return Path.Combine(m_root, "documentation");
     }
 
     private void Write(

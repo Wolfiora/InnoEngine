@@ -33,6 +33,9 @@ namespace Inno.Tooling.Documentation;
 /// <param name="pages">
 /// Parsed page facts in stable path order, including complete section and contract identities.
 /// </param>
+/// <param name="references">
+/// Protected project/API payloads available from the same snapshot without returning to a mutable checkout.
+/// </param>
 public sealed record DocumentationCatalogReport(
     string snapshot,
     string contentIdentity,
@@ -42,5 +45,6 @@ public sealed record DocumentationCatalogReport(
     string toolingRevision,
     string sourceApiStatus,
     IReadOnlyDictionary<string, string?> projects,
-    IReadOnlyList<DocumentationPageInfo> pages
+    IReadOnlyList<DocumentationPageInfo> pages,
+    IReadOnlyList<DocumentationReferenceInfo> references
 );

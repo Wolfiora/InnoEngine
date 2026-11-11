@@ -6,7 +6,9 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
+using System.Threading.Tasks;
 using Inno.Core.IO;
+using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Architecture;
 
@@ -90,6 +92,9 @@ public static class DocumentationReferences
     /// <param name="arguments">
     /// Required engine-root, dotnet, output and repeated reference options. All references must select the same
     /// source-clr configuration and target; their actual projects determine the batch, including empty public surfaces.
+    /// An explicit cache-root and snapshot pair reads logical reference paths from that protected generation.
+    /// Otherwise reference paths select local files. Repeated project options restrict comparison to declared owners;
+    /// an absent owner is an error. Snapshot provenance is reported separately from source compatibility.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels capture or comparison before replacing the report.
@@ -110,12 +115,14 @@ public static class DocumentationReferences
     /// <exception cref="OperationCanceledException">
     /// The caller cancels before a complete comparison report is published.
     /// </exception>
-    public static int ValidateApi(
+    public static async Task<int> ValidateApiAsync(
         string[] arguments,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
+        var selectedReferences = new HashSet<string>(StringComparer.Ordinal);
+        var selectedProjects = new HashSet<string>(StringComparer.Ordinal);
         var references = new Dictionary<string, byte[]>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         for (int index = 0; index < arguments.Length; index += 2)
         {
@@ -124,17 +131,44 @@ public static class DocumentationReferences
             string key = arguments[index];
             if (key == "--reference")
             {
-                string path = Path.GetFullPath(arguments[index + 1]);
-                if (!references.TryAdd(path, File.ReadAllBytes(path)))
-                    throw new ArgumentException("Duplicate reference manifest: " + path);
+                if (!selectedReferences.Add(arguments[index + 1]))
+                    throw new ArgumentException("Duplicate reference manifest: " + arguments[index + 1]);
             }
-            else if (key is not ("--engine-root" or "--dotnet" or "--output") || !options.TryAdd(key, arguments[index + 1]))
+            else if (key == "--project")
+            {
+                if (!selectedProjects.Add(arguments[index + 1]))
+                    throw new ArgumentException("Duplicate source owner selection: " + arguments[index + 1]);
+            }
+            else if (key is not ("--engine-root" or "--dotnet" or "--output" or "--cache-root" or "--snapshot")
+                || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown or duplicate reference validation option: " + key);
         }
-        if (references.Count == 0 || !options.TryGetValue("--engine-root", out string? root)
+        if (selectedReferences.Count == 0 || !options.TryGetValue("--engine-root", out string? root)
             || !options.TryGetValue("--dotnet", out string? dotnet) || !options.TryGetValue("--output", out string? output))
-            throw new ArgumentException("Usage: docs validate-api --engine-root ROOT --dotnet SDK --reference FACTS.json [--reference FACTS.json] --output REPORT.json");
+            throw new ArgumentException("Usage: docs validate-api --engine-root ROOT --dotnet SDK --reference FACTS.json [--reference FACTS.json] --output REPORT.json [--cache-root CACHE --snapshot ID] [--project OWNER.csproj]");
+        bool cached = options.TryGetValue("--cache-root", out string? cache);
+        if (cached != options.ContainsKey("--snapshot"))
+            throw new ArgumentException("A prepared reference comparison requires both cache-root and snapshot.");
         output = Path.GetFullPath(output);
+        if (cached)
+        {
+            string relativeOutput = Path.GetRelativePath(Path.GetFullPath(cache!), output);
+            if (!Path.IsPathRooted(relativeOutput) && relativeOutput != ".."
+                && !relativeOutput.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+                throw new ArgumentException("Comparison reports cannot modify the documentation cache owner.");
+        }
+        using DocumentationSnapshot? snapshot = cached
+            ? await DocumentationStore.OpenAsync(cache!, options["--snapshot"], cancellationToken: cancellationToken).ConfigureAwait(false)
+            : null;
+        foreach (string selected in selectedReferences)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string path = cached ? selected : Path.GetFullPath(selected);
+            byte[] bytes = snapshot is null ? await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false)
+                : await snapshot.ReadReferenceAsync(path, cancellationToken).ConfigureAwait(false);
+            if (!references.TryAdd(path, bytes))
+                throw new ArgumentException("Repeated reference manifest identity: " + path);
+        }
         if (references.ContainsKey(output))
             throw new ArgumentException("A comparison report cannot replace an input manifest.");
         string? configuration = null;
@@ -172,6 +206,14 @@ public static class DocumentationReferences
         }
         if (expected.Count == 0)
             throw new InvalidDataException("Required source reference discovery is empty.");
+        if (selectedProjects.Count != 0)
+        {
+            foreach (string project in selectedProjects)
+                if (!expected.ContainsKey(project))
+                    throw new InvalidDataException("Selected source owner is absent from the reference batch: " + project);
+            foreach (string project in expected.Keys.Where(project => !selectedProjects.Contains(project)).ToArray())
+                expected.Remove(project);
+        }
         IReadOnlyList<ApiProject> actual = CaptureApi(Path.GetFullPath(root), dotnet, configuration!, target,
             expected.Keys, cancellationToken);
         var results = new List<object>();
@@ -196,16 +238,19 @@ public static class DocumentationReferences
             differences.AddRange(symbols.Keys.Order(StringComparer.Ordinal).Select(static id => "Reference declaration no longer exists: " + id));
             passed &= differences.Count == 0;
             results.Add(new { project.project, project.name, status = differences.Count == 0 ? "Passed" : "Failed",
+                referenceIdentity = Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(previous))),
                 symbols = project.symbols.Count, differences });
         }
-        foreach (var reference in references)
-            if (!File.ReadAllBytes(reference.Key).AsSpan().SequenceEqual(reference.Value))
-                throw new InvalidDataException("Reference input changed during source validation: " + reference.Key);
+        if (snapshot is null)
+            foreach (var reference in references)
+                if (!File.ReadAllBytes(reference.Key).AsSpan().SequenceEqual(reference.Value))
+                    throw new InvalidDataException("Reference input changed during source validation: " + reference.Key);
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(output, JsonSerializer.SerializeToUtf8Bytes(new
         {
             status = passed ? "Passed" : "Failed", scope = "SelectedSourceReferenceComparison", configuration, target,
             sourceApiStatus = "Unverified",
+            documentationSnapshot = snapshot?.identity, documentationSourceTree = snapshot?.sourceTree,
             references = references.OrderBy(static pair => pair.Key, StringComparer.Ordinal).Select(static pair => new
             {
                 path = pair.Key, identity = Convert.ToHexStringLower(SHA256.HashData(pair.Value))

@@ -54,6 +54,9 @@ public static class DocumentationStore
     /// <exception cref="IOException">
     /// Inputs change during preparation, paths escape ownership, or a reference, contract or inclusion is invalid.
     /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Reference hashes, contexts, project ownership or required catalog relationships are inconsistent.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// Preparation is canceled. Completed immutable payloads remain registered for safe maintenance.
     /// </exception>
@@ -87,6 +90,8 @@ public static class DocumentationStore
         if (DocumentationMarkdown.Hash(projectBytes) != binding.projectManifestIdentity)
             throw new InvalidDataException("Project manifest does not match the engine binding.");
         DocumentationProject[] projects = Deserialize<DocumentationProject[]>(projectBytes);
+        DocumentationReferenceStore.Prepared references = await DocumentationReferenceStore.PrepareAsync(root, output,
+            binding, projects, projectBytes, publisher, cancellationToken).ConfigureAwait(false);
         DocumentationManifest? previous = TryReadCurrent(output);
         var reusable = previous?.parserSchema == parserSchema
             ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
@@ -171,7 +176,7 @@ public static class DocumentationStore
         })).ToArray();
         var symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
             page.metadata.owners.Single(), page.metadata.apiSurface!, symbol.id, page.metadata.uid, symbol.anchor))).ToArray();
-        var manifest = new DocumentationManifest("", schema, parserSchema, binding, entries, projects, search, symbols);
+        var manifest = new DocumentationManifest("", schema, parserSchema, binding, entries, projects, search, symbols, references.references);
         string identity = DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest, json));
         manifest = manifest with { identity = identity };
         string generation = Path.Combine(output, "generations", identity);
@@ -185,12 +190,14 @@ public static class DocumentationStore
             || !File.ReadAllBytes(projectPath).SequenceEqual(projectBytes))
             throw new IOException("Documentation inputs changed during preparation. The previous snapshot remains selected; refresh a stable source.");
         cancellationToken.ThrowIfCancellationRequested();
+        DocumentationReferenceStore.Verify(references);
         RecordPhase("FreshnessValidation");
         if (previous?.identity == identity)
             return Finish($"Confirmed {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. Existing generation retained without rewriting its manifest.");
         using FileLease publishing = await FileLease.AcquireAsync(generationLease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         AtomicFile.WriteAllBytes(Path.Combine(generation, "manifest.json"), JsonSerializer.SerializeToUtf8Bytes(manifest, json));
-        publisher.Record(generation, generationLease, entries.Values.Select(page => Path.Combine(output, "pages", page.key)).ToArray(),
+        publisher.Record(generation, generationLease, entries.Values.Select(page => Path.Combine(output, "pages", page.key))
+                .Concat(references.references.Select(reference => Path.Combine(output, "references", reference.identity))).Distinct(StringComparer.Ordinal).ToArray(),
             "documentation", null, cancellationToken);
         // Cancellation is observed before this commit point; selection cannot expose a partial generation.
         AtomicFile.WriteAllBytes(Path.Combine(output, "current.json"), JsonSerializer.SerializeToUtf8Bytes(identity));
@@ -310,7 +317,7 @@ public static class DocumentationStore
         string path = PathBoundary.RequireUnlinkedPath(output, Path.Combine(output, "generations", identity, "manifest.json"));
         DocumentationManifest manifest = Deserialize<DocumentationManifest>(File.ReadAllBytes(path));
         if (manifest.identity != identity
-            || (requireCurrentSchema && (manifest.schema != schema || manifest.parserSchema != parserSchema))
+            || (requireCurrentSchema && (manifest.schema != schema || manifest.parserSchema != parserSchema || manifest.references is null))
             || DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest with { identity = "" }, json)) != identity)
             throw new InvalidDataException("Documentation snapshot integrity or schema mismatch; explicitly rebuild its index.");
         return manifest;

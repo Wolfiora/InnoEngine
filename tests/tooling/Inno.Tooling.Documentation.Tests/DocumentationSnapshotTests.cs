@@ -45,6 +45,86 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task ReferencePayloadsRemainReadableAfterCheckoutChangesAndShareImmutableStorage()
+    {
+        const string C_REFERENCE = "reference/api/probe.json";
+        byte[] firstBytes = BindReference(C_REFERENCE, "initial");
+        DocumentationResult first = await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, first.snapshot);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        DocumentationReferenceInfo reference = Assert.Single(catalog.references, item => item.model == "host-runtime");
+        Assert.Equal(new[] { "Inno.Probe" }, reference.projects);
+        Assert.Equal(Hash(firstBytes), reference.identity);
+        Assert.Equal(firstBytes, await snapshot.ReadReferenceAsync(C_REFERENCE));
+        string payload = Path.Combine(cache, "references", reference.identity, "reference.json");
+        DateTime timestamp = File.GetLastWriteTimeUtc(payload);
+        Write("content/en/task.md", Page("task", "A new task", "Read the existing API contracts."));
+        DocumentationResult second = await IndexAsync();
+        Assert.NotEqual(first.snapshot, second.snapshot);
+        Assert.Equal(timestamp, File.GetLastWriteTimeUtc(payload));
+        Assert.Equal(2, Directory.GetDirectories(Path.Combine(cache, "references")).Length);
+        BindReference(C_REFERENCE, "updated");
+        DocumentationResult third = await IndexAsync();
+        using DocumentationSnapshot refreshed = await DocumentationStore.OpenAsync(cache, third.snapshot);
+        Assert.Equal(firstBytes, await snapshot.ReadReferenceAsync(C_REFERENCE));
+        Assert.NotEqual(firstBytes, await refreshed.ReadReferenceAsync(C_REFERENCE));
+        Dictionary<string, string> before = Files();
+        Directory.Move(source, Path.Combine(m_root, "unavailable-reference-source"));
+        byte[][] readers = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => snapshot.ReadReferenceAsync(C_REFERENCE)));
+        Assert.All(readers, bytes => Assert.Equal(firstBytes, bytes));
+        Assert.Equal(before.OrderBy(static pair => pair.Key), Files().OrderBy(static pair => pair.Key));
+        await Assert.ThrowsAsync<ArgumentException>(() => snapshot.ReadReferenceAsync("../escape.json"));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => snapshot.ReadReferenceAsync(C_REFERENCE, new CancellationToken(true)));
+    }
+
+    [Fact]
+    public async Task CorruptOrMismatchedReferencesCannotBecomePublishedFacts()
+    {
+        const string C_REFERENCE = "reference/api/probe.json";
+        byte[] expected = BindReference(C_REFERENCE, "initial");
+        DocumentationResult first = await IndexAsync();
+        byte[] pointer = File.ReadAllBytes(Path.Combine(cache, "current.json"));
+        string input = Path.Combine(source, C_REFERENCE);
+        DateTime timestamp = File.GetLastWriteTimeUtc(input);
+        File.WriteAllBytes(input, Encoding.UTF8.GetBytes(Encoding.UTF8.GetString(expected).Replace("initial", "changed", StringComparison.Ordinal)));
+        File.SetLastWriteTimeUtc(input, timestamp);
+        await Assert.ThrowsAsync<InvalidDataException>(IndexAsync);
+        Assert.Equal(pointer, File.ReadAllBytes(Path.Combine(cache, "current.json")));
+        File.WriteAllBytes(input, expected);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, first.snapshot);
+        string payload = Path.Combine(cache, "references", Hash(expected), "reference.json");
+        File.WriteAllText(payload, "corrupt");
+        await Assert.ThrowsAsync<InvalidDataException>(() => snapshot.ReadReferenceAsync(C_REFERENCE));
+        await IndexAsync();
+        Assert.Equal(expected, await snapshot.ReadReferenceAsync(C_REFERENCE));
+        using DocumentationSnapshot mismatch = await DocumentationStore.OpenAsync(cache, first.snapshot, new string('c', 40));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => mismatch.ReadReferenceAsync(C_REFERENCE));
+    }
+
+    [Theory]
+    [InlineData("target")]
+    [InlineData("configuration")]
+    [InlineData("model")]
+    [InlineData("sourceRevision")]
+    [InlineData("duplicate")]
+    [InlineData("escape")]
+    public async Task InvalidReferenceBindingsFailBeforePublication(string changed)
+    {
+        BindReference("reference/api/probe.json", "initial");
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/engine.lock.json")))!;
+        JsonArray references = binding["apiManifests"]!.AsArray();
+        if (changed == "duplicate") references.Add(references[0]!.DeepClone());
+        else if (changed == "escape") references[0]!["path"] = "../outside.json";
+        else references[0]![changed] = "invalid";
+        Write("reference/engine.lock.json", binding.ToJsonString());
+        if (changed == "escape")
+            await Assert.ThrowsAnyAsync<IOException>(IndexAsync);
+        else
+            await Assert.ThrowsAsync<InvalidDataException>(IndexAsync);
+        Assert.False(File.Exists(Path.Combine(cache, "current.json")));
+    }
+
+    [Fact]
     public async Task CatalogUsesThePreparedSnapshotAndReportsMissingProjectCoverage()
     {
         await IndexAsync();
@@ -554,6 +634,26 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Equal(C_SYMBOL, exact.hits.Single().symbol);
         Assert.Equal("Excerpt", exact.hits.Single().completeness);
         Assert.Equal("Exact qualified symbol", exact.hits.Single().reason);
+    }
+
+    private byte[] BindReference(
+        string path,
+        string description
+    ) {
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            model = "host-runtime", configuration = "Debug", target = (string?)null,
+            projects = new[] { new { name = "Inno.Probe", project = "src/Inno.Probe.csproj", symbols = Array.Empty<object>(), description } }
+        });
+        Write(path, Encoding.UTF8.GetString(bytes));
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/engine.lock.json")))!;
+        binding["apiManifests"] = JsonSerializer.SerializeToNode(new[]
+        {
+            new { path, sha256 = Hash(bytes), model = "host-runtime", configuration = "Debug", target = (string?)null,
+                sourceRevision = new string('a', 40), sourceTree = new string('b', 40) }
+        });
+        Write("reference/engine.lock.json", binding.ToJsonString());
+        return bytes;
     }
 
     private void Write(
