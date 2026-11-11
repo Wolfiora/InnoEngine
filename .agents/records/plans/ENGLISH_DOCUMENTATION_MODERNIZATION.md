@@ -17,6 +17,12 @@ Implemented in Docs commit `3d5991f45fe5f3ba1fa2789d3290e452f78ec876`: 4,327 gen
 - Adjacent consumer repositories are read-only. Product behavior, generated bindings, and third-party source are outside the modification scope.
 - Current documentation and AI workflow become English. Historical records and original evidence retain their bytes and conclusions.
 
+## Scene task migration and search correction, 2026-11-11
+
+Docs commit `f05537abc432759a9e1ff61dab24a91ce1db9420` adds the complete reviewed Scene batch: four original pages mapped to two project entries, seven task/landing pages, architecture and host-state guidance, and 310 exact declarations across 31 type pages. Six example groups compile through actual host/trimmed-script references; their unchanged page and reference inputs remain valid after the query-only tooling update. The [Scene acceptance report](https://github.com/Wolfiora/InnoEngine.Docs/blob/f05537abc432759a9e1ff61dab24a91ce1db9420/.agents/records/acceptance/SCENE_2026_11_11.md) identifies snapshots, source captures, semantic boundaries, actual visual inspection and remaining gaps. Final local source/rendered projection passes for 855 pages and 4,834 bound engine declarations, with 83 entries and 169 still missing. The site built in 21.44 seconds; no full performance or deployment certification is inferred.
+
+Engine commit `18da08eaecb12d89b816166bae8d9480683f6948` corrects the observed natural-language search tie: `instantiate prefab` now returns the Manual task before the method reference. All 37 query regressions pass and the Build CLI compiled with zero warnings/errors. Exact symbols and identifiers retain reference priority; queries do not prepare Native inputs. The original broad validation selection, old Wiki cutover and remote CI/publication requirements remain unresolved. No repeated tests were triggered merely by these ledger/commit updates.
+
 ## Required outcomes
 
 1. Inventory all current documentation, rules, project ownership, links, and evidence before migration.
