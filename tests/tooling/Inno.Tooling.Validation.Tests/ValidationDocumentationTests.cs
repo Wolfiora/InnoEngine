@@ -165,8 +165,10 @@ public sealed class ValidationDocumentationTests
         Assert.NotEqual(baseline.snapshot, current.snapshot);
     }
 
-    [Fact]
-    public async Task RemovingARequiredCaptureDoesNotBecomeAnEmptySuccessfulSelection()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RemovingARequiredCaptureDoesNotBecomeAnEmptySuccessfulSelection(bool changedSource)
     {
         using var repository = new ValidationRepository();
         var docs = new ValidationDocumentationFixture(repository);
@@ -181,12 +183,51 @@ public sealed class ValidationDocumentationTests
         binding["apiManifests"]![0]!["sha256"] = Convert.ToHexStringLower(SHA256.HashData(bytes));
         docs.Write("reference/engine.lock.json", binding.ToJsonString());
         DocumentationResult current = await docs.IndexAsync();
+        if (changedSource)
+        {
+            repository.Write("src/Example/Changed.cs", "namespace Example; /// <summary>A captured source contract.</summary>\npublic class Changed { }");
+            repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Fixture policy passed'");
+            repository.Write("tests/ci/CapturePolicy.Tests.ps1", "Write-Output 'Fixture compilation policy passed'");
+        }
         using JsonDocument plan = await docs.PlanAsync(current, baseline);
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
         JsonElement missing = checks.Single(check => check.GetProperty("id").GetString() == "documentation-api-missing:src/Example/Example.csproj");
         Assert.Equal("documentation-missing", missing.GetProperty("kind").GetString());
         Assert.Equal(JsonValueKind.Null, missing.GetProperty("exclusion").ValueKind);
-        Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
+        if (changedSource)
+        {
+            JsonElement build = checks.Single(check => check.GetProperty("id").GetString() == "build:src/Example/Example.csproj");
+            Assert.Equal(build.GetProperty("context").GetString(), missing.GetProperty("context").GetString());
+            Assert.Contains(missing.GetProperty("prerequisites").EnumerateArray(), prerequisite => prerequisite.GetString() == build.GetProperty("id").GetString());
+            Assert.True(Array.IndexOf(checks, build) < Array.IndexOf(checks, missing));
+            Assert.Equal("src/Example/Example.csproj", Assert.Single(missing.GetProperty("projects").EnumerateArray()).GetString());
+            // Exercise the real executor and compiler with a finite fixture policy. Repository-wide
+            // architecture and test discovery are separate contracts, not inputs to this capture test.
+            JsonNode execution = JsonNode.Parse(plan.RootElement.GetRawText())!;
+            JsonArray selected = new();
+            foreach (JsonElement check in checks.Where(check => new[] { "instructions", "architecture", "documentation", build.GetProperty("id").GetString(), missing.GetProperty("id").GetString() }.Contains(check.GetProperty("id").GetString())))
+            {
+                JsonNode item = JsonNode.Parse(check.GetRawText())!;
+                if (item["id"]!.GetValue<string>() == "architecture")
+                    item["kind"] = "ci-contracts";
+                selected.Add(item);
+            }
+            execution["checks"] = selected;
+            repository.Write("artifacts/plan/plan.json", execution.ToJsonString());
+            await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
+            using JsonDocument evidence = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/run/results.json")));
+            JsonElement[] results = evidence.RootElement.GetProperty("results").EnumerateArray().ToArray();
+            Assert.True(results.Single(result => result.GetProperty("id").GetString() == build.GetProperty("id").GetString()).GetProperty("status").GetString() == "Passed", evidence.RootElement.GetRawText());
+            Assert.Equal("Blocked", results.Single(result => result.GetProperty("id").GetString() == missing.GetProperty("id").GetString()).GetProperty("status").GetString());
+            using JsonDocument captured = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/run/documentation-captures/Example.json")));
+            Assert.Equal("Unverified", captured.RootElement.GetProperty("sourceApiStatus").GetString());
+            Assert.Contains(captured.RootElement.GetProperty("projects")[0].GetProperty("symbols").EnumerateArray(), symbol => symbol.GetProperty("id").GetString() == "T:Example.Changed");
+        }
+        else
+        {
+            Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
+            Assert.Equal(JsonValueKind.Null, missing.GetProperty("projects").ValueKind);
+        }
     }
 
     [Fact]

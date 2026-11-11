@@ -454,8 +454,15 @@ internal static class ValidationPlanner
                     group.Key.context, "contract", paths, new(references, [], identity, configuration, group.Key.target)));
             }
             foreach (string owner in owners.Except(covered).Order(StringComparer.Ordinal))
+            {
+                ValidationCheck? prepared = builds.SingleOrDefault(check => check.owner == owner);
                 checks.Add(new("documentation-api-missing:" + owner, "documentation-missing", owner,
-                    "Required source API capture is absent for the selected configuration and target.", "any", ["documentation"], ["@" + owner], false, null));
+                    "Required source API capture is absent for the selected configuration and target. Prepared owners may export unverified facts for review; capture does not pass this requirement.",
+                    "any", prepared is null ? ["documentation"] : ["documentation", prepared.id],
+                    prepared?.inputs ?? ["@" + owner], false, null, prepared?.context, "contract",
+                    prepared is null ? null : [owner], prepared is null ? null : new([], [], "", configuration,
+                        prepared.context == "native" ? target : null)));
+            }
             foreach (var group in examplePages.GroupBy(page => scriptPages.Contains(page.id)
                 || (page.examples?.projects ?? []).Any(name => nativeOwners.Contains(selected.owners[name].path)
                     || nativeDocumentOwners.Contains(selected.owners[name].path)) ? "native" : "managed"))

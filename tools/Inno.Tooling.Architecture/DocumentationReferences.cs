@@ -23,6 +23,9 @@ public static class DocumentationReferences
     /// </summary>
     /// <param name="arguments">
     /// Required engine-root, dotnet, output and one or more project options; optional configuration and target.
+    /// Optional artifacts-path and sdk-snapshot select already prepared outputs and one resolved graph with
+    /// matching properties and owners. The caller owns the execution boundary and closing input checks;
+    /// a supplied graph does not independently establish freshness or certify the exported contracts.
     /// Project paths are relative to the engine root and must occur in its actual source inventory.
     /// The selected SDK and prepared references supply compilation facts; no product build is requested.
     /// </param>
@@ -62,7 +65,7 @@ public static class DocumentationReferences
                 if (!requested.Add(arguments[index + 1].Replace('\\', '/')))
                     throw new ArgumentException("Duplicate API project selection.");
             }
-            else if (key is not ("--engine-root" or "--dotnet" or "--output" or "--configuration" or "--target")
+            else if (key is not ("--engine-root" or "--dotnet" or "--output" or "--configuration" or "--target" or "--artifacts-path" or "--sdk-snapshot")
                 || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown or duplicate API export option: " + key);
         }
@@ -74,7 +77,9 @@ public static class DocumentationReferences
             throw new ArgumentException("Unsupported API extraction configuration.");
         string root = Path.GetFullPath(engineRoot);
         IReadOnlyList<ApiProject> inventory = CaptureApi(root, dotnet, configuration,
-            options.GetValueOrDefault("--target"), requested, cancellationToken);
+            options.GetValueOrDefault("--target"), requested, cancellationToken,
+            options.GetValueOrDefault("--artifacts-path"),
+            options.TryGetValue("--sdk-snapshot", out string? graphPath) ? File.ReadAllText(graphPath) : null);
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(Path.GetFullPath(output), JsonSerializer.SerializeToUtf8Bytes(new
         {

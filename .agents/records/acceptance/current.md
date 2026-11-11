@@ -2,6 +2,8 @@
 
 [Open work](../open-items.md) · [Implementation ledger](../plans/ENGLISH_DOCUMENTATION_MODERNIZATION.md) · [Historical evidence](README.md)
 
+- [Missing source capture execution](CI_MISSING_REFERENCE_CAPTURE_2026_11_12.md) records the local protocol and actual compilation regression. Captured facts remain unverified; missing comparison requirements remain blocked.
+
 The English documentation and workflow modernization is **incomplete**. Existing engine/UI certifications remain bound to their original revisions and environments. This page does not promote them to the current working tree.
 
 ## Current local evidence

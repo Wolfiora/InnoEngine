@@ -161,6 +161,20 @@ internal static class ValidationRunner
                         case "documentation-missing":
                             status = "Blocked";
                             detail = check.reason;
+                            if (check.projects is { Length: > 0 } captureOwners && check.documentation is not null)
+                            {
+                                string captureDirectory = Path.Combine(directory, "documentation-captures");
+                                Directory.CreateDirectory(captureDirectory);
+                                string capturePath = Path.Combine(captureDirectory, Path.GetFileNameWithoutExtension(check.owner) + ".json");
+                                string[] captureTarget = check.documentation.target is string selectedTarget ? ["--target", selectedTarget] : [];
+                                DocumentationReferences.ExportApi(["--engine-root", plan.root, "--dotnet", plan.dotnet,
+                                    "--configuration", check.documentation.configuration,
+                                    "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"],
+                                    "--sdk-snapshot", await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                    "--output", capturePath, ..captureTarget,
+                                    ..captureOwners.SelectMany(static owner => new[] { "--project", owner })], cancellation);
+                                detail += " Unverified source facts retained at " + capturePath + "; review and compare the resulting documentation in a subsequent validation.";
+                            }
                             break;
                         case "documentation":
                             if (documentationSnapshot is null)

@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $directory = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/ci-planning-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $cases = @(
     @{ name = 'missing-snapshot'; missing = 'documentation'; native = $true; empty = $false; exit = 0; throws = $true },
-    @{ name = 'missing-api-capture'; missing = 'documentation-api-missing:owner'; native = $true; empty = $false; exit = 0; throws = $true },
+    @{ name = 'missing-api-capture'; missing = 'documentation-api-missing:owner'; native = $true; empty = $false; exit = 0; throws = $false },
     @{ name = 'managed-prose'; missing = ''; native = $false; empty = $false; exit = 0; throws = $false },
     @{ name = 'prepared-native'; missing = ''; native = $true; empty = $false; exit = 0; throws = $false },
     @{ name = 'empty-discovery'; missing = ''; native = $true; empty = $true; exit = 0; throws = $true },
@@ -129,10 +129,15 @@ $global:LASTEXITCODE = [int]$case.exit
         } catch { $threw = $true; $failureReason = $_.Exception.Message; $failureReason | Set-Content (Join-Path $root 'failure.log') }
         if ($threw -ne $case.throws) { throw "Unexpected planning failure state: $($case.name)" }
         if ($case.reason -and $failureReason -cne $case.reason) { throw "Unexpected rejection for $($case.name): $failureReason" }
-        if ($case.missing -and $failureReason -notlike 'Required documentation inputs are unavailable;*') {
+        if ($case.missing -ceq 'documentation' -and $failureReason -notlike 'Required documentation inputs are unavailable;*') {
             throw "The fixture did not fail for its missing documentation requirement: $($case.name)"
         }
         $published = [IO.File]::ReadAllText($env:GITHUB_OUTPUT)
+        if ($case.missing -and -not $case.throws) {
+            $planned = Get-Content (Join-Path $root 'artifacts/validation/ci/plan.json') -Raw | ConvertFrom-Json
+            $required = @($planned.checks | Where-Object { $_.id -ceq $case.missing -and $_.kind -ceq 'documentation-missing' -and $null -eq $_.exclusion })
+            if ($required.Count -ne 1) { throw 'Independent execution removed or excluded the required missing API result.' }
+        }
         if ($case.throws) {
             if ($published.Trim()) { throw "Blocked planning published downstream execution outputs: $($case.name)" }
         } elseif ($published.Trim() -cne "native=$($case.native.ToString().ToLowerInvariant())") {

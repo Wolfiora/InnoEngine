@@ -153,10 +153,15 @@ public sealed class DocumentationReferenceTests : IDisposable
         await File.WriteAllTextAsync(graphPath, graph);
         Write("src/Inno.Probe/no-resolve", "Reference resolution has already completed for this execution boundary.");
         Assert.Equal(0, await DocumentationReferences.ValidateApiAsync([..comparisonArguments, "--sdk-snapshot", graphPath]));
+        byte[] originalCapture = File.ReadAllBytes(output);
+        Assert.Equal(0, DocumentationReferences.ExportApi([..arguments, "--sdk-snapshot", graphPath]));
+        Assert.Equal(originalCapture, File.ReadAllBytes(output));
         JsonNode wrongContext = JsonNode.Parse(graph)!;
         wrongContext[0]!["GlobalProperties"]!["Configuration"] = "Release";
         await File.WriteAllTextAsync(graphPath, wrongContext.ToJsonString());
         await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationReferences.ValidateApiAsync([..comparisonArguments, "--sdk-snapshot", graphPath]));
+        Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi([..arguments, "--sdk-snapshot", graphPath]));
+        Assert.Equal(originalCapture, File.ReadAllBytes(output));
         JsonNode missingOwner = JsonNode.Parse(graph)!;
         missingOwner[0]!["Path"] = Path.Combine(m_root, "src/Inno.Other/Inno.Other.csproj");
         await File.WriteAllTextAsync(graphPath, missingOwner.ToJsonString());

@@ -73,7 +73,9 @@ if ($Stage -eq 'Plan') {
     if ($LASTEXITCODE -ne 0) { throw 'Validation plan generation failed; no downstream stage can certify success.' }
     $plan = Get-Content -LiteralPath (Join-Path $output 'plan.json') -Raw | ConvertFrom-Json
     if (@($plan.checks).Count -eq 0) { throw 'Required hosted validation discovery is empty.' }
-    $missingDocumentation = @($plan.checks | Where-Object { $_.kind -ceq 'documentation-missing' -and $null -eq $_.exclusion })
+    # A missing catalog prevents trustworthy selection. A missing owner capture is a required
+    # blocked result in the plan; it must not suppress independent compilation and tests.
+    $missingDocumentation = @($plan.checks | Where-Object { $_.id -ceq 'documentation' -and $_.kind -ceq 'documentation-missing' -and $null -eq $_.exclusion })
     if ($missingDocumentation.Count -ne 0) {
         throw "Required documentation inputs are unavailable; downstream product preparation was not selected: $($missingDocumentation.id -join ', ')."
     }
