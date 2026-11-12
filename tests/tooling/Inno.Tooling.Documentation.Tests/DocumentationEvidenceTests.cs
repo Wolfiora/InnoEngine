@@ -94,6 +94,13 @@ public sealed class DocumentationEvidenceTests : IDisposable
     [InlineData("missing-producer")]
     [InlineData("bad-producer")]
     [InlineData("wrong-format")]
+    [InlineData("missing-tables")]
+    [InlineData("missing-source-set")]
+    [InlineData("missing-source-file")]
+    [InlineData("duplicate-source-file")]
+    [InlineData("escaping-source-file")]
+    [InlineData("missing-input-group")]
+    [InlineData("different-input-group")]
     public async Task IncompleteOrAmbiguousCertificatesAreRejected(string change)
     {
         JsonNode certificate = await PrepareAsync();
@@ -106,6 +113,17 @@ public sealed class DocumentationEvidenceTests : IDisposable
             case "missing-producer": certificate["producers"] = new JsonArray(); break;
             case "bad-producer": certificate["producers"]![0]!["receiptIdentity"] = "not-a-digest"; break;
             case "wrong-format": certificate["format"] = "unknown"; break;
+            case "missing-tables": certificate.AsObject().Remove("sourceFiles"); break;
+            case "missing-source-set": certificate["inputs"]![0]!["sourceSet"] = 9; break;
+            case "missing-source-file": certificate["sourceSets"]![0] = new JsonArray(9); break;
+            case "duplicate-source-file": certificate["sourceSets"]![0] = new JsonArray(0, 0); break;
+            case "escaping-source-file": certificate["sourceFiles"]![0]!["path"] = "../secret"; break;
+            case "missing-input-group":
+            case "different-input-group":
+                certificate["examples"] = JsonSerializer.SerializeToNode(new[] { new { contexts = new[] {
+                    new { platform = "foreign", configuration = "Debug", target = (string?)null,
+                        reportIdentity = new string('d', 64), inputGroup = change == "missing-input-group" ? 9 : 0 } } } });
+                break;
         }
         await Assert.ThrowsAsync<InvalidDataException>(() => ReadAsync(certificate));
     }
@@ -126,6 +144,24 @@ public sealed class DocumentationEvidenceTests : IDisposable
             "--evidence-file", file, "--evidence-sha256", evidence.identity]));
     }
 
+    [Theory]
+    [InlineData("runtime-script")]
+    [InlineData("editor-script")]
+    public async Task ScriptSurfaceRequiresActualProjectionAndMatchingExecutionInputs(string surface)
+    {
+        JsonNode certificate = await PrepareAsync();
+        JsonNode reference = certificate["references"]![0]!;
+        reference["model"] = surface;
+        JsonNode proof = reference.DeepClone();
+        proof["platform"] = "fixture";
+        proof["reportIdentity"] = new string('d', 64);
+        proof["inputGroup"] = 0;
+        certificate["scriptReferences"] = new JsonArray(proof);
+        Assert.NotNull(await ReadAsync(certificate));
+        certificate["scriptReferences"] = new JsonArray();
+        await Assert.ThrowsAsync<InvalidDataException>(() => ReadAsync(certificate));
+    }
+
     private async Task<JsonNode> PrepareAsync()
     {
         byte[] projects = JsonSerializer.SerializeToUtf8Bytes(new[] { new { name = "Probe", path = "src/Probe.csproj", surfaces = new[] { "source-clr" } } });
@@ -144,8 +180,13 @@ public sealed class DocumentationEvidenceTests : IDisposable
         await DocumentationStore.IndexAsync(m_root, source, cache);
         return JsonSerializer.SerializeToNode(new
         {
-            format = "inno-documentation-source/1", repository = "https://github.com/Wolfiora/InnoEngine", sourceTree = new string('b', 40),
+            format = "inno-documentation-source/2", repository = "https://github.com/Wolfiora/InnoEngine", sourceTree = new string('b', 40),
             projectManifestIdentity = Hash(projects),
+            sourceFiles = new[] { new { path = "src/Probe.cs", identity = new string('a', 64) } },
+            sourceSets = new[] { new[] { 0 } },
+            inputGroups = new[] { new { platform = "fixture", configuration = "Debug", target = (string?)null,
+                reportIdentity = new string('d', 64), inputs = new[] { new { sourceSet = 0 } } } },
+            inputs = new[] { new { sourceSet = 0 } }, examples = Array.Empty<object>(), scriptReferences = Array.Empty<object>(),
             references = new[] { new { path = "reference/api/probe.json", identity = Hash(api), model = "source-clr", configuration = "Debug",
                 target = (string?)null, projects = new[] { "Probe" } } },
             producers = new[] { new { origin = "fixture://reconciled-local-producer", receiptIdentity = new string('d', 64) } }

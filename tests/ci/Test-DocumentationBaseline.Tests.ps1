@@ -72,7 +72,7 @@ try {
         try {
             $name = if ($mode -ceq 'escaping-entry') { '../source-certificate.json' } else { 'source-certificate.json' }
             $writer = [IO.StreamWriter]::new($zip.CreateEntry($name).Open())
-            try { $writer.Write((@{ format = 'inno-documentation-source/1'; repository = 'https://github.com/Wolfiora/InnoEngine'
+            try { $writer.Write((@{ format = 'inno-documentation-source/2'; repository = 'https://github.com/Wolfiora/InnoEngine'
                 sourceCommit = $(if ($mode -ceq 'wrong-payload') { 'b' * 40 } else { $commit }); sourceTree = 'd' * 40 } | ConvertTo-Json)) }
             finally { $writer.Dispose() }
             if ($mode -ceq 'extra-entry') { [void]$zip.CreateEntry('unexpected.txt') }

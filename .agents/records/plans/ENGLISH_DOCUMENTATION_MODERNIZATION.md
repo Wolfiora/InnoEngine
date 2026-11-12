@@ -2,6 +2,14 @@
 
 Status: implementation in progress. This record does not certify completion.
 
+## Current acceptance checkpoint, 2026-11-13
+
+This checkpoint supersedes earlier counts and unfinished-work lists below. All 454 baseline dispositions, all 252 project entries and all 241 original rule identities remain covered. The current English site contains 3,656 pages and 18,874 selected host/script declarations. The actual script surfaces and their caller constraints are implemented; backend-native and generated binding API references remain outside the approved scope.
+
+Both full/extended platform producers passed, including ten warm samples and actual Debug/Release 1,000-cycle product journeys. The aggregate then failed on duplicated certificate input expansion. [The normalization repair](../acceptance/SOURCE_CERTIFICATE_NORMALIZATION_2026_11_13.md) preserves every original proof field and reduces the real certificate to approximately 6.3 MB; matching hosted follow-up remains pending. [The draft release rehearsal](../acceptance/FULL_MATRIX_AND_DRAFT_RELEASE_2026_11_13.md) uploaded exact verified default-branch artifacts without rebuilding or formal publication.
+
+Remaining actionable acceptance is the latest script candidate and hosted certificate reconciliation. Protected cross-repository App credentials, reviewed default-branch workflow activation, prepared-candidate ordering and Pages promotion remain external prerequisites. Current evidence and boundaries are maintained in [current acceptance](../acceptance/current.md), not inferred from earlier chronological progress notes.
+
 ## Current cutover checkpoint, 2026-11-12
 
 The current status table supersedes the older chronological checkpoints below. Original results and first failures remain linked; their historical missing-work lists are not a current task queue.

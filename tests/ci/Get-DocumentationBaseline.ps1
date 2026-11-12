@@ -55,7 +55,7 @@ foreach ($run in @($runs.workflow_runs)) {
     $zip = [IO.Compression.ZipFile]::OpenRead($archive)
     try {
         if ($zip.Entries.Count -ne 1 -or $zip.Entries[0].FullName -cne 'source-certificate.json' `
-            -or $zip.Entries[0].Length -le 0 -or $zip.Entries[0].Length -gt 512MB) {
+            -or $zip.Entries[0].Length -le 0 -or $zip.Entries[0].Length -gt 16MB) {
             throw 'Documentation baseline archive exceeds its single-certificate content boundary.'
         }
     } finally { $zip.Dispose() }
@@ -65,7 +65,7 @@ foreach ($run in @($runs.workflow_runs)) {
         throw 'Documentation baseline must contain exactly its root certificate.'
     }
     $certificate = Get-Content -LiteralPath $files[0].FullName -Raw | ConvertFrom-Json
-    if ($certificate.format -cne 'inno-documentation-source/1' -or $certificate.sourceCommit -cne $Commit `
+    if ($certificate.format -cne 'inno-documentation-source/2' -or $certificate.sourceCommit -cne $Commit `
         -or $certificate.repository -cne 'https://github.com/Wolfiora/InnoEngine' -or $certificate.sourceTree -cnotmatch '^[a-f0-9]{40}$') {
         throw 'Documentation baseline payload differs from its authenticated producer.'
     }

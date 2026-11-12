@@ -10,7 +10,7 @@ The full English documentation, AI workflow and CI/CD plan remains in progress. 
 
 External setup remains unresolved for organization-installed GitHub App credentials. Repository administration and Pages configuration were available, but repository secrets were empty and organization secret metadata returned HTTP 403. This is not evidence of a configured cross-repository App.
 
-Current local query, rule and validation checks do not establish complete Windows/macOS CI, publication ordering, paired-PR or draft-release acceptance. No old issue is automatically closed by this work.
+The full/extended Windows and macOS producers and an actual exact-artifact draft release passed at the inputs recorded in [full acceptance](acceptance/FULL_MATRIX_AND_DRAFT_RELEASE_2026_11_13.md). The full aggregate's certificate memory failure has a [locally verified normalization repair](acceptance/SOURCE_CERTIFICATE_NORMALIZATION_2026_11_13.md). Latest-candidate hosted reconciliation, protected source import, publication ordering and paired-PR activation remain incomplete. No old issue is automatically closed by this work.
 
 [Run 43191512147](acceptance/CI_43191512147.md) completed 334 macOS checks, then failed a script-example receipt format mismatch. The corrected producer records separate canonical Runtime/Editor reference hashes; a real compiler-to-CI regression reproduces the first failure and passes after correction. Final hosted acceptance remains necessary.
 

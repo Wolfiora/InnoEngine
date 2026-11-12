@@ -8,9 +8,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/DocumentationCertificateInputs.ps1"
+if ((Get-Item -LiteralPath $PreviousCertificatePath).Length -gt 16MB) { throw 'Source certificate exceeds its normalized metadata boundary.' }
 $previous = Get-Content -LiteralPath $PreviousCertificatePath -Raw | ConvertFrom-Json
 $receipts = @(Get-Content -LiteralPath $CertificationPath -Raw | ConvertFrom-Json)
-if ($previous.format -cne 'inno-documentation-source/1' -or $previous.repository -cne 'https://github.com/Wolfiora/InnoEngine' `
+if ($previous.format -cne 'inno-documentation-source/2' -or $previous.repository -cne 'https://github.com/Wolfiora/InnoEngine' `
     -or $previous.sourceCommit -cnotmatch '^[a-f0-9]{40}$' -or $previous.sourceTree -cnotmatch '^[a-f0-9]{40}$' `
     -or $PlanPaths.Count -ne $receipts.Count -or $CatalogPaths.Count -ne $receipts.Count -or [string]::IsNullOrWhiteSpace($PreviousOrigin)) {
     throw 'Documentation compatibility requires a bound prior producer and every reconciled current plan.'
@@ -78,6 +80,7 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
     $binding = [ordered]@{ method = 'UnchangedDeclaredInputs'; origin = $PreviousOrigin; certificateIdentity = $identity
         sourceCommit = $previous.sourceCommit; sourceTree = $previous.sourceTree; candidateCommit = $plan.commit; planIdentity = $row.receipt.planIdentity }
     foreach ($proof in @($previous.inputs | Where-Object { $_.platform -ceq $row.platform })) {
+        $proof = Get-DocumentationInputProof $previous $proof
         if (-not (Test-Inputs $proof $plan)) { continue }
         foreach ($reference in @($catalog.references | Where-Object { $_.model -ceq 'source-clr' -and $proof.project -cin $_.projects `
             -and $_.configuration -ceq $proof.configuration -and $_.target -ceq $proof.target })) {
@@ -89,6 +92,23 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             $api.Add([pscustomobject]@{ reference = $reference.path; proof = $proof; compatibility = $binding })
         }
     }
+    $groupChecks = @{}
+    $groupInputs = @{}
+    function Test-Group($context) {
+        if ($null -eq $context.inputGroup) { throw 'Certificate context lacks its input group.' }
+        $key = $context.inputGroup
+        if (-not $groupChecks.ContainsKey($key)) {
+            $proofs = @(Get-DocumentationInputGroup $previous $context)
+            $groupInputs[$key] = $proofs
+            $groupChecks[$key] = @($proofs | Where-Object { -not (Test-Inputs $_ $plan) }).Count -eq 0
+        }
+        $group = $previous.inputGroups[$key]
+        if ($group.platform -cne $context.platform -or $group.configuration -cne $context.configuration `
+            -or $group.target -cne $context.target -or $group.reportIdentity -cne $context.reportIdentity) {
+            throw 'Certificate input group belongs to another execution context.'
+        }
+        $groupChecks[$key]
+    }
     foreach ($example in @($previous.examples)) {
         $page = @($catalog.pages | Where-Object id -CEQ $example.page)
         if ($page.Count -ne 1 -or $null -eq $page[0].examples -or $page[0].examples.mode -cne $example.mode `
@@ -96,9 +116,9 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
         $blocks = @($page[0].codeBlocks | Where-Object { $_.language -cin @('cs', 'csharp') -and @($_.declarationSymbols).Count -eq 0 } | ForEach-Object contentIdentity)
         if ($blocks.Count -eq 0 -or ($blocks -join "`n") -cne (@($example.blocks) -join "`n")) { continue }
         foreach ($context in @($example.contexts | Where-Object platform -CEQ $row.platform)) {
-            if (@($context.inputs).Count -eq 0 -or @($context.inputs | Where-Object { -not (Test-Inputs $_ $plan) }).Count -ne 0) { continue }
+            if (-not (Test-Group $context)) { continue }
             $examples.Add([pscustomobject]@{ page = $example.page; mode = $example.mode; projects = @($example.projects); blocks = $blocks
-                context = $context; compatibility = $binding })
+                context = $context; inputs = $groupInputs[$context.inputGroup]; compatibility = $binding })
         }
     }
     foreach ($projection in @($previous.scriptReferences | Where-Object { $null -ne $_ -and $_.platform -ceq $row.platform })) {
@@ -107,12 +127,12 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             -and $_.configuration -ceq $projection.configuration -and $null -eq $_.target })
         if ($bound.Count -ne 1 -or (@($projection.projects) -join "`n") -cne (@($bound[0].projects) -join "`n") `
             -or $projection.reportIdentity -cnotmatch '^[a-f0-9]{64}$' -or $projection.documentationIdentity -cnotmatch '^[a-f0-9]{64}$' `
-            -or @($projection.inputs).Count -eq 0 -or @($projection.inputs | Where-Object { -not (Test-Inputs $_ $plan) }).Count -ne 0) { continue }
+            -or -not (Test-Group $projection)) { continue }
         $names = @($projection.projectionIdentities.PSObject.Properties | ForEach-Object Name | Sort-Object -CaseSensitive)
         $required = if ($projection.model -ceq 'editor-script') { @('Inno.ScriptApi.Editor', 'Inno.ScriptApi.Runtime') } else { @('Inno.ScriptApi.Runtime') }
         if (($names -join "`n") -cne ($required -join "`n") `
             -or @($projection.projectionIdentities.PSObject.Properties | Where-Object { $_.Value -cnotmatch '^[a-f0-9]{64}$' }).Count -ne 0) { continue }
-        $scripts.Add([pscustomobject]@{ proof = $projection; compatibility = $binding })
+        $scripts.Add([pscustomobject]@{ proof = $projection; inputs = $groupInputs[$projection.inputGroup]; compatibility = $binding })
     }
 }
 [pscustomobject]@{ api = $api.ToArray(); examples = $examples.ToArray(); scripts = $scripts.ToArray(); diagnostics = $diagnostics.ToArray() }

@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/DocumentationCertificateInputs.ps1"
 $run = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/source-certificate-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $hash = 'a' * 64
 $tree = 'b' * 40
@@ -42,11 +43,12 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
         if ($actual -ceq 'Passed') {
             $proof = Get-Content $file -Raw | ConvertFrom-Json
             if ($proof.references[0].projects.Count -ne 2 -or $proof.projectManifestIdentity -cne $hash -or $proof.sourceCommit -cne ('d' * 40) `
-                -or $proof.examples.Count -ne 1 -or $proof.examples[0].contexts.Count -ne 2 `
+                -or $proof.examples.Count -ne @($state.rows[0].receipt.sourceExamples[0].pages).Count -or $proof.examples[0].contexts.Count -ne 2 `
                 -or $proof.producers[0].receiptIdentity -cne (Get-FileHash $certification).Hash.ToLowerInvariant()) { throw 'Source certificate lost exact coverage or provenance.' }
             $expectedInputs = @($state.rows | ForEach-Object { $_.receipt.sourceApi | ForEach-Object { $_.inputs } })
             if (@($proof.inputs).Count -ne $expectedInputs.Count) { throw 'Source certificate lost owner input proofs.' }
             foreach ($inputProof in @($proof.inputs)) {
+                $inputProof = Get-DocumentationInputProof $proof $inputProof
                 $original = @($expectedInputs | Where-Object project -CEQ $inputProof.project)
                 if ($original.Count -ne 1 -or $inputProof.sourceIdentity -cne $original[0].sourceIdentity `
                     -or $inputProof.referenceIdentity -cne $original[0].referenceIdentity `
@@ -55,6 +57,18 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
                     throw 'Source certificate altered source, dependency or comparison provenance.'
                 }
             }
+            $resolvedGroups = @{}
+            foreach ($example in $proof.examples) {
+                foreach ($context in $example.contexts) {
+                    if ($resolvedGroups.ContainsKey($context.inputGroup)) { continue }
+                    $expanded = @(Get-DocumentationInputGroup $proof $context)
+                    if ($expanded.Count -ne 1 -or $expanded[0].sources.'src/Probe.csproj' -cne $hash) {
+                        throw 'Shared example inputs lost their exact closure.'
+                    }
+                    $resolvedGroups[$context.inputGroup] = $true
+                }
+            }
+            if ($state.maximumBytes -and (Get-Item $file).Length -gt $state.maximumBytes) { throw 'Certificate expanded shared closures per page.' }
         } elseif (Test-Path $file) { throw 'Incomplete coverage published a certificate.' }
     } catch { $actual = 'Rejected'; $diagnostic = $_.Exception.Message }
     $results.Add(@{ name = $Name; actual = $actual; expected = $Expected; diagnostic = $diagnostic })
@@ -62,6 +76,21 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
     if ($actual -cne $Expected) { throw "Unexpected certificate result for ${Name}: $actual $diagnostic" }
 }
 Invoke-Case 'combined-platform-coverage' { param($s) } 'Passed'
+Invoke-Case 'many-pages-share-exact-closures' {
+    param($s)
+    $catalog = Get-Content $s.catalogPaths[0] -Raw | ConvertFrom-Json -AsHashtable
+    $catalog.pages = @(1..1000 | ForEach-Object { @{ id = "task.$_"; examples = @{ mode = 'host'; projects = @('Probe') }
+        codeBlocks = @(@{ language = 'csharp'; contentIdentity = $hash; declarationSymbols = @() }) } })
+    $catalog | ConvertTo-Json -Depth 12 | Set-Content $s.catalogPaths[0] -Encoding utf8NoBOM
+    $identity = (Get-FileHash $s.catalogPaths[0]).Hash.ToLowerInvariant()
+    foreach ($row in $s.rows) {
+        $row.receipt.sourceApi[0].catalogIdentity = $identity
+        $row.receipt.sourceExamples[0].catalogIdentity = $identity
+        $row.receipt.sourceExamples[0].pages = @($catalog.pages | ForEach-Object { @{page=$_.id; mode='host'; projects=@('Probe'); blocks=@($hash)} })
+        foreach ($index in 1..500) { $row.receipt.sourceExamples[0].inputs[0].sources["src/Input$index.cs"] = $hash }
+    }
+    $s.maximumBytes = 700000
+} 'Passed'
 function Add-ScriptCertification($s) {
     $path = $s.catalogPaths[0]
     $catalog = Get-Content $path -Raw | ConvertFrom-Json -AsHashtable
@@ -124,4 +153,25 @@ Invoke-Case 'unhashed-package' { param($s) Add-CompiledInputs $s; $s.rows[0].rec
 Invoke-Case 'missing-source-map' { param($s) $s.rows[0].receipt.sourceApi[0].inputs[0].sources = @{} } 'Rejected'
 Invoke-Case 'escaping-source-map' { param($s) $s.rows[0].receipt.sourceApi[0].inputs[0].sources = @{ '../outside' = $hash } } 'Rejected'
 Invoke-Case 'unhashed-source-map' { param($s) $s.rows[0].receipt.sourceApi[0].inputs[0].sources = @{ 'src/Probe.csproj' = 'unknown' } } 'Rejected'
+foreach ($mutation in @('missing-group', 'negative-group', 'string-group', 'wrong-platform', 'wrong-report', 'missing-set', 'missing-file', 'duplicate-path', 'escaping-path')) {
+    $certificate = Get-Content (Join-Path $run 'combined-platform-coverage/output/source-certificate.json') -Raw | ConvertFrom-Json
+    $context = $certificate.examples[0].contexts[0]
+    $group = $certificate.inputGroups[$context.inputGroup]
+    switch ($mutation) {
+        'missing-group' { $context.inputGroup = 999 }
+        'negative-group' { $context.inputGroup = -1 }
+        'string-group' { $context.inputGroup = '0' }
+        'wrong-platform' { $context.platform = 'foreign' }
+        'wrong-report' { $context.reportIdentity = 'f' * 64 }
+        'missing-set' { $group.inputs[0].sourceSet = 999 }
+        'missing-file' { $certificate.sourceSets[$group.inputs[0].sourceSet] = @(999) }
+        'duplicate-path' { $set = $group.inputs[0].sourceSet; $certificate.sourceSets[$set] = @($certificate.sourceSets[$set][0], $certificate.sourceSets[$set][0]) }
+        'escaping-path' { $file = $certificate.sourceSets[$group.inputs[0].sourceSet][0]; $certificate.sourceFiles[$file].path = '../secret' }
+    }
+    $rejected = $false
+    try { $null = @(Get-DocumentationInputGroup $certificate $context) } catch { $rejected = $true }
+    if (-not $rejected) { throw "Corrupt shared evidence was accepted: $mutation" }
+    $results.Add(@{ name = $mutation; actual = 'Rejected'; expected = 'Rejected' })
+}
+$results | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $run 'tests.json') -Encoding utf8NoBOM
 Write-Output "Passed $($results.Count) source certificate cases. Evidence: $run"

@@ -1,4 +1,5 @@
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/DocumentationCertificateInputs.ps1"
 $run = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/documentation-compatibility-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $hash = 'a' * 64
 $baseline = 'b' * 40
@@ -13,7 +14,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
         sourceIdentity = $hash; environment = $hash; configuration = 'Debug'; target = $null; referenceIdentity = $hash
         packages = @{}; sources = $sources; reportIdentity = $hash; inputMode = 'Compiled' }
     $state = @{
-        previous = @{ format = 'inno-documentation-source/1'; repository = 'https://github.com/Wolfiora/InnoEngine'; sourceCommit = $baseline
+        previous = @{ format = 'inno-documentation-source/2'; repository = 'https://github.com/Wolfiora/InnoEngine'; sourceCommit = $baseline
             policyIdentity = (& "$PSScriptRoot/Get-DocumentationCertificatePolicy.ps1")
             sourceTree = 'e' * 40; inputs = @($input); examples = @(@{ page = 'task.probe'; mode = 'host'; projects = @('Probe'); blocks = @($hash)
                 contexts = @(@{ platform = 'host-one'; configuration = 'Debug'; target = $null; reportIdentity = $hash; inputs = @($input) }) }) }
@@ -27,6 +28,18 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
             documentationSources = @{ ('reference/api/probe.json' + "`0Probe") = $hash } }
     }
     & $Change $state
+    $store = New-DocumentationInputStore
+    $state.previous.inputs = @($state.previous.inputs | ForEach-Object { Add-DocumentationInputProof $store $_ })
+    foreach ($context in @($state.previous.examples | ForEach-Object contexts) + @($state.previous.scriptReferences | Where-Object { $null -ne $_ })) {
+        $group = $store.groups.Count
+        $store.groups.Add(@{ platform = $context.platform; configuration = $context.configuration; target = $context.target
+            reportIdentity = $context.reportIdentity; inputs = @($context.inputs | ForEach-Object { Add-DocumentationInputProof $store $_ }) })
+        $context.Remove('inputs')
+        $context.inputGroup = $group
+    }
+    $state.previous.sourceFiles = $store.files.ToArray()
+    $state.previous.sourceSets = $store.sets.ToArray()
+    $state.previous.inputGroups = $store.groups.ToArray()
     $prior = Join-Path $directory 'previous.json'
     $plan = Join-Path $directory 'plan.json'
     $catalog = Join-Path $directory 'catalog.json'
@@ -89,7 +102,7 @@ Invoke-Case 'changed-example-block' { param($s) $s.catalog.pages[0].codeBlocks[0
 Invoke-Case 'changed-example-mode' { param($s) $s.catalog.pages[0].examples.mode = 'runtime-script' } 'Blocked'
 Invoke-Case 'changed-example-owner' { param($s) $s.catalog.pages[0].examples.projects = @('Other') } 'Blocked'
 Invoke-Case 'missing-prior-inputs' { param($s) $s.previous.inputs = @() } 'Blocked'
-Invoke-Case 'missing-example-provenance' { param($s) $s.previous.examples[0].contexts[0].inputs = @() } 'Blocked'
+Invoke-Case 'missing-example-provenance' { param($s) $s.previous.examples[0].contexts[0].inputs = @() } 'Rejected'
 Invoke-Case 'tampered-plan' { param($s) $s.tamper = $true } 'Rejected'
 Invoke-Case 'different-catalog-source' { param($s) $s.catalog.sourceTree = 'f' * 40 } 'Rejected'
 Invoke-Case 'foreign-certificate' { param($s) $s.previous.repository = 'https://github.com/foreign/repository' } 'Rejected'

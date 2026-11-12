@@ -9,6 +9,8 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
+. "$PSScriptRoot/DocumentationCertificateInputs.ps1"
+$inputStore = New-DocumentationInputStore
 $policyIdentity = & "$PSScriptRoot/Get-DocumentationCertificatePolicy.ps1"
 $receipts = @(Get-Content -LiteralPath $CertificationPath -Raw | ConvertFrom-Json)
 if ($receipts.Count -eq 0 -or $receipts.Count -ne $CatalogPaths.Count -or [string]::IsNullOrWhiteSpace($ProducerOrigin)) {
@@ -78,10 +80,10 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
                     -or $package.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Compiled source packages have invalid paths or identities.' }
             }
             $sources = & "$PSScriptRoot/Get-DocumentationSourceInputs.ps1" -Inputs $proof.sources
-            $sourceInputs.Add([ordered]@{ platform = $row.platform; check = $check.check; inputMode = $check.inputMode; project = $proof.project; path = $proof.path
+            $sourceInputs.Add((Add-DocumentationInputProof $inputStore ([ordered]@{ platform = $row.platform; check = $check.check; inputMode = $check.inputMode; project = $proof.project; path = $proof.path
                 owners = @($proof.owners); sourceIdentity = $proof.sourceIdentity; environment = $proof.environment
                 configuration = $proof.configuration; target = $proof.target; referenceIdentity = $proof.referenceIdentity
-                packages = $packages; sources = $sources; reportIdentity = $check.reportIdentity })
+                packages = $packages; sources = $sources; reportIdentity = $check.reportIdentity })))
         }
         foreach ($reference in @($check.references)) {
             $bound = @($catalog.references | Where-Object { $_.path -ceq $reference.path -and $_.identity -ceq $reference.identity `
@@ -98,6 +100,17 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             -or [string]::IsNullOrWhiteSpace($check.configuration) -or @($check.pages).Count -eq 0) {
             throw 'Example certification lacks its exact catalog, context or successful report.'
         }
+        if (@($check.inputs).Count -eq 0) { throw 'Example certification lacks its source input closure.' }
+        $normalized = foreach ($inputProof in @($check.inputs)) {
+            if ($inputProof.environment -cne $receipt.environment -or $inputProof.configuration -cne $check.configuration `
+                -or $inputProof.target -cne $check.target -or $inputProof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$') {
+                throw 'Example certification input proof has a different environment or context.'
+            }
+            Add-DocumentationInputProof $inputStore $inputProof
+        }
+        $group = $inputStore.groups.Count
+        $inputStore.groups.Add(@{ platform = $row.platform; configuration = $check.configuration; target = $check.target
+            reportIdentity = $check.reportIdentity; inputs = @($normalized) })
         foreach ($projection in @($check.scriptReferences | Where-Object { $null -ne $_ })) {
             $bound = @($catalog.references | Where-Object { $_.path -ceq $projection.path -and $_.identity -ceq $projection.identity `
                 -and $_.model -ceq $projection.model -and $_.model -cin @('runtime-script', 'editor-script') `
@@ -118,7 +131,7 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             foreach ($project in $bound[0].projects) { [void]$coverage.Add($projection.path + "`0" + $project) }
             $scriptCoverage.Add(@{ platform = $row.platform; path = $projection.path; identity = $projection.identity; model = $projection.model
                 configuration = $check.configuration; projects = @($projection.projects); projectionIdentities = $projection.projectionIdentities
-                documentationIdentity = $projection.documentationIdentity; reportIdentity = $check.reportIdentity; inputs = @($check.inputs) })
+                documentationIdentity = $projection.documentationIdentity; reportIdentity = $check.reportIdentity; inputGroup = $group })
         }
         foreach ($proof in @($check.pages)) {
             $page = @($catalog.pages | Where-Object id -CEQ $proof.page)
@@ -135,16 +148,8 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
                 $exampleCoverage.Add($proof.page, [ordered]@{ page = $proof.page; mode = $proof.mode; projects = @($proof.projects); blocks = $blocks
                     contexts = [Collections.Generic.List[object]]::new() })
             }
-            if (@($check.inputs).Count -eq 0) { throw 'Example certification lacks its source input closure.' }
-            foreach ($inputProof in @($check.inputs)) {
-                if ($inputProof.environment -cne $receipt.environment -or $inputProof.configuration -cne $check.configuration `
-                    -or $inputProof.target -cne $check.target -or $inputProof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$') {
-                    throw 'Example certification input proof has a different environment or context.'
-                }
-                $null = & "$PSScriptRoot/Get-DocumentationSourceInputs.ps1" -Inputs $inputProof.sources
-            }
             $exampleCoverage[$proof.page].contexts.Add(@{ platform = $row.platform; configuration = $check.configuration; target = $check.target
-                reportIdentity = $check.reportIdentity; inputs = @($check.inputs) })
+                reportIdentity = $check.reportIdentity; inputGroup = $group })
         }
     }
 }
@@ -159,11 +164,22 @@ if ($PreviousCertificatePath) {
         if (-not $inputOwners.Add($key)) { continue }
         $entry = $proof | ConvertTo-Json -Depth 12 | ConvertFrom-Json -AsHashtable
         $entry['compatibility'] = $inherited.compatibility
-        $sourceInputs.Add($entry)
+        $sourceInputs.Add((Add-DocumentationInputProof $inputStore $entry))
+    }
+    $inheritedGroups = @{}
+    function Import-InputGroup($context, $proofs) {
+        $key = $context.platform + "`0" + $context.configuration + "`0" + $context.target + "`0" + $context.reportIdentity
+        if (-not $inheritedGroups.ContainsKey($key)) {
+            $inheritedGroups[$key] = $inputStore.groups.Count
+            $inputStore.groups.Add(@{ platform = $context.platform; configuration = $context.configuration; target = $context.target
+                reportIdentity = $context.reportIdentity; inputs = @($proofs | ForEach-Object { Add-DocumentationInputProof $inputStore $_ }) })
+        }
+        $context['inputGroup'] = $inheritedGroups[$key]
     }
     foreach ($inherited in @($compatibility.examples)) {
         $context = $inherited.context | ConvertTo-Json -Depth 12 | ConvertFrom-Json -AsHashtable
         $context['compatibility'] = $inherited.compatibility
+        Import-InputGroup $context $inherited.inputs
         if (-not $exampleCoverage.ContainsKey($inherited.page)) {
             $exampleCoverage.Add($inherited.page, [ordered]@{ page = $inherited.page; mode = $inherited.mode
                 projects = @($inherited.projects); blocks = @($inherited.blocks); contexts = [Collections.Generic.List[object]]::new() })
@@ -178,6 +194,7 @@ if ($PreviousCertificatePath) {
         if (@($scriptCoverage | Where-Object { $_.platform -ceq $proof.platform -and $_.path -ceq $proof.path }).Count -eq 0) {
             $entry = $proof | ConvertTo-Json -Depth 15 | ConvertFrom-Json -AsHashtable
             $entry['compatibility'] = $inherited.compatibility
+            Import-InputGroup $entry $inherited.inputs
             $scriptCoverage.Add($entry)
         }
     }
@@ -202,8 +219,11 @@ $report = @{ status = $(if ($missing.Count) { 'Blocked' } else { 'Passed' }); mi
 $report | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory 'source-certification-status.json') -Encoding utf8NoBOM
 if ($missing.Count) { return [pscustomobject]$report }
 $certificate = [ordered]@{
-    format = 'inno-documentation-source/1'; repository = $catalog.repository; sourceTree = $catalog.sourceTree; sourceCommit = $commits[0]
+    format = 'inno-documentation-source/2'; repository = $catalog.repository; sourceTree = $catalog.sourceTree; sourceCommit = $commits[0]
     policyIdentity = $policyIdentity
+    sourceFiles = $inputStore.files.ToArray()
+    sourceSets = $inputStore.sets.ToArray()
+    inputGroups = $inputStore.groups.ToArray()
     scriptReferences = @($scriptCoverage)
     projectManifestIdentity = $inventory[0].identity
     references = @($references | Sort-Object path -CaseSensitive | ForEach-Object {
@@ -216,5 +236,7 @@ $certificate = [ordered]@{
 }
 $file = Join-Path $OutputDirectory 'source-certificate.json'
 if (Test-Path -LiteralPath $file) { throw 'Source certification must not overwrite a previous producer result.' }
-$certificate | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $file -Encoding utf8NoBOM
+$json = $certificate | ConvertTo-Json -Depth 12 -Compress
+if ([Text.Encoding]::UTF8.GetByteCount($json) -gt 16MB) { throw 'Normalized source certificate exceeds its 16 MiB import boundary.' }
+[IO.File]::WriteAllText($file, $json, [Text.UTF8Encoding]::new($false))
 [pscustomobject]$report
