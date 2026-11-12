@@ -61,6 +61,16 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
     if ($actual -cne $Expected) { throw "Unexpected compatibility for ${Name}: $actual $diagnostic" }
 }
 Invoke-Case 'unchanged-owner-and-example' { param($s) } 'Passed'
+function Add-ScriptCompatibility($s) {
+    $s.catalog.references += @{ path = 'reference/api/runtime-script.json'; identity = $hash; model = 'runtime-script'; configuration = 'Debug'; target = $null; projects = @('Probe') }
+    $s.previous.scriptReferences = @(@{ platform = 'host-one'; path = 'reference/api/runtime-script.json'; identity = $hash; model = 'runtime-script'
+        configuration = 'Debug'; projects = @('Probe'); projectionIdentities = @{ 'Inno.ScriptApi.Runtime' = $hash }; documentationIdentity = $hash
+        reportIdentity = $hash; inputs = @($s.previous.inputs[0]) })
+}
+Invoke-Case 'unchanged-projected-inputs' { param($s) Add-ScriptCompatibility $s } 'Passed'
+Invoke-Case 'changed-projected-reference' { param($s) Add-ScriptCompatibility $s; $s.catalog.references[2].identity = 'f' * 64 } 'Blocked'
+Invoke-Case 'changed-projected-source' { param($s) Add-ScriptCompatibility $s; $s.plan.inputs['src/Probe.cs'] = 'f' * 64 } 'Blocked'
+Invoke-Case 'unhashed-projected-input' { param($s) Add-ScriptCompatibility $s; $s.previous.scriptReferences[0].projectionIdentities['Inno.ScriptApi.Runtime'] = 'unknown' } 'Blocked'
 Invoke-Case 'unrelated-owner-change' { param($s) $s.plan.owners = @('src/Unrelated.csproj') } 'Passed'
 Invoke-Case 'unchanged-unprepared-native-pin' { param($s) $s.previous.inputs[0].sources['extern/native'] = 'f' * 40; $s.plan.inputs['extern/native'] = 'unavailable:' + ('f' * 40) } 'Passed'
 Invoke-Case 'changed-unprepared-native-pin' { param($s) $s.previous.inputs[0].sources['extern/native'] = 'f' * 40; $s.plan.inputs['extern/native'] = 'unavailable:' + ('e' * 40) } 'Blocked'

@@ -39,6 +39,10 @@ The previous source/XML review found AssetPipeline.Delete removes source and met
 
 ## Missing or limited acceptance
 
+### Script projection constructor artifacts
+
+The documentation capture on 2026-11-13 found 25 Runtime and 52 Editor logical-reference constructors without matching public/protected constructors in the captured engine source. The stub writer emits visible constructors but does not suppress the C# compiler's implicit parameterless constructor when an implementation class has none. `ArtifactLease` is one concrete example. These declarations are retained in precise projection facts with `projectionOnly: true` and an explicit unsupported-construction constraint; they must not be presented as supported factories. Product compilation and runtime behavior remain unchanged in this documentation task. A separate compiler-owned change must verify both trimmed runtime and IDE paths before claiming that all generated construction paths match actual implementations.
+
 ### Collection handle identity observations
 
 The documentation review of `IndexedObjectStore.Keys.cs` and `IndexedObjectStore.cs` found that `Clear` resets key IDs, while key validity checks the store, numeric ID and key type without a separate reset epoch. Recreating a key of the same type can therefore make an old key look valid again. `RemoveKey` also removes by numeric ID without using the owner check applied by normal key queries/updates. These are source-review findings, not newly executed failure reproductions. Product behavior remains unchanged in this documentation migration. Callers must discard keys after Clear and use only the exact owning store; a separate owner-scoped runtime fix and regression are needed before claiming durable stale/foreign-key rejection.

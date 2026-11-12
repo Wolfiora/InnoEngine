@@ -84,6 +84,36 @@ foreach ($check in $selected) {
         }
         [pscustomobject]@{ page = $result.page; mode = $result.mode; projects = @($page[0].examples.projects); blocks = $identities }
     }
+    $modes = @($pages | ForEach-Object mode)
+    $expectedScriptReferences = @($catalog.references | Where-Object {
+        ($_.model -ceq 'runtime-script' -and ('runtime-script' -cin $modes -or 'editor-script' -cin $modes)) `
+        -or ($_.model -ceq 'editor-script' -and 'editor-script' -cin $modes)
+    })
+    $actualScriptReferences = @($report.scriptReferences | Where-Object { $null -ne $_ })
+    if ((@($expectedScriptReferences.path | Sort-Object -CaseSensitive) -join "`n") `
+        -cne (@($actualScriptReferences.path | Sort-Object -CaseSensitive) -join "`n")) {
+        throw 'Projected API comparison is missing, duplicated or outside the selected script surfaces.'
+    }
+    foreach ($projection in $actualScriptReferences) {
+        $bound = @($expectedScriptReferences | Where-Object path -CEQ $projection.path)
+        if ($bound.Count -ne 1 -or $projection.status -cne 'Passed' -or @($projection.differences).Count -ne 0 `
+            -or $projection.identity -cne $bound[0].identity -or $projection.model -cne $bound[0].model `
+            -or $projection.configuration -cne $report.configuration -or $bound[0].configuration -cne $report.configuration `
+            -or $null -ne $bound[0].target -or $projection.documentationIdentity -cnotmatch '^[a-f0-9]{64}$' `
+            -or (@($projection.projects) -join "`n") -cne (@($bound[0].projects) -join "`n")) {
+            throw 'Projected API comparison lost its exact reference, owners, context or successful result.'
+        }
+        $names = @($projection.projectionIdentities.PSObject.Properties | ForEach-Object Name | Sort-Object -CaseSensitive)
+        $required = if ($projection.model -ceq 'editor-script') { @('Inno.ScriptApi.Editor', 'Inno.ScriptApi.Runtime') } else { @('Inno.ScriptApi.Runtime') }
+        if (($names -join "`n") -cne ($required -join "`n")) { throw 'Projected API evidence has the wrong logical assemblies.' }
+        foreach ($identity in $projection.projectionIdentities.PSObject.Properties) {
+            if ($identity.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Projected API evidence has an invalid assembly identity.' }
+            $consumers = @($report.results | Where-Object { $_.mode -ceq $projection.model -or ($projection.model -ceq 'runtime-script' -and $_.mode -ceq 'editor-script') })
+            if ($consumers.Count -eq 0 -or @($consumers | Where-Object { $_.references.($identity.Name) -cne $identity.Value }).Count -ne 0) {
+                throw 'Projected API evidence does not describe the assemblies used by the actual script compilation.'
+            }
+        }
+    }
     [pscustomobject]@{
         check = $check.id
         catalogIdentity = (Get-FileHash -LiteralPath $catalogPath -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -92,5 +122,6 @@ foreach ($check in $selected) {
         target = $report.target
         inputs = $proofs
         pages = @($pages)
+        scriptReferences = $actualScriptReferences
     }
 }

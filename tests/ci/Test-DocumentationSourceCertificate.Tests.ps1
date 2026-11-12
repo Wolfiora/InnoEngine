@@ -62,6 +62,28 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
     if ($actual -cne $Expected) { throw "Unexpected certificate result for ${Name}: $actual $diagnostic" }
 }
 Invoke-Case 'combined-platform-coverage' { param($s) } 'Passed'
+function Add-ScriptCertification($s) {
+    $path = $s.catalogPaths[0]
+    $catalog = Get-Content $path -Raw | ConvertFrom-Json -AsHashtable
+    $catalog.pages[0].examples.mode = 'runtime-script'
+    $catalog.references += @{ path = 'reference/api/runtime-script.json'; identity = $hash; model = 'runtime-script'; configuration = 'Debug'; target = $null; projects = @('Probe') }
+    $catalog | ConvertTo-Json -Depth 12 | Set-Content $path -Encoding utf8NoBOM
+    $identity = (Get-FileHash $path).Hash.ToLowerInvariant()
+    foreach ($row in $s.rows) {
+        $row.receipt.sourceApi[0].catalogIdentity = $identity
+        $row.receipt.sourceExamples[0].catalogIdentity = $identity
+        $row.receipt.sourceExamples[0].pages[0].mode = 'runtime-script'
+        $row.receipt.sourceExamples[0].scriptReferences = @(@{ path = 'reference/api/runtime-script.json'; identity = $hash; model = 'runtime-script'
+            configuration = 'Debug'; projects = @('Probe'); status = 'Passed'; differences = @()
+            projectionIdentities = @{ 'Inno.ScriptApi.Runtime' = $hash }; documentationIdentity = $hash })
+    }
+}
+Invoke-Case 'script-surface-certification' { param($s) Add-ScriptCertification $s } 'Passed'
+Invoke-Case 'missing-script-certification' { param($s) Add-ScriptCertification $s; foreach($row in $s.rows){$row.receipt.sourceExamples[0].scriptReferences = @()} } 'Blocked'
+Invoke-Case 'failed-script-certification' { param($s) Add-ScriptCertification $s; $s.rows[0].receipt.sourceExamples[0].scriptReferences[0].status = 'Failed' } 'Rejected'
+Invoke-Case 'wrong-script-owner' { param($s) Add-ScriptCertification $s; $s.rows[0].receipt.sourceExamples[0].scriptReferences[0].projects = @('Other') } 'Rejected'
+Invoke-Case 'wrong-script-model' { param($s) Add-ScriptCertification $s; $s.rows[0].receipt.sourceExamples[0].scriptReferences[0].model = 'editor-script' } 'Rejected'
+Invoke-Case 'unhashed-script-assembly' { param($s) Add-ScriptCertification $s; $s.rows[0].receipt.sourceExamples[0].scriptReferences[0].projectionIdentities['Inno.ScriptApi.Runtime'] = 'unknown' } 'Rejected'
 Invoke-Case 'missing-owner' { param($s) $s.rows[1].receipt.sourceApi[0].projects = @(); $s.rows[1].receipt.sourceApi[0].inputs = @() } 'Blocked'
 Invoke-Case 'no-comparisons' { param($s) $s.rows[0].receipt.sourceApi = @(); $s.rows[1].receipt.sourceApi = @() } 'Blocked'
 Invoke-Case 'failed-required-check' { param($s) $s.rows[0].receipt.passed = 1 } 'Rejected'

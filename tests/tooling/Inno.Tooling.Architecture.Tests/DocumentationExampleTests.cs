@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
@@ -200,6 +201,124 @@ public sealed class DocumentationExampleTests : IDisposable
         Assert.Equal(1, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "runtime", "--runtime-reference", unrelated]));
         Assert.Contains("Expected the Inno.ScriptApi.Runtime", File.ReadAllText(output));
         await Assert.ThrowsAsync<ArgumentException>(() => DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "editor", "--editor-reference", editor]));
+    }
+
+    [Fact]
+    public async Task ScriptReferenceCaptureUsesActualMembersOriginsAndQualifiedSurfaces()
+    {
+        Write("src/Inno.Probe/Probe.cs", "namespace Inno.Probe; public static class Probe { public static int Read(int value) => value; public static int Read(string value) => value.Length; } public static class EditorProbe { public static int Inspect() => 1; } public sealed class Owned { private Owned() { } }");
+        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        foreach (string argument in new[] { "restore", Path.Combine(m_root, "src/Inno.Probe/Inno.Probe.csproj"), "--disable-parallel", "-nr:false", "-v:quiet" })
+            start.ArgumentList.Add(argument);
+        using (Process process = Process.Start(start)!)
+        {
+            Task<string> stdout = process.StandardOutput.ReadToEndAsync();
+            Task<string> stderr = process.StandardError.ReadToEndAsync();
+            await process.WaitForExitAsync();
+            Assert.True(process.ExitCode == 0, await stdout + await stderr);
+        }
+        string facts = Path.Combine(m_root, "host.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(["--engine-root", m_root, "--dotnet", host,
+            "--project", "src/Inno.Probe/Inno.Probe.csproj", "--output", facts]));
+        string runtime = EmitReference("Inno.ScriptApi.Runtime", "namespace Logical; public static class Renamed { public static int Read(int value) => value; public static int Read(string value) => value.Length; private static int Hidden() => 0; } public sealed class Owned { }");
+        string editor = EmitReference("Inno.ScriptApi.Editor", "namespace Logical; public static class Tools { public static int Inspect() => 1; }");
+        const string C_XML = """
+            <doc><assembly><name>ASSEMBLY</name></assembly>
+            <provenance format="inno-script-documentation/2"><type id="T:Logical.Renamed" source="T:Inno.Probe.Probe" assembly="Inno.Probe" /></provenance>
+            <members><member name="T:Logical.Renamed"><summary>Uses the logical caller contract.</summary></member>
+            <member name="M:Logical.Renamed.Read(System.Int32)"><summary>Reads the supplied value.</summary><param name="value">The value.</param><returns>The supplied value.</returns></member>
+            <member name="M:Logical.Renamed.HostOnly"><summary>Must not become a projected declaration.</summary></member></members></doc>
+            """;
+        File.WriteAllText(Path.ChangeExtension(runtime, ".xml"), C_XML.Replace("ASSEMBLY", "Inno.ScriptApi.Runtime", StringComparison.Ordinal)
+            .Replace("</provenance>", "<type id=\"T:Logical.Owned\" source=\"T:Inno.Probe.Owned\" assembly=\"Inno.Probe\" /></provenance>", StringComparison.Ordinal));
+        File.WriteAllText(Path.ChangeExtension(editor, ".xml"), C_XML.Replace("ASSEMBLY", "Inno.ScriptApi.Editor", StringComparison.Ordinal)
+            .Replace("Logical.Renamed", "Logical.Tools", StringComparison.Ordinal).Replace("T:Inno.Probe.Probe", "T:Inno.Probe.EditorProbe", StringComparison.Ordinal));
+        string output = Path.Combine(m_root, "projected.json");
+        string[] arguments = ["--engine-root", m_root, "--dotnet", host, "--source-reference", facts,
+            "--runtime-reference", runtime, "--editor-reference", editor, "--output", output,
+            "--framework-project", "src/Inno.Probe/Inno.Probe.csproj"];
+        Assert.Equal(0, DocumentationReferences.ExportApi([..arguments, "--surface", "runtime-script"]));
+        byte[] runtimeFacts = File.ReadAllBytes(output);
+        using (JsonDocument captured = JsonDocument.Parse(File.ReadAllBytes(output)))
+        {
+            Assert.Equal("runtime-script", captured.RootElement.GetProperty("model").GetString());
+            Assert.Single(captured.RootElement.GetProperty("projectionIdentities").EnumerateObject());
+            JsonElement project = captured.RootElement.GetProperty("projects")[0];
+            Assert.Equal("Inno.Probe", project.GetProperty("name").GetString());
+            var symbols = project.GetProperty("symbols").EnumerateArray().ToDictionary(static symbol => symbol.GetProperty("id").GetString()!);
+            Assert.Contains("M:Logical.Renamed.Read(System.Int32)", symbols.Keys);
+            Assert.Contains("M:Logical.Renamed.Read(System.String)", symbols.Keys);
+            Assert.DoesNotContain(symbols.Keys, static id => id.Contains("Hidden", StringComparison.Ordinal) || id.Contains("HostOnly", StringComparison.Ordinal));
+            Assert.Contains("supplied value", symbols["M:Logical.Renamed.Read(System.Int32)"].GetProperty("documentation").GetString());
+            Assert.True(symbols["M:Logical.Owned.#ctor"].GetProperty("projectionOnly").GetBoolean());
+            Assert.Contains("not a supported construction path", symbols["M:Logical.Owned.#ctor"].GetProperty("documentation").GetString());
+        }
+        Assert.Equal(0, DocumentationReferences.ExportApi([..arguments, "--surface", "editor-script"]));
+        using (JsonDocument captured = JsonDocument.Parse(File.ReadAllBytes(output)))
+        {
+            Assert.Equal(2, captured.RootElement.GetProperty("projectionIdentities").EnumerateObject().Count());
+            Assert.Contains(captured.RootElement.GetProperty("projects")[0].GetProperty("symbols").EnumerateArray(),
+                static symbol => symbol.GetProperty("id").GetString() == "M:Logical.Tools.Inspect");
+        }
+        Page("projected-contract", "runtime-script", "public static class Example { public static int Read() => Logical.Renamed.Read(7); }");
+        Bind(runtimeFacts);
+        DocumentationResult prepared = await DocumentationStore.IndexAsync(m_root, source, cache);
+        string comparison = Path.Combine(m_root, "comparison.json");
+        Assert.Equal(0, await DocumentationExamples.ExecuteAsync([..Arguments(prepared.snapshot, comparison), "--runtime-reference", runtime]));
+        using (JsonDocument report = JsonDocument.Parse(File.ReadAllBytes(comparison)))
+        {
+            Assert.Equal("Passed", report.RootElement.GetProperty("scriptReferences")[0].GetProperty("status").GetString());
+        }
+        await AssertReceiptAsync(prepared.snapshot, comparison, "projected-contract");
+        JsonNode changedFacts = JsonNode.Parse(runtimeFacts)!;
+        changedFacts["projects"]![0]!["symbols"]![0]!["signature"] = "public int ChangedContract";
+        Bind(JsonSerializer.SerializeToUtf8Bytes(changedFacts));
+        DocumentationResult changed = await DocumentationStore.IndexAsync(m_root, source, cache);
+        Assert.Equal(1, await DocumentationExamples.ExecuteAsync([..Arguments(changed.snapshot, comparison), "--runtime-reference", runtime]));
+        using (JsonDocument report = JsonDocument.Parse(File.ReadAllBytes(comparison)))
+        {
+            Assert.Equal("Passed", report.RootElement.GetProperty("results")[0].GetProperty("status").GetString());
+            Assert.Equal("Failed", report.RootElement.GetProperty("scriptReferences")[0].GetProperty("status").GetString());
+        }
+        byte[] previous = File.ReadAllBytes(output);
+        JsonNode conflicting = JsonNode.Parse(File.ReadAllBytes(facts))!;
+        JsonNode selectedMember = conflicting["projects"]![0]!["symbols"]!.AsArray()
+            .Single(value => value!["id"]!.GetValue<string>() == "M:Inno.Probe.Probe.Read(System.Int32)")!;
+        selectedMember["documentation"] = "<member><summary>A conflicting captured contract.</summary></member>";
+        string conflictPath = Path.Combine(m_root, "conflicting-source.json");
+        File.WriteAllBytes(conflictPath, JsonSerializer.SerializeToUtf8Bytes(conflicting));
+        Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi(
+            [..arguments, "--source-reference", conflictPath, "--surface", "runtime-script"]));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        File.WriteAllText(Path.ChangeExtension(runtime, ".xml"), C_XML.Replace("T:Inno.Probe.Probe", "T:Missing.Owner", StringComparison.Ordinal));
+        Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi([..arguments, "--surface", "runtime-script"]));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        Assert.ThrowsAny<OperationCanceledException>(() => DocumentationReferences.ExportApi([..arguments, "--surface", "runtime-script"], cancellation.Token));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+
+        void Bind(byte[] projectedFacts)
+        {
+            byte[] inventory = JsonSerializer.SerializeToUtf8Bytes(new[]
+            {
+                new { name = "Inno.Probe", path = "src/Inno.Probe/Inno.Probe.csproj", surfaces = new[] { "source-clr", "runtime-script" } }
+            });
+            byte[] hostFacts = File.ReadAllBytes(facts);
+            Write("documentation/reference/projects.json", Encoding.UTF8.GetString(inventory));
+            Write("documentation/reference/host.json", Encoding.UTF8.GetString(hostFacts));
+            Write("documentation/reference/runtime.json", Encoding.UTF8.GetString(projectedFacts));
+            Write("documentation/reference/engine.lock.json", JsonSerializer.Serialize(new
+            {
+                repository = "https://github.com/Wolfiora/InnoEngine", revision = new string('a', 40), sourceTree = new string('b', 40),
+                projectManifest = "reference/projects.json", projectManifestIdentity = Convert.ToHexStringLower(SHA256.HashData(inventory)),
+                toolingRevision = new string('a', 40), apiManifests = new[]
+                {
+                    new { path = "reference/host.json", sha256 = Convert.ToHexStringLower(SHA256.HashData(hostFacts)), model = "source-clr", configuration = "Debug", sourceRevision = new string('a', 40), sourceTree = new string('b', 40) },
+                    new { path = "reference/runtime.json", sha256 = Convert.ToHexStringLower(SHA256.HashData(projectedFacts)), model = "runtime-script", configuration = "Debug", sourceRevision = new string('a', 40), sourceTree = new string('b', 40) }
+                }
+            }));
+        }
     }
 
     private async Task AssertReceiptAsync(string snapshotId, string reportPath, string pageId)

@@ -36,6 +36,21 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     if ($accepted -ne $Expected) { throw "Unexpected example receipt for ${Name}: $diagnostic" }
 }
 Invoke-Case 'complete' { param($s) } $true
+function Add-Projection($s) {
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'runtime-script'
+    $s.report.results[0].references['Inno.ScriptApi.Runtime'] = $hash
+    $s.catalog.references = @(@{ path = 'reference/api/runtime-script.json'; identity = $hash; model = 'runtime-script'; configuration = 'Debug'; target = $null; projects = @('Probe') })
+    $s.report.scriptReferences = @(@{ path = 'reference/api/runtime-script.json'; identity = $hash; model = 'runtime-script'; configuration = 'Debug'; projects = @('Probe')
+        status = 'Passed'; differences = @(); projectionIdentities = @{ 'Inno.ScriptApi.Runtime' = $hash }; documentationIdentity = $hash })
+}
+Invoke-Case 'actual-projected-contracts' { param($s) Add-Projection $s } $true
+Invoke-Case 'missing-projected-contracts' { param($s) Add-Projection $s; $s.report.scriptReferences = @() } $false
+Invoke-Case 'duplicate-projected-contracts' { param($s) Add-Projection $s; $s.report.scriptReferences += $s.report.scriptReferences[0] } $false
+Invoke-Case 'failed-projected-contracts' { param($s) Add-Projection $s; $s.report.scriptReferences[0].status = 'Failed' } $false
+Invoke-Case 'different-projection-assembly' { param($s) Add-Projection $s; $s.report.scriptReferences[0].projectionIdentities['Inno.ScriptApi.Runtime'] = 'c' * 64 } $false
+Invoke-Case 'different-projection-reference' { param($s) Add-Projection $s; $s.report.scriptReferences[0].identity = 'c' * 64 } $false
+Invoke-Case 'different-projection-owner' { param($s) Add-Projection $s; $s.report.scriptReferences[0].projects = @('Other') } $false
+Invoke-Case 'unhashed-projection-xml' { param($s) Add-Projection $s; $s.report.scriptReferences[0].documentationIdentity = 'unknown' } $false
 Invoke-Case 'runtime-script-references' { param($s)
     $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'runtime-script'
     $s.report.results[0].references['Inno.ScriptApi.Runtime'] = $hash

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
@@ -95,6 +96,57 @@ internal static class DocumentationApiExtractor
             _ => []
         };
         return types.Any(IsUnresolved);
+    }
+
+    internal static IReadOnlyList<DocumentationApiEntry> CaptureReference(
+        IAssemblySymbol assembly,
+        Func<ISymbol, DocumentationApiEntry> resolveOrigin,
+        CancellationToken cancellationToken
+    ) {
+        var entries = new SortedDictionary<string, DocumentationApiEntry>(StringComparer.Ordinal);
+        VisitNamespace(assembly.GlobalNamespace);
+        return entries.Values.ToArray();
+
+        void VisitNamespace(INamespaceSymbol space)
+        {
+            foreach (INamespaceSymbol child in space.GetNamespaceMembers())
+                VisitNamespace(child);
+            foreach (INamedTypeSymbol type in space.GetTypeMembers())
+                VisitType(type);
+        }
+
+        void VisitType(INamedTypeSymbol type)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!IsVisible(type))
+                return;
+            foreach (ISymbol symbol in new ISymbol[] { type }.Concat(type.GetMembers()))
+            {
+                if (!IsVisible(symbol) || symbol is INamedTypeSymbol nested && !SymbolEqualityComparer.Default.Equals(nested, type)
+                    || symbol.Name.StartsWith('<') || symbol is IMethodSymbol { AssociatedSymbol: not null }
+                    || symbol is IMethodSymbol { MethodKind: MethodKind.Constructor, ContainingType.TypeKind: TypeKind.Struct or TypeKind.Enum,
+                        IsImplicitlyDeclared: true })
+                    continue;
+                string? id = symbol.GetDocumentationCommentId();
+                if (id is null)
+                    continue;
+                if (HasUnresolvedContract(symbol))
+                    throw new InvalidDataException("The projected API reference closure is incomplete: " + id);
+                DocumentationApiEntry origin = resolveOrigin(symbol);
+                string signature = Signature(symbol);
+                string documentation = Documentation(symbol, new HashSet<ISymbol>(SymbolEqualityComparer.Default), cancellationToken);
+                entries.Add(id, new(origin.project, id, signature,
+                    Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(signature))), origin.source, origin.line,
+                    string.Empty, string.IsNullOrWhiteSpace(documentation) ? origin.documentation : documentation,
+                    origin.implicitDeclaration, symbol is IFieldSymbol { HasConstantValue: true } field ? field.ConstantValue : null,
+                    symbol.Kind.ToString(), symbol.ContainingType?.GetDocumentationCommentId(),
+                    symbol is INamedTypeSymbol named ? named.BaseType?.ToDisplayString() : null,
+                    symbol is INamedTypeSymbol namedType
+                        ? namedType.Interfaces.Select(static contract => contract.ToDisplayString()).ToArray() : [], origin.projectionOnly));
+            }
+            foreach (INamedTypeSymbol child in type.GetTypeMembers())
+                VisitType(child);
+        }
     }
 
     private static bool IsUnresolved(ITypeSymbol type) => type switch
@@ -209,6 +261,7 @@ internal static class DocumentationApiExtractor
         string kind,
         string? containingType,
         string? baseType,
-        IReadOnlyList<string> interfaces
+        IReadOnlyList<string> interfaces,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool projectionOnly = false
     );
 }

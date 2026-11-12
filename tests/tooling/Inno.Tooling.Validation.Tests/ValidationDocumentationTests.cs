@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
@@ -12,6 +13,69 @@ namespace Inno.Tooling.Validation.Tests;
 
 public sealed class ValidationDocumentationTests
 {
+    [Fact]
+    public async Task ProjectedReferenceChangesSelectTheirCompilerAndIgnoreUnrelatedBatchOwners()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("Product.props", "<Project />");
+        repository.Write("entry/InnoEngine.Build/InnoEngine.Build.csproj", ValidationRepository.Project());
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoProductId>editor</InnoProductId><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare the actual projection hosts");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        docs.Write("content/en/script.md", ValidationDocumentationFixture.Page("Example", "```csharp\nint value = 1;\n```\n", "runtime-script"));
+        string root = repository.PathOf("artifacts/docs-source");
+        JsonNode inventory = JsonNode.Parse(File.ReadAllBytes(Path.Combine(root, "reference/projects/catalog.json")))!;
+        inventory.AsArray().Single(owner => owner!["name"]!.GetValue<string>() == "Example")!["surfaces"]!.AsArray().Add("runtime-script");
+        byte[] inventoryBytes = JsonSerializer.SerializeToUtf8Bytes(inventory);
+        docs.Write("reference/projects/catalog.json", Encoding.UTF8.GetString(inventoryBytes));
+        JsonNode binding = JsonNode.Parse(File.ReadAllBytes(Path.Combine(root, "reference/engine.lock.json")))!;
+        binding["projectManifestIdentity"] = Convert.ToHexStringLower(SHA256.HashData(inventoryBytes));
+        binding["apiManifests"]!.AsArray().Add(JsonSerializer.SerializeToNode(new
+        {
+            path = "reference/api/scripts.json", model = "runtime-script", configuration = "Debug",
+            sourceRevision = new string('a', 40), sourceTree = new string('b', 40), sha256 = ""
+        }));
+        BindProjection("before");
+        DocumentationResult baseline = await docs.IndexAsync();
+        BindProjection("after");
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
+        JsonElement check = plan.RootElement.GetProperty("checks").EnumerateArray()
+            .Single(candidate => candidate.GetProperty("id").GetString() == "documentation-examples:native");
+        Assert.Contains("build:entry/InnoEngine.Build/InnoEngine.Build.csproj", check.GetProperty("prerequisites").EnumerateArray().Select(static value => value.GetString()));
+        Assert.Contains("reference/api/scripts.json", check.GetProperty("documentation").GetProperty("references").EnumerateArray().Select(static value => value.GetString()));
+        string identity = check.GetProperty("documentation").GetProperty("contentIdentity").GetString()!;
+        JsonNode sourceFacts = JsonNode.Parse(File.ReadAllBytes(Path.Combine(root, "reference/api/facts.json")))!;
+        sourceFacts["projects"]!.AsArray().Single(owner => owner!["name"]!.GetValue<string>() == "Other")!["symbols"]!.AsArray()
+            .Add(JsonSerializer.SerializeToNode(new { id = "T:Other.Added" }));
+        byte[] factsBytes = JsonSerializer.SerializeToUtf8Bytes(sourceFacts);
+        docs.Write("reference/api/facts.json", Encoding.UTF8.GetString(factsBytes));
+        binding["apiManifests"]![0]!["sha256"] = Convert.ToHexStringLower(SHA256.HashData(factsBytes));
+        docs.Write("reference/engine.lock.json", binding.ToJsonString());
+        using JsonDocument unrelated = await docs.PlanAsync(await docs.IndexAsync(), baseline);
+        JsonElement same = unrelated.RootElement.GetProperty("checks").EnumerateArray()
+            .Single(candidate => candidate.GetProperty("id").GetString() == "documentation-examples:native");
+        Assert.Equal(identity, same.GetProperty("documentation").GetProperty("contentIdentity").GetString());
+
+        void BindProjection(string signature)
+        {
+            byte[] facts = JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                model = "runtime-script", configuration = "Debug", projects = new[]
+                {
+                    new { project = "src/Example/Example.csproj", name = "Example", symbols = new[] { new { id = "T:Logical.Example", signature } } }
+                }
+            });
+            docs.Write("reference/api/scripts.json", Encoding.UTF8.GetString(facts));
+            binding["apiManifests"]![1]!["sha256"] = Convert.ToHexStringLower(SHA256.HashData(facts));
+            docs.Write("reference/engine.lock.json", binding.ToJsonString());
+        }
+    }
+
     [Theory]
     [InlineData(".agents/records/acceptance/native-reload.json", false)]
     [InlineData(".agents/records/plans/work.md", false)]

@@ -165,14 +165,19 @@ public static class DocumentationExamples
                 return value.reference.WithProperties(reference.Properties);
             }
         }
-        string overall = groups.Length == 0 || results.Any(static result => result.status == "Blocked") ? "Blocked"
-            : results.Any(static result => result.status == "Failed") ? "Failed" : "Passed";
+        IReadOnlyList<DocumentationScriptApi.Comparison> scriptReferences = await DocumentationScriptApi.CompareAsync(snapshot, catalog,
+            results.Select(static result => result.mode).OfType<string>().ToHashSet(StringComparer.Ordinal), configuration,
+            options.GetValueOrDefault("--runtime-reference"), options.GetValueOrDefault("--editor-reference"),
+            () => sdk.GetFrameworkReferences(cancellationToken), cancellationToken).ConfigureAwait(false);
+        string overall = groups.Length == 0 || results.Any(static result => result.status == "Blocked")
+            || scriptReferences.Any(static reference => reference.status == "Blocked") ? "Blocked"
+            : results.Any(static result => result.status == "Failed") || scriptReferences.Any(static reference => reference.status == "Failed") ? "Failed" : "Passed";
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(Path.GetFullPath(options["--output"]), JsonSerializer.SerializeToUtf8Bytes(new
         {
             status = overall, catalog.snapshot, catalog.contentIdentity, catalog.revision, catalog.sourceTree,
             sourceApiStatus = "Unverified", configuration, target = options.GetValueOrDefault("--target"),
-            reason = groups.Length == 0 ? "Required executable example discovery was empty." : null, results
+            reason = groups.Length == 0 ? "Required executable example discovery was empty." : null, results, scriptReferences
         }, new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }));
         Console.WriteLine($"Documentation examples: {overall}; {results.Count} groups. Source and runtime behavior certification remain separate.");
         return overall == "Passed" ? 0 : 1;

@@ -27,6 +27,7 @@ $inventory = @($catalog.references | Where-Object model -CEQ 'project-inventory'
 if ($inventory.Count -ne 1 -or $inventory[0].identity -cnotmatch '^[a-f0-9]{64}$') { throw 'The source catalog lacks its exact project inventory.' }
 $coverage = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $exampleCoverage = [Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)
+$scriptCoverage = [Collections.Generic.List[object]]::new()
 $sourceInputs = [Collections.Generic.List[object]]::new()
 $inputOwners = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 if ($null -eq $catalog.pages) { throw 'Source certification requires the canonical example inventory.' }
@@ -97,6 +98,28 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             -or [string]::IsNullOrWhiteSpace($check.configuration) -or @($check.pages).Count -eq 0) {
             throw 'Example certification lacks its exact catalog, context or successful report.'
         }
+        foreach ($projection in @($check.scriptReferences | Where-Object { $null -ne $_ })) {
+            $bound = @($catalog.references | Where-Object { $_.path -ceq $projection.path -and $_.identity -ceq $projection.identity `
+                -and $_.model -ceq $projection.model -and $_.model -cin @('runtime-script', 'editor-script') `
+                -and $_.configuration -ceq $check.configuration -and $null -eq $_.target })
+            if ($bound.Count -ne 1 -or $projection.status -cne 'Passed' -or @($projection.differences).Count -ne 0 `
+                -or $projection.configuration -cne $check.configuration -or @($check.inputs).Count -eq 0 `
+                -or @($check.pages | Where-Object { $_.mode -ceq $projection.model -or ($projection.model -ceq 'runtime-script' -and $_.mode -ceq 'editor-script') }).Count -eq 0 `
+                -or $projection.documentationIdentity -cnotmatch '^[a-f0-9]{64}$' `
+                -or (@($projection.projects) -join "`n") -cne (@($bound[0].projects) -join "`n")) {
+                throw 'Script certification differs from its actual successful projection comparison.'
+            }
+            $names = @($projection.projectionIdentities.PSObject.Properties | ForEach-Object Name | Sort-Object -CaseSensitive)
+            $required = if ($projection.model -ceq 'editor-script') { @('Inno.ScriptApi.Editor', 'Inno.ScriptApi.Runtime') } else { @('Inno.ScriptApi.Runtime') }
+            if (($names -join "`n") -cne ($required -join "`n") `
+                -or @($projection.projectionIdentities.PSObject.Properties | Where-Object { $_.Value -cnotmatch '^[a-f0-9]{64}$' }).Count -ne 0) {
+                throw 'Script certification lacks its actual logical assembly identities.'
+            }
+            foreach ($project in $bound[0].projects) { [void]$coverage.Add($projection.path + "`0" + $project) }
+            $scriptCoverage.Add(@{ platform = $row.platform; path = $projection.path; identity = $projection.identity; model = $projection.model
+                configuration = $check.configuration; projects = @($projection.projects); projectionIdentities = $projection.projectionIdentities
+                documentationIdentity = $projection.documentationIdentity; reportIdentity = $check.reportIdentity; inputs = @($check.inputs) })
+        }
         foreach ($proof in @($check.pages)) {
             $page = @($catalog.pages | Where-Object id -CEQ $proof.page)
             if ($page.Count -ne 1 -or $null -eq $page[0].examples -or $proof.mode -cne $page[0].examples.mode `
@@ -149,11 +172,20 @@ if ($PreviousCertificatePath) {
         if (@($contexts | Where-Object { $_.platform -ceq $context.platform -and $_.configuration -ceq $context.configuration `
             -and $_.target -ceq $context.target }).Count -eq 0) { $contexts.Add($context) }
     }
+    foreach ($inherited in @($compatibility.scripts | Where-Object { $null -ne $_ })) {
+        $proof = $inherited.proof
+        foreach ($project in $proof.projects) { [void]$coverage.Add($proof.path + "`0" + $project) }
+        if (@($scriptCoverage | Where-Object { $_.platform -ceq $proof.platform -and $_.path -ceq $proof.path }).Count -eq 0) {
+            $entry = $proof | ConvertTo-Json -Depth 15 | ConvertFrom-Json -AsHashtable
+            $entry['compatibility'] = $inherited.compatibility
+            $scriptCoverage.Add($entry)
+        }
+    }
 }
 $references = @($catalog.references | Where-Object model -CNE 'project-inventory')
 $missing = @($references | ForEach-Object {
     $reference = $_
-    if ($reference.model -cne 'source-clr') { "Unsupported source certification surface: $($reference.path)" }
+    if ($reference.model -cnotin @('source-clr', 'runtime-script', 'editor-script')) { "Unsupported source certification surface: $($reference.path)" }
     foreach ($project in @($reference.projects)) {
         if (-not $coverage.Contains($reference.path + "`0" + $project)) { "$($reference.path): $project" }
     }
@@ -172,6 +204,7 @@ if ($missing.Count) { return [pscustomobject]$report }
 $certificate = [ordered]@{
     format = 'inno-documentation-source/1'; repository = $catalog.repository; sourceTree = $catalog.sourceTree; sourceCommit = $commits[0]
     policyIdentity = $policyIdentity
+    scriptReferences = @($scriptCoverage)
     projectManifestIdentity = $inventory[0].identity
     references = @($references | Sort-Object path -CaseSensitive | ForEach-Object {
         [ordered]@{ path = $_.path; identity = $_.identity; model = $_.model; configuration = $_.configuration; target = $_.target

@@ -18,6 +18,7 @@ if ($previous.format -cne 'inno-documentation-source/1' -or $previous.repository
 $identity = (Get-FileHash -LiteralPath $PreviousCertificatePath -Algorithm SHA256).Hash.ToLowerInvariant()
 $api = [Collections.Generic.List[object]]::new()
 $examples = [Collections.Generic.List[object]]::new()
+$scripts = [Collections.Generic.List[object]]::new()
 $diagnostics = [Collections.Generic.List[string]]::new()
 if ($PolicyIdentity -cnotmatch '^[a-f0-9]{64}$') { throw 'Current documentation certificate policy has no content identity.' }
 if ($previous.policyIdentity -cne $PolicyIdentity) {
@@ -100,5 +101,18 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
                 context = $context; compatibility = $binding })
         }
     }
+    foreach ($projection in @($previous.scriptReferences | Where-Object { $null -ne $_ -and $_.platform -ceq $row.platform })) {
+        $bound = @($catalog.references | Where-Object { $_.path -ceq $projection.path -and $_.identity -ceq $projection.identity `
+            -and $_.model -ceq $projection.model -and $_.model -cin @('runtime-script', 'editor-script') `
+            -and $_.configuration -ceq $projection.configuration -and $null -eq $_.target })
+        if ($bound.Count -ne 1 -or (@($projection.projects) -join "`n") -cne (@($bound[0].projects) -join "`n") `
+            -or $projection.reportIdentity -cnotmatch '^[a-f0-9]{64}$' -or $projection.documentationIdentity -cnotmatch '^[a-f0-9]{64}$' `
+            -or @($projection.inputs).Count -eq 0 -or @($projection.inputs | Where-Object { -not (Test-Inputs $_ $plan) }).Count -ne 0) { continue }
+        $names = @($projection.projectionIdentities.PSObject.Properties | ForEach-Object Name | Sort-Object -CaseSensitive)
+        $required = if ($projection.model -ceq 'editor-script') { @('Inno.ScriptApi.Editor', 'Inno.ScriptApi.Runtime') } else { @('Inno.ScriptApi.Runtime') }
+        if (($names -join "`n") -cne ($required -join "`n") `
+            -or @($projection.projectionIdentities.PSObject.Properties | Where-Object { $_.Value -cnotmatch '^[a-f0-9]{64}$' }).Count -ne 0) { continue }
+        $scripts.Add([pscustomobject]@{ proof = $projection; compatibility = $binding })
+    }
 }
-[pscustomobject]@{ api = $api.ToArray(); examples = $examples.ToArray(); diagnostics = $diagnostics.ToArray() }
+[pscustomobject]@{ api = $api.ToArray(); examples = $examples.ToArray(); scripts = $scripts.ToArray(); diagnostics = $diagnostics.ToArray() }

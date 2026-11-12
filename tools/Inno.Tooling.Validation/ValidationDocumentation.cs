@@ -115,7 +115,8 @@ internal static class ValidationDocumentation
             DocumentationCatalogReport report
         ) {
             var identities = new Dictionary<string, SourceFacts>(StringComparer.Ordinal);
-            foreach (DocumentationReferenceInfo reference in report.references.Where(static reference => reference.model == "source-clr"))
+            foreach (DocumentationReferenceInfo reference in report.references.Where(static reference =>
+                reference.model is "source-clr" or "runtime-script" or "editor-script"))
             {
                 using JsonDocument facts = JsonDocument.Parse(await reader.ReadReferenceAsync(reference.path, cancellation).ConfigureAwait(false));
                 foreach (JsonElement project in facts.RootElement.GetProperty("projects").EnumerateArray())
@@ -136,7 +137,12 @@ internal static class ValidationDocumentation
         Selection selection,
         IReadOnlySet<string> affected,
         bool full
-    ) => selection.catalog.pages.Where(page => (full || selection.changedPages.Contains(page.id) || page.owners.Concat(page.examples?.projects ?? [])
+    ) => selection.catalog.pages.Where(page => (full || selection.changedPages.Contains(page.id)
+        || page.examples?.mode is "runtime-script" or "editor-script" && selection.catalog.references.Any(reference =>
+            reference.model is "runtime-script" or "editor-script"
+            && reference.projects.Any(owner => selection.changedReferenceOwners.Contains(owner)
+                || affected.Contains(selection.owners[owner].path)))
+        || page.owners.Concat(page.examples?.projects ?? [])
             .Any(owner => selection.owners.TryGetValue(owner, out Owner? project) && affected.Contains(project.path)))
         && page.codeBlocks.Any(static block => block.language is "csharp" or "cs" && block.declarationSymbols.Count == 0)).ToArray();
 
@@ -158,4 +164,37 @@ internal static class ValidationDocumentation
 
     internal static string PageIdentity(IEnumerable<DocumentationPageInfo> pages)
         => ValidationInputs.Identity(pages.Select(static page => new KeyValuePair<string, string>(page.id, page.contentIdentity)));
+
+    internal static string ExampleIdentity(
+        Selection selection,
+        IReadOnlyList<DocumentationPageInfo> pages,
+        IReadOnlyList<string> references
+    ) {
+        var selected = selection.catalog.references.Where(reference => references.Contains(reference.path, StringComparer.Ordinal)).ToArray();
+        var scriptOwners = selected.Where(static reference => reference.model is "runtime-script" or "editor-script")
+            .SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
+        var inputs = pages.Select(static page => new KeyValuePair<string, string>(page.id, page.contentIdentity)).ToList();
+        foreach (DocumentationReferenceInfo reference in selected)
+        {
+            if (reference.model == "source-clr")
+                inputs.AddRange(reference.projects.Where(scriptOwners.Contains).Select(owner =>
+                    new KeyValuePair<string, string>(reference.path + "\0" + owner, selection.sourceIdentities[reference.path + "\0" + owner].identity)));
+            else
+                inputs.Add(new(reference.path, reference.identity));
+        }
+        return ValidationInputs.Identity(inputs);
+    }
+
+    internal static string[] ExampleReferences(
+        Selection selection,
+        IReadOnlyList<DocumentationPageInfo> pages
+    ) {
+        bool editor = pages.Any(static page => page.examples?.mode == "editor-script");
+        bool runtime = editor || pages.Any(static page => page.examples?.mode == "runtime-script");
+        DocumentationReferenceInfo[] projections = selection.catalog.references.Where(reference =>
+            reference.model == "runtime-script" && runtime || reference.model == "editor-script" && editor).ToArray();
+        var owners = projections.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
+        return projections.Concat(selection.catalog.references.Where(reference => reference.model == "source-clr"
+            && reference.projects.Any(owners.Contains))).Select(static reference => reference.path).Order(StringComparer.Ordinal).ToArray();
+    }
 }

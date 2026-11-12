@@ -513,11 +513,12 @@ internal static class ValidationPlanner
                 ValidationCheck[] required = builds.Where(check => paths.Contains(check.owner, StringComparer.Ordinal)
                     || group.Key == "native" && scriptExamples && check.owner is "entry/InnoEngine.Build/InnoEngine.Build.csproj" or "entry/InnoEngine.Editor/InnoEngine.Editor.csproj").ToArray();
                 string[] pages = group.Select(static page => page.id).Order(StringComparer.Ordinal).ToArray();
+                string[] scriptReferences = ValidationDocumentation.ExampleReferences(selected, group.ToArray());
                 checks.Add(new("documentation-examples:" + group.Key, "documentation-examples", "InnoEngine.Docs",
                     "Canonical example blocks and their declared host or script context; no Markdown reparse or namespace guessing.", "any",
                     required.Select(static check => check.id).Append("documentation").ToArray(),
                     required.SelectMany(static check => check.inputs).Append("@tooling").Distinct(StringComparer.Ordinal).ToArray(), true, null,
-                    group.Key, "contract", paths, new([], pages, ValidationDocumentation.PageIdentity(group), configuration,
+                    group.Key, "contract", paths, new(scriptReferences, pages, ValidationDocumentation.ExampleIdentity(selected, group.ToArray(), scriptReferences), configuration,
                         group.Key == "native" ? target : null)));
             }
         }

@@ -19,7 +19,8 @@ public static class DocumentationReferences
 {
     /// <summary>
     /// Exports selected CLR source contracts using the existing evaluated API extractor, independently of Wiki pages.
-    /// This operation does not certify script projection, behavioral prose, examples or product execution.
+    /// An explicit script surface reads prepared logical reference assemblies and compiler-produced origin metadata.
+    /// This operation does not certify behavioral prose, examples or product execution.
     /// </summary>
     /// <param name="arguments">
     /// Required engine-root, dotnet, output and one or more project options; optional configuration and target.
@@ -28,6 +29,10 @@ public static class DocumentationReferences
     /// a supplied graph does not independently establish freshness or certify the exported contracts.
     /// Project paths are relative to the engine root and must occur in its actual source inventory.
     /// The selected SDK and prepared references supply compilation facts; no product build is requested.
+    /// Script extraction selects surface, runtime-reference and optional editor-reference instead of project,
+    /// with repeated source-reference manifests resolving exact engine owners. Its SDK evaluation is preparation,
+    /// with one explicit framework-project supplying the framework closure instead of evaluating all API owners;
+    /// never part of a prepared-snapshot query. Missing origin metadata requires current compiler artifacts.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels evaluated capture and extraction before atomic publication.
@@ -53,6 +58,8 @@ public static class DocumentationReferences
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments.Contains("--surface", StringComparer.Ordinal))
+            return DocumentationScriptApi.Export(arguments, cancellationToken);
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         var requested = new HashSet<string>(StringComparer.Ordinal);
         for (int index = 0; index < arguments.Length; index += 2)
@@ -375,7 +382,7 @@ public static class DocumentationReferences
         return inventory;
     }
 
-    private static string ComparableSymbol(JsonElement symbol)
+    internal static string ComparableSymbol(JsonElement symbol)
     {
         var ordered = new SortedDictionary<string, JsonNode?>(StringComparer.Ordinal);
         foreach (JsonProperty property in symbol.EnumerateObject())
