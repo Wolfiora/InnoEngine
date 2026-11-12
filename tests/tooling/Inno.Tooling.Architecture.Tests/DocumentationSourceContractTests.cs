@@ -148,6 +148,70 @@ public sealed class DocumentationSourceContractTests : IDisposable
     }
 
     [Fact]
+    public async Task PrivateProductEntriesHaveAnExplicitEmptySurfaceWithoutCompiledDependencies()
+    {
+        Write(C_PROJECT, File.ReadAllText(Path.Combine(m_root, C_PROJECT)).Replace("</Project>", """
+            <Target Name="MissingReference" AfterTargets="ResolveReferences">
+              <ItemGroup><ReferencePath Include="absent-product-contract.dll" /></ItemGroup>
+            </Target>
+            <Target Name="RejectProductBuild" BeforeTargets="CoreCompile">
+              <Error Text="Source API inspection must not build a product." />
+            </Target>
+            </Project>
+            """, StringComparison.Ordinal));
+        const string C_SOURCE = "namespace Contract; internal sealed class Entry : UnavailableBase { public void Run() { } }";
+        Write("tests/support/Contract/Entry.cs", C_SOURCE);
+        await RestoreAsync();
+        string output = Path.Combine(m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        byte[] original = File.ReadAllBytes(output);
+        using (JsonDocument facts = JsonDocument.Parse(original))
+        {
+            Assert.Equal("Unverified", facts.RootElement.GetProperty("sourceApiStatus").GetString());
+            JsonElement owner = Assert.Single(facts.RootElement.GetProperty("projects").EnumerateArray());
+            Assert.Equal("Contract", owner.GetProperty("name").GetString());
+            Assert.Empty(owner.GetProperty("symbols").EnumerateArray());
+        }
+        Assert.False(File.Exists(Path.Combine(m_root, "tests/support/Contract/bin/Debug/net10.0/Contract.dll")));
+        Write("tests/support/Contract/Entry.cs", C_SOURCE.Replace("internal sealed", "public sealed", StringComparison.Ordinal));
+        InvalidDataException failure = Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Contains("requires its evaluated compile reference", failure.Message);
+        Assert.Equal(original, File.ReadAllBytes(output));
+    }
+
+    [Fact]
+    public async Task EmptySurfaceUsesSelectedConditionalAndGeneratedSourceInputs()
+    {
+        Write(C_PROJECT, File.ReadAllText(Path.Combine(m_root, C_PROJECT)).Replace("</Project>", """
+            <PropertyGroup><DefineConstants>EXPOSE_CONTRACT</DefineConstants></PropertyGroup>
+            <ItemGroup><Compile Include="obj/Selected.cs" /></ItemGroup>
+            </Project>
+            """, StringComparison.Ordinal));
+        Write("tests/support/Contract/Entry.cs", "namespace Contract; internal sealed class Entry;");
+        Write("tests/support/Contract/obj/Selected.cs", """
+            namespace Contract;
+            #if EXPOSE_CONTRACT
+            public delegate void GeneratedContract();
+            #else
+            internal delegate void GeneratedContract();
+            #endif
+            """);
+        await RestoreAsync();
+        string output = Path.Combine(m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Contains("T:Contract.GeneratedContract", File.ReadAllText(output));
+        byte[] previous = File.ReadAllBytes(output);
+        Write("tests/support/Contract/obj/Selected.cs", "internal class Broken {");
+        InvalidDataException invalid = Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Contains("invalid C# syntax", invalid.Message);
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        File.Delete(Path.Combine(m_root, "tests/support/Contract/obj/Selected.cs"));
+        InvalidDataException missing = Assert.Throws<InvalidDataException>(() => DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Contains("source is missing", missing.Message);
+        Assert.Equal(previous, File.ReadAllBytes(output));
+    }
+
+    [Fact]
     public async Task ForeignProductSelectionCannotBorrowHostReferences()
     {
         Write(C_PROJECT, File.ReadAllText(Path.Combine(m_root, C_PROJECT)).Replace("</PropertyGroup>",

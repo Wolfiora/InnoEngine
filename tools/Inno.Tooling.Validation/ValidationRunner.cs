@@ -225,7 +225,7 @@ internal static class ValidationRunner
                                 Directory.CreateDirectory(Path.Combine(project, "Assets"));
                                 await File.WriteAllTextAsync(Path.Combine(project, "Assets", "DocumentationProbe.cs"), "public sealed class DocumentationProbe { }", cancellation).ConfigureAwait(false);
                                 await ValidationProcess.RunAsync(plan.dotnet, [entry, "scripts", "--engine-root", plan.root,
-                                    "--tools-target", plan.contexts[contextId].properties["InnoToolTarget"], "--dotnet", plan.dotnet,
+                                    "--dotnet", plan.dotnet,
                                     "--project", project, "--output", Path.Combine(project, "Scripts"), "--ide"], plan.root,
                                     Path.Combine(directory, contextId + "-documentation-projection.log"), cancellation).ConfigureAwait(false);
                                 XDocument projection = XDocument.Load(Path.Combine(project, "Inno.EditorScripts.csproj"));

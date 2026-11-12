@@ -8,6 +8,7 @@ using System.Xml.Linq;
 using Inno.Build.Toolchains;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Inno.Tooling.Architecture;
 
@@ -110,7 +111,7 @@ internal sealed class DocumentationProjectReferences
         string project,
         CancellationToken cancellationToken
     ) {
-        CSharpCompilation contract = Evaluate(project, cancellationToken);
+        CSharpCompilation contract = Evaluate(project, cancellationToken, sourceOnly: true);
         var trees = new List<SyntaxTree>();
         foreach (string source in m_sources[project])
         {
@@ -128,7 +129,8 @@ internal sealed class DocumentationProjectReferences
     private CSharpCompilation Evaluate(
         string project,
         CancellationToken cancellationToken,
-        bool frameworkOnly = false
+        bool frameworkOnly = false,
+        bool sourceOnly = false
     ) {
         if (m_compilations.TryGetValue(project, out CSharpCompilation? compilation))
             return compilation;
@@ -174,14 +176,22 @@ internal sealed class DocumentationProjectReferences
         }
         if (frameworkOnly)
             return CSharpCompilation.Create("DocumentationFramework", references: m_frameworkReferences);
-        foreach (string reference in references)
-            if (!File.Exists(reference))
-                throw new FileNotFoundException($"Documentation project '{project}' requires its evaluated compile reference: '{reference}'. Build this target/configuration before validation.", reference);
         string language = properties.GetProperty("LangVersion").GetString()!;
         if (!LanguageVersionFacts.TryParse(language, out LanguageVersion version))
             throw new InvalidDataException($"Documentation project '{project}' selects unsupported C# language version '{language}'. The validator must support that version explicitly.");
         var parse = new CSharpParseOptions(version, preprocessorSymbols:
             properties.GetProperty("DefineConstants").GetString()!.Split(';', StringSplitOptions.RemoveEmptyEntries));
+        string[] sources = document.GetProperty("Items").GetProperty("Compile")
+            .EnumerateArray().Select(static item => item.GetProperty("FullPath").GetString()!)
+            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        // An evaluated source set with no public type declaration cannot expose CLR members.
+        // This proves only the empty authored API surface, never product build or generator execution.
+        bool referenceFree = sourceOnly && HasNoPublicTypes(sources, parse, cancellationToken);
+        if (referenceFree)
+            references = [];
+        foreach (string reference in references)
+            if (!File.Exists(reference))
+                throw new FileNotFoundException($"Documentation project '{project}' requires its evaluated compile reference: '{reference}'. Build this target/configuration before validation.", reference);
         NullableContextOptions nullable = properties.GetProperty("Nullable").GetString() switch
         {
             "enable" => NullableContextOptions.Enable,
@@ -197,12 +207,37 @@ internal sealed class DocumentationProjectReferences
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                 allowUnsafe: properties.GetProperty("AllowUnsafeBlocks").GetString() == "true",
                 nullableContextOptions: nullable));
-        m_compilations.Add(project, compilation);
-        m_outputs.Add(project, target);
-        m_sources.Add(project, document.GetProperty("Items").GetProperty("Compile")
-            .EnumerateArray().Select(static item => item.GetProperty("FullPath").GetString()!)
-            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray());
+        // Do not let an API-only empty surface replace metadata needed by executable examples.
+        if (!referenceFree)
+            m_compilations.Add(project, compilation);
+        m_outputs[project] = target;
+        m_sources[project] = sources;
         return compilation;
+    }
+
+    private static bool HasNoPublicTypes(
+        string[] sources,
+        CSharpParseOptions parse,
+        CancellationToken cancellationToken
+    ) {
+        foreach (string source in sources)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!File.Exists(source))
+                throw new InvalidDataException($"The evaluated Documentation source is missing: '{source}'.");
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(File.ReadAllText(source), parse, source,
+                cancellationToken: cancellationToken);
+            if (tree.GetDiagnostics(cancellationToken).Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+                throw new InvalidDataException($"The evaluated Documentation source has invalid C# syntax: '{source}'.");
+            if (tree.GetRoot(cancellationToken).DescendantNodes().Any(static node => node switch
+                {
+                    BaseTypeDeclarationSyntax type => type.Modifiers.Any(SyntaxKind.PublicKeyword),
+                    DelegateDeclarationSyntax type => type.Modifiers.Any(SyntaxKind.PublicKeyword),
+                    _ => false
+                }))
+                return false;
+        }
+        return true;
     }
 
 }

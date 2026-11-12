@@ -39,6 +39,9 @@ public sealed class DocumentationReferenceTests : IDisposable
                   <Target Name="RejectRepeatedResolution" BeforeTargets="ResolveReferences" Condition="Exists('no-resolve')">
                     <Error Text="The union already owns its resolved reference snapshot." />
                   </Target>
+                  <Target Name="RejectNativePreparation" BeforeTargets="ResolveReferences" Condition="'$(DesignTimeBuild)' != 'true'">
+                    <Error Text="API reference collection must not enter product or Task-host preparation." />
+                  </Target>
                 </Project>
                 """);
             Write("src/" + name + "/Probe.cs", "namespace " + name + ";\n/// <summary>Supplies this source owner's public contract.</summary>\npublic sealed class Probe { }\n");

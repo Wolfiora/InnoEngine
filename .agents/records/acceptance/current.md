@@ -8,6 +8,8 @@ The English documentation and workflow modernization is **incomplete**. Existing
 
 ## Current local evidence
 
+- [Windows CI diagnosis and follow-up](CI_43067538817.md) records 331 passed checks and five actual failures, the retained warm samples, read-only reference repairs and Console selection regression. Overall certification remains incomplete.
+
 - [Explicit source certificates](DOCUMENTATION_SOURCE_CERTIFICATES_2026_11_12.md) adds source-comparison receipts, complete-coverage certification and immutable evidence selection. Local protocol and query cases pass; real complete source certification remains outstanding.
 
 - [Canonical documentation cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md) removes the old product tree and Wiki/query implementations. Fifty query tests, 38 targeted Architecture tests, rule/source/agent-link checks and the full 454-file disposition audit passed locally. Source certification and hosted publication remain separate.

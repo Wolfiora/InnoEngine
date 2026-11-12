@@ -77,6 +77,10 @@ if ($ArtifactsPath) {
 }
 $sharedFilter = 'ProcessIsolation!=Required'
 $isolatedFilter = 'ProcessIsolation=Required'
+# Emit named long-running test diagnostics without treating legitimate compilation as a hang.
+# This interval reports activity; it neither cancels a test nor changes its outcome.
+$testParallelism = [Math]::Min([Environment]::ProcessorCount, 4)
+$runnerSettings = @('--', 'xUnit.DiagnosticMessages=true', 'xUnit.LongRunningTestSeconds=60', "xUnit.MaxParallelThreads=$testParallelism")
 if ($Filter) {
     $sharedFilter = "($sharedFilter)&($Filter)"
     $isolatedFilter = "($isolatedFilter)&($Filter)"
@@ -95,7 +99,7 @@ Start-Check 'Shared' $solutionPath
 try {
     & $Dotnet test $solutionPath --configuration $Configuration `
         --no-build --no-restore --disable-build-servers -m:1 -nr:false `
-        --blame-hang-timeout 20m --blame-hang-dump-type none --filter $sharedFilter --logger 'trx' --results-directory $resultsRoot @productArguments @sdkEnvironment
+        --blame --filter $sharedFilter --logger 'trx' --logger 'console;verbosity=normal' --results-directory $resultsRoot @productArguments @sdkEnvironment @runnerSettings
     $sharedExit = $LASTEXITCODE
     Add-CheckResult 'Shared' $solutionPath $(if ($sharedExit -eq 0) { 'Passed' } else { 'Failed' }) $sharedExit ''
 } catch {
@@ -157,7 +161,7 @@ foreach ($project in $projects) {
         try {
             $reportName = 'isolated-' + [Guid]::NewGuid().ToString('N') + '.trx'
             & $Dotnet test $assembly --filter $caseFilter `
-                --blame-hang-timeout 10m --blame-hang-dump-type none --logger "trx;LogFileName=$reportName" --results-directory $resultsRoot @assemblyEnvironment
+                --blame --logger "trx;LogFileName=$reportName" --logger 'console;verbosity=normal' --results-directory $resultsRoot @assemblyEnvironment @runnerSettings
             $caseExit = $LASTEXITCODE
             if ($caseExit -eq 0) {
                 & (Join-Path $PSScriptRoot 'ci/Test-IsolatedExecution.ps1') -Report (Join-Path $resultsRoot $reportName) -Contract $name

@@ -446,7 +446,7 @@ internal static class ValidationPlanner
                 ValidationCheck[] required = builds.Where(check => paths.Contains(check.owner, StringComparer.Ordinal)).ToArray();
                 string[] references = group.Select(static item => item.reference.path).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
                 string identity = ValidationInputs.Identity(group.Select(item => new KeyValuePair<string, string>(item.path,
-                    selected.sourceIdentities[item.reference.path + "\0" + item.name])));
+                    selected.sourceIdentities[item.reference.path + "\0" + item.name].identity)));
                 checks.Add(new("documentation-api:" + group.Key.context + ":" + (group.Key.target ?? "default"), "documentation-api", "InnoEngine.Docs",
                     "Selected owner declarations and XML from protected source reference payloads.", "any",
                     required.Select(static check => check.id).Append("documentation").ToArray(),
@@ -462,6 +462,28 @@ internal static class ValidationPlanner
                     prepared?.inputs ?? ["@" + owner], false, null, prepared?.context, "contract",
                     prepared is null ? null : [owner], prepared is null ? null : new([], [], "", configuration,
                         prepared.context == "native" ? target : null)));
+            }
+            // Foreign product execution stays excluded. Its explicitly empty authored public surface
+            // can still be checked against actual SDK-selected source without borrowing host binaries.
+            var emptyForeign = selected.catalog.references.Where(reference => reference.model == "source-clr"
+                    && reference.configuration == configuration)
+                .SelectMany(reference => reference.projects.Where(name => selected.owners.TryGetValue(name, out ValidationDocumentation.Owner? owner)
+                        && !owner.test && !owner.nativeReference && byPath[owner.path].productTarget.Length != 0
+                        && byPath[owner.path].productTarget != target
+                        && (affected.Contains(owner.path) || selected.changedReferenceOwners.Contains(name))
+                        && selected.sourceIdentities[reference.path + "\0" + name].empty)
+                    .Select(name => (reference, name, path: selected.owners[name].path)))
+                .GroupBy(static item => item.reference.target);
+            foreach (var group in emptyForeign)
+            {
+                string[] paths = group.Select(static item => item.path).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+                string[] references = group.Select(static item => item.reference.path).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+                string identity = ValidationInputs.Identity(group.Select(item => new KeyValuePair<string, string>(item.path,
+                    selected.sourceIdentities[item.reference.path + "\0" + item.name].identity)));
+                checks.Add(new("documentation-api:source:" + (group.Key ?? "default"), "documentation-api", "InnoEngine.Docs",
+                    "Verify the recorded empty public surface from actual target-selected source; this does not certify foreign product execution.",
+                    "any", ["documentation"], CapturedInputs(paths.SelectMany(path => byPath[path].inputs)).Append("@tooling").Order(StringComparer.Ordinal).ToArray(),
+                    true, null, "managed", "contract", paths, new(references, [], identity, configuration, group.Key)));
             }
             foreach (var group in examplePages.GroupBy(page => scriptPages.Contains(page.id)
                 || (page.examples?.projects ?? []).Any(name => nativeOwners.Contains(selected.owners[name].path)

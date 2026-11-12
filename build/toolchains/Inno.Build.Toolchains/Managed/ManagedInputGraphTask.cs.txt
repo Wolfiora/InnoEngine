@@ -304,6 +304,7 @@ public sealed class ManagedInputGraphTask : Task
                 // Reference collection is read-only even when the evaluated build context compiles dependencies.
                 // The injected target also handles projects that redeclare this as a local property.
                 selected["BuildProjectReferences"] = "false";
+                selected["DesignTimeBuild"] = "true";
                 selected["InnoOriginalCustomAfterMicrosoftCommonTargets"] = project.GetPropertyValue("CustomAfterMicrosoftCommonTargets");
                 selected["CustomAfterMicrosoftCommonTargets"] = CompilerInputsTargets;
                 var outputs = new System.Collections.Hashtable(StringComparer.OrdinalIgnoreCase);

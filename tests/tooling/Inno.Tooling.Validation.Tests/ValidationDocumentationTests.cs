@@ -115,6 +115,36 @@ public sealed class ValidationDocumentationTests
     }
 
     [Fact]
+    public async Task EmptyForeignProductSurfaceDoesNotClaimForeignExecutionOrRequireItsBuild()
+    {
+        using var repository = new ValidationRepository();
+        const string C_FOREIGN = "platforms/Foreign/player/Foreign.Player/Foreign.Player.csproj";
+        repository.Write("Product.props", "<Project />");
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoDevelopmentTarget>host-fixture</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        repository.Write(C_FOREIGN, ValidationRepository.Project(
+            "<PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>foreign-fixture</InnoProductTarget></PropertyGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare an internal foreign product entry");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        repository.Write("platforms/Foreign/player/Foreign.Player/Entry.cs", "namespace Foreign; internal static class Entry { }");
+        repository.Write("src/Example/Changed.cs", "namespace Example; internal class Changed { }");
+        using JsonDocument plan = await docs.PlanAsync(await docs.IndexAsync());
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement source = checks.Single(check => check.GetProperty("id").GetString() == "documentation-api:source:default");
+        Assert.Equal(C_FOREIGN, Assert.Single(source.GetProperty("projects").EnumerateArray()).GetString());
+        Assert.Equal("documentation", Assert.Single(source.GetProperty("prerequisites").EnumerateArray()).GetString());
+        Assert.DoesNotContain("@" + C_FOREIGN, source.GetProperty("inputs").EnumerateArray().Select(value => value.GetString()));
+        Assert.Contains(C_FOREIGN, source.GetProperty("inputs").EnumerateArray().Select(value => value.GetString()));
+        JsonElement foreignBuild = checks.Single(check => check.GetProperty("id").GetString() == "build:" + C_FOREIGN);
+        Assert.Contains("requires its own supported target", foreignBuild.GetProperty("exclusion").GetString());
+        Assert.Contains(checks, check => check.GetProperty("id").GetString() == "test:tests/Example.Tests/Example.Tests.csproj"
+            && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
+    }
+
+    [Fact]
     public async Task MissingExternalSnapshotCannotFallBackToAnOldWikiTree()
     {
         using var repository = new ValidationRepository();

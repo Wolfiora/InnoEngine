@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
+using Inno.Testing.Source;
 using Inno.Tooling.Validation;
 using Inno.Tooling.Documentation;
 using Xunit;
@@ -15,6 +16,30 @@ namespace Inno.Tooling.Validation.Tests;
 
 public sealed class ValidationPlanningTests
 {
+    [Fact]
+    public async Task ConsolePresentationKeepsItsContractsWithoutSelectingBuildIntegration()
+    {
+        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationPlanningTests).Assembly));
+        const string C_STYLE = "src/composition/editor/panels/Inno.Editor.Panel.Logging/Styling/ConsoleStyle.cs";
+        string original = File.ReadAllText(repository.PathOf(C_STYLE));
+        string changed = original.Replace("new(0.80f, 0.90f, 0.85f", "new(0.81f, 0.90f, 0.85f", StringComparison.Ordinal);
+        Assert.NotEqual(original, changed);
+        repository.Write(C_STYLE, changed);
+        // Scope is established before external documentation or pinned Native sources are prepared.
+        // An unavailable prerequisite must retain this selection without certifying execution.
+        string output = repository.PathOf("artifacts/console-selection");
+        int status = await ValidationCommand.ExecuteAsync(["plan", "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--base", "HEAD", "--output", output]);
+        Assert.Equal(2, status);
+        Assert.False(File.Exists(Path.Combine(output, "plan.json")));
+        using JsonDocument preparation = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "preparation.json")));
+        Assert.Equal("Blocked", preparation.RootElement.GetProperty("status").GetString());
+        string[] owners = preparation.RootElement.GetProperty("owners").EnumerateArray().Select(value => value.GetString()!).ToArray();
+        Assert.Contains("tests/editor/Inno.Editor.Presentation.Tests/Inno.Editor.Presentation.Tests.csproj", owners);
+        Assert.DoesNotContain("tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj", owners);
+        Assert.DoesNotContain("tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj", owners);
+    }
+
     [Fact]
     public async Task NativeTestOwnersCannotOmitTheirProductDeployment()
     {

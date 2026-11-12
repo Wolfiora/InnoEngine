@@ -11,6 +11,11 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationDocumentation
 {
+    internal sealed record SourceFacts(
+        string identity,
+        bool empty
+    );
+
     internal sealed record Owner(
         string path,
         bool test,
@@ -21,7 +26,7 @@ internal static class ValidationDocumentation
         ValidationDocumentationBinding binding,
         DocumentationCatalogReport catalog,
         IReadOnlyDictionary<string, Owner> owners,
-        IReadOnlyDictionary<string, string> sourceIdentities,
+        IReadOnlyDictionary<string, SourceFacts> sourceIdentities,
         IReadOnlySet<string> changedPages,
         IReadOnlySet<string> changedReferenceOwners
     );
@@ -59,7 +64,7 @@ internal static class ValidationDocumentation
             if (!owners.TryAdd(name, new(path, actual.test, native)))
                 throw new InvalidDataException("Duplicate documentation project identity: " + name);
         }
-        Dictionary<string, string> sourceIdentities = await SourceIdentitiesAsync(snapshot, catalog).ConfigureAwait(false);
+        Dictionary<string, SourceFacts> sourceIdentities = await SourceIdentitiesAsync(snapshot, catalog).ConfigureAwait(false);
         var changedPages = new HashSet<string>(StringComparer.Ordinal);
         var changedOwners = new HashSet<string>(StringComparer.Ordinal);
         if (baseline is not null && baseline != snapshot.identity)
@@ -91,7 +96,7 @@ internal static class ValidationDocumentation
                         changedPaths.Add(page.path);
                     }
             } while (expanded);
-            Dictionary<string, string> earlier = await SourceIdentitiesAsync(previous, prior).ConfigureAwait(false);
+            Dictionary<string, SourceFacts> earlier = await SourceIdentitiesAsync(previous, prior).ConfigureAwait(false);
             foreach (var input in sourceIdentities)
                 if (earlier.GetValueOrDefault(input.Key) != input.Value)
                     changedOwners.Add(input.Key.Split('\0')[1]);
@@ -104,18 +109,19 @@ internal static class ValidationDocumentation
         }
         return new(new(Path.GetFullPath(cache), snapshot.identity, snapshot.sourceTree, baseline), catalog, owners, sourceIdentities, changedPages, changedOwners);
 
-        async Task<Dictionary<string, string>> SourceIdentitiesAsync(
+        async Task<Dictionary<string, SourceFacts>> SourceIdentitiesAsync(
             DocumentationSnapshot reader,
             DocumentationCatalogReport report
         ) {
-            var identities = new Dictionary<string, string>(StringComparer.Ordinal);
+            var identities = new Dictionary<string, SourceFacts>(StringComparer.Ordinal);
             foreach (DocumentationReferenceInfo reference in report.references.Where(static reference => reference.model == "source-clr"))
             {
                 using JsonDocument facts = JsonDocument.Parse(await reader.ReadReferenceAsync(reference.path, cancellation).ConfigureAwait(false));
                 foreach (JsonElement project in facts.RootElement.GetProperty("projects").EnumerateArray())
                 {
                     string key = reference.path + "\0" + project.GetProperty("name").GetString();
-                    if (!identities.TryAdd(key, ValidationInputs.Identity([new("project", project.GetRawText())])))
+                    if (!identities.TryAdd(key, new(ValidationInputs.Identity([new("project", project.GetRawText())]),
+                        project.GetProperty("symbols").GetArrayLength() == 0)))
                         throw new InvalidDataException("Repeated source facts in the documentation snapshot: " + key);
                 }
             }
