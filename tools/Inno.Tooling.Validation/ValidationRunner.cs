@@ -63,6 +63,7 @@ internal static class ValidationRunner
             string detail = string.Empty;
             Dictionary<string, string>? outputs = null;
             string dependencyIdentity = string.Empty;
+            ValidationDocumentationInput[]? documentationInputs = null;
             var elapsed = Stopwatch.StartNew();
             ValidationResult? old = previous?.results.SingleOrDefault(result => result.id == check.id);
             if (check.exclusion is not null)
@@ -92,6 +93,7 @@ internal static class ValidationRunner
                 detail = check.kind == "test" ? old.detail : "Exact local deterministic input identity matches retained successful evidence.";
                 outputs = old.outputs;
                 dependencyIdentity = old.dependencyIdentity;
+                documentationInputs = old.documentationInputs;
             }
             else
             {
@@ -389,6 +391,7 @@ internal static class ValidationRunner
                     {
                         outputs = ValidationOutputs.Capture(plan, check, cancellation, outputDigests);
                         dependencyIdentity = dependencyInputs.Capture(check);
+                        documentationInputs = ValidationDocumentationInputs.Capture(plan, check, dependencyInputs);
                         status = "Passed";
                     }
                 }
@@ -402,7 +405,7 @@ internal static class ValidationRunner
                     detail = failure.Message;
                 }
             }
-            results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity));
+            results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity, documentationInputs));
             Console.WriteLine($"{status}: {check.id} ({elapsed.Elapsed.TotalSeconds:F2}s) {detail}");
             await SaveAsync().ConfigureAwait(false);
         }

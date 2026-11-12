@@ -33,7 +33,8 @@ foreach ($check in $selected) {
     if ($actual.Count -eq 0 -or ($actual -join "`n") -cne ($expected -join "`n") `
         -or @($actual | Select-Object -Unique).Count -ne $actual.Count) { throw 'Source comparison owner coverage is incomplete or duplicated.' }
     foreach ($project in @($report.projects)) {
-        if ($project.status -cne 'Passed' -or @($project.differences).Count -ne 0 -or [string]::IsNullOrWhiteSpace($project.name)) {
+        if ($project.status -cne 'Passed' -or @($project.differences).Count -ne 0 -or [string]::IsNullOrWhiteSpace($project.name) `
+            -or $project.referenceIdentity -cnotmatch '^[a-f0-9]{64}$') {
             throw "Source owner did not pass: $($project.project)"
         }
     }
@@ -47,6 +48,39 @@ foreach ($check in $selected) {
             -and $_.model -ceq 'source-clr' -and $_.configuration -ceq $report.configuration -and $_.target -ceq $report.target })
         if ($bound.Count -ne 1) { throw "Source comparison reference differs from the immutable catalog: $($reference.path)" }
     }
+    $compiled = @($check.inputs | Where-Object { $_ -like '@*' -and $_ -cnotin @('@tooling', '@native-sources') }).Count -gt 0
+    $proofs = @($result[0].documentationInputs | Where-Object { $null -ne $_ })
+    if ($proofs.Count -ne $actual.Count) {
+        throw 'Source input provenance does not cover its actual compiled owners.'
+    }
+    $seenInputs = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $inputProofs = foreach ($proof in $proofs) {
+        $owner = @($report.projects | Where-Object project -CEQ $proof.project)
+        if ($owner.Count -ne 1 -or -not $seenInputs.Add($proof.project) `
+            -or $proof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$' -or $Plan.environment -cnotmatch '^[a-f0-9]{64}$' `
+            -or $proof.environment -cne $Plan.environment -or $proof.configuration -cne $report.configuration -or $proof.target -cne $report.target `
+            -or @($proof.owners).Count -eq 0 -or $proof.project -cnotin $proof.owners `
+            -or @($proof.owners | Sort-Object -Unique).Count -ne @($proof.owners).Count -or $null -eq $proof.packages) {
+            throw 'Source input provenance has missing, duplicate or mismatched owners, environment or context.'
+        }
+        foreach ($path in $proof.owners) {
+            if ([string]::IsNullOrWhiteSpace($path) -or [IO.Path]::IsPathRooted($path) -or $path.Contains('\') -or $path.Contains(':') `
+                -or $path -match '(^|/)\.{1,2}(/|$)' -or -not $path.EndsWith('.csproj')) {
+                throw 'Source input owner escapes its canonical repository boundary.'
+            }
+        }
+        $packages = $proof.packages | ConvertTo-Json -Depth 4 | ConvertFrom-Json -AsHashtable
+        if ($packages -isnot [Collections.IDictionary]) { throw 'Source package provenance must be an explicit content map.' }
+        if (-not $compiled -and $packages.Count -ne 0) { throw 'Source-only inspection cannot claim compiled package inputs.' }
+        foreach ($package in $packages.GetEnumerator()) {
+            if ($package.Key -cnotmatch '^[a-z0-9_.-]+/[a-z0-9_.+-]+$' -or $package.Key -match '(^|/)\.{1,2}(/|$)' `
+                -or $package.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Source package provenance has an invalid path or content identity.' }
+        }
+        $sources = & "$PSScriptRoot/Get-DocumentationSourceInputs.ps1" -Inputs $proof.sources
+        [pscustomobject]@{ project = $owner[0].name; path = $proof.project; owners = @($proof.owners)
+            sourceIdentity = $proof.sourceIdentity; environment = $proof.environment; configuration = $proof.configuration; target = $proof.target
+            referenceIdentity = $owner[0].referenceIdentity; packages = $packages; sources = $sources }
+    }
     [pscustomobject]@{
         check = $check.id
         reportIdentity = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -55,5 +89,7 @@ foreach ($check in $selected) {
         target = $report.target
         references = @($report.references)
         projects = @($report.projects | ForEach-Object { $_.name })
+        inputMode = $(if ($compiled) { 'Compiled' } else { 'SourceOnly' })
+        inputs = @($inputProofs)
     }
 }

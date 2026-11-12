@@ -40,7 +40,8 @@ internal sealed record ValidationPlan(
     Dictionary<string, ValidationContext> contexts,
     bool extended = false,
     Dictionary<string, double>? planningSeconds = null,
-    ValidationDocumentationBinding? documentation = null
+    ValidationDocumentationBinding? documentation = null,
+    Dictionary<string, string>? documentationSources = null
 );
 
 internal sealed record ValidationContext(
@@ -86,7 +87,19 @@ internal sealed record ValidationResult(
     double seconds,
     string detail,
     Dictionary<string, string>? outputs = null,
-    string dependencyIdentity = ""
+    string dependencyIdentity = "",
+    ValidationDocumentationInput[]? documentationInputs = null
+);
+
+internal sealed record ValidationDocumentationInput(
+    string project,
+    string[] owners,
+    string sourceIdentity,
+    string environment,
+    string configuration,
+    string? target,
+    Dictionary<string, string> packages,
+    Dictionary<string, string> sources
 );
 
 internal sealed record ValidationEvidence(

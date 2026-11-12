@@ -218,6 +218,7 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
           CADENCE_CONCLUSION: ${{ needs.cadence.result }}
           SHOULD_RUN: ${{ needs.cadence.outputs.run }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if ($env:CADENCE_CONCLUSION -cne 'success') { throw 'Cadence selection did not succeed.' }
           if ($env:SHOULD_RUN -ceq 'false') {
@@ -226,23 +227,35 @@ jobs:
           }
           if ($env:SHOULD_RUN -cne 'true') { throw 'Cadence selection did not produce an explicit decision.' }
           $catalogPaths = [Collections.Generic.List[string]]::new()
+          $planPaths = [Collections.Generic.List[string]]::new()
           $receipts = foreach ($platform in @('windows-2022', 'macos-15')) {
             $available = @(Get-ChildItem artifacts/validation/received -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
             $selected = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $available -Name "validation-$platform" -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
             $directory = $selected.directory
             $catalogPaths.Add("$directory/documentation-catalog.json")
+            $planPaths.Add("$directory/plan.json")
             $receipt = ./tests/ci/Test-ValidationReport.ps1 -PlanPath "$directory/plan.json" -ResultsPath "$directory/results.json" `
               -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION `
               -DocumentationPairingPath "$directory/documentation-pairing.json"
             [pscustomobject]@{ platform = $platform; receipt = $receipt }
           }
           $receipts | ConvertTo-Json -Depth 10 | Set-Content artifacts/validation/certification.json
+          $full = @($receipts | Where-Object { -not $_.receipt.full }).Count -eq 0
+          $compatibility = @{}
+          if (-not $full) {
+            $baselines = @($planPaths | ForEach-Object { (Get-Content -LiteralPath $_ -Raw | ConvertFrom-Json).baseline } | Sort-Object -Unique)
+            if ($baselines.Count -ne 1) { throw 'The platform plans disagree on their impact baseline.' }
+            $previous = ./tests/ci/Get-DocumentationBaseline.ps1 -Commit $baselines[0] -OutputDirectory artifacts/validation/documentation-baseline
+            $previous | ConvertTo-Json -Depth 5 | Set-Content artifacts/validation/documentation-baseline-selection.json
+            if ($previous.status -ceq 'Ready') {
+              $compatibility = @{ PreviousCertificatePath = $previous.path; PreviousOrigin = $previous.origin; PlanPaths = $planPaths.ToArray() }
+            } elseif ($previous.status -cne 'Unavailable') { throw 'Documentation baseline lookup did not produce an explicit decision.' }
+          }
           $source = ./tests/ci/New-DocumentationSourceCertificate.ps1 -CertificationPath artifacts/validation/certification.json `
             -CatalogPaths $catalogPaths.ToArray() -OutputDirectory artifacts/validation/source-certification `
-            -ProducerOrigin "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT"
+            -ProducerOrigin "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT" @compatibility
           "source-certified=$(($source.status -ceq 'Passed').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "Source API certification: $($source.status). Missing obligations: $($source.missing.Count)." >> $env:GITHUB_STEP_SUMMARY
-          $full = @($receipts | Where-Object { -not $_.receipt.full }).Count -eq 0
           if ($full -and $source.status -cne 'Passed') { throw 'Full certification requires complete source API and executable-example coverage; inspect source-certification-status.json.' }
           "full=$($full.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           foreach ($receipt in $receipts) {
@@ -278,7 +291,10 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: documentation-source-status-attempt-${{ github.run_attempt }}
-          path: artifacts/validation/source-certification/source-certification-status.json
+          path: |
+            artifacts/validation/source-certification/source-certification-status.json
+            artifacts/validation/documentation-baseline-selection.json
+            artifacts/validation/documentation-baseline/provenance.json
           if-no-files-found: ignore
           retention-days: 30
       - name: Retain complete source certification

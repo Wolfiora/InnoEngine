@@ -2,10 +2,14 @@ param(
     [Parameter(Mandatory)][string]$CertificationPath,
     [Parameter(Mandatory)][string[]]$CatalogPaths,
     [Parameter(Mandatory)][string]$OutputDirectory,
-    [Parameter(Mandatory)][string]$ProducerOrigin
+    [Parameter(Mandatory)][string]$ProducerOrigin,
+    [string]$PreviousCertificatePath,
+    [string]$PreviousOrigin,
+    [string[]]$PlanPaths
 )
 
 $ErrorActionPreference = 'Stop'
+$policyIdentity = & "$PSScriptRoot/Get-DocumentationCertificatePolicy.ps1"
 $receipts = @(Get-Content -LiteralPath $CertificationPath -Raw | ConvertFrom-Json)
 if ($receipts.Count -eq 0 -or $receipts.Count -ne $CatalogPaths.Count -or [string]::IsNullOrWhiteSpace($ProducerOrigin)) {
     throw 'Source certification requires every reconciled producer and its exact catalog.'
@@ -23,6 +27,8 @@ $inventory = @($catalog.references | Where-Object model -CEQ 'project-inventory'
 if ($inventory.Count -ne 1 -or $inventory[0].identity -cnotmatch '^[a-f0-9]{64}$') { throw 'The source catalog lacks its exact project inventory.' }
 $coverage = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $exampleCoverage = [Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)
+$sourceInputs = [Collections.Generic.List[object]]::new()
+$inputOwners = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 if ($null -eq $catalog.pages) { throw 'Source certification requires the canonical example inventory.' }
 $platforms = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 for ($index = 0; $index -lt $receipts.Count; $index++) {
@@ -42,6 +48,39 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
     foreach ($check in @($receipt.sourceApi)) {
         if ($null -eq $check -or $check.catalogIdentity -cne $catalogIdentity -or $check.reportIdentity -cnotmatch '^[a-f0-9]{64}$') {
             throw 'Source comparison provenance does not bind its exact catalog and report.'
+        }
+        if ($check.inputMode -cnotin @('Compiled', 'SourceOnly') `
+            -or @($check.inputs).Count -ne @($check.projects).Count) {
+            throw 'Source comparison lacks explicit compiled-input or source-only provenance.'
+        }
+        foreach ($proof in @($check.inputs)) {
+            $key = $row.platform + "`0" + $check.configuration + "`0" + $check.target + "`0" + $proof.project
+            if ($proof.project -cnotin $check.projects -or -not $inputOwners.Add($key) `
+                -or $proof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$' -or $proof.referenceIdentity -cnotmatch '^[a-f0-9]{64}$' `
+                -or $receipt.environment -cnotmatch '^[a-f0-9]{64}$' -or $proof.environment -cne $receipt.environment `
+                -or $proof.configuration -cne $check.configuration -or $proof.target -cne $check.target `
+                -or @($proof.owners).Count -eq 0 -or $proof.path -cnotin $proof.owners `
+                -or @($proof.owners | Sort-Object -Unique).Count -ne @($proof.owners).Count -or $null -eq $proof.packages) {
+                throw 'Compiled source input provenance is incomplete, duplicated or belongs to another execution context.'
+            }
+            foreach ($owner in @($proof.owners)) {
+                if ([string]::IsNullOrWhiteSpace($owner) -or [IO.Path]::IsPathRooted($owner) -or $owner.Contains('\') `
+                    -or $owner.Contains(':') -or $owner -match '(^|/)\.{1,2}(/|$)' -or -not $owner.EndsWith('.csproj')) {
+                    throw 'Compiled source input provenance has an invalid repository owner.'
+                }
+            }
+            $packages = $proof.packages | ConvertTo-Json -Depth 4 | ConvertFrom-Json -AsHashtable
+            if ($packages -isnot [Collections.IDictionary]) { throw 'Compiled source packages must be an explicit content map.' }
+            if ($check.inputMode -ceq 'SourceOnly' -and $packages.Count -ne 0) { throw 'Source-only inspection cannot claim compiled packages.' }
+            foreach ($package in $packages.GetEnumerator()) {
+                if ($package.Key -cnotmatch '^[a-z0-9_.-]+/[a-z0-9_.+-]+$' -or $package.Key -match '(^|/)\.{1,2}(/|$)' `
+                    -or $package.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Compiled source packages have invalid paths or identities.' }
+            }
+            $sources = & "$PSScriptRoot/Get-DocumentationSourceInputs.ps1" -Inputs $proof.sources
+            $sourceInputs.Add([ordered]@{ platform = $row.platform; check = $check.check; inputMode = $check.inputMode; project = $proof.project; path = $proof.path
+                owners = @($proof.owners); sourceIdentity = $proof.sourceIdentity; environment = $proof.environment
+                configuration = $proof.configuration; target = $proof.target; referenceIdentity = $proof.referenceIdentity
+                packages = $packages; sources = $sources; reportIdentity = $check.reportIdentity })
         }
         foreach ($reference in @($check.references)) {
             $bound = @($catalog.references | Where-Object { $_.path -ceq $reference.path -and $_.identity -ceq $reference.identity `
@@ -73,8 +112,42 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
                 $exampleCoverage.Add($proof.page, [ordered]@{ page = $proof.page; mode = $proof.mode; projects = @($proof.projects); blocks = $blocks
                     contexts = [Collections.Generic.List[object]]::new() })
             }
-            $exampleCoverage[$proof.page].contexts.Add(@{ platform = $row.platform; configuration = $check.configuration; target = $check.target; reportIdentity = $check.reportIdentity })
+            if (@($check.inputs).Count -eq 0) { throw 'Example certification lacks its source input closure.' }
+            foreach ($inputProof in @($check.inputs)) {
+                if ($inputProof.environment -cne $receipt.environment -or $inputProof.configuration -cne $check.configuration `
+                    -or $inputProof.target -cne $check.target -or $inputProof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$') {
+                    throw 'Example certification input proof has a different environment or context.'
+                }
+                $null = & "$PSScriptRoot/Get-DocumentationSourceInputs.ps1" -Inputs $inputProof.sources
+            }
+            $exampleCoverage[$proof.page].contexts.Add(@{ platform = $row.platform; configuration = $check.configuration; target = $check.target
+                reportIdentity = $check.reportIdentity; inputs = @($check.inputs) })
         }
+    }
+}
+$compatibility = $null
+if ($PreviousCertificatePath) {
+    $compatibility = & "$PSScriptRoot/Get-CompatibleDocumentationEvidence.ps1" -PreviousCertificatePath $PreviousCertificatePath `
+        -CertificationPath $CertificationPath -PlanPaths $PlanPaths -CatalogPaths $CatalogPaths -PreviousOrigin $PreviousOrigin -PolicyIdentity $policyIdentity
+    foreach ($inherited in @($compatibility.api)) {
+        $proof = $inherited.proof
+        [void]$coverage.Add($inherited.reference + "`0" + $proof.project)
+        $key = $proof.platform + "`0" + $proof.configuration + "`0" + $proof.target + "`0" + $proof.project
+        if (-not $inputOwners.Add($key)) { continue }
+        $entry = $proof | ConvertTo-Json -Depth 12 | ConvertFrom-Json -AsHashtable
+        $entry['compatibility'] = $inherited.compatibility
+        $sourceInputs.Add($entry)
+    }
+    foreach ($inherited in @($compatibility.examples)) {
+        $context = $inherited.context | ConvertTo-Json -Depth 12 | ConvertFrom-Json -AsHashtable
+        $context['compatibility'] = $inherited.compatibility
+        if (-not $exampleCoverage.ContainsKey($inherited.page)) {
+            $exampleCoverage.Add($inherited.page, [ordered]@{ page = $inherited.page; mode = $inherited.mode
+                projects = @($inherited.projects); blocks = @($inherited.blocks); contexts = [Collections.Generic.List[object]]::new() })
+        }
+        $contexts = $exampleCoverage[$inherited.page].contexts
+        if (@($contexts | Where-Object { $_.platform -ceq $context.platform -and $_.configuration -ceq $context.configuration `
+            -and $_.target -ceq $context.target }).Count -eq 0) { $contexts.Add($context) }
     }
 }
 $references = @($catalog.references | Where-Object model -CNE 'project-inventory')
@@ -91,11 +164,14 @@ foreach ($page in @($catalog.pages)) {
     if ($executable.Count -gt 0 -and -not $exampleCoverage.ContainsKey($page.id)) { $missing += "Executable examples: $($page.id)" }
 }
 [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath($OutputDirectory)) | Out-Null
-$report = @{ status = $(if ($missing.Count) { 'Blocked' } else { 'Passed' }); missing = $missing; sourceTree = $catalog.sourceTree }
+$report = @{ status = $(if ($missing.Count) { 'Blocked' } else { 'Passed' }); missing = $missing; sourceTree = $catalog.sourceTree
+    compatibility = $(if ($null -ne $compatibility) { @{ sourceOwners = @($compatibility.api).Count
+        exampleContexts = @($compatibility.examples).Count; diagnostics = @($compatibility.diagnostics) } } else { $null }) }
 $report | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory 'source-certification-status.json') -Encoding utf8NoBOM
 if ($missing.Count) { return [pscustomobject]$report }
 $certificate = [ordered]@{
     format = 'inno-documentation-source/1'; repository = $catalog.repository; sourceTree = $catalog.sourceTree; sourceCommit = $commits[0]
+    policyIdentity = $policyIdentity
     projectManifestIdentity = $inventory[0].identity
     references = @($references | Sort-Object path -CaseSensitive | ForEach-Object {
         [ordered]@{ path = $_.path; identity = $_.identity; model = $_.model; configuration = $_.configuration; target = $_.target
@@ -103,6 +179,7 @@ $certificate = [ordered]@{
     })
     producers = @(@{ origin = $ProducerOrigin; receiptIdentity = (Get-FileHash -LiteralPath $CertificationPath -Algorithm SHA256).Hash.ToLowerInvariant() })
     examples = @($exampleCoverage.Keys | Sort-Object -CaseSensitive | ForEach-Object { $exampleCoverage[$_] })
+    inputs = @($sourceInputs | Sort-Object platform, project, configuration, target -CaseSensitive)
 }
 $file = Join-Path $OutputDirectory 'source-certificate.json'
 if (Test-Path -LiteralPath $file) { throw 'Source certification must not overwrite a previous producer result.' }

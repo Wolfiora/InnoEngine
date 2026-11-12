@@ -435,7 +435,8 @@ internal static class ValidationPlanner
             preceding.Add(check.id);
         }
         return new(new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
-            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding), null);
+            full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding,
+            documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal)), null);
 
         void AddDocumentationChecks()
         {

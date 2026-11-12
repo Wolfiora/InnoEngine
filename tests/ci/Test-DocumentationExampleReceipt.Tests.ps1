@@ -9,9 +9,10 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     $id = 'documentation-examples:managed'
     $block = @{ language = 'csharp'; contentIdentity = $hash; declarationSymbols = @() }
     $state = @{
-        plan = @{ checks = @(@{ id = $id; kind = 'documentation-examples'; context = 'managed'; exclusion = $null
+        plan = @{ environment = $hash; checks = @(@{ id = $id; kind = 'documentation-examples'; context = 'managed'; exclusion = $null; projects = @('src/Probe.csproj')
             documentation = @{ pages = @('task.probe'); configuration = 'Debug'; target = $null } }) }
-        evidence = @{ results = @(@{ id = $id; status = 'Passed' }) }
+        evidence = @{ results = @(@{ id = $id; status = 'Passed'; documentationInputs = @(@{ project = 'src/Probe.csproj'; owners = @('src/Probe.csproj')
+            sourceIdentity = $hash; environment = $hash; configuration = 'Debug'; target = $null; packages = @{}; sources = @{ 'src/Probe.csproj' = $hash } }) }) }
         pairing = @{ documentationSnapshot = $hash; contentIdentity = $hash; engineTree = $tree }
         catalog = @{ repository = 'https://github.com/Wolfiora/InnoEngine'; snapshot = $hash; contentIdentity = $hash; sourceTree = $tree
             pages = @(@{ id = 'task.probe'; contentIdentity = $hash; examples = @{ mode = 'host'; projects = @('Probe') }; codeBlocks = @($block,
@@ -53,4 +54,9 @@ Invoke-Case 'unhashed-reference' { param($s) $s.report.results[0].references['Pr
 Invoke-Case 'escaping-report' { param($s) $s.plan.checks[0].id = '../outside' } $false
 Invoke-Case 'escaping-context' { param($s) $s.plan.checks[0].context = '../outside' } $false
 Invoke-Case 'mismatched-context' { param($s) $s.plan.checks[0].context = 'native' } $false
+Invoke-Case 'missing-input-proof' { param($s) $s.evidence.results[0].documentationInputs = @() } $false
+Invoke-Case 'changed-input-environment' { param($s) $s.evidence.results[0].documentationInputs[0].environment = 'c' * 64 } $false
+Invoke-Case 'changed-input-owner' { param($s) $s.evidence.results[0].documentationInputs[0].project = 'src/Other.csproj' } $false
+Invoke-Case 'missing-source-map' { param($s) $s.evidence.results[0].documentationInputs[0].sources = @{} } $false
+Invoke-Case 'invalid-package' { param($s) $s.evidence.results[0].documentationInputs[0].packages = @{ 'probe/1.0.0' = 'unknown' } } $false
 Write-Output "Passed $($results.Count) executable example receipt cases. Evidence: $run"

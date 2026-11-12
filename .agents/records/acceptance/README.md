@@ -1,5 +1,7 @@
 # Acceptance records
 
+- [Documentation input compatibility](DOCUMENTATION_INPUT_COMPATIBILITY_2026_11_12.md): per-owner source/example provenance, authenticated baseline import, precise compatibility rejection and current query observations.
+
 - [Static validation ownership and rule-source batching](STATIC_VALIDATION_SCOPE_2026_11_12.md): shared discovery, preserved conservative fallbacks, actual rule-loading samples and hosted Docs projection results.
 
 - [Windows success and macOS follow-up](CI_43164720103.md): actual platform results, physical temporary roots, target-scoped examples and the remaining incremental certification gap.

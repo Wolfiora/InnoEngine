@@ -20,6 +20,31 @@ foreach ($check in $selected) {
     if ($check.id -cnotmatch '^documentation-examples:[a-zA-Z0-9_-]+$') { throw 'Invalid example report identity.' }
     $passed = @($Evidence.results | Where-Object { $_.id -ceq $check.id -and $_.status -cin @('Passed', 'Reused') })
     if ($passed.Count -ne 1) { throw 'Required example execution did not pass exactly once.' }
+    $proofs = @($passed[0].documentationInputs | Where-Object { $null -ne $_ })
+    $expectedOwners = @($check.projects | Sort-Object -CaseSensitive)
+    if ($proofs.Count -eq 0 -or (@($proofs | ForEach-Object project | Sort-Object -CaseSensitive) -join "`n") -cne ($expectedOwners -join "`n") `
+        -or @($proofs | ForEach-Object project | Sort-Object -Unique).Count -ne $proofs.Count) {
+        throw 'Example input provenance must cover every planned source owner exactly once.'
+    }
+    foreach ($proof in $proofs) {
+        if ($proof.environment -cnotmatch '^[a-f0-9]{64}$' -or $proof.environment -cne $Plan.environment `
+            -or $proof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$' -or $proof.configuration -cne $check.documentation.configuration `
+            -or $proof.target -cne $check.documentation.target -or $proof.project -cnotin @($proof.owners) `
+            -or @($proof.owners | Sort-Object -Unique).Count -ne @($proof.owners).Count) {
+            throw 'Example input provenance differs from its actual owner, environment or context.'
+        }
+        foreach ($owner in @($proof.owners)) {
+            if ([string]::IsNullOrWhiteSpace($owner) -or [IO.Path]::IsPathRooted($owner) -or $owner.Contains('\') -or $owner.Contains(':') `
+                -or $owner -match '(^|/)\.{1,2}(/|$)' -or -not $owner.EndsWith('.csproj')) { throw 'Example input owner escapes its repository boundary.' }
+        }
+        $null = & "$PSScriptRoot/Get-DocumentationSourceInputs.ps1" -Inputs $proof.sources
+        $packages = $proof.packages | ConvertTo-Json -Depth 4 | ConvertFrom-Json -AsHashtable
+        if ($packages -isnot [Collections.IDictionary]) { throw 'Example package inputs require an explicit content map.' }
+        foreach ($package in $packages.GetEnumerator()) {
+            if ($package.Key -cnotmatch '^[a-z0-9_.-]+/[a-z0-9_.+-]+$' -or $package.Key -match '(^|/)\.{1,2}(/|$)' `
+                -or $package.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Example package inputs have an invalid path or identity.' }
+        }
+    }
     if ($check.context -cnotmatch '^[a-zA-Z0-9_-]+$' -or $check.id -cne "documentation-examples:$($check.context)") {
         throw 'Example receipt requires the exact planned execution context.'
     }
@@ -57,6 +82,7 @@ foreach ($check in $selected) {
         reportIdentity = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
         configuration = $report.configuration
         target = $report.target
+        inputs = $proofs
         pages = @($pages)
     }
 }

@@ -12,7 +12,7 @@ External setup remains unresolved for organization-installed GitHub App credenti
 
 Current local query, rule and validation checks do not establish complete Windows/macOS CI, publication ordering, paired-PR or draft-release acceptance. No old issue is automatically closed by this work.
 
-[Run 43164720103](acceptance/CI_43164720103.md) completed with Windows success and diagnosed macOS documentation failures. The final macOS Editor capture is now available. The same review identified an actionable incremental-certification gap: complete new-tree documentation certification currently requires more owner coverage than the ordinary impact plan. Resolve this with explicit input compatibility, not inherited cross-tree test success, before claiming the daily workflow is fully optimized.
+[Run 43164720103](acceptance/CI_43164720103.md) completed with Windows success and diagnosed macOS documentation failures. The final macOS Editor capture is now available. Its incremental-certification gap now has an [implemented input-compatibility path and local acceptance](acceptance/DOCUMENTATION_INPUT_COMPATIBILITY_2026_11_12.md): unchanged owner/source/example evidence retains original provenance without inheriting cross-tree test passes. Final hosted acceptance and a trusted default-branch baseline are still required before claiming this publication path is operational.
 
 ## Preserved engine findings
 
