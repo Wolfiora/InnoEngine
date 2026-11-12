@@ -1,0 +1,74 @@
+name: Reconcile documentation pairing
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+  push:
+    branches: [master]
+  merge_group:
+    types: [checks_requested]
+  workflow_run:
+    workflows: [Engine CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      documentation_revision:
+        description: Exact Docs commit whose completed validation or merge should refresh pairing
+        type: string
+        required: false
+      bootstrap:
+        description: Run the explicitly approved ai-pipeline implementation before protected-default activation
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+# Serialize evidence callbacks and metadata edits without interrupting a check update.
+concurrency:
+  group: documentation-pairing-${{ github.event.merge_group.head_sha || 'pull-requests' }}
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    name: Refresh exact pairing status
+    if: github.repository == 'Wolfiora/InnoEngine' && (github.event_name != 'workflow_dispatch' || github.ref == 'refs/heads/master' || (inputs.bootstrap && github.ref == 'refs/heads/ai-pipeline'))
+    runs-on: windows-2022
+    steps:
+      # Never check out the PR/merge-group source in a job with write or App credentials.
+      - id: implementation
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap && 'ai-pipeline' || 'master' }}
+          persist-credentials: false
+      - name: Inspect evidence access without concealing a missing installation
+        id: access
+        shell: pwsh
+        env:
+          APP_ID: ${{ vars.INNO_DOCS_APP_ID }}
+          APP_KEY: ${{ secrets.INNO_DOCS_APP_PRIVATE_KEY }}
+        run: |
+          "ready=$(([bool]($env:APP_ID -and $env:APP_KEY)).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+      - id: evidence
+        if: steps.access.outputs.ready == 'true'
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.INNO_DOCS_APP_ID }}
+          private-key: ${{ secrets.INNO_DOCS_APP_PRIVATE_KEY }}
+          owner: Wolfiora
+          repositories: InnoEngine.Docs
+          permission-actions: read
+          permission-contents: read
+      - name: Publish the independently required candidate check
+        if: always() && steps.implementation.outcome == 'success'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          INNO_DOCS_READ_TOKEN: ${{ steps.evidence.outputs.token }}
+          DOCS_REVISION: ${{ inputs.documentation_revision }}
+          MERGE_COMMIT: ${{ github.event.merge_group.head_sha }}
+        run: |
+          ./tests/ci/Update-DocumentationPairing.ps1 -DocumentationRevision $env:DOCS_REVISION -MergeCommit $env:MERGE_COMMIT |
+            ConvertTo-Json -Depth 5 | Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append

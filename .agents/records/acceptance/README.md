@@ -1,5 +1,7 @@
 # Acceptance records
 
+- [Independent documentation merge gate](DOCUMENTATION_PAIRING_GATE_2026_11_12.md): exact merged Docs evidence, candidate-race rejection and explicit protected activation prerequisites.
+
 - [Windows CI diagnosis and follow-up](CI_43067538817.md): real passing workloads, metadata/script failures, read-only capture, test scope and external setup.
 
 - [Explicit documentation source certificates](DOCUMENTATION_SOURCE_CERTIFICATES_2026_11_12.md): authenticated preparation, complete reference coverage, read-only evidence and observed test latency.
