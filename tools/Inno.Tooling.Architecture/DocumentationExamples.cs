@@ -29,13 +29,16 @@ public static class DocumentationExamples
     /// configuration, target, artifacts-path, sdk-snapshot, runtime-reference and editor-reference. References must already exist.
     /// A supplied resolved SDK snapshot must match the requested properties and contain every selected example owner.
     /// Its caller maintains the stable execution boundary and verifies closing inputs; the graph alone does not certify freshness.
+    /// Bound Runtime and Editor script manifests are compared with the actual prepared logical assemblies and
+    /// their compiler-produced origins. A compiling example does not excuse a mismatched projected declaration.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels reading, SDK inspection or compilation before atomic report publication.
     /// </param>
     /// <returns>
-    /// Zero when every selected example group compiles; one for failed compilation, missing prerequisites,
-    /// missing explicit contexts or empty required example discovery. The report preserves each group's status.
+    /// Zero when every selected example group compiles and every required script-reference comparison passes;
+    /// one for failed compilation or comparison, missing prerequisites, missing explicit contexts or empty
+    /// required example discovery. The report preserves each group's and reference's status.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// Options are missing, duplicated or unknown, or a requested page does not exist.
