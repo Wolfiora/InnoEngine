@@ -14,7 +14,7 @@ Docs now confirms that the tested merge tree equals the immutable head selected 
 - Nine status/race scenarios passed, including PR head/base/merge/metadata changes, closure, missing merge/access and the exact merge-group candidate.
 - Four real Git candidate-tree scenarios passed: identical revision, different commit with identical tree, changed tree rejection and nonimmutable target rejection.
 - Docs Node regression passed 168 cases, including authenticated completion callbacks and protected workflow boundaries. No cases were skipped.
-- The first status-fixture failure remains in `artifacts/acceptance/english-documentation/pairing-status-tests.log`. Its mock used PowerShell's `?` wildcard for a literal query separator, intercepting individual PR reads. Correcting that mock preserved all race assertions; the final output is `pairing-status-tests-03.log`. Production behavior was not weakened.
+- The first status-fixture failure was `Incorrect check result: head-changed`, retained in the tool response and explicitly transcribed to `artifacts/acceptance/english-documentation/pairing-status-first-failure.json`; the original redirected log was empty after the terminating PowerShell exception and remains unchanged. Its mock used PowerShell's `?` wildcard for a literal query separator, intercepting individual PR reads. Correcting that mock preserved all race assertions; the final output is `pairing-status-tests-03.log`. Production behavior was not weakened.
 
 The unified engine CI contract discovery includes the new PowerShell suites. Docs candidate identity checks run alongside archive checks. Local protocol success is not a hosted pairing result.
 

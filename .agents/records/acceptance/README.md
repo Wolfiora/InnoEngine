@@ -1,5 +1,7 @@
 # Acceptance records
 
+- [Windows success and macOS follow-up](CI_43164720103.md): actual platform results, physical temporary roots, target-scoped examples and the remaining incremental certification gap.
+
 - [Independent documentation merge gate](DOCUMENTATION_PAIRING_GATE_2026_11_12.md): exact merged Docs evidence, candidate-race rejection and explicit protected activation prerequisites.
 
 - [Windows CI diagnosis and follow-up](CI_43067538817.md): real passing workloads, metadata/script failures, read-only capture, test scope and external setup.

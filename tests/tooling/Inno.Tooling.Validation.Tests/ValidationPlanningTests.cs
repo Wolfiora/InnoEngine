@@ -662,6 +662,44 @@ public sealed class ValidationPlanningTests
         Assert.Contains("build:" + C_OWNER, examples.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ProductExamplesRequireTheirEvaluatedTargetWithoutPreparingForeignProducts(bool matchingTarget)
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("Product.props", "<Project />");
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        const string C_OWNER = "platforms/Fixture/editor/Product/Product.csproj";
+        repository.Write(C_OWNER, ValidationRepository.Project("<PropertyGroup><InnoProductId>editor</InnoProductId><InnoProductTarget>"
+            + (matchingTarget ? "fixture-target" : "foreign-target") + "</InnoProductTarget></PropertyGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare actual product and host target prerequisites");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        DocumentationResult baseline = await docs.IndexAsync();
+        docs.Write("content/en/product-example.md", ValidationDocumentationFixture.Page("Product", "Compose this product.\n\n```csharp\nint value = 1;\n```\n", "host"));
+        DocumentationResult current = await docs.IndexAsync();
+        using JsonDocument plan = await docs.PlanAsync(current, baseline);
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement example = Assert.Single(checks.Where(check => check.GetProperty("kind").GetString() == "documentation-examples"));
+        Assert.Equal("task-product", Assert.Single(example.GetProperty("documentation").GetProperty("pages").EnumerateArray()).GetString());
+        Assert.Equal(matchingTarget, plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
+        if (matchingTarget)
+        {
+            Assert.Equal(JsonValueKind.Null, example.GetProperty("exclusion").ValueKind);
+            Assert.Contains("build:" + C_OWNER, example.GetProperty("prerequisites").EnumerateArray().Select(item => item.GetString()));
+        }
+        else
+        {
+            Assert.Contains("foreign-target", example.GetProperty("exclusion").GetString(), StringComparison.Ordinal);
+            Assert.Contains("fixture-target", example.GetProperty("exclusion").GetString(), StringComparison.Ordinal);
+            Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
+        }
+    }
+
     [Fact]
     public async Task ExecutionFailureRetainsAnExactPlanReceiptAndCannotCertifySuccess()
     {

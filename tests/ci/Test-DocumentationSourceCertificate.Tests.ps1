@@ -15,7 +15,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
     $catalog | ConvertTo-Json -Depth 10 | Set-Content $catalogFile -Encoding utf8NoBOM
     $catalogHash = (Get-FileHash $catalogFile).Hash.ToLowerInvariant()
     $rows = @('host-one', 'host-two') | ForEach-Object {
-        @{ platform = $_; receipt = @{ required = 2; passed = 2; reused = 0
+        @{ platform = $_; receipt = @{ commit = 'd' * 40; required = 2; passed = 2; reused = 0
             documentation = @{ engineTree = $tree; documentationSnapshot = $hash; contentIdentity = $hash }
             sourceExamples = @(@{ configuration = 'Debug'; target = $null; catalogIdentity = $catalogHash; reportIdentity = $hash
                 pages = @(@{ page = 'task.probe'; mode = 'host'; projects = @('Probe'); blocks = @($hash) }) })
@@ -35,7 +35,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
         $file = Join-Path $output 'source-certificate.json'
         if ($actual -ceq 'Passed') {
             $proof = Get-Content $file -Raw | ConvertFrom-Json
-            if ($proof.references[0].projects.Count -ne 2 -or $proof.projectManifestIdentity -cne $hash `
+            if ($proof.references[0].projects.Count -ne 2 -or $proof.projectManifestIdentity -cne $hash -or $proof.sourceCommit -cne ('d' * 40) `
                 -or $proof.examples.Count -ne 1 -or $proof.examples[0].contexts.Count -ne 2 `
                 -or $proof.producers[0].receiptIdentity -cne (Get-FileHash $certification).Hash.ToLowerInvariant()) { throw 'Source certificate lost exact coverage or provenance.' }
         } elseif (Test-Path $file) { throw 'Incomplete coverage published a certificate.' }
@@ -50,6 +50,8 @@ Invoke-Case 'no-comparisons' { param($s) $s.rows[0].receipt.sourceApi = @(); $s.
 Invoke-Case 'failed-required-check' { param($s) $s.rows[0].receipt.passed = 1 } 'Rejected'
 Invoke-Case 'duplicate-platform' { param($s) $s.rows[1].platform = $s.rows[0].platform } 'Rejected'
 Invoke-Case 'changed-source' { param($s) $s.rows[0].receipt.documentation.engineTree = 'c' * 40 } 'Rejected'
+Invoke-Case 'missing-tested-commit' { param($s) $s.rows[0].receipt.Remove('commit') } 'Rejected'
+Invoke-Case 'different-tested-commits' { param($s) $s.rows[0].receipt.commit = 'e' * 40 } 'Rejected'
 Invoke-Case 'changed-catalog' { param($s) $s.rows[0].receipt.sourceApi[0].catalogIdentity = 'c' * 64 } 'Rejected'
 Invoke-Case 'changed-reference' { param($s) $s.rows[0].receipt.sourceApi[0].references[0].identity = 'c' * 64 } 'Rejected'
 Invoke-Case 'wrong-target' { param($s) $s.rows[0].receipt.sourceApi[0].target = 'other' } 'Rejected'

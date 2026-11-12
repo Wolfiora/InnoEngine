@@ -113,7 +113,22 @@ internal static class ValidationPlanner
             else if (project.layer == "performance" && !deepNative && !changedTestExecutor && !ChangedTestClosure(project))
                 executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
         }
+        JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
+            Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
+        string target = development?.GetProperty("Properties").GetProperty("InnoDevelopmentTarget").GetString() ?? string.Empty;
         DocumentationPageInfo[] examplePages = documentation is null ? [] : ValidationDocumentation.SelectExamples(documentation, affected, full);
+        var exampleExclusions = new Dictionary<DocumentationPageInfo, string>();
+        foreach (DocumentationPageInfo page in examplePages)
+        {
+            string[] reasons = (page.examples?.projects ?? []).Select(name => byPath[documentation!.owners[name].path])
+                .Select(project => executionExclusions.GetValueOrDefault(project.path)
+                    ?? (target.Length != 0 && project.productTarget.Length != 0 && project.productTarget != target
+                        ? $"Example owner '{project.path}' requires product target '{project.productTarget}'; this host selects '{target}'." : null))
+                .OfType<string>().Distinct(StringComparer.Ordinal).ToArray();
+            if (reasons.Length != 0)
+                exampleExclusions.Add(page, string.Join(" ", reasons));
+        }
+        examplePages = examplePages.Where(page => !exampleExclusions.ContainsKey(page)).ToArray();
         foreach (DocumentationPageInfo page in examplePages)
         foreach (string owner in page.examples?.projects ?? [])
             documentationOwners.Add(documentation!.owners[owner].path);
@@ -171,7 +186,6 @@ internal static class ValidationPlanner
             }, graph.RootElement.Clone())
         };
         Dictionary<string, ValidationProject> nativeProjects = byPath;
-        string target = string.Empty;
         if (scriptExamples || nativeOwners.Any(owner => !executionExclusions.ContainsKey(owner)
             && (affected.Contains(owner) || documentationOwners.Contains(owner))))
         {
@@ -185,8 +199,6 @@ internal static class ValidationPlanner
                         .Concat(nativeDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
                     documentation is null ? new(StringComparer.Ordinal) : unavailable.ToDictionary(static path => path,
                         path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
-            JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
-                Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
             if (development is null)
                 throw new InvalidDataException("Native validation requires the existing development product declaration.");
             JsonElement host = development.Value.GetProperty("Properties");
@@ -427,6 +439,11 @@ internal static class ValidationPlanner
         void AddDocumentationChecks()
         {
             ValidationDocumentation.Selection selected = documentation!;
+            foreach (var excluded in exampleExclusions)
+                checks.Add(new("documentation-examples:excluded:" + excluded.Key.id, "documentation-examples", "InnoEngine.Docs",
+                    "The example retains its declared product and environment obligations in the corresponding matrix cell.", "any", [],
+                    ["@tooling"], false, excluded.Value, layer: "contract", documentation: new([], [excluded.Key.id],
+                        ValidationDocumentation.PageIdentity([excluded.Key]), configuration, null)));
             var owners = affected.Concat(selected.changedReferenceOwners.Select(owner => selected.owners[owner].path))
                 .Where(owner => !byPath[owner].test && !executionExclusions.ContainsKey(owner)
                 && (byPath[owner].productTarget.Length == 0 || byPath[owner].productTarget == target))

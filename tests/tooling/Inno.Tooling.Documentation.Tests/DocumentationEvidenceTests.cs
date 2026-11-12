@@ -7,13 +7,14 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Tooling.Documentation.Tests;
 
 public sealed class DocumentationEvidenceTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDocumentationEvidence", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoDocumentationEvidence", Guid.NewGuid().ToString("N"));
     private string cache => Path.Combine(m_root, "cache");
     private string source => Path.Combine(m_root, "source");
 

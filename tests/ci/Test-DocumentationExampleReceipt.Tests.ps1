@@ -9,7 +9,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     $id = 'documentation-examples:managed'
     $block = @{ language = 'csharp'; contentIdentity = $hash; declarationSymbols = @() }
     $state = @{
-        plan = @{ checks = @(@{ id = $id; kind = 'documentation-examples'; exclusion = $null
+        plan = @{ checks = @(@{ id = $id; kind = 'documentation-examples'; context = 'managed'; exclusion = $null
             documentation = @{ pages = @('task.probe'); configuration = 'Debug'; target = $null } }) }
         evidence = @{ results = @(@{ id = $id; status = 'Passed' }) }
         pairing = @{ documentationSnapshot = $hash; contentIdentity = $hash; engineTree = $tree }
@@ -21,7 +21,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     }
     & $Change $state
     $state.catalog | ConvertTo-Json -Depth 12 | Set-Content (Join-Path $directory 'documentation-catalog.json') -Encoding utf8NoBOM
-    $file = Join-Path $directory 'documentation-examples-managed.json'
+    $file = Join-Path $directory 'managed-documentation-examples.json'
     if (-not $state.missing) { $state.report | ConvertTo-Json -Depth 12 | Set-Content $file -Encoding utf8NoBOM }
     $accepted = $false; $diagnostic = ''
     try {
@@ -51,4 +51,6 @@ Invoke-Case 'missing-block' { param($s) $s.report.results[0].blocks = @() } $fal
 Invoke-Case 'missing-reference' { param($s) $s.report.results[0].references = @{} } $false
 Invoke-Case 'unhashed-reference' { param($s) $s.report.results[0].references['Probe.dll'] = 'unknown' } $false
 Invoke-Case 'escaping-report' { param($s) $s.plan.checks[0].id = '../outside' } $false
+Invoke-Case 'escaping-context' { param($s) $s.plan.checks[0].context = '../outside' } $false
+Invoke-Case 'mismatched-context' { param($s) $s.plan.checks[0].context = 'native' } $false
 Write-Output "Passed $($results.Count) executable example receipt cases. Evidence: $run"

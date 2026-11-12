@@ -20,7 +20,10 @@ foreach ($check in $selected) {
     if ($check.id -cnotmatch '^documentation-examples:[a-zA-Z0-9_-]+$') { throw 'Invalid example report identity.' }
     $passed = @($Evidence.results | Where-Object { $_.id -ceq $check.id -and $_.status -cin @('Passed', 'Reused') })
     if ($passed.Count -ne 1) { throw 'Required example execution did not pass exactly once.' }
-    $file = Join-Path $directory ($check.id.Replace(':', '-') + '.json')
+    if ($check.context -cnotmatch '^[a-zA-Z0-9_-]+$' -or $check.id -cne "documentation-examples:$($check.context)") {
+        throw 'Example receipt requires the exact planned execution context.'
+    }
+    $file = Join-Path $directory ($check.context + '-documentation-examples.json')
     if ((Get-Item -LiteralPath $file).LinkType) { throw 'Example certification cannot follow a linked report.' }
     $report = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json
     if ($report.status -cne 'Passed' -or $report.snapshot -cne $catalog.snapshot -or $report.sourceTree -cne $catalog.sourceTree `

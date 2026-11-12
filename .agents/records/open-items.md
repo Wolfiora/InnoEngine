@@ -12,6 +12,8 @@ External setup remains unresolved for organization-installed GitHub App credenti
 
 Current local query, rule and validation checks do not establish complete Windows/macOS CI, publication ordering, paired-PR or draft-release acceptance. No old issue is automatically closed by this work.
 
+[Run 43164720103](acceptance/CI_43164720103.md) completed with Windows success and diagnosed macOS documentation failures. The final macOS Editor capture is now available. The same review identified an actionable incremental-certification gap: complete new-tree documentation certification currently requires more owner coverage than the ordinary impact plan. Resolve this with explicit input compatibility, not inherited cross-tree test success, before claiming the daily workflow is fully optimized.
+
 ## Preserved engine findings
 
 The following findings come from the [baseline open-item ledger](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/open-items.md) and its linked reports. Their historical evidence and unresolved distinctions remain authoritative; GitHub issue state must be checked before delivery.

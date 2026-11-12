@@ -12,6 +12,13 @@ if ($receipts.Count -eq 0 -or $receipts.Count -ne $CatalogPaths.Count -or [strin
 }
 $catalogs = @($CatalogPaths | ForEach-Object { Get-Content -LiteralPath $_ -Raw | ConvertFrom-Json })
 $catalog = $catalogs[0]
+if (@($receipts | Where-Object { [string]$_.receipt.commit -cnotmatch '^[a-f0-9]{40}$' }).Count -ne 0) {
+    throw 'Every source certification receipt must identify its exact tested commit.'
+}
+$commits = @($receipts | ForEach-Object { $_.receipt.commit } | Sort-Object -Unique)
+if ($commits.Count -ne 1 -or $commits[0] -cnotmatch '^[a-f0-9]{40}$') {
+    throw 'Source certification requires one exact tested commit across the reconciled matrix.'
+}
 $inventory = @($catalog.references | Where-Object model -CEQ 'project-inventory')
 if ($inventory.Count -ne 1 -or $inventory[0].identity -cnotmatch '^[a-f0-9]{64}$') { throw 'The source catalog lacks its exact project inventory.' }
 $coverage = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -88,7 +95,7 @@ $report = @{ status = $(if ($missing.Count) { 'Blocked' } else { 'Passed' }); mi
 $report | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory 'source-certification-status.json') -Encoding utf8NoBOM
 if ($missing.Count) { return [pscustomobject]$report }
 $certificate = [ordered]@{
-    format = 'inno-documentation-source/1'; repository = $catalog.repository; sourceTree = $catalog.sourceTree
+    format = 'inno-documentation-source/1'; repository = $catalog.repository; sourceTree = $catalog.sourceTree; sourceCommit = $commits[0]
     projectManifestIdentity = $inventory[0].identity
     references = @($references | Sort-Object path -CaseSensitive | ForEach-Object {
         [ordered]@{ path = $_.path; identity = $_.identity; model = $_.model; configuration = $_.configuration; target = $_.target
