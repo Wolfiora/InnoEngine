@@ -6,11 +6,13 @@ This ledger distinguishes unfinished implementation, missing evidence and extern
 
 ## Active modernization
 
-The full English documentation, AI workflow and CI/CD plan remains in progress. The implementation ledger tracks content inventory, API binding, query extraction, validation precision, cross-repository automation and deployment. The old engine product documentation, Wiki/query implementations and duplicated documentation-rule authority have been removed after their replacements and local checks. Current gaps are source certification, the remaining macOS Editor capture, final hosted acceptance and protected delivery activation; do not recreate retired paths to address those gaps.
+The full English documentation, AI workflow and CI/CD plan remains in progress. The implementation ledger tracks content inventory, API binding, query extraction, validation precision, cross-repository automation and deployment. The old engine product documentation, Wiki/query implementations and duplicated documentation-rule authority have been removed after their replacements and local checks. Current gaps are source certification, final hosted acceptance and protected delivery activation; the macOS Editor capture is available. Do not recreate retired paths to address those gaps.
 
 External setup remains unresolved for organization-installed GitHub App credentials. Repository administration and Pages configuration were available, but repository secrets were empty and organization secret metadata returned HTTP 403. This is not evidence of a configured cross-repository App.
 
 Current local query, rule and validation checks do not establish complete Windows/macOS CI, publication ordering, paired-PR or draft-release acceptance. No old issue is automatically closed by this work.
+
+[Run 43191512147](acceptance/CI_43191512147.md) completed 334 macOS checks, then failed a script-example receipt format mismatch. The corrected producer records separate canonical Runtime/Editor reference hashes; a real compiler-to-CI regression reproduces the first failure and passes after correction. Final hosted acceptance remains necessary.
 
 [Run 43164720103](acceptance/CI_43164720103.md) completed with Windows success and diagnosed macOS documentation failures. The final macOS Editor capture is now available. Its incremental-certification gap now has an [implemented input-compatibility path and local acceptance](acceptance/DOCUMENTATION_INPUT_COMPATIBILITY_2026_11_12.md): unchanged owner/source/example evidence retains original provenance without inheriting cross-tree test passes. Final hosted acceptance and a trusted default-branch baseline are still required before claiming this publication path is operational.
 

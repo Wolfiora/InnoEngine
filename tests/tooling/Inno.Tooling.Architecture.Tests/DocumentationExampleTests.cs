@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Testing.Source;
 using Inno.Tooling.Documentation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -183,17 +184,57 @@ public sealed class DocumentationExampleTests : IDisposable
         Assert.Contains("Blocked", File.ReadAllText(output));
         int runtimeResult = await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "runtime", "--runtime-reference", runtime]);
         Assert.True(runtimeResult == 0, File.ReadAllText(output));
+        await AssertReceiptAsync(index.snapshot, output, "runtime");
         Assert.Equal(1, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "editor", "--runtime-reference", runtime]));
         Assert.Contains("Blocked", File.ReadAllText(output));
         Assert.Equal(0, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "editor", "--runtime-reference", runtime, "--editor-reference", editor]));
-        string evidence = File.ReadAllText(output);
-        Assert.Contains(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(runtime))), evidence);
-        Assert.Contains(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(editor))), evidence);
+        using (JsonDocument evidence = JsonDocument.Parse(File.ReadAllBytes(output)))
+        {
+            JsonElement references = evidence.RootElement.GetProperty("results")[0].GetProperty("references");
+            Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(runtime))), references.GetProperty("Inno.ScriptApi.Runtime").GetString());
+            Assert.Equal(Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(editor))), references.GetProperty("Inno.ScriptApi.Editor").GetString());
+        }
+        await AssertReceiptAsync(index.snapshot, output, "editor");
         Assert.Equal(1, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "host-leak", "--runtime-reference", runtime]));
         Assert.Contains("CS0103", File.ReadAllText(output));
         Assert.Equal(1, await DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "runtime", "--runtime-reference", unrelated]));
         Assert.Contains("Expected the Inno.ScriptApi.Runtime", File.ReadAllText(output));
         await Assert.ThrowsAsync<ArgumentException>(() => DocumentationExamples.ExecuteAsync([..Arguments(index.snapshot, output), "--page", "editor", "--editor-reference", editor]));
+    }
+
+    private async Task AssertReceiptAsync(string snapshotId, string reportPath, string pageId)
+    {
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, snapshotId);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        Write("receipt/documentation-catalog.json", JsonSerializer.Serialize(catalog));
+        File.Copy(reportPath, Path.Combine(m_root, "receipt/managed-documentation-examples.json"), overwrite: true);
+        Write("receipt/check.ps1", """
+            param([string]$Repository, [string]$Page)
+            $ErrorActionPreference = 'Stop'
+            $catalog = Get-Content "$PSScriptRoot/documentation-catalog.json" -Raw | ConvertFrom-Json
+            $hash = 'a' * 64
+            $owner = 'src/Inno.Probe/Inno.Probe.csproj'
+            $plan = @{ environment = $hash; checks = @(@{ id = 'documentation-examples:managed'; kind = 'documentation-examples'; context = 'managed'
+                exclusion = $null; projects = @($owner); documentation = @{ pages = @($Page); configuration = 'Debug'; target = $null } }) }
+            $evidence = @{ results = @(@{ id = 'documentation-examples:managed'; status = 'Passed'; documentationInputs = @(@{
+                project = $owner; owners = @($owner); sourceIdentity = $hash; environment = $hash; configuration = 'Debug'; target = $null
+                packages = @{}; sources = @{ $owner = (Get-FileHash "$PSScriptRoot/../$owner" -Algorithm SHA256).Hash.ToLowerInvariant() } }) }) }
+            $pairing = @{ documentationSnapshot = $catalog.snapshot; contentIdentity = $catalog.contentIdentity; engineTree = $catalog.sourceTree }
+            $receipt = @(& "$Repository/tests/ci/Get-DocumentationExampleReceipt.ps1" -Plan $plan -Evidence $evidence -Pairing $pairing -Directory $PSScriptRoot)
+            if ($receipt.Count -ne 1 -or $receipt[0].pages.Count -ne 1 -or $receipt[0].pages[0].page -cne $Page) {
+                throw 'The real compiler report lost its selected example during CI reconciliation.'
+            }
+            "Reconciled $Page against the actual example compiler report."
+            """);
+        var start = new ProcessStartInfo("pwsh") { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
+        foreach (string argument in new[] { "-NoProfile", "-File", Path.Combine(m_root, "receipt/check.ps1"),
+                     TestRepository.GetRoot(typeof(DocumentationExampleTests).Assembly), pageId })
+            start.ArgumentList.Add(argument);
+        using Process process = Process.Start(start)!;
+        Task<string> stdout = process.StandardOutput.ReadToEndAsync();
+        Task<string> stderr = process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        Assert.True(process.ExitCode == 0, await stdout + await stderr);
     }
 
     private string EmitReference(string name, string sourceText)

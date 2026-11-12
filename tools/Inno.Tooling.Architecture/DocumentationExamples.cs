@@ -122,7 +122,8 @@ public static class DocumentationExamples
                         options.GetValueOrDefault("--editor-reference"));
                     bool editor = context.mode == "editor-script";
                     IReadOnlyList<MetadataReference> references = scripts.GetReferences(editor);
-                    identities.Add("script-projection", scripts.GetIdentity(editor));
+                    foreach (var identity in scripts.GetIdentities(editor))
+                        identities.Add(identity.Key, identity.Value);
                     compilation = CSharpCompilation.Create("DocumentationScript", references:
                         sdk.GetFrameworkReferences(cancellationToken).OfType<PortableExecutableReference>().Select(Freeze).Concat(references),
                         options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,

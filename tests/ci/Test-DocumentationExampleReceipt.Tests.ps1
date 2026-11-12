@@ -36,6 +36,31 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     if ($accepted -ne $Expected) { throw "Unexpected example receipt for ${Name}: $diagnostic" }
 }
 Invoke-Case 'complete' { param($s) } $true
+Invoke-Case 'runtime-script-references' { param($s)
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'runtime-script'
+    $s.report.results[0].references['Inno.ScriptApi.Runtime'] = $hash
+} $true
+Invoke-Case 'editor-script-references' { param($s)
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'editor-script'
+    $s.report.results[0].references['Inno.ScriptApi.Runtime'] = $hash
+    $s.report.results[0].references['Inno.ScriptApi.Editor'] = 'c' * 64
+} $true
+Invoke-Case 'runtime-script-missing-runtime' { param($s)
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'runtime-script'
+} $false
+Invoke-Case 'editor-script-missing-editor' { param($s)
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'editor-script'
+    $s.report.results[0].references['Inno.ScriptApi.Runtime'] = $hash
+} $false
+Invoke-Case 'editor-script-missing-runtime' { param($s)
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'editor-script'
+    $s.report.results[0].references['Inno.ScriptApi.Editor'] = $hash
+} $false
+Invoke-Case 'runtime-script-borrowed-editor' { param($s)
+    $s.catalog.pages[0].examples.mode = $s.report.results[0].mode = 'runtime-script'
+    $s.report.results[0].references['Inno.ScriptApi.Runtime'] = $hash
+    $s.report.results[0].references['Inno.ScriptApi.Editor'] = $hash
+} $false
 Invoke-Case 'missing-report' { param($s) $s.missing = $true } $false
 Invoke-Case 'failed-check' { param($s) $s.evidence.results[0].status = 'Failed' } $false
 Invoke-Case 'stale-tree' { param($s) $s.report.sourceTree = 'c' * 40 } $false

@@ -32,8 +32,18 @@ internal sealed class DocumentationScriptReferences
         return editor ? [m_runtime, m_editor!] : [m_runtime];
     }
 
-    internal string GetIdentity(bool editor)
-        => editor ? $"{m_runtimeIdentity};{m_editorIdentity}" : m_runtimeIdentity ?? string.Empty;
+    internal IReadOnlyDictionary<string, string> GetIdentities(bool editor)
+    {
+        var identities = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Inno.ScriptApi.Runtime"] = m_runtimeIdentity
+                ?? throw new InvalidOperationException("The Runtime script reference is unavailable.")
+        };
+        if (editor)
+            identities.Add("Inno.ScriptApi.Editor", m_editorIdentity
+                ?? throw new InvalidOperationException("The Editor script reference is unavailable."));
+        return identities;
+    }
 
     private static (MetadataReference? reference, string? identity) Read(
         string? path,
@@ -52,6 +62,6 @@ internal sealed class DocumentationScriptReferences
             throw new InvalidDataException($"Expected the {expectedName} logical script reference: {absolute}");
         // Compilation and evidence use the same frozen bytes, even if the source file changes later.
         return (MetadataReference.CreateFromImage(bytes, filePath: absolute),
-            expectedName + ":" + Convert.ToHexString(SHA256.HashData(bytes)));
+            Convert.ToHexStringLower(SHA256.HashData(bytes)));
     }
 }

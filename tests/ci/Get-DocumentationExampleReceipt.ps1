@@ -74,6 +74,14 @@ foreach ($check in $selected) {
         foreach ($reference in $result.references.PSObject.Properties) {
             if ($reference.Value -cnotmatch '^[a-f0-9]{64}$') { throw 'Example compilation reference has no content identity.' }
         }
+        if ($result.mode -cin @('runtime-script', 'editor-script')) {
+            $names = @($result.references.PSObject.Properties | ForEach-Object Name)
+            if ('Inno.ScriptApi.Runtime' -cnotin $names `
+                -or ($result.mode -ceq 'editor-script' -and 'Inno.ScriptApi.Editor' -cnotin $names) `
+                -or ($result.mode -ceq 'runtime-script' -and 'Inno.ScriptApi.Editor' -cin $names)) {
+                throw 'Script example references do not match their required Runtime and Editor surfaces.'
+            }
+        }
         [pscustomobject]@{ page = $result.page; mode = $result.mode; projects = @($page[0].examples.projects); blocks = $identities }
     }
     [pscustomobject]@{

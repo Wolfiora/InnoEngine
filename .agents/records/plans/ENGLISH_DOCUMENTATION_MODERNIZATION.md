@@ -6,8 +6,8 @@ Status: implementation in progress. This record does not certify completion.
 
 The current status table supersedes the older chronological checkpoints below. Original results and first failures remain linked; their historical missing-work lists are not a current task queue.
 
-- Master/logo is merged into `ai-pipeline`; the hosted Windows/macOS run 43164720103 is executing the exact 7e12d767/Docs 01bc7e4 pair.
-- All 454 baseline product-file dispositions are reconciled: 364 reviewed destinations, 73 approved native/generated API retirements and 17 unchanged historical images. All 252 actual project entries exist. The latest local projection has 2,531 pages and 12,274 selected declarations; macOS Editor evaluated facts and complete source certification remain pending.
+- Master/logo `259e8a63` is merged into `ai-pipeline`. Run 43164720103 completed with Windows success and diagnosed macOS failures. Subsequent run 43191512147 completed 334 macOS checks before a receipt-format failure; its [actual compiler/receipt correction](../acceptance/CI_43191512147.md) has local regression evidence and still needs matching hosted acceptance.
+- All 454 baseline product-file dispositions are reconciled: 364 reviewed destinations, 73 approved native/generated API retirements and 17 unchanged historical images. All 252 actual project entries exist. The current projection has 2,533 pages and 12,276 selected declarations, including macOS Editor facts. Complete source certification remains pending. Docs run 43210727247 passed 188 Node cases, production rendering and 72 browser journeys, then correctly blocked unavailable source evidence.
 - The engine product tree and old Wiki/query implementations are removed. Read-only documentation queries use the independent tooling library. Detailed documentation rules now have one authority in Docs, with all 241 original engine rule IDs and eight moved complete units retained in the shared provenance registry.
 - Protected evidence relay, separate preview/source jobs, bounded partial resumption and executable-input certificates are implemented and locally checked. The final engine/Docs candidates still need matching hosted acceptance. App setup/default-branch activation and actual deployment are not claimed.
 
@@ -62,7 +62,7 @@ Engine commit `18da08eaecb12d89b816166bae8d9480683f6948` corrects the observed n
 | Query core and immutable snapshots | Implemented; final integration pending | Independent library, explicit preparation, immutable reads, structured contracts and retained regression/performance evidence; old consumers removed |
 | English rules and workflow | Implemented; final paired CI pending | All 58 units in English, 241 original identities retained; eight documentation units owned only by Docs and loaded explicitly |
 | Incremental validation and CI/CD | Final acceptance in progress | Actual input closures, independent prerequisites, narrowed Console dependency, protected evidence relay, static artifact reuse and separate executable-example proof |
-| Legacy removal and final acceptance | Legacy cutover complete; hosted acceptance incomplete | Retired product/Wiki/query paths removed; source certification, macOS capture and actual protected delivery remain unresolved |
+| Legacy removal and final acceptance | Legacy cutover complete; hosted acceptance incomplete | Retired product/Wiki/query paths removed; all source captures exist, while final source certification and actual protected delivery remain unresolved |
 
 ## Current decisions
 
