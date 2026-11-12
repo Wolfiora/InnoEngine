@@ -74,6 +74,24 @@ try {
     $fixtureEntry = Join-Path $fixture 'tests/ci/Test-AgentRules.ps1'
     $registry = Join-Path $fixture '.agents/rulebook/coverage.json'
     $originalRegistry = [IO.File]::ReadAllText($registry)
+    foreach ($scenario in @('missing-original', 'non-file-original', 'injected-source-line')) {
+        $copy = $originalRegistry | ConvertFrom-Json
+        $revision = ($copy.units[0].source -split ':', 2)[0]
+        $expected = 'Unavailable rule source'
+        switch ($scenario) {
+            'missing-original' { $copy.units[0].source = $revision + ':missing-rule-original.md' }
+            'non-file-original' { $copy.units[0].source = $revision + ':docs' }
+            'injected-source-line' {
+                $copy.units[0].source += "`n" + $copy.units[1].source
+                $expected = 'Invalid immutable rule source'
+            }
+        }
+        [IO.File]::WriteAllText($registry, ($copy | ConvertTo-Json -Depth 50))
+        $failure = ''
+        try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
+        if (-not $failure.Contains($expected)) { throw "Wrong source rejection for ${scenario}: $failure" }
+    }
+    [IO.File]::WriteAllText($registry, $originalRegistry)
     # Use one real preserved engine unit as an isolated external-authority fixture. No network,
     # sibling checkout or copied current Docs tree is needed by engine-only regression execution.
     $authorityRoot = Join-Path $fixture 'external-authority'

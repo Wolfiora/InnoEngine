@@ -79,7 +79,8 @@ internal static class ValidationPlanner
                 || change.StartsWith(DirectoryOf(project.path), StringComparison.Ordinal)).ToArray();
             foreach (ValidationProject owner in owners)
                 affected.Add(owner.path);
-            if (owners.Length == 0 && !IsDocumentation(change) && change != ValidationRunner.C_TEST_EXECUTOR)
+            if (owners.Length == 0 && !IsDocumentation(change) && change != ValidationRunner.C_TEST_EXECUTOR
+                && change != ValidationCiContracts.C_RULE_LOADER && !ValidationCiContracts.Owns(change))
             {
                 diagnostics.Add($"Unknown or shared input '{change}': conservatively selecting every owner.");
                 full = true;
@@ -228,7 +229,7 @@ internal static class ValidationPlanner
         }
 
         string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith(".agents/rulebook/", StringComparison.Ordinal)
-            || path == "tests/ci/Test-AgentRules.ps1").Concat(RuleReviewInputs()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+            || path == ValidationCiContracts.C_RULE_LOADER).Concat(RuleReviewInputs()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         var toolingOwners = new HashSet<string>(StringComparer.Ordinal);
         AddToolOwner("tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj");
         string[] toolingInputs = CapturedInputs(toolingOwners.SelectMany(owner => byPath[owner].inputs)

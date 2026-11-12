@@ -116,10 +116,10 @@ internal static class ValidationRunner
                                 "-ResultsDirectory", Path.Combine(directory, "hot-builds"), "-Iterations", "10"], "hot-builds.log").ConfigureAwait(false);
                             break;
                         case "instructions":
-                            await ShellAsync("tests/ci/Test-AgentRules.ps1", [], "instructions.log").ConfigureAwait(false);
+                            await ShellAsync(ValidationCiContracts.C_RULE_LOADER, [], "instructions.log").ConfigureAwait(false);
                             break;
                         case "ci-contracts":
-                            string[] contracts = Directory.GetFiles(Path.Combine(plan.root, "tests", "ci"), "*.Tests.ps1").Order(StringComparer.Ordinal).ToArray();
+                            string[] contracts = ValidationCiContracts.Discover(plan.root);
                             if (contracts.Length == 0)
                                 throw new InvalidDataException("Required CI contract discovery is empty.");
                             foreach (string contract in contracts)

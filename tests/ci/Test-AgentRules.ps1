@@ -16,11 +16,57 @@ $rootText = Get-Content -LiteralPath (Join-Path $repository 'AGENTS.md') -Raw
 $rootBytes = [Text.Encoding]::UTF8.GetByteCount($rootText)
 if ($rootBytes -gt $manifest.rootBudgetBytes) { throw 'Root instructions exceed 8 KiB.' }
 $sources = @{}
-function Read-Source([string]$identity) {
-    if (-not $sources.ContainsKey($identity)) {
-        $sources[$identity] = (& git -C $repository show $identity) -join "`n"
-        if ($LASTEXITCODE -ne 0) { throw "Unavailable rule source: $identity" }
+$sourceIdentities = @("$($manifest.baseline):AGENTS.md") + @($manifest.units | ForEach-Object source) +
+    @($manifest.units | Where-Object { $_.approvedAddition.translation } | ForEach-Object { $_.approvedAddition.translation.source })
+$sourceReader = [Diagnostics.Process]::new()
+$sourceReader.StartInfo.FileName = 'git'
+foreach ($argument in @('-C', $repository, 'cat-file', '--batch')) { $sourceReader.StartInfo.ArgumentList.Add($argument) }
+$sourceReader.StartInfo.UseShellExecute = $false
+$sourceReader.StartInfo.CreateNoWindow = $true
+$sourceReader.StartInfo.RedirectStandardInput = $true
+$sourceReader.StartInfo.RedirectStandardOutput = $true
+$sourceReader.StartInfo.RedirectStandardError = $true
+$sourceReader.StartInfo.StandardInputEncoding = [Text.UTF8Encoding]::new($false)
+# Preparation owns acquisition. Reading rules never hydrates a partial clone over the network.
+$sourceReader.StartInfo.Environment['GIT_NO_LAZY_FETCH'] = '1'
+$sourceReader.StartInfo.Environment['GIT_TERMINAL_PROMPT'] = '0'
+$sourceStarted = $false
+$bytes = $null
+try {
+    $sourceStarted = $sourceReader.Start()
+    if (-not $sourceStarted) { throw 'Cannot read immutable rule provenance.' }
+    $sourceErrors = $sourceReader.StandardError.ReadToEndAsync()
+    $bytes = [IO.BinaryReader]::new($sourceReader.StandardOutput.BaseStream)
+    foreach ($identity in @($sourceIdentities | Sort-Object -Unique)) {
+        if ($identity -cnotmatch '^[a-f0-9]{40}:[^\r\n\x00]+$') { throw "Invalid immutable rule source: $identity" }
+        # Exchange one request and its size-delimited response at a time: neither pipe can fill
+        # while its peer is waiting for the complete batch, even for a large original rulebook.
+        $sourceReader.StandardInput.WriteLine($identity)
+        $sourceReader.StandardInput.Flush()
+        $header = [Text.StringBuilder]::new()
+        while (($value = $bytes.ReadByte()) -ne 10) {
+            if ($header.Length -ge 4096) { throw 'Invalid rule provenance response.' }
+            [void]$header.Append([char]$value)
+        }
+        $match = [regex]::Match($header.ToString(), '^[a-f0-9]{40} blob ([0-9]+)$')
+        if (-not $match.Success) { throw "Unavailable rule source: $identity" }
+        $length = [long]::Parse($match.Groups[1].Value)
+        if ($length -gt 16777216) { throw "Rule provenance exceeds the bounded source size: $identity" }
+        $content = $bytes.ReadBytes([int]$length)
+        if ($content.Length -ne $length -or $bytes.ReadByte() -ne 10) { throw "Incomplete rule source: $identity" }
+        $sources[$identity] = [Text.UTF8Encoding]::new($false, $true).GetString($content).Replace("`r`n", "`n").TrimEnd([char]10)
     }
+    $sourceReader.StandardInput.Close()
+    $sourceReader.WaitForExit()
+    $diagnostic = $sourceErrors.GetAwaiter().GetResult()
+    if ($sourceReader.ExitCode -ne 0) { throw "Cannot read immutable rule provenance: $diagnostic" }
+} finally {
+    if ($sourceStarted -and -not $sourceReader.HasExited) { $sourceReader.Kill(); $sourceReader.WaitForExit() }
+    if ($bytes) { $bytes.Dispose() }
+    $sourceReader.Dispose()
+}
+function Read-Source([string]$identity) {
+    if (-not $sources.ContainsKey($identity)) { throw "Unavailable rule source: $identity" }
     return $sources[$identity]
 }
 function Get-Hash([string]$value) {

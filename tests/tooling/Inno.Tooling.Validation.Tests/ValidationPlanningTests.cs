@@ -234,6 +234,53 @@ public sealed class ValidationPlanningTests
     }
 
     [Theory]
+    [InlineData("tests/ci/Scope.Tests.ps1", false)]
+    [InlineData("tests/ci/Test-AgentRules.ps1", false)]
+    [InlineData("tests/ci/Prepare-Unknown.ps1", true)]
+    [InlineData("tests/ci/nested/Scope.Tests.ps1", true)]
+    public async Task StaticContractOwnersFollowActualDiscoveryWithoutSelectingProductBuilds(
+        string path,
+        bool unknown
+    ) {
+        using var repository = new ValidationRepository();
+        repository.Write(path, "Write-Output 'Changed contract'\n");
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.Equal(unknown, plan.RootElement.GetProperty("full").GetBoolean());
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        JsonElement contract = Assert.Single(checks.Where(check => check.GetProperty("id").GetString() == "ci-contracts"));
+        Assert.Contains(path, contract.GetProperty("inputs").EnumerateArray().Select(input => input.GetString()));
+        if (!unknown)
+        {
+            Assert.Empty(Owners(plan));
+            Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString() == "build");
+            Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
+        }
+        else
+            Assert.Contains(plan.RootElement.GetProperty("diagnostics").EnumerateArray(),
+                diagnostic => diagnostic.GetString()!.Contains("Unknown or shared input", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task StaticContractRecognitionDoesNotHideAnExplicitProjectConsumer()
+    {
+        using var repository = new ValidationRepository();
+        const string C_SCRIPT = "tests/ci/Shared.Tests.ps1";
+        const string C_OWNER = "tests/Example.Tests/Example.Tests.csproj";
+        repository.Write(C_SCRIPT, "Write-Output 'Original'\n");
+        repository.Write(C_OWNER, File.ReadAllText(repository.PathOf(C_OWNER)).Replace("</Project>",
+            "<ItemGroup><InnoValidationInput Include=\"../ci/Shared.Tests.ps1\" /></ItemGroup></Project>", StringComparison.Ordinal));
+        repository.Git("add", C_SCRIPT, C_OWNER);
+        repository.Git("commit", "-m", "Declare the contract's additional runtime consumer");
+        repository.Write(C_SCRIPT, "Write-Output 'Changed'\n");
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
+        Assert.Contains(C_OWNER, Owners(plan));
+        Assert.Contains(plan.RootElement.GetProperty("checks").EnumerateArray(),
+            check => check.GetProperty("id").GetString() == "build:" + C_OWNER
+                && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
+    }
+
+    [Theory]
     [InlineData("tests/fixtures/editor-ui/ManagedMemorySample.editor.cs")]
     [InlineData("tests/Invoke-EditorUiProductJourney.ps1")]
     public async Task JourneySourceChangesSelectCiContractsAndInvalidateTheirEvidence(string path)
