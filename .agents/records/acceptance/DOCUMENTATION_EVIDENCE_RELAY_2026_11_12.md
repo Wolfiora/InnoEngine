@@ -17,3 +17,9 @@ The Docs implementation separately tests artifact selection, partial-job resumpt
 This is implementation and local protocol acceptance, not a successful hosted dispatch. GitHub App credentials remain unconfigured at repository level, organization credential inspection was denied, and the protected receiver/default-branch workflows are not merged. Manual bootstrap is restricted to the explicitly approved migration branches. No PR was merged or made ready, no engine release was published, and #75 remains open.
 
 Engine CI run 43164720103 continues against 7e12d767 and Docs 01bc7e4. It must finish on its original inputs; these follow-up changes do not retroactively belong to that run. Final paired publication, complete source/example certification, default-branch delivery, and the planned remaining acceptance require their own matching evidence.
+
+## Incremental producer selection
+
+The relay now inspects eligibility with the ordinary read-only repository token before acquiring App access. A successful incremental run without complete source evidence returns explicit NotApplicable and does not dispatch or demand unused credentials. A missing certificate on a producer claiming full certification, or a malformed/expired certificate, remains a failure. Full Engine validation also rejects incomplete source/example certification directly. The dispatch path reauthenticates eligibility after access acquisition.
+
+All nineteen relay protocol cases pass in `relay-selection-tests.log`, including successful selection without a dispatch credential, incremental absence, full-certification absence and invalid retained artifacts. No workflow dispatch was inferred from these tests. Browser inspection of organization App settings redirected to GitHub sign-in; it did not establish an authenticated organization setup session.

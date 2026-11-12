@@ -1,10 +1,11 @@
 param(
     [Parameter(Mandatory)][long]$RunId,
-    [switch]$Bootstrap
+    [switch]$Bootstrap,
+    [switch]$SelectOnly
 )
 
 $ErrorActionPreference = 'Stop'
-if ($RunId -le 0 -or -not $env:GH_TOKEN -or -not $env:INNO_DOCS_DISPATCH_TOKEN) {
+if ($RunId -le 0 -or -not $env:GH_TOKEN -or (-not $SelectOnly -and -not $env:INNO_DOCS_DISPATCH_TOKEN)) {
     throw 'Evidence relay requires an exact run and independently scoped read/dispatch credentials.'
 }
 $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
@@ -35,9 +36,16 @@ $aggregate = @($jobs | Where-Object name -CEQ 'Engine validation')
 if ($aggregate.Count -ne 1 -or $aggregate[0].conclusion -cne 'success' -or $aggregate[0].status -cne 'completed') { throw 'The Engine validation aggregate did not pass exactly once.' }
 $artifacts = @(Read-Collection "/actions/runs/$RunId/artifacts" 'artifacts')
 $certificate = @($artifacts | Where-Object name -CEQ "documentation-source-certification-attempt-$($run.run_attempt)")
+if ($SelectOnly -and $certificate.Count -eq 0) {
+    if (@($artifacts | Where-Object name -CEQ "engine-full-certification-attempt-$($run.run_attempt)").Count -ne 0) {
+        throw 'A fully certified engine producer has no complete documentation source certificate.'
+    }
+    return [pscustomobject]@{ status = 'NotApplicable'; run = $RunId; reason = 'This incremental producer did not certify the complete documentation source; no dispatch is required.' }
+}
 if ($certificate.Count -ne 1 -or $certificate[0].expired -or $certificate[0].size_in_bytes -le 0 `
     -or $certificate[0].digest -cnotmatch '^sha256:[a-f0-9]{64}$' -or $certificate[0].workflow_run.id -ne $RunId `
     -or $certificate[0].workflow_run.head_sha -cne $run.head_sha) { throw 'No retained complete source certificate exists for this successful attempt.' }
+if ($SelectOnly) { return [pscustomobject]@{ status = 'Ready'; run = $RunId; commit = $run.head_sha; attempt = $run.run_attempt } }
 $destination = if ($Bootstrap) { 'docs-modernization' } else { 'main' }
 $body = @{ ref = $destination; inputs = @{ engine_run = [string]$RunId; engine_commit = $run.head_sha; bootstrap = [bool]$Bootstrap } } | ConvertTo-Json -Depth 4
 $dispatchHeaders = @{ Authorization = "Bearer $env:INNO_DOCS_DISPATCH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }

@@ -33,7 +33,20 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Select an eligible certificate before acquiring dispatch access
+        id: selection
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENGINE_RUN: ${{ github.event.workflow_run.id || inputs.engine_run }}
+          BOOTSTRAP: ${{ inputs.bootstrap }}
+        run: |
+          $selected = ./tests/ci/Send-DocumentationEvidence.ps1 -RunId $env:ENGINE_RUN -SelectOnly -Bootstrap:($env:BOOTSTRAP -eq 'true')
+          "ready=$(($selected.status -ceq 'Ready').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          if ($selected.status -cnotin @('Ready', 'NotApplicable')) { throw 'Evidence selection did not return an explicit decision.' }
+          if ($selected.status -ceq 'NotApplicable') { $selected.reason >> $env:GITHUB_STEP_SUMMARY }
       - name: Require the scoped cross-repository dispatch installation
+        if: steps.selection.outputs.ready == 'true'
         shell: pwsh
         env:
           APP_ID: ${{ vars.INNO_DOCS_APP_ID }}
@@ -41,6 +54,7 @@ jobs:
         run: |
           if (-not $env:APP_ID -or -not $env:APP_KEY) { throw 'Blocked: provision the restricted GitHub App before cross-repository evidence dispatch.' }
       - id: dispatch
+        if: steps.selection.outputs.ready == 'true'
         uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
           app-id: ${{ vars.INNO_DOCS_APP_ID }}
@@ -49,6 +63,7 @@ jobs:
           repositories: InnoEngine.Docs
           permission-actions: write
       - name: Reconcile the producer before notifying its independent receiver
+        if: steps.selection.outputs.ready == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}

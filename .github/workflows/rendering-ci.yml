@@ -243,6 +243,7 @@ jobs:
           "source-certified=$(($source.status -ceq 'Passed').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           "Source API certification: $($source.status). Missing obligations: $($source.missing.Count)." >> $env:GITHUB_STEP_SUMMARY
           $full = @($receipts | Where-Object { -not $_.receipt.full }).Count -eq 0
+          if ($full -and $source.status -cne 'Passed') { throw 'Full certification requires complete source API and executable-example coverage; inspect source-certification-status.json.' }
           "full=$($full.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           foreach ($receipt in $receipts) {
             "$($receipt.platform): $($receipt.receipt.passed) passed, $($receipt.receipt.reused) reused, $($receipt.receipt.notApplicable) explicitly not applicable." >> $env:GITHUB_STEP_SUMMARY

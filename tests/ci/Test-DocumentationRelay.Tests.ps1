@@ -42,6 +42,7 @@ $call = {
             digest = 'sha256:' + ('b' * 64); workflow_run = @{ id = 11; head_sha = $sha } }
         switch ($transport.failure) {
             'missing-certificate' { return @{ artifacts = @() } }
+            'full-missing-certificate' { return @{ artifacts = @(@{ name = 'engine-full-certification-attempt-2' }) } }
             'expired' { $artifact.expired = $true }
             'missing-digest' { $artifact.Remove('digest') }
             'wrong-attempt' { $artifact.name = 'documentation-source-certification-attempt-1' }
@@ -62,6 +63,21 @@ try {
         $valid = $mode -cin @('', 'internal-pr')
         if ($valid -and ($failure -or $transport.dispatched -ne 1)) { throw "Valid relay failed: $failure" }
         if (-not $valid -and (-not $failure -or $transport.dispatched -ne 0)) { throw "Invalid relay dispatched: $mode" }
+        $cases++
+    }
+    $env:INNO_DOCS_DISPATCH_TOKEN = ''
+    foreach ($mode in @('', 'missing-certificate', 'full-missing-certificate', 'expired', 'wrong-producer')) {
+        $transport.failure = $mode
+        $transport.dispatched = 0
+        $failure = $null
+        $selection = $null
+        try { $selection = & "$PSScriptRoot/Send-DocumentationEvidence.ps1" -RunId 11 -SelectOnly } catch { $failure = $_ }
+        $valid = $mode -cin @('', 'missing-certificate')
+        if ($valid -and ($failure -or $selection.status -cne $(if ($mode) { 'NotApplicable' } else { 'Ready' }))) {
+            throw "Read-only certificate selection failed: $failure"
+        }
+        if (-not $valid -and -not $failure) { throw "Invalid read-only certificate selection passed: $mode" }
+        if ($transport.dispatched -ne 0) { throw 'Read-only selection requested a cross-repository dispatch.' }
         $cases++
     }
 } finally {
