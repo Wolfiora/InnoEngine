@@ -23,6 +23,11 @@ if ($PolicyIdentity -cnotmatch '^[a-f0-9]{64}$') { throw 'Current documentation 
 if ($previous.policyIdentity -cne $PolicyIdentity) {
     return [pscustomobject]@{ api = @(); examples = @(); diagnostics = @('Certificate checker inputs changed or prior policy provenance is unavailable.') }
 }
+function Test-SourceIdentity([string]$Expected, [string]$Current) {
+    # Missing Native checkouts retain the Git index's exact immutable source pin.
+    # This proves source compatibility, not Native preparation or execution on this runner.
+    return $Expected -ceq $Current -or ($Expected -cmatch '^[a-f0-9]{40}$' -and $Current -ceq ('unavailable:' + $Expected))
+}
 function Test-Inputs($Proof, $Plan) {
     if ($Proof.environment -cne $Plan.environment -or $Proof.configuration -cne $Plan.configuration `
         -or $Proof.sourceIdentity -cnotmatch '^[a-f0-9]{64}$' -or @($Proof.owners).Count -eq 0 -or $null -eq $Proof.sources) {
@@ -37,7 +42,7 @@ function Test-Inputs($Proof, $Plan) {
         }
     }
     foreach ($inputFile in $sources.GetEnumerator()) {
-        if (-not $Plan.inputs.Contains($inputFile.Key) -or $Plan.inputs[$inputFile.Key] -cne $inputFile.Value) {
+        if (-not $Plan.inputs.Contains($inputFile.Key) -or -not (Test-SourceIdentity $inputFile.Value $Plan.inputs[$inputFile.Key])) {
             $diagnostics.Add("$($row.platform): source input changed: $($inputFile.Key).")
             return $false
         }
@@ -46,7 +51,7 @@ function Test-Inputs($Proof, $Plan) {
     # Retained native-context inputs are compared above even when this bounded plan needs no native context.
     foreach ($owner in @($Proof.owners) + @('tooling')) {
         foreach ($path in @($Plan.inputSets[$owner])) {
-            if (-not $sources.Contains($path) -or $sources[$path] -cne $Plan.inputs[$path]) {
+            if (-not $sources.Contains($path) -or -not (Test-SourceIdentity $sources[$path] $Plan.inputs[$path])) {
                 $diagnostics.Add("$($row.platform): added or changed evaluated input: $path.")
                 return $false
             }

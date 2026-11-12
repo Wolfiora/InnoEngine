@@ -23,7 +23,7 @@ Certificates keep the original report, dependency snapshot and prior producer pr
 | Source receipt reconciliation | 28 passed | `source-input-receipt-tests-03.log` |
 | Source certificate completeness and malformed inputs | 31 passed | `source-input-certificate-tests-05.log` |
 | Executable example receipts | 24 passed | `example-input-receipt-tests.log` |
-| Incremental source/example compatibility | 21 passed | `source-compatibility-tests-02.log` |
+| Incremental source/example compatibility | 23 passed | `source-compatibility-tests-04.log` |
 | Authenticated baseline import | 23 passed | `source-baseline-tests.log` |
 | Current aggregate result reconciliation | 31 passed | `source-compatibility-report-tests.log` |
 | Updated Docs links and projection | 34 passed | `source-compatibility-doc-tests.log` |
@@ -33,6 +33,10 @@ The real managed fixture restores an explicitly owned local package, compiles so
 The foreign proof fixture first failed the existing missing-behavior-consumer planning guard. It now retains the same behavioral consumer as the established foreign-boundary planning fixture while executing only its finite source-inspection checks. The original failure remains in `foreign-source-proof.trx`; the production guard was not weakened. Source architecture and agent-record links passed separately.
 
 The workflow YAML parses and preserves the `Engine validation` name. Protocol fixtures authenticate mocked transport metadata; they are not hosted successful imports. A real authenticated lookup for current master `259e8a63` returned `Unavailable`, as no retained modernized default-branch certificate exists; `default-source-baseline-selection.json` preserves that result. Full Engine run 43191512147 remains tied to its earlier `977655a3` source and cannot certify these follow-up changes.
+
+The follow-up compares actual source-comparator output with planned per-owner reference identities. Four managed regression cases passed in 46 seconds (`query-tests/source-reference-identity.trx`); the build completed without warnings or errors. This exposed and corrected a mismatch between raw JSON hashing and the comparator's canonical serialized payload hashing. An unchanged Git-pinned Native source may remain unprepared while proving source compatibility; a changed pin is rejected. This does not certify Native execution. Certificate-policy inputs also include authenticated baseline import, archive verification and the producer workflow.
+
+Hosted Docs run 43206670020 at `59a33214` passed projection, static output and browser journeys. Its separate source-certification gate failed because authenticated matching evidence was unavailable. Engine run 43206570197 failed before matrix preparation because the immutable Docs candidate metadata had not yet been added; that first failure is retained in `engine-446659d6-candidate-first-failure.log`. Metadata was corrected, with no claim that the failed run passed.
 
 ## Query observations
 

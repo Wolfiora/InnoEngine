@@ -62,6 +62,8 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
 }
 Invoke-Case 'unchanged-owner-and-example' { param($s) } 'Passed'
 Invoke-Case 'unrelated-owner-change' { param($s) $s.plan.owners = @('src/Unrelated.csproj') } 'Passed'
+Invoke-Case 'unchanged-unprepared-native-pin' { param($s) $s.previous.inputs[0].sources['extern/native'] = 'f' * 40; $s.plan.inputs['extern/native'] = 'unavailable:' + ('f' * 40) } 'Passed'
+Invoke-Case 'changed-unprepared-native-pin' { param($s) $s.previous.inputs[0].sources['extern/native'] = 'f' * 40; $s.plan.inputs['extern/native'] = 'unavailable:' + ('e' * 40) } 'Blocked'
 Invoke-Case 'changed-owner' { param($s) $s.plan.owners = @('src/Probe.csproj') } 'Blocked'
 Invoke-Case 'changed-source' { param($s) $s.plan.inputs['src/Probe.cs'] = 'f' * 64 } 'Blocked'
 Invoke-Case 'missing-source' { param($s) $s.plan.inputs.Remove('src/Probe.cs') } 'Blocked'

@@ -139,6 +139,12 @@ public sealed class ValidationDocumentationInputTests
             repository.Write("artifacts/plan/plan.json", execution.ToJsonString());
             string output = "artifacts/source-input-run-" + ++run;
             await repository.RunAsync(output: output);
+            using JsonDocument comparison = JsonDocument.Parse(File.ReadAllBytes(
+                repository.PathOf(output + "/documentation-api-managed-default.json")));
+            foreach (JsonElement owner in comparison.RootElement.GetProperty("projects").EnumerateArray())
+                Assert.Equal(planned.RootElement.GetProperty("documentationSources")
+                    .GetProperty("reference/api/facts.json\0" + owner.GetProperty("name").GetString()).GetString(),
+                    owner.GetProperty("referenceIdentity").GetString());
             return JsonDocument.Parse(File.ReadAllBytes(repository.PathOf(output + "/results.json")));
         }
 

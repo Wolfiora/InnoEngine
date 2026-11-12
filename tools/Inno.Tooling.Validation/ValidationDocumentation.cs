@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -120,7 +121,9 @@ internal static class ValidationDocumentation
                 foreach (JsonElement project in facts.RootElement.GetProperty("projects").EnumerateArray())
                 {
                     string key = reference.path + "\0" + project.GetProperty("name").GetString();
-                    if (!identities.TryAdd(key, new(ValidationInputs.Identity([new("project", project.GetRawText())]),
+                    // Match the canonical per-project payload identity emitted by the actual
+                    // source comparator, including its JSON whitespace normalization.
+                    if (!identities.TryAdd(key, new(Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(project))),
                         project.GetProperty("symbols").GetArrayLength() == 0)))
                         throw new InvalidDataException("Repeated source facts in the documentation snapshot: " + key);
                 }
