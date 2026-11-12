@@ -34,6 +34,20 @@ $fixture = Join-Path $fixtureParent ('InnoRuleTests-' + [guid]::NewGuid().ToStri
 try {
     & git clone --quiet --shared --no-checkout $repository $fixture
     if ($LASTEXITCODE -ne 0) { throw 'Cannot create the isolated rule provenance fixture.' }
+    # A clone of a shallow CI checkout does not inherit separately fetched provenance objects.
+    # Acquire only missing original revisions from the explicit local owner, never the network.
+    $provenance = @("$($manifest.baseline):AGENTS.md") + @($manifest.units | ForEach-Object source) +
+        @($manifest.units | Where-Object { $_.approvedAddition.translation } | ForEach-Object { $_.approvedAddition.translation.source })
+    foreach ($source in @($provenance | Sort-Object -Unique)) {
+        & git -C $fixture cat-file -e $source 2>$null
+        if ($LASTEXITCODE -eq 0) { continue }
+        $revision = ($source -split ':', 2)[0]
+        if ($revision -cnotmatch '^[a-f0-9]{40}$') { throw 'The rule fixture requires immutable local provenance.' }
+        & git -C $fixture fetch --quiet --no-tags --depth=1 $repository $revision
+        if ($LASTEXITCODE -ne 0) { throw 'Cannot prepare original rule provenance from the local checkout.' }
+        & git -C $fixture cat-file -e $source 2>$null
+        if ($LASTEXITCODE -ne 0) { throw "Original rule provenance is unavailable in the fixture: $source" }
+    }
     [void][IO.Directory]::CreateDirectory((Join-Path $fixture 'tests/ci'))
     [void][IO.Directory]::CreateDirectory((Join-Path $fixture '.agents'))
     Copy-Item -LiteralPath (Join-Path $repository '.agents/rulebook') -Destination (Join-Path $fixture '.agents/rulebook') -Recurse
