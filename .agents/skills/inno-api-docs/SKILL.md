@@ -3,7 +3,7 @@ name: inno-api-docs
 description: Maintain InnoEngine design, usage, API XML and examples against actual public and protected contracts.
 ---
 
-Select applicable `wiki` and `xml` units through the rule loader; start at the [documentation rules](../../rulebook/documentation.md). Also read the explicitly selected InnoEngine.Docs checkout's writing and presentation rules when editing authored content. Engine declarations and XML remain in the engine; narrative content belongs to Docs.
+Select applicable `wiki` and `xml` units through the rule loader with `-DocsRoot <explicit-checkout>`. The [documentation rules](https://github.com/Wolfiora/InnoEngine.Docs/blob/docs-modernization/.agents/rulebook/documentation.md) have one authority in that checkout. Read its additional writing and presentation rules when editing authored content. Engine declarations and XML remain in the engine; narrative content belongs to Docs.
 
 Use Build `docs search/read/symbol` against a prepared snapshot to locate task guidance, the authoritative project entry and exact qualified symbols. Read necessary associated contracts and explicit continuations. Search excerpts and API markers are not complete contracts or matching source verification evidence.
 

@@ -63,3 +63,11 @@ The following additional units were compared clause by clause with their registe
 | documentation-standard-6 | Existing verifier switches are accurately identified as pre-cutover operations; external snapshot caller migration remains mandatory. SDK-evaluated references, frozen script bytes, generator limitations, separate signature/behavior counts, exact language/target/configuration and honest semantic acceptance remain |
 
 Only units with registered translations are English-reviewed here. Other units retain their original text and original full-text checks until their own translation review. This record is not a claim that all active rules, documentation or CI/CD migration is complete.
+
+## Documentation authority cutover, 2026-11-12
+
+All eight documentation units now have their sole text authority in InnoEngine.Docs `.agents/rulebook/documentation.md`. The engine retains each original rule ID, source path/hash, complete-unit relationship, translated clause mapping and review responsibility. The registry adds the explicit repository owner; abbreviated original Git revisions are expanded to their identical complete object IDs for reproducible shallow-checkout preparation. No source clause or approval is discarded.
+
+The approved plan replaces retired Wiki command names with the implemented `validate plan/run` and immutable `docs` preparation/query boundary. Script examples still require actual projected references; host examples still require evaluated SDK references, actual compilation and honest evidence. Public/protected coverage, exact declarations, content boundaries, initialization, ownership, release, failures and semantic review remain unchanged. The earlier migration-only command descriptions above are superseded by this reviewed operational correction.
+
+Normal engine-only checks validate engine bodies and external source mappings, explicitly reporting that external bodies were not read. Selecting a documentation unit without `-DocsRoot` fails. Supplying the explicit Docs checkout validates its complete bodies against the same clause mappings and loads them without a network call or sibling-path inference. Docs CI prepares only the few immutable Git provenance objects and performs the complete cross-repository rule check. The source-mapping check alone is not represented as verification of external text.

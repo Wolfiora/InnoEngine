@@ -10,7 +10,7 @@ Behavior tags describe the work: for example, `new-boundary`, `public-api`, `own
 | --- | --- |
 | Architecture, boundaries, reuse and project ownership | [Architecture](architecture.md) |
 | Naming, XML, formatting, exceptions and concurrency | [Coding](coding.md) |
-| Documentation, API, examples and content ownership | [Documentation](documentation.md) |
+| Documentation, API, examples and content ownership | [Docs authority](https://github.com/Wolfiora/InnoEngine.Docs/blob/docs-modernization/.agents/rulebook/documentation.md); load with an explicit `-DocsRoot` |
 | Tests, compilation, completion and review | [Validation](validation.md) |
 | Commits, PRs and notifications | [Delivery](delivery.md) |
 | Editor | [Editor](domains/editor.md) |

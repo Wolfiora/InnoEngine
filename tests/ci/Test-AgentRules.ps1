@@ -3,7 +3,8 @@ param(
     [string[]]$Rules = @(),
     [string[]]$Behaviors = @(),
     [switch]$ShowInstructions,
-    [int]$Stage = 0
+    [int]$Stage = 0,
+    [string]$DocsRoot
 )
 $ErrorActionPreference = 'Stop'
 $OutputEncoding = [Text.UTF8Encoding]::new($false)
@@ -58,20 +59,51 @@ function Test-Translation($unit, [string]$source, [string]$target) {
         }
     }
 }
-$units = @{}; $bodies = @{}
+$units = @{}; $bodies = @{}; $external = @{}
+function Resolve-Authority($unit) {
+    $ownerRoot = $repository
+    if ($unit.PSObject.Properties.Name -contains 'repository') {
+        if ($unit.repository -cne 'Wolfiora/InnoEngine.Docs') { throw "Unknown rule repository: $($unit.id)" }
+        $external[$unit.id] = $true
+        if ($DocsRoot) { $ownerRoot = [IO.Path]::GetFullPath($DocsRoot) }
+    }
+    $ownerRules = [IO.Path]::GetFullPath('.agents/rulebook/', $ownerRoot)
+    $destination = [IO.Path]::GetFullPath($unit.path, $ownerRoot)
+    if (-not $destination.StartsWith($ownerRules, [StringComparison]::Ordinal)) { throw "Rule path escapes owner: $($unit.id)" }
+    if ($external.ContainsKey($unit.id) -and -not $DocsRoot) { return $null }
+    $currentPath = $destination
+    while ($currentPath -and $currentPath.Length -ge $ownerRoot.Length) {
+        if (Test-Path -LiteralPath $currentPath) {
+            if ((Get-Item -LiteralPath $currentPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw "Rule authority cannot traverse a link: $($unit.id)" }
+        }
+        $currentPath = Split-Path $currentPath -Parent
+    }
+    return $destination
+}
 foreach ($unit in $manifest.units) {
     if ($units.ContainsKey($unit.id)) { throw "Duplicate rule unit: $($unit.id)" }
-    $destination = [IO.Path]::GetFullPath($unit.path, $repository)
-    if (-not $destination.StartsWith($ruleRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::Ordinal)) { throw "Rule path escapes owner: $($unit.id)" }
+    $destination = Resolve-Authority $unit
+    $source = Read-Source $unit.source
+    if ($unit.PSObject.Properties.Name -contains 'sourceSection') { $source = [regex]::Split($source, '(?m)(?=^## )')[$unit.sourceSection] }
+    if ((Get-Hash $source.Trim()) -cne $unit.sourceHash) { throw "Changed source identity: $($unit.id)" }
+    foreach ($replacement in $manifest.pathReplacements) { $source = $source.Replace($replacement.old, $replacement.current) }
+    if ($null -eq $destination) {
+        $sourceLines = @(Get-RuleLines $source)
+        if ($unit.translation.language -cne 'en' -or [string]::IsNullOrWhiteSpace($unit.translation.approval) -or
+            $unit.translation.lines.Count -ne $sourceLines.Count) { throw "External rule source mapping is incomplete: $($unit.id)" }
+        for ($index = 0; $index -lt $sourceLines.Count; $index++) {
+            $line = $unit.translation.lines[$index]
+            if ($line.ordinal -ne $index + 1 -or $line.sourceHash -cne (Get-Hash (Normalize-RuleLine $sourceLines[$index])) -or
+                $line.targetHash -cnotmatch '^[a-f0-9]{64}$') { throw "Invalid external rule source clause: $($unit.id)" }
+        }
+        $units[$unit.id] = $unit
+        continue
+    }
     $text = Get-Content -LiteralPath $destination -Raw
     $pattern = '(?s)<!-- rule-unit: ' + [regex]::Escape($unit.id) + ' -->\s*<a id="[^"\r\n]+"></a>\s*(.*?)\s*<!-- /rule-unit: ' + [regex]::Escape($unit.id) + ' -->'
     $matches = [regex]::Matches($text, $pattern)
     if ($matches.Count -ne 1) { throw "Missing or repeated complete rule unit: $($unit.id)" }
     $body = $matches[0].Groups[1].Value
-    $source = Read-Source $unit.source
-    if ($unit.PSObject.Properties.Name -contains 'sourceSection') { $source = [regex]::Split($source, '(?m)(?=^## )')[$unit.sourceSection] }
-    if ((Get-Hash $source.Trim()) -cne $unit.sourceHash) { throw "Changed source identity: $($unit.id)" }
-    foreach ($replacement in $manifest.pathReplacements) { $source = $source.Replace($replacement.old, $replacement.current) }
     $preservedBody = $body
     if ($unit.PSObject.Properties.Name -contains 'approvedAddition') {
         $parts = [regex]::Split($body, '(?m)^<!-- approved-addition -->\r?$')
@@ -98,13 +130,21 @@ foreach ($unit in $manifest.units) {
     $units[$unit.id] = $unit; $bodies[$unit.id] = $body
 }
 $original = Read-Source "$($manifest.baseline):AGENTS.md"
+if ($DocsRoot) {
+    foreach ($path in @($manifest.units | Where-Object repository | ForEach-Object path | Sort-Object -Unique)) {
+        foreach ($marker in [regex]::Matches([IO.File]::ReadAllText((Join-Path $DocsRoot $path)), '<!-- rule-unit: ([^ ]+) -->')) {
+            $id = $marker.Groups[1].Value
+            if (-not $external.ContainsKey($id) -or $units[$id].path -cne $path) { throw "Unregistered external rule authority: $id" }
+        }
+    }
+}
 foreach ($file in Get-ChildItem -LiteralPath $ruleRoot -Filter '*.md' -Recurse) {
-    if ($file.Name -cne 'README.md' -and -not @($manifest.units | Where-Object { [IO.Path]::GetFullPath($_.path, $repository) -ceq $file.FullName }).Count) {
+    if ($file.Name -cne 'README.md' -and -not @($manifest.units | Where-Object { -not $_.repository -and [IO.Path]::GetFullPath($_.path, $repository) -ceq $file.FullName }).Count) {
         throw "Unregistered rule file: $($file.FullName)"
     }
     foreach ($marker in [regex]::Matches((Get-Content -LiteralPath $file.FullName -Raw), '<!-- rule-unit: ([^ ]+) -->')) {
         $id = $marker.Groups[1].Value
-        if (-not $units.ContainsKey($id) -or [IO.Path]::GetFullPath($units[$id].path, $repository) -cne $file.FullName) {
+        if (-not $units.ContainsKey($id) -or $units[$id].repository -or [IO.Path]::GetFullPath($units[$id].path, $repository) -cne $file.FullName) {
             throw "Unregistered rule unit or authority: $id in $($file.FullName)"
         }
     }
@@ -118,7 +158,7 @@ foreach ($section in [regex]::Matches($original, '(?ms)^## (\d+)\. .*?(?=^## \d+
         if ($rows.Count -ne 1) { throw "Missing or duplicate rule mapping: $id" }
         $row = $rows[0]
         if ($row.originalHash -cne (Get-Hash $bullet.Value) -or -not $row.check -or -not $row.reviewer) { throw "Invalid provenance or responsibility: $id" }
-        if (-not $units.ContainsKey($row.unit) -or $units[$row.unit].path -cne $row.path) { throw "Rule has no unique authority: $id" }
+        if (-not $units.ContainsKey($row.unit) -or $units[$row.unit].path -cne $row.path -or $units[$row.unit].repository -cne $row.repository) { throw "Rule has no unique authority: $id" }
         $expected = $bullet.Value
         foreach ($replacement in $manifest.pathReplacements) { $expected = $expected.Replace($replacement.old, $replacement.current) }
         if ($row.disposition -eq 'preserved') {
@@ -177,6 +217,7 @@ foreach ($file in @((Join-Path $repository 'AGENTS.md')) + @(Get-ChildItem -Lite
 $stages = [Collections.Generic.List[object]]::new()
 $current = [Collections.Generic.List[string]]::new(); $bytes = $rootBytes
 foreach ($id in ($selected.Keys | Sort-Object)) {
+    if (-not $bodies.ContainsKey($id)) { throw "Selected rule $id belongs to Wolfiora/InnoEngine.Docs. Supply -DocsRoot with the explicitly selected checkout; no network fetch or sibling-path guess is performed." }
     $size = [Text.Encoding]::UTF8.GetByteCount($bodies[$id])
     if ($size + $rootBytes -gt $manifest.taskBudgetBytes) { throw "Unit $id needs smaller complete subchapters; truncation is forbidden." }
     if ($bytes + $size -gt $manifest.taskBudgetBytes) {
@@ -187,10 +228,14 @@ foreach ($id in ($selected.Keys | Sort-Object)) {
 $stages.Add(@{ ids = $current.ToArray(); bytes = $bytes })
 if ($Stage -lt 0 -or $Stage -gt $stages.Count) { throw 'Invalid instruction stage.' }
 Write-Output "Preserved mapping: $count rules; $($units.Count) complete units. Root: $rootBytes bytes. Stages: $($stages.Count)."
+if ($external.Count -gt 0) {
+    if ($DocsRoot) { Write-Output "External authority verified: $($external.Count) complete units in $([IO.Path]::GetFullPath($DocsRoot))." }
+    else { Write-Output "External authority not read: $($external.Count) source mappings only. Documentation work requires -DocsRoot; this result certifies engine-owned rule bodies only." }
+}
 for ($index = 0; $index -lt $stages.Count; $index++) {
     $entry = $stages[$index]
     Write-Output "Stage $($index + 1): $($entry.bytes) bytes; units: $($entry.ids -join ', ')"
-    foreach ($id in $entry.ids) { Write-Output "$id | $($units[$id].path)#$id | source: $($units[$id].source) | $($selected[$id] -join '; ')" }
+    foreach ($id in $entry.ids) { Write-Output "$id | $($units[$id].repository)/$($units[$id].path)#$id | source: $($units[$id].source) | $($selected[$id] -join '; ')" }
     if ($ShowInstructions -and ($Stage -eq 0 -or $Stage -eq $index + 1)) {
         Write-Output $rootText
         foreach ($id in $entry.ids) { Write-Output $bodies[$id] }

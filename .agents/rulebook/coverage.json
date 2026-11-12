@@ -1,11 +1,11 @@
 {
-  "baseline": "7f56dd64b",
+  "baseline": "7f56dd64bd29231351f5441c18877b0c3ad3229b",
   "rootBudgetBytes": 8192,
   "taskBudgetBytes": 16384,
   "rules": [
     {
       "id": "1.1",
-      "source": "7f56dd64b:AGENTS.md#section-1",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-1",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "0438048c6c19d09a17302f8833d072eee0bc1dbbea42ef63792c8e182acdd9b6",
       "disposition": "preserved",
@@ -16,7 +16,7 @@
     },
     {
       "id": "1.2",
-      "source": "7f56dd64b:AGENTS.md#section-1",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-1",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "7548a57f38c92debf7c5fbb29b5f477132cd9dc587bb166ecafd996d2529e745",
       "disposition": "preserved",
@@ -27,7 +27,7 @@
     },
     {
       "id": "1.3",
-      "source": "7f56dd64b:AGENTS.md#section-1",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-1",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "4c955118aec3a46bfc2136417987f168069fe06a1991534daeea48f6e032490b",
       "disposition": "preserved",
@@ -38,7 +38,7 @@
     },
     {
       "id": "2.1",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "23ed7825005c55de7bab25a13ad15e4d6f9003fa963e9dc6c8f83f25aa156aba",
       "disposition": "preserved",
@@ -49,7 +49,7 @@
     },
     {
       "id": "2.2",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "7146fd46302f8cb642df8c5543f331a66155d896ac1e73a902b4225731cefb22",
       "disposition": "preserved",
@@ -60,7 +60,7 @@
     },
     {
       "id": "2.3",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "1254fc0af71afb409b4898cd71bc434108cda6aff826f68e79fed35a059b7a43",
       "disposition": "preserved",
@@ -71,7 +71,7 @@
     },
     {
       "id": "2.4",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "c7d1597e6822b378b28cff3f9a6360068544ad29df7f7118e736d012ffb58230",
       "disposition": "preserved",
@@ -82,7 +82,7 @@
     },
     {
       "id": "2.5",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "de1e8fc2ce15a3e73e3f8a940abf54b6279a7d557154acb8298b5e688b8d82b0",
       "disposition": "preserved",
@@ -93,7 +93,7 @@
     },
     {
       "id": "2.6",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "00238457aa080323c071fbab13a30fba20d564883baf55386c4e2b878f67da94",
       "disposition": "preserved",
@@ -104,7 +104,7 @@
     },
     {
       "id": "2.7",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "4dd1a89dc1b7a7b4354e70948fc01c4ae5993733201c0ff5bf7f4713a5abefcd",
       "disposition": "preserved",
@@ -115,7 +115,7 @@
     },
     {
       "id": "2.8",
-      "source": "7f56dd64b:AGENTS.md#section-2",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-2",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "779100086672741a3bd94e2b881aa35d8217edd739afdd017731e3983cff3a3f",
       "disposition": "preserved",
@@ -126,7 +126,7 @@
     },
     {
       "id": "3.1",
-      "source": "7f56dd64b:AGENTS.md#section-3",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-3",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "155b573531fa878aa6c0186be8cb195d0df3cdcfeb74ae9ef7426d4de92344b9",
       "disposition": "preserved",
@@ -137,7 +137,7 @@
     },
     {
       "id": "3.2",
-      "source": "7f56dd64b:AGENTS.md#section-3",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-3",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "42c62c7d7814e5d5233bdf69c66252172ddb30d91cadd2d789f390959fac14ed",
       "disposition": "preserved",
@@ -148,7 +148,7 @@
     },
     {
       "id": "3.3",
-      "source": "7f56dd64b:AGENTS.md#section-3",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-3",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "6a0621716390e0c953ed9eed37545093931c0c1eaf280210e4c8312a6981ac9e",
       "disposition": "preserved",
@@ -159,7 +159,7 @@
     },
     {
       "id": "4.1",
-      "source": "7f56dd64b:AGENTS.md#section-4",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-4",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "b41c9ac4a02994caca07eae9f9f88b1a04a54588576dc83b210317d72f54f76f",
       "disposition": "preserved",
@@ -170,7 +170,7 @@
     },
     {
       "id": "4.2",
-      "source": "7f56dd64b:AGENTS.md#section-4",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-4",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "c99a1440e54ed1f02f47977ef854a48b8e3ba1ad66f80b02acea7285a1ac5bc3",
       "disposition": "preserved",
@@ -181,7 +181,7 @@
     },
     {
       "id": "4.3",
-      "source": "7f56dd64b:AGENTS.md#section-4",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-4",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "da4c375502ff67444749d190568441619c09ceecf1a2cb8afffb691b326f9bca",
       "disposition": "preserved",
@@ -192,7 +192,7 @@
     },
     {
       "id": "5.1",
-      "source": "7f56dd64b:AGENTS.md#section-5",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-5",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "6b3170a223fbeeaa9708f03854dd47d7601bcc74996a78b9d7ec626f11fbc9d1",
       "disposition": "preserved",
@@ -203,7 +203,7 @@
     },
     {
       "id": "5.2",
-      "source": "7f56dd64b:AGENTS.md#section-5",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-5",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "53a79b0ffff61e3c64fadd0822b5eaf64d9d86c64f03abc4f10662923ebec648",
       "disposition": "preserved",
@@ -214,7 +214,7 @@
     },
     {
       "id": "5.3",
-      "source": "7f56dd64b:AGENTS.md#section-5",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-5",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "230cd76be9c06b7b0154b24b64777add074d6436884be6cba68c8ebd6ebd887c",
       "disposition": "preserved",
@@ -225,7 +225,7 @@
     },
     {
       "id": "5.4",
-      "source": "7f56dd64b:AGENTS.md#section-5",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-5",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "0771e910c76a4d4fe8240049d51a9777a9ca6d429b972d2b7f37c3915cfa24f6",
       "disposition": "preserved",
@@ -236,7 +236,7 @@
     },
     {
       "id": "5.5",
-      "source": "7f56dd64b:AGENTS.md#section-5",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-5",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "59a8922dc82b328b1745c0f3b91fc0db931b0eb3fd0e3c26fdf6b18bd3f38ced",
       "disposition": "preserved",
@@ -247,7 +247,7 @@
     },
     {
       "id": "6.1",
-      "source": "7f56dd64b:AGENTS.md#section-6",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-6",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "0980b1aadfe2ac68f2408411a4c8faa47d4827bfcab4626fa364d341f1c740fa",
       "disposition": "preserved",
@@ -258,7 +258,7 @@
     },
     {
       "id": "6.2",
-      "source": "7f56dd64b:AGENTS.md#section-6",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-6",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "76b50f93158d312ca2fdf09d100930fdac90a842695d5d71982bc1e62d47187c",
       "disposition": "preserved",
@@ -269,7 +269,7 @@
     },
     {
       "id": "6.3",
-      "source": "7f56dd64b:AGENTS.md#section-6",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-6",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "4976e70e627ac2a6a257fa2480583a521c47ebccadf5a58e480b1da5512e369a",
       "disposition": "preserved",
@@ -280,7 +280,7 @@
     },
     {
       "id": "7.1",
-      "source": "7f56dd64b:AGENTS.md#section-7",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-7",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "5b08d747721d1fff4043b5b4cdcc9ff5a2012f5b2dc38d6cc15d1005115c3458",
       "disposition": "preserved",
@@ -291,7 +291,7 @@
     },
     {
       "id": "7.2",
-      "source": "7f56dd64b:AGENTS.md#section-7",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-7",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "4ade080ca04bd3a8af8c5cc2a079c0d7c576063df419672c0beec9f8e88c58eb",
       "disposition": "preserved",
@@ -302,7 +302,7 @@
     },
     {
       "id": "7.3",
-      "source": "7f56dd64b:AGENTS.md#section-7",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-7",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "714ca4b88d20ad2f599c3e8c7287cb819db79eeaef3377ce67c9590515568ca8",
       "disposition": "preserved",
@@ -313,7 +313,7 @@
     },
     {
       "id": "8.1",
-      "source": "7f56dd64b:AGENTS.md#section-8",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-8",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "4d36e33d8774770bda3087a17e046899067d6245b693c62d5c23b8d497390701",
       "disposition": "superseded-by-approved-plan",
@@ -323,7 +323,7 @@
     },
     {
       "id": "8.2",
-      "source": "7f56dd64b:AGENTS.md#section-8",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-8",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "ee26061ccd340d9dcb274ba8facee84e6cbf1fae4cdd67df149028fe8e6ba697",
       "disposition": "superseded-by-approved-plan",
@@ -333,7 +333,7 @@
     },
     {
       "id": "9.1",
-      "source": "7f56dd64b:AGENTS.md#section-9",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-9",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "a743bcef487abea16b872c402957ae77f7060eb95df7e2a912abd615215f0cef",
       "disposition": "preserved",
@@ -344,7 +344,7 @@
     },
     {
       "id": "9.2",
-      "source": "7f56dd64b:AGENTS.md#section-9",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-9",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "191eedc7864cd1a54ce09fdaec1018a177b1364934c04d1d7b6ea850f6d3e6ad",
       "disposition": "preserved",
@@ -355,7 +355,7 @@
     },
     {
       "id": "10.1",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "5f0ecb345e2161c7505f72636b3869f4b2f5d36c854a4cdf080a365154dced3b",
       "disposition": "preserved",
@@ -366,7 +366,7 @@
     },
     {
       "id": "10.2",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "cf4346c90282c6ab53c2e461e575b9d72eb07351721701f75db9577cf9736121",
       "disposition": "preserved",
@@ -377,7 +377,7 @@
     },
     {
       "id": "10.3",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "68be7e5cbe335410234b361ddc9a1d2a470d52a2efeec1cc51df20b1104df9fb",
       "disposition": "preserved",
@@ -388,7 +388,7 @@
     },
     {
       "id": "10.4",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "baf67bc8327069fca81f39fdd43a48c48942ad117e14c21a07d5d3ac3a2cf785",
       "disposition": "preserved",
@@ -399,7 +399,7 @@
     },
     {
       "id": "10.5",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "826058d66069113fdd2ddf34145f9a3cfcd007cbf94058820e4b16c739492a7e",
       "disposition": "preserved",
@@ -410,7 +410,7 @@
     },
     {
       "id": "10.6",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "994b998db615f982f3bec7be1d89e09f1c23f503c0919cc3d6e206713b2bd91e",
       "disposition": "preserved",
@@ -421,7 +421,7 @@
     },
     {
       "id": "10.7",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "aa4a2e04b024bba81ec11150d13eac13d2e640c7e908177c8e7a9d3a6221572e",
       "disposition": "preserved",
@@ -432,7 +432,7 @@
     },
     {
       "id": "10.8",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "3725c7f1220801b602870d097eb30b8101fe29c3d0f0dbcc25b9706b3d7b9ffd",
       "disposition": "preserved",
@@ -443,7 +443,7 @@
     },
     {
       "id": "10.9",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "22e3056d5cffccb699ab9f877c922098768541bf4f1f38f09d241ab128799ef9",
       "disposition": "preserved",
@@ -454,7 +454,7 @@
     },
     {
       "id": "10.10",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "b44cca91ac82e75c8eebc27fb13765fd4b7e7a77a7a8df68c6aae6f9b4d66e05",
       "disposition": "preserved",
@@ -465,7 +465,7 @@
     },
     {
       "id": "10.11",
-      "source": "7f56dd64b:AGENTS.md#section-10",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-10",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "163b6b3e30a395ad2deb4ac88fa58052e5b17073729b41c31e1b56f91a2606a3",
       "disposition": "preserved",
@@ -476,117 +476,127 @@
     },
     {
       "id": "11.1",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "96ccf044ebe34361538ac4c3dac0fd3d2b7c9db5ad532b3e7837d04945d57363",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "e087be9cfd2eeb17a2c72f63a24b7aa673672b83193afe20ee2217c9b9f5e87a"
+      "translatedHash": "9c171f3383ff9da15e8face978be93b8e1da13d5696517f201fd2e639cab8733",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.2",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "1dc0296ec2118708e1a75334f08d993e5b18f50ac371cd911d5862dfed847932",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "cc08880907c077e40ef8bdc501254fbbe9022842760fac1e7e32a52c0ca6f3af"
+      "translatedHash": "cc08880907c077e40ef8bdc501254fbbe9022842760fac1e7e32a52c0ca6f3af",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.3",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "f3f7debbcd9b552b379d4bfeea8312c3c6d9a4c55564db4ba8005f7a6e461d16",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "514fe3da1bab404bab0253872340f8dd6ed56cfb6a23d67b7bb36a3deb9c712c"
+      "translatedHash": "514fe3da1bab404bab0253872340f8dd6ed56cfb6a23d67b7bb36a3deb9c712c",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.4",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "2568dc23c50d9799f22535715a1d496259248c52318d5280129d71d928a350af",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "899b6f9f0862475b13ab5c0b8e932f8e3331d53947d8d8c452c8ecb6ce98c0e4"
+      "translatedHash": "899b6f9f0862475b13ab5c0b8e932f8e3331d53947d8d8c452c8ecb6ce98c0e4",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.5",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "5534ff06531b8f0e4dcede3a7409924a894a57e11848043c894a891cc226419e",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "f85f2d2ad085f23b258020732abb8034becd84c5964ae41c00d977df176afe47"
+      "translatedHash": "f85f2d2ad085f23b258020732abb8034becd84c5964ae41c00d977df176afe47",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.6",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "d84e481c7e94dccb3d7646f58403de71f291ddf796eb607f6762b5a8cd1d077a",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "ff9bfa908630fcb2084bb98403c1d19e70163d171069b4f880acdef651435362"
+      "translatedHash": "ff9bfa908630fcb2084bb98403c1d19e70163d171069b4f880acdef651435362",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.7",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "8905a7d3ff5e3dc12c838f074a7eed0664d76a6695e44ff5a1f99d4f6b60f4a8",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "5ae53f3449101c75753f1d4f1a259267adf4ce383492782fcd10de7c815f3de6"
+      "translatedHash": "5ae53f3449101c75753f1d4f1a259267adf4ce383492782fcd10de7c815f3de6",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.8",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "0e1d603608acd5aa204278ec1a5b69fc0e271ede6c8edb77edf667a1b3868b9b",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "2cc05fd8785c66d75571462f5888b9990c8720bf6f6a402708e0b83cb784f6dc"
+      "translatedHash": "2cc05fd8785c66d75571462f5888b9990c8720bf6f6a402708e0b83cb784f6dc",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.9",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "06dbaecfd67f1807ce241fa928a76e1b9da9fc66c5e19457f8ee84e843d95c44",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "3d9951ef1257c276f5d3a96b0e7c482bc8986fe597fdd2e990c73d1cf1e36282"
+      "translatedHash": "3d9951ef1257c276f5d3a96b0e7c482bc8986fe597fdd2e990c73d1cf1e36282",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "11.10",
-      "source": "7f56dd64b:AGENTS.md#section-11",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-11",
       "path": ".agents/rulebook/documentation.md",
       "originalHash": "f91ef9d6d4abc6129c4ed63429a5786c8f63324d43544bc62422f4d51bd17cd9",
       "disposition": "preserved",
       "check": "owner contract tests + semantic review",
       "reviewer": "implementing owner",
       "unit": "wiki",
-      "translatedHash": "58fad6bddd9ff0a3400450ce71641e40827a76bbdb53c19e0e035ebd21926bb9"
+      "translatedHash": "58fad6bddd9ff0a3400450ce71641e40827a76bbdb53c19e0e035ebd21926bb9",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "12.1",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "5d9f37c482d7ed2d1831728bfe868cdf0ef116cf3dfda5a68ac0be5491c6b44d",
       "disposition": "preserved",
@@ -597,7 +607,7 @@
     },
     {
       "id": "12.2",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "5c9522580d5b894b7597f4f96ac9128b92e6635bc21fdf7fef209f33a09f14ac",
       "disposition": "preserved",
@@ -608,7 +618,7 @@
     },
     {
       "id": "12.3",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "500bf61050900845ef55695ad3920e9d6904499db3ac32b4ee13cd9a227c05c3",
       "disposition": "preserved",
@@ -619,7 +629,7 @@
     },
     {
       "id": "12.4",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "e7c01c6e4c8764cf658d961174e881c4c70cf317597643d35d9cd070e60d0633",
       "disposition": "preserved",
@@ -630,7 +640,7 @@
     },
     {
       "id": "12.5",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "94120d8bac9df2ed991b33100188f9a5785ac28cbd4ebc93c9649c31f8f4e937",
       "disposition": "preserved",
@@ -641,7 +651,7 @@
     },
     {
       "id": "12.6",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "7ed60e2fe34199e32bf4156299913bd1058fde36733c1eed362fc55a1adeb8f9",
       "disposition": "preserved",
@@ -652,7 +662,7 @@
     },
     {
       "id": "12.7",
-      "source": "7f56dd64b:AGENTS.md#section-12",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-12",
       "path": ".agents/rulebook/domains/scripting.md",
       "originalHash": "9d8ee25f4a083113ca0e53db9a1482d7a74aef76bd1b87fb9841bea819143dd1",
       "disposition": "preserved",
@@ -663,7 +673,7 @@
     },
     {
       "id": "13.1",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "9443cafc9093dae4fd32a2c037d02de87486add1e4cc1b52377cd1f94a125619",
       "disposition": "preserved",
@@ -674,7 +684,7 @@
     },
     {
       "id": "13.2",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "4f5e5aed6897ace5c4b6cbfdb87904d6a6a8929cd0df981f479cee26ffd96743",
       "disposition": "preserved",
@@ -685,7 +695,7 @@
     },
     {
       "id": "13.3",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "84cc6095ce04a31a8beeb1661912a58b8de562db0624475248f755b77a0e20e9",
       "disposition": "preserved",
@@ -696,7 +706,7 @@
     },
     {
       "id": "13.4",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "5fe6ec264db83e6748ca0ae5daa13968f80aac8d6d005ee4e2ded8e32199491d",
       "disposition": "preserved",
@@ -707,7 +717,7 @@
     },
     {
       "id": "13.5",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "bb394f03ce7c3962d38eb892f3240eeca07f7582563dfaaa56a128c5f9956757",
       "disposition": "preserved",
@@ -718,7 +728,7 @@
     },
     {
       "id": "13.6",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "f03c8af813a56eea5cf54f57b7a6cbe268261de47a5d1c06c63facc942081797",
       "disposition": "preserved",
@@ -729,7 +739,7 @@
     },
     {
       "id": "13.7",
-      "source": "7f56dd64b:AGENTS.md#section-13",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-13",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "ea83c11a5783a0e4674ddbf18b0bd8d13ae741d859ba8d18ad3ac2d57309dead",
       "disposition": "preserved",
@@ -740,7 +750,7 @@
     },
     {
       "id": "14.1",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "802beca59c3c5542e350400d5553b4376e4fd603b93289346cddac56db95287f",
       "disposition": "preserved",
@@ -751,7 +761,7 @@
     },
     {
       "id": "14.2",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "ab15e73721074f5f58250e7e325e01403f065f8bf3ef26057fd9d4c287a2871f",
       "disposition": "preserved",
@@ -762,7 +772,7 @@
     },
     {
       "id": "14.3",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "4ab9e48bd4ad307a8eaf797efe07f0383ca83d3cf7a28f5f5c976ffcc21b71ec",
       "disposition": "preserved",
@@ -773,7 +783,7 @@
     },
     {
       "id": "14.4",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "f439cf9fc6e91c8205613454bef02d000df1f466bce557863dcdb89daa5467ea",
       "disposition": "preserved",
@@ -784,7 +794,7 @@
     },
     {
       "id": "14.5",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "5e625d5ffdba8dc2fa694a43c0e2d06993f973f21f2582fa12e3613ea1f4bd6f",
       "disposition": "preserved",
@@ -795,7 +805,7 @@
     },
     {
       "id": "14.6",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "8f1386ba061db6235bb1f467ac5ff571974533e5ce32362da4692176d8f1d544",
       "disposition": "preserved",
@@ -806,7 +816,7 @@
     },
     {
       "id": "14.7",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "c886a65a41f603a5bea7387efe60e2af979dbdd589945ec485b82c5473f3d972",
       "disposition": "preserved",
@@ -817,7 +827,7 @@
     },
     {
       "id": "14.8",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "11a421a9a00cf21080803c70bc4740cc226479a4c9adb1f5592e82eebd5e8550",
       "disposition": "preserved",
@@ -828,7 +838,7 @@
     },
     {
       "id": "14.9",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "80fd966faab70b6d56473c56b0bbffeaca4831ee75830e7195a4a7f8fc46262b",
       "disposition": "preserved",
@@ -839,7 +849,7 @@
     },
     {
       "id": "14.10",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "6d61fb5dcecd2a282ec55c91f551fbf012adce132bdae2589a134bfeadd3d70d",
       "disposition": "preserved",
@@ -850,7 +860,7 @@
     },
     {
       "id": "14.11",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "1e309e4880134bdf98872c3601eb16261a30b08ce818ce2919acb47877ffd8ed",
       "disposition": "preserved",
@@ -861,7 +871,7 @@
     },
     {
       "id": "14.12",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "89047a47e41186f278ab244de7f51ef84f5a4fc8e33999fa99e84eda365a4b1c",
       "disposition": "preserved",
@@ -872,7 +882,7 @@
     },
     {
       "id": "14.13",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "ced6359a37b15683302c590a140cf9f9c5b8ce14a4583b80ab64082e9a164735",
       "disposition": "preserved",
@@ -883,7 +893,7 @@
     },
     {
       "id": "14.14",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "aa037a2eb62bc515463abef944986e311e5889fa1ee4bc031884fb591c405d61",
       "disposition": "preserved",
@@ -894,7 +904,7 @@
     },
     {
       "id": "14.15",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "38878299c8a97469089022a237b2896e3699d76cff0af54d8c2a21e8a68f453c",
       "disposition": "preserved",
@@ -905,7 +915,7 @@
     },
     {
       "id": "14.16",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "d17b7484e2d5247bc6ed1dc891fa65149977f5d341c2079801f746c646c97843",
       "disposition": "preserved",
@@ -916,7 +926,7 @@
     },
     {
       "id": "14.17",
-      "source": "7f56dd64b:AGENTS.md#section-14",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-14",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "b8459066a743985e3556a91a0e8e30de69fbc32d33d2de7aa13e127e635f14ad",
       "disposition": "preserved",
@@ -927,7 +937,7 @@
     },
     {
       "id": "15.1",
-      "source": "7f56dd64b:AGENTS.md#section-15",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-15",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "ca3db635c67a5e06af1fc552d2d14673df5219117c438670b2bb80261308e997",
       "disposition": "preserved",
@@ -938,7 +948,7 @@
     },
     {
       "id": "15.2",
-      "source": "7f56dd64b:AGENTS.md#section-15",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-15",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "cd95d65721a19bed59819a9dfb3218039fbf58ce5532b9516c3db44984c7d452",
       "disposition": "preserved",
@@ -949,7 +959,7 @@
     },
     {
       "id": "15.3",
-      "source": "7f56dd64b:AGENTS.md#section-15",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-15",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "e42ad938b23b8d9430521e0e67abcefb208494d08e4c19a53d5a45acd4e0d76b",
       "disposition": "preserved",
@@ -960,7 +970,7 @@
     },
     {
       "id": "15.4",
-      "source": "7f56dd64b:AGENTS.md#section-15",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-15",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "2b8f8939ec19c4de68cd0c8460a2366d20cdd71d6049839e54eb77572fd9cb28",
       "disposition": "preserved",
@@ -971,7 +981,7 @@
     },
     {
       "id": "15.5",
-      "source": "7f56dd64b:AGENTS.md#section-15",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-15",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "2126318b976262755e90da066ca6efa95c95318fbafd150e1eff03f6b1d8578c",
       "disposition": "preserved",
@@ -982,7 +992,7 @@
     },
     {
       "id": "15.6",
-      "source": "7f56dd64b:AGENTS.md#section-15",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-15",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "5586fdaa422ec00e446f3499402e7672a9cd07466802b5c0d8e9cf8b2e2665cc",
       "disposition": "preserved",
@@ -993,7 +1003,7 @@
     },
     {
       "id": "16.1",
-      "source": "7f56dd64b:AGENTS.md#section-16",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-16",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "1df3e0e0a5f191314228a4d5be1242bd096be2fa118a256e29d168b2a59bd9f1",
       "disposition": "preserved",
@@ -1004,7 +1014,7 @@
     },
     {
       "id": "16.2",
-      "source": "7f56dd64b:AGENTS.md#section-16",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-16",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "8b74dc6c1bcb5502e35ce4ba58d7ca4be4828fb387862bb479937ba101029a76",
       "disposition": "preserved",
@@ -1015,7 +1025,7 @@
     },
     {
       "id": "17.1",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "ee5e8af526141af2cb7ee6ab91b439e48d714da2c1f8e832da7553ef22c503a6",
       "disposition": "preserved",
@@ -1026,7 +1036,7 @@
     },
     {
       "id": "17.2",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "656c7f1ead45a3c2d3163ae94c6f0c49657a07676f798b0615deb70769a5103e",
       "disposition": "preserved",
@@ -1037,7 +1047,7 @@
     },
     {
       "id": "17.3",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "1ea202115e8e050c1713a7233da99ad2bc40b4dd94cb29d5cbf5e7061bdec892",
       "disposition": "preserved",
@@ -1048,7 +1058,7 @@
     },
     {
       "id": "17.4",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "db8d1cd54f08743dd4298fd3d5411a31e8444aadbb26a42dcd8b3f5b27a8fd63",
       "disposition": "preserved",
@@ -1059,7 +1069,7 @@
     },
     {
       "id": "17.5",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "71eadeb9ec2aa3ec64d0f246f13251317f05bb6bbcc44f1aeab3f5433d01d2ac",
       "disposition": "preserved",
@@ -1070,7 +1080,7 @@
     },
     {
       "id": "17.6",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "f899f36c3b77d92fcc886d9b7d293b9881feeca684e86924773830af0b4b372f",
       "disposition": "preserved",
@@ -1081,7 +1091,7 @@
     },
     {
       "id": "17.7",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "6cbbcfde884e75e96c1efa01bc4eba9521b988dd0539a50971e71a34c7a6717a",
       "disposition": "preserved",
@@ -1092,7 +1102,7 @@
     },
     {
       "id": "17.8",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "7ede213dd1659d4ad6f51ee6eb413609ada0db844ff03f38311bef69b2e77cb1",
       "disposition": "preserved",
@@ -1103,7 +1113,7 @@
     },
     {
       "id": "17.9",
-      "source": "7f56dd64b:AGENTS.md#section-17",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-17",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "0e9ff540e001733230ba91a68544e1305ee617702ac64afa50608e05971e14db",
       "disposition": "preserved",
@@ -1114,7 +1124,7 @@
     },
     {
       "id": "18.1",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "e1ea473d5024366f6c1b634551d461d2271cc9699cf1c765b2be393c8e947494",
       "disposition": "preserved",
@@ -1125,7 +1135,7 @@
     },
     {
       "id": "18.2",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "010d03f20e88a10ca3465d22b36ea51f9495938372834fb019c236ce8bb9a67b",
       "disposition": "preserved",
@@ -1136,7 +1146,7 @@
     },
     {
       "id": "18.3",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "0a74219bb93287684baac21ff83548cae7bcb14e0e7fd53284e1763a11b6e548",
       "disposition": "preserved",
@@ -1147,7 +1157,7 @@
     },
     {
       "id": "18.4",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "af5f687faf8913e068718e3a73cba0003d520121aeeb249479f62505f3aaf3a6",
       "disposition": "preserved",
@@ -1158,7 +1168,7 @@
     },
     {
       "id": "18.5",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "c46d6878522f11987318a6a509d56e72b4f6681e98af45cff3623657630d9959",
       "disposition": "preserved",
@@ -1169,7 +1179,7 @@
     },
     {
       "id": "18.6",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "ad39665d09837ad8d1e4f78c284b97d4277c68a2d44ae4442a1185d9b8a3b896",
       "disposition": "preserved",
@@ -1180,7 +1190,7 @@
     },
     {
       "id": "18.7",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "f4ab19400c0702d8da6092df70ecdb4c75293f97205663411aa847c3c325963c",
       "disposition": "preserved",
@@ -1191,7 +1201,7 @@
     },
     {
       "id": "18.8",
-      "source": "7f56dd64b:AGENTS.md#section-18",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-18",
       "path": ".agents/rulebook/domains/plugins.md",
       "originalHash": "6397690af4b51494ac9f83bde6b137aca3326fdd6aa74bab0dc42d93490a2d21",
       "disposition": "preserved",
@@ -1202,7 +1212,7 @@
     },
     {
       "id": "19.1",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "b8e41433b5af0edc8f9e61054e6ac81c6aa2cacd0d90bbdbab1fb3b889c54bbd",
       "disposition": "preserved",
@@ -1213,7 +1223,7 @@
     },
     {
       "id": "19.2",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "73e27ca28caa6f4e6c6f7cd1fe54ca2dc8e49e2ba15490ce7c5b1068354f8c71",
       "disposition": "preserved",
@@ -1224,7 +1234,7 @@
     },
     {
       "id": "19.3",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "cde43bdde3090f6b7947886e50001b552d09d461f5ff40a0914968e988446ca2",
       "disposition": "preserved",
@@ -1235,7 +1245,7 @@
     },
     {
       "id": "19.4",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "49c25780621007dcc71be5f2e2b4f4b002de2b0a9d96c40e81d193604c75f2ab",
       "disposition": "preserved",
@@ -1246,7 +1256,7 @@
     },
     {
       "id": "19.5",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "c9950b8ac4190e36f1941ec0d592853ba28171f1c75724002906cf5eb1bb4b4d",
       "disposition": "preserved",
@@ -1257,7 +1267,7 @@
     },
     {
       "id": "19.6",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "24a6745290c0969a46d0461042c788fabc2e4d0d0b69b3d355aebe16f7de0e92",
       "disposition": "preserved",
@@ -1268,7 +1278,7 @@
     },
     {
       "id": "19.7",
-      "source": "7f56dd64b:AGENTS.md#section-19",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-19",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "38808df39142443fd505e2cadbcb49dadb6cbc8e876d68b23fdf516472173de4",
       "disposition": "preserved",
@@ -1279,7 +1289,7 @@
     },
     {
       "id": "20.1",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "d04589d0ce99484f813001832e92a2f8411d2d1a4bc64aaff8175fa1e1475e0b",
       "disposition": "preserved",
@@ -1290,7 +1300,7 @@
     },
     {
       "id": "20.2",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "975f6da00e76191fdb166d04c732a9d0acc77828f65b1d270c6aa94bd0b0d07a",
       "disposition": "preserved",
@@ -1301,7 +1311,7 @@
     },
     {
       "id": "20.3",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "5c2f32dc18a4142ae2b41e7f0191688430deb3942f8d653c058ca5fb09ae9380",
       "disposition": "preserved",
@@ -1312,7 +1322,7 @@
     },
     {
       "id": "20.4",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "811e0a9fda7f7c75556ae181360e3af2a2c4a57ddf60a74bab1d17eabed0b896",
       "disposition": "preserved",
@@ -1323,7 +1333,7 @@
     },
     {
       "id": "20.5",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "92829893c198c28c5c8f6d5fb3542e80f592ee4c6b362826cc9965d23506bb79",
       "disposition": "preserved",
@@ -1334,7 +1344,7 @@
     },
     {
       "id": "20.6",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "63e109baa64f062a988a244a78754cf21234b8d3478124c99a0f3a5b131a4f3d",
       "disposition": "preserved",
@@ -1345,7 +1355,7 @@
     },
     {
       "id": "20.7",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "da38afa634e638869a4aa17188dd56e7762b25c0d33026205f91a9df4fee53ee",
       "disposition": "preserved",
@@ -1356,7 +1366,7 @@
     },
     {
       "id": "20.8",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "54c7a14b2e0f3011f82089ee72b14d27f8963883d6ee166fcbc0e6deda1414d2",
       "disposition": "preserved",
@@ -1367,7 +1377,7 @@
     },
     {
       "id": "20.9",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "1b7d6605e20bbfa15843a42196d806ce2b1d06b97b9c7d678304cc474ed022c2",
       "disposition": "preserved",
@@ -1378,7 +1388,7 @@
     },
     {
       "id": "20.10",
-      "source": "7f56dd64b:AGENTS.md#section-20",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-20",
       "path": ".agents/rulebook/domains/identity-reload.md",
       "originalHash": "9117cdcf7615cfaa27c12cdb1a27b762440a39595a279414c42e876acdc60e25",
       "disposition": "preserved",
@@ -1389,7 +1399,7 @@
     },
     {
       "id": "21.1",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "0ee4a1381219a58a864b2d34e63490bc76b41a6d3a91f162d10b545296301eb4",
       "disposition": "preserved",
@@ -1400,7 +1410,7 @@
     },
     {
       "id": "21.2",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "b8fcd9e15d3ebd1fe14864d7337caf534fe5be36043c761b9da98aaf817f10ff",
       "disposition": "preserved",
@@ -1411,7 +1421,7 @@
     },
     {
       "id": "21.3",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "3ae787b3f7492f78c4d175c1afeb3440f337470bc957514fd541e334ca7a6791",
       "disposition": "preserved",
@@ -1422,7 +1432,7 @@
     },
     {
       "id": "21.4",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "f0646b2f9c636d6649ae60527b2a3171e98f1667369d7bca95825102773f09f3",
       "disposition": "preserved",
@@ -1433,7 +1443,7 @@
     },
     {
       "id": "21.5",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "fc03e6bc382adbe5a20029ffbb9d84bf52481670141c960b6ee9daa7188efc37",
       "disposition": "preserved",
@@ -1444,7 +1454,7 @@
     },
     {
       "id": "21.6",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "114ac52f6a6a08e00af88d925c557453cc899572151d6638fe5e6b485b98d7f1",
       "disposition": "preserved",
@@ -1455,7 +1465,7 @@
     },
     {
       "id": "21.7",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "1f55a6c4e2413d61a0c260b94b1379c3ba5381dd3fddb553d5068f8784585b6d",
       "disposition": "preserved",
@@ -1466,7 +1476,7 @@
     },
     {
       "id": "21.8",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "10a2bfdf68c81051d2f8b0fbab24495a609c1771531462fbf9868e9bef0bc320",
       "disposition": "preserved",
@@ -1477,7 +1487,7 @@
     },
     {
       "id": "21.9",
-      "source": "7f56dd64b:AGENTS.md#section-21",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-21",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "bab9bd3ed3aa17a1a152fa893a422014284ab69be0c24b7aa6576647c333335b",
       "disposition": "preserved",
@@ -1488,7 +1498,7 @@
     },
     {
       "id": "22.1",
-      "source": "7f56dd64b:AGENTS.md#section-22",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-22",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "6fa5cc593dbe1d5fe96ff5e177c49a6b4feecd18f9cec91e80e7dcbec482cef8",
       "disposition": "preserved",
@@ -1499,7 +1509,7 @@
     },
     {
       "id": "22.2",
-      "source": "7f56dd64b:AGENTS.md#section-22",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-22",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "43025970366c56e171047fa7cc31fb9ad071cd667dfba68297c36756f02e73cb",
       "disposition": "preserved",
@@ -1510,7 +1520,7 @@
     },
     {
       "id": "23.1",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "a7180c7b2a595dffc271bbf430dad6da72ac8dbabaa7a713ac746d3be7bdcbd9",
       "disposition": "preserved",
@@ -1521,7 +1531,7 @@
     },
     {
       "id": "23.2",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "31891a8a828b1709293b0f1f3d81067b15c1e35e0a9e8b2f6ef6149a56f0c635",
       "disposition": "preserved",
@@ -1532,7 +1542,7 @@
     },
     {
       "id": "23.3",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "95e12ed427e31ee89b53ebdd3551f8b671bb56c5d8d85a7c141127c989abfcda",
       "disposition": "preserved",
@@ -1543,7 +1553,7 @@
     },
     {
       "id": "23.4",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "8338542136dae7aa818b9446f5050658f3e1e89402c0c97e9d4f5abcc8b7d0cd",
       "disposition": "preserved",
@@ -1554,7 +1564,7 @@
     },
     {
       "id": "23.5",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "41874671f58ef7bc6285d79b4539b0d61ea6e5787d16732d3e2493d84b043ba2",
       "disposition": "preserved",
@@ -1565,7 +1575,7 @@
     },
     {
       "id": "23.6",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "19ef285a86c7baaf07c63b9a8fc5cd74742cfdc2048821333f3cf14a22acb7c9",
       "disposition": "preserved",
@@ -1576,7 +1586,7 @@
     },
     {
       "id": "23.7",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "e37bcae5aa76b76e6688c78103d6163a25fc73ed080c760964579585038c086c",
       "disposition": "preserved",
@@ -1587,7 +1597,7 @@
     },
     {
       "id": "23.8",
-      "source": "7f56dd64b:AGENTS.md#section-23",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-23",
       "path": ".agents/rulebook/coding.md",
       "originalHash": "00ab8e1bf5ec15ca8c2df55c202cfcd4172b471b8fb6ee80cfa15a58bcbaf1bc",
       "disposition": "preserved",
@@ -1598,7 +1608,7 @@
     },
     {
       "id": "24.1",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "a78da5ad23986a44349374372658a6557ee2d9976628b07e933721594fc468fb",
       "disposition": "preserved",
@@ -1609,7 +1619,7 @@
     },
     {
       "id": "24.2",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "ff8188e23b8af5d3991c935b771b773a59598b7babf864d5b944150c0e013e27",
       "disposition": "preserved",
@@ -1620,7 +1630,7 @@
     },
     {
       "id": "24.3",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "d2f1efe96013a971a0f435d8592204bebbe86ec48abb5f4bb537ad6b12f3e7d4",
       "disposition": "preserved",
@@ -1631,7 +1641,7 @@
     },
     {
       "id": "24.4",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "3376fbba35db3b14186fad6856628170c46b5ea568ec4da85d68e13a360df83e",
       "disposition": "preserved",
@@ -1642,7 +1652,7 @@
     },
     {
       "id": "24.5",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "102fc73957d8dcc7555e9f021d87b707da29f344e4b6715357256318c6944ead",
       "disposition": "preserved",
@@ -1653,7 +1663,7 @@
     },
     {
       "id": "24.6",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "9aa7299366b57f5a1b1b5ca963563c742683e3fb6380dacb2af72d6e1d99fc1d",
       "disposition": "preserved",
@@ -1664,7 +1674,7 @@
     },
     {
       "id": "24.7",
-      "source": "7f56dd64b:AGENTS.md#section-24",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-24",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "a60a708374ddcfa25bb62fbd311ec7a8bb959a60e3d74fc03ccb28777eefae77",
       "disposition": "preserved",
@@ -1675,7 +1685,7 @@
     },
     {
       "id": "25.1",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "b19118c564bf7869a979959cb5942e88df5ab3a54f541061adb140aa316ba10c",
       "disposition": "preserved",
@@ -1686,7 +1696,7 @@
     },
     {
       "id": "25.2",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "c7c3e1e13e6ec6f3600f6355d31a4a8d755f43369274baf9acfbe21440e8a0d6",
       "disposition": "preserved",
@@ -1697,7 +1707,7 @@
     },
     {
       "id": "25.3",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "2ce9b85e57802b8c2a31c4cc3d0c8235b69068b7d46a7e5277978472f4de88d7",
       "disposition": "preserved",
@@ -1708,7 +1718,7 @@
     },
     {
       "id": "25.4",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "8b73963b3c9f46a9705c77b3a0a00ab19c234e26eaffd223d6fc0b2e932f603a",
       "disposition": "preserved",
@@ -1719,7 +1729,7 @@
     },
     {
       "id": "25.5",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "df22738791386899274f61f777a931262733f8a48f1744208c042fea57880d80",
       "disposition": "preserved",
@@ -1730,7 +1740,7 @@
     },
     {
       "id": "25.6",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "b2d018fd842124e7109ad0973e6e907e908ea05c3d29d2ff0bbde4cc7abc8e4e",
       "disposition": "preserved",
@@ -1741,7 +1751,7 @@
     },
     {
       "id": "25.7",
-      "source": "7f56dd64b:AGENTS.md#section-25",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-25",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "224ccdec3ed83d364b31ccbc614ca441b1dc8b66d1985e44e5c5d615342d7a67",
       "disposition": "preserved",
@@ -1752,7 +1762,7 @@
     },
     {
       "id": "26.1",
-      "source": "7f56dd64b:AGENTS.md#section-26",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-26",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "bb60b33ba54c7336e9799166c01b4052d126a112d4722915e3904b66fc4b5ab0",
       "disposition": "preserved",
@@ -1763,7 +1773,7 @@
     },
     {
       "id": "26.2",
-      "source": "7f56dd64b:AGENTS.md#section-26",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-26",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "96c711350d8ff162324062dfb4b49240d44be6a667a5fd42a42bf590c3a5e3ef",
       "disposition": "preserved",
@@ -1774,7 +1784,7 @@
     },
     {
       "id": "26.3",
-      "source": "7f56dd64b:AGENTS.md#section-26",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-26",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "fac2752dd3f41f02a5029638af0b428b76cd57c54b1e806d7075b11720f6e4d3",
       "disposition": "preserved",
@@ -1785,7 +1795,7 @@
     },
     {
       "id": "26.4",
-      "source": "7f56dd64b:AGENTS.md#section-26",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-26",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "24eb6050ce21ea7ff4821e7c8829d4beeed5e4ffa67e27dbff16f278a535ae78",
       "disposition": "preserved",
@@ -1796,7 +1806,7 @@
     },
     {
       "id": "26.5",
-      "source": "7f56dd64b:AGENTS.md#section-26",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-26",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "73642ccb128fdfa44c92f79efe6cfa8da42c7c16b4fc99e21e64f6ddac3c47ef",
       "disposition": "preserved",
@@ -1807,7 +1817,7 @@
     },
     {
       "id": "26.6",
-      "source": "7f56dd64b:AGENTS.md#section-26",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-26",
       "path": ".agents/rulebook/architecture.md",
       "originalHash": "25a9c3360ddadcf3681147ed90c1d86a63205a903b3dddde86992c1866b32e79",
       "disposition": "preserved",
@@ -1818,7 +1828,7 @@
     },
     {
       "id": "27.1",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "9cc6e95f7ea461fd696de07ce76f8797c96ed41f0433e310e1af26582805b22b",
       "disposition": "preserved",
@@ -1829,7 +1839,7 @@
     },
     {
       "id": "27.2",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "7603640023e8356e822dbdca1f0bce8573039862e61d8e8926b0acd6611b9494",
       "disposition": "preserved",
@@ -1840,7 +1850,7 @@
     },
     {
       "id": "27.3",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "aa8f68717a46b2a24105079cfff00c2955062fc80da10d8005ef3611bd7d997d",
       "disposition": "preserved",
@@ -1851,7 +1861,7 @@
     },
     {
       "id": "27.4",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "b95630e0b3deb0b2d09de1f2ce037457354b9e319ebd2f39c8106174275eb320",
       "disposition": "preserved",
@@ -1862,7 +1872,7 @@
     },
     {
       "id": "27.5",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "8e6c8256ca3966575e246bf2c4986d105214afbb19a069bbf83c3e0b40de379d",
       "disposition": "preserved",
@@ -1873,7 +1883,7 @@
     },
     {
       "id": "27.6",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "2c398b51c32d526e1b9337797dc9d7a06302c34f25f22fb2806075bca491c99a",
       "disposition": "preserved",
@@ -1884,7 +1894,7 @@
     },
     {
       "id": "27.7",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "1eda47cd0c85d1ffa678dd58baa94224f78967bdd53aeb22c46f5b551bb403f8",
       "disposition": "preserved",
@@ -1895,7 +1905,7 @@
     },
     {
       "id": "27.8",
-      "source": "7f56dd64b:AGENTS.md#section-27",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-27",
       "path": ".agents/rulebook/domains/rendering.md",
       "originalHash": "ee7ed4698848793ab73e52bd3e73fd8c709f75028df195bbe876b70e0f648a28",
       "disposition": "preserved",
@@ -1906,7 +1916,7 @@
     },
     {
       "id": "28.1",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "bbd068ddf45b8a55440546f88432f08f1bc7a2b94ed6aca1d4f72c53a59c15f8",
       "disposition": "preserved",
@@ -1917,7 +1927,7 @@
     },
     {
       "id": "28.2",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "38365fab9c07d85ea81c40cd0d181f0549b781dea9c48bdfeb0559a24a02c607",
       "disposition": "preserved",
@@ -1928,7 +1938,7 @@
     },
     {
       "id": "28.3",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "1e3f7d9acc0b4f337cc02dc2fe79d66ccda45221c943c14cf71f91de709ad989",
       "disposition": "preserved",
@@ -1939,7 +1949,7 @@
     },
     {
       "id": "28.4",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "e584940bd16fa8ff45182ea7674910860e3a03209a16703f1b06a98866620b01",
       "disposition": "preserved",
@@ -1950,7 +1960,7 @@
     },
     {
       "id": "28.5",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "a1d364c82b7a1c3cb16f56bd1aae66832cb7b15706a9a2c5206ba3fdaa79a886",
       "disposition": "preserved",
@@ -1961,7 +1971,7 @@
     },
     {
       "id": "28.6",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "875e20eacd91a77fba60d63920f357e4e7d1a3e3ae2c1f9f830da1fd8b8000a7",
       "disposition": "preserved",
@@ -1972,7 +1982,7 @@
     },
     {
       "id": "28.7",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "6af5d2f1a1c1f5083c4e8da9c181963e99d54ea38a9563da8747ea5fbcaab5e0",
       "disposition": "preserved",
@@ -1983,7 +1993,7 @@
     },
     {
       "id": "28.8",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "dbfa9fbd4fa122d1eb9ea53bd5d523239d856d17a436e8df8616730f411e6a95",
       "disposition": "preserved",
@@ -1994,7 +2004,7 @@
     },
     {
       "id": "28.9",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "c02df2b6b87a837d2297dead8bd588d68b1e0b158f265aa2f720331fb975487a",
       "disposition": "preserved",
@@ -2005,7 +2015,7 @@
     },
     {
       "id": "28.10",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "91e9b473ace4cf03421e9e288264dbc1c14ede8d85b92a96436ade4f1831095b",
       "disposition": "preserved",
@@ -2016,7 +2026,7 @@
     },
     {
       "id": "28.11",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "a80250da185512ce2c8cd8d97ae37f7e29f823e844cfb499659b0e89502d3ae3",
       "disposition": "preserved",
@@ -2027,7 +2037,7 @@
     },
     {
       "id": "28.12",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "627102228e1d72789f8c8c31687375dbeedb3e7c275a879eeed503ceaf1203d6",
       "disposition": "preserved",
@@ -2038,7 +2048,7 @@
     },
     {
       "id": "28.13",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "86fc3f18e3017b563ef8b55f15576986538a7e01dc9f61b869e698a24ee7cbfa",
       "disposition": "preserved",
@@ -2049,7 +2059,7 @@
     },
     {
       "id": "28.14",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "a5945bfa41a6b678b345609c3fb7753aa2aa3a183b9ebc7d11427caeaa0ab25c",
       "disposition": "preserved",
@@ -2060,7 +2070,7 @@
     },
     {
       "id": "28.15",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "a4e99ab18a653cd24bc57f0d7df13d1dfb5778cdbf0a59aee49002ac93b77915",
       "disposition": "preserved",
@@ -2071,7 +2081,7 @@
     },
     {
       "id": "28.16",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "0afee409eaa98d08d8e1a0334b61183523ae221b3f3b86f59d9607e0babec762",
       "disposition": "preserved",
@@ -2082,7 +2092,7 @@
     },
     {
       "id": "28.17",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "09969edea363049274eb103b0f3ed28431ee6c029070d88a2de8e287f5f0ceeb",
       "disposition": "preserved",
@@ -2093,7 +2103,7 @@
     },
     {
       "id": "28.18",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "066a20c7fa263bec6fb1bf35b123412cdc19b984fe121365b77d5eb4e8bd7fe2",
       "disposition": "preserved",
@@ -2104,7 +2114,7 @@
     },
     {
       "id": "28.19",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "f6b7f455387f2ffe8b272441fe9ccd7c6fb793a640332c7889ec4b963ceec35f",
       "disposition": "preserved",
@@ -2115,7 +2125,7 @@
     },
     {
       "id": "28.20",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "96a1de39674aff5c38eee8057c697e37d7b1a34051133b3471bb96ff56933c6c",
       "disposition": "preserved",
@@ -2126,7 +2136,7 @@
     },
     {
       "id": "28.21",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "2530d325d5dbe1448fda7a6e246d71380bddcb95a48162a33cf8950573e8b381",
       "disposition": "preserved",
@@ -2137,7 +2147,7 @@
     },
     {
       "id": "28.22",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "85f424ca1b9c5b3d21b925ef469a1a515c31f2ed651a82a92a208258f55e961a",
       "disposition": "preserved",
@@ -2148,7 +2158,7 @@
     },
     {
       "id": "28.23",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "1121c4faa7c7e120a90135449a220ec60b622d7831ad68c2c621d96fc0e7efcd",
       "disposition": "preserved",
@@ -2159,7 +2169,7 @@
     },
     {
       "id": "28.24",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "b61c0f0e7f3be551ed431b43a76b62991a811b2b51bafee0af5ebdb39d320a59",
       "disposition": "preserved",
@@ -2170,7 +2180,7 @@
     },
     {
       "id": "28.25",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "1193087c674adcad2e28e80da089bca39d1bb083e175c00c46e3bfac2e21f07a",
       "disposition": "preserved",
@@ -2181,7 +2191,7 @@
     },
     {
       "id": "28.26",
-      "source": "7f56dd64b:AGENTS.md#section-28",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-28",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "780f84046cc74eea6834fe6397421a5e76f32bc030c29b2d0a7e66ac18155bb1",
       "disposition": "preserved",
@@ -2192,7 +2202,7 @@
     },
     {
       "id": "29.1",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "1184ebc811c53110f9b93a156ddbfe721a06e84ff561b7b170de4b8a4f09c7d1",
       "disposition": "preserved",
@@ -2203,7 +2213,7 @@
     },
     {
       "id": "29.2",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "24e7a817f0f579805afd40f5ed16f6c767153b6ebd44dacee9c627313443d019",
       "disposition": "preserved",
@@ -2214,7 +2224,7 @@
     },
     {
       "id": "29.3",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "930fcd222b949ce695b267388f8203bd798c04c174217146304ffc68ac90e511",
       "disposition": "preserved",
@@ -2225,7 +2235,7 @@
     },
     {
       "id": "29.4",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "464eade4d3d14b2b800c761c2c5e26c77a22a4351b5ceebcd1f112dd3cfdfc2a",
       "disposition": "preserved",
@@ -2236,7 +2246,7 @@
     },
     {
       "id": "29.5",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "47a490a8d8506b2fb25cf4e48407c8654b2cbc143c272e53e509ecaeb52dbbb5",
       "disposition": "preserved",
@@ -2247,7 +2257,7 @@
     },
     {
       "id": "29.6",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "77c7d40f8caca628be02ac2147345e04132df08185765da27e5d6e823ac61f1c",
       "disposition": "preserved",
@@ -2258,7 +2268,7 @@
     },
     {
       "id": "29.7",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "dca2a1bf003d9c82f5c57956cc315bd20cfe11d5c9c52caf2aa2c3c06a6ac852",
       "disposition": "preserved",
@@ -2269,7 +2279,7 @@
     },
     {
       "id": "29.8",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "1ea3f833bf68f4009d0a8baf5b54744de3b51c97d38370e47e41a34bc31a0f96",
       "disposition": "preserved",
@@ -2280,7 +2290,7 @@
     },
     {
       "id": "29.9",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "db9846f1d6d8462e20d840a76c3fd2271e2cb1c171ab6a3c3dab8373c31d5e6b",
       "disposition": "preserved",
@@ -2291,7 +2301,7 @@
     },
     {
       "id": "29.10",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "4417ce20429062015905ffbe98b19a0d31908960f6d5863c80c27fd2b7644ea3",
       "disposition": "preserved",
@@ -2302,7 +2312,7 @@
     },
     {
       "id": "29.11",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "167343d8d3372823fd6a5c09a919f63b5bd1524b4cb1b6229f516f4eb6a7044f",
       "disposition": "preserved",
@@ -2313,7 +2323,7 @@
     },
     {
       "id": "29.12",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "d03b95720e5346978f818d1cee320f8eb0576eb915431635b925dd83b318f5bd",
       "disposition": "preserved",
@@ -2324,7 +2334,7 @@
     },
     {
       "id": "29.13",
-      "source": "7f56dd64b:AGENTS.md#section-29",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-29",
       "path": ".agents/rulebook/domains/build-native.md",
       "originalHash": "d8360e8265f5088a3def25af85805151c7aebd7a508d09cc919f19f5e24d666b",
       "disposition": "preserved",
@@ -2335,7 +2345,7 @@
     },
     {
       "id": "30.1",
-      "source": "7f56dd64b:AGENTS.md#section-30",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-30",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "3e0df150e5273f71eff27bbbc8671a331f09cb12a5c07a96c8e861a64bf28ae3",
       "disposition": "preserved",
@@ -2346,7 +2356,7 @@
     },
     {
       "id": "30.2",
-      "source": "7f56dd64b:AGENTS.md#section-30",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-30",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "1d25bc7acfa0735c58e3814dca382bf3234a0e7d965325e173bd88a903c14af4",
       "disposition": "preserved",
@@ -2357,7 +2367,7 @@
     },
     {
       "id": "30.3",
-      "source": "7f56dd64b:AGENTS.md#section-30",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-30",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "4c780ef5b65a99dad550c107a7c514591d3e2812ddff8d00cd308978579b15be",
       "disposition": "preserved",
@@ -2368,7 +2378,7 @@
     },
     {
       "id": "30.4",
-      "source": "7f56dd64b:AGENTS.md#section-30",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-30",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "009ca6574de647708b05c24de08073f8af6183a5c3b7fc0abbcf5fb23fe9ed39",
       "disposition": "preserved",
@@ -2379,7 +2389,7 @@
     },
     {
       "id": "30.5",
-      "source": "7f56dd64b:AGENTS.md#section-30",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-30",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "33c44f2b873bacb7822af7718aedd66c8967bd7cc3e1ac6f8a193caa4013a663",
       "disposition": "preserved",
@@ -2390,7 +2400,7 @@
     },
     {
       "id": "30.6",
-      "source": "7f56dd64b:AGENTS.md#section-30",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-30",
       "path": ".agents/rulebook/validation.md",
       "originalHash": "e3dbaacfefac2daa3eef9aba4b6d0d9656b068941246544f122f5ac40e767e6d",
       "disposition": "preserved",
@@ -2401,7 +2411,7 @@
     },
     {
       "id": "31.1",
-      "source": "7f56dd64b:AGENTS.md#section-31",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-31",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "3b1ecfb344235b63cb4015fa1548529093f605c5673ae454bc1660106d7b3d3a",
       "disposition": "preserved",
@@ -2412,7 +2422,7 @@
     },
     {
       "id": "31.2",
-      "source": "7f56dd64b:AGENTS.md#section-31",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-31",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "e5bc32830644660581c3286a3d352fcf4828b676c91c116afa23e08b48f00c85",
       "disposition": "preserved",
@@ -2423,7 +2433,7 @@
     },
     {
       "id": "31.3",
-      "source": "7f56dd64b:AGENTS.md#section-31",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-31",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "5101467f70d294ab413e4befbd85c00c6717a855cf3fbee0aa1b24c48467f2c6",
       "disposition": "preserved",
@@ -2434,7 +2444,7 @@
     },
     {
       "id": "31.4",
-      "source": "7f56dd64b:AGENTS.md#section-31",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-31",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "f67f47be3449ea304ec5c3279342840557c75efccf63bdcc783df37d2d974053",
       "disposition": "preserved",
@@ -2445,7 +2455,7 @@
     },
     {
       "id": "31.5",
-      "source": "7f56dd64b:AGENTS.md#section-31",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-31",
       "path": ".agents/rulebook/delivery.md",
       "originalHash": "de6a01673254e95d66beda0153ba848d3f808fb9e3164e41d4561dfe6d07aed2",
       "disposition": "preserved",
@@ -2456,7 +2466,7 @@
     },
     {
       "id": "32.1",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "1df2bd9d01c7611d9916939771fdd2becb76f37d10cbfa4d1542ee2c8f938eca",
       "disposition": "preserved",
@@ -2466,7 +2476,7 @@
     },
     {
       "id": "32.2",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "22fd6af1bb890a7d27b23d959b8504b5db470e401d2b581c63ba038f4c957914",
       "disposition": "preserved",
@@ -2476,7 +2486,7 @@
     },
     {
       "id": "32.3",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "22e9cf2e6c3a92b4655ca67b49479f7a54525bf1d3f59e904c1fb91168a97175",
       "disposition": "preserved",
@@ -2486,7 +2496,7 @@
     },
     {
       "id": "32.4",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "c6f50e26701141e063be238e81bb9c0fbf0c60e1a49bc1925e71e59b51cbb97c",
       "disposition": "preserved",
@@ -2496,7 +2506,7 @@
     },
     {
       "id": "32.5",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "87015c79749cfa3edcc9f013455858720122b3f2df306b9f507fd634e1fe53a5",
       "disposition": "preserved",
@@ -2506,7 +2516,7 @@
     },
     {
       "id": "32.6",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "cfa03efef9d5ec20da6ca65f90d6761a38e59891d567887476cc392e0b32b09d",
       "disposition": "preserved",
@@ -2516,7 +2526,7 @@
     },
     {
       "id": "32.7",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "616d978818c8ea9234ef6765a405f2099a74021ea0a5b43f6b6e72c965516b22",
       "disposition": "preserved",
@@ -2526,7 +2536,7 @@
     },
     {
       "id": "32.8",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "5e7b3322365eeb3a3a454a09842e63914b9c1ed22fb330012dbb026612372641",
       "disposition": "preserved",
@@ -2536,7 +2546,7 @@
     },
     {
       "id": "32.9",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "0ec49656b2d037e60ea3b07ae7d8ca86fa67f996e8395e7baf375163b28e47ed",
       "disposition": "preserved",
@@ -2546,7 +2556,7 @@
     },
     {
       "id": "32.10",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "e425b5e45991d571e96373a3315bf81929ff0b8984a0dcb5c1ade024fe38f965",
       "disposition": "preserved",
@@ -2556,7 +2566,7 @@
     },
     {
       "id": "32.11",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "74cbd2228ca2f4aa825d56f3716cad9b10b6def5eeeaf1b9923bd511f2986ffe",
       "disposition": "preserved",
@@ -2566,7 +2576,7 @@
     },
     {
       "id": "32.12",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "26c8b3a4f5b3d5912f20cf6fd304de30470a8a81618e5a441ed1e497762bba27",
       "disposition": "preserved",
@@ -2576,7 +2586,7 @@
     },
     {
       "id": "32.13",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "ecbde133185bbf5cf11dcd67eef943701bd229a987d8201b48f769e1adc2bbec",
       "disposition": "preserved",
@@ -2586,7 +2596,7 @@
     },
     {
       "id": "32.14",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "0a616cb021da2aca735b276f89b6bc78090c19fdcbec1ec83cbef96e2bd7023b",
       "disposition": "preserved",
@@ -2596,7 +2606,7 @@
     },
     {
       "id": "32.15",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "7306cf65c6b8dcd323bb97ad664f248e95f7da3934d6414041f959dd2649908b",
       "disposition": "preserved",
@@ -2606,7 +2616,7 @@
     },
     {
       "id": "32.16",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "8f22deaf3629f8fccb357421384db74be421c8e9a05a672ebb22409ada07cf5f",
       "disposition": "preserved",
@@ -2616,7 +2626,7 @@
     },
     {
       "id": "32.17",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "fbbbb0cd6acaf286fbde2fd4e51abe04c768ecf13ab67d53d313d47d1ba054ea",
       "disposition": "preserved",
@@ -2626,7 +2636,7 @@
     },
     {
       "id": "32.18",
-      "source": "7f56dd64b:AGENTS.md#section-32",
+      "source": "7f56dd64bd29231351f5441c18877b0c3ad3229b:AGENTS.md#section-32",
       "path": ".agents/rulebook/domains/editor.md",
       "originalHash": "ed3692df56697465796d1e95ae805068eabf4418cf8e9ec3ed5327607578d4a4",
       "disposition": "preserved",
@@ -3487,7 +3497,7 @@
           {
             "ordinal": 2,
             "sourceHash": "96ccf044ebe34361538ac4c3dac0fd3d2b7c9db5ad532b3e7837d04945d57363",
-            "targetHash": "e087be9cfd2eeb17a2c72f63a24b7aa673672b83193afe20ee2217c9b9f5e87a"
+            "targetHash": "9c171f3383ff9da15e8face978be93b8e1da13d5696517f201fd2e639cab8733"
           },
           {
             "ordinal": 3,
@@ -3535,7 +3545,8 @@
             "targetHash": "58fad6bddd9ff0a3400450ce71641e40827a76bbdb53c19e0e035ebd21926bb9"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "tests",
@@ -5111,7 +5122,7 @@
         "hash": "11daf5b535242c204be26f40eebc86a38ae7449501f035ab867d8d5416cce465",
         "translation": {
           "language": "en",
-          "source": "a31375a5:.agents/rulebook/coding.md",
+          "source": "a31375a5f01a9523edce97b54a0055fdde92c067:.agents/rulebook/coding.md",
           "approval": "User-approved English modernization; original addition obligation unchanged",
           "review": ".agents/records/decisions/ENGLISH_RULE_PRESERVATION.md",
           "lines": [
@@ -5614,7 +5625,8 @@
             "targetHash": "dda0f207813397cbcdea5e62ef2cd2b77966ef0dffe4e57ecaf350d2808a57b9"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "documentation-standard-1",
@@ -5651,7 +5663,8 @@
             "targetHash": "e1af2f77ce196b8f5a834d718bbc3f9d88fb453093a3af100638f904cfb5a213"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "documentation-standard-2",
@@ -5693,7 +5706,8 @@
             "targetHash": "7422c46f261edc4d8da8e4ae471f53322d791f6bbf8bb2fbe9f0917cfd085944"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "documentation-standard-3",
@@ -5745,7 +5759,8 @@
             "targetHash": "682c848319352ffed13444f5f62ba034c7d635a0109a0b1fdc3d87819589bb91"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "documentation-standard-4",
@@ -5782,7 +5797,8 @@
             "targetHash": "43aa30aea59b4f89b0abd187ff612529af822af3aafb1d91e1772cb840146f72"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "documentation-standard-5",
@@ -5814,7 +5830,8 @@
             "targetHash": "b64bb3f82e4b9bab3618f42da267d2f077d17973e0e4efb14df75e2806745fa9"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "documentation-standard-6",
@@ -5838,17 +5855,17 @@
           {
             "ordinal": 1,
             "sourceHash": "7d1a463d62b40dc279f0bcbb2dda6de62d2bdc39fbe1fdab514604c19afbcf46",
-            "targetHash": "0afdbca3b62d1ce5fad3f9d8184f02b40121cec74fdd5d1587f4057598e26088"
+            "targetHash": "bdb7ffe98f4ab63e001c1e5a0250358ecbe82e6b5ac71d39e91c816df99554e7"
           },
           {
             "ordinal": 2,
             "sourceHash": "74fa08a7c5cc7a9aec4a1272ad757e830dc7f82446cf7fdb993502ae84ffcc89",
-            "targetHash": "176c3c4d5bb6d085aaa832d61e2fc8ffac2be895b209d8d6f71a8dd7d27de4f9"
+            "targetHash": "f0c899a46a7abff68879c7aa0f4dd5417c90b6c2526d818131978ed15e559e69"
           },
           {
             "ordinal": 3,
             "sourceHash": "a86daf878310539249a382b48f28d4fe3b31268843ca189c2234e597b47d7105",
-            "targetHash": "191aaef958229a4f3a6e94de19556abdb8a00ecaa7f84a8c94cc5d96e0c18577"
+            "targetHash": "39b3af164ffdf99c152f46819e2419258b0d6c50d46a7cf91f7e9bed921f7735"
           },
           {
             "ordinal": 4,
@@ -5858,7 +5875,7 @@
           {
             "ordinal": 5,
             "sourceHash": "572982ca2711b2329ac43f26715debbe332f66f9da0c002ad1ecbef2f4cf74c2",
-            "targetHash": "9c204fb12c066c622c8639bc493491101667825c4b0fb4829c55589027b4a789"
+            "targetHash": "75b551e961d6e6b78d8396f4ebd554a7ced350b1d1c11f4b2a6f20fc544a1366"
           },
           {
             "ordinal": 6,
@@ -5878,10 +5895,11 @@
           {
             "ordinal": 9,
             "sourceHash": "683c506dd23c61a8865fcc8f1fb27bbcd47b571dac371fbfc4fa52e9246581d0",
-            "targetHash": "75791ca99a4523517bd8c2dec4691a46c9b69ea56114a68da8e8d39d74910f64"
+            "targetHash": "4dc89cc8dbc3629f9a068baae136a9839275a2679ce40eb640bed285ea0ef365"
           }
         ]
-      }
+      },
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "id": "editor-standard-9",
@@ -6616,49 +6634,56 @@
       "section": 0,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-0",
-      "hash": "2b3f30679024db5d9b1d07ff1086179e79654d12aeb7d585f9101d857c7c5cd5"
+      "hash": "2b3f30679024db5d9b1d07ff1086179e79654d12aeb7d585f9101d857c7c5cd5",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
       "section": 1,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-1",
-      "hash": "6b05a0ec83b508519b83132ffd74c35db7f53ebd1d955367afd966333a3e9c30"
+      "hash": "6b05a0ec83b508519b83132ffd74c35db7f53ebd1d955367afd966333a3e9c30",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
       "section": 2,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-2",
-      "hash": "652d09619bf30978b0061ed778331dd33c9154f3ce49c509f05b128e6fd909fa"
+      "hash": "652d09619bf30978b0061ed778331dd33c9154f3ce49c509f05b128e6fd909fa",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
       "section": 3,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-3",
-      "hash": "d50017b48c0e71a1ce5f026d029ffb6ee93a88d8d018a5f002118d88aa00314c"
+      "hash": "d50017b48c0e71a1ce5f026d029ffb6ee93a88d8d018a5f002118d88aa00314c",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
       "section": 4,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-4",
-      "hash": "b4e203ad58328e392684d984491729c023a8643bb8daf527e3c1431dfa495196"
+      "hash": "b4e203ad58328e392684d984491729c023a8643bb8daf527e3c1431dfa495196",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
       "section": 5,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-5",
-      "hash": "d17e16a584ffa310b40873a100b302ae616e77495c262be03a8d6c9a14565b66"
+      "hash": "d17e16a584ffa310b40873a100b302ae616e77495c262be03a8d6c9a14565b66",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/DOCUMENTATION_STANDARD.md",
       "section": 6,
       "target": ".agents/rulebook/documentation.md",
       "unit": "documentation-standard-6",
-      "hash": "e4755ac95fa67c8079c901ee495f1f523c103f3a0f2d7bf419a9e2760367a8f2"
+      "hash": "e4755ac95fa67c8079c901ee495f1f523c103f3a0f2d7bf419a9e2760367a8f2",
+      "repository": "Wolfiora/InnoEngine.Docs"
     },
     {
       "source": "docs/architecture/EDITOR_UI_DESIGN_STANDARD.md",

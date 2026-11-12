@@ -2,52 +2,41 @@
 
 [Open work](../open-items.md) · [Implementation ledger](../plans/ENGLISH_DOCUMENTATION_MODERNIZATION.md) · [Historical evidence](README.md)
 
-- [Missing source capture execution](CI_MISSING_REFERENCE_CAPTURE_2026_11_12.md) records the local protocol and actual compilation regression. Captured facts remain unverified; missing comparison requirements remain blocked.
+The English documentation and workflow modernization is **not yet fully certified**. The implementation has passed the local checks below; the final paired Windows/macOS run, complete source certification and protected delivery remain outstanding. Older reports retain their original inputs and conclusions.
 
-The English documentation and workflow modernization is **incomplete**. Existing engine/UI certifications remain bound to their original revisions and environments. This page does not promote them to the current working tree.
+## Current implementation
 
-## Current local evidence
+| Area | Current result and evidence |
+| --- | --- |
+| Source integration | Master/logo commit `259e8a636c19c447f2c703c0a64e2f070f9030c3` is merged into `ai-pipeline`; no other-session source edit was included. |
+| Content migration | All 454 original product files have verified dispositions: 364 reviewed destinations, 73 approved native/generated API retirements and 17 byte-identical historical images. See [legacy cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md). |
+| Website and coverage | The current local authoring projection contains 2,531 pages, all 252 project entries and 12,274 selected declarations. Astro checking, production rendering and available-projection checks pass. macOS Editor source capture and complete source certification remain required; page counts are not behavioral proof. |
+| Queries | Independent `Inno.Tooling.Documentation`, explicit preparation, immutable snapshot readers and structured transport-independent requests. [Protected snapshots](DOCUMENTATION_REFERENCE_SNAPSHOTS_2026_11_11.md), [writer samples](DOCUMENTATION_WRITER_CONCURRENCY.md) and [query preparation](DOCUMENTATION_QUERY_PREPARATION.md) retain their actual test and measurement scopes. |
+| Rules and skills | All 241 original rules and 58 complete units remain registered in English. Eight documentation units now have one authority in Docs. [Rule ownership acceptance](DOCUMENTATION_RULE_AUTHORITY_2026_11_12.md) covers explicit loading, provenance, budgets and rejection behavior. |
+| Validation selection | Actual project/tool input closures, explicit prerequisites, distinct evidence layers and the [private Console dependency regression](CI_43067538817.md). Necessary behavioral consumers remain selected. |
+| Source inspection | Read-only evaluated reference preparation and actual empty Browser/macOS Player surfaces are implemented. [Missing-capture execution](CI_MISSING_REFERENCE_CAPTURE_2026_11_12.md) retains blocked requirements rather than green empty discovery. |
+| Evidence and publication | [Source certificates](DOCUMENTATION_SOURCE_CERTIFICATES_2026_11_12.md), [protected relay](DOCUMENTATION_EVIDENCE_RELAY_2026_11_12.md), and [executable-input receipts](DOCUMENTATION_EXAMPLE_EVIDENCE_2026_11_12.md) are implemented with local positive/negative checks. Docs projection and source certification are separate; retrying late evidence consumes the successful preview artifact. |
+| Legacy | Engine product documentation, old Wiki/query implementations, old switches and duplicate documentation-rule text are removed. Historical evidence and legal provenance remain. |
 
-- [Windows CI diagnosis and follow-up](CI_43067538817.md) records 331 passed checks and five actual failures, the retained warm samples, read-only reference repairs and Console selection regression. Overall certification remains incomplete.
+## Hosted evidence
 
-- [Explicit source certificates](DOCUMENTATION_SOURCE_CERTIFICATES_2026_11_12.md) adds source-comparison receipts, complete-coverage certification and immutable evidence selection. Local protocol and query cases pass; real complete source certification remains outstanding.
+Engine [run 43164720103](https://github.com/Wolfiora/InnoEngine/actions/runs/43164720103) is executing Windows and macOS against engine `7e12d767c39771d8746f3e23ba6190bd2c82eb72` and Docs `01bc7e441bbe1a1346919c30bb9652104cbb7a57`. Follow-up relay, example-certificate and rule-owner changes do not belong to that run and need matching acceptance.
 
-- [Canonical documentation cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md) removes the old product tree and Wiki/query implementations. Fifty query tests, 38 targeted Architecture tests, rule/source/agent-link checks and the full 454-file disposition audit passed locally. Source certification and hosted publication remain separate.
+The retained [Windows failure analysis](CI_43067538817.md) records 331 passed checks, five failures and one blocked release bundle. The diagnosed reference bootstrap and script CLI failures were corrected before the current run. Its ten warm samples preserve all original observations; no third-party producer or binding generator ran in those warm builds. That result does not certify the corrected candidate.
 
-- [Complete baseline dispositions](DOCUMENTATION_DISPOSITIONS_2026_11_11.md) verifies all 454 original product files against exact Git identities and their declared destinations or retirements; eleven negative/positive audit contracts pass. This is separate from source/API certification and physical legacy cutover.
+Docs run 43164698881 passed its preview/build/browser stages and failed complete source certification. That first failure is preserved. The subsequent implementation separates that blocked gate from the successful projection; missing source evidence remains blocked.
 
-- [Native source preflight](CI_NATIVE_PREFLIGHT_2026_11_11.md) removes unconditional source checkout and product-entry compilation from hosted classification. Seven planning regressions, nine real local-Git preparation cases and fifteen CI protocol cases pass. The managed bootstrap builds independently; real hosted execution remains outstanding.
+## Required completion work
 
-- [Immutable CI documentation candidates](CI_DOCUMENTATION_CANDIDATES_2026_11_11.md) records the hosted checkout wiring, nineteen local metadata/ancestry protocol cases and remaining live certification requirements. Candidate correspondence does not establish source compatibility or publication eligibility.
-- [External documentation validation](EXTERNAL_DOCUMENTATION_VALIDATION_2026_11_11.md) records the ongoing planner/runner cutover, exact Docs snapshot selection, per-owner reference facts, shared resolved SDK graphs, bounded passing checks and the preserved old-fixture failure. Hosted pairing, full source certification and deployment remain outstanding.
-- [Protected reference snapshots](DOCUMENTATION_REFERENCE_SNAPSHOTS_2026_11_11.md) records 45 query/snapshot regressions, selected real source comparison and retirement protection. The committed Docs snapshot `54374a3e8077858e6db9bf2c36760595df6d81dac301bd7f6490e59b56caf817` contains 2,529 pages, 252 project entries and 12,272 selected declarations. These supersede the older inventory counts below; later uncommitted changes are not certified by that snapshot.
+1. Finish the current platform run, inspect actual failures and retrieve the remaining macOS Editor source facts.
+2. Bind the final engine and Docs candidates, complete source/API and executable-example certification, and reconcile every required hosted result.
+3. Exercise protected evidence import, paired-candidate ordering, verified Pages promotion and draft release using exact artifacts, within actual permissions and review requirements.
+4. Reconcile final query/performance observations, migration inventory and legacy removal against the final inputs. Do not repeat valid checks solely for commits or reports.
 
-- [Owned cache retirement](OWNED_CACHE_RETIREMENT_2026_11_11.md) records obsolete Docs generations and inactive process payload cleanup, separate logical/physical measurements and the retained unverifiable metadata claim. Metadata-integrity failures now preserve completed retirement results; explicit cleanup still fails visibly. Existing 74 Toolchains regressions passed and both corrected failure fixtures passed without Native preparation.
+The Docs repository is public, with `main`, Pages custom Actions and required `Documentation validation`. The engine requires `Engine validation`. Configuration is not a successful deployment. Repository-level App credentials were absent; organization credential inspection returned HTTP 403. Restricted GitHub App installation/credentials and protected default-branch activation remain external prerequisites. Draft PRs are not merged or made ready automatically, formal releases remain user-controlled, and #75 remains open.
 
-- Independent documentation-query tooling and the Build CLI route are implemented. All 37 documentation regressions pass locally, including explicit preparation, stable reads, corruption, moves, includes, contracts, ambiguity, continuations, concurrent readers/writers, cancellation behind a protected page lease and natural-task ranking without weakening exact symbol lookup. The [bounded writer comparison](DOCUMENTATION_WRITER_CONCURRENCY.md) retains five before/after samples and their limits. [Deferred keyword preparation and task ranking](DOCUMENTATION_QUERY_PREPARATION.md) remove unrelated work from exact reads and record the still-broad validation selection.
-- The current source-project inventory contains 252 projects. After the user-approved exclusion of backend-native/generated binding API documentation and the Scene/Assets migration, the external Docs candidate has 252 authoritative project entries and 12,252 bound engine/support declarations across 2,522 pages, including concise BGFX/ImGui/ImGuizmo integration boundaries. All actual project entries exist, but macOS Editor/Player and Browser Player evaluated source captures, full original-content review and complete source certification are unfinished. Entry coverage cannot certify these missing prerequisites. Native implementation correctness and deployment requirements are unchanged. All 67 actual test owners now have English behavior guides; all fourteen support/fixture libraries now retain their separate public API documentation. These counts describe migrated content, not an overall completion percentage.
-- All 58 registered rule units have English bodies; 57 have reviewed translation mappings and one was already English. All 241 original rule identities remain registered. Rule-provenance, routing, complete-unit budgets and negative translation tests pass.
-- The Docs repository has a working Astro/Starlight representative slice, local production output and initial home/search inspection. Complete page/API migration, visual acceptance, CI and Pages deployment are outstanding.
-- Validation now records explicit prerequisites rather than blocking every context after an unrelated failure. Tool source inputs follow evaluated references; tool binary identities follow actual assembly references. Focused regressions and unresolved validation details are recorded in the implementation ledger.
+## Preservation and disk ownership
 
-Local evidence files are retained under artifacts/acceptance/english-documentation/. The ledger records exact filenames, first failures and retry reasons. This summary is not a replacement for those results.
+The unrelated Editor Assets source edit retains its original hash and is excluded from commits. Local output uses registered owners and reader protection. Obsolete Docs generations and exited-process payloads were retired; an unverifiable metadata owner was retained and reported. The first failed Windows archive remains intact. C-drive free space was approximately 34 GiB at the latest check; this is a point-in-time observation, not a cleanup entitlement.
 
-## External setup and unexecuted work
-
-Wolfiora/InnoEngine.Docs exists publicly, uses main and has Pages custom-Actions configuration and a required Documentation validation check. These settings are not a deployed or certified website. Repository-level Actions secrets/variables were empty when checked. Organization Actions-secret metadata access returned HTTP 403; an appropriately installed GitHub App and credentials remain unverified setup requirements.
-
-The first remote migration candidate completed unsuccessfully: [CI run 42934085309](CI_42934085309.md) records the macOS old-Wiki migration failures and Windows runner communication loss. No passing Windows/macOS full matrix, paired-PR publication, actual Pages deployment or draft-release certification is claimed. No formal engine release or automatic merge is authorized by this summary.
-
-## Preserved earlier evidence
-
-The [pre-modernization acceptance summary](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/acceptance/current.md) preserves every original result, count, revision and limitation in its original language.
-
-Relevant original reports remain unchanged:
-
-- [Logo and final Windows acceptance](LOGO_BRANDING_2026_11_07.md): the 2026-11-10 run recorded 329 successful required checks, including one reused result; three other-platform products were not applicable.
-- [Editor UI final acceptance](EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md): candidate dd5979c6 local UI implementation and applicable acceptance; overlapping profiles must not be added as unique test counts.
-- [Exact PR #26 delivery evidence](https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338): original delivery commit and CI boundaries.
-- [BGCS 4.1.2 consumer acceptance](BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md), [priority fixes](PRIORITY_FIX_ACCEPTANCE_2026_10_25.md) and [standard NuGet restore](STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md): separate original input and product scopes.
-- [Previous documentation reorganization](DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md): local staged delivery, not the new external website migration.
-
-Manual Mac interaction, physical displays, OS IME, subjective usability and unexecuted device/long-running scenarios remain unverified unless a report explicitly supplies matching evidence. Historical benchmarks retain their original first failures and sample populations; no new performance claim is inferred from them.
+Earlier acceptance remains in [the baseline summary](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/acceptance/current.md) and unchanged reports. Manual physical-device, IME, subjective usability and unsupported-platform scenarios remain unverified unless matching evidence explicitly records them. No historical green result is promoted to current certification.

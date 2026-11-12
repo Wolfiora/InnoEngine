@@ -1,3 +1,4 @@
+param([string]$DocsRoot)
 $ErrorActionPreference = 'Stop'
 $repository = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 $entry = Join-Path $PSScriptRoot 'Test-AgentRules.ps1'
@@ -22,7 +23,7 @@ $manifest = Get-Content -LiteralPath (Join-Path $repository '.agents/rulebook/co
 foreach ($unit in $manifest.units) {
     if (-not $unit.sourceHash -or -not $unit.check -or -not $unit.reviewer) { throw "Incomplete rule responsibility: $($unit.id)" }
 }
-$all = @(& $entry -Rules $manifest.units.id) -join "`n"
+$all = @(& $entry -Rules @($manifest.units | Where-Object { -not $_.repository } | ForEach-Object id)) -join "`n"
 foreach ($match in [regex]::Matches($all, 'Stage \d+: (\d+) bytes')) {
     if ([int]$match.Groups[1].Value -gt 16384) { throw 'A staged instruction set exceeds its complete-read budget.' }
 }
@@ -38,6 +39,19 @@ try {
     Copy-Item -LiteralPath (Join-Path $repository '.agents/rulebook') -Destination (Join-Path $fixture '.agents/rulebook') -Recurse
     Copy-Item -LiteralPath (Join-Path $repository 'AGENTS.md') -Destination $fixture
     Copy-Item -LiteralPath $entry -Destination (Join-Path $fixture 'tests/ci/Test-AgentRules.ps1')
+    foreach ($instruction in @((Join-Path $repository 'AGENTS.md')) + @(Get-ChildItem (Join-Path $repository '.agents/rulebook') -Recurse -Filter '*.md' | ForEach-Object FullName)) {
+        foreach ($link in [regex]::Matches([IO.File]::ReadAllText($instruction), '\]\(([^)#]+)(?:#[^)]*)?\)')) {
+            $relative = $link.Groups[1].Value
+            if ($relative -match '^[a-z]+:') { continue }
+            $sourceFile = [IO.Path]::GetFullPath($relative, (Split-Path $instruction))
+            $target = Join-Path $fixture ([IO.Path]::GetRelativePath($repository, $sourceFile))
+            if (-not [IO.Path]::GetFullPath($target).StartsWith($fixture + [IO.Path]::DirectorySeparatorChar, [StringComparison]::Ordinal)) {
+                throw 'Instruction fixture link escaped its isolated owner.'
+            }
+            [void][IO.Directory]::CreateDirectory((Split-Path $target))
+            Copy-Item -LiteralPath $sourceFile -Destination $target
+        }
+    }
     foreach ($review in @($manifest.units | Where-Object translation | ForEach-Object { ($_.translation.review -split '#')[0] } | Sort-Object -Unique)) {
         $reviewTarget = Join-Path $fixture $review
         [void][IO.Directory]::CreateDirectory((Split-Path $reviewTarget))
@@ -46,6 +60,73 @@ try {
     $fixtureEntry = Join-Path $fixture 'tests/ci/Test-AgentRules.ps1'
     $registry = Join-Path $fixture '.agents/rulebook/coverage.json'
     $originalRegistry = [IO.File]::ReadAllText($registry)
+    # Use one real preserved engine unit as an isolated external-authority fixture. No network,
+    # sibling checkout or copied current Docs tree is needed by engine-only regression execution.
+    $authorityRoot = Join-Path $fixture 'external-authority'
+    $authorityRules = Join-Path $authorityRoot '.agents/rulebook'
+    [void][IO.Directory]::CreateDirectory($authorityRules)
+    $externalCopy = $originalRegistry | ConvertFrom-Json
+    $externalUnit = $externalCopy.units | Where-Object id -CEQ 'style'
+    $localAuthority = Join-Path $fixture $externalUnit.path
+    $localText = [IO.File]::ReadAllText($localAuthority)
+    $unitPattern = '(?s)<!-- rule-unit: style -->.*?<!-- /rule-unit: style -->'
+    $externalText = [regex]::Match($localText, $unitPattern).Value
+    $externalUnit | Add-Member repository 'Wolfiora/InnoEngine.Docs'
+    $externalUnit.path = '.agents/rulebook/imported.md'
+    foreach ($row in $externalCopy.rules | Where-Object unit -CEQ 'style') {
+        $row | Add-Member repository 'Wolfiora/InnoEngine.Docs'
+        $row.path = $externalUnit.path
+    }
+    $externalPath = Join-Path $authorityRoot $externalUnit.path
+    [IO.File]::WriteAllText($externalPath, $externalText)
+    [IO.File]::WriteAllText($localAuthority, [regex]::Replace($localText, $unitPattern, ''))
+    [IO.File]::WriteAllText($registry, ($externalCopy | ConvertTo-Json -Depth 50))
+    # Other migrated units are not part of this single-authority fixture; selecting a missing
+    # authority must fail before any complete instruction output can be claimed.
+    $failure = ''
+    try { & $fixtureEntry -Rules style | Out-Null } catch { $failure = $_.Exception.Message }
+    if (-not $failure.Contains('Supply -DocsRoot')) { throw "Missing explicit external rule authority was accepted: $failure" }
+    foreach ($scenario in @('unknown-repository', 'escaped-authority')) {
+        $originalPath = $externalUnit.path
+        if ($scenario -eq 'unknown-repository') { $externalUnit.repository = 'Other/Rules' }
+        else { $externalUnit.path = '../../escaped.md' }
+        [IO.File]::WriteAllText($registry, ($externalCopy | ConvertTo-Json -Depth 50))
+        $failure = ''
+        try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
+        $expected = if ($scenario -eq 'unknown-repository') { 'Unknown rule repository' } else { 'Rule path escapes owner' }
+        if (-not $failure.Contains($expected)) { throw "Wrong external authority rejection for ${scenario}: $failure" }
+        $externalUnit.repository = 'Wolfiora/InnoEngine.Docs'
+        $externalUnit.path = $originalPath
+    }
+    [IO.File]::WriteAllText($registry, $originalRegistry)
+    [IO.File]::WriteAllText($localAuthority, $localText)
+    if ($DocsRoot) {
+        foreach ($path in @($manifest.units | Where-Object repository | ForEach-Object path | Sort-Object -Unique)) {
+            $target = Join-Path $authorityRoot $path
+            [void][IO.Directory]::CreateDirectory((Split-Path $target))
+            Copy-Item -LiteralPath (Join-Path $DocsRoot $path) -Destination $target
+        }
+        $complete = @(& $fixtureEntry -DocsRoot $authorityRoot -Rules wiki -ShowInstructions) -join "`n"
+        if (-not $complete.Contains('External authority verified: 8 complete units') -or -not $complete.Contains('Canonical source and example verification')) {
+            throw 'Explicit external authority did not load complete current requirements.'
+        }
+        Push-Location (Join-Path $fixture 'tests')
+        try { $nestedExternal = @(& $fixtureEntry -DocsRoot $authorityRoot -Rules wiki -ShowInstructions) -join "`n" }
+        finally { Pop-Location }
+        if ($complete -cne $nestedExternal) { throw 'Nested invocation changed external authority or rule bodies.' }
+        $authority = Join-Path $authorityRoot '.agents/rulebook/documentation.md'
+        $originalAuthority = [IO.File]::ReadAllText($authority)
+        [IO.File]::WriteAllText($authority, $originalAuthority.Replace('## API reference and source', '## Weakened contract'))
+        $failure = ''
+        try { & $fixtureEntry -DocsRoot $authorityRoot | Out-Null } catch { $failure = $_.Exception.Message }
+        if (-not $failure.Contains('Changed or unmapped translation clause')) { throw 'Changed external rule body passed provenance validation.' }
+        [IO.File]::WriteAllText($authority, $originalAuthority)
+        [IO.File]::WriteAllText($authority, $originalAuthority + "`n<!-- rule-unit: unknown-external -->`n")
+        $failure = ''
+        try { & $fixtureEntry -DocsRoot $authorityRoot | Out-Null } catch { $failure = $_.Exception.Message }
+        if (-not $failure.Contains('Unregistered external rule authority')) { throw 'Unregistered external rule authority passed validation.' }
+        [IO.File]::WriteAllText($authority, $originalAuthority)
+    }
     foreach ($scenario in @('cycle', 'missing-section', 'unregistered-section')) {
         [IO.File]::WriteAllText($registry, $originalRegistry)
         $copy = $originalRegistry | ConvertFrom-Json

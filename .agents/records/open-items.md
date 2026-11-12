@@ -6,7 +6,7 @@ This ledger distinguishes unfinished implementation, missing evidence and extern
 
 ## Active modernization
 
-The full English documentation, AI workflow and CI/CD plan remains in progress. The implementation ledger tracks the full content inventory, API binding, query extraction, validation precision, cross-repository automation, deployment and legacy removal. The old engine documentation and old validator consumers must remain until their reviewed replacements work, then be removed before completion.
+The full English documentation, AI workflow and CI/CD plan remains in progress. The implementation ledger tracks content inventory, API binding, query extraction, validation precision, cross-repository automation and deployment. The old engine product documentation, Wiki/query implementations and duplicated documentation-rule authority have been removed after their replacements and local checks. Current gaps are source certification, the remaining macOS Editor capture, final hosted acceptance and protected delivery activation; do not recreate retired paths to address those gaps.
 
 External setup remains unresolved for organization-installed GitHub App credentials. Repository administration and Pages configuration were available, but repository secrets were empty and organization secret metadata returned HTTP 403. This is not evidence of a configured cross-repository App.
 

@@ -2,6 +2,15 @@
 
 Status: implementation in progress. This record does not certify completion.
 
+## Current cutover checkpoint, 2026-11-12
+
+The current status table supersedes the older chronological checkpoints below. Original results and first failures remain linked; their historical missing-work lists are not a current task queue.
+
+- Master/logo is merged into `ai-pipeline`; the hosted Windows/macOS run 43164720103 is executing the exact 7e12d767/Docs 01bc7e4 pair.
+- All 454 baseline product-file dispositions are reconciled: 364 reviewed destinations, 73 approved native/generated API retirements and 17 unchanged historical images. All 252 actual project entries exist. The latest local projection has 2,531 pages and 12,274 selected declarations; macOS Editor evaluated facts and complete source certification remain pending.
+- The engine product tree and old Wiki/query implementations are removed. Read-only documentation queries use the independent tooling library. Detailed documentation rules now have one authority in Docs, with all 241 original engine rule IDs and eight moved complete units retained in the shared provenance registry.
+- Protected evidence relay, separate preview/source jobs, bounded partial resumption and executable-input certificates are implemented and locally checked. The final engine/Docs candidates still need matching hosted acceptance. App setup/default-branch activation and actual deployment are not claimed.
+
 ## External validation cutover checkpoint, 2026-11-11
 
 The unified planner and runner now consume explicit external documentation snapshots, canonical example contexts and selected per-owner source facts. Compiled API inspection and documentation checks share resolved SDK references, including consumer-selected property variants. Execution and standalone evidence reconciliation reject damaged snapshot payloads. Hosted preparation validates an exact clean Docs revision against the actual engine candidate tree without treating input pairing as source certification.
@@ -48,12 +57,12 @@ Engine commit `18da08eaecb12d89b816166bae8d9480683f6948` corrects the observed n
 | --- | --- | --- |
 | Workspace and baseline confirmation | Complete | Clean `ai-pipeline` at the approved baseline; no additional worktree created |
 | Docs repository creation | Complete | Public repository created through authenticated GitHub API; administrator access confirmed |
-| Full migration inventory | Captured; review pending | 686 inventoried files, 437 product Markdown pages, 249 baseline projects; individual dispositions still require review |
-| English content and website | In progress | Initial task pages and Astro/Starlight build work; Pages Actions configuration exists, but no deployment or complete coverage is claimed |
-| Query core and immutable snapshots | In progress | Independent library and Build route implemented; 14 snapshot regressions pass. Old validator/catalog consumers remain to migrate |
-| English rules and workflow | In progress | Root instructions, CONTRIBUTING and four skills are English. All 58 complete units are English, including 57 reviewed translations preserving all 241 original rule identities. Cross-repository documentation-rule ownership remains outstanding |
-| Incremental validation and CI/CD | In progress | Actual tooling input closures and explicit failure prerequisites implemented; 49 planning regressions and focused execution tests pass. Full CI/CD certification remains outstanding |
-| Legacy removal and final acceptance | Pending | Old content remains until verified migration |
+| Full migration inventory | Reviewed dispositions complete | All 454 original product files have verified destinations or approved retirements; immutable raw evidence is preserved |
+| English content and website | Implemented; source/publication acceptance pending | All actual project entries, task-oriented Manual and English references; production output and browser journeys checked at recorded candidates |
+| Query core and immutable snapshots | Implemented; final integration pending | Independent library, explicit preparation, immutable reads, structured contracts and retained regression/performance evidence; old consumers removed |
+| English rules and workflow | Implemented; final paired CI pending | All 58 units in English, 241 original identities retained; eight documentation units owned only by Docs and loaded explicitly |
+| Incremental validation and CI/CD | Final acceptance in progress | Actual input closures, independent prerequisites, narrowed Console dependency, protected evidence relay, static artifact reuse and separate executable-example proof |
+| Legacy removal and final acceptance | Legacy cutover complete; hosted acceptance incomplete | Retired product/Wiki/query paths removed; source certification, macOS capture and actual protected delivery remain unresolved |
 
 ## Current decisions
 
