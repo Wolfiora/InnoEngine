@@ -7,6 +7,8 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
     $directory = Join-Path $run $Name
     [IO.Directory]::CreateDirectory($directory) | Out-Null
     $catalog = @{ repository = 'https://github.com/Wolfiora/InnoEngine'; sourceTree = $tree; snapshot = $hash; contentIdentity = $hash
+        pages = @(@{ id = 'task.probe'; examples = @{ mode = 'host'; projects = @('Probe') }
+            codeBlocks = @(@{ language = 'csharp'; contentIdentity = $hash; declarationSymbols = @() }) })
         references = @(@{ path = 'reference/projects/catalog.json'; identity = $hash; model = 'project-inventory' },
             @{ path = 'reference/api/probe.json'; identity = $hash; model = 'source-clr'; configuration = 'Debug'; target = $null; projects = @('Probe', 'Other') }) }
     $catalogFile = Join-Path $directory 'catalog.json'
@@ -15,6 +17,8 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
     $rows = @('host-one', 'host-two') | ForEach-Object {
         @{ platform = $_; receipt = @{ required = 2; passed = 2; reused = 0
             documentation = @{ engineTree = $tree; documentationSnapshot = $hash; contentIdentity = $hash }
+            sourceExamples = @(@{ configuration = 'Debug'; target = $null; catalogIdentity = $catalogHash; reportIdentity = $hash
+                pages = @(@{ page = 'task.probe'; mode = 'host'; projects = @('Probe'); blocks = @($hash) }) })
             sourceApi = @(@{ configuration = 'Debug'; target = $null; catalogIdentity = $catalogHash; reportIdentity = $hash
                 references = @(@{ path = 'reference/api/probe.json'; identity = $hash }); projects = @($(if ($_ -ceq 'host-one') { 'Probe' } else { 'Other' })) }) } }
     }
@@ -32,6 +36,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
         if ($actual -ceq 'Passed') {
             $proof = Get-Content $file -Raw | ConvertFrom-Json
             if ($proof.references[0].projects.Count -ne 2 -or $proof.projectManifestIdentity -cne $hash `
+                -or $proof.examples.Count -ne 1 -or $proof.examples[0].contexts.Count -ne 2 `
                 -or $proof.producers[0].receiptIdentity -cne (Get-FileHash $certification).Hash.ToLowerInvariant()) { throw 'Source certificate lost exact coverage or provenance.' }
         } elseif (Test-Path $file) { throw 'Incomplete coverage published a certificate.' }
     } catch { $actual = 'Rejected'; $diagnostic = $_.Exception.Message }
@@ -48,4 +53,9 @@ Invoke-Case 'changed-source' { param($s) $s.rows[0].receipt.documentation.engine
 Invoke-Case 'changed-catalog' { param($s) $s.rows[0].receipt.sourceApi[0].catalogIdentity = 'c' * 64 } 'Rejected'
 Invoke-Case 'changed-reference' { param($s) $s.rows[0].receipt.sourceApi[0].references[0].identity = 'c' * 64 } 'Rejected'
 Invoke-Case 'wrong-target' { param($s) $s.rows[0].receipt.sourceApi[0].target = 'other' } 'Rejected'
+Invoke-Case 'missing-examples' { param($s) $s.rows[0].receipt.sourceExamples = @(); $s.rows[1].receipt.sourceExamples = @() } 'Blocked'
+Invoke-Case 'changed-example-code' { param($s) $s.rows[0].receipt.sourceExamples[0].pages[0].blocks = @('c' * 64) } 'Rejected'
+Invoke-Case 'changed-example-mode' { param($s) $s.rows[0].receipt.sourceExamples[0].pages[0].mode = 'runtime-script' } 'Rejected'
+Invoke-Case 'changed-example-owner' { param($s) $s.rows[0].receipt.sourceExamples[0].pages[0].projects = @('Other') } 'Rejected'
+Invoke-Case 'unhashed-example-report' { param($s) $s.rows[0].receipt.sourceExamples[0].reportIdentity = 'unknown' } 'Rejected'
 Write-Output "Passed $($results.Count) source certificate cases. Evidence: $run"

@@ -15,6 +15,8 @@ $catalog = $catalogs[0]
 $inventory = @($catalog.references | Where-Object model -CEQ 'project-inventory')
 if ($inventory.Count -ne 1 -or $inventory[0].identity -cnotmatch '^[a-f0-9]{64}$') { throw 'The source catalog lacks its exact project inventory.' }
 $coverage = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+$exampleCoverage = [Collections.Generic.Dictionary[string,object]]::new([StringComparer]::Ordinal)
+if ($null -eq $catalog.pages) { throw 'Source certification requires the canonical example inventory.' }
 $platforms = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 for ($index = 0; $index -lt $receipts.Count; $index++) {
     $row = $receipts[$index]
@@ -43,6 +45,30 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             }
         }
     }
+    foreach ($check in @($receipt.sourceExamples)) {
+        if ($null -eq $check) { continue }
+        if ($check.catalogIdentity -cne $catalogIdentity -or $check.reportIdentity -cnotmatch '^[a-f0-9]{64}$' `
+            -or [string]::IsNullOrWhiteSpace($check.configuration) -or @($check.pages).Count -eq 0) {
+            throw 'Example certification lacks its exact catalog, context or successful report.'
+        }
+        foreach ($proof in @($check.pages)) {
+            $page = @($catalog.pages | Where-Object id -CEQ $proof.page)
+            if ($page.Count -ne 1 -or $null -eq $page[0].examples -or $proof.mode -cne $page[0].examples.mode `
+                -or (@($proof.projects) -join "`n") -cne (@($page[0].examples.projects) -join "`n")) {
+                throw 'Example certification differs from its canonical execution context.'
+            }
+            $blocks = @($page[0].codeBlocks | Where-Object { $_.language -cin @('cs', 'csharp') -and @($_.declarationSymbols).Count -eq 0 } | ForEach-Object contentIdentity)
+            if ($blocks.Count -eq 0 -or ($blocks -join "`n") -cne (@($proof.blocks) -join "`n") `
+                -or @($blocks | Where-Object { $_ -cnotmatch '^[a-f0-9]{64}$' }).Count -ne 0) {
+                throw 'Example certification differs from its canonical executable blocks.'
+            }
+            if (-not $exampleCoverage.ContainsKey($proof.page)) {
+                $exampleCoverage.Add($proof.page, [ordered]@{ page = $proof.page; mode = $proof.mode; projects = @($proof.projects); blocks = $blocks
+                    contexts = [Collections.Generic.List[object]]::new() })
+            }
+            $exampleCoverage[$proof.page].contexts.Add(@{ platform = $row.platform; configuration = $check.configuration; target = $check.target; reportIdentity = $check.reportIdentity })
+        }
+    }
 }
 $references = @($catalog.references | Where-Object model -CNE 'project-inventory')
 $missing = @($references | ForEach-Object {
@@ -53,6 +79,10 @@ $missing = @($references | ForEach-Object {
     }
 })
 if ($references.Count -eq 0) { $missing += 'No source API references were captured.' }
+foreach ($page in @($catalog.pages)) {
+    $executable = @($page.codeBlocks | Where-Object { $_.language -cin @('cs', 'csharp') -and @($_.declarationSymbols).Count -eq 0 })
+    if ($executable.Count -gt 0 -and -not $exampleCoverage.ContainsKey($page.id)) { $missing += "Executable examples: $($page.id)" }
+}
 [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath($OutputDirectory)) | Out-Null
 $report = @{ status = $(if ($missing.Count) { 'Blocked' } else { 'Passed' }); missing = $missing; sourceTree = $catalog.sourceTree }
 $report | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $OutputDirectory 'source-certification-status.json') -Encoding utf8NoBOM
@@ -65,6 +95,7 @@ $certificate = [ordered]@{
             projects = @($_.projects | Sort-Object -CaseSensitive) }
     })
     producers = @(@{ origin = $ProducerOrigin; receiptIdentity = (Get-FileHash -LiteralPath $CertificationPath -Algorithm SHA256).Hash.ToLowerInvariant() })
+    examples = @($exampleCoverage.Keys | Sort-Object -CaseSensitive | ForEach-Object { $exampleCoverage[$_] })
 }
 $file = Join-Path $OutputDirectory 'source-certificate.json'
 if (Test-Path -LiteralPath $file) { throw 'Source certification must not overwrite a previous producer result.' }
