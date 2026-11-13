@@ -43,9 +43,13 @@ $logPath = [IO.Path]::GetFullPath($Log)
 if ([IO.File]::Exists($logPath)) { throw 'Retain the previous preparation log and select a new evidence path.' }
 [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($logPath)) | Out-Null
 $watch = [Diagnostics.Stopwatch]::StartNew()
+# Docs-owned solutions live outside the Engine's Directory.Solution.targets scope.
+# One explicit invocation identity must reach every root and transitive reference.
+$bootstrapOwner = [Guid]::NewGuid().ToString('N')
 Write-Host "Preparing $($Projects.Count) managed roots in $Configuration; output owner: $ArtifactsPath."
 & $Dotnet build $destination --configuration $Configuration --artifacts-path ([IO.Path]::GetFullPath($ArtifactsPath)) `
     '-p:InnoBuildPurpose=ApiReferences' '-p:ShouldUnsetParentConfigurationAndPlatform=false' `
+    "-p:InnoTaskBootstrapOwner=$bootstrapOwner" `
     "-m:$([Math]::Min([Environment]::ProcessorCount, 4))" -nr:false --disable-build-servers 2>&1 |
     Tee-Object -FilePath $logPath | ForEach-Object { Write-Host $_ }
 if ($LASTEXITCODE -ne 0) { throw "Managed API preparation failed; its first failure is retained in $logPath." }

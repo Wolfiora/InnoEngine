@@ -40,6 +40,10 @@ Docs hosted run `43424006619` passed its Node tests and content/tool checks, the
 
 The persistent Docs `draft` branch exists, and implementation PR 1 now targets it. Docs main protection rule `27199657` is active: required `Documentation validation`, resolved discussions, pull-request merge commits, no force-push or deletion. Editorial coverage is not required. No PR has been merged. Pages is configured for workflow deployment but has no certified deployment from this migration. Repository App variables/secrets are absent; organization-level settings are not visible to this account, so automatic synchronization credentials remain an external prerequisite.
 
+A Docs-owned temporary entry exposed distinct root invocation identities writing the same managed dependency. Both first-failure logs were retained. The shared managed union now supplies one explicit existing task-bootstrap owner even when its solution is outside the engine's Directory.Solution.targets scope; the real configuration fixture verifies the same owner at root and dependency. An actual four-worker rebuild of the maintenance dependency graph then passed in 14.24 seconds with one Catalogs output. Docs catalog bootstrap applies the same root-owner propagation.
+
+Publisher-owned retirement previewed 8,448 obsolete Docs query artifacts and verified their paths stayed under the selected Docs cache. Actual retirement reclaimed 447,570,846 bytes with zero skips/failures and retained 138,651,277 protected bytes. No engine or adjacent-session cache was selected. Current free C-drive space after this operation was 64.77 GiB.
+
 ## Documentation query measurements
 
 The 2,729-page schema-refresh index parsed all pages in 156.023 seconds; this is not an empty-cache cold benchmark. Five unchanged index confirmations took 25,384.8702, 22,559.8537, 25,175.1893, 22,824.6784 and 20,998.3556 milliseconds (median 22,824.6784), each parsing zero pages and reusing all 2,729 without rewriting the manifest. Index confirmation is an explicit writer operation, not part of ordinary reads.

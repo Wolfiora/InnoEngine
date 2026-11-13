@@ -9,7 +9,14 @@ function Write-Text([string] $Path, [string] $Text) {
 }
 try {
     Write-Text (Join-Path $root 'Directory.Build.props') '<Project />'
-    Write-Text (Join-Path $root 'Directory.Build.targets') '<Project />'
+    Write-Text (Join-Path $root 'Directory.Build.targets') @'
+<Project>
+  <Target Name="RequireSharedInvocation" BeforeTargets="CoreCompile">
+    <Error Condition="'$(InnoTaskBootstrapOwner)' == ''" Text="An external solution did not freeze its invocation owner." />
+    <WriteLinesToFile File="$(MSBuildProjectDirectory)/owner.txt" Lines="$(InnoTaskBootstrapOwner)" Overwrite="true" />
+  </Target>
+</Project>
+'@
     Write-Text (Join-Path $root 'Directory.Solution.targets') '<Project />'
     $project = @'
 <Project Sdk="Microsoft.NET.Sdk">
@@ -30,6 +37,11 @@ try {
         Write-Text (Join-Path $root 'entry/Entry.csproj') $selected.Replace('REFERENCE', '<ItemGroup><ProjectReference Include="../dependency/Dependency.csproj" /></ItemGroup>')
         & $writer -EngineRoot $root -Projects 'entry/Entry.csproj' -Configuration $configuration -Output $solution `
             -Dotnet $dotnet -ArtifactsPath (Join-Path $root ('outputs/' + $configuration)) -Log (Join-Path $root ($configuration + '.log'))
+        $entryOwner = [IO.File]::ReadAllText((Join-Path $root 'entry/owner.txt')).Trim()
+        $dependencyOwner = [IO.File]::ReadAllText((Join-Path $root 'dependency/owner.txt')).Trim()
+        if ($entryOwner -cnotmatch '^[a-f0-9]{32}$' -or $entryOwner -cne $dependencyOwner) {
+            throw 'External solution roots and dependencies did not share one invocation owner.'
+        }
     }
     $previous = [IO.File]::ReadAllBytes($solution)
     $rejected = $false
