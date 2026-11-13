@@ -8,6 +8,10 @@ on:
       - '.github/workflows/documentation-api.yml'
       - 'tests/ci/Export-DocumentationApi.ps1'
       - 'tests/ci/Join-DocumentationApi.ps1'
+      - 'tests/ci/Invoke-ManagedApiPreparation.ps1'
+      - 'tests/ci/Get-DocumentationScriptReferences.ps1'
+      - 'tests/ci/Test-ManagedPreparationSolution.Tests.ps1'
+      - 'tests/ci/Test-DocumentationScriptReferences.Tests.ps1'
       - 'tools/Inno.Tooling.Architecture/Documentation*.cs'
       - 'tools/Inno.Tooling.Documentation/**'
   workflow_dispatch:
@@ -38,7 +42,7 @@ jobs:
       - name: Export actual managed and projected contracts
         shell: pwsh
         run: |
-          ./tests/ci/Export-DocumentationApi.ps1 -Dotnet (Get-Command dotnet).Source `
+          ./tests/ci/Export-DocumentationApi.ps1 -Dotnet (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source `
             -Configuration '${{ matrix.configuration }}' -Output artifacts/documentation-export/current
       - name: Retain completed producer facts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -81,7 +85,7 @@ jobs:
         env:
           EXPECTED_COMMIT: ${{ github.sha }}
         run: |
-          $dotnet = (Get-Command dotnet).Source
+          $dotnet = (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source
           $transport = ./tests/ci/Initialize-ValidationEntry.ps1 -Dotnet $dotnet -LogPath artifacts/api-aggregation-bootstrap.log
           ./tests/ci/Join-DocumentationApi.ps1 -Dotnet $dotnet -Transport $transport `
             -InputDirectory artifacts/documentation-export/producers -OutputDirectory artifacts/documentation-export/package `

@@ -1,12 +1,17 @@
 param(
-    [Parameter(Mandatory)][string] $Dotnet,
-    [Parameter(Mandatory)][string] $BuildCli
+    [string] $Dotnet,
+    [string] $BuildCli
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $engineRoot = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
 $root = Join-Path $engineRoot ('artifacts/validation/api-publication/' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $root | Out-Null
+if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
+if (!$BuildCli) {
+    $BuildCli = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log')
+}
+if (!(Test-Path -LiteralPath $BuildCli -PathType Leaf)) { throw 'The actual managed API transport is required.' }
 $oldConfig = $env:GIT_CONFIG_GLOBAL
 $oldPrompt = $env:GIT_TERMINAL_PROMPT
 $success = $false

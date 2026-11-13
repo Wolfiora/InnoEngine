@@ -1,4 +1,4 @@
-param([Parameter(Mandatory)][string] $Dotnet, [Parameter(Mandatory)][string] $Transport)
+param([string] $Dotnet, [string] $Transport)
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $engine = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
@@ -10,6 +10,11 @@ function Write-Text([string] $Path, [string] $Text) {
 function Write-Json([string] $Path, [object] $Data) { Write-Text $Path (ConvertTo-Json -InputObject $Data -Depth 40) }
 function Hash([string] $Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
 [IO.Directory]::CreateDirectory($root) | Out-Null
+if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
+if (!$Transport) {
+    $Transport = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log')
+}
+if (!(Test-Path -LiteralPath $Transport -PathType Leaf)) { throw 'The actual managed API transport is required.' }
 & git -C $root init -q -b master
 & git -C $root config user.name 'API aggregation fixture'
 & git -C $root config user.email fixture@example.invalid

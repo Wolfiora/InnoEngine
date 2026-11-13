@@ -10,10 +10,19 @@ using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiPackageFile(string path, string sha256, string text);
+internal sealed record DocumentationApiPackageFile(
+    string path,
+    string sha256,
+    string text
+);
 internal sealed record DocumentationApiPackageData(
-    string schema, string repository, string revision, string sourceTree, string toolingRevision,
-    string contentIdentity, IReadOnlyList<DocumentationApiPackageFile> files
+    string schema,
+    string repository,
+    string revision,
+    string sourceTree,
+    string toolingRevision,
+    string contentIdentity,
+    IReadOnlyList<DocumentationApiPackageFile> files
 );
 
 internal static class DocumentationApiPackage
@@ -21,8 +30,11 @@ internal static class DocumentationApiPackage
     private const string C_BINDING = "reference/engine.lock.json";
     private const string C_RECEIPT = "reference/api/export.json";
 
-    internal static async Task<int> ExecuteAsync(string operation, string[] arguments, CancellationToken cancellation)
-    {
+    internal static async Task<int> ExecuteAsync(
+        string operation,
+        string[] arguments,
+        CancellationToken cancellation
+    ) {
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int index = 0; index < arguments.Length; index += 2)
             if (index + 1 == arguments.Length || arguments[index] is not ("--docs-root" or "--package")

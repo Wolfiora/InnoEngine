@@ -68,14 +68,21 @@ internal static class DocumentationApiNavigation
         return pages;
     }
 
-    private static void AppendType(StringBuilder text, string page, DocumentationApiContentEntry type,
-        DocumentationApiContentEntry[] siblings, IReadOnlyDictionary<string, DocumentationApiFact[]> facts)
-    {
+    private static void AppendType(
+        StringBuilder text,
+        string page,
+        DocumentationApiContentEntry type,
+        DocumentationApiContentEntry[] siblings,
+        IReadOnlyDictionary<string, DocumentationApiFact[]> facts
+    ) {
         string title = siblings.Count(sibling => sibling.title == type.title) > 1 ? facts[type.symbol][0].id[2..] : type.title;
         text.Append("- [").Append(title.Replace("`", "", StringComparison.Ordinal)).Append("](")
             .Append(Relative(page, type.path)).Append(")\n");
     }
 
     private static string Parent(string path) => path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";
-    private static string Relative(string from, string to) => Path.GetRelativePath(Path.GetDirectoryName(from)!, to).Replace('\\', '/');
+    private static string Relative(
+        string from,
+        string to
+    ) => Path.GetRelativePath(Path.GetDirectoryName(from)!, to).Replace('\\', '/');
 }

@@ -61,10 +61,16 @@ public sealed record DocumentationPageInfo(
     IReadOnlyList<DocumentationCodeBlockInfo> codeBlocks,
     DocumentationExampleContext? examples
 ) {
-    /// <summary>Gets canonical composed Markdown shared by website rendering and snapshot reads.</summary>
+    /// <summary>
+    /// Gets canonical composed Markdown shared by website rendering and snapshot reads.
+    /// </summary>
     public string markdown { get; init; } = "";
-    /// <summary>Gets the declared scripting scope, independent of the compilation surface.</summary>
+    /// <summary>
+    /// Gets the declared scripting scope, independent of the compilation surface.
+    /// </summary>
     public string? scope { get; init; }
-    /// <summary>Gets the actual compilation surfaces available on this composed page.</summary>
+    /// <summary>
+    /// Gets the actual compilation surfaces available on this composed page.
+    /// </summary>
     public IReadOnlyList<string> surfaces { get; init; } = [];
 }

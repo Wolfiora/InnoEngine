@@ -14,7 +14,11 @@ namespace Inno.Tooling.Architecture;
 
 internal static class DocumentationApiExtractor
 {
-    internal sealed record ScriptExport(string assembly, string type, string scope);
+    internal sealed record ScriptExport(
+        string assembly,
+        string type,
+        string scope
+    );
 
     internal static IReadOnlyList<ScriptExport> ReadExports(Compilation? compilation)
     {

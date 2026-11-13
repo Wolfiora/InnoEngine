@@ -10,18 +10,43 @@ using Inno.Core.IO;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiContentEntry(string symbol, string path, string type, string title, string contract);
-internal sealed record DocumentationApiContentRegistry(string schema, IReadOnlyList<DocumentationApiContentEntry> entries, IReadOnlyList<string>? navigation = null);
-internal sealed record DocumentationApiEdit(string path, string? before, string? text);
-internal sealed record DocumentationApiWarning(string symbol, string path, string code, string message);
-internal sealed record DocumentationApiPlan(IReadOnlyList<DocumentationApiEdit> edits, IReadOnlyList<DocumentationApiWarning> warnings, int symbols);
+internal sealed record DocumentationApiContentEntry(
+    string symbol,
+    string path,
+    string type,
+    string title,
+    string contract
+);
+internal sealed record DocumentationApiContentRegistry(
+    string schema,
+    IReadOnlyList<DocumentationApiContentEntry> entries,
+    IReadOnlyList<string>? navigation = null
+);
+internal sealed record DocumentationApiEdit(
+    string path,
+    string? before,
+    string? text
+);
+internal sealed record DocumentationApiWarning(
+    string symbol,
+    string path,
+    string code,
+    string message
+);
+internal sealed record DocumentationApiPlan(
+    IReadOnlyList<DocumentationApiEdit> edits,
+    IReadOnlyList<DocumentationApiWarning> warnings,
+    int symbols
+);
 
 internal static class DocumentationApiContent
 {
     internal const string C_REGISTRY = "reference/api/content.json";
 
-    internal static DocumentationApiPlan Plan(string root, DocumentationBinding binding)
-    {
+    internal static DocumentationApiPlan Plan(
+        string root,
+        DocumentationBinding binding
+    ) {
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts = DocumentationApiFacts.Read(root, binding);
         if (facts.Count == 0) throw new InvalidDataException("Complete API synchronization discovered no eligible symbols.");
         string registryPath = DocumentationApiFacts.Resolve(root, C_REGISTRY);
@@ -107,8 +132,10 @@ internal static class DocumentationApiContent
             new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }) + "\n");
         return new(edits.Values.OrderBy(edit => edit.path, StringComparer.Ordinal).ToArray(), warnings, facts.Count);
 
-        void Edit(string path, string? text)
-        {
+        void Edit(
+            string path,
+            string? text
+        ) {
             string absolute = path == C_REGISTRY ? registryPath : RequireApiPath(root, path);
             string? before = File.Exists(absolute) ? File.ReadAllText(absolute) : null;
             if (before == text) return;
@@ -118,7 +145,12 @@ internal static class DocumentationApiContent
         }
     }
 
-    internal static string Fragment(DocumentationApiContentEntry entry, DocumentationApiFact fact, string body, DocumentationApiFragment? previous = null)
+    internal static string Fragment(
+        DocumentationApiContentEntry entry,
+        DocumentationApiFact fact,
+        string body,
+        DocumentationApiFragment? previous = null
+    )
         => "---\nuid: " + (previous?.uid ?? "api." + DocumentationMarkdown.Hash(entry.symbol)) + "\nsymbol: " + JsonSerializer.Serialize(entry.symbol)
             + "\nsource: xml\nreviewed: " + entry.contract + "\ntitle: " + JsonSerializer.Serialize(entry.title)
             + "\nkind: api\nowners: [" + fact.project + "]\napiSurface: " + fact.surface
@@ -160,8 +192,10 @@ internal static class DocumentationApiContent
         return "content/en/api/" + category + "/" + Slug(Title(fact)) + "/index.md";
     }
 
-    internal static string RequireApiPath(string root, string path)
-    {
+    internal static string RequireApiPath(
+        string root,
+        string path
+    ) {
         string resolved = DocumentationApiFacts.Resolve(root, path);
         if (!path.StartsWith("content/en/api/engine/", StringComparison.Ordinal)
             && !path.StartsWith("content/en/api/scripting/", StringComparison.Ordinal)

@@ -15,7 +15,8 @@ function Git-Value([string[]] $Arguments) {
 }
 function Invoke-Managed([string[]] $Arguments, [string] $Log) {
     $watch = [Diagnostics.Stopwatch]::StartNew()
-    & $sdk @Arguments *> $Log
+    Write-Host "Starting $([IO.Path]::GetFileName($Log))."
+    & $sdk @Arguments 2>&1 | Tee-Object -FilePath $Log | ForEach-Object { Write-Host $_ }
     if ($LASTEXITCODE -ne 0) { throw "API preparation failed; first failure is retained in $Log." }
     Write-Host "$([IO.Path]::GetFileName($Log)): $([Math]::Round($watch.Elapsed.TotalSeconds, 3)) seconds."
 }
@@ -40,21 +41,13 @@ if ($plan.schema -cne 'inno-api-export-plan/1' -or @($plan.buildProjects).Count 
 
 # The SDK builds the union once. Normal product commands retain their Native preparation;
 # this explicitly scoped export only needs real managed references and generated bindings.
-$solution = [Xml.XmlDocument]::new()
-$solution.AppendChild($solution.CreateElement('Solution')) | Out-Null
 # The executable transport has no authored public types, but executes the real script compiler.
 # Its explicit operational dependency must survive the API owner's empty-surface optimization.
-foreach ($project in @(@($plan.buildProjects) + 'entry/InnoEngine.Build/InnoEngine.Build.csproj' | Sort-Object -Unique)) {
-    $node = $solution.CreateElement('Project')
-    $node.SetAttribute('Path', [IO.Path]::GetFullPath($project, $engine))
-    $solution.DocumentElement.AppendChild($node) | Out-Null
-}
 $solutionPath = Join-Path $outputRoot 'managed-union.slnx'
-$solution.Save($solutionPath)
 $managedOutputs = Join-Path $engine "artifacts/documentation-export/managed/$Configuration/$($plan.hostTarget)"
-Invoke-Managed @('build', $solutionPath, '--configuration', $Configuration, '--disable-build-servers',
-    "-m:$([Math]::Min([Environment]::ProcessorCount, 4))", '-nr:false', '-p:InnoBuildPurpose=ApiReferences',
-    '--artifacts-path', $managedOutputs) (Join-Path $outputRoot 'managed-union.log')
+& "$PSScriptRoot/Invoke-ManagedApiPreparation.ps1" -EngineRoot $engine -Configuration $Configuration -Dotnet $sdk `
+    -Projects (@($plan.buildProjects) + 'entry/InnoEngine.Build/InnoEngine.Build.csproj') -Output $solutionPath `
+    -ArtifactsPath $managedOutputs -Log (Join-Path $outputRoot 'managed-union.log')
 $cli = @(& $sdk msbuild (Join-Path $engine 'entry/InnoEngine.Build/InnoEngine.Build.csproj') -nologo `
     "-p:Configuration=$Configuration" "-p:ArtifactsPath=$managedOutputs" -getProperty:TargetPath)
 if ($LASTEXITCODE -ne 0 -or $cli.Count -ne 1 -or !(Test-Path -LiteralPath $cli[0])) { throw 'The SDK did not identify the prepared Build entry.' }
@@ -76,17 +69,14 @@ $scriptRoot = Join-Path $engine "artifacts/documentation-export/scripts/$Configu
 [IO.Directory]::CreateDirectory((Join-Path $scriptRoot 'Assets')) | Out-Null
 Invoke-Managed @($cli[0], 'scripts', '--engine-root', $engine, '--dotnet', $sdk, '--project', $scriptRoot,
     '--output', (Join-Path $scriptRoot 'Export'), '--ide') (Join-Path $outputRoot 'script-projection.log')
-[xml] $ide = Get-Content -LiteralPath (Join-Path $scriptRoot 'Inno.EditorScripts.csproj') -Raw
-$runtime = @($ide.Project.ItemGroup.Reference | Where-Object Include -CEQ 'Inno.ScriptApi.Runtime')
-$editor = @($ide.Project.ItemGroup.Reference | Where-Object Include -CEQ 'Inno.ScriptApi.Editor')
-if ($runtime.Count -ne 1 -or $editor.Count -ne 1) { throw 'Actual script preparation did not expose both logical references.' }
+$logical = & "$PSScriptRoot/Get-DocumentationScriptReferences.ps1" -Project (Join-Path $scriptRoot 'Inno.EditorScripts.csproj')
 foreach ($surface in @('runtime-script', 'editor-script')) {
     $path = Join-Path $outputRoot ($surface + '.json')
     $arguments = @($cli[0], 'docs', 'export-api', '--engine-root', $engine, '--dotnet', $sdk,
         '--configuration', $Configuration, '--target', $plan.hostTarget, '--surface', $surface,
-        '--runtime-reference', $runtime[0].HintPath, '--framework-project', 'entry/InnoEngine.Build/InnoEngine.Build.csproj',
+        '--runtime-reference', $logical.runtime, '--framework-project', 'entry/InnoEngine.Build/InnoEngine.Build.csproj',
         '--artifacts-path', $managedOutputs, '--output', $path)
-    if ($surface -eq 'editor-script') { $arguments += @('--editor-reference', $editor[0].HintPath) }
+    if ($surface -eq 'editor-script') { $arguments += @('--editor-reference', $logical.editor) }
     foreach ($capture in $captures | Where-Object model -CEQ 'source-clr') { $arguments += @('--source-reference', (Join-Path $outputRoot $capture.path)) }
     Invoke-Managed $arguments ($path + '.log')
     $captures.Add(@{ path = [IO.Path]::GetFileName($path); sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant();

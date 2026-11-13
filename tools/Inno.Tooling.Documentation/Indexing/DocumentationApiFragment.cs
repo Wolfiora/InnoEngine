@@ -7,7 +7,16 @@ using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiFragment(string path, string text, string body, string uid, string symbol, string source, string? reviewed, YamlMappingNode metadata)
+internal sealed record DocumentationApiFragment(
+    string path,
+    string text,
+    string body,
+    string uid,
+    string symbol,
+    string source,
+    string? reviewed,
+    YamlMappingNode metadata
+)
 {
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
 

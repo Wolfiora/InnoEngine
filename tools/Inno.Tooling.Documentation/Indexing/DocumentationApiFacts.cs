@@ -8,16 +8,32 @@ using Inno.Core.IO;
 namespace Inno.Tooling.Documentation.Indexing;
 
 internal sealed record DocumentationApiFact(
-    string key, string project, string family, string? scope, string id, string? containingType,
-    string kind, string signature, string signatureHash, string documentation, string source, int line,
-    string revision, string configuration, string? target, string surface, string? baseType,
+    string key,
+    string project,
+    string family,
+    string? scope,
+    string id,
+    string? containingType,
+    string kind,
+    string signature,
+    string signatureHash,
+    string documentation,
+    string source,
+    int line,
+    string revision,
+    string configuration,
+    string? target,
+    string surface,
+    string? baseType,
     IReadOnlyList<string> interfaces
 );
 
 internal static class DocumentationApiFacts
 {
-    internal static IReadOnlyDictionary<string, DocumentationApiFact[]> Read(string root, DocumentationBinding binding)
-    {
+    internal static IReadOnlyDictionary<string, DocumentationApiFact[]> Read(
+        string root,
+        DocumentationBinding binding
+    ) {
         string inventoryPath = Resolve(root, binding.projectManifest);
         byte[] inventoryBytes = File.ReadAllBytes(inventoryPath);
         if (DocumentationMarkdown.Hash(inventoryBytes) != binding.projectManifestIdentity)
@@ -122,9 +138,15 @@ internal static class DocumentationApiFacts
             .ThenBy(fact => fact.target, StringComparer.Ordinal).ThenBy(fact => fact.surface, StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
     }
 
-    internal static string Resolve(string root, string relative)
+    internal static string Resolve(
+        string root,
+        string relative
+    )
         => PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, relative));
 
-    private static string? String(JsonElement value, string name)
+    private static string? String(
+        JsonElement value,
+        string name
+    )
         => value.TryGetProperty(name, out JsonElement result) && result.ValueKind != JsonValueKind.Null ? result.GetString() : null;
 }

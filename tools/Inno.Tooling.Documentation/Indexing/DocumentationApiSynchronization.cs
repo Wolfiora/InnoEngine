@@ -13,8 +13,11 @@ namespace Inno.Tooling.Documentation.Indexing;
 
 internal static class DocumentationApiSynchronization
 {
-    internal static async Task<int> ExecuteAsync(string operation, string[] arguments, CancellationToken cancellation)
-    {
+    internal static async Task<int> ExecuteAsync(
+        string operation,
+        string[] arguments,
+        CancellationToken cancellation
+    ) {
         if (arguments.Length != 2 || arguments[0] != "--docs-root")
             throw new ArgumentException("Usage: docs <api-plan|api-check|api-sync> --docs-root CHECKOUT");
         string root = Path.GetFullPath(arguments[1]);

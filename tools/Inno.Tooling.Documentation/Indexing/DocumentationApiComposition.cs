@@ -11,7 +11,15 @@ using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationApiOrigin(string page, string id, string path, string source, string? scope, string revision, string[] surfaces);
+internal sealed record DocumentationApiOrigin(
+    string page,
+    string id,
+    string path,
+    string source,
+    string? scope,
+    string revision,
+    string[] surfaces
+);
 internal sealed record DocumentationComposedContent(
     IReadOnlyDictionary<string, string> pages,
     IReadOnlyDictionary<string, string> inputs,
@@ -20,8 +28,11 @@ internal sealed record DocumentationComposedContent(
 
 internal static class DocumentationApiComposition
 {
-    internal static DocumentationComposedContent Prepare(string root, DocumentationBinding binding, IReadOnlyDictionary<string, string> raw)
-    {
+    internal static DocumentationComposedContent Prepare(
+        string root,
+        DocumentationBinding binding,
+        IReadOnlyDictionary<string, string> raw
+    ) {
         var pages = new SortedDictionary<string, string>(raw.ToDictionary(pair => pair.Key, pair => pair.Value), StringComparer.Ordinal);
         var inputs = new SortedDictionary<string, string>(raw.ToDictionary(pair => pair.Key, pair => DocumentationMarkdown.Hash(pair.Value)), StringComparer.Ordinal);
         var origins = new List<DocumentationApiOrigin>();
@@ -106,8 +117,14 @@ internal static class DocumentationApiComposition
         }
         return new(pages, inputs, origins);
 
-        void AppendSymbol(StringBuilder text, DocumentationApiFact[] contexts, DocumentationApiFragment fragment, string ownerPath, int level, string title)
-        {
+        void AppendSymbol(
+            StringBuilder text,
+            DocumentationApiFact[] contexts,
+            DocumentationApiFragment fragment,
+            string ownerPath,
+            int level,
+            string title
+        ) {
             DocumentationApiFact fact = contexts[0];
             text.Append('\n').Append('#', level).Append(' ').Append(title).Append("\n\n<a id=\"api-")
                 .Append(DocumentationMarkdown.Hash(fact.id)[..16]).Append("\"></a>\n<!-- api: ")
@@ -133,8 +150,11 @@ internal static class DocumentationApiComposition
     private static string Category(DocumentationApiFact fact) => fact.id.Contains(".#ctor", StringComparison.Ordinal) ? "Constructors"
         : fact.kind switch { "Method" => "Methods", "Property" => "Properties", "Event" => "Events", "Field" => "Fields", _ => "Members" };
 
-    private static string Header(DocumentationApiFragment fragment, DocumentationApiFact[] contexts, IEnumerable<DocumentationApiFragment> members)
-    {
+    private static string Header(
+        DocumentationApiFragment fragment,
+        DocumentationApiFact[] contexts,
+        IEnumerable<DocumentationApiFragment> members
+    ) {
         // Only the in-memory projection changes. The authored frontmatter and prose remain byte-preserved.
         YamlMappingNode metadata = fragment.metadata;
         metadata.Children[new YamlScalarNode("owners")] = new YamlSequenceNode(new YamlScalarNode(contexts[0].project));
@@ -159,8 +179,13 @@ internal static class DocumentationApiComposition
         return "---\n" + yaml + "\n---\n";
     }
 
-    private static string Rebase(string root, string body, string fragmentPath, string pagePath, int level)
-    {
+    private static string Rebase(
+        string root,
+        string body,
+        string fragmentPath,
+        string pagePath,
+        int level
+    ) {
         MarkdownDocument document = Markdown.Parse(body);
         var changes = new List<(int start, int length, string value)>();
         foreach (HeadingBlock heading in document.Descendants<HeadingBlock>())

@@ -26,7 +26,25 @@ Docs removed its independent legacy API renderer, source-certificate inspector, 
 
 ## Remaining acceptance
 
-The new export workflow and producer orchestration still require complete committed Windows/macOS validation. The website's historical macOS capture cannot serve as a new exact-source package. Scoped example preparation and trusted reuse are wired but require initial hosted execution. Hosted draft synchronization, branch protection, manual draft-to-main publication and exact artifact deployment remain unverified.
+The new export workflow and producer orchestration still require complete committed Windows/macOS validation. The website's historical macOS capture cannot serve as a new exact-source package. Scoped example preparation and trusted reuse are wired but require initial hosted execution. Hosted draft synchronization, manual draft-to-main publication and exact artifact deployment remain unverified.
+
+## Hosted diagnostics and targeted corrections
+
+Engine API run `43423902848` retained two concrete Windows failures. Release preparation took 568.043 seconds, then extraction correctly rejected a missing Release dependency: MSBuild had reset the configuration of a transitive project omitted from the bounded solution. Debug preparation took 952.735 seconds and produced its real script workspace in 17.439 seconds, then strict PowerShell XML member enumeration failed on mixed Compile/None/Reference item groups. Neither failure is a timeout or a reason to disable engine validation.
+
+The shared managed preparation now preserves the selected configuration across omitted transitive projects. Real SDK fixtures pass for Release and SourceDebug and reject invalid owners without replacing an existing solution. Engine export and Docs example preparation use this same implementation. The shared script-reference reader selects explicit XML nodes, requires exactly one existing Runtime and Editor artifact, and passes mixed-item-group plus four rejection cases. Managed phases stream progress while retaining their first logs.
+
+The standard CI contract runner calls scripts without arguments. Aggregation and publisher fixtures now bootstrap their managed transport when invoked that way. The aggregation standalone rerun passed after explicitly selecting one installed SDK executable. The source architecture check passed all 252 projects after restoring the required parameter and XML formatting.
+
+Docs hosted run `43424006619` passed its Node tests and content/tool checks, then correctly blocked example preparation against the historical API source revision that predates isolated reference builds. Its binding must be replaced by a complete current export; this failure is not bypassed with historical facts.
+
+The persistent Docs `draft` branch exists, and implementation PR 1 now targets it. Docs main protection rule `27199657` is active: required `Documentation validation`, resolved discussions, pull-request merge commits, no force-push or deletion. Editorial coverage is not required. No PR has been merged. Pages is configured for workflow deployment but has no certified deployment from this migration. Repository App variables/secrets are absent; organization-level settings are not visible to this account, so automatic synchronization credentials remain an external prerequisite.
+
+## Documentation query measurements
+
+The 2,729-page schema-refresh index parsed all pages in 156.023 seconds; this is not an empty-cache cold benchmark. Five unchanged index confirmations took 25,384.8702, 22,559.8537, 25,175.1893, 22,824.6784 and 20,998.3556 milliseconds (median 22,824.6784), each parsing zero pages and reusing all 2,729 without rewriting the manifest. Index confirmation is an explicit writer operation, not part of ordinary reads.
+
+Five warm prepared-snapshot samples per query, measured without a concurrent website build, gave a 1,672.5111 ms median for task search (five results, 4,795 bytes, first result `extending/customize-console.md`) and 1,239.716 ms for exact DependencyGraph symbol lookup (one result, 2,577 bytes). These include process startup. The symbol response is explicitly Partial with continuations; it does not claim to contain every contract. Raw samples remain in `query-benchmark-02.json` in the local evidence directory. Source API verification remains separate from snapshot freshness.
 
 The source workspace contains a protected other-session change to `src/composition/editor/features/Inno.Editor.Assets/Properties/ScriptingApi.cs`; it is not included in these commits or falsely certified as a clean export input.
 
