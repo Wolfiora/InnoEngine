@@ -130,7 +130,7 @@ for ($index = 0; $index -lt $receipts.Count; $index++) {
             }
             foreach ($project in $bound[0].projects) { [void]$coverage.Add($projection.path + "`0" + $project) }
             $scriptCoverage.Add(@{ platform = $row.platform; path = $projection.path; identity = $projection.identity; model = $projection.model
-                configuration = $check.configuration; projects = @($projection.projects); projectionIdentities = $projection.projectionIdentities
+                configuration = $check.configuration; target = $check.target; projects = @($projection.projects); projectionIdentities = $projection.projectionIdentities
                 documentationIdentity = $projection.documentationIdentity; reportIdentity = $check.reportIdentity; inputGroup = $group })
         }
         foreach ($proof in @($check.pages)) {

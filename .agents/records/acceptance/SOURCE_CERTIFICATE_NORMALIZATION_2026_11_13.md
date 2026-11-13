@@ -38,3 +38,13 @@ Original diagnostic archives are retained under `artifacts/acceptance/english-do
 `full-reconciliation/` retains exact plans, catalogs, results, reconciled receipts, the original normalization sample, final certificate and full input-equality report. `full-aggregate-43224643776.log` preserves the original memory failure. First failures are not deleted.
 
 At this checkpoint, the later actual-script candidate run `43264340393` is still executing. This repair needs hosted follow-up; the successful local reconstruction does not certify that later candidate. Protected cross-repository import, prepared-candidate merge ordering and Pages promotion still require the restricted GitHub App and protected default-branch workflow activation.
+
+## Subsequent hosted reconciliation and execution-target correction
+
+Run `43293893886` at candidate `a6e294ea097024f4b1fcc4b4d43a406b6868bd7f` completed successfully on both platforms and in `Engine validation`. Its tested merge was `5eef7dac945a739a48bfa76ad5d8427b20f4af3c`, tree `9d0d2da1e089a3850ea64ab12c27dc0ca98f4c52`. Windows reconciled 339 passed and three not-applicable checks; macOS reconciled 337 passed and six not-applicable checks. This closes the hosted serialization-memory regression.
+
+The independent prepared-snapshot consumer then rejected that run's certificate: four script projection proofs omitted their execution target, although their shared input groups correctly named Windows x64 or macOS ARM64. Platform-neutral reference identity does not make the producing execution platform-neutral. The producer now retains the execution target alongside configuration, report identity and input group. Consumer checks remain strict.
+
+The original authenticated certificate (`cc0a5f06cb0bb90da995452bdebfeb04ae872aba0b12614eb70c2f6f9e6765a2`) is preserved under `artifacts/acceptance/english-documentation/final-source-certification/`; it must not be represented as successfully consumed evidence. The follow-up passes 48 producer cases, including real target-specific script contexts, 27 compatibility cases and 23 authenticated baseline cases. Exact-report reconstruction and final candidate reconciliation remain required at this checkpoint. No engine behavior or API declaration changed.
+
+A local diagnostic copy that restores only those four execution targets from their existing input groups was accepted by the unchanged public .NET reader and complete website checker: 3,656 pages, 252 projects, all 18,874 selected declarations and 134 executable-example pages. This isolates the producer omission; the diagnostic copy is explicitly not an authenticated hosted replacement. Original certificate bytes remain unchanged.

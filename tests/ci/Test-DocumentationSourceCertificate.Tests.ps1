@@ -68,6 +68,12 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [string]$Expected) {
                     $resolvedGroups[$context.inputGroup] = $true
                 }
             }
+            foreach ($context in $proof.scriptReferences) {
+                $expanded = @(Get-DocumentationInputGroup $proof $context)
+                if ($expanded.Count -ne 1 -or $expanded[0].target -cne $context.target) {
+                    throw 'Script projection lost its exact execution target.'
+                }
+            }
             if ($state.maximumBytes -and (Get-Item $file).Length -gt $state.maximumBytes) { throw 'Certificate expanded shared closures per page.' }
         } elseif (Test-Path $file) { throw 'Incomplete coverage published a certificate.' }
     } catch { $actual = 'Rejected'; $diagnostic = $_.Exception.Message }
@@ -108,6 +114,15 @@ function Add-ScriptCertification($s) {
     }
 }
 Invoke-Case 'script-surface-certification' { param($s) Add-ScriptCertification $s } 'Passed'
+Invoke-Case 'script-surface-targeted-execution' {
+    param($s)
+    Add-ScriptCertification $s
+    foreach ($row in $s.rows) {
+        $target = if ($row.platform -ceq 'host-one') { 'windows-x64' } else { 'macos-arm64' }
+        $row.receipt.sourceExamples[0].target = $target
+        $row.receipt.sourceExamples[0].inputs[0].target = $target
+    }
+} 'Passed'
 Invoke-Case 'missing-script-certification' { param($s) Add-ScriptCertification $s; foreach($row in $s.rows){$row.receipt.sourceExamples[0].scriptReferences = @()} } 'Blocked'
 Invoke-Case 'failed-script-certification' { param($s) Add-ScriptCertification $s; $s.rows[0].receipt.sourceExamples[0].scriptReferences[0].status = 'Failed' } 'Rejected'
 Invoke-Case 'wrong-script-owner' { param($s) Add-ScriptCertification $s; $s.rows[0].receipt.sourceExamples[0].scriptReferences[0].projects = @('Other') } 'Rejected'
