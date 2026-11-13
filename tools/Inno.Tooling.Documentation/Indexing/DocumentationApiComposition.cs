@@ -47,6 +47,17 @@ internal static class DocumentationApiComposition
         }
         foreach (string key in facts.Keys)
             if (!entries.ContainsKey(key)) throw new InvalidDataException("API capture has no registered content: " + key);
+        var contractPages = new Dictionary<string, (string path, string title)>(StringComparer.Ordinal);
+        foreach (var page in pages)
+        {
+            YamlMappingNode metadata = DocumentationApiFragment.ReadMetadata(page.Key, page.Value);
+            string uid = ((YamlScalarNode)metadata.Children[new YamlScalarNode("uid")]).Value!;
+            string title = metadata.Children.TryGetValue(new YamlScalarNode("title"), out YamlNode? value)
+                ? ((YamlScalarNode)value).Value ?? uid : uid;
+            contractPages.Add(uid, (page.Key, title));
+        }
+        foreach (DocumentationApiContentEntry typeEntry in entries.Values.Where(value => value.type == value.symbol && facts.ContainsKey(value.symbol)))
+            contractPages.Add(fragments[typeEntry.symbol].uid, (typeEntry.path, typeEntry.title));
         var byType = entries.Values.Where(entry => facts.ContainsKey(entry.symbol)).GroupBy(entry => entry.type, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.OrderBy(member => member.title, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(member => member.symbol, StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
@@ -59,6 +70,20 @@ internal static class DocumentationApiComposition
             var text = new StringBuilder(header).Append("\n\n# ").Append(entry.title.Replace("`", "", StringComparison.Ordinal)).Append("\n\n");
             text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
                 .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
+            if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
+            {
+                text.Append("## Required contracts\n\n");
+                foreach (YamlScalarNode contract in contracts.Children)
+                {
+                    string[] target = (contract.Value ?? "").Split('#', 2);
+                    if (!contractPages.TryGetValue(target[0], out var destination))
+                        throw new InvalidDataException("Missing associated API contract: " + contract.Value);
+                    string relative = Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, destination.path).Replace('\\', '/');
+                    text.Append("- [").Append(destination.title.Replace("[", "\\[", StringComparison.Ordinal).Replace("]", "\\]", StringComparison.Ordinal))
+                        .Append("](").Append(relative).Append(target.Length == 2 ? "#" + target[1] : "").Append(")\n");
+                }
+                text.Append('\n');
+            }
             if (fact.baseType is not null) text.Append("**Inherits:** `").Append(fact.baseType).Append("`\n\n");
             if (fact.interfaces.Count != 0) text.Append("**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`"))).Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
@@ -95,6 +120,8 @@ internal static class DocumentationApiComposition
                     .Append(variants.Key).Append("\n```\n\n");
             }
             if (fragment.source == "xml") text.Append("**XML-synced**\n\n");
+            text.Append("[Edit this explanation](https://github.com/Wolfiora/InnoEngine.Docs/edit/draft/")
+                .Append(string.Join('/', fragment.path.Split('/').Select(Uri.EscapeDataString))).Append(")\n\n");
             text.Append(Rebase(root, fragment.body.Trim(), fragment.path, ownerPath, level)).Append("\n\n")
                 .Append("[Source declaration](").Append(binding.repository).Append("/blob/").Append(fact.revision)
                 .Append('/').Append(fact.source).Append("#L").Append(fact.line).Append(").\n\n");

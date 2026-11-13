@@ -216,6 +216,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         File.WriteAllText(member, manual);
         Bind(description: "Updated XML.", countType: "long");
         await Sync();
+        Write("content/en/manual/ownership.md", "---\nuid: manual.ownership\ntitle: Ownership and retirement\nkind: explanation\n---\n\n# Ownership and retirement\n\n## Release\n\nKeep the owner alive until all borrows end.\n");
+        string typePath = Fragment(C_TYPE);
+        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("kind: api", "kind: api\ncontracts: [manual.ownership#release]", StringComparison.Ordinal));
         string cache = Path.Combine(m_root, "artifacts", "query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -223,6 +226,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationPageInfo page = Assert.Single(catalog.pages.Where(page => page.kind == "api"));
         Assert.Contains("public long Inno.Probe.Value.count", page.markdown);
         Assert.Contains("Read the count only after publication.", page.markdown);
+        Assert.Contains("## Required contracts", page.markdown);
+        Assert.Contains("[Ownership and retirement](../../../../manual/ownership.md#release)", page.markdown);
+        Assert.Contains("https://github.com/Wolfiora/InnoEngine.Docs/edit/draft/" + Path.GetRelativePath(m_root, member).Replace('\\', '/'), page.markdown);
         Assert.Contains("reference/api/content.json", catalog.sourceFiles.Keys);
         Assert.Contains(Path.GetRelativePath(m_root, member).Replace('\\', '/'), catalog.sourceFiles.Keys);
         DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "source-clr"));
@@ -431,6 +437,105 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(facts, File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json")));
         Assert.Equal(invalid, File.ReadAllText(member));
         Assert.False(File.Exists(Path.Combine(m_root, "reference/api/export.json")));
+    }
+
+    [Fact]
+    public async Task NestedXmlListsAndFollowingContractsSurviveComposition()
+    {
+        SetTypeDocumentation("""
+            <member><summary>Owns a value.</summary><remarks>Before the list.
+            <list type="bullet"><item><description><b>Borrow</b> the value.
+            <para>Do not release it.</para><list type="number">
+            <item><description>Check <c>IsAlive</c>.</description></item>
+            <item><description>Use the <i>current</i> generation.</description></item>
+            </list></description></item><item><description>Retain the owner.</description></item></list>
+            <para>After the list, observe failure.</para></remarks></member>
+            """);
+        await Sync();
+        string prose = File.ReadAllText(Fragment(C_TYPE));
+        Assert.Contains("- **Borrow** the value.", prose);
+        Assert.Contains("  Do not release it.", prose);
+        Assert.Contains("  1. Check `IsAlive`.", prose);
+        Assert.Contains("  1. Use the *current* generation.", prose);
+        Assert.Contains("\n\nAfter the list, observe failure.", prose);
+    }
+
+    [Theory]
+    [InlineData("<member><summary><unknown>Keep this constraint.</unknown></summary></member>")]
+    [InlineData("<member><summary><list type=\"table\"><item>Keep this constraint.</item></list></summary></member>")]
+    [InlineData("<!DOCTYPE member [<!ENTITY injected SYSTEM 'file:///missing'>]><member><summary>&injected;</summary></member>")]
+    public async Task InvalidXmlCannotDiscardConstraintsOrReplaceLastGoodProse(string xml)
+    {
+        await Sync();
+        string previous = File.ReadAllText(Fragment(C_TYPE));
+        SetTypeDocumentation(xml);
+        Exception? failure = await Record.ExceptionAsync(Sync);
+        Assert.NotNull(failure);
+        Assert.True(failure is InvalidDataException or System.Xml.XmlException);
+        Assert.Equal(previous, File.ReadAllText(Fragment(C_TYPE)));
+    }
+
+    [Fact]
+    public async Task XmlExampleFencesPreserveIndentationAndMarkupAsCode()
+    {
+        SetTypeDocumentation("""
+            <member><summary>Owns a value.</summary><example><code>
+                if (ready)
+                {
+                    string marker = "``` &lt;script&gt;";
+                }
+            </code><para>Observe failure after this example.</para></example></member>
+            """);
+        await Sync();
+        string prose = File.ReadAllText(Fragment(C_TYPE));
+        Assert.Contains("````csharp\nif (ready)\n{\n    string marker = \"``` <script>\";\n}\n````", prose);
+        Assert.Contains("Observe failure after this example.", prose);
+    }
+
+    [Theory]
+    [InlineData("backends/Probe/Adapter.csproj", false)]
+    [InlineData("extern/Probe.csproj", false)]
+    [InlineData("tests/fixtures/Probe.csproj", false)]
+    [InlineData("tools/Probe.Tests.csproj", true)]
+    [InlineData("src/Native.vcxproj", false)]
+    public async Task ExcludedOwnersCannotEnterTheRegisteredApiSet(
+        string projectPath,
+        bool isTest
+    ) {
+        JsonNode inventory = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/projects/catalog.json")))!;
+        JsonNode excluded = inventory[0]!.DeepClone();
+        excluded["name"] = "Excluded.Probe";
+        excluded["path"] = projectPath;
+        excluded["isTest"] = isTest;
+        inventory.AsArray().Add(excluded);
+        string inventoryText = inventory.ToJsonString();
+        Write("reference/projects/catalog.json", inventoryText);
+        JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        JsonNode captured = facts["projects"]![0]!.DeepClone();
+        captured["name"] = "Excluded.Probe";
+        captured["project"] = projectPath;
+        facts["projects"]!.AsArray().Add(captured);
+        string factsText = facts.ToJsonString();
+        Write("reference/api/probe.json", factsText);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["projectManifestIdentity"] = Hash(inventoryText);
+        binding["apiManifests"]![0]!["sha256"] = Hash(factsText);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+        await Sync();
+        JsonNode registry = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/content.json")))!;
+        Assert.Equal(2, registry["entries"]!.AsArray().Count);
+        Assert.DoesNotContain("Excluded.Probe", registry.ToJsonString());
+    }
+
+    private void SetTypeDocumentation(string xml)
+    {
+        JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        facts["projects"]![0]!["symbols"]![0]!["documentation"] = xml;
+        string text = facts.ToJsonString();
+        Write("reference/api/probe.json", text);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["apiManifests"]![0]!["sha256"] = Hash(text);
+        Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
     private Task<int> Sync(CancellationToken cancellation) => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);

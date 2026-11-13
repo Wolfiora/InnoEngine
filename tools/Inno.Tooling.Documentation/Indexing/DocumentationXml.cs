@@ -92,6 +92,13 @@ internal static class DocumentationXml
         if (kind == "table")
         {
             XElement? header = element.Element("listheader");
+            foreach (XElement row in element.Elements())
+            {
+                if (!row.Elements().Any() || row.Elements().Any(child => child.Name.LocalName is not ("term" or "description"))
+                    || row.Elements("term").Count() > 1 || row.Elements("description").Count() > 1
+                    || row.Nodes().OfType<XText>().Any(text => !string.IsNullOrWhiteSpace(text.Value)))
+                    throw new InvalidDataException("An XML table requires explicit term and description cells; unstructured content cannot be discarded.");
+            }
             string Cell(XElement? value) => value is null ? "" : Children(value).Trim().Replace("|", "\\|", StringComparison.Ordinal).ReplaceLineEndings(" ");
             return "\n\n| " + (header is null ? "Term | Description" : Cell(header.Element("term")) + " | " + Cell(header.Element("description")))
                 + " |\n| --- | --- |\n" + string.Join('\n', items.Select(item => "| " + Cell(item.Element("term")) + " | " + Cell(item.Element("description")) + " |")) + "\n\n";
