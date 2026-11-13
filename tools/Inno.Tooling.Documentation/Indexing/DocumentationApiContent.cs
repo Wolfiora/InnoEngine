@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using YamlDotNet.RepresentationModel;
 using System.Text.RegularExpressions;
 using Inno.Core.IO;
 
@@ -81,7 +82,7 @@ internal static class DocumentationApiContent
             }
             else
             {
-                Edit(path, Fragment(entry, fact, DocumentationXml.Render(fact.documentation)));
+                Edit(path, Fragment(entry, fact, DocumentationXml.Render(fact.documentation), existing));
                 warnings.Add(new(fact.key, path, "XmlOnly", "This API still uses XML-synchronized prose."));
             }
         }
@@ -117,11 +118,26 @@ internal static class DocumentationApiContent
         }
     }
 
-    internal static string Fragment(DocumentationApiContentEntry entry, DocumentationApiFact fact, string body)
-        => "---\nuid: api." + DocumentationMarkdown.Hash(entry.symbol) + "\nsymbol: " + JsonSerializer.Serialize(entry.symbol)
+    internal static string Fragment(DocumentationApiContentEntry entry, DocumentationApiFact fact, string body, DocumentationApiFragment? previous = null)
+        => "---\nuid: " + (previous?.uid ?? "api." + DocumentationMarkdown.Hash(entry.symbol)) + "\nsymbol: " + JsonSerializer.Serialize(entry.symbol)
             + "\nsource: xml\nreviewed: " + entry.contract + "\ntitle: " + JsonSerializer.Serialize(entry.title)
             + "\nkind: api\nowners: [" + fact.project + "]\napiSurface: " + fact.surface
-            + (fact.scope is null ? "" : "\napiScope: " + fact.scope) + "\n---\n\n" + body.Trim() + "\n";
+            + (fact.scope is null ? "" : "\napiScope: " + fact.scope) + Associations(previous) + "\n---\n\n" + body.Trim() + "\n";
+
+    private static string Associations(DocumentationApiFragment? fragment)
+    {
+        if (fragment is null) return "";
+        var metadata = new YamlMappingNode();
+        foreach (string key in new[] { "contracts", "aliases", "exampleMode", "exampleProjects" })
+            if (fragment.metadata.Children.TryGetValue(new YamlScalarNode(key), out YamlNode? value))
+                metadata.Add(new YamlScalarNode(key), value);
+        if (metadata.Children.Count == 0) return "";
+        using var writer = new StringWriter();
+        new YamlStream(new YamlDocument(metadata)).Save(writer, assignAnchors: false);
+        string text = writer.ToString().ReplaceLineEndings("\n").TrimEnd();
+        if (text.EndsWith("\n...", StringComparison.Ordinal)) text = text[..^4];
+        return "\n" + text;
+    }
 
     internal static string Contract(IEnumerable<DocumentationApiFact> contexts)
         => DocumentationMarkdown.Hash(string.Join('\n', contexts.Select(fact => fact.signatureHash + "\0" + fact.documentation

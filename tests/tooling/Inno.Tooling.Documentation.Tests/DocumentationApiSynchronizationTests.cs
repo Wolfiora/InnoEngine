@@ -236,7 +236,83 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(hit.text, Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits).text);
     }
 
+    [Fact]
+    public async Task AllTargetDeclarationsRemainFactsWhileAuthoredExamplesRemainExecutable()
+    {
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        JsonNode variant = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        variant["target"] = "other-target";
+        const string C_VARIANT = "public long Inno.Probe.Value.count { get; }";
+        variant["projects"]![0]!["symbols"]![1]!["signature"] = C_VARIANT;
+        variant["projects"]![0]!["symbols"]![1]!["signatureHash"] = Hash(C_VARIANT);
+        string text = variant.ToJsonString();
+        Write("reference/api/variant.json", text);
+        JsonNode capture = binding["apiManifests"]![0]!.DeepClone();
+        capture["path"] = "reference/api/variant.json";
+        capture["target"] = "other-target";
+        capture["sha256"] = Hash(text);
+        binding["apiManifests"]!.AsArray().Add(capture);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+        await Sync();
+        string member = Fragment(C_MEMBER);
+        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+            + "\n```csharp\nvar count = value.count;\n```\n");
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api"));
+        Assert.Equal(3, page.codeBlocks.Count(block => block.declarationSymbols.Count != 0));
+        Assert.Equal("var count = value.count;", Assert.Single(page.codeBlocks.Where(block => block.declarationSymbols.Count == 0)).text);
+        Assert.Contains(C_VARIANT, page.symbols[C_MEMBER].code);
+    }
+
     private Task<int> Sync() => Sync(CancellationToken.None);
+
+    [Fact]
+    public async Task XmlRefreshPreservesAuthoredContractAndExampleAssociations()
+    {
+        await Sync();
+        string type = Fragment(C_TYPE);
+        string text = File.ReadAllText(type).Replace("kind: api", "contracts: [manual.ownership#release]\naliases: [persistent value]\nexampleMode: host\nexampleProjects: [Inno.Probe]\nkind: api", StringComparison.Ordinal);
+        File.WriteAllText(type, text);
+        Bind(description: "Fresh XML still needs shared ownership guidance.");
+        await Sync();
+        string updated = File.ReadAllText(type);
+        Assert.Contains("manual.ownership#release", updated);
+        Assert.Contains("persistent value", updated);
+        Assert.Contains("exampleMode: host", updated);
+        Assert.Contains("exampleProjects:", updated);
+        Assert.Contains("Fresh XML still needs", updated);
+        await Sync();
+        Assert.Equal(updated, File.ReadAllText(type));
+    }
+
+    [Fact]
+    public async Task XmlRenderingPreservesFormulaListsAndExecutableExampleBoundaries()
+    {
+        JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        facts["projects"]![0]!["symbols"]![0]!["documentation"] = """
+            <member><summary>Owns a value.</summary><remarks>
+            A formula: <code>left + (right - left) * amount</code>.
+            <list type="bullet"><item><description>Retain the owner.</description></item>
+            <item><description>Release the lease.</description></item></list>
+            </remarks><example><code>
+                var value = 1;
+                System.Console.WriteLine(value);
+            </code></example></member>
+            """;
+        string text = facts.ToJsonString();
+        Write("reference/api/probe.json", text);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["apiManifests"]![0]!["sha256"] = Hash(text);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+        await Sync();
+        string prose = File.ReadAllText(Fragment(C_TYPE));
+        Assert.Contains("`left + (right - left) * amount`", prose);
+        Assert.Contains("- Retain the owner.", prose);
+        Assert.Contains("- Release the lease.", prose);
+        Assert.Contains("```csharp\nvar value = 1;\nSystem.Console.WriteLine(value);\n```", prose);
+    }
 
     [Theory]
     [InlineData(false)]

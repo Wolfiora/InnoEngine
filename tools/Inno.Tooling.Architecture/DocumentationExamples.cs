@@ -151,7 +151,7 @@ public static class DocumentationExamples
                 status = "Blocked";
                 errors.Add(failure.Message);
             }
-            results.Add(new(group.page.id, group.page.contentIdentity, context?.mode, group.blocks,
+            results.Add(new(group.page.id, group.page.contentIdentity, context?.mode, context?.projects ?? [], group.blocks,
                 status, identities, errors));
 
             PortableExecutableReference Freeze(PortableExecutableReference reference)
@@ -178,6 +178,15 @@ public static class DocumentationExamples
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(Path.GetFullPath(options["--output"]), JsonSerializer.SerializeToUtf8Bytes(new
         {
+            schema = "inno-documentation-examples/1", catalog.repository, catalog.toolingRevision,
+            validatorIdentity = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(typeof(DocumentationExamples).Assembly.Location))),
+            compilerIdentity = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(typeof(CSharpCompilation).Assembly.Location))),
+            apiInputs = catalog.references.Where(static reference => reference.model != "project-inventory")
+                .Select(static reference => new { reference.model, reference.configuration, reference.target, reference.identity })
+                .OrderBy(static reference => reference.model, StringComparer.Ordinal)
+                .ThenBy(static reference => reference.configuration, StringComparer.Ordinal)
+                .ThenBy(static reference => reference.target, StringComparer.Ordinal)
+                .ThenBy(static reference => reference.identity, StringComparer.Ordinal),
             status = overall, catalog.snapshot, catalog.contentIdentity, catalog.revision, catalog.sourceTree,
             sourceApiStatus = "Unverified", configuration, target = options.GetValueOrDefault("--target"),
             reason = groups.Length == 0 ? "Required executable example discovery was empty." : null, results, scriptReferences
@@ -195,6 +204,7 @@ public static class DocumentationExamples
         string page,
         string contentIdentity,
         string? mode,
+        IReadOnlyList<string> projects,
         IReadOnlyList<DocumentationCodeBlockInfo> blocks,
         string status,
         IReadOnlyDictionary<string, string> references,

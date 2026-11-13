@@ -19,7 +19,7 @@ namespace Inno.Tooling.Documentation.Indexing;
 internal static class DocumentationMarkdown
 {
     // Changes to parsing, tokenization or cached contracts must change this schema identity.
-    internal const string C_SCHEMA = "inno-doc/3;markdig/1.5.1;yaml/16.3.0;tokens/1";
+    internal const string C_SCHEMA = "inno-doc/4;markdig/1.5.1;yaml/16.3.0;tokens/1";
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder()
         .UseYamlFrontMatter().UsePipeTables().UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
         .UseGenericAttributes().Build();
@@ -102,13 +102,27 @@ internal static class DocumentationMarkdown
         }
         string[] includes = html.SelectMany(block => Regex.Matches(block, @"<!-- api-include: (?<path>[^\r\n]+?) -->")
             .Select(static marker => marker.Groups["path"].Value)).ToArray();
+        var declarations = new Dictionary<int, string>();
+        foreach (HtmlBlock block in document.Descendants<HtmlBlock>())
+        foreach (Match marker in Regex.Matches(text[block.Span.Start..(block.Span.End + 1)], @"<!-- api-declaration: (?<id>\S+) (?<hash>[a-f0-9]{64}) -->"))
+        {
+            FencedCodeBlock? fence = fences.FirstOrDefault(candidate => candidate.Span.Start > block.Span.End);
+            string id = marker.Groups["id"].Value;
+            if (fence is null || fence.Info != "csharp"
+                || !string.IsNullOrWhiteSpace(text[(block.Span.End + 1)..fence.Span.Start])
+                || !symbols.Any(symbol => symbol.id == id && symbol.code.Contains(fence.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n'), StringComparer.Ordinal))
+                || Hash(fence.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n')) != marker.Groups["hash"].Value
+                || !declarations.TryAdd(fence.Span.Start, id))
+                throw new InvalidDataException("Invalid API declaration association: " + path);
+        }
         DocumentationCodeBlockInfo[] codeBlocks = fences.Select(block =>
         {
             string code = block.Lines.ToString().Replace("\r\n", "\n").TrimEnd('\n');
             string identity = Hash(code);
             string? section = sections.LastOrDefault(candidate => candidate.start <= block.Span.Start)?.anchor;
             return new DocumentationCodeBlockInfo(block.Info ?? "", code, identity, block.Line + 1, section,
-                symbols.Where(symbol => symbol.signatureIdentity == identity).Select(static symbol => symbol.id).ToArray());
+                declarations.TryGetValue(block.Span.Start, out string? declared) ? [declared]
+                    : symbols.Where(symbol => symbol.signatureIdentity == identity).Select(static symbol => symbol.id).ToArray());
         }).ToArray();
         return new(path, Hash(text), HeadingText(headings.Single(static heading => heading.Level == 1)),
             text, facts, sections, symbols, includes, document.Descendants<LinkInline>()

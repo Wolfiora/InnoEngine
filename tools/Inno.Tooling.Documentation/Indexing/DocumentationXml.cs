@@ -50,7 +50,7 @@ internal static class DocumentationXml
             "paramref" or "typeparamref" => Code(element.Attribute("name")?.Value
                 ?? throw new InvalidDataException("An XML parameter reference requires its name.")),
             "c" => Code(element.Value),
-            "code" => CodeBlock(element.Value),
+            "code" => CodeBlock(element),
             "para" => "\n\n" + Children(element).Trim() + "\n\n",
             "b" or "strong" => "**" + Children(element) + "**",
             "i" or "em" => "*" + Children(element) + "*",
@@ -67,13 +67,20 @@ internal static class DocumentationXml
         return fence + (value.StartsWith('`') ? " " : "") + value + (value.EndsWith('`') ? " " : "") + fence;
     }
 
-    private static string CodeBlock(string value)
+    private static string CodeBlock(XElement element)
     {
+        string value = element.Value;
         string[] lines = value.ReplaceLineEndings("\n").Trim('\n').Split('\n');
         int indentation = lines.Where(line => !string.IsNullOrWhiteSpace(line)).Select(line => line.Length - line.TrimStart().Length).DefaultIfEmpty(0).Min();
         string code = string.Join('\n', lines.Select(line => line.Length >= indentation ? line[indentation..] : ""));
+        // XML code inside an example is executable C#; an unlabelled formula in remarks is explanatory text.
+        // This is structural XML metadata, not a guess based on whether a snippet happens to compile.
+        string? language = (string?)element.Attribute("language") ?? (string?)element.Attribute("lang");
+        if (language is null && !element.Ancestors("example").Any() && !code.Contains('\n')) return Code(code.Trim());
+        language ??= element.Ancestors("example").Any() ? "csharp" : "text";
+        if (!Regex.IsMatch(language, "^[a-zA-Z0-9#+-]+$")) throw new InvalidDataException("Invalid XML example language.");
         string fence = new('`', Math.Max(3, Regex.Matches(code, "`+").Select(match => match.Length + 1).DefaultIfEmpty(3).Max()));
-        return "\n\n" + fence + "csharp\n" + code + "\n" + fence + "\n\n";
+        return "\n\n" + fence + language + "\n" + code + "\n" + fence + "\n\n";
     }
 
     private static string List(XElement element)

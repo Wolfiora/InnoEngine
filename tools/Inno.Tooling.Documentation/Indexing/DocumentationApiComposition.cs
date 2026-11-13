@@ -90,7 +90,8 @@ internal static class DocumentationApiComposition
             foreach (var variants in contexts.GroupBy(value => value.signature, StringComparer.Ordinal))
             {
                 text.Append("**Available in:** ").Append(string.Join(", ", variants.Select(value => value.surface + "/" + value.configuration
-                    + (value.target is null ? "" : "/" + value.target)).Distinct(StringComparer.Ordinal))).Append("\n\n```csharp\n")
+                    + (value.target is null ? "" : "/" + value.target)).Distinct(StringComparer.Ordinal))).Append("\n\n<!-- api-declaration: ")
+                    .Append(fact.id).Append(' ').Append(DocumentationMarkdown.Hash(variants.Key)).Append(" -->\n\n```csharp\n")
                     .Append(variants.Key).Append("\n```\n\n");
             }
             if (fragment.source == "xml") text.Append("**XML-synced**\n\n");

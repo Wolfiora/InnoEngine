@@ -81,9 +81,13 @@ public sealed class DocumentationExampleTests : IDisposable
         string output = Path.Combine(m_root, "results.json");
         Assert.Equal(1, await DocumentationExamples.ExecuteAsync(Arguments(index.snapshot, output)));
         using JsonDocument report = JsonDocument.Parse(File.ReadAllBytes(output));
+        Assert.Equal("inno-documentation-examples/1", report.RootElement.GetProperty("schema").GetString());
+        Assert.Matches("^[a-f0-9]{64}$", report.RootElement.GetProperty("validatorIdentity").GetString()!);
+        Assert.Matches("^[a-f0-9]{64}$", report.RootElement.GetProperty("compilerIdentity").GetString()!);
         var results = report.RootElement.GetProperty("results").EnumerateArray()
             .ToDictionary(static group => group.GetProperty("page").GetString()!);
         Assert.Equal("Passed", results["working"].GetProperty("status").GetString());
+        Assert.Equal("Inno.Probe", Assert.Single(results["working"].GetProperty("projects").EnumerateArray()).GetString());
         Assert.NotEmpty(results["working"].GetProperty("references").EnumerateObject());
         Assert.Equal("Failed", results["broken"].GetProperty("status").GetString());
         Assert.Equal("Blocked", results["script"].GetProperty("status").GetString());
