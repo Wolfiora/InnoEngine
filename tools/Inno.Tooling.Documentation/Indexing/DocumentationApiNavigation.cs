@@ -40,7 +40,7 @@ internal static class DocumentationApiNavigation
             var text = new StringBuilder("---\nuid: api.directory.").Append(category.Key.Replace('/', '.'))
                 .Append("\ntitle: ").Append(JsonSerializer.Serialize(category.Value)).Append("\nkind: landing\nowners: []\n---\n\n# ")
                 .Append(category.Value).Append("\n\n");
-            if (category.Key == "engine") text.Append("Browse public C# engine and tooling contracts by their owning project. Backend, external-library and test APIs are outside this reference.\n\n");
+            if (category.Key == "engine") text.Append("Browse public C# contracts from src/ and build/ by their owning project. All other source roots, tests and fixtures are outside Engine API.\n\n");
             else if (category.Key == "scripting") text.Append("Browse the actual projected script API by its declared scope. Runtime contracts are also available to Editor scripts; Authoring annotations are compilation-time contracts.\n\n");
             else text.Append("Find types in this ").Append(category.Key.StartsWith("scripting/", StringComparison.Ordinal) ? "declared script scope" : "project category").Append(". Each type links to its exact declarations and member contracts.\n\n");
             foreach (var child in categories.Where(child => Parent(child.Key) == category.Key))

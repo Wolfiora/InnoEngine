@@ -64,8 +64,6 @@ Per-owner C# extraction now reuses immutable payloads only after matching actual
 
 The tooling commit is delivered without starting another remote engine matrix under the user's revised boundary. Docs functional checks remain required for publication. App provisioning and human production merges remain external actions.
 
-## Evidence locations
-
 ## Final API scope and functional cutover
 
 The user narrowed Engine API to src/ and build/ C# projects only, excluding tests and fixtures, and removed platform implementation project guides. Operational tooling/entry dependencies do not become API owners. Actual script projection and Scope remain authoritative. Existing platform implementation code is unchanged.
@@ -74,7 +72,7 @@ The final synchronization contains 17,971 symbols and removes 365 previously reg
 
 Final functional results: 42 documentation synchronization/snapshot cases, one actual SDK export-plan case, and 151 Node regressions passed. The original 241 rule identities remain mapped; seven documentation clauses carry explicit user-approved scope amendments. Baseline migration disposition validation passed all 454 original engine documentation inputs with no errors. No performance, stress or full product build acceptance was rerun.
 
-## Evidence locations (continued)
+## Evidence locations
 
 Engine local evidence: `artifacts/acceptance/api-draft-pipeline/`. Exact PowerShell fixture directories are recorded by each log. Docs evidence: `artifacts/api-draft-*.log`, final browser captures under `artifacts/browser/attempt-04/`, and the tracked migration register under `.agents/records/acceptance/api-draft-migration/`.
 
