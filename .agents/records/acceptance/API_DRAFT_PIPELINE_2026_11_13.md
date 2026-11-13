@@ -42,6 +42,8 @@ The persistent Docs `draft` branch exists, and implementation PR 1 now targets i
 
 A Docs-owned temporary entry exposed distinct root invocation identities writing the same managed dependency. Both first-failure logs were retained. The shared managed union now supplies one explicit existing task-bootstrap owner even when its solution is outside the engine's Directory.Solution.targets scope; the real configuration fixture verifies the same owner at root and dependency. An actual four-worker rebuild of the maintenance dependency graph then passed in 14.24 seconds with one Catalogs output. Docs catalog bootstrap applies the same root-owner propagation.
 
+Independent PR API exports now select the actual PR head explicitly in producer and reconciliation jobs. The functional engine workflow continues to validate its merge candidate. A temporary synthetic PR merge SHA must not become a long-lived Docs binding: the later human merge need not retain that temporary commit as an ancestor. Master publication still accepts only the exact canonical master head and checks ancestry before and immediately before publication.
+
 Publisher-owned retirement previewed 8,448 obsolete Docs query artifacts and verified their paths stayed under the selected Docs cache. Actual retirement reclaimed 447,570,846 bytes with zero skips/failures and retained 138,651,277 protected bytes. No engine or adjacent-session cache was selected. Current free C-drive space after this operation was 64.77 GiB.
 
 ## Documentation query measurements
