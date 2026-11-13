@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 
@@ -59,7 +60,7 @@ internal static class DocumentationApiNavigation
             }
             else foreach (DocumentationApiContentEntry type in direct)
             {
-                text.Append("## ").Append(type.title.Replace("`", "", StringComparison.Ordinal)).Append("\n\n");
+                text.Append("## ").Append(WebUtility.HtmlEncode(type.title)).Append("\n\n");
                 AppendType(text, path, type, direct, facts);
                 text.Append('\n');
             }
@@ -75,8 +76,9 @@ internal static class DocumentationApiNavigation
         DocumentationApiContentEntry[] siblings,
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts
     ) {
-        string title = siblings.Count(sibling => sibling.title == type.title) > 1 ? facts[type.symbol][0].id[2..] : type.title;
-        text.Append("- [").Append(title.Replace("`", "", StringComparison.Ordinal)).Append("](")
+        string title = siblings.Count(sibling => sibling.title == type.title) > 1
+            ? DocumentationApiContent.QualifiedTitle(facts[type.symbol][0]) : type.title;
+        text.Append("- [").Append(WebUtility.HtmlEncode(title)).Append("](")
             .Append(Relative(page, type.path)).Append(")\n");
     }
 

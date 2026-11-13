@@ -22,6 +22,67 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
+    [Theory]
+    [InlineData("T:Inno.Probe.Value`1", "public class Inno.Probe.Value<TValue>", "Value<TValue>")]
+    [InlineData("T:Inno.Probe.Value`2", "public class Inno.Probe.Value<TTarget, TArgument>", "Value<TTarget, TArgument>")]
+    [InlineData("T:Inno.Probe.Outer`1.Value`1", "public class Inno.Probe.Outer<TOwner>.Value<TValue>", "Value<TValue>")]
+    [InlineData("T:Inno.Probe.Outer`1.Value", "public class Inno.Probe.Outer<TOwner>.Value", "Value")]
+    [InlineData("T:Inno.Probe.class`1", "public class Inno.Probe.@class<TValue>", "@class<TValue>")]
+    [InlineData("T:Inno.Probe.Factory`2", "public delegate TResult Inno.Probe.Factory<TValue, TResult>(TValue value)", "Factory<TValue, TResult>")]
+    public async Task GenericTitlesUseDeclaredNamesAndRenderAsText(
+        string id,
+        string signature,
+        string expected
+    ) {
+        SetTypes((id, signature));
+        await Sync();
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api"));
+        Assert.Equal(expected, page.title);
+        Assert.Contains("<h1>" + System.Net.WebUtility.HtmlEncode(expected) + "</h1>", Markdig.Markdown.ToHtml(page.markdown));
+        Assert.Contains(expected, (await snapshot.QueryAsync(new("symbol", id, "Inno.Probe"))).hits.Single().text);
+    }
+
+    [Fact]
+    public async Task GenericParameterRenamesPreserveAddressesAndManualProseWithReadableDisambiguation()
+    {
+        const string C_ONE = "T:Inno.Probe.Value`1";
+        const string C_TWO = "T:Inno.Probe.Value`2";
+        const string C_OTHER = "T:Other.Value`1";
+        SetTypes((C_TYPE, "public class Inno.Probe.Value"),
+            (C_ONE, "public class Inno.Probe.Value<TValue>"),
+            (C_TWO, "public class Inno.Probe.Value<TTarget, TArgument>"),
+            (C_OTHER, "public class Other.Value<TValue>"));
+        await Sync();
+        string[] paths = new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment).ToArray();
+        Assert.Equal(4, paths.Distinct().Count());
+        string manual = File.ReadAllText(paths[2]).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+            + "\nKeep the target alive while the operation runs.\n";
+        File.WriteAllText(paths[2], manual);
+        SetTypes((C_TYPE, "public class Inno.Probe.Value"),
+            (C_ONE, "public class Inno.Probe.Value<TValue>"),
+            (C_TWO, "public class Inno.Probe.Value<TOwner, TArgument>"),
+            (C_OTHER, "public class Other.Value<TValue>"));
+        await Sync();
+        Assert.Equal(paths, new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment));
+        Assert.Equal(manual, File.ReadAllText(paths[2]));
+        string navigation = File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md"));
+        Assert.Contains("[Inno.Probe.Value&lt;TValue&gt;]", navigation);
+        Assert.Contains("[Other.Value&lt;TValue&gt;]", navigation);
+        Assert.Contains("[Value&lt;TOwner, TArgument&gt;]", navigation);
+        Assert.DoesNotContain("Value1", navigation);
+        Assert.DoesNotContain("Value2", navigation);
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.symbols.ContainsKey(C_TWO));
+        Assert.Equal("Value<TOwner, TArgument>", page.title);
+        Assert.Contains("Keep the target alive", page.markdown);
+        Assert.Equal(manual, File.ReadAllText(paths[2]));
+    }
+
     [Fact]
     public async Task SynchronizationIsDeterministicAndNeverTouchesManualGuides()
     {
@@ -554,6 +615,27 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode registry = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/content.json")))!;
         Assert.Equal(2, registry["entries"]!.AsArray().Count);
         Assert.DoesNotContain("Excluded.Probe", registry.ToJsonString());
+    }
+
+    private void SetTypes(params (string id, string signature)[] types)
+    {
+        JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        JsonNode prototype = facts["projects"]![0]!["symbols"]![0]!.DeepClone();
+        var symbols = new JsonArray();
+        foreach (var type in types)
+        {
+            JsonNode symbol = prototype.DeepClone();
+            symbol["id"] = type.id;
+            symbol["signature"] = type.signature;
+            symbol["signatureHash"] = Hash(type.signature);
+            symbols.Add(symbol);
+        }
+        facts["projects"]![0]!["symbols"] = symbols;
+        string text = facts.ToJsonString();
+        Write("reference/api/probe.json", text);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["apiManifests"]![0]!["sha256"] = Hash(text);
+        Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
     private void SetTypeDocumentation(string xml)

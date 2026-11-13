@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using Markdig;
@@ -78,7 +79,7 @@ internal static class DocumentationApiComposition
             DocumentationApiContentEntry entry = entries[fact.key];
             DocumentationApiFragment fragment = fragments[fact.key];
             string header = Header(fragment, type, byType[fact.key].Select(member => fragments[member.symbol]));
-            var text = new StringBuilder(header).Append("\n\n# ").Append(entry.title.Replace("`", "", StringComparison.Ordinal)).Append("\n\n");
+            var text = new StringBuilder(header).Append("\n\n# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
                 .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
             if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
@@ -90,7 +91,7 @@ internal static class DocumentationApiComposition
                     if (!contractPages.TryGetValue(target[0], out var destination))
                         throw new InvalidDataException("Missing associated API contract: " + contract.Value);
                     string relative = Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, destination.path).Replace('\\', '/');
-                    text.Append("- [").Append(destination.title.Replace("[", "\\[", StringComparison.Ordinal).Replace("]", "\\]", StringComparison.Ordinal))
+                    text.Append("- [").Append(WebUtility.HtmlEncode(destination.title).Replace("[", "\\[", StringComparison.Ordinal).Replace("]", "\\]", StringComparison.Ordinal))
                         .Append("](").Append(relative).Append(target.Length == 2 ? "#" + target[1] : "").Append(")\n");
                 }
                 text.Append('\n');
@@ -157,6 +158,7 @@ internal static class DocumentationApiComposition
     ) {
         // Only the in-memory projection changes. The authored frontmatter and prose remain byte-preserved.
         YamlMappingNode metadata = fragment.metadata;
+        metadata.Children[new YamlScalarNode("title")] = new YamlScalarNode(DocumentationApiContent.Title(contexts[0]));
         metadata.Children[new YamlScalarNode("owners")] = new YamlSequenceNode(new YamlScalarNode(contexts[0].project));
         metadata.Children[new YamlScalarNode("apiSurface")] = new YamlScalarNode(contexts[0].surface);
         if (contexts[0].scope is string scope) metadata.Children[new YamlScalarNode("apiScope")] = new YamlScalarNode(scope);
