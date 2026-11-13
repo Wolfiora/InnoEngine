@@ -66,11 +66,13 @@ for ($attempt = 1; $attempt -le 3; $attempt++) {
     if ($LASTEXITCODE -ne 0) { throw 'The imported API content did not reconcile with its facts.' }
     $changes = @(Invoke-Git $checkout @('-c', 'core.quotepath=false', 'ls-files', '--modified', '--deleted', '--others', '--exclude-standard'))
     foreach ($path in $changes) {
-        if ($path -cnotmatch '^(content/en/api/(engine|scripting)/.*\.md|reference/(api|projects)/.*\.json|reference/engine\.lock\.json)$' -or
+        # The trusted synchronizer also repairs Markdown link destinations when registered API pages move.
+        # It cannot claim or regenerate independent prose; the sync plan preserves all non-link bytes.
+        if ($path -cnotmatch '^(content/en/.*\.md|reference/(api|projects)/.*\.json|reference/engine\.lock\.json)$' -or
             $path.Split('/') -contains '..') { throw "The API publisher attempted to change an independent file: $path" }
     }
     if ($changes.Count -ne 0) {
-        [void](Invoke-Git $checkout @('add', '--', 'content/en/api', 'reference/api', 'reference/projects', 'reference/engine.lock.json'))
+        [void](Invoke-Git $checkout @('add', '--', 'content/en', 'reference/api', 'reference/projects', 'reference/engine.lock.json'))
         [void](Invoke-Git $checkout @('commit', '-m', "docs(api): synchronize engine $($packet.revision.Substring(0, 12))"))
     }
     $candidate = (Invoke-Git $checkout @('rev-parse', 'HEAD')) -join ''

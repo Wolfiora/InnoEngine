@@ -12,7 +12,8 @@ internal static class DocumentationApiNavigation
 {
     internal static IReadOnlyDictionary<string, string> Create(
         IEnumerable<DocumentationApiContentEntry> entries,
-        IReadOnlyDictionary<string, DocumentationApiFact[]> facts
+        IReadOnlyDictionary<string, DocumentationApiFact[]> facts,
+        IReadOnlyDictionary<string, string> descriptions
     ) {
         var pages = new SortedDictionary<string, string>(StringComparer.Ordinal);
         DocumentationApiContentEntry[] types = entries.Where(entry => entry.type == entry.symbol && facts.ContainsKey(entry.symbol)).ToArray();
@@ -44,9 +45,22 @@ internal static class DocumentationApiNavigation
             if (category.Key == "engine") text.Append("Browse public C# contracts from src/ and build/ by their owning project. All other source roots, tests and fixtures are outside Engine API.\n\n");
             else if (category.Key == "scripting") text.Append("Browse the actual projected script API by its declared scope. Runtime contracts are also available to Editor scripts; Authoring annotations are compilation-time contracts.\n\n");
             else text.Append("Find types in this ").Append(category.Key.StartsWith("scripting/", StringComparison.Ordinal) ? "declared script scope" : "project category").Append(". Each type links to its exact declarations and member contracts.\n\n");
-            foreach (var child in categories.Where(child => Parent(child.Key) == category.Key))
-                text.Append("## ").Append(child.Value).Append("\n\n[Browse ").Append(child.Value).Append("](")
-                    .Append(Relative(path, "content/en/api/" + child.Key + "/index.md")).Append(").\n\n");
+            var children = categories.Where(child => Parent(child.Key) == category.Key).ToArray();
+            if (children.Length != 0)
+            {
+                text.Append("## Categories\n\n| Category | Purpose |\n| --- | --- |\n");
+                foreach (var child in children)
+                {
+                    string prefix = "content/en/api/" + child.Key + "/";
+                    string[] projects = types.Where(type => type.path.StartsWith(prefix, StringComparison.Ordinal))
+                        .Select(type => facts[type.symbol][0].project).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+                    string description = projects.Length == 1 && descriptions.TryGetValue(projects[0], out string? value)
+                        ? value : "Browse " + child.Value + " contracts" + (projects.Length == 0 ? "." : " from " + string.Join(", ", projects.Take(4)) + (projects.Length > 4 ? " and related projects." : "."));
+                    text.Append("| [").Append(DocumentationApiPresentation.Cell(child.Value)).Append("](")
+                        .Append(Relative(path, prefix + "index.md")).Append(") | ").Append(DocumentationApiPresentation.Cell(description)).Append(" |\n");
+                }
+                text.Append('\n');
+            }
             DocumentationApiContentEntry[] direct = types.Where(type => Parent(Parent(type.path)) == "content/en/api/" + category.Key)
                 .OrderBy(type => type.title, StringComparer.OrdinalIgnoreCase).ThenBy(type => type.symbol, StringComparer.Ordinal).ToArray();
             if (category.Key.StartsWith("scripting/", StringComparison.Ordinal))
@@ -54,14 +68,15 @@ internal static class DocumentationApiNavigation
                 foreach (var letter in direct.GroupBy(type => char.IsAsciiLetter(type.title[0]) ? char.ToUpperInvariant(type.title[0]).ToString() : "Other"))
                 {
                     text.Append("## ").Append(letter.Key).Append("\n\n");
+                    text.Append("| Type | Purpose |\n| --- | --- |\n");
                     foreach (DocumentationApiContentEntry type in letter) AppendType(text, path, type, direct, facts);
                     text.Append('\n');
                 }
             }
-            else foreach (DocumentationApiContentEntry type in direct)
+            else if (direct.Length != 0)
             {
-                text.Append("## ").Append(WebUtility.HtmlEncode(type.title)).Append("\n\n");
-                AppendType(text, path, type, direct, facts);
+                text.Append("## Types\n\n| Type | Purpose |\n| --- | --- |\n");
+                foreach (DocumentationApiContentEntry type in direct) AppendType(text, path, type, direct, facts);
                 text.Append('\n');
             }
             pages.Add(path, text.ToString());
@@ -78,8 +93,10 @@ internal static class DocumentationApiNavigation
     ) {
         string title = siblings.Count(sibling => sibling.title == type.title) > 1
             ? DocumentationApiContent.QualifiedTitle(facts[type.symbol][0]) : type.title;
-        text.Append("- [").Append(WebUtility.HtmlEncode(title)).Append("](")
-            .Append(Relative(page, type.path)).Append(")\n");
+        text.Append("| [").Append(DocumentationApiPresentation.Cell(title)).Append("](")
+            .Append(Relative(page, type.path)).Append(") | ")
+            .Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Render(facts[type.symbol][0].documentation))))
+            .Append(" |\n");
     }
 
     private static string Parent(string path) => path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";

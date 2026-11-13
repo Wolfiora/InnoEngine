@@ -53,7 +53,7 @@ public sealed record DocumentationCatalogReport(
     /// </summary>
     public string? sourceEvidenceIdentity { get; init; }
     /// <summary>
-    /// Gets every original source identity, including member fragments and their composition registry.
+    /// Gets every original source identity, including individual API pages and their source-fact registry.
     /// </summary>
     public IReadOnlyDictionary<string, string> sourceFiles { get; init; } = new Dictionary<string, string>();
 }

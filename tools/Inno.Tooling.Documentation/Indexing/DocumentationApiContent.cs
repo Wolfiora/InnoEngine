@@ -82,10 +82,12 @@ internal static class DocumentationApiContent
             DocumentationApiFact fact = pair.Value[0];
             string type = fact.kind == "NamedType" ? fact.key : fact.family + ":" + fact.project + ":" + fact.containingType;
             if (!typePaths.TryGetValue(type, out string? typePath)) throw new InvalidDataException("API member has no eligible declaring type: " + fact.key);
+            string title = DocumentationApiPresentation.Name(fact, facts);
+            string fileName = string.Join('.', title.Split('.').Select(part => Slug(Regex.Replace(part, "<[^<>]+>", ""))));
             string path = fact.kind == "NamedType" ? typePath
-                : typePath.Replace("index.md", "_members/" + Slug(PathName(fact)) + "-" + DocumentationMarkdown.Hash(fact.key)[..16] + ".md", StringComparison.Ordinal);
+                : typePath.Replace("index.md", fileName + "-" + DocumentationMarkdown.Hash(fact.key)[..16] + ".md", StringComparison.Ordinal);
             string contract = Contract(pair.Value);
-            var entry = new DocumentationApiContentEntry(fact.key, path, type, Title(fact), contract);
+            var entry = new DocumentationApiContentEntry(fact.key, path, type, title, contract);
             entries.Add(entry);
             DocumentationApiFragment? existing = null;
             if (prior.TryGetValue(fact.key, out DocumentationApiContentEntry? old))
@@ -125,9 +127,32 @@ internal static class DocumentationApiContent
                 warnings.Add(new(removed.symbol, removed.path, "RemovedApi", "Preserved manual prose for an API absent from the current input."));
             }
         }
-        IReadOnlyDictionary<string, string> navigation = DocumentationApiNavigation.Create(entries, facts);
+        IReadOnlyDictionary<string, string> navigation = DocumentationApiNavigation.Create(entries, facts, DocumentationApiPresentation.ProjectDescriptions(root));
         foreach (var page in navigation) Edit(page.Key, page.Value);
         foreach (string removed in (previous?.navigation ?? []).Except(navigation.Keys, StringComparer.Ordinal)) Edit(removed, null);
+        var moves = entries.Where(entry => prior.TryGetValue(entry.symbol, out var old) && old.path != entry.path)
+            .ToDictionary(entry => prior[entry.symbol].path, entry => entry.path, StringComparer.Ordinal);
+        var anchors = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (DocumentationApiContentEntry entry in entries.Where(entry => entry.type != entry.symbol && facts.ContainsKey(entry.symbol)))
+            if (prior.TryGetValue(entry.type, out var oldType))
+                anchors[oldType.path + "#api-" + DocumentationMarkdown.Hash(facts[entry.symbol][0].id)[..16]] = entry.path;
+        if (moves.Count != 0)
+        {
+            var reverse = moves.ToDictionary(pair => pair.Value, pair => pair.Key, StringComparer.Ordinal);
+            string[] paths = Directory.EnumerateFiles(Path.Combine(root, "content/en"), "*.md", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/')).Concat(edits.Keys.Where(path => path.EndsWith(".md", StringComparison.Ordinal)))
+                .Distinct(StringComparer.Ordinal).ToArray();
+            foreach (string path in paths)
+            {
+                string? text = edits.TryGetValue(path, out var edit) ? edit.text : File.ReadAllText(DocumentationApiFacts.Resolve(root, path));
+                if (text is null) continue;
+                string rewritten = DocumentationApiLinks.Rewrite(root, reverse.GetValueOrDefault(path) ?? path, path, text, moves, anchors);
+                if (text == rewritten) continue;
+                string absolute = DocumentationApiFacts.Resolve(root, path);
+                string? before = File.Exists(absolute) ? DocumentationMarkdown.Hash(File.ReadAllText(absolute)) : null;
+                edits[path] = new(path, before, rewritten);
+            }
+        }
         Edit(C_REGISTRY, JsonSerializer.Serialize(new DocumentationApiContentRegistry("inno-api-content/1", entries.OrderBy(entry => entry.symbol, StringComparer.Ordinal).ToArray(), navigation.Keys.Order(StringComparer.Ordinal).ToArray()),
             new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }) + "\n");
         return new(edits.Values.OrderBy(edit => edit.path, StringComparer.Ordinal).ToArray(), warnings, facts.Count);

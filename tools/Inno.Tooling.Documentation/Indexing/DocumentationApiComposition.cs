@@ -68,17 +68,27 @@ internal static class DocumentationApiComposition
                 ? ((YamlScalarNode)value).Value ?? uid : uid;
             contractPages.Add(uid, (page.Key, title));
         }
-        foreach (DocumentationApiContentEntry typeEntry in entries.Values.Where(value => value.type == value.symbol && facts.ContainsKey(value.symbol)))
+        foreach (DocumentationApiContentEntry typeEntry in entries.Values.Where(value => facts.ContainsKey(value.symbol)))
             contractPages.Add(fragments[typeEntry.symbol].uid, (typeEntry.path, typeEntry.title));
-        var byType = entries.Values.Where(entry => facts.ContainsKey(entry.symbol)).GroupBy(entry => entry.type, StringComparer.Ordinal)
+        var byType = entries.Values.Where(entry => facts.ContainsKey(entry.symbol))
+            .Where(entry => DocumentationApiPresentation.Parent(facts[entry.symbol][0]) is not null)
+            .GroupBy(entry => DocumentationApiPresentation.Parent(facts[entry.symbol][0])!, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.OrderBy(member => member.title, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(member => member.symbol, StringComparer.Ordinal).ToArray(), StringComparer.Ordinal);
-        foreach (var type in facts.Values.Where(contexts => contexts[0].kind == "NamedType"))
+        foreach (var type in facts.Values)
         {
             DocumentationApiFact fact = type[0];
             DocumentationApiContentEntry entry = entries[fact.key];
             DocumentationApiFragment fragment = fragments[fact.key];
-            string header = Header(fragment, type, byType[fact.key].Select(member => fragments[member.symbol]));
+            string? parent = DocumentationApiPresentation.Parent(fact);
+            var ancestors = new List<DocumentationApiFragment>();
+            var visited = new HashSet<string>(StringComparer.Ordinal) { fact.key };
+            for (string? ancestor = parent; ancestor is not null; ancestor = DocumentationApiPresentation.Parent(facts[ancestor][0]))
+            {
+                if (!visited.Add(ancestor)) throw new InvalidDataException("Cyclic API containment: " + fact.key);
+                ancestors.Add(fragments[ancestor]);
+            }
+            string header = Header(fragment, type, entry.title, ancestors);
             var text = new StringBuilder(header).Append("\n\n# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
                 .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
@@ -99,19 +109,22 @@ internal static class DocumentationApiComposition
             if (fact.baseType is not null) text.Append("**Inherits:** `").Append(fact.baseType).Append("`\n\n");
             if (fact.interfaces.Count != 0) text.Append("**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`"))).Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
-            DocumentationApiContentEntry[] members = byType[fact.key].Where(member => member.symbol != fact.key).ToArray();
+            DocumentationApiContentEntry[] members = byType.GetValueOrDefault(fact.key) ?? [];
             if (members.Length != 0)
             {
-                text.Append("\n## Member summary\n\n| Member | Kind |\n| --- | --- |\n");
-                foreach (DocumentationApiContentEntry member in members)
-                    text.Append("| [").Append(member.title.Replace("|", "\\|", StringComparison.Ordinal)).Append("](#api-")
-                        .Append(DocumentationMarkdown.Hash(facts[member.symbol][0].id)[..16]).Append(") | ")
-                        .Append(facts[member.symbol][0].kind).Append(" |\n");
                 foreach (var group in members.GroupBy(member => Category(facts[member.symbol][0])).OrderBy(group => group.Key, StringComparer.Ordinal))
                 {
-                    text.Append("\n## ").Append(group.Key).Append("\n\n");
+                    text.Append("\n## ").Append(group.Key).Append("\n\n| Element | Description |\n| --- | --- |\n");
                     foreach (DocumentationApiContentEntry member in group)
-                        AppendSymbol(text, facts[member.symbol], fragments[member.symbol], entry.path, 3, member.title.Replace("`", "", StringComparison.Ordinal));
+                    {
+                        DocumentationApiFact child = facts[member.symbol][0];
+                        string label = member.title;
+                        if (group.Count(other => other.title == member.title) > 1)
+                            label += child.id.Contains('(') ? child.id[child.id.IndexOf('(')..] : " (" + child.kind + ")";
+                        text.Append("| [").Append(DocumentationApiPresentation.Cell(label)).Append("](")
+                            .Append(Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, member.path).Replace('\\', '/'))
+                            .Append(") | ").Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(fragments[member.symbol].body))).Append(" |\n");
+                    }
                 }
             }
             pages.Add(entry.path, text.ToString());
@@ -149,16 +162,17 @@ internal static class DocumentationApiComposition
     }
 
     private static string Category(DocumentationApiFact fact) => fact.id.Contains(".#ctor", StringComparison.Ordinal) ? "Constructors"
-        : fact.kind switch { "Method" => "Methods", "Property" => "Properties", "Event" => "Events", "Field" => "Fields", _ => "Members" };
+        : fact.kind switch { "NamedType" => "Nested types", "Method" => "Methods", "Property" => "Properties", "Event" => "Events", "Field" => "Fields", _ => "Members" };
 
     private static string Header(
         DocumentationApiFragment fragment,
         DocumentationApiFact[] contexts,
-        IEnumerable<DocumentationApiFragment> members
+        string title,
+        IReadOnlyList<DocumentationApiFragment> ancestors
     ) {
         // Only the in-memory projection changes. The authored frontmatter and prose remain byte-preserved.
         YamlMappingNode metadata = fragment.metadata;
-        metadata.Children[new YamlScalarNode("title")] = new YamlScalarNode(DocumentationApiContent.Title(contexts[0]));
+        metadata.Children[new YamlScalarNode("title")] = new YamlScalarNode(title);
         metadata.Children[new YamlScalarNode("owners")] = new YamlSequenceNode(new YamlScalarNode(contexts[0].project));
         metadata.Children[new YamlScalarNode("apiSurface")] = new YamlScalarNode(contexts[0].surface);
         if (contexts[0].scope is string scope) metadata.Children[new YamlScalarNode("apiScope")] = new YamlScalarNode(scope);
@@ -166,13 +180,14 @@ internal static class DocumentationApiComposition
         metadata.Children[new YamlScalarNode("apiSurfaces")] = new YamlSequenceNode(contexts.Select(context => context.surface)
             .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).Select(value => new YamlScalarNode(value)));
         var contracts = new SortedSet<string>(StringComparer.Ordinal);
-        foreach (DocumentationApiFragment member in members)
+        foreach (DocumentationApiFragment member in new[] { fragment }.Concat(ancestors))
             if (member.metadata.Children.TryGetValue(new YamlScalarNode("contracts"), out YamlNode? value))
             {
                 if (value is not YamlSequenceNode sequence || sequence.Children.Any(child => child is not YamlScalarNode))
                     throw new InvalidDataException("API contracts must be a sequence of stable references: " + member.path);
                 foreach (YamlScalarNode contract in sequence.Children) contracts.Add(contract.Value ?? "");
             }
+        if (ancestors.Count != 0) contracts.Add(ancestors[0].uid);
         metadata.Children[new YamlScalarNode("contracts")] = new YamlSequenceNode(contracts.Select(value => new YamlScalarNode(value)));
         using var writer = new StringWriter();
         new YamlStream(new YamlDocument(metadata)).Save(writer, assignAnchors: false);
@@ -188,7 +203,7 @@ internal static class DocumentationApiComposition
         string pagePath,
         int level
     ) {
-        MarkdownDocument document = Markdown.Parse(body);
+        MarkdownDocument document = Markdown.Parse(body, new MarkdownPipelineBuilder().UsePreciseSourceLocation().EnableTrackTrivia().Build());
         var changes = new List<(int start, int length, string value)>();
         foreach (HeadingBlock heading in document.Descendants<HeadingBlock>())
         {

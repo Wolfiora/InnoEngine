@@ -25,7 +25,8 @@ public static class DocumentationStore
     internal static string schema { get; } = CreateSchemaIdentity();
     private static string parserSchema { get; } = CreateSchemaIdentity(
         "DocumentationMarkdown.cs", "DocumentationPage.cs", "DocumentationCodeBlockInfo.cs",
-        "DocumentationExampleContext.cs", "DocumentationApiComposition.cs", "DocumentationApiFragment.cs", "Inno.Tooling.Documentation.csproj");
+        "DocumentationExampleContext.cs", "DocumentationApiComposition.cs", "DocumentationApiFragment.cs",
+        "DocumentationApiPresentation.cs", "Inno.Tooling.Documentation.csproj");
 
     /// <summary>
     /// Explicitly scans a Docs checkout and publishes a consistent generation using reusable parsed pages.

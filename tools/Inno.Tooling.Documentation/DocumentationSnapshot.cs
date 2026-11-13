@@ -28,7 +28,6 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly Dictionary<string, DocumentationSymbolReference[]> m_symbols;
     private readonly Dictionary<string, DocumentationReferenceInfo> m_references;
     private readonly Dictionary<string, DocumentationApiOrigin> m_origins;
-    private readonly Dictionary<string, DocumentationApiOrigin> m_fragments;
     private readonly ConcurrentDictionary<string, DocumentationPage> m_pages = new(StringComparer.Ordinal);
     private bool m_disposed;
 
@@ -155,8 +154,6 @@ public sealed class DocumentationSnapshot : IDisposable
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
         m_references = manifest.references!.ToDictionary(static reference => reference.path, StringComparer.Ordinal);
         m_origins = (manifest.apiOrigins ?? []).ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
-        m_fragments = (manifest.apiOrigins ?? []).Where(origin => origin.path != origin.page)
-            .ToDictionary(origin => origin.path, StringComparer.Ordinal);
         m_terms = new(() => CreateSearchPostings(manifest), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
@@ -225,11 +222,6 @@ public sealed class DocumentationSnapshot : IDisposable
         if (request.operation != "read")
             throw new ArgumentException("Unknown documentation query operation: " + request.operation);
         string? pageId = request.value;
-        if (pageId is not null && m_fragments.TryGetValue(pageId.Replace('\\', '/'), out DocumentationApiOrigin? fragment))
-        {
-            DocumentationMetadata owner = m_manifest.pages[fragment.page].metadata;
-            return await SymbolAsync(new("symbol", fragment.id, owner.owners.Single(), owner.apiSurface, scope: owner.apiScope), cancellationToken).ConfigureAwait(false);
-        }
         if (pageId is null && request.project is not null)
             pageId = m_manifest.projects.Single(project => project.name == request.project).entry;
         if (pageId is null)

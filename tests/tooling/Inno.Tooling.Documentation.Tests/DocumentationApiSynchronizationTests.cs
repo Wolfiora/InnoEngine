@@ -255,7 +255,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        DocumentationPageInfo script = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope));
+        DocumentationPageInfo script = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_MEMBER)));
         Assert.Contains("scripting/" + scope.ToLowerInvariant(), script.path);
         Assert.Contains("## V", catalog.pages.Single(page => page.path == "content/en/api/scripting/" + scope.ToLowerInvariant() + "/index.md").markdown);
         foreach (string surface in new[] { "runtime-script", "editor-script" })
@@ -285,7 +285,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
-        DocumentationPageInfo page = Assert.Single(catalog.pages.Where(page => page.kind == "api"));
+        DocumentationPageInfo page = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.symbols.ContainsKey(C_MEMBER)));
         Assert.Contains("public long Inno.Probe.Value.count", page.markdown);
         Assert.Contains("Read the count only after publication.", page.markdown);
         Assert.Contains("## Required contracts", page.markdown);
@@ -299,7 +299,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("public long Inno.Probe.Value.count", hit.text);
         Assert.Contains("Read the count only after publication.", hit.text);
         Assert.Equal(manual, File.ReadAllText(member));
-        Assert.Equal(hit.text, Assert.Single((await snapshot.QueryAsync(new("read", hit.contentSource))).hits).text);
+        Assert.Contains(hit.text, Assert.Single((await snapshot.QueryAsync(new("read", hit.contentSource))).hits).text);
         Directory.Move(Path.Combine(m_root, "content"), Path.Combine(m_root, "unavailable-content"));
         Assert.Equal(hit.text, Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits).text);
     }
@@ -328,13 +328,96 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api"));
-        Assert.Equal(3, page.codeBlocks.Count(block => block.declarationSymbols.Count != 0));
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api" && page.symbols.ContainsKey(C_MEMBER)));
+        Assert.Equal(2, page.codeBlocks.Count(block => block.declarationSymbols.Count != 0));
         Assert.Equal("var count = value.count;", Assert.Single(page.codeBlocks.Where(block => block.declarationSymbols.Count == 0)).text);
         Assert.Contains(C_VARIANT, page.symbols[C_MEMBER].code);
     }
 
     private Task<int> Sync() => Sync(CancellationToken.None);
+
+    [Fact]
+    public async Task ElementsAreIndependentPagesWithNestedContainmentAndOverloadLinks()
+    {
+        JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        JsonArray symbols = facts["projects"]![0]!["symbols"]!.AsArray();
+        const string C_NESTED = "T:Inno.Probe.Value.Child`1";
+        const string C_DEEP = "T:Inno.Probe.Value.Child`1.State";
+        Add(C_NESTED, "NamedType", "public struct Inno.Probe.Value.Child<TItem>", C_TYPE);
+        Add(C_DEEP, "NamedType", "public enum Inno.Probe.Value.Child<TItem>.State", C_NESTED);
+        Add("F:Inno.Probe.Value.Child`1.State.Ready", "Field", "public const Inno.Probe.Value.Child<TItem>.State Ready = 0", C_DEEP);
+        Add("M:Inno.Probe.Value.Read(System.Int32)", "Method", "public void Inno.Probe.Value.Read(int value)", C_TYPE);
+        Add("M:Inno.Probe.Value.Read(System.String)", "Method", "public void Inno.Probe.Value.Read(string value)", C_TYPE);
+        SaveFacts(facts);
+        await Sync();
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        var pages = (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api").ToArray();
+        Assert.Equal(7, pages.Length);
+        Assert.All(pages, page => Assert.Single(page.symbols));
+        DocumentationPageInfo outer = pages.Single(page => page.symbols.ContainsKey(C_TYPE));
+        Assert.Contains("## Nested types", outer.markdown);
+        Assert.Contains("Value.Child&lt;TItem&gt;", outer.markdown);
+        Assert.Contains("Value.Read(System.Int32)", outer.markdown);
+        Assert.Contains("Value.Read(System.String)", outer.markdown);
+        DocumentationPageInfo nested = pages.Single(page => page.symbols.ContainsKey(C_NESTED));
+        Assert.Equal("Value.Child<TItem>", nested.title);
+        Assert.Contains("Value.Child&lt;TItem&gt;.State", nested.markdown);
+        DocumentationPageInfo field = pages.Single(page => page.title.EndsWith(".Ready", StringComparison.Ordinal));
+        Assert.Equal("Value.Child<TItem>.State.Ready", field.title);
+        Assert.Contains(pages.Single(page => page.symbols.ContainsKey(C_DEEP)).id, field.contracts);
+        Assert.DoesNotContain("_members", field.path);
+
+        void Add(string id, string kind, string signature, string parent)
+        {
+            JsonNode symbol = symbols[0]!.DeepClone();
+            symbol["id"] = id; symbol["kind"] = kind; symbol["signature"] = signature;
+            symbol["signatureHash"] = Hash(signature); symbol["containingType"] = parent;
+            symbols.Add(symbol);
+        }
+    }
+
+    [Fact]
+    public async Task MovingLegacyMembersRepairsIncomingAnchorsAndManualRelativeLinks()
+    {
+        await Sync();
+        string current = Fragment(C_MEMBER);
+        string legacy = Path.Combine(Path.GetDirectoryName(current)!, "_members/count.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(legacy)!);
+        string text = File.ReadAllText(current).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+            + "\nKeep the original explanation. [Owner](../index.md).\n";
+        File.WriteAllText(legacy, text);
+        File.Delete(current);
+        string registryPath = Path.Combine(m_root, "reference/api/content.json");
+        JsonNode registry = JsonNode.Parse(File.ReadAllText(registryPath))!;
+        registry["entries"]!.AsArray().Single(entry => entry!["symbol"]!.GetValue<string>().EndsWith(C_MEMBER, StringComparison.Ordinal))!["path"]
+            = Path.GetRelativePath(m_root, legacy).Replace('\\', '/');
+        File.WriteAllText(registryPath, registry.ToJsonString());
+        Write("content/en/manual/count.md", "---\nuid: manual.count\ntitle: Count\nkind: how-to\n---\n\n# Count\n\n"
+            + "[Old member](../api/engine/probe/value/_members/count.md) and [exact member](../api/engine/probe/value/index.md#api-" + Hash(C_MEMBER)[..16] + ").\n");
+        await Sync();
+        Assert.False(File.Exists(legacy));
+        Assert.Contains("Keep the original explanation. [Owner](index.md).", File.ReadAllText(current));
+        Assert.Contains("source: manual", File.ReadAllText(current));
+        string guide = File.ReadAllText(Path.Combine(m_root, "content/en/manual/count.md"));
+        Assert.DoesNotContain("_members", guide);
+        Assert.DoesNotContain("index.md#api-", guide);
+        string cache = Path.Combine(m_root, "artifacts/query");
+        await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        string after = File.ReadAllText(current);
+        await Sync();
+        Assert.Equal(after, File.ReadAllText(current));
+    }
+
+    private void SaveFacts(JsonNode facts)
+    {
+        string text = facts.ToJsonString();
+        Write("reference/api/probe.json", text);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["apiManifests"]![0]!["sha256"] = Hash(text);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+    }
 
     [Fact]
     public async Task XmlRefreshPreservesAuthoredContractAndExampleAssociations()
