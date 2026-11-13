@@ -90,9 +90,10 @@ internal static class DocumentationScriptApi
             "editor-script" => true,
             _ => throw new ArgumentException("Expected runtime-script or editor-script surface.")
         };
-        var sourceTypes = new Dictionary<string, List<(string path, DocumentationApiExtractor.DocumentationApiEntry symbol)>>(StringComparer.Ordinal);
+        var sourceTypes = new Dictionary<string, List<(string path, string assembly, DocumentationApiExtractor.DocumentationApiEntry symbol)>>(StringComparer.Ordinal);
         var sourceMembers = new Dictionary<string, DocumentationApiExtractor.DocumentationApiEntry>(StringComparer.Ordinal);
         var ambiguousMembers = new HashSet<string>(StringComparer.Ordinal);
+        var declaredScopes = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (byte[] bytes in sourceReferences)
         {
             using JsonDocument source = JsonDocument.Parse(bytes);
@@ -100,6 +101,18 @@ internal static class DocumentationScriptApi
                 continue;
             foreach (JsonElement project in source.RootElement.GetProperty("projects").EnumerateArray())
             {
+                // Export declarations can live in a feature assembly that does not own the exported type.
+                // Collect them before filtering projected owners; compilation context is not a scope.
+                if (project.TryGetProperty("scriptExports", out JsonElement exports))
+                    foreach (JsonElement export in exports.EnumerateArray())
+                    {
+                        string key = export.GetProperty("assembly").GetString() + "\0" + export.GetProperty("type").GetString();
+                        string scope = export.GetProperty("scope").GetString()!;
+                        if (scope is not ("Runtime" or "Editor" or "Authoring")
+                            || declaredScopes.TryGetValue(key, out string? earlier) && earlier != scope)
+                            throw new InvalidDataException("Conflicting or invalid declared scripting scope: " + key);
+                        declaredScopes[key] = scope;
+                    }
                 if (selectedOwners is not null && !selectedOwners.Contains(project.GetProperty("name").GetString()!))
                     continue;
                 foreach (JsonElement element in project.GetProperty("symbols").EnumerateArray())
@@ -116,7 +129,7 @@ internal static class DocumentationScriptApi
                     if (!sourceTypes.TryGetValue(symbol.id, out var candidates))
                         sourceTypes.Add(symbol.id, candidates = []);
                     if (!candidates.Any(prior => prior.path == path && prior.symbol.signature == symbol.signature))
-                        candidates.Add((path, symbol));
+                        candidates.Add((path, project.GetProperty("assembly").GetString()!, symbol));
                 }
             }
         }
@@ -133,6 +146,9 @@ internal static class DocumentationScriptApi
             throw new InvalidDataException("Unsupported script documentation provenance.");
         var origins = provenance.Elements("type").ToDictionary(
             static origin => (string)origin.Attribute("id")!, static origin => (string)origin.Attribute("source")!, StringComparer.Ordinal);
+        var originAssemblies = provenance.Elements("type").ToDictionary(
+            static origin => (string)origin.Attribute("id")!, static origin => (string?)origin.Attribute("assembly")
+                ?? throw new InvalidDataException("A script projection origin requires its actual assembly."), StringComparer.Ordinal);
         var mappings = new Dictionary<string, string>(origins, StringComparer.Ordinal);
         if (editor)
         {
@@ -182,9 +198,13 @@ internal static class DocumentationScriptApi
         {
             INamedTypeSymbol type = symbol as INamedTypeSymbol ?? symbol.ContainingType;
             string id = type.GetDocumentationCommentId()!;
-            if (!origins.TryGetValue(id, out string? original) || !sourceTypes.TryGetValue(original, out var candidates) || candidates.Count != 1)
+            if (!origins.TryGetValue(id, out string? original) || !sourceTypes.TryGetValue(original, out var allCandidates))
                 throw new InvalidDataException("Projected type has no unambiguous compiler origin and captured engine owner: " + id);
+            var candidates = allCandidates.Where(candidate => candidate.assembly == originAssemblies[id]).ToArray();
+            if (candidates.Length != 1) throw new InvalidDataException("Projected type origin does not resolve to one captured assembly: " + id);
             var origin = candidates[0];
+            if (!declaredScopes.TryGetValue(origin.assembly + "\0" + original, out string? scope))
+                throw new InvalidDataException("Projected type lacks its actual export scope declaration: " + id);
             if (paths.TryGetValue(origin.symbol.project, out string? path) && path != origin.path)
                 throw new InvalidDataException("A projected owner has inconsistent source paths.");
             paths[origin.symbol.project] = origin.path;
@@ -194,14 +214,14 @@ internal static class DocumentationScriptApi
             if (!sourceMembers.TryGetValue(origin.path + "\0" + originalId, out var member))
             {
                 if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor, Parameters.Length: 0, ContainingType.IsValueType: true })
-                    return origin.symbol with { documentation = string.Empty, implicitDeclaration = true };
+                    return origin.symbol with { documentation = string.Empty, implicitDeclaration = true, scriptingScope = scope };
                 if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor, Parameters.Length: 0 })
                     return origin.symbol with
                     {
                         documentation = new XElement("member", new XAttribute("name", symbol.GetDocumentationCommentId()!),
                             new XElement("summary", "Appears in the generated script reference without a matching public or protected engine constructor."),
                             new XElement("remarks", "This is an IDE projection artifact, not a supported construction path. Do not call this constructor from scripts; obtain the instance through the containing type's documented owner or factory.")).ToString(SaveOptions.DisableFormatting),
-                        implicitDeclaration = true, projectionOnly = true
+                        implicitDeclaration = true, projectionOnly = true, scriptingScope = scope
                     };
                 throw new InvalidDataException("Projected member has no exact captured source declaration: " + symbol.GetDocumentationCommentId());
             }
@@ -214,7 +234,7 @@ internal static class DocumentationScriptApi
                     attribute.Value = forwardNames.Replace(attribute.Value, match => toLogical[match.Value]);
                 xml = contract.ToString(SaveOptions.DisableFormatting);
             }
-            return member with { documentation = xml };
+            return member with { documentation = xml, scriptingScope = scope };
         }
     }
 

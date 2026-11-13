@@ -9,7 +9,9 @@ internal sealed record DocumentationMetadata(
     string[] aliases,
     string[] contracts,
     string? apiSurface,
-    DocumentationExampleContext? examples
+    DocumentationExampleContext? examples,
+    string? apiScope = null,
+    string[]? apiSurfaces = null
 );
 
 internal sealed record DocumentationPage(

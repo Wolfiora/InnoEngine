@@ -27,6 +27,8 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly Lazy<Dictionary<string, int[]>> m_terms;
     private readonly Dictionary<string, DocumentationSymbolReference[]> m_symbols;
     private readonly Dictionary<string, DocumentationReferenceInfo> m_references;
+    private readonly Dictionary<string, DocumentationApiOrigin> m_origins;
+    private readonly Dictionary<string, DocumentationApiOrigin> m_fragments;
     private readonly ConcurrentDictionary<string, DocumentationPage> m_pages = new(StringComparer.Ordinal);
     private bool m_disposed;
 
@@ -77,13 +79,14 @@ public sealed class DocumentationSnapshot : IDisposable
                 page.sections.ToDictionary(static section => section.anchor, static section => section.line, StringComparer.Ordinal),
                 page.symbols.ToDictionary(static symbol => symbol.id,
                     static symbol => new DocumentationSymbolInfo(symbol.anchor, symbol.signatureIdentity, symbol.code), StringComparer.Ordinal),
-                page.metadata.contracts, page.includes, page.codeBlocks, page.metadata.examples));
+                page.metadata.contracts, page.includes, page.codeBlocks, page.metadata.examples) { markdown = page.text, scope = page.metadata.apiScope,
+                    surfaces = page.metadata.apiSurfaces ?? [] });
         }
         string contentIdentity = DocumentationMarkdown.Hash(string.Join('\n', pages.Select(static page => page.path + "\0" + page.contentIdentity)));
         return new(identity, contentIdentity, m_manifest.binding.repository, m_manifest.binding.revision,
             sourceTree, m_manifest.binding.toolingRevision, m_sourceEvidence is null ? "Unverified" : "Verified",
             m_manifest.projects.ToDictionary(static project => project.name, static project => project.entry, StringComparer.Ordinal), pages,
-            m_manifest.references!) { sourceEvidenceIdentity = m_sourceEvidence?.identity };
+            m_manifest.references!) { sourceEvidenceIdentity = m_sourceEvidence?.identity, sourceFiles = m_manifest.sourceFiles! };
     }
 
     /// <summary>
@@ -151,6 +154,9 @@ public sealed class DocumentationSnapshot : IDisposable
         m_symbols = manifest.symbols.GroupBy(static symbol => symbol.id, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
         m_references = manifest.references!.ToDictionary(static reference => reference.path, StringComparer.Ordinal);
+        m_origins = (manifest.apiOrigins ?? []).ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
+        m_fragments = (manifest.apiOrigins ?? []).Where(origin => origin.path != origin.page)
+            .ToDictionary(origin => origin.path, StringComparer.Ordinal);
         m_terms = new(() => CreateSearchPostings(manifest), LazyThreadSafetyMode.ExecutionAndPublication);
     }
 
@@ -202,6 +208,8 @@ public sealed class DocumentationSnapshot : IDisposable
         cancellationToken.ThrowIfCancellationRequested();
         if (request.offset < 0 || request.limit is < 1 or > 100)
             throw new ArgumentException("Documentation offset must be nonnegative and limit must be between 1 and 100.");
+        if (request.scope is not (null or "Runtime" or "Editor" or "Authoring"))
+            throw new ArgumentException("Unknown declared scripting API scope.");
         if (m_expectedSourceTree is not null && m_expectedSourceTree != sourceTree)
             return Result("Mismatched", "The selected documentation is bound to a different engine input tree. Select or prepare a matching snapshot.");
         if (request.project is not null && !m_manifest.projects.Any(project => project.name == request.project))
@@ -217,6 +225,11 @@ public sealed class DocumentationSnapshot : IDisposable
         if (request.operation != "read")
             throw new ArgumentException("Unknown documentation query operation: " + request.operation);
         string? pageId = request.value;
+        if (pageId is not null && m_fragments.TryGetValue(pageId.Replace('\\', '/'), out DocumentationApiOrigin? fragment))
+        {
+            DocumentationMetadata owner = m_manifest.pages[fragment.page].metadata;
+            return await SymbolAsync(new("symbol", fragment.id, owner.owners.Single(), owner.apiSurface, scope: owner.apiScope), cancellationToken).ConfigureAwait(false);
+        }
         if (pageId is null && request.project is not null)
             pageId = m_manifest.projects.Single(project => project.name == request.project).entry;
         if (pageId is null)
@@ -276,7 +289,8 @@ public sealed class DocumentationSnapshot : IDisposable
         if (m_symbols.TryGetValue(request.value, out DocumentationSymbolReference[]? exact))
         {
             DocumentationSymbolReference[] matches = exact.Where(symbol => (request.project is null || symbol.project == request.project)
-                && (request.surface is null || symbol.surface == request.surface)).ToArray();
+                && (request.surface is null || symbol.surface == request.surface || (symbol.surfaces ?? []).Contains(request.surface, StringComparer.Ordinal))
+                && Scope(m_manifest.pages[m_paths[symbol.pageId]].metadata, request)).ToArray();
             var symbolHits = new List<DocumentationHit>();
             foreach (DocumentationSymbolReference symbol in matches.Skip(request.offset).Take(request.limit))
             {
@@ -360,13 +374,15 @@ public sealed class DocumentationSnapshot : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(request.value);
         DocumentationSymbolReference[] matches = m_symbols.GetValueOrDefault(request.value, [])
             .Where(symbol => (request.project is null || symbol.project == request.project)
-                && (request.surface is null || symbol.surface == request.surface)).ToArray();
+                && (request.surface is null || symbol.surface == request.surface || (symbol.surfaces ?? []).Contains(request.surface, StringComparer.Ordinal))
+                && Scope(m_manifest.pages[m_paths[symbol.pageId]].metadata, request)).ToArray();
         if (matches.Length != 1)
         {
             DocumentationSymbolReference[] candidates = matches.Length > 1 ? matches : m_manifest.symbols
                 .Where(symbol => symbol.id.Contains(request.value, StringComparison.OrdinalIgnoreCase)
                     && (request.project is null || symbol.project == request.project)
-                    && (request.surface is null || symbol.surface == request.surface)).ToArray();
+                    && (request.surface is null || symbol.surface == request.surface || (symbol.surfaces ?? []).Contains(request.surface, StringComparer.Ordinal))
+                    && Scope(m_manifest.pages[m_paths[symbol.pageId]].metadata, request)).ToArray();
             var hits = new List<DocumentationHit>();
             foreach (DocumentationSymbolReference candidate in candidates.Skip(request.offset).Take(request.limit))
             {
@@ -445,9 +461,16 @@ public sealed class DocumentationSnapshot : IDisposable
         string reason,
         string completeness,
         string text
-    ) => new(page.metadata.uid, page.path, section, line, page.metadata.owners, page.metadata.apiSurface, symbol, reason, completeness, text,
-        "inno-doc://innoengine/snapshots/" + identity + "/pages/" + Uri.EscapeDataString(page.metadata.uid)
-        + (section.Length == 0 ? "" : "#" + Uri.EscapeDataString(section)));
+    ) {
+        DocumentationApiOrigin? origin = symbol is null ? null : m_origins.GetValueOrDefault(page.path + "\0" + symbol);
+        return new(page.metadata.uid, page.path, section, line, page.metadata.owners, page.metadata.apiSurface, symbol, reason, completeness, text,
+            "inno-doc://innoengine/snapshots/" + identity + "/pages/" + Uri.EscapeDataString(page.metadata.uid)
+            + (section.Length == 0 ? "" : "#" + Uri.EscapeDataString(section)))
+        {
+            scope = page.metadata.apiScope, contentSource = origin?.path, contentSourceKind = origin?.source,
+            declarationRevision = origin?.revision, surfaces = origin?.surfaces ?? page.metadata.apiSurfaces ?? []
+        };
+    }
 
     private DocumentationResult Result(
         string status,
@@ -459,5 +482,6 @@ public sealed class DocumentationSnapshot : IDisposable
         DocumentationMetadata metadata,
         DocumentationRequest request
     ) => (request.project is null || metadata.owners.Contains(request.project, StringComparer.Ordinal))
-        && (request.surface is null || metadata.apiSurface == request.surface);
+        && (request.surface is null || metadata.apiSurface == request.surface || (metadata.apiSurfaces ?? []).Contains(request.surface, StringComparer.Ordinal))
+        && (request.scope is null || metadata.apiScope == request.scope);
 }

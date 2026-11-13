@@ -14,6 +14,25 @@ namespace Inno.Tooling.Architecture;
 
 internal static class DocumentationApiExtractor
 {
+    internal sealed record ScriptExport(string assembly, string type, string scope);
+
+    internal static IReadOnlyList<ScriptExport> ReadExports(Compilation? compilation)
+    {
+        var exports = new List<ScriptExport>();
+        foreach (AttributeData attribute in compilation?.Assembly.GetAttributes() ?? [])
+        {
+            if (attribute.AttributeClass?.ToDisplayString() != "Inno.Scripting.Api.ScriptingApiExportAttribute"
+                || attribute.ConstructorArguments.Length < 2
+                || attribute.ConstructorArguments[0].Value is not INamedTypeSymbol exported) continue;
+            TypedConstant scope = attribute.ConstructorArguments[^1];
+            string? name = scope.Type?.GetMembers().OfType<IFieldSymbol>()
+                .SingleOrDefault(field => field.HasConstantValue && Equals(field.ConstantValue, scope.Value))?.Name;
+            if (name is not ("Runtime" or "Editor" or "Authoring")) throw new InvalidDataException("Unknown scripting API scope for " + exported);
+            exports.Add(new(exported.ContainingAssembly.Name, exported.OriginalDefinition.GetDocumentationCommentId()!, name));
+        }
+        return exports.OrderBy(export => export.assembly, StringComparer.Ordinal).ThenBy(export => export.type, StringComparer.Ordinal).ToArray();
+    }
+
     private static readonly SymbolDisplayFormat S_SIGNATURE = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
@@ -40,6 +59,8 @@ internal static class DocumentationApiExtractor
     ) {
         var result = new List<DocumentationApiEntry>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
+        var scopes = ReadExports(compilation).Where(export => export.assembly == compilation?.AssemblyName)
+            .ToDictionary(export => export.type, export => export.scope, StringComparer.Ordinal);
         foreach (SyntaxTree tree in compilation?.SyntaxTrees ?? [])
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -51,7 +72,8 @@ internal static class DocumentationApiExtractor
                     continue;
                 foreach (ISymbol symbol in new ISymbol[] { type }.Concat(type.GetMembers()))
                 {
-                    if (!IsVisible(symbol) || symbol.Name.StartsWith('<')
+                    if (!IsVisible(symbol) || symbol is INamedTypeSymbol nested && !SymbolEqualityComparer.Default.Equals(nested, type)
+                        || symbol.Name.StartsWith('<')
                         || symbol is IMethodSymbol { AssociatedSymbol: not null }
                         || symbol is IMethodSymbol { IsImplicitlyDeclared: true, MethodKind: MethodKind.Constructor,
                             ContainingType.TypeKind: TypeKind.Struct or TypeKind.Enum })
@@ -74,7 +96,8 @@ internal static class DocumentationApiExtractor
                         symbol.Kind.ToString(), symbol.ContainingType?.GetDocumentationCommentId(),
                         symbol is INamedTypeSymbol named ? named.BaseType?.ToDisplayString() : null,
                         symbol is INamedTypeSymbol namedType
-                            ? namedType.Interfaces.Select(static contract => contract.ToDisplayString()).ToArray() : []));
+                            ? namedType.Interfaces.Select(static contract => contract.ToDisplayString()).ToArray() : [],
+                        scriptingScope: scopes.GetValueOrDefault(type.GetDocumentationCommentId()!)));
                 }
             }
         }
@@ -142,7 +165,7 @@ internal static class DocumentationApiExtractor
                     symbol.Kind.ToString(), symbol.ContainingType?.GetDocumentationCommentId(),
                     symbol is INamedTypeSymbol named ? named.BaseType?.ToDisplayString() : null,
                     symbol is INamedTypeSymbol namedType
-                        ? namedType.Interfaces.Select(static contract => contract.ToDisplayString()).ToArray() : [], origin.projectionOnly));
+                        ? namedType.Interfaces.Select(static contract => contract.ToDisplayString()).ToArray() : [], origin.projectionOnly, origin.scriptingScope));
             }
             foreach (INamedTypeSymbol child in type.GetTypeMembers())
                 VisitType(child);
@@ -262,6 +285,7 @@ internal static class DocumentationApiExtractor
         string? containingType,
         string? baseType,
         IReadOnlyList<string> interfaces,
-        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool projectionOnly = false
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool projectionOnly = false,
+        [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? scriptingScope = null
     );
 }

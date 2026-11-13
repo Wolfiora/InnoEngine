@@ -27,6 +27,40 @@ public sealed class DocumentationSourceContractTests : IDisposable
     }
 
     [Fact]
+    public async Task ScriptScopeComesFromExportAttributesIncludingNestedAndAuthoringTypes()
+    {
+        Write("tests/support/Contract/Contract.cs", """
+            using Inno.Scripting.Api;
+            [assembly: ScriptingApiExport(typeof(Contract.Outer), ScriptingApiScope.Runtime)]
+            [assembly: ScriptingApiExport(typeof(Contract.Outer.Inner), ScriptingApiScope.Editor)]
+            [assembly: ScriptingApiExport(typeof(Contract.Annotation), ScriptingApiScope.Authoring)]
+            namespace Inno.Scripting.Api {
+                public enum ScriptingApiScope { Runtime, Editor, Authoring }
+                [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
+                public sealed class ScriptingApiExportAttribute : System.Attribute {
+                    public ScriptingApiExportAttribute(System.Type type, ScriptingApiScope scope) { }
+                }
+            }
+            namespace Contract {
+                public class Outer { public int Read() => 1; public class Inner { public int Read() => 2; } }
+                public class Annotation : System.Attribute { public int Value { get; } }
+                public class NotExported { }
+            }
+            """);
+        await RestoreAsync();
+        string facts = Path.Combine(m_root, "scope.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(facts)));
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(facts));
+        var symbols = document.RootElement.GetProperty("projects")[0].GetProperty("symbols").EnumerateArray()
+            .ToDictionary(symbol => symbol.GetProperty("id").GetString()!);
+        Assert.Equal("Runtime", symbols["M:Contract.Outer.Read"].GetProperty("scriptingScope").GetString());
+        Assert.Equal("Editor", symbols["T:Contract.Outer.Inner"].GetProperty("scriptingScope").GetString());
+        Assert.Equal("Editor", symbols["M:Contract.Outer.Inner.Read"].GetProperty("scriptingScope").GetString());
+        Assert.Equal("Authoring", symbols["P:Contract.Annotation.Value"].GetProperty("scriptingScope").GetString());
+        Assert.False(symbols["T:Contract.NotExported"].TryGetProperty("scriptingScope", out _));
+    }
+
+    [Fact]
     public async Task SupportLibrariesRetainNullableRefGenericRecordAndInheritedContracts()
     {
         const string C_SOURCE = """

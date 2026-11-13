@@ -375,7 +375,8 @@ public static class DocumentationReferences
                 ?? throw new InvalidDataException("Selected API compilation is unavailable: " + project
                     + (failures.Count == 0 ? string.Empty : "\n" + string.Join('\n', failures)));
             var symbols = DocumentationApiExtractor.Capture(root, project, null, compilation, failures, cancellationToken);
-            inventory.Add(new(Path.GetRelativePath(root, project).Replace('\\', '/'), Path.GetFileNameWithoutExtension(project), symbols));
+            inventory.Add(new(Path.GetRelativePath(root, project).Replace('\\', '/'), Path.GetFileNameWithoutExtension(project), symbols,
+                DocumentationApiExtractor.ReadExports(compilation), compilation.AssemblyName!));
         }
         if (failures.Count != 0)
             throw new InvalidDataException("API extraction did not establish complete source facts:\n" + string.Join('\n', failures));
@@ -400,6 +401,8 @@ public static class DocumentationReferences
     private sealed record ApiProject(
         string project,
         string name,
-        IReadOnlyList<DocumentationApiExtractor.DocumentationApiEntry> symbols
+        IReadOnlyList<DocumentationApiExtractor.DocumentationApiEntry> symbols,
+        IReadOnlyList<DocumentationApiExtractor.ScriptExport> scriptExports,
+        string assembly
     );
 }

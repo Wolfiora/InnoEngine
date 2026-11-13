@@ -25,7 +25,7 @@ public static class DocumentationStore
     internal static string schema { get; } = CreateSchemaIdentity();
     private static string parserSchema { get; } = CreateSchemaIdentity(
         "DocumentationMarkdown.cs", "DocumentationPage.cs", "DocumentationCodeBlockInfo.cs",
-        "DocumentationExampleContext.cs", "Inno.Tooling.Documentation.csproj");
+        "DocumentationExampleContext.cs", "DocumentationApiComposition.cs", "DocumentationApiFragment.cs", "Inno.Tooling.Documentation.csproj");
 
     /// <summary>
     /// Explicitly scans a Docs checkout and publishes a consistent generation using reusable parsed pages.
@@ -96,7 +96,9 @@ public static class DocumentationStore
         var reusable = previous?.parserSchema == parserSchema
             ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
             : new Dictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
-        string[] sources = EnumerateContent(content).ToArray();
+        var raw = EnumerateContent(content).ToDictionary(path => Path.GetRelativePath(root, path).Replace('\\', '/'), File.ReadAllText, StringComparer.Ordinal);
+        DocumentationComposedContent composed = DocumentationApiComposition.Prepare(root, binding, raw);
+        string[] sources = composed.pages.Keys.ToArray();
         var prepared = new (DocumentationPage page, DocumentationPageReference reference)[sources.Length];
         var entries = new SortedDictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
         int parsed = 0;
@@ -114,8 +116,8 @@ public static class DocumentationStore
         {
             cancellation.ThrowIfCancellationRequested();
             string path = sources[index];
-            string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
-            string text = File.ReadAllText(path);
+            string relative = path;
+            string text = composed.pages[path];
             string key = DocumentationMarkdown.Hash(parserSchema + "\n" + relative + "\n" + text);
             string directory = Path.Combine(output, "pages", key);
             string payload = PathBoundary.RequireUnlinkedPath(output, Path.Combine(directory, "page.json"));
@@ -174,9 +176,12 @@ public static class DocumentationStore
             return new DocumentationSearchEntry(page.metadata.uid, section.anchor, section.title,
                 body[..Math.Min(body.Length, 320)], DocumentationMarkdown.Tokens(terms));
         })).ToArray();
+        var origins = composed.origins.ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
         var symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
-            page.metadata.owners.Single(), page.metadata.apiSurface!, symbol.id, page.metadata.uid, symbol.anchor))).ToArray();
-        var manifest = new DocumentationManifest("", schema, parserSchema, binding, entries, projects, search, symbols, references.references);
+            page.metadata.owners.Single(), page.metadata.apiSurface!, symbol.id, page.metadata.uid, symbol.anchor,
+            origins.GetValueOrDefault(page.path + "\0" + symbol.id)?.surfaces))).ToArray();
+        var manifest = new DocumentationManifest("", schema, parserSchema, binding, entries, projects, search, symbols, references.references,
+            composed.inputs, composed.origins);
         string identity = DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest, json));
         manifest = manifest with { identity = identity };
         string generation = Path.Combine(output, "generations", identity);
@@ -184,8 +189,9 @@ public static class DocumentationStore
         RecordPhase("IndexProjection");
         // Recheck actual contents, including additions and same-length timestamp-preserving edits.
         string[] current = EnumerateContent(content).Select(path => Path.GetRelativePath(root, path).Replace('\\', '/')).ToArray();
-        if (!current.SequenceEqual(entries.Keys, StringComparer.Ordinal)
-            || pages.Any(page => File.ReadAllText(Path.Combine(root, page.path)) != page.text)
+        if (!current.SequenceEqual(raw.Keys.Order(StringComparer.Ordinal), StringComparer.Ordinal)
+            || composed.inputs.Any(input => !File.Exists(Path.Combine(root, input.Key))
+                || DocumentationMarkdown.Hash(File.ReadAllText(Path.Combine(root, input.Key))) != input.Value)
             || !File.ReadAllBytes(bindingPath).SequenceEqual(bindingBytes)
             || !File.ReadAllBytes(projectPath).SequenceEqual(projectBytes))
             throw new IOException("Documentation inputs changed during preparation. The previous snapshot remains selected; refresh a stable source.");

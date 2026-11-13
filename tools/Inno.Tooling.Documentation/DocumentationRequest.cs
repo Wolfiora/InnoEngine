@@ -26,6 +26,7 @@ namespace Inno.Tooling.Documentation;
 /// <param name="limit">
 /// Maximum search candidates, between one and one hundred. Content reads retain complete units or explicit continuations.
 /// </param>
+/// <param name="scope">Declared Runtime, Editor or Authoring scripting scope, or null for every scope.</param>
 public sealed record DocumentationRequest(
     string operation,
     string? value = null,
@@ -33,5 +34,6 @@ public sealed record DocumentationRequest(
     string? surface = null,
     string? section = null,
     int offset = 0,
-    int limit = 5
+    int limit = 5,
+    string? scope = null
 );

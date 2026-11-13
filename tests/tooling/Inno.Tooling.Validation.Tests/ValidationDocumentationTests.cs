@@ -209,16 +209,16 @@ public sealed class ValidationDocumentationTests
     }
 
     [Fact]
-    public async Task MissingExternalSnapshotCannotFallBackToAnOldWikiTree()
+    public async Task EngineChangesDoNotRequireADocumentationCandidateOrReadAnOldWikiTree()
     {
         using var repository = new ValidationRepository();
         repository.Write("docs/Example.md", "# Example\nOld guidance cannot certify the external candidate.");
         repository.Write("src/Example/Changed.cs", "namespace Example; public class Changed { }");
         using JsonDocument plan = await repository.PlanAsync();
-        JsonElement missing = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "documentation");
-        Assert.Equal("documentation-missing", missing.GetProperty("kind").GetString());
-        Assert.Equal(JsonValueKind.Null, missing.GetProperty("exclusion").ValueKind);
-        Assert.Contains("--docs-cache-root", missing.GetProperty("reason").GetString());
+        JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
+        Assert.DoesNotContain(checks, check => check.GetProperty("kind").GetString()!.StartsWith("documentation", StringComparison.Ordinal));
+        Assert.Contains(checks, check => check.GetProperty("kind").GetString() == "build");
+        Assert.Contains(checks, check => check.GetProperty("kind").GetString() == "api");
         await Assert.ThrowsAsync<ArgumentException>(() => repository.PlanAsync(documentationCache: repository.PathOf("artifacts/documentation")));
     }
 

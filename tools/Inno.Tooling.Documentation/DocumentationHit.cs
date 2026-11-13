@@ -50,4 +50,15 @@ public sealed record DocumentationHit(
     string completeness,
     string text,
     string resource
-);
+) {
+    /// <summary>Gets the declared scripting scope when this result belongs to a script API.</summary>
+    public string? scope { get; init; }
+    /// <summary>Gets the original symbol Markdown path, separately from its composed type page.</summary>
+    public string? contentSource { get; init; }
+    /// <summary>Gets xml or manual for an exact API content unit, or null for ordinary guidance.</summary>
+    public string? contentSourceKind { get; init; }
+    /// <summary>Gets the exact captured engine revision for the selected declaration.</summary>
+    public string? declarationRevision { get; init; }
+    /// <summary>Gets actual compilation surfaces for the selected symbol, or the page for ordinary reads.</summary>
+    public IReadOnlyList<string> surfaces { get; init; } = [];
+}

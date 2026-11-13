@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Tooling.Documentation.Indexing;
 
 namespace Inno.Tooling.Documentation;
 
@@ -18,9 +19,14 @@ public static class DocumentationCommand
     /// </summary>
     /// <param name="arguments">
     /// index, search, read, symbol, resource, status or catalog followed by engine-root, cache-root, docs-root,
-    /// snapshot, source-tree, query, page, project, surface, section, id, offset, limit and format as applicable.
+    /// snapshot, source-tree, query, page, project, surface, scope, section, id, offset, limit and format as applicable.
     /// Index requires docs-root. Read-only commands reject docs-root rather than implicitly refreshing mutable content.
     /// Reads optionally accept evidence-file and evidence-sha256 selected by an authenticated preparation boundary.
+    /// api-plan, api-check and api-sync accept only docs-root; they validate captured facts and plan, audit or synchronize registered
+    /// API prose. Manual prose is preserved, while XML-managed fragments follow the captured XML documentation.
+    /// api-package and api-import accept docs-root and package, explicitly transferring complete hashed API facts.
+    /// Import runs only in a publisher-owned checkout; remote origin, branch ancestry and atomic Git publication
+    /// are the protected workflow's responsibility. Ordinary queries never import or synchronize content.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels preparation or reading while preserving the previous complete generation.
@@ -43,15 +49,19 @@ public static class DocumentationCommand
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
+        if (arguments.Length > 0 && arguments[0] is "api-package" or "api-import")
+            return await DocumentationApiPackage.ExecuteAsync(arguments[0], arguments[1..], cancellationToken).ConfigureAwait(false);
+        if (arguments.Length > 0 && arguments[0] is "api-plan" or "api-check" or "api-sync")
+            return await DocumentationApiSynchronization.ExecuteAsync(arguments[0], arguments[1..], cancellationToken).ConfigureAwait(false);
         if (arguments.Length == 0 || arguments[0] is not ("index" or "search" or "read" or "symbol" or "resource" or "status" or "catalog"))
             throw new ArgumentException("Usage: docs <index|search|read|symbol|resource|status|catalog> --engine-root ROOT [--cache-root PATH] [--format text|json]. Index requires --docs-root CHECKOUT; reads require a prepared snapshot.");
         string operation = arguments[0];
         string[] specific = operation switch
         {
             "index" => ["--docs-root"],
-            "search" => ["--query", "--project", "--surface", "--limit", "--offset"],
+            "search" => ["--query", "--project", "--surface", "--scope", "--limit", "--offset"],
             "read" => ["--page", "--project", "--section", "--offset"],
-            "symbol" => ["--id", "--project", "--surface", "--limit", "--offset"],
+            "symbol" => ["--id", "--project", "--surface", "--scope", "--limit", "--offset"],
             "resource" => ["--uri", "--offset"],
             _ => []
         };
@@ -111,7 +121,7 @@ public static class DocumentationCommand
             result = await snapshot.QueryAsync(new(operation, value, options.GetValueOrDefault("--project"),
                 options.GetValueOrDefault("--surface"), options.GetValueOrDefault("--section"),
                 int.Parse(options.GetValueOrDefault("--offset", "0"), CultureInfo.InvariantCulture),
-                int.Parse(options.GetValueOrDefault("--limit", "5"), CultureInfo.InvariantCulture)), cancellationToken).ConfigureAwait(false);
+                int.Parse(options.GetValueOrDefault("--limit", "5"), CultureInfo.InvariantCulture), options.GetValueOrDefault("--scope")), cancellationToken).ConfigureAwait(false);
         }
         if (format == "json")
             Console.WriteLine(JsonSerializer.Serialize(result, DocumentationStore.json));

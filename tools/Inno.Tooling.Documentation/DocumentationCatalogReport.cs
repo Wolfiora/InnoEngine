@@ -52,4 +52,6 @@ public sealed record DocumentationCatalogReport(
     /// Gets the matching trusted source certificate identity, or null for an unverified catalog.
     /// </summary>
     public string? sourceEvidenceIdentity { get; init; }
+    /// <summary>Gets every original source identity, including member fragments and their composition registry.</summary>
+    public IReadOnlyDictionary<string, string> sourceFiles { get; init; } = new Dictionary<string, string>();
 }

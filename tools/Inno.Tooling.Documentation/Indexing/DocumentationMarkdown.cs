@@ -47,7 +47,7 @@ internal static class DocumentationMarkdown
             throw new InvalidDataException("Examples require an explicit reference mode and unique project identities: " + path);
         var facts = new DocumentationMetadata(uid, Scalar("kind") ?? "", Sequence("owners"),
             Sequence("aliases"), Sequence("contracts"), Scalar("apiSurface"),
-            exampleMode is null ? null : new DocumentationExampleContext(exampleMode, exampleProjects));
+            exampleMode is null ? null : new DocumentationExampleContext(exampleMode, exampleProjects), Scalar("apiScope"), Sequence("apiSurfaces"));
         if (facts.kind is not ("landing" or "tutorial" or "how-to" or "explanation" or "project" or "api" or "troubleshooting"))
             throw new InvalidDataException("Unknown documentation page kind: " + path);
         if (facts.kind == "project" && facts.owners.Length != 1)

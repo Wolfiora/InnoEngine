@@ -206,7 +206,24 @@ public sealed class DocumentationExampleTests : IDisposable
     [Fact]
     public async Task ScriptReferenceCaptureUsesActualMembersOriginsAndQualifiedSurfaces()
     {
-        Write("src/Inno.Probe/Probe.cs", "namespace Inno.Probe; public static class Probe { public static int Read(int value) => value; public static int Read(string value) => value.Length; } public static class EditorProbe { public static int Inspect() => 1; } public sealed class Owned { private Owned() { } }");
+        Write("src/Inno.Probe/Probe.cs", """
+            using Inno.Scripting.Api;
+            [assembly: ScriptingApiExport(typeof(Inno.Probe.Probe), ScriptingApiScope.Runtime)]
+            [assembly: ScriptingApiExport(typeof(Inno.Probe.EditorProbe), ScriptingApiScope.Editor)]
+            [assembly: ScriptingApiExport(typeof(Inno.Probe.Owned), ScriptingApiScope.Authoring)]
+            namespace Inno.Scripting.Api {
+                public enum ScriptingApiScope { Runtime, Editor, Authoring }
+                [System.AttributeUsage(System.AttributeTargets.Assembly, AllowMultiple = true)]
+                public sealed class ScriptingApiExportAttribute : System.Attribute {
+                    public ScriptingApiExportAttribute(System.Type type, ScriptingApiScope scope) { }
+                }
+            }
+            namespace Inno.Probe {
+                public static class Probe { public static int Read(int value) => value; public static int Read(string value) => value.Length; }
+                public static class EditorProbe { public static int Inspect() => 1; }
+                public sealed class Owned { private Owned() { } }
+            }
+            """);
         var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
         foreach (string argument in new[] { "restore", Path.Combine(m_root, "src/Inno.Probe/Inno.Probe.csproj"), "--disable-parallel", "-nr:false", "-v:quiet" })
             start.ArgumentList.Add(argument);
@@ -250,6 +267,8 @@ public sealed class DocumentationExampleTests : IDisposable
             Assert.Contains("M:Logical.Renamed.Read(System.String)", symbols.Keys);
             Assert.DoesNotContain(symbols.Keys, static id => id.Contains("Hidden", StringComparison.Ordinal) || id.Contains("HostOnly", StringComparison.Ordinal));
             Assert.Contains("supplied value", symbols["M:Logical.Renamed.Read(System.Int32)"].GetProperty("documentation").GetString());
+            Assert.Equal("Runtime", symbols["M:Logical.Renamed.Read(System.Int32)"].GetProperty("scriptingScope").GetString());
+            Assert.Equal("Authoring", symbols["T:Logical.Owned"].GetProperty("scriptingScope").GetString());
             Assert.True(symbols["M:Logical.Owned.#ctor"].GetProperty("projectionOnly").GetBoolean());
             Assert.Contains("not a supported construction path", symbols["M:Logical.Owned.#ctor"].GetProperty("documentation").GetString());
         }

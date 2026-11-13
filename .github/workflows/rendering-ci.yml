@@ -19,10 +19,6 @@ on:
         description: Require cold native input, ten warm samples and extended lifecycle acceptance
         type: boolean
         default: false
-      documentation_revision:
-        description: Exact InnoEngine.Docs candidate commit; blank uses the engine PR metadata
-        type: string
-        required: false
 
 permissions:
   contents: read
@@ -47,7 +43,6 @@ jobs:
       run: ${{ steps.select.outputs.run }}
       full: ${{ steps.select.outputs.full }}
       extended: ${{ steps.select.outputs.extended }}
-      documentation: ${{ steps.documentation.outputs.revision }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -61,35 +56,6 @@ jobs:
         run: |
           ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
             -Commit $env:CANDIDATE_COMMIT -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL
-      - name: Select the immutable documentation candidate before matrix preparation
-        id: documentation
-        if: steps.select.outputs.run == 'true'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CANDIDATE_COMMIT: ${{ github.sha }}
-          DOCUMENTATION_REVISION: ${{ inputs.documentation_revision }}
-        run: |
-          New-Item -ItemType Directory -Path artifacts/validation/candidate -Force | Out-Null
-          try {
-            $candidate = ./tests/ci/Get-DocumentationCandidate.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
-              -ExpectedCommit $env:CANDIDATE_COMMIT -ExplicitRevision $env:DOCUMENTATION_REVISION
-            $candidate | ConvertTo-Json -Depth 4 | Set-Content artifacts/validation/candidate/selection.json
-          } catch {
-            @{ commit = $env:CANDIDATE_COMMIT; status = 'Blocked'; reason = $_.Exception.Message } |
-              ConvertTo-Json | Set-Content artifacts/validation/candidate/failure.json
-            throw
-          }
-          "revision=$($candidate.revision)" >> $env:GITHUB_OUTPUT
-          "Documentation candidate: $($candidate.repository)@$($candidate.revision), engine tree $($candidate.engineTree). Source certification remains required." >> $env:GITHUB_STEP_SUMMARY
-      - name: Retain candidate selection and first failure
-        if: always() && steps.select.outputs.run == 'true'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: documentation-candidate-attempt-${{ github.run_attempt }}
-          path: artifacts/validation/candidate/
-          if-no-files-found: error
-          retention-days: 30
 
   validation:
     needs: cadence
@@ -106,13 +72,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Check out the selected documentation without executing its scripts
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          repository: Wolfiora/InnoEngine.Docs
-          ref: ${{ needs.cadence.outputs.documentation }}
-          path: artifacts/documentation-source
-          persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
         id: sdk
       - uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
@@ -126,13 +85,11 @@ jobs:
           FORCE_FULL: ${{ needs.cadence.outputs.full }}
           EXTENDED: ${{ needs.cadence.outputs.extended }}
           VALIDATION_PLATFORM: ${{ matrix.os }}
-          DOCUMENTATION_REVISION: ${{ needs.cadence.outputs.documentation }}
         run: |
           $baseline = $env:BASE_REVISION
           if ($baseline -match '^0+$') { $baseline = $env:EXPECTED_COMMIT; $env:FORCE_FULL = 'true' }
           ./tests/ci/Invoke-ValidationCi.ps1 -Stage Plan -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT `
-            -Full:($env:FORCE_FULL -eq 'true') -Extended:($env:EXTENDED -eq 'true') `
-            -DocumentationRoot artifacts/documentation-source -DocumentationRevision $env:DOCUMENTATION_REVISION
+            -Full:($env:FORCE_FULL -eq 'true') -Extended:($env:EXTENDED -eq 'true')
       - name: Restore immutable candidates for publisher verification
         id: native-cache
         if: steps.plan.outputs.native == 'true' && needs.cadence.outputs.extended != 'true'
@@ -226,37 +183,16 @@ jobs:
             exit 0
           }
           if ($env:SHOULD_RUN -cne 'true') { throw 'Cadence selection did not produce an explicit decision.' }
-          $catalogPaths = [Collections.Generic.List[string]]::new()
-          $planPaths = [Collections.Generic.List[string]]::new()
           $receipts = foreach ($platform in @('windows-2022', 'macos-15')) {
             $available = @(Get-ChildItem artifacts/validation/received -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
             $selected = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $available -Name "validation-$platform" -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
             $directory = $selected.directory
-            $catalogPaths.Add("$directory/documentation-catalog.json")
-            $planPaths.Add("$directory/plan.json")
             $receipt = ./tests/ci/Test-ValidationReport.ps1 -PlanPath "$directory/plan.json" -ResultsPath "$directory/results.json" `
-              -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION `
-              -DocumentationPairingPath "$directory/documentation-pairing.json"
+              -ExpectedCommit $env:EXPECTED_COMMIT -JobConclusion $env:PRODUCER_CONCLUSION
             [pscustomobject]@{ platform = $platform; receipt = $receipt }
           }
           $receipts | ConvertTo-Json -Depth 10 | Set-Content artifacts/validation/certification.json
           $full = @($receipts | Where-Object { -not $_.receipt.full }).Count -eq 0
-          $compatibility = @{}
-          if (-not $full) {
-            $baselines = @($planPaths | ForEach-Object { (Get-Content -LiteralPath $_ -Raw | ConvertFrom-Json).baseline } | Sort-Object -Unique)
-            if ($baselines.Count -ne 1) { throw 'The platform plans disagree on their impact baseline.' }
-            $previous = ./tests/ci/Get-DocumentationBaseline.ps1 -Commit $baselines[0] -OutputDirectory artifacts/validation/documentation-baseline
-            $previous | ConvertTo-Json -Depth 5 | Set-Content artifacts/validation/documentation-baseline-selection.json
-            if ($previous.status -ceq 'Ready') {
-              $compatibility = @{ PreviousCertificatePath = $previous.path; PreviousOrigin = $previous.origin; PlanPaths = $planPaths.ToArray() }
-            } elseif ($previous.status -cne 'Unavailable') { throw 'Documentation baseline lookup did not produce an explicit decision.' }
-          }
-          $source = ./tests/ci/New-DocumentationSourceCertificate.ps1 -CertificationPath artifacts/validation/certification.json `
-            -CatalogPaths $catalogPaths.ToArray() -OutputDirectory artifacts/validation/source-certification `
-            -ProducerOrigin "$env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID/attempts/$env:GITHUB_RUN_ATTEMPT" @compatibility
-          "source-certified=$(($source.status -ceq 'Passed').ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
-          "Source API certification: $($source.status). Missing obligations: $($source.missing.Count)." >> $env:GITHUB_STEP_SUMMARY
-          if ($full -and $source.status -cne 'Passed') { throw 'Full certification requires complete source API and executable-example coverage; inspect source-certification-status.json.' }
           "full=$($full.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
           foreach ($receipt in $receipts) {
             "$($receipt.platform): $($receipt.receipt.passed) passed, $($receipt.receipt.reused) reused, $($receipt.receipt.notApplicable) explicitly not applicable." >> $env:GITHUB_STEP_SUMMARY
@@ -286,30 +222,3 @@ jobs:
           path: artifacts/validation/certification.json
           if-no-files-found: error
           retention-days: 30
-      - name: Retain source certification diagnostics
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: documentation-source-status-attempt-${{ github.run_attempt }}
-          path: |
-            artifacts/validation/source-certification/source-certification-status.json
-            artifacts/validation/documentation-baseline-selection.json
-            artifacts/validation/documentation-baseline/provenance.json
-          if-no-files-found: ignore
-          retention-days: 30
-      - name: Retain failed reconciliation inputs
-        if: failure()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: source-certification-inputs-attempt-${{ github.run_attempt }}
-          path: artifacts/validation/certification.json
-          if-no-files-found: ignore
-          retention-days: 30
-      - name: Retain complete source certification
-        if: steps.reconcile.outputs.source-certified == 'true'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: documentation-source-certification-attempt-${{ github.run_attempt }}
-          path: artifacts/validation/source-certification/source-certificate.json
-          if-no-files-found: error
-          retention-days: 90

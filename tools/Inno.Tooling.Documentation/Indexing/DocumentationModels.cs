@@ -39,7 +39,9 @@ internal sealed record DocumentationManifest(
     IReadOnlyList<DocumentationProject> projects,
     IReadOnlyList<DocumentationSearchEntry> search,
     IReadOnlyList<DocumentationSymbolReference> symbols,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<DocumentationReferenceInfo>? references = null
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<DocumentationReferenceInfo>? references = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyDictionary<string, string>? sourceFiles = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<DocumentationApiOrigin>? apiOrigins = null
 );
 
 internal sealed record DocumentationSymbolReference(
@@ -47,7 +49,8 @@ internal sealed record DocumentationSymbolReference(
     string surface,
     string id,
     string pageId,
-    string anchor
+    string anchor,
+    string[]? surfaces = null
 );
 
 internal sealed record DocumentationPageReference(

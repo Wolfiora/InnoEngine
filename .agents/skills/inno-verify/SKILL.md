@@ -9,4 +9,6 @@ Check evidence identities before executing missing or invalid work. Commits, pus
 
 Block work whose prerequisites failed; continue independent work when input integrity, environment and cancellation permit. Keep compilation, behavioral contracts, documentation/examples and product requirements distinct. Website rendering and prepared-snapshot queries do not require engine products or Native preparation. Missing reference or example evidence remains blocked.
 
+Ordinary engine verification does not require a paired Docs candidate. Independent API extraction verifies complete source/XML/projection facts; Docs validation checks its selected API version and examples. `API editorial coverage` warnings are neutral and never substitute for or block these checks. Keep a tool crash, corrupt data, missing environment and an editorial reminder distinct.
+
 Write statuses, exact input identities, failure causes, fixes and outstanding evidence to the existing [acceptance record](../../records/acceptance/README.md). Respect an explicitly local acceptance boundary; retain the unexecuted matrix as outstanding work. Historical evidence is not current certification.

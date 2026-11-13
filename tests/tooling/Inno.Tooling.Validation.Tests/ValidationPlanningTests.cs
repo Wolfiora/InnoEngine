@@ -910,14 +910,11 @@ public sealed class ValidationPlanningTests
         using JsonDocument report = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "preparation.json")));
         JsonElement preparation = report.RootElement;
         Assert.Equal("Blocked", preparation.GetProperty("status").GetString());
-        Assert.Equal(documentation ? "NativeSources" : "Documentation", preparation.GetProperty("kind").GetString());
+        Assert.Equal("NativeSources", preparation.GetProperty("kind").GetString());
         Assert.Equal(repository.Git("rev-parse", "HEAD"), preparation.GetProperty("commit").GetString());
         Assert.Contains(C_OWNER, preparation.GetProperty("owners").EnumerateArray().Select(owner => owner.GetString()));
         JsonElement sources = preparation.GetProperty("sources");
-        if (documentation)
-            Assert.Equal(revision, sources.GetProperty("extern/Uninitialized").GetString());
-        else
-            Assert.Empty(sources.EnumerateObject());
+        Assert.Equal(revision, sources.GetProperty("extern/Uninitialized").GetString());
         Assert.False(File.Exists(Path.Combine(output, "plan.json")));
         Assert.False(File.Exists(Path.Combine(output, "results.json")));
         Assert.False(Directory.Exists(repository.PathOf("extern/Uninitialized/.git")));

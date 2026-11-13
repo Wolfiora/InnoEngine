@@ -192,13 +192,11 @@ internal static class ValidationPlanner
         {
             string[] unavailable = inputs.Where(static pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)).Select(static pair => pair.Key).ToArray();
             if (unavailable.Length != 0)
-                return new(null, new("Blocked", documentation is null ? "Documentation" : "NativeSources", root, commit, mergeBase,
-                    ValidationInputs.Identity(inputs), documentation is null
-                        ? "Select the required external documentation snapshot before preparing native inputs."
-                        : "Selected owners require unavailable pinned native sources. Prepare these inputs explicitly, then generate a new plan.",
+                return new(null, new("Blocked", "NativeSources", root, commit, mergeBase,
+                    ValidationInputs.Identity(inputs), "Selected owners require unavailable pinned native sources. Prepare these inputs explicitly, then generate a new plan.",
                     nativeOwners.Where(owner => !executionExclusions.ContainsKey(owner) && (affected.Contains(owner) || documentationOwners.Contains(owner)))
                         .Concat(nativeDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
-                    documentation is null ? new(StringComparer.Ordinal) : unavailable.ToDictionary(static path => path,
+                    unavailable.ToDictionary(static path => path,
                         path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
             if (development is null)
                 throw new InvalidDataException("Native validation requires the existing development product declaration.");
@@ -254,12 +252,11 @@ internal static class ValidationPlanner
             checks.Add(new("agent-documents", "agent-documents", ".agents", "Rule, skill and record structure and links; no product compilation.", "any", [],
                 inputs.Keys.Where(static path => path.StartsWith(".agents/", StringComparison.Ordinal) || path is "AGENTS.md" or "CONTRIBUTING.md")
                     .Append("@tooling").Order(StringComparer.Ordinal).ToArray(), true, null));
-        if (documentation is not null || affected.Any(owner => !byPath[owner].test) || full)
-            checks.Add(new("documentation", documentation is null ? "documentation-missing" : "documentation", "InnoEngine.Docs",
-                documentation is null ? "Required external documentation snapshot was not supplied. Pass --docs-cache-root and --docs-snapshot."
-                    : "Canonical external project entries and selected immutable reference payloads.", "any", [],
+        if (documentation is not null)
+            checks.Add(new("documentation", "documentation", "InnoEngine.Docs",
+                "Explicitly selected canonical project entries and immutable reference payloads.", "any", [],
                 inputs.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal)).Append("@tooling").ToArray(), true, null,
-                documentation: documentation is null ? null : new([], [], documentation.catalog.contentIdentity, configuration, null)));
+                documentation: new([], [], documentation.catalog.contentIdentity, configuration, null)));
         if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || IsCiContractInput(path)
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)))
             checks.Add(new("ci-contracts", "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",

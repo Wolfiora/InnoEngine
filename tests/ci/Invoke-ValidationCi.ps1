@@ -3,8 +3,6 @@ param(
     [Parameter(Mandatory)][string]$ExpectedCommit,
     [Parameter(Mandatory)][ValidateSet('Plan', 'Run', 'Retain')][string]$Stage,
     [string]$Dotnet = 'dotnet',
-    [string]$DocumentationRoot,
-    [string]$DocumentationRevision,
     [switch]$Full,
     [switch]$Extended,
     [ValidateSet('success', 'failure', 'cancelled', 'skipped')][string]$ValidationConclusion
@@ -24,62 +22,21 @@ if ($Stage -eq 'Plan') {
     New-Item -ItemType Directory -Path $output | Out-Null
     $assembly = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $output 'bootstrap.log'))
     @{ assembly = $assembly[0]; sha256 = (Get-FileHash -LiteralPath $assembly[0]).Hash } | ConvertTo-Json | Set-Content (Join-Path $output 'entry.json')
-    $documentationArguments = @()
-    if ($DocumentationRoot) {
-        if ($DocumentationRevision -cnotmatch '^[a-f0-9]{40}$') { throw 'Hosted documentation preparation requires an exact candidate revision.' }
-        $documentation = (Resolve-Path -LiteralPath $DocumentationRoot).Path
-        $documentationCommit = (& git -C $documentation rev-parse HEAD).Trim()
-        if ($LASTEXITCODE -ne 0 -or $documentationCommit -cne $DocumentationRevision) { throw 'Documentation checkout is not the requested candidate.' }
-        $documentationEdits = @(& git -C $documentation status --porcelain --untracked-files=all)
-        if ($LASTEXITCODE -ne 0 -or $documentationEdits.Count -ne 0) { throw 'Hosted documentation candidate contains uncommitted inputs.' }
-        $sourceTree = (& git rev-parse 'HEAD^{tree}').Trim()
-        if ($LASTEXITCODE -ne 0 -or $sourceTree -cnotmatch '^[a-f0-9]{40}$') { throw 'The engine candidate has no valid source-tree identity.' }
-        $cacheRoot = Join-Path $repository 'artifacts/documentation-query'
-        $indexed = @(& $Dotnet $assembly[0] docs index --engine-root $repository --docs-root $documentation --cache-root $cacheRoot --format json)
-        if ($LASTEXITCODE -ne 0) { throw 'Explicit documentation snapshot preparation failed.' }
-        $indexed -join "`n" | Set-Content -LiteralPath (Join-Path $output 'documentation-index.json') -Encoding utf8NoBOM
-        $snapshot = $indexed -join "`n" | ConvertFrom-Json
-        if ($snapshot.snapshot -cnotmatch '^[a-f0-9]{64}$') { throw 'Documentation preparation did not establish an immutable snapshot.' }
-        $catalogOutput = @(& $Dotnet $assembly[0] docs catalog --engine-root $repository --cache-root $cacheRoot `
-            --snapshot $snapshot.snapshot --source-tree $sourceTree --format json)
-        if ($LASTEXITCODE -ne 0) { throw 'Documentation does not bind the actual engine merge-candidate tree.' }
-        $catalog = $catalogOutput -join "`n" | ConvertFrom-Json
-        $catalogOutput -join "`n" | Set-Content -LiteralPath (Join-Path $output 'documentation-catalog.json') -Encoding utf8NoBOM
-        if ($catalog.repository -cne 'https://github.com/Wolfiora/InnoEngine' -or $catalog.sourceTree -cne $sourceTree `
-            -or $catalog.snapshot -cne $snapshot.snapshot -or $catalog.contentIdentity -cnotmatch '^[a-f0-9]{64}$') {
-            throw 'Canonical documentation binding does not identify this engine candidate.'
-        }
-        # Pairing records input correspondence, not source/API verification or permission to publish.
-        @{ engineCommit = $actual; engineTree = $sourceTree; documentationCommit = $documentationCommit
-            documentationSnapshot = $catalog.snapshot; contentIdentity = $catalog.contentIdentity
-            toolingRevision = $catalog.toolingRevision; sourceApiStatus = $catalog.sourceApiStatus } |
-            ConvertTo-Json | Set-Content -LiteralPath (Join-Path $output 'documentation-pairing.json') -Encoding utf8NoBOM
-        $documentationArguments = @('--docs-cache-root', $cacheRoot, '--docs-snapshot', $snapshot.snapshot)
-    } elseif ($DocumentationRevision) {
-        throw 'A documentation candidate revision requires its explicit checkout.'
-    }
     & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $output `
-        --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() @documentationArguments 2>&1 | Tee-Object -FilePath (Join-Path $output 'planning.log')
+        --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() 2>&1 | Tee-Object -FilePath (Join-Path $output 'planning.log')
     if ($LASTEXITCODE -eq 2) {
-        if (-not $DocumentationRoot) { throw 'Hosted preparation requires the explicitly bound documentation candidate.' }
         $initial = Join-Path $output 'initial-preparation.json'
         Copy-Item -LiteralPath (Join-Path $output 'preparation.json') -Destination $initial
         & "$PSScriptRoot/Prepare-ValidationSources.ps1" -RequirementsPath $initial -ExpectedCommit $ExpectedCommit `
             *> (Join-Path $output 'source-preparation.log')
         # Availability and content identity changed. Never execute the preflight inputs or reuse its partial selection as a plan.
         & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $output `
-            --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() @documentationArguments `
+            --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() `
             2>&1 | Tee-Object -FilePath (Join-Path $output 'planning-prepared.log')
     }
     if ($LASTEXITCODE -ne 0) { throw 'Validation plan generation failed; no downstream stage can certify success.' }
     $plan = Get-Content -LiteralPath (Join-Path $output 'plan.json') -Raw | ConvertFrom-Json
     if (@($plan.checks).Count -eq 0) { throw 'Required hosted validation discovery is empty.' }
-    # A missing catalog prevents trustworthy selection. A missing owner capture is a required
-    # blocked result in the plan; it must not suppress independent compilation and tests.
-    $missingDocumentation = @($plan.checks | Where-Object { $_.id -ceq 'documentation' -and $_.kind -ceq 'documentation-missing' -and $null -eq $_.exclusion })
-    if ($missingDocumentation.Count -ne 0) {
-        throw "Required documentation inputs are unavailable; downstream product preparation was not selected: $($missingDocumentation.id -join ', ')."
-    }
     "native=$(($null -ne $plan.contexts.native).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
     return
 }
@@ -120,11 +77,8 @@ if ($LASTEXITCODE -ne 0) { throw "Required validation failed; inspect the retain
     --plan (Join-Path $output 'plan.json') --evidence (Join-Path $output 'results.json') --output (Join-Path $output 'reconciliation') `
     *> (Join-Path $output 'evidence.log')
 if ($LASTEXITCODE -ne 0) { throw 'Completed evidence does not match the current inputs and outputs.' }
-$pairingArguments = if (Test-Path -LiteralPath (Join-Path $output 'documentation-pairing.json')) {
-    @{ DocumentationPairingPath = Join-Path $output 'documentation-pairing.json' }
-} else { @{} }
 & "$PSScriptRoot/Test-ValidationReport.ps1" -PlanPath (Join-Path $output 'plan.json') -ResultsPath (Join-Path $output 'results.json') `
-    -ExpectedCommit $ExpectedCommit -JobConclusion success @pairingArguments | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $output 'receipt.json')
+    -ExpectedCommit $ExpectedCommit -JobConclusion success | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $output 'receipt.json')
 $plan = Get-Content -LiteralPath (Join-Path $output 'plan.json') -Raw | ConvertFrom-Json
 if ($plan.full) {
     $bundle = @($plan.checks | Where-Object { $_.id -ceq 'release-bundle' -and $null -eq $_.exclusion })
