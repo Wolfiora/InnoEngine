@@ -280,13 +280,15 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Write("content/en/manual/ownership.md", "---\nuid: manual.ownership\ntitle: Ownership and retirement\nkind: explanation\n---\n\n# Ownership and retirement\n\n## Release\n\nKeep the owner alive until all borrows end.\n");
         string typePath = Fragment(C_TYPE);
-        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("kind: api", "kind: api\ncontracts: [manual.ownership#release]", StringComparison.Ordinal));
+        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("kind: api", "kind: api\ncontracts: [manual.ownership#release]\nexampleMode: host\nexampleProjects: [Inno.Probe]", StringComparison.Ordinal));
         string cache = Path.Combine(m_root, "artifacts", "query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
         DocumentationPageInfo page = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.symbols.ContainsKey(C_MEMBER)));
         Assert.Contains("public long Inno.Probe.Value.count", page.markdown);
+        Assert.NotNull(page.examples);
+        Assert.Equal("host", page.examples.mode);
         Assert.Contains("Read the count only after publication.", page.markdown);
         Assert.Contains("## Required contracts", page.markdown);
         Assert.Contains("[Ownership and retirement](../../../../manual/ownership.md#release)", page.markdown);

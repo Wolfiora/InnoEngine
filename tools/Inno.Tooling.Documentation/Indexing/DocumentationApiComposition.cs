@@ -187,7 +187,14 @@ internal static class DocumentationApiComposition
                     throw new InvalidDataException("API contracts must be a sequence of stable references: " + member.path);
                 foreach (YamlScalarNode contract in sequence.Children) contracts.Add(contract.Value ?? "");
             }
-        if (ancestors.Count != 0) contracts.Add(ancestors[0].uid);
+        foreach (DocumentationApiFragment ancestor in ancestors) contracts.Add(ancestor.uid);
+        if (!metadata.Children.ContainsKey(new YamlScalarNode("exampleMode")))
+        {
+            DocumentationApiFragment? context = ancestors.FirstOrDefault(ancestor => ancestor.metadata.Children.ContainsKey(new YamlScalarNode("exampleMode")));
+            if (context is not null)
+                foreach (string key in new[] { "exampleMode", "exampleProjects" })
+                    metadata.Children[new YamlScalarNode(key)] = context.metadata.Children[new YamlScalarNode(key)];
+        }
         metadata.Children[new YamlScalarNode("contracts")] = new YamlSequenceNode(contracts.Select(value => new YamlScalarNode(value)));
         using var writer = new StringWriter();
         new YamlStream(new YamlDocument(metadata)).Save(writer, assignAnchors: false);

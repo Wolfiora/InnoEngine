@@ -8,7 +8,7 @@ Registered member prose moves from hidden `_members` files to dotted element fil
 
 ## Local functional evidence
 
-- All 128 documentation-tool regressions passed (`artifacts/acceptance/api-draft-pipeline/api-elements-05.trx`). Coverage includes nested generic structs/enums, overload links, independently queryable symbols, inherited obligations, old-page link migration, manual prose preservation, and idempotence.
+- All 128 documentation-tool regressions passed (`artifacts/acceptance/api-draft-pipeline/api-elements-06.trx`). Coverage includes nested generic structs/enums, overload links, independently queryable symbols, inherited obligations, old-page link migration, manual prose preservation, inherited example compilation context, and idempotence.
 - Earlier failed attempts are retained. Existing aggregate-page assertions were updated for the new approved unit; the migration regression identified missing precise parser URL spans before any real content migration.
 - Rule coverage/loading passed in `api-elements-rule-check.log`.
 - No product, Native, full-engine, stress or performance matrix was run.
