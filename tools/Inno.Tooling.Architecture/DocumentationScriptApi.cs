@@ -36,7 +36,7 @@ internal static class DocumentationScriptApi
                     throw new ArgumentException("Repeated source reference: " + source);
             }
             else if (key is not ("--engine-root" or "--dotnet" or "--surface" or "--runtime-reference" or "--editor-reference"
-                or "--output" or "--configuration" or "--sdk-snapshot" or "--artifacts-path" or "--framework-project") || !options.TryAdd(key, value))
+                or "--output" or "--configuration" or "--target" or "--sdk-snapshot" or "--artifacts-path" or "--framework-project") || !options.TryAdd(key, value))
                 throw new ArgumentException("Unknown or duplicate script API export option: " + key);
         }
         foreach (string required in new[] { "--engine-root", "--dotnet", "--surface", "--runtime-reference", "--output", "--framework-project" })
@@ -57,6 +57,7 @@ internal static class DocumentationScriptApi
             sdkSnapshot: options.TryGetValue("--sdk-snapshot", out string? graph) ? File.ReadAllText(graph) : null);
         Capture capture = Read(options["--surface"], configuration, options["--runtime-reference"],
             options.GetValueOrDefault("--editor-reference"), sdk.GetFrameworkReferences(cancellationToken), sources.Values, cancellationToken);
+        capture = capture with { target = options.GetValueOrDefault("--target") };
         var inventory = RepositorySourceInventory.Projects(root).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (Project project in capture.projects)
             if (!inventory.Contains(PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, project.project))))
@@ -247,19 +248,27 @@ internal static class DocumentationScriptApi
         DocumentationCatalogReport catalog,
         IReadOnlySet<string> modes,
         string configuration,
+        string? target,
         string? runtimePath,
         string? editorPath,
         Func<IReadOnlyList<MetadataReference>> frameworkReferences,
         CancellationToken cancellationToken
     ) {
-        DocumentationReferenceInfo[] selected = catalog.references.Where(reference =>
+        // A compile-only snapshot can contain no API facts. Its receipt has no projection
+        // proof and cannot satisfy publication's separate API evidence requirements.
+        if (!catalog.references.Any(reference => reference.model is "runtime-script" or "editor-script")) return [];
+        DocumentationReferenceInfo[] selected = catalog.references.Where(reference => reference.configuration == configuration
+            && (reference.target is null || reference.target == target)).Where(reference =>
             reference.model == "runtime-script" && (modes.Contains("runtime-script") || modes.Contains("editor-script"))
             || reference.model == "editor-script" && modes.Contains("editor-script")).ToArray();
-        if (selected.Length == 0)
-            return [];
+        if ((modes.Contains("runtime-script") || modes.Contains("editor-script")) && !selected.Any(reference => reference.model == "runtime-script")
+            || modes.Contains("editor-script") && !selected.Any(reference => reference.model == "editor-script"))
+            throw new InvalidDataException("Required script projection facts are absent for the selected configuration and target.");
+        if (selected.Length == 0) return [];
         var sourceFacts = new List<byte[]>();
         var requiredOwners = selected.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
         foreach (DocumentationReferenceInfo source in catalog.references.Where(reference => reference.model == "source-clr"
+            && reference.configuration == configuration && (reference.target is null || reference.target == target)
             && reference.projects.Any(requiredOwners.Contains)))
             sourceFacts.Add(await snapshot.ReadReferenceAsync(source.path, cancellationToken).ConfigureAwait(false));
         var results = new List<Comparison>();
@@ -271,7 +280,7 @@ internal static class DocumentationScriptApi
             string status;
             try
             {
-                if (reference.configuration != configuration || reference.target is not null)
+                if (reference.configuration != configuration || reference.target is not null && reference.target != target)
                     throw new InvalidDataException("The projected reference context differs from the selected script compiler context.");
                 Capture actual = Read(reference.model, configuration, runtimePath
                     ?? throw new InvalidDataException("The current logical Runtime reference is unavailable."),
@@ -310,7 +319,7 @@ internal static class DocumentationScriptApi
                 status = "Blocked";
                 differences.Add(failure.Message);
             }
-            results.Add(new(reference.path, reference.identity, reference.model, configuration, reference.projects,
+            results.Add(new(reference.path, reference.identity, reference.model, configuration, reference.target, reference.projects,
                 status, identities, xmlIdentity, differences));
         }
         return results;
@@ -321,6 +330,7 @@ internal static class DocumentationScriptApi
         string identity,
         string model,
         string configuration,
+        string? target,
         IReadOnlyList<string> projects,
         string status,
         IReadOnlyDictionary<string, string> projectionIdentities,

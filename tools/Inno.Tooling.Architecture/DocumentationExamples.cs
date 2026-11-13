@@ -27,6 +27,8 @@ public static class DocumentationExamples
     /// <param name="arguments">
     /// Required engine-root, cache-root, snapshot, dotnet and output options; optional repeated page identities,
     /// configuration, target, artifacts-path, sdk-snapshot, runtime-reference and editor-reference. References must already exist.
+    /// Operation plan publishes selected example owners and projection requirements without SDK evaluation or compilation;
+    /// operation compile is the default and executes the prepared groups.
     /// A supplied resolved SDK snapshot must match the requested properties and contain every selected example owner.
     /// Its caller maintains the stable execution boundary and verifies closing inputs; the graph alone does not certify freshness.
     /// Bound Runtime and Editor script manifests are compared with the actual prepared logical assemblies and
@@ -67,7 +69,7 @@ public static class DocumentationExamples
                     throw new ArgumentException("Duplicate example page selection.");
             }
             else if (key is not ("--engine-root" or "--cache-root" or "--snapshot" or "--dotnet" or "--output"
-                or "--configuration" or "--target" or "--artifacts-path" or "--sdk-snapshot" or "--runtime-reference" or "--editor-reference")
+                or "--configuration" or "--target" or "--artifacts-path" or "--sdk-snapshot" or "--runtime-reference" or "--editor-reference" or "--operation")
                 || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown or duplicate example validation option: " + key);
         }
@@ -78,6 +80,8 @@ public static class DocumentationExamples
         string configuration = options.GetValueOrDefault("--configuration", "Debug");
         if (configuration is not ("Debug" or "SourceDebug" or "Release"))
             throw new ArgumentException("Unsupported example configuration.");
+        string operation = options.GetValueOrDefault("--operation", "compile");
+        if (operation is not ("plan" or "compile")) throw new ArgumentException("Unsupported example operation.");
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(options["--cache-root"],
             options["--snapshot"], cancellationToken: cancellationToken).ConfigureAwait(false);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync(cancellationToken).ConfigureAwait(false);
@@ -93,6 +97,21 @@ public static class DocumentationExamples
         var requested = groups.Where(static group => group.page.examples is not null)
             .SelectMany(static group => group.page.examples!.projects)
             .Where(projects.ContainsKey).Select(name => projects[name]).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (operation == "plan")
+        {
+            if (groups.Length == 0 || groups.Any(group => group.page.examples is null
+                || group.page.examples.projects.Count == 0 || group.page.examples.projects.Any(project => !projects.ContainsKey(project))))
+                throw new InvalidDataException("Required example planning needs nonempty groups with actual source owners.");
+            cancellationToken.ThrowIfCancellationRequested();
+            AtomicFile.WriteAllBytes(Path.GetFullPath(options["--output"]), JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                schema = "inno-example-plan/1", snapshot = catalog.snapshot, catalog.contentIdentity, configuration,
+                target = options.GetValueOrDefault("--target"), pages = groups.Select(group => group.page.id).ToArray(),
+                projects = requested.Order(StringComparer.Ordinal).Select(project => Path.GetRelativePath(root, project).Replace('\\', '/')).ToArray(),
+                needsScriptProjection = groups.Any(group => group.page.examples!.mode is "runtime-script" or "editor-script")
+            }, new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }));
+            return 0;
+        }
         var sdk = new DocumentationProjectReferences(root, configuration, Path.GetFullPath(options["--dotnet"]),
             options.GetValueOrDefault("--target"), options.TryGetValue("--artifacts-path", out string? artifacts) ? Path.GetFullPath(artifacts) : null,
             selectedProjects: requested, sdkSnapshot: options.TryGetValue("--sdk-snapshot", out string? graphPath)
@@ -170,6 +189,7 @@ public static class DocumentationExamples
         }
         IReadOnlyList<DocumentationScriptApi.Comparison> scriptReferences = await DocumentationScriptApi.CompareAsync(snapshot, catalog,
             results.Select(static result => result.mode).OfType<string>().ToHashSet(StringComparer.Ordinal), configuration,
+            options.GetValueOrDefault("--target"),
             options.GetValueOrDefault("--runtime-reference"), options.GetValueOrDefault("--editor-reference"),
             () => sdk.GetFrameworkReferences(cancellationToken), cancellationToken).ConfigureAwait(false);
         string overall = groups.Length == 0 || results.Any(static result => result.status == "Blocked")

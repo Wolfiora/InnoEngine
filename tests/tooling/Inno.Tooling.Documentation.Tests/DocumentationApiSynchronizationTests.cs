@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 using Xunit;
 
 namespace Inno.Tooling.Documentation.Tests;
@@ -417,6 +418,31 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
         Assert.Equal(binding, File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json")));
         Assert.Equal(before, File.ReadAllText(Fragment(C_TYPE)));
+    }
+
+    [Fact]
+    public async Task ImportWaitsForTheSharedWriterBeforeChangingFactsAndCancellationPreservesInputs()
+    {
+        await Sync();
+        Bind(description: "New import contract.");
+        string package = Path.Combine(m_root, "artifacts/api-package.json");
+        await DocumentationCommand.ExecuteAsync(["api-package", "--docs-root", m_root, "--package", package]);
+        Bind();
+        byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
+        byte[] facts = File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json"));
+        using (FileLease writer = await FileLease.AcquireAsync(Path.Combine(m_root, "artifacts/api-sync/writer.lock"), Timeout.InfiniteTimeSpan))
+        {
+            using var cancellation = new CancellationTokenSource();
+            Task<int> import = DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package], cancellation.Token);
+            Assert.False(import.IsCompleted);
+            Assert.Equal(binding, File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json")));
+            Assert.Equal(facts, File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json")));
+            cancellation.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => import);
+            Assert.Equal(facts, File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json")));
+        }
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
+        Assert.Contains("New import contract.", File.ReadAllText(Fragment(C_TYPE)));
     }
 
     [Fact]

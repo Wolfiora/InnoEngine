@@ -1,0 +1,148 @@
+name: Export documentation API
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    paths:
+      - '.github/workflows/documentation-api.yml'
+      - 'tests/ci/Export-DocumentationApi.ps1'
+      - 'tests/ci/Join-DocumentationApi.ps1'
+      - 'tools/Inno.Tooling.Architecture/Documentation*.cs'
+      - 'tools/Inno.Tooling.Documentation/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: documentation-api-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  export:
+    name: API facts / ${{ matrix.os }} / ${{ matrix.configuration }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2025, macos-15]
+        configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - name: Export actual managed and projected contracts
+        shell: pwsh
+        run: |
+          ./tests/ci/Export-DocumentationApi.ps1 -Dotnet (Get-Command dotnet).Source `
+            -Configuration '${{ matrix.configuration }}' -Output artifacts/documentation-export/current
+      - name: Retain completed producer facts
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-facts-${{ matrix.os }}-${{ matrix.configuration }}-${{ github.run_attempt }}
+          path: artifacts/documentation-export/current/*.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Retain first failures and phase timings
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: api-diagnostics-${{ matrix.os }}-${{ matrix.configuration }}-${{ github.run_attempt }}
+          path: artifacts/documentation-export/current/*.log
+          if-no-files-found: warn
+          retention-days: 30
+
+  reconcile:
+    name: API export validation
+    if: always()
+    needs: export
+    runs-on: windows-2025
+    steps:
+      - name: Reject missing or unsuccessful producers
+        shell: pwsh
+        env:
+          EXPORT_RESULT: ${{ needs.export.result }}
+        run: |
+          if ($env:EXPORT_RESULT -cne 'success') { throw "Required API producer is $env:EXPORT_RESULT; no package can be published." }
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: api-facts-*-${{ github.run_attempt }}
+          path: artifacts/documentation-export/producers
+      - name: Reconcile complete exact-source API package
+        shell: pwsh
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+        run: |
+          $dotnet = (Get-Command dotnet).Source
+          $transport = ./tests/ci/Initialize-ValidationEntry.ps1 -Dotnet $dotnet -LogPath artifacts/api-aggregation-bootstrap.log
+          ./tests/ci/Join-DocumentationApi.ps1 -Dotnet $dotnet -Transport $transport `
+            -InputDirectory artifacts/documentation-export/producers -OutputDirectory artifacts/documentation-export/package `
+            -ExpectedCommit $env:EXPECTED_COMMIT -Configurations Debug,Release
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: documentation-api-package-${{ github.run_attempt }}
+          path: artifacts/documentation-export/package/api-package.json
+          if-no-files-found: error
+          retention-days: 90
+
+  synchronize:
+    name: Synchronize Docs draft
+    needs: reconcile
+    if: github.repository == 'Wolfiora/InnoEngine' && github.ref == 'refs/heads/master'
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: documentation-api-package-${{ github.run_attempt }}
+          path: artifacts/documentation-export/package
+      - name: Prepare trusted transport before acquiring write credentials
+        id: transport
+        shell: pwsh
+        run: |
+          $assembly = ./tests/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet).Source -LogPath artifacts/api-publisher-bootstrap.log
+          "assembly=$assembly" >> $env:GITHUB_OUTPUT
+      - name: Require the restricted synchronization installation
+        shell: pwsh
+        env:
+          APP_ID: ${{ vars.INNO_DOCS_APP_ID }}
+          APP_KEY: ${{ secrets.INNO_DOCS_APP_PRIVATE_KEY }}
+        run: |
+          if (!$env:APP_ID -or !$env:APP_KEY) { throw 'Blocked: configure the GitHub App with Docs Contents write and no workflow/main bypass permission.' }
+      - id: app
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.INNO_DOCS_APP_ID }}
+          private-key: ${{ secrets.INNO_DOCS_APP_PRIVATE_KEY }}
+          owner: Wolfiora
+          repositories: InnoEngine.Docs
+          permission-contents: write
+      - name: Atomically update only the persistent draft branch
+        shell: pwsh
+        env:
+          DOCS_TOKEN: ${{ steps.app.outputs.token }}
+          API_TRANSPORT: ${{ steps.transport.outputs.assembly }}
+        run: |
+          # URL-scoped ephemeral authentication is never written to repository config or logs.
+          $env:GIT_CONFIG_COUNT = '1'
+          $env:GIT_CONFIG_KEY_0 = 'http.https://github.com/Wolfiora/InnoEngine.Docs.git.extraheader'
+          $env:GIT_CONFIG_VALUE_0 = 'AUTHORIZATION: basic ' + [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes('x-access-token:' + $env:DOCS_TOKEN))
+          try {
+            ./tests/ci/Publish-DocumentationApi.ps1 -EngineRoot $env:GITHUB_WORKSPACE -Dotnet (Get-Command dotnet).Source `
+              -BuildCli $env:API_TRANSPORT -Package artifacts/documentation-export/package/api-package.json `
+              -Workspace artifacts/documentation-export/publication
+          } finally {
+            Remove-Item Env:GIT_CONFIG_COUNT, Env:GIT_CONFIG_KEY_0, Env:GIT_CONFIG_VALUE_0, Env:DOCS_TOKEN -ErrorAction SilentlyContinue
+          }

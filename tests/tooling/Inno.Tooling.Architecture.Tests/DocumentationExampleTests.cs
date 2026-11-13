@@ -121,6 +121,44 @@ public sealed class DocumentationExampleTests : IDisposable
         Assert.Equal(previous, File.ReadAllBytes(output));
     }
 
+    [Fact]
+    public async Task ExamplePlanningUsesActualOwnersWithoutStartingSdkAndPreservesPreviousPlanOnFailure()
+    {
+        Page("host", "host", "public class Example { }");
+        Page("script", "runtime-script", "public class ScriptExample { }");
+        Page("empty", null, null);
+        DocumentationResult index = await DocumentationStore.IndexAsync(m_root, source, cache);
+        string output = Path.Combine(m_root, "plan.json");
+        string[] arguments = Arguments(index.snapshot, output);
+        arguments[Array.IndexOf(arguments, "--dotnet") + 1] = Path.Combine(m_root, "sdk-must-not-start.exe");
+        Assert.Equal(0, await DocumentationExamples.ExecuteAsync([..arguments, "--operation", "plan"]));
+        using (JsonDocument plan = JsonDocument.Parse(File.ReadAllBytes(output)))
+        {
+            Assert.Equal("inno-example-plan/1", plan.RootElement.GetProperty("schema").GetString());
+            Assert.True(plan.RootElement.GetProperty("needsScriptProjection").GetBoolean());
+            Assert.Equal("src/Inno.Probe/Inno.Probe.csproj", Assert.Single(plan.RootElement.GetProperty("projects").EnumerateArray()).GetString());
+            Assert.Equal(2, plan.RootElement.GetProperty("pages").GetArrayLength());
+        }
+        Assert.Equal(0, await DocumentationExamples.ExecuteAsync([..arguments, "--operation", "plan", "--page", "host"]));
+        using (JsonDocument plan = JsonDocument.Parse(File.ReadAllBytes(output)))
+            Assert.False(plan.RootElement.GetProperty("needsScriptProjection").GetBoolean());
+        byte[] previous = File.ReadAllBytes(output);
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationExamples.ExecuteAsync(
+            [..arguments, "--operation", "plan", "--page", "empty"]));
+        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationExamples.ExecuteAsync(
+            [..arguments, "--operation", "plan", "--page", "absent"]));
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => DocumentationExamples.ExecuteAsync(
+            [..arguments, "--operation", "plan"], cancellation.Token));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        File.Delete(Path.Combine(m_root, "src/Inno.Probe/Inno.Probe.csproj"));
+        await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationExamples.ExecuteAsync(
+            [..arguments, "--operation", "plan"]));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        Assert.False(Directory.Exists(Path.Combine(m_root, "src/Inno.Probe/obj")));
+    }
+
     public void Dispose()
     {
         if (Directory.Exists(m_root))
@@ -361,8 +399,8 @@ public sealed class DocumentationExampleTests : IDisposable
             $evidence = @{ results = @(@{ id = 'documentation-examples:managed'; status = 'Passed'; documentationInputs = @(@{
                 project = $owner; owners = @($owner); sourceIdentity = $hash; environment = $hash; configuration = 'Debug'; target = $null
                 packages = @{}; sources = @{ $owner = (Get-FileHash "$PSScriptRoot/../$owner" -Algorithm SHA256).Hash.ToLowerInvariant() } }) }) }
-            $pairing = @{ documentationSnapshot = $catalog.snapshot; contentIdentity = $catalog.contentIdentity; engineTree = $catalog.sourceTree }
-            $receipt = @(& "$Repository/tests/ci/Get-DocumentationExampleReceipt.ps1" -Plan $plan -Evidence $evidence -Pairing $pairing -Directory $PSScriptRoot)
+            $context = @{ snapshot = $catalog.snapshot; contentIdentity = $catalog.contentIdentity; sourceTree = $catalog.sourceTree }
+            $receipt = @(& "$Repository/tests/ci/Get-DocumentationExampleReceipt.ps1" -Plan $plan -Evidence $evidence -Context $context -Directory $PSScriptRoot)
             if ($receipt.Count -ne 1 -or $receipt[0].pages.Count -ne 1 -or $receipt[0].pages[0].page -cne $Page) {
                 throw 'The real compiler report lost its selected example during CI reconciliation.'
             }

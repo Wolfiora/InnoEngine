@@ -79,6 +79,51 @@ try {
     [void](Invoke-FixtureGit $docsRemote @('show', 'draft:reference/api/content.json'))
     & pwsh -NoProfile -File $publisher -EngineRoot $engine -Dotnet $Dotnet -BuildCli $BuildCli -Package $package -Workspace (Join-Path $root 'repeat')
     if ($LASTEXITCODE -or ((Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join '') -cne $first) { throw 'Identical API export created another commit.' }
+    # Intercept only the fixture process's first push. A real competing author commits before
+    # the ordinary Git fast-forward push; production code receives no test hooks or bypasses.
+    $author = Join-Path $root 'author'
+    [void](Invoke-FixtureGit $root @('clone', '--branch', 'draft', $docsRemote, $author))
+    [void](Invoke-FixtureGit $author @('config', 'user.name', 'Concurrent documentation author'))
+    [void](Invoke-FixtureGit $author @('config', 'user.email', 'author@example.invalid'))
+    $registry = Get-Content (Join-Path $author 'reference/api/content.json') -Raw | ConvertFrom-Json
+    $fragment = $registry.entries[0].path
+    $manual = [IO.File]::ReadAllText((Join-Path $author $fragment)).Replace('source: xml', 'source: manual') + "`nA concurrent author owns this explanation.`n"
+    Write-Text (Join-Path $author $fragment) $manual
+    [void](Invoke-FixtureGit $author @('add', '--', $fragment))
+    [void](Invoke-FixtureGit $author @('commit', '-m', 'docs(api): take ownership during synchronization'))
+    $facts = $facts.Replace('A source value.', 'An updated XML explanation.')
+    $capture.sha256 = Hash $facts
+    $binding.apiManifests = @($capture)
+    Write-Text (Join-Path $inputRoot 'reference/engine.lock.json') ($binding | ConvertTo-Json -Depth 20 -Compress)
+    Write-Text (Join-Path $inputRoot 'reference/api/probe.json') $facts
+    & $Dotnet $BuildCli docs api-package --docs-root $inputRoot --package $package
+    if ($LASTEXITCODE) { throw 'Updated fixture packaging failed.' }
+    $wrapper = Join-Path $root 'concurrent-publication.ps1'
+    Write-Text $wrapper @'
+param([string]$GitExe, [string]$Publisher, [string]$Engine, [string]$Dotnet, [string]$Cli, [string]$Package, [string]$Workspace, [string]$Author)
+$ErrorActionPreference = 'Stop'
+$global:fixtureApiRaceInjected = $false
+function git {
+    if (!$global:fixtureApiRaceInjected -and $args -contains 'HEAD:refs/heads/draft') {
+        $global:fixtureApiRaceInjected = $true
+        & $GitExe -C $Author push origin HEAD:refs/heads/draft | Out-Null
+        if ($LASTEXITCODE) { throw 'The concurrent fixture author failed to push.' }
+    }
+    & $GitExe @args
+}
+& $Publisher -EngineRoot $Engine -Dotnet $Dotnet -BuildCli $Cli -Package $Package -Workspace $Workspace
+'@
+    & pwsh -NoProfile -File $wrapper -GitExe (Get-Command git -CommandType Application).Source -Publisher $publisher `
+        -Engine $engine -Dotnet $Dotnet -Cli $BuildCli -Package $package -Workspace (Join-Path $root 'concurrent') -Author $author `
+        *> (Join-Path $root 'concurrent-result.log')
+    if ($LASTEXITCODE) { throw "Concurrent publication failed; see $root/concurrent-result.log." }
+    $concurrentLog = [IO.File]::ReadAllText((Join-Path $root 'concurrent-result.log'))
+    if (!$concurrentLog.Contains('Recompute ownership')) { throw 'The competing push did not exercise ownership recomputation.' }
+    $after = Join-Path $root 'after-race'
+    [void](Invoke-FixtureGit $root @('clone', '--branch', 'draft', $docsRemote, $after))
+    if ([IO.File]::ReadAllText((Join-Path $after $fragment)) -cne $manual) { throw 'Concurrent manual prose was overwritten.' }
+    if (![IO.File]::ReadAllText((Join-Path $after 'reference/api/probe.json')).Contains('An updated XML explanation.')) { throw 'Source facts were not synchronized after the competing edit.' }
+    $first = (Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join ''
     Write-Text (Join-Path $engine 'input.txt') 'A newer engine input.'
     [void](Invoke-FixtureGit $engine @('add', '.'))
     [void](Invoke-FixtureGit $engine @('commit', '-m', 'fixture(engine): advance master'))
@@ -87,7 +132,7 @@ try {
     if ($LASTEXITCODE -eq 0 -or ((Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join '') -cne $first) { throw 'A superseded API export was accepted.' }
     if ((Get-Content (Join-Path $root 'stale-result.log') -Raw) -notmatch 'superseded') { throw 'Superseded export did not explain its rejection.' }
     $success = $true
-    Write-Output 'Passed: complete draft publication, untouched main/manual, repeat no-op, stale export rejection.'
+    Write-Output 'Passed: complete draft publication, untouched main/manual, repeat no-op, concurrent manual takeover, updated facts and stale export rejection.'
 }
 finally {
     $env:GIT_CONFIG_GLOBAL = $oldConfig

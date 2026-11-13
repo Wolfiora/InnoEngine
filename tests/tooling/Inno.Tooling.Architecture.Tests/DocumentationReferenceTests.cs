@@ -28,6 +28,39 @@ public sealed class DocumentationReferenceTests : IDisposable
     }
 
     [Fact]
+    public async Task ExportPlanningUsesActualTargetsAndExcludesNonProductOwnersWithoutBuilding()
+    {
+        Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00");
+        Write("Directory.Build.props", """
+            <Project><PropertyGroup><TargetFramework>net10.0</TargetFramework><LangVersion>14.0</LangVersion>
+            <InnoDevelopmentTarget>fixture-host</InnoDevelopmentTarget></PropertyGroup></Project>
+            """);
+        foreach (string owner in new[] { "src/Local", "platforms/Foreign", "platforms/Empty", "backends/Hidden", "tests/Hidden", "tools/Fixture" })
+        {
+            string product = owner.StartsWith("platforms/", StringComparison.Ordinal) ? "<InnoProductTarget>fixture-foreign</InnoProductTarget>" : "";
+            string test = owner == "tools/Fixture" ? "<IsTestProject>true</IsTestProject>" : "";
+            Write(owner + "/" + Path.GetFileName(owner) + ".csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup>" + product + test
+                + "</PropertyGroup><Target Name=\"RejectBuild\" BeforeTargets=\"Build;Restore;ResolveReferences\"><Error Text=\"Planning must not prepare references or products.\" /></Target></Project>");
+            Write(owner + "/Probe.cs", owner == "platforms/Empty" ? "internal sealed class Probe { }" : "public sealed class Probe { }");
+        }
+        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        string output = Path.Combine(m_root, "plan.json");
+        Assert.Equal(0, await DocumentationReferences.PlanExportAsync(["--engine-root", m_root, "--dotnet", host, "--output", output]));
+        using JsonDocument plan = JsonDocument.Parse(File.ReadAllBytes(output));
+        Assert.Equal(3, plan.RootElement.GetProperty("projects").GetArrayLength());
+        Assert.Equal("src/Local/Local.csproj", plan.RootElement.GetProperty("buildProjects").EnumerateArray().Single().GetString());
+        Assert.Equal("platforms/Foreign/Foreign.csproj", plan.RootElement.GetProperty("foreignOwners").EnumerateArray().Single().GetProperty("path").GetString());
+        Assert.Equal(2, plan.RootElement.GetProperty("captures").GetArrayLength());
+        byte[] original = File.ReadAllBytes(output);
+        using var canceled = new CancellationTokenSource();
+        canceled.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => DocumentationReferences.PlanExportAsync(
+            ["--engine-root", m_root, "--dotnet", host, "--output", output], canceled.Token));
+        Assert.Equal(original, File.ReadAllBytes(output));
+    }
+
+    [Fact]
     public async Task ResolvedUnionSupportsIndependentSelectedSourceOwners()
     {
         Write("InnoEngine.sln", "Microsoft Visual Studio Solution File, Format Version 12.00");

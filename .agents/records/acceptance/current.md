@@ -2,9 +2,11 @@
 
 [Open work](../open-items.md) · [Implementation ledger](../plans/ENGLISH_DOCUMENTATION_MODERNIZATION.md) · [Historical evidence](README.md)
 
-The English documentation and workflow modernization is **not yet fully certified**. Both extended platform producers and the actual draft-release rehearsal passed. The full aggregate exposed a certificate memory failure, now corrected and verified against its exact reports locally. The later actual-script candidate, hosted certificate repair and protected documentation delivery remain outstanding. Older reports retain their original inputs and conclusions.
+The approved API draft/main replacement is **in progress**. Its current implementation and exact local evidence are recorded in [API draft pipeline acceptance](API_DRAFT_PIPELINE_2026_11_13.md). Mandatory paired PRs and the full-engine documentation publication certificate are retired responsibilities; they are no longer completion gates for this design. Current API producer, example preparation, remote draft synchronization and publication evidence remain outstanding.
 
-## Current implementation
+The following observations describe the preceding implementation and retain their original inputs. They are historical evidence, not certification of the replacement.
+
+## Previous implementation evidence
 
 | Area | Current result and evidence |
 | --- | --- |

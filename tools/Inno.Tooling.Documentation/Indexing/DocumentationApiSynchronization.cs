@@ -18,12 +18,28 @@ internal static class DocumentationApiSynchronization
         if (arguments.Length != 2 || arguments[0] != "--docs-root")
             throw new ArgumentException("Usage: docs <api-plan|api-check|api-sync> --docs-root CHECKOUT");
         string root = Path.GetFullPath(arguments[1]);
+        return await WithOwnershipAsync(root, () => Task.FromResult(ExecuteOwned(operation, root, cancellation)), cancellation).ConfigureAwait(false);
+    }
+
+    internal static async Task<int> WithOwnershipAsync(
+        string root,
+        Func<Task<int>> operation,
+        CancellationToken cancellation
+    ) {
         string output = PathBoundary.RequireUnlinkedPath(root, Path.Combine(root, "artifacts", "api-sync"));
         var publisher = new BuildCachePublisher(output, BuildCacheArtifactRole.ReusableWorkspace);
         BuildCacheOwnerCatalog.Register(root, output, "documentation-api-sync", publisher.role, cancellation);
         using FileLease activity = await publisher.AcquireUseAsync(cancellation).ConfigureAwait(false);
         using FileLease writing = await FileLease.AcquireAsync(Path.Combine(output, "writer.lock"),
             Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false);
+        return await operation().ConfigureAwait(false);
+    }
+
+    internal static int ExecuteOwned(
+        string operation,
+        string root,
+        CancellationToken cancellation
+    ) {
         string bindingPath = DocumentationApiFacts.Resolve(root, "reference/engine.lock.json");
         byte[] bindingBytes = File.ReadAllBytes(bindingPath);
         DocumentationBinding binding = JsonSerializer.Deserialize<DocumentationBinding>(bindingBytes)

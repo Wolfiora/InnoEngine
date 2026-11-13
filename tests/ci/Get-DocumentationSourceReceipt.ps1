@@ -1,7 +1,7 @@
 param(
     [Parameter(Mandatory)]$Plan,
     [Parameter(Mandatory)]$Evidence,
-    [Parameter(Mandatory)]$Pairing,
+    [Parameter(Mandatory)]$Context,
     [Parameter(Mandatory)][string]$Directory
 )
 
@@ -12,8 +12,8 @@ $directory = [IO.Path]::GetFullPath($Directory)
 $catalogPath = Join-Path $directory 'documentation-catalog.json'
 if ((Get-Item -LiteralPath $catalogPath).LinkType) { throw 'Source certification cannot follow a linked catalog.' }
 $catalog = Get-Content -LiteralPath $catalogPath -Raw | ConvertFrom-Json
-if ($catalog.snapshot -cne $Pairing.documentationSnapshot -or $catalog.sourceTree -cne $Pairing.engineTree `
-    -or $catalog.contentIdentity -cne $Pairing.contentIdentity -or $catalog.repository -cne 'https://github.com/Wolfiora/InnoEngine') {
+if ($catalog.snapshot -cne $Context.snapshot -or $catalog.sourceTree -cne $Context.sourceTree `
+    -or $catalog.contentIdentity -cne $Context.contentIdentity -or $catalog.repository -cne 'https://github.com/Wolfiora/InnoEngine') {
     throw 'Source certification catalog differs from the reconciled documentation pair.'
 }
 foreach ($check in $selected) {
@@ -24,7 +24,7 @@ foreach ($check in $selected) {
     if ((Get-Item -LiteralPath $file).LinkType) { throw 'Source certification cannot follow a linked comparison report.' }
     $report = Get-Content -LiteralPath $file -Raw | ConvertFrom-Json
     if ($report.status -cne 'Passed' -or $report.scope -cne 'SelectedSourceReferenceComparison' `
-        -or $report.documentationSnapshot -cne $catalog.snapshot -or $report.documentationSourceTree -cne $catalog.sourceTree `
+        -or $report.snapshot -cne $catalog.snapshot -or $report.documentationSourceTree -cne $catalog.sourceTree `
         -or $report.configuration -cne $check.documentation.configuration -or $report.target -cne $check.documentation.target) {
         throw "Source comparison context differs from its planned obligation: $($check.id)"
     }

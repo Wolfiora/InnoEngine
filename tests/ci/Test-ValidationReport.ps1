@@ -2,8 +2,7 @@ param(
     [Parameter(Mandatory)][string]$PlanPath,
     [Parameter(Mandatory)][string]$ResultsPath,
     [Parameter(Mandatory)][string]$ExpectedCommit,
-    [Parameter(Mandatory)][string]$JobConclusion,
-    [string]$DocumentationPairingPath
+    [Parameter(Mandatory)][string]$JobConclusion
 )
 
 $ErrorActionPreference = 'Stop'
@@ -25,21 +24,14 @@ $checks = @($plan.checks)
 $results = @($evidence.results)
 $documentation = $null
 if ($null -ne $plan.documentation) {
-    if (-not $DocumentationPairingPath) { throw 'External documentation certification requires its exact hosted pairing.' }
-    $documentation = Get-Content -LiteralPath $DocumentationPairingPath -Raw | ConvertFrom-Json
     $catalogChecks = @($checks | Where-Object { $_.id -ceq 'documentation' -and $_.kind -ceq 'documentation' -and $null -eq $_.exclusion })
-    if ($catalogChecks.Count -ne 1 -or $documentation.engineCommit -cne $ExpectedCommit `
-        -or $documentation.engineTree -cnotmatch '^[a-f0-9]{40}$' -or $documentation.engineTree -cne $plan.documentation.sourceTree `
-        -or $documentation.documentationCommit -cnotmatch '^[a-f0-9]{40}$' `
-        -or $documentation.toolingRevision -cnotmatch '^[a-f0-9]{40}$' `
-        -or $documentation.documentationSnapshot -cnotmatch '^[a-f0-9]{64}$' `
-        -or $documentation.documentationSnapshot -cne $plan.documentation.snapshot `
-        -or $documentation.contentIdentity -cnotmatch '^[a-f0-9]{64}$' `
-        -or $documentation.contentIdentity -cne $catalogChecks[0].documentation.contentIdentity) {
-        throw 'The hosted documentation pairing does not match the reconciled source and content inputs.'
+    if ($catalogChecks.Count -ne 1 -or $plan.documentation.sourceTree -cnotmatch '^[a-f0-9]{40}$' `
+        -or $plan.documentation.snapshot -cnotmatch '^[a-f0-9]{64}$' `
+        -or $catalogChecks[0].documentation.contentIdentity -cnotmatch '^[a-f0-9]{64}$') {
+        throw 'Explicit documentation validation requires a complete selected snapshot identity.'
     }
-} elseif ($DocumentationPairingPath) {
-    throw 'A documentation pairing cannot certify a plan without external documentation inputs.'
+    $documentation = [pscustomobject]@{ sourceTree = $plan.documentation.sourceTree; snapshot = $plan.documentation.snapshot;
+        contentIdentity = $catalogChecks[0].documentation.contentIdentity }
 }
 if ($checks.Count -eq 0 -or @($checks | Where-Object { $null -eq $_.exclusion }).Count -eq 0 -or $checks.Count -ne $results.Count) {
     throw 'The required plan is empty or results are missing or unplanned.'
@@ -80,11 +72,11 @@ foreach ($check in $checks) {
 }
 $sourceApi = if ($null -ne $documentation) {
     @( & (Join-Path $PSScriptRoot 'Get-DocumentationSourceReceipt.ps1') -Plan $plan -Evidence $evidence `
-        -Pairing $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+        -Context $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
 } else { @() }
 $sourceExamples = if ($null -ne $documentation) {
     @( & (Join-Path $PSScriptRoot 'Get-DocumentationExampleReceipt.ps1') -Plan $plan -Evidence $evidence `
-        -Pairing $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+        -Context $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
 } else { @() }
 [pscustomobject]@{
     commit = $ExpectedCommit

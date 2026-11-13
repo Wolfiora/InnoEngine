@@ -14,6 +14,7 @@ using System;
 using System.Threading;
 using Inno.Tooling.Documentation;
 using Inno.Tooling.Validation;
+using Inno.Tooling.Architecture;
 
 using var cancellation = new CancellationTokenSource();
 Console.CancelKeyPress += (_, options) => { options.Cancel = true; cancellation.Cancel(); };
@@ -23,6 +24,11 @@ try
     return args[0] switch
     {
         "validate" => await ValidationCommand.ExecuteAsync(args[1..], cancellation.Token),
+        "docs" when args.Length > 1 && args[1] == "export-plan" => await DocumentationReferences.PlanExportAsync(args[2..], cancellation.Token),
+        "docs" when args.Length > 1 && args[1] == "export-projects" => DocumentationReferences.ExportProjects(args[2..], cancellation.Token),
+        "docs" when args.Length > 1 && args[1] == "export-api" => DocumentationReferences.ExportApi(args[2..], cancellation.Token),
+        "docs" when args.Length > 1 && args[1] == "validate-examples" => await DocumentationExamples.ExecuteAsync(args[2..], cancellation.Token),
+        "docs" when args.Length > 1 && args[1] == "example-plan" => await DocumentationExamples.ExecuteAsync([..args[2..], "--operation", "plan"], cancellation.Token),
         "docs" => await DocumentationCommand.ExecuteAsync(args[1..], cancellation.Token),
         _ => throw new ArgumentException("Unsupported CI transport command: " + args[0])
     };
@@ -35,6 +41,7 @@ catch (Exception failure)
 '@
 $validation = [Security.SecurityElement]::Escape((Join-Path $repository 'tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj').Replace('\', '/'))
 $documentation = [Security.SecurityElement]::Escape((Join-Path $repository 'tools/Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj').Replace('\', '/'))
+$architecture = [Security.SecurityElement]::Escape((Join-Path $repository 'tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj').Replace('\', '/'))
 $projectText = @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -48,6 +55,7 @@ $projectText = @"
     <Compile Include="ValidationEntry.cs" />
     <ProjectReference Include="$validation" />
     <ProjectReference Include="$documentation" />
+    <ProjectReference Include="$architecture" />
   </ItemGroup>
 </Project>
 "@

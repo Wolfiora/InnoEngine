@@ -15,10 +15,10 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
         evidence = @{ results = @(@{ id = $id; status = 'Passed'; documentationInputs = @(@{
             project = 'src/Probe.csproj'; owners = @('src/Probe.csproj'); sourceIdentity = $hash; environment = $hash
             configuration = 'Debug'; target = $null; packages = @{ 'probe/1.0.0' = $hash }; sources = @{ 'src/Probe.csproj' = $hash } }) }) }
-        pairing = @{ documentationSnapshot = $hash; contentIdentity = $hash; engineTree = $tree }
+        context = @{ snapshot = $hash; contentIdentity = $hash; sourceTree = $tree }
         catalog = @{ snapshot = $hash; contentIdentity = $hash; sourceTree = $tree; repository = 'https://github.com/Wolfiora/InnoEngine'
             references = @(@{ path = 'reference/api/probe.json'; identity = $hash; model = 'source-clr'; configuration = 'Debug'; target = $null }) }
-        report = @{ status = 'Passed'; scope = 'SelectedSourceReferenceComparison'; documentationSnapshot = $hash; documentationSourceTree = $tree
+        report = @{ status = 'Passed'; scope = 'SelectedSourceReferenceComparison'; snapshot = $hash; documentationSourceTree = $tree
             configuration = 'Debug'; target = $null; references = @(@{ path = 'reference/api/probe.json'; identity = $hash })
             projects = @(@{ project = 'src/Probe.csproj'; name = 'Probe'; status = 'Passed'; differences = @(); referenceIdentity = $hash }) }
     }
@@ -29,7 +29,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Expected) {
     $accepted = $false
     $diagnostic = ''
     try {
-        $receipt = @(& "$PSScriptRoot/Get-DocumentationSourceReceipt.ps1" -Plan $state.plan -Evidence $state.evidence -Pairing $state.pairing -Directory $directory)
+        $receipt = @(& "$PSScriptRoot/Get-DocumentationSourceReceipt.ps1" -Plan $state.plan -Evidence $state.evidence -Context $state.context -Directory $directory)
         if ($receipt.Count -ne 1 -or $receipt[0].reportIdentity -cne (Get-FileHash $file).Hash.ToLowerInvariant() `
             -or $receipt[0].projects[0] -cne 'Probe') { throw 'The source receipt lost exact coverage or report provenance.' }
         if ($state.plan.checks[0].inputs.Count -gt 0 -and ($receipt[0].inputs.Count -ne 1 `
@@ -44,7 +44,7 @@ Invoke-Case 'complete' { param($s) } $true
 Invoke-Case 'missing-report' { param($s) $s.missing = $true } $false
 Invoke-Case 'failed-check' { param($s) $s.evidence.results[0].status = 'Failed' } $false
 Invoke-Case 'changed-tree' { param($s) $s.report.documentationSourceTree = 'c' * 40 } $false
-Invoke-Case 'changed-snapshot' { param($s) $s.report.documentationSnapshot = 'c' * 64 } $false
+Invoke-Case 'changed-snapshot' { param($s) $s.report.snapshot = 'c' * 64 } $false
 Invoke-Case 'changed-catalog' { param($s) $s.catalog.contentIdentity = 'c' * 64 } $false
 Invoke-Case 'failed-comparison' { param($s) $s.report.status = 'Failed' } $false
 Invoke-Case 'failed-owner' { param($s) $s.report.projects[0].status = 'Failed' } $false

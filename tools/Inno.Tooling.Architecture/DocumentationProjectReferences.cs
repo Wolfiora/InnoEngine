@@ -215,7 +215,7 @@ internal sealed class DocumentationProjectReferences
         return compilation;
     }
 
-    private static bool HasNoPublicTypes(
+    internal static bool HasNoPublicTypes(
         string[] sources,
         CSharpParseOptions parse,
         CancellationToken cancellationToken

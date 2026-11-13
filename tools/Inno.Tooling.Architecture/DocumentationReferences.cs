@@ -18,6 +18,36 @@ namespace Inno.Tooling.Architecture;
 public static class DocumentationReferences
 {
     /// <summary>
+    /// Plans complete API export owners and managed preparation from the actual SDK project graph.
+    /// </summary>
+    /// <param name="arguments">
+    /// Required engine-root, dotnet and output options, with optional configuration and artifacts-path.
+    /// The selected development entry determines the host; foreign nonempty surfaces require another producer.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels graph evaluation and source inspection before atomic plan publication.
+    /// </param>
+    /// <returns>
+    /// Zero after publishing the plan. Planning does not build products or certify export completeness across hosts.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// An option is absent, repeated or unsupported.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Owners, host identity, language selection or required source inputs are invalid.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Source inputs or the plan destination are unavailable.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The caller cancels planning.
+    /// </exception>
+    public static Task<int> PlanExportAsync(
+        string[] arguments,
+        CancellationToken cancellationToken = default
+    ) => DocumentationExportPlan.ExecuteAsync(arguments, cancellationToken);
+
+    /// <summary>
     /// Exports selected CLR source contracts using the existing evaluated API extractor, independently of Wiki pages.
     /// An explicit script surface reads prepared logical reference assemblies and compiler-produced origin metadata.
     /// This operation does not certify behavioral prose, examples or product execution.

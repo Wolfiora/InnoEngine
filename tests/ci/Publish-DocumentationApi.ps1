@@ -36,13 +36,15 @@ if ($master -cne $packet.revision) { throw 'The API export is superseded by a ne
 $tree = (Invoke-Git $engine @('rev-parse', "$($packet.revision)^{tree}")) -join ''
 if ($tree -cne $packet.sourceTree) { throw 'The API export tree differs from its verified master commit.' }
 New-Item -ItemType Directory -Path $workspacePath | Out-Null
+$hooks = Join-Path $workspacePath 'disabled-hooks'
+New-Item -ItemType Directory -Path $hooks | Out-Null
 
 for ($attempt = 1; $attempt -le 3; $attempt++) {
     $checkout = Join-Path $workspacePath "attempt-$attempt"
     # This checkout is data. Never execute scripts, hooks or Actions from the Docs candidate with an App token.
-    $clone = @(& git -c core.hooksPath= clone --no-checkout --single-branch --branch draft 'https://github.com/Wolfiora/InnoEngine.Docs.git' $checkout 2>&1)
+    $clone = @(& git -c "core.hooksPath=$hooks" clone --no-checkout --single-branch --branch draft 'https://github.com/Wolfiora/InnoEngine.Docs.git' $checkout 2>&1)
     if ($LASTEXITCODE -ne 0) { throw "Cannot open the persistent Docs draft branch: $($clone -join [Environment]::NewLine)" }
-    [void](Invoke-Git $checkout @('config', 'core.hooksPath', ''))
+    [void](Invoke-Git $checkout @('config', 'core.hooksPath', $hooks))
     [void](Invoke-Git $checkout @('config', 'user.name', 'InnoEngine API synchronization'))
     [void](Invoke-Git $checkout @('config', 'user.email', 'innoengine-api@users.noreply.github.com'))
     [void](Invoke-Git $checkout @('checkout', 'draft'))

@@ -31,6 +31,16 @@ internal static class DocumentationApiPackage
         if (options.Count != 2) throw new ArgumentException("Both docs-root and package are required.");
         string root = Path.GetFullPath(options["--docs-root"]);
         string packagePath = Path.GetFullPath(options["--package"]);
+        return await DocumentationApiSynchronization.WithOwnershipAsync(root,
+            () => Task.FromResult(ExecuteOwned(operation, root, packagePath, cancellation)), cancellation).ConfigureAwait(false);
+    }
+
+    private static int ExecuteOwned(
+        string operation,
+        string root,
+        string packagePath,
+        CancellationToken cancellation
+    ) {
         cancellation.ThrowIfCancellationRequested();
         if (operation == "api-package")
         {
@@ -99,7 +109,7 @@ internal static class DocumentationApiPackage
             }
             _ = DocumentationApiFacts.Read(root, candidate);
             // The synchronization transaction restores content on failure. This outer transaction restores facts.
-            await DocumentationApiSynchronization.ExecuteAsync("api-sync", ["--docs-root", root], cancellation).ConfigureAwait(false);
+            _ = DocumentationApiSynchronization.ExecuteOwned("api-sync", root, cancellation);
         }
         catch
         {
