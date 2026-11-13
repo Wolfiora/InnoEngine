@@ -161,7 +161,9 @@ public static class DocumentationStore
         timings.Add("MarkdownParsing", parsingTicks * 1000d / Stopwatch.Frequency);
         timings.Add("OwnerRegistration", registrationTicks * 1000d / Stopwatch.Frequency);
         // The source manifest supplies project facts; authored page metadata supplies each canonical entry.
-        projects = projects.Select(project => project with
+        // The complete graph remains reference provenance. Platform implementation projects
+        // do not acquire reader entries, API pages or query ownership in cross-platform docs.
+        projects = projects.Where(project => !project.path.StartsWith("platforms/", StringComparison.Ordinal)).Select(project => project with
         {
             entry = pages.Where(page => page.metadata.kind == "project" && page.metadata.owners.Contains(project.name, StringComparer.Ordinal))
                 .Select(static page => page.metadata.uid).SingleOrDefault()

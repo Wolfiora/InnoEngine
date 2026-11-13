@@ -2,11 +2,15 @@
 
 Status: In progress. This record supersedes the paired-PR publication design for documentation; historical acceptance remains historical.
 
+## Revised acceptance boundary
+
+The user explicitly removed performance sampling, stress/volume testing and large build acceptance from this delivery on 2026-11-13. Continue implementation and necessary functional regression checks. Compilation required to produce real API facts is still an implementation prerequisite; it must not grow into another full engine, Native or product matrix. Preserve existing measurements as historical evidence without repeating them. Full Engine validation run 43430034014 was requested to stop under this revised boundary. Unexecuted or canceled broader acceptance is reported, not passed.
+
 ## Approved behavior
 
 Engine master produces an independent, complete C# API export. A protected writer imports it into InnoEngine.Docs draft. Draft runs documentation validation and non-blocking editorial coverage; only an explicitly reviewed draft-to-main merge may publish. No automatic PR merge or engine release is authorized.
 
-The API scope is product and tooling public/protected contracts, excluding backends, extern, non-C#, tests and fixtures. Script categories come from Runtime, Editor and Authoring exports, separately from compilation surfaces. Every type/member has a Markdown source: xml or absent means generator-owned; manual protects prose. Declarations always come from captured facts. Missing editorial prose is a neutral check, not failed validation.
+The final user-approved Engine API scope is public/protected C# contracts owned by src/ and build/ only, excluding declared tests and fixtures. Every other root is excluded. Platform implementation project guides are also retired; shared contracts and availability limits remain. Script categories come from Runtime, Editor and Authoring exports, separately from compilation surfaces. Every type/member has a Markdown source: xml or absent means generator-owned; manual protects prose. Declarations always come from captured facts. Missing editorial prose is a neutral check, not failed validation.
 
 ## Baseline and protected work
 
@@ -55,4 +59,12 @@ The corpus fixture uses explicit zero revision identities and a reduced prepared
 
 ## Still required
 
-Complete independent export preparation/CI, all target contexts, full existing-content migration, source/example receipt decoupling, protected neutral-check reporting, actual draft/main workflows and permissions, complete legacy cleanup, visual acceptance, five warm samples and real hosted deployment/synchronization evidence. Existing feature and migration branches have not been merged. Do not mark this plan complete from the local foundation tests.
+The foundation table above is historical. The [current acceptance record](../acceptance/API_DRAFT_PIPELINE_2026_11_13.md) and the Docs acceptance record distinguish later completed migration, source/example decoupling, legacy removal, browser checks and warm measurements from outstanding work.
+
+1. Completed the selected Windows/macOS Debug package at `6eca1055adf859efd335bccb7761552ec5de9fd6`: two successful producer artifacts form seven explicitly Debug API contexts. Import synchronized 18,336 symbols and preserved all six manual files byte-for-byte. The user removed broader build acceptance; the remaining Release producer and full Engine run were canceled, not certified. Production export retains its normal configuration matrix.
+2. Verify hosted initial example preparation, complete Docs validation and its exact site artifact against the new API package. Previous example receipts cannot certify a changed tooling/API input.
+3. Implemented per-owner authored C# extraction reuse using frozen source/reference/XML inputs, embedded extractor identity, verified immutable payloads and existing owner/lease/retirement protocols. Functional regressions cover same-length source edits, inherited XML changes, corrupt cache quarantine and cross-workspace payload import without copied ownership. Ten targeted cache/example regressions passed after the final changes. Script projection remains a fresh extraction; no additional performance samples are required or claimed.
+4. Activate and exercise protected editorial reporting, automatic master-to-draft synchronization and manual draft-to-main deployment. Required App credentials and human production merges remain external actions. Branch protection and Pages configuration alone do not establish an actual successful publication.
+5. Record the resulting hosted evidence, source/manual-prose preservation, final legacy inventory and remaining external blockers. Keep exact first failures and retire only this task's owned intermediate artifacts.
+
+Existing feature and migration branches have not been merged. Do not mark this plan complete from local tests or an incomplete producer set.

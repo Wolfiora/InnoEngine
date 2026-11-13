@@ -35,13 +35,13 @@ public sealed class DocumentationReferenceTests : IDisposable
             <Project><PropertyGroup><TargetFramework>net10.0</TargetFramework><LangVersion>14.0</LangVersion>
             <InnoDevelopmentTarget>fixture-host</InnoDevelopmentTarget></PropertyGroup></Project>
             """);
-        foreach (string owner in new[] { "src/Local", "platforms/Foreign", "platforms/Empty", "backends/Hidden", "tests/Hidden", "tools/Fixture" })
+        foreach (string owner in new[] { "src/Local", "build/Foreign", "build/Empty", "entry/Hidden", "platforms/Hidden", "backends/Hidden", "tests/Hidden", "tools/Hidden", "src/Fixture" })
         {
-            string product = owner.StartsWith("platforms/", StringComparison.Ordinal) ? "<InnoProductTarget>fixture-foreign</InnoProductTarget>" : "";
-            string test = owner == "tools/Fixture" ? "<IsTestProject>true</IsTestProject>" : "";
+            string product = owner.StartsWith("build/", StringComparison.Ordinal) ? "<InnoProductTarget>fixture-foreign</InnoProductTarget>" : "";
+            string test = owner == "src/Fixture" ? "<IsTestProject>true</IsTestProject>" : "";
             Write(owner + "/" + Path.GetFileName(owner) + ".csproj", "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup>" + product + test
                 + "</PropertyGroup><Target Name=\"RejectBuild\" BeforeTargets=\"Build;Restore;ResolveReferences\"><Error Text=\"Planning must not prepare references or products.\" /></Target></Project>");
-            Write(owner + "/Probe.cs", owner == "platforms/Empty" ? "internal sealed class Probe { }" : "public sealed class Probe { }");
+            Write(owner + "/Probe.cs", owner == "build/Empty" ? "internal sealed class Probe { }" : "public sealed class Probe { }");
         }
         string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
@@ -50,7 +50,7 @@ public sealed class DocumentationReferenceTests : IDisposable
         using JsonDocument plan = JsonDocument.Parse(File.ReadAllBytes(output));
         Assert.Equal(3, plan.RootElement.GetProperty("projects").GetArrayLength());
         Assert.Equal("src/Local/Local.csproj", plan.RootElement.GetProperty("buildProjects").EnumerateArray().Single().GetString());
-        Assert.Equal("platforms/Foreign/Foreign.csproj", plan.RootElement.GetProperty("foreignOwners").EnumerateArray().Single().GetProperty("path").GetString());
+        Assert.Equal("build/Foreign/Foreign.csproj", plan.RootElement.GetProperty("foreignOwners").EnumerateArray().Single().GetProperty("path").GetString());
         Assert.Equal(2, plan.RootElement.GetProperty("captures").GetArrayLength());
         byte[] original = File.ReadAllBytes(output);
         using var canceled = new CancellationTokenSource();

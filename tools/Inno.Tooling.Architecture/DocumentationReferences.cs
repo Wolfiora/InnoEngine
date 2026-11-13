@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.IO;
 using Inno.Tooling.Documentation;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Inno.Tooling.Architecture;
 
@@ -69,6 +70,9 @@ public static class DocumentationReferences
     /// </param>
     /// <returns>
     /// Zero after publishing complete facts for every selected project, including explicit empty public surfaces.
+    /// Matching per-owner extraction results may be reused from verified immutable artifacts. Every selected
+    /// source and actual reference is captured first; changed source, XML, configuration or extraction tools
+    /// invalidate reuse. External XML includes are freshly extracted until their dependencies can be frozen.
     /// Source API certification remains separate from this extraction result.
     /// </returns>
     /// <exception cref="ArgumentException">
@@ -395,6 +399,7 @@ public static class DocumentationReferences
             artifactsPath is null ? null : Path.GetFullPath(artifactsPath), selectedProjects: selected, sdkSnapshot: sdkSnapshot);
         var models = new DocumentationSourceModels(root, configuration, references, cancellationToken, failures);
         var inventory = new List<ApiProject>();
+        using var cache = new DocumentationExportCache(root, cancellationToken);
         foreach (string project in selected.Order(StringComparer.Ordinal))
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -404,12 +409,29 @@ public static class DocumentationReferences
             var compilation = models.GetCompilation(directory)
                 ?? throw new InvalidDataException("Selected API compilation is unavailable: " + project
                     + (failures.Count == 0 ? string.Empty : "\n" + string.Join('\n', failures)));
-            var symbols = DocumentationApiExtractor.Capture(root, project, null, compilation, failures, cancellationToken);
-            inventory.Add(new(Path.GetRelativePath(root, project).Replace('\\', '/'), Path.GetFileNameWithoutExtension(project), symbols,
-                DocumentationApiExtractor.ReadExports(compilation), compilation.AssemblyName!));
+            string owner = Path.GetRelativePath(root, project).Replace('\\', '/');
+            ApiProject Capture()
+            {
+                var symbols = DocumentationApiExtractor.Capture(root, project, null, compilation, failures, cancellationToken);
+                if (failures.Count != 0)
+                    throw new InvalidDataException("API extraction did not establish complete source facts:\n" + string.Join('\n', failures));
+                return new(owner, Path.GetFileNameWithoutExtension(project), symbols,
+                    DocumentationApiExtractor.ReadExports(compilation), compilation.AssemblyName!);
+            }
+            // External XML includes need their own frozen dependency closure. Until resolved,
+            // preserve the normal fresh extraction instead of reusing an incomplete input identity.
+            bool externalXml = compilation.SyntaxTrees.Any(tree => tree.GetRoot(cancellationToken)
+                .DescendantNodes(descendIntoTrivia: true).Any(static node => node is
+                    XmlEmptyElementSyntax { Name.LocalName.ValueText: "include" }
+                    or XmlElementSyntax { StartTag.Name.LocalName.ValueText: "include" }));
+            inventory.Add(externalXml ? Capture() : cache.Capture(owner + "|" + configuration + "|" + target,
+                references.GetSourceInputIdentity(project, compilation, cancellationToken), Capture, cancellationToken));
+            if (externalXml)
+                Console.WriteLine("API extraction performed fresh for external XML includes: " + owner);
         }
         if (failures.Count != 0)
             throw new InvalidDataException("API extraction did not establish complete source facts:\n" + string.Join('\n', failures));
+        cache.Report();
         return inventory;
     }
 

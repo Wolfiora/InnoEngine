@@ -45,6 +45,30 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task PlatformInventoryDoesNotRequireOrExposeImplementationGuides()
+    {
+        JsonNode projects = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/projects/catalog.json")))!;
+        JsonNode platform = projects[0]!.DeepClone();
+        platform["name"] = "Inno.Platform.Probe";
+        platform["path"] = "platforms/Probe/Inno.Platform.Probe.csproj";
+        platform["entry"] = null;
+        projects.AsArray().Add(platform);
+        string text = projects.ToJsonString();
+        Write("reference/projects/catalog.json", text);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/engine.lock.json")))!;
+        binding["projectManifestIdentity"] = Hash(Encoding.UTF8.GetBytes(text));
+        Write("reference/engine.lock.json", binding.ToJsonString());
+        DocumentationResult indexed = await IndexAsync();
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        Assert.Contains("Inno.Probe", catalog.projects.Keys);
+        Assert.DoesNotContain("Inno.Platform.Probe", catalog.projects.Keys);
+        Write("content/en/platform.md", Page("platform", "Platform implementation", "Platform-specific internals.",
+            "kind: project\nowners: [Inno.Platform.Probe]\n"));
+        await Assert.ThrowsAsync<InvalidDataException>(IndexAsync);
+    }
+
+    [Fact]
     public async Task UnclosedFencesCannotReplaceThePublishedSnapshot()
     {
         DocumentationResult previous = await IndexAsync();

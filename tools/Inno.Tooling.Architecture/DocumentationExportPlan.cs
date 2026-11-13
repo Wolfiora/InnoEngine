@@ -37,9 +37,7 @@ internal static class DocumentationExportPlan
         string[] projects = RepositorySourceInventory.Projects(root).Where(project =>
         {
             string relative = Path.GetRelativePath(root, project).Replace('\\', '/');
-            return !relative.StartsWith("backends/", StringComparison.Ordinal)
-                && !relative.StartsWith("extern/", StringComparison.Ordinal)
-                && !relative.StartsWith("tests/", StringComparison.Ordinal)
+            return (relative.StartsWith("src/", StringComparison.Ordinal) || relative.StartsWith("build/", StringComparison.Ordinal))
                 && !RepositorySourceInventory.IsDeclaredTestProject(project);
         }).Order(StringComparer.Ordinal).ToArray();
         if (projects.Length == 0) throw new InvalidDataException("API export owner discovery is empty.");
@@ -50,7 +48,11 @@ internal static class DocumentationExportPlan
         };
         if (options.TryGetValue("--artifacts-path", out string? artifacts))
             properties["ArtifactsPath"] = Path.GetFullPath(artifacts);
-        string graphText = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet, projects, properties,
+        // The operational Build entry supplies the existing SDK host selection. It is not
+        // an API owner and must not acquire a documentation page merely to run extraction.
+        string entry = Path.Combine(root, "entry", "InnoEngine.Build", "InnoEngine.Build.csproj");
+        string[] graphProjects = File.Exists(entry) ? [..projects, entry] : projects;
+        string graphText = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet, graphProjects, properties,
             cancellationToken).ConfigureAwait(false);
         using JsonDocument graph = JsonDocument.Parse(graphText);
         var nodes = graph.RootElement.EnumerateArray().ToDictionary(node => Path.GetFullPath(node.GetProperty("Path").GetString()!),

@@ -258,6 +258,121 @@ public sealed class DocumentationSourceContractTests : IDisposable
         Assert.Equal("retain prior evidence", File.ReadAllText(output));
     }
 
+    [Fact]
+    public async Task ExtractionReusesOwnersAndInvalidatesSameLengthSourceWithPreservedTimestamp()
+    {
+        const string C_OTHER = "src/Other/Other.csproj";
+        const string C_SOURCE = "namespace Contract;\n/// <summary>Alpha contract.</summary>\npublic sealed class Probe;";
+        Write("tests/support/Contract/Contract.cs", C_SOURCE);
+        Write(C_OTHER, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
+        Write("src/Other/Other.cs", "namespace Other; public sealed class Independent;");
+        await RestoreAsync();
+        await RestoreProjectAsync(C_OTHER, []);
+        string output = Path.Combine(m_root, "facts.json");
+        string[] arguments = [..ExportArguments(output), "--project", C_OTHER];
+        Assert.Equal(0, DocumentationReferences.ExportApi(arguments));
+        string cache = Path.Combine(m_root, "artifacts/documentation-export/extraction-cache/entries");
+        string[] originals = Directory.GetFiles(cache, "project.json", SearchOption.AllDirectories);
+        Assert.Equal(2, originals.Length);
+        DateTime retainedTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        foreach (string file in originals)
+            File.SetLastWriteTimeUtc(file, retainedTime);
+        byte[] previous = File.ReadAllBytes(output);
+        Write("notes.md", "A report does not alter compiler inputs.");
+        Assert.Equal(0, DocumentationReferences.ExportApi(arguments));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        Assert.All(originals, file => Assert.Equal(retainedTime, File.GetLastWriteTimeUtc(file)));
+        string sourcePath = Path.Combine(m_root, "tests/support/Contract/Contract.cs");
+        DateTime sourceTime = File.GetLastWriteTimeUtc(sourcePath);
+        File.WriteAllText(sourcePath, C_SOURCE.Replace("Alpha", "Bravo", StringComparison.Ordinal));
+        File.SetLastWriteTimeUtc(sourcePath, sourceTime);
+        Assert.Equal(0, DocumentationReferences.ExportApi(arguments));
+        Assert.Contains("Bravo contract", File.ReadAllText(output));
+        Assert.Equal(3, Directory.GetFiles(cache, "project.json", SearchOption.AllDirectories).Length);
+        Assert.All(originals, file => Assert.Equal(retainedTime, File.GetLastWriteTimeUtc(file)));
+    }
+
+    [Fact]
+    public async Task CorruptExtractionIsQuarantinedBeforeARealReplacementIsReturned()
+    {
+        Write("tests/support/Contract/Contract.cs", "namespace Contract; public sealed class Probe;");
+        await RestoreAsync();
+        string output = Path.Combine(m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        byte[] previous = File.ReadAllBytes(output);
+        string cache = Path.Combine(m_root, "artifacts/documentation-export/extraction-cache");
+        string payload = Assert.Single(Directory.GetFiles(Path.Combine(cache, "entries"), "project.json", SearchOption.AllDirectories));
+        string corrupt = File.ReadAllText(payload).Replace("Probe", "Fraud", StringComparison.Ordinal);
+        DateTime timestamp = File.GetLastWriteTimeUtc(payload);
+        File.WriteAllText(payload, corrupt);
+        File.SetLastWriteTimeUtc(payload, timestamp);
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Equal(previous, File.ReadAllBytes(output));
+        string quarantine = Assert.Single(Directory.GetFiles(Path.Combine(cache, "quarantine"), "project.json", SearchOption.AllDirectories));
+        Assert.Equal(corrupt, File.ReadAllText(quarantine));
+    }
+
+    [Fact]
+    public async Task ExtractionPayloadsCanMoveWithoutCopyingLocalOwnershipOrLeases()
+    {
+        const string C_SOURCE = "namespace Contract; public sealed class Probe;";
+        Write("tests/support/Contract/Contract.cs", C_SOURCE);
+        await RestoreAsync();
+        string output = Path.Combine(m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        using var consumer = new DocumentationSourceContractTests();
+        consumer.Write("tests/support/Contract/Contract.cs", C_SOURCE);
+        await consumer.RestoreAsync();
+        const string C_ENTRIES = "artifacts/documentation-export/extraction-cache/entries";
+        string entries = Path.Combine(m_root, C_ENTRIES);
+        foreach (string file in Directory.GetFiles(entries, "*", SearchOption.AllDirectories))
+        {
+            string relative = Path.GetRelativePath(entries, file);
+            Assert.True(relative.EndsWith("project.json", StringComparison.Ordinal)
+                || relative.EndsWith("generation-manifest.json", StringComparison.Ordinal));
+            string destination = Path.Combine(consumer.m_root, C_ENTRIES, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.Copy(file, destination);
+        }
+        string payload = Assert.Single(Directory.GetFiles(Path.Combine(consumer.m_root, C_ENTRIES), "project.json", SearchOption.AllDirectories));
+        DateTime retainedTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        File.SetLastWriteTimeUtc(payload, retainedTime);
+        string result = Path.Combine(consumer.m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(consumer.ExportArguments(result)));
+        Assert.Equal(File.ReadAllBytes(output), File.ReadAllBytes(result));
+        Assert.Equal(retainedTime, File.GetLastWriteTimeUtc(payload));
+        string cache = Path.GetDirectoryName(Path.Combine(consumer.m_root, C_ENTRIES))!;
+        Assert.NotEmpty(Directory.GetFiles(cache, "*.cache.json"));
+        Assert.NotEmpty(Directory.GetFiles(Path.Combine(cache, "leases"), "*.lock"));
+    }
+
+    [Fact]
+    public async Task ExtractionInvalidatesInheritedXmlWithoutChangingTheReferenceAssembly()
+    {
+        string reference = Path.Combine(m_root, "BaseContract.dll");
+        var compilation = CSharpCompilation.Create("BaseContract",
+            [CSharpSyntaxTree.ParseText("namespace BaseContract; public abstract class Parent { public abstract void Read(); }")],
+            ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)
+                .Select(static file => MetadataReference.CreateFromFile(file)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        Assert.True(compilation.Emit(reference).Success);
+        string xml = Path.ChangeExtension(reference, ".xml");
+        const string C_XML = "<doc><members><member name=\"M:BaseContract.Parent.Read\"><summary>Alpha obligation.</summary></member></members></doc>";
+        File.WriteAllText(xml, C_XML);
+        Write(C_PROJECT, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup>"
+            + "<ItemGroup><Reference Include=\"BaseContract\"><HintPath>../../../BaseContract.dll</HintPath></Reference></ItemGroup></Project>");
+        Write("tests/support/Contract/Contract.cs", "namespace Contract; public sealed class Probe : BaseContract.Parent {\n/// <inheritdoc/>\npublic override void Read() {} }");
+        await RestoreAsync();
+        string output = Path.Combine(m_root, "facts.json");
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Contains("Alpha obligation", File.ReadAllText(output));
+        DateTime timestamp = File.GetLastWriteTimeUtc(xml);
+        File.WriteAllText(xml, C_XML.Replace("Alpha", "Bravo", StringComparison.Ordinal));
+        File.SetLastWriteTimeUtc(xml, timestamp);
+        Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(output)));
+        Assert.Contains("Bravo obligation", File.ReadAllText(output));
+    }
+
     public void Dispose()
     {
         string boundary = Path.Combine(Path.GetTempPath(), "InnoDocumentationSourceContracts") + Path.DirectorySeparatorChar;
@@ -267,10 +382,14 @@ public sealed class DocumentationSourceContractTests : IDisposable
 
     private string[] ExportArguments(string output) => ["--engine-root", m_root, "--dotnet", m_host, "--project", C_PROJECT, "--output", output];
 
-    private async Task RestoreAsync(params string[] arguments)
-    {
+    private Task RestoreAsync(params string[] arguments) => RestoreProjectAsync(C_PROJECT, arguments);
+
+    private async Task RestoreProjectAsync(
+        string project,
+        string[] arguments
+    ) {
         var start = new ProcessStartInfo(m_host) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
-        foreach (string argument in new[] { "restore", Path.Combine(m_root, C_PROJECT), "--disable-parallel", "-m:1", "-nr:false", "--disable-build-servers" }.Concat(arguments)) start.ArgumentList.Add(argument);
+        foreach (string argument in new[] { "restore", Path.Combine(m_root, project), "--disable-parallel", "-m:1", "-nr:false", "--disable-build-servers" }.Concat(arguments)) start.ArgumentList.Add(argument);
         using Process process = Process.Start(start)!;
         Task<string> stdout = process.StandardOutput.ReadToEndAsync();
         Task<string> stderr = process.StandardError.ReadToEndAsync();

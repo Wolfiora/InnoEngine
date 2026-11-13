@@ -54,7 +54,27 @@ Five warm prepared-snapshot samples per query, measured without a concurrent web
 
 The source workspace contains a protected other-session change to `src/composition/editor/features/Inno.Editor.Assets/Properties/ScriptingApi.cs`; it is not included in these commits or falsely certified as a clean export input.
 
+## Functional-only completion boundary
+
+On 2026-11-13 the user explicitly removed performance, stress/volume and large build acceptance from this delivery. Full Engine run `43430034014` and the remaining producer in API run `43430033940` were canceled under that instruction. Windows Debug, Windows Release and macOS Debug had succeeded; macOS Release is not certified. Existing measurements remain historical and are not repeated.
+
+The two successful Debug producers were authenticated by their GitHub artifact digests and reconciled into a complete, explicitly Debug-only package at `6eca1055adf859efd335bccb7761552ec5de9fd6`. Package identity: `36a3643b175a7aba799d361caf020076c051efb64ae019f12bfd4c6cd46ede83`. Its seven contexts replace the historical Docs binding without relabeling missing Release evidence. Local import synchronized 18,336 symbols and retained every byte of all six manual fragments. This development import is not a successful protected master publication.
+
+Per-owner C# extraction now reuses immutable payloads only after matching actual frozen source, reference images, reference XML, configuration and extractor inputs. Cache payloads travel separately from local leases/registrations; corrupt payloads are replaced through the existing publisher and retained in quarantine. External XML includes take fresh extraction until their dependency closure can be frozen. The final ten targeted extraction-cache/example tests passed with no failures or skips (`extraction-cache-02.trx`); the preceding source/reference suite passed 26 tests. No speed claim is inferred from these functional tests.
+
+The tooling commit is delivered without starting another remote engine matrix under the user's revised boundary. Docs functional checks remain required for publication. App provisioning and human production merges remain external actions.
+
 ## Evidence locations
+
+## Final API scope and functional cutover
+
+The user narrowed Engine API to src/ and build/ C# projects only, excluding tests and fixtures, and removed platform implementation project guides. Operational tooling/entry dependencies do not become API owners. Actual script projection and Scope remain authoritative. Existing platform implementation code is unchanged.
+
+The final synchronization contains 17,971 symbols and removes 365 previously registered symbols. The Docs retirement register accounts for 419 removed files: 365 XML-owned fragments, 30 generated navigation pages and 24 platform implementation guides. All retired paths are absent. Historical declarations were filtered without inventing new capture provenance; retained facts still identify the successful Debug producers at 6eca1055adf859efd335bccb7761552ec5de9fd6. The empty platform-only Browser capture was removed. Six actual API contexts remain.
+
+Final functional results: 42 documentation synchronization/snapshot cases, one actual SDK export-plan case, and 151 Node regressions passed. The original 241 rule identities remain mapped; seven documentation clauses carry explicit user-approved scope amendments. Baseline migration disposition validation passed all 454 original engine documentation inputs with no errors. No performance, stress or full product build acceptance was rerun.
+
+## Evidence locations (continued)
 
 Engine local evidence: `artifacts/acceptance/api-draft-pipeline/`. Exact PowerShell fixture directories are recorded by each log. Docs evidence: `artifacts/api-draft-*.log`, final browser captures under `artifacts/browser/attempt-04/`, and the tracked migration register under `.agents/records/acceptance/api-draft-migration/`.
 

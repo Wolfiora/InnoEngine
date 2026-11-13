@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Xml.Linq;
@@ -25,6 +27,7 @@ internal sealed class DocumentationProjectReferences
     private readonly Dictionary<string, string[]> m_sources = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, string> m_outputs = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, JsonElement> m_snapshots = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, FrozenReference> m_frozenReferences = new(StringComparer.OrdinalIgnoreCase);
     private IReadOnlyList<MetadataReference>? m_frameworkReferences;
 
     internal DocumentationProjectReferences(
@@ -126,6 +129,65 @@ internal sealed class DocumentationProjectReferences
             .WithAssemblyName(Path.GetFileNameWithoutExtension(m_outputs[project]));
     }
 
+    internal string GetSourceInputIdentity(
+        string project,
+        CSharpCompilation compilation,
+        CancellationToken cancellationToken
+    ) {
+        var sources = new List<object>();
+        foreach (SyntaxTree tree in compilation.SyntaxTrees)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var parse = (CSharpParseOptions)tree.Options;
+            sources.Add(new
+            {
+                path = Path.GetRelativePath(m_root, tree.FilePath).Replace('\\', '/'),
+                content = Hash(Encoding.UTF8.GetBytes(tree.GetText(cancellationToken).ToString())),
+                parse.LanguageVersion, parse.Kind, parse.DocumentationMode,
+                symbols = parse.PreprocessorSymbolNames.ToArray(),
+                features = parse.Features.OrderBy(static item => item.Key, StringComparer.Ordinal).ToArray()
+            });
+        }
+        var references = compilation.References.OfType<PortableExecutableReference>().Select(reference => new
+        {
+            name = Path.GetFileName(reference.FilePath),
+            input = m_frozenReferences[reference.FilePath!].identity,
+            reference.Properties.Kind, reference.Properties.EmbedInteropTypes,
+            aliases = reference.Properties.Aliases.ToArray()
+        }).ToArray();
+        return Hash(JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            project = Path.GetRelativePath(m_root, project).Replace('\\', '/'),
+            configuration = m_configuration, target = m_target,
+            compilation.AssemblyName, compilation.Options.OutputKind,
+            compilation.Options.AllowUnsafe, compilation.Options.NullableContextOptions,
+            sources, references
+        }));
+    }
+
+    private PortableExecutableReference FreezeReference(string path)
+    {
+        if (m_frozenReferences.TryGetValue(path, out FrozenReference? retained))
+            return retained.reference;
+        byte[] image = File.ReadAllBytes(path);
+        string xmlPath = Path.ChangeExtension(path, ".xml");
+        byte[]? xml = File.Exists(xmlPath) ? File.ReadAllBytes(xmlPath) : null;
+        // Roslyn and the reuse identity consume the very same immutable bytes. A concurrent
+        // compiler cannot replace a file between hashing it and lazy metadata/XML inspection.
+        PortableExecutableReference reference = MetadataReference.CreateFromImage(image, filePath: path,
+            documentation: xml is null ? null : new AssemblyDocumentationProvider(xmlPath, xml));
+        string identity = Hash(Encoding.UTF8.GetBytes(Hash(image) + "\n" + (xml is null ? "absent" : Hash(xml))));
+        m_frozenReferences.Add(path, new(reference, identity));
+        return reference;
+    }
+
+    private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
+
+    private sealed record FrozenReference(
+        PortableExecutableReference reference,
+        string identity
+    );
+
     private CSharpCompilation Evaluate(
         string project,
         CancellationToken cancellationToken,
@@ -201,9 +263,7 @@ internal sealed class DocumentationProjectReferences
         };
         compilation = CSharpCompilation.Create("DocumentationProject",
             [CSharpSyntaxTree.ParseText(string.Empty, parse)],
-            references.Select(static path => MetadataReference.CreateFromFile(path,
-                documentation: File.Exists(Path.ChangeExtension(path, ".xml"))
-                    ? new AssemblyDocumentationProvider(Path.ChangeExtension(path, ".xml")) : null)),
+            references.Select(FreezeReference),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
                 allowUnsafe: properties.GetProperty("AllowUnsafeBlocks").GetString() == "true",
                 nullableContextOptions: nullable));

@@ -13,6 +13,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="DocumentationExportCache.cs;DocumentationReferences.cs;DocumentationApiExtractor.cs;DocumentationProjectReferences.cs;DocumentationSourceModels.cs;AssemblyDocumentationProvider.cs;PublicApiDocumentationValidator.cs;RepositorySourceInventory.cs">
+      <LogicalName>ApiExtractionSource/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../src/foundation/extensibility/Inno.Extensibility.Catalogs/Inno.Extensibility.Catalogs.csproj" />
     <ProjectReference Include="../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" PrivateAssets="compile" />

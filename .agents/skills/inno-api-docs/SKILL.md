@@ -7,7 +7,7 @@ Select applicable `wiki` and `xml` units through the rule loader with `-DocsRoot
 
 Use Build `docs search/read/symbol` against a prepared snapshot to locate task guidance, the authoritative project entry and exact qualified symbols. Read necessary associated contracts and explicit continuations. Search excerpts and API markers are not complete contracts or matching source verification evidence.
 
-API reference covers public and externally usable protected C# engine, Editor, Build and tooling contracts, plus actual ScriptingApiScope projections. All backends, extern, tests, fixtures and non-C# APIs are excluded. Preserve useful integration guidance and required Native implementation/deployment tests. Scope (Runtime, Editor, Authoring) and compiler surface are separate identities.
+API reference covers public and externally usable protected C# contracts owned by src/ and build/, plus actual ScriptingApiScope projections. Engine API uses only src/ and build/; tools, entries, platforms, backends, extern, tests, fixtures and non-C# APIs are excluded. Preserve useful integration guidance and required Native implementation/deployment tests. Scope (Runtime, Editor, Authoring) and compiler surface are separate identities.
 
 Verify actual public/protected declarations, project references, surfaces and callers. Maintain affected design explanations, mechanisms, tutorials and use contracts in clear English. Distinguish public promises from implementation details. Preserve ownership, threading, lifetime, failure, cancellation and release obligations. Split large pages by coherent tasks or types; retain stable identities, exact overloads and include ownership. Update incoming links and navigation when moving content.
 

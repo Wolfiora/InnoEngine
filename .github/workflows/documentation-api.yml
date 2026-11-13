@@ -45,11 +45,27 @@ jobs:
           submodules: recursive
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
+      - name: Restore immutable per-owner extraction candidates
+        id: extraction-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          # Only hashed payloads travel. Local registrations, active leases, PID records,
+          # mutable compilation outputs and quarantine diagnostics stay on their owner.
+          path: artifacts/documentation-export/extraction-cache/entries
+          key: api-extraction-${{ runner.os }}-${{ matrix.configuration }}-${{ hashFiles('global.json') }}-${{ env.API_SOURCE_REVISION }}
+          restore-keys: |
+            api-extraction-${{ runner.os }}-${{ matrix.configuration }}-${{ hashFiles('global.json') }}-
       - name: Export actual managed and projected contracts
         shell: pwsh
         run: |
           ./tests/ci/Export-DocumentationApi.ps1 -Dotnet (Get-Command dotnet -CommandType Application | Select-Object -First 1).Source `
             -Configuration '${{ matrix.configuration }}' -Output artifacts/documentation-export/current
+      - name: Retain verified extraction payloads for future inputs
+        if: success() && steps.extraction-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
+        with:
+          path: artifacts/documentation-export/extraction-cache/entries
+          key: ${{ steps.extraction-cache.outputs.cache-primary-key }}
       - name: Retain completed producer facts
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

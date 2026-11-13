@@ -520,6 +520,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
 
     [Theory]
     [InlineData("backends/Probe/Adapter.csproj", false)]
+    [InlineData("platforms/WindowsX64/Probe.csproj", false)]
+    [InlineData("tools/Probe.csproj", false)]
+    [InlineData("entry/Probe.csproj", false)]
     [InlineData("extern/Probe.csproj", false)]
     [InlineData("tests/fixtures/Probe.csproj", false)]
     [InlineData("tools/Probe.Tests.csproj", true)]

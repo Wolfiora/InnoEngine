@@ -16,3 +16,7 @@ Original rule IDs, immutable source locations, source hashes and clause order re
 The accompanying [clause mapping](API_DRAFT_RULE_CHANGES.json) records each amended destination clause before and after this change. The mapping updates the authority hashes and cites this semantic review; a hash update alone is not the review. Scope and publication changes are authorized by the user's explicit API draft/main plan.
 
 Implementation and hosted activation remain in progress; these rules do not certify that the synchronization workflow or deployment has already run successfully.
+
+## Final reader scope amendment
+
+The user subsequently restricted Engine API to C# projects under src/ and build/, excluding tests and fixtures. Platform implementation guides and API are retired; shared contracts and truthful availability limits remain. Tooling and entry usage guides do not create tool API obligations. Original rule IDs and source hashes are preserved; [the exact clause amendment](API_SCOPE_RULE_CHANGES.json) records this explicitly authorized scope change.

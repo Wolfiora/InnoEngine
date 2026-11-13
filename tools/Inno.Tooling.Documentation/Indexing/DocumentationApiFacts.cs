@@ -42,9 +42,7 @@ internal static class DocumentationApiFacts
         var eligible = inventory.RootElement.EnumerateArray().Where(project =>
         {
             string path = project.GetProperty("path").GetString()!;
-            return !path.StartsWith("backends/", StringComparison.Ordinal)
-                && !path.StartsWith("extern/", StringComparison.Ordinal)
-                && !path.StartsWith("tests/", StringComparison.Ordinal)
+            return (path.StartsWith("src/", StringComparison.Ordinal) || path.StartsWith("build/", StringComparison.Ordinal))
                 && (!project.TryGetProperty("isTest", out JsonElement test) || !test.GetBoolean())
                 && path.EndsWith(".csproj", StringComparison.Ordinal);
         }).ToDictionary(project => project.GetProperty("name").GetString()!, project => project.GetProperty("path").GetString()!, StringComparer.Ordinal);
@@ -95,7 +93,7 @@ internal static class DocumentationApiFacts
                         || Path.IsPathRooted(source) || symbol.GetProperty("line").GetInt32() < 1)
                         throw new InvalidDataException("Invalid API source location: " + source);
                     if (!source.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
-                        || source.StartsWith("backends/", StringComparison.Ordinal) || source.StartsWith("extern/", StringComparison.Ordinal)) continue;
+                        || !(source.StartsWith("src/", StringComparison.Ordinal) || source.StartsWith("build/", StringComparison.Ordinal))) continue;
                     string id = symbol.GetProperty("id").GetString()!;
                     string? scope = family == "scripting" ? String(symbol, "scriptingScope") : null;
                     if (family == "scripting" && scope is not ("Runtime" or "Editor" or "Authoring"))
