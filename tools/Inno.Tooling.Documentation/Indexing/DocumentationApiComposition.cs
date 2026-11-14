@@ -90,8 +90,15 @@ internal static class DocumentationApiComposition
             }
             string header = Header(fragment, type, entry.title, ancestors);
             var text = new StringBuilder(header).Append("\n\n# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
-            text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
-                .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
+            string body = fragment.body.Trim();
+            if (fragment.source == "xml")
+            {
+                // The generated introduction is the XML summary. Keep the remaining Markdown sections independent of declarations.
+                MarkdownDocument document = Markdown.Parse(body);
+                int section = document.OfType<HeadingBlock>().Select(heading => heading.Span.Start).DefaultIfEmpty(body.Length).First();
+                text.Append(body[..section].Trim()).Append("\n\n");
+                body = body[section..].Trim();
+            }
             if (fragment.metadata.Children.TryGetValue(new YamlScalarNode("source"), out YamlNode? source)
                 && source is YamlScalarNode { Value: "xml" })
                 text.Append("> [!TIP]\n> This explanation is synchronized from the source XML documentation.\n\n");
@@ -109,9 +116,12 @@ internal static class DocumentationApiComposition
                 }
                 text.Append('\n');
             }
+            text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
+                .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
             if (fact.baseType is not null) text.Append("**Inherits:** `").Append(fact.baseType).Append("`\n\n");
             if (fact.interfaces.Count != 0) text.Append("**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`"))).Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
+            text.Append(Rebase(root, body, fragment.path, entry.path, fragment.source == "xml" ? 0 : 2)).Append("\n\n");
             DocumentationApiContentEntry[] members = byType.GetValueOrDefault(fact.key) ?? [];
             if (members.Length != 0)
             {
@@ -154,7 +164,6 @@ internal static class DocumentationApiComposition
                     .Append(fact.id).Append(' ').Append(DocumentationMarkdown.Hash(variants.Key)).Append(" -->\n\n```csharp\n")
                     .Append(variants.Key).Append("\n```\n\n");
             }
-            text.Append(Rebase(root, fragment.body.Trim(), fragment.path, ownerPath, level)).Append("\n\n");
             origins.Add(new(ownerPath, fact.id, fragment.path, fragment.source, fact.scope, fact.revision,
                 contexts.Select(context => context.surface).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()));
         }

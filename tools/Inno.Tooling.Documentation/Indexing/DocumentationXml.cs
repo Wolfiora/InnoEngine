@@ -14,19 +14,26 @@ internal static class DocumentationXml
         if (string.IsNullOrWhiteSpace(xml)) return "No XML description is available.\n";
         using var reader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
         XElement root = XElement.Load(reader);
-        return string.Join("\n\n", root.Elements().Select(element => element.Name.LocalName switch
+        return string.Join("\n\n", root.Elements().GroupBy(element => element.Name.LocalName)
+            .OrderBy(group => group.Key == "summary" ? 0 : 1).Select(group =>
         {
-            "summary" => Children(element).Trim(),
-            "remarks" => "## Remarks\n\n" + Children(element).Trim(),
-            "param" => "**Parameter `" + element.Attribute("name")?.Value + "`:** " + Children(element).Trim(),
-            "typeparam" => "**Type parameter `" + element.Attribute("name")?.Value + "`:** " + Children(element).Trim(),
-            "returns" => "**Returns:** " + Children(element).Trim(),
-            "value" => "**Value:** " + Children(element).Trim(),
-            "exception" => "**Exception `" + element.Attribute("cref")?.Value + "`:** " + Children(element).Trim(),
-            "example" => "## Example\n\n" + Children(element).Trim(),
-            "seealso" => Node(element),
-            "inheritdoc" => throw new InvalidDataException("Resolve inherited XML before publishing API content."),
-            _ => throw new InvalidDataException("Unsupported API XML element: " + element.Name)
+            string heading = group.Key switch
+            {
+                "summary" => "", "remarks" => "Remarks", "param" => "Parameters", "typeparam" => "Type parameters",
+                "returns" => "Returns", "value" => "Value", "exception" => "Exceptions", "example" => "Example", "seealso" => "See also",
+                "inheritdoc" => throw new InvalidDataException("Resolve inherited XML before publishing API content."),
+                _ => throw new InvalidDataException("Unsupported API XML element: " + group.Key)
+            };
+            string content = string.Join("\n\n", group.Select(element => element.Name.LocalName switch
+            {
+                "summary" or "remarks" or "returns" or "value" or "example" => Children(element).Trim(),
+                "param" => "**Parameter `" + element.Attribute("name")?.Value + "`:** " + Children(element).Trim(),
+                "typeparam" => "**Type parameter `" + element.Attribute("name")?.Value + "`:** " + Children(element).Trim(),
+                "exception" => "**Exception `" + element.Attribute("cref")?.Value + "`:** " + Children(element).Trim(),
+                "seealso" => Node(element),
+                _ => throw new InvalidDataException("Unsupported API XML element: " + element.Name)
+            }).Where(text => text.Length != 0));
+            return content.Length == 0 ? "" : (heading.Length == 0 ? "" : "## " + heading + "\n\n") + content;
         }).Where(text => text.Length != 0)) + "\n";
     }
 

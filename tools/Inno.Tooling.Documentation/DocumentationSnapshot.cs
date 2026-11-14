@@ -389,11 +389,12 @@ public sealed class DocumentationSnapshot : IDisposable
         DocumentationSymbol selected = owner.symbols.Single(symbol => symbol.id == request.value);
         DocumentationSection section = owner.sections.Single(candidate => candidate.anchor == selected.section);
         var continuations = Contracts(owner);
-        string text = selected.declaration;
+        bool independentPage = m_origins.ContainsKey(owner.path + "\0" + selected.id) && owner.symbols.Count == 1;
+        string text = independentPage ? owner.text : selected.declaration;
         if (text.Length > C_MAX_CONTENT)
         {
-            continuations.Insert(0, new(owner.metadata.uid, section.anchor, 0, "Read the complete declaration and its constraints."));
-            return new("Navigation", identity, "Unverified", "The declaration requires an explicit section read.", [], continuations);
+            continuations.Insert(0, new(owner.metadata.uid, independentPage ? null : section.anchor, 0, "Read the complete declaration and its constraints."));
+            return new("Navigation", identity, "Unverified", "The symbol content requires an explicit page or section read.", [], continuations);
         }
         return new(continuations.Count == 0 ? "Found" : "Partial", identity, "Unverified",
             "Exact documented declaration; associated contracts remain explicit. Symbol presence is not source API verification.",

@@ -637,6 +637,37 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     }
 
     [Fact]
+    public async Task XmlSummaryAndSectionsHaveTheSameReadingOrderInMarkdownAndQueries()
+    {
+        SetTypeDocumentation("""
+            <member><remarks>Keep the owner alive.</remarks><summary>Owns a value.<para>Release it when finished.</para></summary>
+            <typeparam name="T">The owned type.</typeparam><returns>The current value.</returns>
+            <example><code>var value = Read();</code></example></member>
+            """);
+        JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
+        facts["projects"]![0]!["symbols"]![0]!["baseType"] = "System.Object";
+        SaveFacts(facts);
+        await Sync();
+        string prose = File.ReadAllText(Fragment(C_TYPE));
+        Assert.Contains("Owns a value.\n\nRelease it when finished.\n\n## Remarks", prose);
+        Assert.Contains("## Type parameters", prose);
+        Assert.Contains("## Returns\n\nThe current value.", prose);
+        Assert.Contains("## Example", prose);
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
+        Assert.Contains("# Value\n\nOwns a value.\n\nRelease it when finished.", page.markdown);
+        Assert.Contains("**Project:** `Inno.Probe` · **API:** engine\n\n**Inherits:** `System.Object`", page.markdown);
+        Assert.True(page.markdown.IndexOf("## Declaration", StringComparison.Ordinal) < page.markdown.IndexOf("## Remarks", StringComparison.Ordinal));
+        Assert.DoesNotContain("#### Remarks", page.markdown);
+        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_TYPE, "Inno.Probe"))).hits);
+        Assert.Contains("Owns a value.", hit.text);
+        Assert.Contains("Keep the owner alive.", hit.text);
+        Assert.Equal(1, page.markdown.Split("Owns a value.", StringSplitOptions.None).Length - 1);
+    }
+
+    [Fact]
     public async Task NestedXmlListsAndFollowingContractsSurviveComposition()
     {
         SetTypeDocumentation("""
