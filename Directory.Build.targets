@@ -1,4 +1,10 @@
 <Project>
+  <Target Name="ValidateApiReferenceOutputOwner" BeforeTargets="PrepareForBuild" Condition="'$(InnoBuildPurpose)' == 'ApiReferences'">
+    <Error Condition="'$(ArtifactsPath)' == ''" Text="API reference preparation requires its own explicit ArtifactsPath; ordinary product outputs must not be reused." />
+  </Target>
+  <Target Name="RejectApiReferenceProductPublication" BeforeTargets="Publish" Condition="'$(InnoBuildPurpose)' == 'ApiReferences'">
+    <Error Text="API reference preparation cannot publish a runnable product. Use the ordinary product pipeline." />
+  </Target>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug' or '$(Configuration)' == 'SourceDebug'">
     <!-- Apply after the SDK's default configuration. Development symbols retain exact source bytes without commit churn;
          Release keeps commit-based informational versions and Source Link provenance. -->

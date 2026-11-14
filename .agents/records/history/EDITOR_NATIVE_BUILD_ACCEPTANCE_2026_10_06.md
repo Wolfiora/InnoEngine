@@ -1,6 +1,6 @@
 # Editor 普通构建与原生部署修复验收
 
-[架构索引](../../../docs/architecture/README.md) · [Editor Application](../../../docs/modules/editor/Inno.Editor.Hosting.md) · [Host 工具链](../../../docs/development/build/Inno.Build.Toolchains.md) · [MSBuild Task](../../../docs/development/build/Inno.Build.Tasks.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Editor Application](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/editor/Inno.Editor.Hosting.md) · [Host 工具链](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.Toolchains.md) · [MSBuild Task](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.Tasks.md)
 
 ## 原因与证据
 

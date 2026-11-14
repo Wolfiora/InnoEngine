@@ -1,6 +1,6 @@
 # Solution 与项目文件整理验收（2026-10-05）
 
-[架构索引](../../../docs/architecture/README.md) · [通用开发规范](../../rulebook/coding.md) · [平台扩展示例](../../../docs/development/adding-platform.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [通用开发规范](../../rulebook/coding.md) · [平台扩展示例](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md)
 
 ## 范围与结果
 

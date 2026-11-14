@@ -305,6 +305,58 @@ public sealed class CSharp14ScriptingTests
         Assert.NotEmpty(Directory.GetDirectories(referenceRoot).Except(references));
     }
 
+    /// <summary>
+    /// Refreshes projected documentation after a same-length XML change without relying on timestamps.
+    /// </summary>
+    [Fact]
+    public void SourceDocumentationContentSelectsANewReferenceGeneration()
+    {
+        // This suite is serial. Only its own deployed XML sidecar is changed, and it is restored on failure.
+        string source = Path.ChangeExtension(typeof(Inno.Scene.SceneManager).Assembly.Location, ".xml");
+        Assert.StartsWith(Path.GetFullPath(AppContext.BaseDirectory), Path.GetFullPath(source), StringComparison.OrdinalIgnoreCase);
+        byte[] original = File.ReadAllBytes(source);
+        DateTime timestamp = File.GetLastWriteTimeUtc(source);
+        using var fixture = new CompilerFixture();
+        fixture.Rescan();
+        try
+        {
+            XDocument document = XDocument.Parse(Encoding.UTF8.GetString(original));
+            XElement member = document.Root!.Element("members")!.Elements("member")
+                .Single(value => (string?)value.Attribute("name") == "T:Inno.Scene.SceneManager");
+            member.SetElementValue("summary", "Documentation generation Alpha.");
+            document.Save(source);
+            fixture.compiler.GenerateProjectFiles();
+            string first = ReferenceDocumentation();
+            byte[] frozen = File.ReadAllBytes(first);
+            string changed = File.ReadAllText(source).Replace("generation Alpha.", "generation Bravo.", StringComparison.Ordinal);
+            long length = new FileInfo(source).Length;
+            File.WriteAllText(source, changed, new UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+            Assert.Equal(length, new FileInfo(source).Length);
+            File.SetLastWriteTimeUtc(source, timestamp);
+            fixture.compiler.GenerateProjectFiles();
+            string second = ReferenceDocumentation();
+            Assert.NotEqual(first, second);
+            Assert.Contains("generation Bravo.", File.ReadAllText(second), StringComparison.Ordinal);
+            Assert.Equal(frozen, File.ReadAllBytes(first));
+            XElement origin = XDocument.Load(second).Root!.Element("provenance")!.Elements("type")
+                .Single(value => (string?)value.Attribute("source") == "T:Inno.Scene.SceneManager");
+            Assert.Equal("T:InnoEngine.Scene.SceneManager", (string?)origin.Attribute("id"));
+        }
+        finally
+        {
+            File.WriteAllBytes(source, original);
+            File.SetLastWriteTimeUtc(source, timestamp);
+        }
+
+        string ReferenceDocumentation()
+        {
+            string project = Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj");
+            XElement reference = XDocument.Load(project).Descendants("Reference")
+                .Single(value => (string?)value.Attribute("Include") == "Inno.ScriptApi.Runtime");
+            return Path.ChangeExtension(Path.GetFullPath(reference.Element("HintPath")!.Value, fixture.projectRoot), ".xml");
+        }
+    }
+
     private sealed class MutableCompilationEnvironment : IScriptCompilationEnvironmentProvider
     {
         internal ScriptCompilationInputs inputs { get; set; } = null!;

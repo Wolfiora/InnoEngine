@@ -8,7 +8,9 @@ namespace Inno.Core.Events;
 /// A disposable subscription hub bound to a single <see cref="EventDispatcher"/>.
 /// </summary>
 /// <remarks>
-/// Listeners are ordered by priority (descending) and registration order (ascending).
+/// Dispatch visits the concrete event type before its base types. Within each type bucket,
+/// listeners are ordered by priority (descending) and registration order (ascending).
+/// Callbacks execute on the dispatching thread; subscription disposal does not join an active callback.
 /// </remarks>
 public sealed class EventHub : IDisposable
 {
@@ -80,7 +82,8 @@ public sealed class EventHub : IDisposable
     /// Listener callback.
     /// </param>
     /// <param name="priority">
-    /// Listener priority within this hub. Higher values run earlier.
+    /// Listener priority within the selected event type's bucket. Higher values run earlier;
+    /// a base-type listener does not precede a concrete-type listener because of its priority.
     /// </param>
     /// <returns>
     /// A token that unsubscribes this listener when disposed.
@@ -124,7 +127,8 @@ public sealed class EventHub : IDisposable
     /// Listener callback.
     /// </param>
     /// <param name="priority">
-    /// Listener priority within this hub. Higher values run earlier.
+    /// Listener priority within the selected event type's bucket. Higher values run earlier;
+    /// a base-type listener does not precede a concrete-type listener because of its priority.
     /// </param>
     /// <returns>
     /// A token that can cancel the one-shot listener before it runs.

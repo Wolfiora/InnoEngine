@@ -1,5 +1,7 @@
-# 长期决策
+# Lasting decisions
 
-[记录入口](../README.md)
+[Records](../README.md)
 
-只记录长期有用的决策理由、约束和取舍，并链接当前权威机制。普通样式调整、机械移动和局部修复不强制创建记录。已失效的方案移入 history，不复制为当前规则。
+Record durable reasons, constraints and tradeoffs, with links to the current authoritative mechanism. Ordinary style adjustments, mechanical moves and local fixes do not require decision records. Move superseded designs to history rather than duplicating them as current rules.
+
+- [English rule preservation](ENGLISH_RULE_PRESERVATION.md): original rule identities, clause correspondence, reviewed meaning and explicitly approved ownership/language changes.

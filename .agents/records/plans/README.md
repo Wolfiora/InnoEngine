@@ -1,11 +1,20 @@
-# 活动计划
+# Implementation plans
 
-[记录入口](../README.md)
+[Records](../README.md) · [Current acceptance](../acceptance/current.md)
 
-- [Logo、图标与署名接入](LOGO_BRANDING.md)
+The active English continuation is [English documentation, AI workflow and CI/CD modernization](ENGLISH_DOCUMENTATION_MODERNIZATION.md). It carries forward incomplete #75 acceptance and adds the approved two-repository documentation migration. Its implementation ledger is authoritative for this work; it does not claim previous plans completed.
 
-- [AI 工作流与 CI/CD](AI_PIPELINE_IMPLEMENTATION.md)：#75 仍保留未完成的跨平台与发布验收。
-- [文档、Agent 规则与查询](DOCS_AGENT_INFORMATION_ARCHITECTURE.md)
-- [逐文件迁移与基线身份](docs-agent-migration.json)
+- [Current full source/content baseline](english-documentation-baseline.json)
+- [Diagnostic query observations before extraction](documentation-query-before.json)
+- [English rule preservation review](../decisions/ENGLISH_RULE_PRESERVATION.md)
 
-历史计划见 [history](../history/README.md)，不能据旧计划推断当前实施状态。
+## Prior plan sources
+
+These records retain their original language, decisions and evidence. Read them when a carried-forward obligation requires context; do not load all of them for routine tasks.
+
+- [AI pipeline and CI/CD implementation](AI_PIPELINE_IMPLEMENTATION.md): original #75 obligations and prior execution evidence.
+- [Documentation, rules and local queries](DOCS_AGENT_INFORMATION_ARCHITECTURE.md): preceding content reorganization.
+- [Previous file migration map](docs-agent-migration.json): original source identities and destinations.
+- [Branding integration](LOGO_BRANDING.md): logo, icons, attribution and original acceptance scope.
+
+[Historical plans](../history/README.md) do not establish current implementation status.

@@ -1,6 +1,6 @@
 # 提交前 Sample 导入修复与 BGCS 独立性复核（2026-10-03）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [上轮审查](PRECOMMIT_BGCS_AUDIT_2026_10_02.md) · [当前问题入口](../open-items.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [上轮审查](PRECOMMIT_BGCS_AUDIT_2026_10_02.md) · [当前问题入口](../open-items.md)
 
 ## 范围
 
@@ -62,7 +62,7 @@ BGCS 的 capability matrix 只采用自身测试：target triple、32 位 pointe
 
 Binding 必须按目标解析 `long`、pointer、alignment、calling convention 和 target headers。否则 64 位作者主机上的解析结果可能被错误当成 32 位 Wasm ABI。Clang 明确区分 target triple、sysroot 和宿主工具链输入；BGCS 识别 Emscripten 属于必要的通用目标支持。[Clang 交叉编译](https://clang.llvm.org/docs/CrossCompilation.html)。
 
-必要的是一份目标描述及显式 SDK 输入；不需要每个 native 库拥有另一套 BGCS 生成逻辑。引擎 Browser 工具链的静态链接、宿主帧调度和存储，以及 SDK SjLj lowering，继续属于引擎平台实现。参见 Browser 工具链（历史位置 `../../../docs/platform/Browser/Inno.Build.Browser.md`，当前不可用）及 [Web Player 边界](../../../docs/architecture/web-player.md)。
+必要的是一份目标描述及显式 SDK 输入；不需要每个 native 库拥有另一套 BGCS 生成逻辑。引擎 Browser 工具链的静态链接、宿主帧调度和存储，以及 SDK SjLj lowering，继续属于引擎平台实现。参见 Browser 工具链（历史位置 `../../../docs/platform/Browser/Inno.Build.Browser.md`，当前不可用）及 [Web Player 边界](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/web-player.md)。
 
 ## 验证
 

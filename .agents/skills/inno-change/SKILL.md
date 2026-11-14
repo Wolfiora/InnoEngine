@@ -3,8 +3,10 @@ name: inno-change
 description: Scope an InnoEngine implementation by actual owners, behavior changes, applicable rules and finite acceptance.
 ---
 
-先核对分支、差异和 owner，保护其他会话。用仓库根的 tests/ci/Test-AgentRules.ps1 按路径发现完整规则，并按行为补选；规则入口见 [rulebook](../../rulebook/README.md)。
+Confirm the branch, workspace changes and implementing owner; protect other sessions. Run `tests/ci/Test-AgentRules.ps1` from the engine root to select complete rule units by repository-relative paths and behavior tags. The [rulebook](../../rulebook/README.md) is their sole authority.
 
-用 Build 的 docs search/read/symbol 查现行设计和使用契约，再核对真实源码与项目关系。明确行为变化、生命周期、失败回滚和有限验收；已有 Core 能力优先。输出只保留 owner、规则单元、改动边界、必要调用方与验证理由。普通局部任务不重新审计整个引擎。
+When task guidance or an API contract is needed, select a prepared documentation snapshot. Use Build `docs search/read/symbol`, then verify relevant source and actual project relationships. Reuse loaded content while its identity and scope remain unchanged. Refresh after relevant edits; a query never creates a Docs candidate or certifies source API correctness.
 
-测试选择交给统一 validate plan，不保存测试名单。接续只更新 [records](../../records/README.md) 中已有计划的范围、决策、输入身份、有效证据、阻塞和下一步；无关改进另记 issue。
+Identify behavior changes, lifecycle obligations, failure rollback, required callers and finite acceptance. Reuse existing Core mechanisms. Keep task context to owners, rules, documentation/source entry points, decisions and verification reasons. Ordinary local changes do not require another whole-engine audit.
+
+Use `validate plan` for check selection; do not keep a skill-specific test list. A private presentation change still needs relevant behavior and lifecycle coverage; unrelated product obligations need an actual dependency or behavior reason. Maintain API XML in the engine; master-to-draft synchronization owns generated reference updates. Change the Docs Manual only when usage guidance changes, from its `draft` baseline. Update the existing [record](../../records/README.md) with scope, decisions, input identity, valid evidence, blockers and next action; track unrelated improvements separately.

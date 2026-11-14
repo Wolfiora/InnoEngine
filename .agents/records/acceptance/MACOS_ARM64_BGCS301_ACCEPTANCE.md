@@ -8,7 +8,7 @@
 
 ## 输入与顺序
 
-使用原生 Apple Silicon Mac、ARM64 .NET SDK、Xcode 工具、CMake、make 和 PowerShell 7。实际工具解析遵循 [Mac 平台配置](../../../docs/platform/PRODUCT_STARTUP.md#from-zero)，不使用 Rosetta 或 Windows 原生产物。
+使用原生 Apple Silicon Mac、ARM64 .NET SDK、Xcode 工具、CMake、make 和 PowerShell 7。实际工具解析遵循 [Mac 平台配置](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md#from-zero)，不使用 Rosetta 或 Windows 原生产物。
 
 四仓库必须包含本轮的全部源码及未跟踪的新文件。当前 Windows 工作区未提交，直接拉取现有远端分支不保证得到相同代码。传递源码时保留 `.imeta`、当前工程、锁文件、插件包与子模块身份；不复制 `bin/obj`、`Library` 或平台缓存。BGCS 从精确固定的 NuGet 3.0.1 还原，不复制 BindGen-CS 源码或引用其工程。
 

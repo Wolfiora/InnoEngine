@@ -7,7 +7,9 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Inno.Build.Toolchains;
 using Inno.Tooling.Architecture;
+using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation;
 
@@ -21,10 +23,16 @@ internal static class ValidationRunner
         ValidationEvidence? previous,
         CancellationToken cancellation
     ) {
+        using DocumentationSnapshot? documentationSnapshot = plan.documentation is null ? null
+            : await DocumentationStore.OpenAsync(plan.documentation.cacheRoot, plan.documentation.snapshot,
+                cancellationToken: cancellation).ConfigureAwait(false);
+        DocumentationCatalogReport? documentationCatalog = documentationSnapshot is null ? null
+            : await ValidationDocumentation.ReadCatalogAsync(plan, documentationSnapshot, cancellation).ConfigureAwait(false);
         var results = new List<ValidationResult>();
         DateTimeOffset started = DateTimeOffset.UtcNow;
         string planIdentity = ValidationInputs.PlanIdentity(plan);
         Directory.CreateDirectory(directory);
+        Console.WriteLine("Validation phase: acquire the selected workspace ownership and freeze current inputs.");
         using var workspace = plan.checks.Any(static check => check.kind == "build" && check.exclusion is null)
             ? await ValidationWorkspace.AcquireAsync(plan, cancellation).ConfigureAwait(false) : null;
         foreach (var context in plan.contexts)
@@ -44,8 +52,10 @@ internal static class ValidationRunner
         var testDetails = new Dictionary<string, (bool passed, string detail)>(StringComparer.Ordinal);
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
+        var compilationGraphs = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ValidationCheck check in plan.checks)
         {
+            Console.WriteLine($"Validation check: {check.id}; kind={check.kind}; context={check.context ?? "none"}; owner={check.owner}.");
             string identity = ValidationInputs.CheckIdentity(plan, check, current);
             string contextId = check.context ?? "managed";
             string graphPath = Path.Combine(directory, contextId + "-sdk-graph.json");
@@ -53,6 +63,7 @@ internal static class ValidationRunner
             string detail = string.Empty;
             Dictionary<string, string>? outputs = null;
             string dependencyIdentity = string.Empty;
+            ValidationDocumentationInput[]? documentationInputs = null;
             var elapsed = Stopwatch.StartNew();
             ValidationResult? old = previous?.results.SingleOrDefault(result => result.id == check.id);
             if (check.exclusion is not null)
@@ -65,12 +76,13 @@ internal static class ValidationRunner
                 status = "Blocked";
                 detail = "Validation was canceled before this required check completed.";
             }
-            else if (check.prerequisites.Any(prerequisite => !results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused"))
-                || (check.context is not null && !(check.kind == "test" && tested.Contains(contextId))
-                    && results.Any(static result => result.status is "Failed" or "Blocked")))
+            else if (check.prerequisites.Any(prerequisite => !results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused")))
             {
                 status = "Blocked";
-                detail = "A required preceding check did not pass; dependent work was not executed.";
+                detail = "Required prerequisites did not pass: " + string.Join(", ", check.prerequisites
+                    .Select(prerequisite => (id: prerequisite, status: results.SingleOrDefault(result => result.id == prerequisite)?.status ?? "Missing"))
+                    .Where(static prerequisite => prerequisite.status is not ("Passed" or "Reused"))
+                    .Select(static prerequisite => prerequisite.id + " (" + prerequisite.status + ")")) + ". Dependent work was not executed.";
             }
             else if (check.reusable && previous is { completed: true } && previous.environment == plan.environment && old is { status: "Passed" or "Reused" }
                 && old.inputIdentity == identity && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
@@ -81,6 +93,7 @@ internal static class ValidationRunner
                 detail = check.kind == "test" ? old.detail : "Exact local deterministic input identity matches retained successful evidence.";
                 outputs = old.outputs;
                 dependencyIdentity = old.dependencyIdentity;
+                documentationInputs = old.documentationInputs;
             }
             else
             {
@@ -105,10 +118,10 @@ internal static class ValidationRunner
                                 "-ResultsDirectory", Path.Combine(directory, "hot-builds"), "-Iterations", "10"], "hot-builds.log").ConfigureAwait(false);
                             break;
                         case "instructions":
-                            await ShellAsync("tests/ci/Test-AgentRules.ps1", [], "instructions.log").ConfigureAwait(false);
+                            await ShellAsync(ValidationCiContracts.C_RULE_LOADER, [], "instructions.log").ConfigureAwait(false);
                             break;
                         case "ci-contracts":
-                            string[] contracts = Directory.GetFiles(Path.Combine(plan.root, "tests", "ci"), "*.Tests.ps1").Order(StringComparer.Ordinal).ToArray();
+                            string[] contracts = ValidationCiContracts.Discover(plan.root);
                             if (contracts.Length == 0)
                                 throw new InvalidDataException("Required CI contract discovery is empty.");
                             foreach (string contract in contracts)
@@ -143,23 +156,66 @@ internal static class ValidationRunner
                                 throw new InvalidDataException("Required compiled API owner selection is empty.");
                             string[] projects = check.projects.SelectMany(static project => new[] { "--api-project", project }).ToArray();
                             if (ArchitectureValidator.Execute([plan.root, "--metadata-only", "--configuration", plan.contexts[contextId].properties["Configuration"],
-                                "--dotnet", plan.dotnet, "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"], "--sdk-snapshot", graphPath, ..projects], cancellation) != 0)
+                                "--dotnet", plan.dotnet, "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"],
+                                "--sdk-snapshot", await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false), ..projects], cancellation) != 0)
                                 throw new InvalidDataException("Affected compiled API boundaries failed.");
                             break;
+                        case "documentation-missing":
+                            status = "Blocked";
+                            detail = check.reason;
+                            if (check.projects is { Length: > 0 } captureOwners && check.documentation is not null)
+                            {
+                                string captureDirectory = Path.Combine(directory, "documentation-captures");
+                                Directory.CreateDirectory(captureDirectory);
+                                string capturePath = Path.Combine(captureDirectory, Path.GetFileNameWithoutExtension(check.owner) + ".json");
+                                string[] captureTarget = check.documentation.target is string selectedTarget ? ["--target", selectedTarget] : [];
+                                DocumentationReferences.ExportApi(["--engine-root", plan.root, "--dotnet", plan.dotnet,
+                                    "--configuration", check.documentation.configuration,
+                                    "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"],
+                                    "--sdk-snapshot", await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                    "--output", capturePath, ..captureTarget,
+                                    ..captureOwners.SelectMany(static owner => new[] { "--project", owner })], cancellation);
+                                detail += " Unverified source facts retained at " + capturePath + "; review and compare the resulting documentation in a subsequent validation.";
+                            }
+                            break;
                         case "documentation":
-                            if (ArchitectureValidator.Execute([plan.root, "--documentation-only"], cancellation) != 0)
-                                throw new InvalidDataException("Documentation ownership, content or links failed.");
+                            if (documentationSnapshot is null)
+                                throw new InvalidDataException("Required external documentation snapshot is unavailable.");
+                            documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+                            string[] missing = plan.inputSets.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal))
+                                .Select(static path => Path.GetFileNameWithoutExtension(path))
+                                .Where(name => !documentationCatalog.projects.TryGetValue(name, out string? entry) || entry is null).ToArray();
+                            if (missing.Length != 0)
+                                throw new InvalidDataException("Required canonical project entries are missing: " + string.Join(", ", missing));
+                            if (documentationCatalog.contentIdentity != check.documentation!.contentIdentity)
+                                throw new InvalidDataException("Documentation content does not match the frozen plan.");
+                            break;
+                        case "documentation-api":
+                            ValidationDocumentationCheck referenceCheck = check.documentation
+                                ?? throw new InvalidDataException("Required reference selection is absent.");
+                            if (plan.documentation is null || check.projects is not { Length: > 0 })
+                                throw new InvalidDataException("Required source reference discovery is empty.");
+                            string[] referenceArguments = referenceCheck.references.SelectMany(static path => new[] { "--reference", path })
+                                .Concat(check.projects.SelectMany(static project => new[] { "--project", project })).ToArray();
+                            if (await DocumentationReferences.ValidateApiAsync(["--engine-root", plan.root, "--dotnet", plan.dotnet,
+                                "--cache-root", plan.documentation.cacheRoot, "--snapshot", plan.documentation.snapshot,
+                                "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"],
+                                "--sdk-snapshot", await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                "--output", Path.Combine(directory, check.id.Replace(':', '-') + ".json"), ..referenceArguments], cancellation).ConfigureAwait(false) != 0)
+                                throw new InvalidDataException("Selected documentation source references differ from current source.");
                             break;
                         case "agent-documents":
                             if (ArchitectureValidator.Execute([plan.root, "--agent-documents-only"], cancellation) != 0)
                                 throw new InvalidDataException("Agent document structure or links failed.");
                             break;
-                        case "wiki":
-                            string[] pages = check.inputs.Where(static input => input.StartsWith("docs/", StringComparison.Ordinal))
-                                .SelectMany(static input => new[] { "--wiki-page", input }).ToArray();
+                        case "documentation-examples":
+                            if (documentationSnapshot is null || check.documentation is null || check.documentation.pages.Length == 0)
+                                throw new InvalidDataException("Required canonical example discovery is empty.");
+                            documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
+                            string[] pages = check.documentation.pages.SelectMany(static page => new[] { "--page", page }).ToArray();
                             var scriptArguments = new List<string>();
-                            if (check.inputs.Where(static input => input.StartsWith("docs/", StringComparison.Ordinal))
-                                .Any(page => ValidationDocumentation.RequiresScriptReferences(Path.Combine(plan.root, page))))
+                            if (documentationCatalog.pages.Any(page => check.documentation.pages.Contains(page.id, StringComparer.Ordinal)
+                                && page.examples?.mode is "runtime-script" or "editor-script"))
                             {
                                 string entryContext = plan.checks.Single(candidate => candidate.kind == "build"
                                     && candidate.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj"
@@ -167,28 +223,31 @@ internal static class ValidationRunner
                                 JsonElement snapshot = plan.contexts[entryContext].sdkGraph;
                                 string entry = snapshot.EnumerateArray().Single(node => Path.GetFileName(node.GetProperty("Path").GetString()) == "InnoEngine.Build.csproj")
                                     .GetProperty("Properties").GetProperty("TargetPath").GetString()!;
-                                string project = Path.Combine(directory, contextId + "-wiki-project");
+                                string project = Path.Combine(directory, contextId + "-documentation-project");
                                 Directory.CreateDirectory(Path.Combine(project, "Assets"));
-                                await File.WriteAllTextAsync(Path.Combine(project, "Assets", "WikiProbe.cs"), "public sealed class WikiProbe { }", cancellation).ConfigureAwait(false);
+                                await File.WriteAllTextAsync(Path.Combine(project, "Assets", "DocumentationProbe.cs"), "public sealed class DocumentationProbe { }", cancellation).ConfigureAwait(false);
                                 await ValidationProcess.RunAsync(plan.dotnet, [entry, "scripts", "--engine-root", plan.root,
-                                    "--tools-target", plan.contexts[contextId].properties["InnoToolTarget"], "--dotnet", plan.dotnet,
+                                    "--dotnet", plan.dotnet,
                                     "--project", project, "--output", Path.Combine(project, "Scripts"), "--ide"], plan.root,
-                                    Path.Combine(directory, contextId + "-wiki-projection.log"), cancellation).ConfigureAwait(false);
+                                    Path.Combine(directory, contextId + "-documentation-projection.log"), cancellation).ConfigureAwait(false);
                                 XDocument projection = XDocument.Load(Path.Combine(project, "Inno.EditorScripts.csproj"));
                                 foreach (string scope in new[] { "Runtime", "Editor" })
                                 {
                                     XElement reference = projection.Descendants("Reference").Single(element => (string?)element.Attribute("Include") == "Inno.ScriptApi." + scope);
                                     string path = Path.GetFullPath(reference.Element("HintPath")!.Value, project);
                                     if (!File.Exists(path))
-                                        throw new InvalidDataException($"Current Wiki script projection reference is missing: {path}");
-                                    scriptArguments.AddRange(["--wiki-" + scope.ToLowerInvariant() + "-reference", path]);
+                                        throw new InvalidDataException($"Current Documentation script projection reference is missing: {path}");
+                                    scriptArguments.AddRange(["--" + scope.ToLowerInvariant() + "-reference", path]);
                                 }
                             }
-                            string[] targetArguments = contextId == "native" ? ["--wiki-target", plan.contexts[contextId].properties["InnoNativeTarget"]] : [];
-                            if (ArchitectureValidator.Execute([plan.root, "--wiki-contracts-only", "--configuration", plan.configuration,
-                                "--dotnet", plan.dotnet, "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"], "--wiki-api", Path.Combine(directory, contextId + "-wiki-api.json"),
-                                "--wiki-examples", Path.Combine(directory, contextId + "-wiki-examples.json"), "--sdk-snapshot", graphPath, ..targetArguments, ..scriptArguments, ..pages], cancellation) != 0)
-                                throw new InvalidDataException("Scoped Wiki signatures or compiled examples failed.");
+                            string[] targetArguments = check.documentation.target is string exampleTarget ? ["--target", exampleTarget] : [];
+                            if (await DocumentationExamples.ExecuteAsync(["--engine-root", plan.root, "--configuration", plan.configuration,
+                                "--dotnet", plan.dotnet, "--cache-root", plan.documentation!.cacheRoot, "--snapshot", plan.documentation.snapshot,
+                                "--artifacts-path", plan.contexts[contextId].properties["ArtifactsPath"],
+                                "--sdk-snapshot", await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                "--output", Path.Combine(directory, contextId + "-documentation-examples.json"),
+                                ..targetArguments, ..scriptArguments, ..pages], cancellation).ConfigureAwait(false) != 0)
+                                throw new InvalidDataException("Selected documentation examples failed or require unavailable compilation inputs.");
                             break;
                         case "products":
                             {
@@ -332,6 +391,7 @@ internal static class ValidationRunner
                     {
                         outputs = ValidationOutputs.Capture(plan, check, cancellation, outputDigests);
                         dependencyIdentity = dependencyInputs.Capture(check);
+                        documentationInputs = ValidationDocumentationInputs.Capture(plan, check, dependencyInputs);
                         status = "Passed";
                     }
                 }
@@ -345,7 +405,7 @@ internal static class ValidationRunner
                     detail = failure.Message;
                 }
             }
-            results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity));
+            results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity, documentationInputs));
             Console.WriteLine($"{status}: {check.id} ({elapsed.Elapsed.TotalSeconds:F2}s) {detail}");
             await SaveAsync().ConfigureAwait(false);
         }
@@ -402,6 +462,29 @@ internal static class ValidationRunner
             string log
         ) => ValidationProcess.RunAsync("pwsh", ["-NoProfile", "-File", Path.Combine(plan.root, script), ..arguments],
             plan.root, Path.Combine(directory, log), cancellation);
+
+        async Task<string> ResolveCompilationGraphAsync(string context)
+        {
+            if (compilationGraphs.TryGetValue(context, out string? existing))
+                return existing;
+            string[] projects = plan.checks.Where(candidate => candidate.context == context && candidate.exclusion is null
+                && candidate.kind is "api" or "documentation-api" or "documentation-examples"
+                && candidate.prerequisites.All(prerequisite => results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused")))
+                .SelectMany(static candidate => candidate.projects ?? [])
+                // Consumer roots carry effective reference-edge properties, even when only their dependency exposes an API.
+                .Concat(plan.checks.Where(candidate => candidate.kind == "build" && candidate.context == context && candidate.exclusion is null
+                    && results.Any(result => result.id == candidate.id && result.status is "Passed" or "Reused")).Select(static candidate => candidate.owner))
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal).Select(project => Path.Combine(plan.root, project)).ToArray();
+            if (projects.Length == 0)
+                throw new InvalidDataException("Required compilation reference preparation has no eligible project owners.");
+            string graph = await ManagedProjectGraphCapture.CaptureAsync(plan.root, plan.dotnet, projects,
+                plan.contexts[context].properties, cancellation, resolveReferences: true).ConfigureAwait(false);
+            string destination = Path.Combine(directory, context + "-resolved-sdk-graph.json");
+            await File.WriteAllTextAsync(destination, graph, cancellation).ConfigureAwait(false);
+            compilationGraphs.Add(context, destination);
+            return destination;
+        }
 
         string WriteUnion(
             string context,

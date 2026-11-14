@@ -123,7 +123,7 @@ PNG SHA-256：`2656f31f52669a51345928718b18d8bb94f2a239d5ee8e93f754e32359e60aa9`
 ### 本轮统一计划与未完成项
 
 1. 正确工具生成的统一计划为 `artifacts/validation/logo-outline-plan-02/plan.json`；品牌文件未知 owner 触发保守全量选择（249 个 owner、324 个必需检查），没有手工改写计划。一次较早的运行误用了旧缓存 CLI，识别后终止，保留 `outline-run.log`，不作为证据。
-2. 正确全量运行 `logo-outline-run-02` 执行过程中，独立的当前 SDK 元数据预检再次确认既有 fixture 问题：`Inno.Testing.Editor.Native` 为 `IsTestProject=true`，但 `InnoValidationLayer` 为空；预检退出 1，仅此一项违规。日志为 `artifacts/branding-work/outline-fixture-preflight.log`，对应 [现有问题](../open-items.md#原生-editor-测试支持库的执行层分类)。
+2. 正确全量运行 `logo-outline-run-02` 执行过程中，独立的当前 SDK 元数据预检再次确认既有 fixture 问题：`Inno.Testing.Editor.Native` 为 `IsTestProject=true`，但 `InnoValidationLayer` 为空；预检退出 1，仅此一项违规。日志为 `artifacts/branding-work/outline-fixture-preflight.log`，对应 [现有问题](../open-items.md#earlier-resolved-scopes)。
 3. 确认该全量门禁阻塞后终止尚在进行的全量原生构建；该运行 `completed:false`，不提供全量完成认证，也不将其中已观察到的通过数作为完成证据。上表来自随后独立完成的专项执行，不替代统一全量门禁。
 4. 首次 Wiki 命令错误地从输出子目录寻找生成项目，缺少引用参数而失败；改为实际项目根目录读取引用后检查通过。首次日志 `outline-wiki.log` 保留。脚本投影成功，但自动缓存盘点超过预算而推迟；没有退休缓存，见 `outline-wiki-projection.log`。
 5. 全量原生测试、产品旅程、Release、Support Pack、NativeAOT、发布归档及 macOS/其他设备没有本轮完成证据；未将既有环境阻塞记为通过。Windows 不存在 `/System/Library/Sounds/Glass.aiff`，未播放提示音。
@@ -167,7 +167,7 @@ TTF SHA-256：`171afea1982bb6bb5326f4233bfa152a4d5118254116e75e8e45a01e2dc44cf3`
 1. `logo-run-01` 的 CI 协议脚本从 PATH 取得旧 SDK，未找到 10.0.402；保留首次日志。`logo-run-02` 为本次命令及子进程设置正确 SDK PATH 后，该检查通过。
 2. `logo-run-02` 全量结果为 295 项 Passed、1 项 Failed、28 项 Blocked、7 项 NotApplicable。失败是 `compiled-api:native`：现有支持库 `tests/editor/fixtures/Inno.Testing.Editor.Native/Inno.Testing.Editor.Native.csproj` 经 xUnit 包导入后 `IsTestProject=true`，但 `InnoValidationLayer` 为空。该工程本次未修改，诊断与 SDK 求值保留在 `native-sdk-graph.json` 与总日志。
 3. 因上述前置门禁失败，全量原生 Wiki/测试、产品旅程、Release、Support Pack、NativeAOT restore 和发布归档没有取得通过证据。定向字体、API 与 Wiki 结果仅证明 Logo 任务范围，不代替全量门禁。
-4. fixture 分类问题另记 [当前问题](../open-items.md#原生-editor-测试支持库的执行层分类)，由测试基础设施 owner 按支持库/runner 的实际职责修正；本次不改写无关测试基础设施。
+4. fixture 分类问题另记 [当前问题](../open-items.md#earlier-resolved-scopes)，由测试基础设施 owner 按支持库/runner 的实际职责修正；本次不改写无关测试基础设施。
 5. macOS 产品与其他真实设备未验收。Windows 环境没有仓库约定的 `/System/Library/Sounds/Glass.aiff`，未播放提示音。
 
 ## 语义审查

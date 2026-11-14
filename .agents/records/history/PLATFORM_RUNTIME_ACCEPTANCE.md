@@ -1,6 +1,6 @@
 # 平台与运行时重构验收
 
-[架构索引](../../../docs/architecture/README.md) · [完整计划](PLATFORM_RUNTIME_REFACTOR_PLAN.md) · [当前架构](../../../docs/architecture/platform-and-products.md) · [Wiki 首页](../../../docs/README.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [完整计划](PLATFORM_RUNTIME_REFACTOR_PLAN.md) · [当前架构](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/platform-and-products.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md)
 
 ## 状态与范围
 

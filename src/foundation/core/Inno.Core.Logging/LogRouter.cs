@@ -35,6 +35,11 @@ public sealed class LogRouter : IDisposable
     /// <summary>
     /// Occurs after a failing sink has been quarantined from this router.
     /// </summary>
+    /// <remarks>
+    /// Quarantine removes the sink from delivery but does not dispose it. The host must retain
+    /// responsibility for safely releasing a removed sink. Observers run within delivery and
+    /// must not flush or dispose this router from their callback.
+    /// </remarks>
     public event Action<ILogSink, Exception>? sinkFailed;
 
     /// <summary>
@@ -119,8 +124,13 @@ public sealed class LogRouter : IDisposable
     }
 
     /// <summary>
-    /// Unregisters a sink so it receives no future entries from this router.
+    /// Removes a sink from subsequent delivery snapshots without disposing it.
     /// </summary>
+    /// <remarks>
+    /// An in-flight batch may still borrow the previous snapshot. This operation does not wait
+    /// for its callbacks; the host must coordinate quiescence before releasing sink resources.
+    /// Router disposal releases only sinks that remain registered.
+    /// </remarks>
     /// <param name="sink">
     /// The sink to remove when registered.
     /// </param>

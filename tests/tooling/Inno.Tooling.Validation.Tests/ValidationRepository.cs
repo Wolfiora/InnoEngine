@@ -80,6 +80,8 @@ internal sealed class ValidationRepository : IDisposable
 
     internal string PathOf(string path) => Path.GetFullPath(path, m_root);
 
+    internal string dotnet => m_dotnet;
+
     internal void Write(
         string path,
         string content
@@ -103,11 +105,21 @@ internal sealed class ValidationRepository : IDisposable
         return output.Result.Trim();
     }
 
-    internal async Task<JsonDocument> PlanAsync(string baseline = "HEAD", bool extended = false, string configuration = "Debug")
+    internal async Task<JsonDocument> PlanAsync(
+        string baseline = "HEAD",
+        bool extended = false,
+        string configuration = "Debug",
+        string? documentationCache = null,
+        string? documentationSnapshot = null,
+        string? documentationBaseline = null
+    )
     {
         string output = PathOf("artifacts/plan");
         await ValidationCommand.ExecuteAsync(["plan", "--engine-root", m_root, "--dotnet", m_dotnet, "--base", baseline, "--output", output,
-            "--extended", extended.ToString(), "--configuration", configuration]);
+            "--extended", extended.ToString(), "--configuration", configuration,
+            ..documentationCache is null ? Array.Empty<string>() : new[] { "--docs-cache-root", documentationCache },
+            ..documentationSnapshot is null ? Array.Empty<string>() : new[] { "--docs-snapshot", documentationSnapshot },
+            ..documentationBaseline is null ? Array.Empty<string>() : new[] { "--docs-base-snapshot", documentationBaseline }]);
         return JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
     }
 

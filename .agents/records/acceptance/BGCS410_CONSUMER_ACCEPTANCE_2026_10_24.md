@@ -1,6 +1,6 @@
 # BGCS 4.1.0 消费与平台构建验收
 
-[当前验收](current.md) · [问题台账](../open-items.md) · [绑定职责](../../../docs/development/native-bindings.md)
+[当前验收](current.md) · [问题台账](../open-items.md) · [绑定职责](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/native-bindings.md)
 
 本轮基线为 InnoEngine `569dde52979104c95e2ba9dba15e5d74225b8f91`，当前分支为 `dotnet10`，环境为 Windows x64。四个消费仓库实施前均无未提交修改。BGCS 源码基线为正式 `v4.1.0` 的 `adbe62f863002015c32fbd734375d12cc9c423b8`；只读取其公开契约，不修改源码、NuGet 内容或生成结果。
 

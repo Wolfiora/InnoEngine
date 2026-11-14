@@ -1,0 +1,71 @@
+{
+  "sourceRevision": "7836ecac751ea3327249534ae031c321dd4ca1a6",
+  "date": "2026-11-10T20:01:39.1391287Z",
+  "sdk": "10.0.402",
+  "runtime": "Windows x64; CLI startup included",
+  "workload": "Prepared snapshot search: Console presentation; five results; JSON",
+  "medianWarmMs": 180.9186,
+  "limitation": "Not a controlled old/new comparison. First process observation does not claim a cold filesystem or cold build. Source API remains unverified.",
+  "samples": [
+    {
+      "sample": 0,
+      "kind": "FirstProcessObservation",
+      "elapsedMs": 258.6072,
+      "outputBytes": 4611,
+      "returnedSections": 5,
+      "firstPage": "extending.console-style",
+      "status": "Found",
+      "snapshot": "b663c635ccc9e8d4d4ba028f7b42ac04dc0670cc663f941a1e5b06cfa1a857dc"
+    },
+    {
+      "sample": 1,
+      "kind": "WarmProcessObservation",
+      "elapsedMs": 180.9186,
+      "outputBytes": 4611,
+      "returnedSections": 5,
+      "firstPage": "extending.console-style",
+      "status": "Found",
+      "snapshot": "b663c635ccc9e8d4d4ba028f7b42ac04dc0670cc663f941a1e5b06cfa1a857dc"
+    },
+    {
+      "sample": 2,
+      "kind": "WarmProcessObservation",
+      "elapsedMs": 191.759,
+      "outputBytes": 4611,
+      "returnedSections": 5,
+      "firstPage": "extending.console-style",
+      "status": "Found",
+      "snapshot": "b663c635ccc9e8d4d4ba028f7b42ac04dc0670cc663f941a1e5b06cfa1a857dc"
+    },
+    {
+      "sample": 3,
+      "kind": "WarmProcessObservation",
+      "elapsedMs": 180.0436,
+      "outputBytes": 4611,
+      "returnedSections": 5,
+      "firstPage": "extending.console-style",
+      "status": "Found",
+      "snapshot": "b663c635ccc9e8d4d4ba028f7b42ac04dc0670cc663f941a1e5b06cfa1a857dc"
+    },
+    {
+      "sample": 4,
+      "kind": "WarmProcessObservation",
+      "elapsedMs": 330.932,
+      "outputBytes": 4611,
+      "returnedSections": 5,
+      "firstPage": "extending.console-style",
+      "status": "Found",
+      "snapshot": "b663c635ccc9e8d4d4ba028f7b42ac04dc0670cc663f941a1e5b06cfa1a857dc"
+    },
+    {
+      "sample": 5,
+      "kind": "WarmProcessObservation",
+      "elapsedMs": 176.6048,
+      "outputBytes": 4611,
+      "returnedSections": 5,
+      "firstPage": "extending.console-style",
+      "status": "Found",
+      "snapshot": "b663c635ccc9e8d4d4ba028f7b42ac04dc0670cc663f941a1e5b06cfa1a857dc"
+    }
+  ]
+}

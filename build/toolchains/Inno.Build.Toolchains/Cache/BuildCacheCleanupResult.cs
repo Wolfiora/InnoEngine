@@ -35,7 +35,8 @@ public sealed class BuildCacheCleanupResult
     public IReadOnlyList<string> skipped { get; }
 
     /// <summary>
-    /// Gets failed paths and their observable IO or permission diagnostics.
+    /// Gets failed paths and their IO, permission or metadata-integrity diagnostics.
+    /// A metadata failure preserves its claim and does not erase completed payload retirements.
     /// </summary>
     public IReadOnlyDictionary<string, string> failures { get; }
 

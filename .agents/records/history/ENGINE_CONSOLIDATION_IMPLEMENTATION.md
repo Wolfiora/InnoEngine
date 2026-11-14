@@ -1,6 +1,6 @@
 # 引擎本体统一收口：实施与验收记录
 
-[架构索引](../../../docs/architecture/README.md) · [Architecture Overview](../../../docs/architecture/overview.md) · [Identity / Recovery / Reload 标准](../../../docs/architecture/identity-and-reload.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Architecture Overview](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [Identity / Recovery / Reload 标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md)
 
 本页记录 2026-09-07 用户批准的完整收口范围。目标不是新增玩法 Plugin，而是让所有引擎子系统使用统一的生命周期、诊断、引用恢复、默认装配和封装标准。实现状态与验证状态分别记录；没有运行的验证不得标为通过。
 

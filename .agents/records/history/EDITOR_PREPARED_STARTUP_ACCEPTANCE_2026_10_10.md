@@ -1,6 +1,6 @@
 # 已准备 Editor 直接启动整改与验收
 
-[架构索引](../../../docs/architecture/README.md) · [开发入口设计](../../../docs/development/entry/README.md) · [启动指南](../../../docs/platform/PRODUCT_STARTUP.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [开发入口设计](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/entry/README.md) · [启动指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md)
 
 ## 用户提出的问题
 

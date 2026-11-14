@@ -3,8 +3,14 @@ name: inno-api-docs
 description: Maintain InnoEngine design, usage, API XML and examples against actual public and protected contracts.
 ---
 
-通过规则加载器补选 wiki、xml，入口见 [文档规则](../../rulebook/documentation.md)。先用 Build 的 docs search/read/symbol 定位唯一项目入口与章节；符号标记和索引新鲜度不代替当前源码验证。
+Select applicable `wiki` and `xml` units through the rule loader with `-DocsRoot <explicit-checkout>`. The [documentation rules](https://github.com/Wolfiora/InnoEngine.Docs/blob/docs-modernization/.agents/rulebook/documentation.md) have one authority in that checkout. Read its additional writing and presentation rules when editing authored content. Engine declarations and XML remain in the engine; narrative content belongs to Docs.
 
-核对实际 public/protected 符号、真实项目引用和调用方，维护受影响的设计、实现、使用教程与调用约束。公开承诺和内部机制分开，所有权、线程、失败和释放不能省略。长页使用同名目录与 api-include；移动时修复入站链接与所属项目关系。方法见 [文档指南](../../../docs/development/documentation.md)。
+Use Build `docs search/read/symbol` against a prepared snapshot to locate task guidance, the authoritative project entry and exact qualified symbols. Read necessary associated contracts and explicit continuations. Search excerpts and API markers are not complete contracts or matching source verification evidence.
 
-统一 validate 计划选择 API 与示例检查。输出所属页面、行为变化、已验证内容和剩余限制，不复制源码目录、规则正文或第二份 API 清单；内部颜色变化不触发全引擎文档重写。
+API reference covers public and externally usable protected C# contracts owned by src/ and build/, plus actual ScriptingApiScope projections. Engine API uses only src/ and build/; tools, entries, platforms, backends, extern, tests, fixtures and non-C# APIs are excluded. Preserve useful integration guidance and required Native implementation/deployment tests. Scope (Runtime, Editor, Authoring) and compiler surface are separate identities.
+
+Verify actual public/protected declarations, project references, surfaces and callers. Maintain affected design explanations, mechanisms, tutorials and use contracts in clear English. Distinguish public promises from implementation details. Preserve ownership, threading, lifetime, failure, cancellation and release obligations. API types and individual members have independent pages, with dotted declaring-type names, exact overload identities and explicit required contracts. Type and nested project-category pages use descriptive navigation tables. Update incoming links and navigation when moving content.
+
+Use the unified validation plan for API and executable example checks. Maintain source XML first; a human master merge triggers independent API export into Docs `draft`. Each type/member Markdown is XML-managed unless `source: manual` explicitly transfers its prose to the author. Never alter generated facts to change a declaration. Preserve manual prose and report contract changes for review. Missing editorial text is a neutral warning; corrupt facts, failed extraction and broken examples remain failures.
+
+Manual and tutorial edits use Docs `draft` or a branch based on it. No paired engine PR metadata, full-engine source certificate or latest-master match is required for website publication. Record API sync, Docs checks, editorial work and deployment separately. Only a human `draft` to `main` merge publishes. Do not duplicate inventories or turn a private color change into an engine-wide rewrite.

@@ -6,44 +6,44 @@ namespace Inno.Core.Input;
 public enum MouseCursor
 {
     /// <summary>
-    /// The none key.
+    /// No concrete cursor shape; the consuming host defines visibility behavior.
     /// </summary>
     None = -1,
         
     /// <summary>
-    /// The arrow key.
+    /// The standard arrow pointer.
     /// </summary>
     Arrow = 0,
     /// <summary>
-    /// The text input key.
+    /// The text insertion cursor.
     /// </summary>
     TextInput = 1,
     /// <summary>
-    /// The resize all key.
+    /// An all-direction move or resize cursor.
     /// </summary>
     ResizeAll = 2,
     /// <summary>
-    /// The resize ns key.
+    /// A north-south resize cursor.
     /// </summary>
     ResizeNS = 3,
     /// <summary>
-    /// The resize ew key.
+    /// An east-west resize cursor.
     /// </summary>
     ResizeEW = 4,
     /// <summary>
-    /// The resize nesw key.
+    /// A northeast-southwest diagonal resize cursor.
     /// </summary>
     ResizeNESW = 5,
     /// <summary>
-    /// The resize nwse key.
+    /// A northwest-southeast diagonal resize cursor.
     /// </summary>
     ResizeNWSE = 6,
     /// <summary>
-    /// The hand key.
+    /// A hand pointer for an interactive target.
     /// </summary>
     Hand = 7,
     /// <summary>
-    /// The not allowed key.
+    /// A cursor indicating that an operation is unavailable.
     /// </summary>
     NotAllowed = 8,
 }

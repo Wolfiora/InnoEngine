@@ -23,7 +23,7 @@
 
 精确 XML ID 和 API 锚点返回声明与所属使用约束；非精确符号返回候选；零命中明确为 Empty；无效目标失败。长页返回章节导航或带 offset 的连续原文；Navigation/Partial 不能当作完整契约。缓存覆盖内容、路径、包含和工具身份，损坏派生数据会重建，失败包含图和取消不发布错误索引。
 
-代表性入口已核对：ConsoleStyle 属于 Logging 内部呈现；Panel 创建由 Registry/Host 驱动、退休不保留帧借用；Identity 区分 persistent 与 runtime/generation；Native 消费者持有独立读取保护；backend 页面解释线程、句柄、回调和第三方限制。Asset 删除的 durable tombstone 目标与实际 Library 边界已明确分开，原整改要求保留在 [open-items](../open-items.md#持久删除身份的既有缺口)。
+代表性入口已核对：ConsoleStyle 属于 Logging 内部呈现；Panel 创建由 Registry/Host 驱动、退休不保留帧借用；Identity 区分 persistent 与 runtime/generation；Native 消费者持有独立读取保护；backend 页面解释线程、句柄、回调和第三方限制。Asset 删除的 durable tombstone 目标与实际 Library 边界已明确分开，原整改要求保留在 [open-items](../open-items.md#durable-deletion-identity)。
 
 ## 局部验证
 

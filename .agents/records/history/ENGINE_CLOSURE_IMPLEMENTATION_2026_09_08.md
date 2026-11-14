@@ -1,6 +1,6 @@
 # 本体收口：实现交付与集中验收（2026-09-08）
 
-[架构索引](../../../docs/architecture/README.md) · [Overview](../../../docs/architecture/overview.md) · [完整清单](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) · [Identity 标准](../../../docs/architecture/identity-and-reload.md) · [之前的执行证据](ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Overview](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [完整清单](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) · [Identity 标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md) · [之前的执行证据](ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)
 
 ## 范围与阶段
 

@@ -6,7 +6,7 @@
 
 实施基线为 `dotnet10` 的 `18f281510daf48968bdd7a60248e17ece9fbe420`。实施前四个测试锁文件已有修改，已保留并逐文件合并。原始状态、完整日志、binlog、TRX、采样与包哈希位于仓库本地 `artifacts/acceptance/platform-build-2026-10-22/`；该目录是可重建的验收产物，不进入 Git。
 
-本文按实际命令区分通过、修正后复验、外部阻塞和未执行；原始失败日志保留。当前 API 与职责见[平台所有权](../../../docs/architecture/platform-and-products.md)、[缓存协议](../../../docs/architecture/build-and-cache.md)和[平台扩展指南](../../../docs/development/adding-platform.md)。
+本文按实际命令区分通过、修正后复验、外部阻塞和未执行；原始失败日志保留。当前 API 与职责见[平台所有权](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/platform-and-products.md)、[缓存协议](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/build-and-cache.md)和[平台扩展指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md)。
 
 ## 已实现的实际边界
 

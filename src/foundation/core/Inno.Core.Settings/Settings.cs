@@ -55,7 +55,13 @@ public static class Settings
     /// An independently owned effective setting snapshot.
     /// </returns>
     /// <exception cref="InvalidOperationException">
-    /// Thrown when no project settings lookup is active or the setting is unavailable.
+    /// Thrown when no project settings lookup is active or its owner is no longer initialized.
+    /// </exception>
+    /// <exception cref="System.Collections.Generic.KeyNotFoundException">
+    /// Thrown by the standard project settings store when the setting is unavailable.
+    /// </exception>
+    /// <exception cref="InvalidCastException">
+    /// Thrown by the standard project settings store when the setting does not implement the requested contract.
     /// </exception>
     public static TSetting Get<TSetting>(ProjectSettingId id)
         where TSetting : class, ISerializable

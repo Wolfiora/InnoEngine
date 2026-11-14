@@ -1,6 +1,6 @@
 # Editor UI 闭合实施与验收记录
 
-[执行台账](../history/EDITOR_UI_CLOSURE_PLAN.md) · [设计规范](../../../docs/architecture/editor-ui.md) · [总 issue #27](https://github.com/Wolfiora/InnoEngine/issues/27) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26)
+[执行台账](../history/EDITOR_UI_CLOSURE_PLAN.md) · [设计规范](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/editor-ui.md) · [总 issue #27](https://github.com/Wolfiora/InnoEngine/issues/27) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26)
 
 ## 结论与适用范围
 

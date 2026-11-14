@@ -1,6 +1,6 @@
 # 平台、后端与集成边界完整整改计划
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [本轮验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [本轮验收](BACKEND_PLATFORM_INTEGRATION_ACCEPTANCE.md)
 
 ## 批准范围与完成定义
 

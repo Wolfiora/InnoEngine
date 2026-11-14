@@ -14,7 +14,8 @@ public interface IProjectSettingsLookup
     Guid ownerId { get; }
 
     /// <summary>
-    /// Gets the monotonic revision of the active effective settings snapshot.
+    /// Gets the revision of the active effective settings snapshot, paired with ownerId.
+    /// A generation rollback may restore its previous revision with the corresponding effective values.
     /// </summary>
     long revision { get; }
 

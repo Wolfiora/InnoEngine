@@ -21,7 +21,7 @@
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
 
-  <Target Name="CompileCompositionShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'">
+  <Target Name="CompileCompositionShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'">
     <PropertyGroup>
       <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
     </PropertyGroup>
@@ -48,7 +48,7 @@
       ToolTarget="$(InnoToolTarget)" />
   </Target>
 
-  <Target Name="IncludeCompositionShaderArtifacts" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileCompositionShaderGraphs">
+  <Target Name="IncludeCompositionShaderArtifacts" Condition="'$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileCompositionShaderGraphs">
     <ItemGroup>
       <EmbeddedResource Include="@(_CompositionShaderApi-&gt;'$(IntermediateOutputPath)Shaders/Composition/%(Identity)/Outputs/Composition.%(Identity).bin')">
         <LogicalName>Inno.BgfxShaders.Composition.$(InnoBgfxShaderTarget).%(Filename)</LogicalName>

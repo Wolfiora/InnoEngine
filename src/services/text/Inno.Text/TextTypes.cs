@@ -186,22 +186,23 @@ public readonly record struct TextShapingOptions
 /// Describes one positioned glyph emitted by Unicode shaping.
 /// </summary>
 /// <param name="glyphId">
-/// The uint value used to initialize this instance.
+/// The glyph identifier in the font face that produced this layout.
 /// </param>
 /// <param name="cluster">
-/// The uint value used to initialize this instance.
+/// The source cluster index reported by the backend. The FreeType/HarfBuzz backend
+/// reports a UTF-8 byte offset, not a UTF-16 character index.
 /// </param>
 /// <param name="advanceX">
-/// The float value used to initialize this instance.
+/// The horizontal pen advance in logical pixels, including backend-applied letter spacing.
 /// </param>
 /// <param name="advanceY">
-/// The float value used to initialize this instance.
+/// The vertical pen advance in logical pixels, including backend-applied letter spacing.
 /// </param>
 /// <param name="offsetX">
-/// The horizontal scroll delta reported by the platform.
+/// The horizontal placement offset from the pen position in logical pixels.
 /// </param>
 /// <param name="offsetY">
-/// The vertical scroll delta reported by the platform.
+/// The vertical placement offset from the pen position in logical pixels.
 /// </param>
 public readonly record struct TextGlyph(
     uint glyphId,
@@ -216,19 +217,19 @@ public readonly record struct TextGlyph(
 /// Describes scalable metrics for one font face and logical size.
 /// </summary>
 /// <param name="ascender">
-/// The float value used to initialize this instance.
+/// The scaled face ascender in logical pixels, using the backend's coordinate convention.
 /// </param>
 /// <param name="descender">
-/// The float value used to initialize this instance.
+/// The scaled face descender in logical pixels, using the backend's coordinate convention.
 /// </param>
 /// <param name="lineHeight">
-/// The float value used to initialize this instance.
+/// The recommended line spacing in logical pixels for the selected face and size.
 /// </param>
 /// <param name="underlinePosition">
-/// The float value used to initialize this instance.
+/// The scaled underline position relative to the baseline in logical pixels.
 /// </param>
 /// <param name="underlineThickness">
-/// The float value used to initialize this instance.
+/// The scaled underline thickness in logical pixels.
 /// </param>
 public readonly record struct TextMetrics(
     float ascender,
