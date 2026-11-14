@@ -92,6 +92,9 @@ internal static class DocumentationApiComposition
             var text = new StringBuilder(header).Append("\n\n# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
                 .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
+            if (fragment.metadata.Children.TryGetValue(new YamlScalarNode("source"), out YamlNode? source)
+                && source is YamlScalarNode { Value: "xml" })
+                text.Append("> [!TIP]\n> This explanation is synchronized from the source XML documentation.\n\n");
             if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
             {
                 text.Append("## Required contracts\n\n");
@@ -112,21 +115,23 @@ internal static class DocumentationApiComposition
             DocumentationApiContentEntry[] members = byType.GetValueOrDefault(fact.key) ?? [];
             if (members.Length != 0)
             {
+                text.Append("\n## Members\n\n| Kind | Element | Description |\n| --- | --- | --- |\n");
                 foreach (var group in members.GroupBy(member => Category(facts[member.symbol][0])).OrderBy(group => group.Key, StringComparer.Ordinal))
                 {
-                    text.Append("\n## ").Append(group.Key).Append("\n\n| Element | Description |\n| --- | --- |\n");
                     foreach (DocumentationApiContentEntry member in group)
                     {
                         DocumentationApiFact child = facts[member.symbol][0];
                         string label = member.title;
                         if (group.Count(other => other.title == member.title) > 1)
                             label += child.id.Contains('(') ? child.id[child.id.IndexOf('(')..] : " (" + child.kind + ")";
-                        text.Append("| [").Append(DocumentationApiPresentation.Cell(label)).Append("](")
+                        text.Append("| ").Append(group.Key).Append(" | [").Append(DocumentationApiPresentation.Cell(label)).Append("](")
                             .Append(Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, member.path).Replace('\\', '/'))
                             .Append(") | ").Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(fragments[member.symbol].body))).Append(" |\n");
                     }
                 }
             }
+            text.Append("\n<!-- api-source -->\n[Source declaration](").Append(binding.repository).Append("/blob/").Append(fact.revision)
+                .Append('/').Append(fact.source).Append("#L").Append(fact.line).Append(")\n");
             pages.Add(entry.path, text.ToString());
         }
         return new(pages, inputs, origins);
@@ -145,17 +150,11 @@ internal static class DocumentationApiComposition
                 .Append(fact.id).Append(' ').Append(fact.signatureHash).Append(" -->\n\n");
             foreach (var variants in contexts.GroupBy(value => value.signature, StringComparer.Ordinal))
             {
-                text.Append("**Available in:** ").Append(string.Join(", ", variants.Select(value => value.surface + "/" + value.configuration
-                    + (value.target is null ? "" : "/" + value.target)).Distinct(StringComparer.Ordinal))).Append("\n\n<!-- api-declaration: ")
+                text.Append("<!-- api-declaration: ")
                     .Append(fact.id).Append(' ').Append(DocumentationMarkdown.Hash(variants.Key)).Append(" -->\n\n```csharp\n")
                     .Append(variants.Key).Append("\n```\n\n");
             }
-            if (fragment.source == "xml") text.Append("**XML-synced**\n\n");
-            text.Append("[Edit this explanation](https://github.com/Wolfiora/InnoEngine.Docs/edit/draft/")
-                .Append(string.Join('/', fragment.path.Split('/').Select(Uri.EscapeDataString))).Append(")\n\n");
-            text.Append(Rebase(root, fragment.body.Trim(), fragment.path, ownerPath, level)).Append("\n\n")
-                .Append("[Source declaration](").Append(binding.repository).Append("/blob/").Append(fact.revision)
-                .Append('/').Append(fact.source).Append("#L").Append(fact.line).Append(").\n\n");
+            text.Append(Rebase(root, fragment.body.Trim(), fragment.path, ownerPath, level)).Append("\n\n");
             origins.Add(new(ownerPath, fact.id, fragment.path, fragment.source, fact.scope, fact.revision,
                 contexts.Select(context => context.surface).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()));
         }

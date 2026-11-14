@@ -292,7 +292,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("Read the count only after publication.", page.markdown);
         Assert.Contains("## Required contracts", page.markdown);
         Assert.Contains("[Ownership and retirement](../../../../manual/ownership.md#release)", page.markdown);
-        Assert.Contains("https://github.com/Wolfiora/InnoEngine.Docs/edit/draft/" + Path.GetRelativePath(m_root, member).Replace('\\', '/'), page.markdown);
+        Assert.Contains("[Source declaration](https://github.com/Wolfiora/InnoEngine/blob/", page.markdown);
+        Assert.DoesNotContain("Edit this explanation", page.markdown);
         Assert.Contains("reference/api/content.json", catalog.sourceFiles.Keys);
         Assert.Contains(Path.GetRelativePath(m_root, member).Replace('\\', '/'), catalog.sourceFiles.Keys);
         DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "source-clr"));
@@ -336,6 +337,29 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains(C_VARIANT, page.symbols[C_MEMBER].code);
     }
 
+    [Theory]
+    [InlineData("xml", true)]
+    [InlineData("manual", false)]
+    [InlineData("", false)]
+    public async Task SourceNoticeRequiresExplicitXmlAndSourceLinkEndsThePage(string source, bool notice)
+    {
+        await Sync();
+        string member = Fragment(C_MEMBER);
+        string original = File.ReadAllText(member);
+        File.WriteAllText(member, original.Replace("source: xml", source.Length == 0 ? "" : "source: " + source, StringComparison.Ordinal));
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_MEMBER)));
+        Assert.Equal(notice, page.markdown.Contains("> [!TIP]", StringComparison.Ordinal));
+        if (notice) Assert.True(page.markdown.IndexOf("> [!TIP]", StringComparison.Ordinal) < page.markdown.IndexOf("## Required contracts", StringComparison.Ordinal));
+        Assert.DoesNotContain("Available in:", page.markdown);
+        Assert.DoesNotContain("XML-synced", page.markdown);
+        Assert.DoesNotContain("Edit this explanation", page.markdown);
+        Assert.Contains("<!-- api-source -->\n[Source declaration](https://github.com/", page.markdown);
+        Assert.EndsWith(")", page.markdown.TrimEnd());
+    }
+
     private Task<int> Sync() => Sync(CancellationToken.None);
 
     [Fact]
@@ -359,7 +383,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(7, pages.Length);
         Assert.All(pages, page => Assert.Single(page.symbols));
         DocumentationPageInfo outer = pages.Single(page => page.symbols.ContainsKey(C_TYPE));
-        Assert.Contains("## Nested types", outer.markdown);
+        Assert.Contains("| Kind | Element | Description |", outer.markdown);
+        Assert.Contains("| Nested types |", outer.markdown);
         Assert.Contains("Value.Child&lt;TItem&gt;", outer.markdown);
         Assert.Contains("Value.Read(System.Int32)", outer.markdown);
         Assert.Contains("Value.Read(System.String)", outer.markdown);
