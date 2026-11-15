@@ -15,6 +15,7 @@ on:
       - tools/Inno.Tooling.Architecture/Documentation*.cs
       - tools/Inno.Tooling.Documentation/**
       - tests/ci/Get-DocumentationExportPreflight.ps1
+      - tests/ci/Test-DocumentationExportPreflight.Tests.ps1
   workflow_dispatch: null
 permissions:
   contents: read
