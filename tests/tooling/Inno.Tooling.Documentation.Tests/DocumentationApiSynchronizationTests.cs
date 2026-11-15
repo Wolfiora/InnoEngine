@@ -744,10 +744,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
-        Assert.Contains("# Value\n\n> Owns a value.\n> \n> Release it when finished.", page.markdown);
-        Assert.DoesNotContain("> - Owns", page.markdown);
+        Assert.Contains("# Value\n\n> - Owns a value.\n>   \n>   Release it when finished.", page.markdown);
+        Assert.Contains("> - Owns", page.markdown);
         Assert.True(page.markdown.IndexOf("> [!SYNCED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal));
-        Assert.Contains("**Project:** `Inno.Probe` · **API:** engine  \n**Inherits:** `System.Object`", page.markdown);
+        Assert.Contains("**API:** engine  \n**Inherits:** `System.Object`  \n**Project:** `Inno.Probe`", page.markdown);
         Assert.True(page.markdown.IndexOf("## Declaration", StringComparison.Ordinal) < page.markdown.IndexOf("## Remarks", StringComparison.Ordinal));
         Assert.DoesNotContain("#### Remarks", page.markdown);
         DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_TYPE, "Inno.Probe"))).hits);
@@ -797,7 +797,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
-        Assert.Contains("# Value\n\n> Updated source summary.", page.markdown);
+        Assert.Contains("# Value\n\n> - Updated source summary.", page.markdown);
         Assert.True(page.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal));
         Assert.Contains("## Remarks\n\nMy independently maintained ownership explanation.", page.markdown);
         Assert.DoesNotContain("#### Remarks", page.markdown);

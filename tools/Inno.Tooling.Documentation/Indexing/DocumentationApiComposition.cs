@@ -102,8 +102,7 @@ internal static class DocumentationApiComposition
             text.Append("# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             // Preserve XML element boundaries: multiple paragraphs in one summary are still one item.
             DocumentationXmlContent xml = DocumentationXml.Read(fact.documentation);
-            string summary = xml.summaries.Length <= 1 ? xml.summary
-                : string.Join("\n\n", xml.summaries.Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal)));
+            string summary = string.Join("\n\n", xml.summaries.Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal)));
             if (summary.Length != 0)
                 text.Append("> ").Append(summary.Replace("\n", "\n> ", StringComparison.Ordinal)).Append("\n\n");
             if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
@@ -120,11 +119,15 @@ internal static class DocumentationApiComposition
                 }
                 text.Append('\n');
             }
-            text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
-                .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope);
-            if (fact.baseType is not null) text.Append("  \n**Inherits:** `").Append(fact.baseType).Append('`');
-            if (fact.interfaces.Count != 0) text.Append("  \n**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`")));
-            text.Append("\n\n");
+            var metadata = new SortedDictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["API"] = fact.family,
+                ["Project"] = "`" + fact.project + "`"
+            };
+            if (fact.baseType is not null) metadata.Add("Inherits", "`" + fact.baseType + "`");
+            if (fact.interfaces.Count != 0) metadata.Add("Implements", string.Join(", ", fact.interfaces.Select(value => "`" + value + "`")));
+            if (fact.scope is not null) metadata.Add("Scope", fact.scope);
+            text.AppendJoin("  \n", metadata.Select(item => "**" + item.Key + ":** " + item.Value)).Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
             text.Append(Rebase(root, body, fragment.path, entry.path, 0)).Append("\n\n");
             DocumentationApiContentEntry[] members = byType.GetValueOrDefault(fact.key) ?? [];
