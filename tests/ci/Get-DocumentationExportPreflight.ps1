@@ -34,7 +34,7 @@ if ($env:GH_TOKEN) {
         $artifacts = Invoke-RestMethod "https://api.github.com/repos/Wolfiora/InnoEngine/actions/runs/$($run.id)/artifacts?per_page=100" -Headers $headers
         if (@($artifacts.artifacts | Where-Object { $_.name -ceq "documentation-api-package-$($run.run_attempt)" -and !$_.expired -and $_.digest -cmatch '^sha256:[a-f0-9]{64}$' }).Count -ne 1) { continue }
         $baseline = $run.head_sha
-        [void](Invoke-InputGit @('fetch', '--no-tags', 'origin', $baseline))
+        [void](Invoke-InputGit @('fetch', '--depth=1', '--no-tags', 'origin', $baseline))
         break
     }
 }
