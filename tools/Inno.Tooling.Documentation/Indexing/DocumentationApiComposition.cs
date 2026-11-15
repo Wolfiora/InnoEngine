@@ -90,11 +90,8 @@ internal static class DocumentationApiComposition
                 ancestors.Add(fragments[ancestor]);
             }
             string header = Header(fragment, type, entry.title, ancestors);
-            var text = new StringBuilder(header).Append("\n\n# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
+            var text = new StringBuilder(header).Append("\n\n");
             string body = fragment.body.Trim();
-            // Summary is a source fact for both XML-managed and manually authored explanations.
-            string summary = DocumentationXml.Read(fact.documentation).summary;
-            if (summary.Length != 0) text.Append(summary).Append("\n\n");
             string status = Status(fragment, type);
             text.Append("> [!").Append(status.ToUpperInvariant()).Append("]\n> ").Append(status switch
             {
@@ -102,6 +99,13 @@ internal static class DocumentationApiComposition
                 "Outdated" => "The source declaration or XML documentation changed, or review was requested. This manual explanation needs review.",
                 _ => "This explanation is manually maintained with no outstanding source review. This status does not certify semantic correctness."
             }).Append("\n\n");
+            text.Append("# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
+            // Preserve XML element boundaries: multiple paragraphs in one summary are still one item.
+            DocumentationXmlContent xml = DocumentationXml.Read(fact.documentation);
+            string summary = xml.summaries.Length <= 1 ? xml.summary
+                : string.Join("\n\n", xml.summaries.Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal)));
+            if (summary.Length != 0)
+                text.Append("> ").Append(summary.Replace("\n", "\n> ", StringComparison.Ordinal)).Append("\n\n");
             if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
             {
                 text.Append("## Required contracts\n\n");

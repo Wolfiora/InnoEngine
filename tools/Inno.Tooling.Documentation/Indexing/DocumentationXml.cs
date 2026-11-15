@@ -7,16 +7,19 @@ using System.Xml.Linq;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationXmlContent(string summary, string body);
+internal sealed record DocumentationXmlContent(string[] summaries, string body)
+{
+    internal string summary => string.Join("\n\n", summaries);
+}
 
 internal static class DocumentationXml
 {
     internal static DocumentationXmlContent Read(string xml)
     {
-        if (string.IsNullOrWhiteSpace(xml)) return new("No XML description is available.", "");
+        if (string.IsNullOrWhiteSpace(xml)) return new(["No XML description is available."], "");
         using var reader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
         XElement root = XElement.Load(reader);
-        string summary = "";
+        string[] summaries = [];
         string body = string.Join("\n\n", root.Elements().GroupBy(element => element.Name.LocalName)
             .OrderBy(group => group.Key == "summary" ? 0 : 1).Select(group =>
         {
@@ -27,7 +30,7 @@ internal static class DocumentationXml
                 "inheritdoc" => throw new InvalidDataException("Resolve inherited XML before publishing API content."),
                 _ => throw new InvalidDataException("Unsupported API XML element: " + group.Key)
             };
-            string content = string.Join("\n\n", group.Select(element => element.Name.LocalName switch
+            string[] parts = group.Select(element => element.Name.LocalName switch
             {
                 "summary" or "remarks" or "returns" or "value" or "example" => Children(element).Trim(),
                 "param" => "**Parameter `" + element.Attribute("name")?.Value + "`:** " + Children(element).Trim(),
@@ -35,15 +38,15 @@ internal static class DocumentationXml
                 "exception" => "**Exception `" + element.Attribute("cref")?.Value + "`:** " + Children(element).Trim(),
                 "seealso" => Node(element),
                 _ => throw new InvalidDataException("Unsupported API XML element: " + element.Name)
-            }).Where(text => text.Length != 0));
+            }).Where(text => text.Length != 0).ToArray();
             if (group.Key == "summary")
             {
-                summary = content;
+                summaries = parts;
                 return "";
             }
-            return content.Length == 0 ? "" : "## " + heading + "\n\n" + content;
+            return parts.Length == 0 ? "" : "## " + heading + "\n\n" + string.Join("\n\n", parts);
         }).Where(text => text.Length != 0));
-        return new(summary, body.Length == 0 ? "" : body + "\n");
+        return new(summaries, body.Length == 0 ? "" : body + "\n");
     }
 
     private static string Children(XElement element) => string.Concat(element.Nodes().Select(Node));

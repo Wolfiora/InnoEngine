@@ -119,8 +119,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationPageInfo[] pages = (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api").ToArray();
         Assert.All(pages, page => Assert.Contains("Updated source documentation.", page.markdown));
         DocumentationPageInfo memberPage = Assert.Single(pages.Where(page => page.symbols.ContainsKey(C_MEMBER)));
-        Assert.True(memberPage.markdown.IndexOf("Updated source documentation.", StringComparison.Ordinal)
-            < memberPage.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal));
+        Assert.True(memberPage.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal)
+            < memberPage.markdown.IndexOf("Updated source documentation.", StringComparison.Ordinal));
         Assert.Contains("Use this count after the owner has published the snapshot.", memberPage.markdown);
         Assert.Contains("Updated source documentation.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
         Assert.Contains("| Updated source documentation. |", Assert.Single(pages.Where(page => page.symbols.ContainsKey(C_TYPE))).markdown);
@@ -744,7 +744,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
-        Assert.Contains("# Value\n\nOwns a value.\n\nRelease it when finished.", page.markdown);
+        Assert.Contains("# Value\n\n> Owns a value.\n> \n> Release it when finished.", page.markdown);
+        Assert.DoesNotContain("> - Owns", page.markdown);
+        Assert.True(page.markdown.IndexOf("> [!SYNCED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal));
         Assert.Contains("**Project:** `Inno.Probe` · **API:** engine  \n**Inherits:** `System.Object`", page.markdown);
         Assert.True(page.markdown.IndexOf("## Declaration", StringComparison.Ordinal) < page.markdown.IndexOf("## Remarks", StringComparison.Ordinal));
         Assert.DoesNotContain("#### Remarks", page.markdown);
@@ -752,6 +754,30 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("Owns a value.", hit.text);
         Assert.Contains("Keep the owner alive.", hit.text);
         Assert.Equal(1, page.markdown.Split("Owns a value.", StringSplitOptions.None).Length - 1);
+    }
+
+    [Fact]
+    public async Task PartialSummariesRemainSeparateQuotedItemsWithoutSplittingTheirParagraphs()
+    {
+        SetTypeDocumentation("""
+            <member><summary>First declaration.<para>Still the first summary.</para></summary>
+            <summary>Second declaration with <c>Value</c>.</summary><remarks>Shared lifetime.</remarks></member>
+            """);
+        await Sync();
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
+        Assert.Contains("> - First declaration.\n>   \n>   Still the first summary.\n> \n> - Second declaration with `Value`.", page.markdown);
+        string html = Markdig.Markdown.ToHtml(page.markdown);
+        string summaryHtml = html[html.IndexOf("<blockquote>\n<ul>", StringComparison.Ordinal)..];
+        summaryHtml = summaryHtml[..summaryHtml.IndexOf("</blockquote>", StringComparison.Ordinal)];
+        Assert.Equal(2, summaryHtml.Split("<li>", StringSplitOptions.None).Length - 1);
+        Assert.Contains("<blockquote>\n<ul>", html);
+        Assert.Contains("## Remarks\n\nShared lifetime.", File.ReadAllText(Fragment(C_TYPE)));
+        Assert.DoesNotContain("First declaration.", File.ReadAllText(Fragment(C_TYPE)));
+        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_TYPE, "Inno.Probe"))).hits);
+        Assert.Contains("> - Second declaration with `Value`.", hit.text);
     }
 
     [Fact]
@@ -771,7 +797,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
-        Assert.Contains("# Value\n\nUpdated source summary.\n\n> [!OUTDATED]", page.markdown);
+        Assert.Contains("# Value\n\n> Updated source summary.", page.markdown);
+        Assert.True(page.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal) < page.markdown.IndexOf("# Value", StringComparison.Ordinal));
         Assert.Contains("## Remarks\n\nMy independently maintained ownership explanation.", page.markdown);
         Assert.DoesNotContain("#### Remarks", page.markdown);
         Assert.DoesNotContain("Changed source remarks.", page.markdown);
