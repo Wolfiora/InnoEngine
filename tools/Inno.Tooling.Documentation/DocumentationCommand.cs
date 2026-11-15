@@ -24,6 +24,8 @@ public static class DocumentationCommand
     /// Reads optionally accept evidence-file and evidence-sha256 selected by an authenticated preparation boundary.
     /// api-plan, api-check and api-sync accept only docs-root; they validate captured facts and plan, audit or synchronize registered
     /// API prose. Manual prose is preserved, while XML-managed fragments follow the captured XML documentation.
+    /// api-review also requires page: a registered manual fragment whose author has reviewed the current source contract.
+    /// It updates the reviewed fingerprint and clears outdated without changing the explanation.
     /// api-package and api-import accept docs-root and package, explicitly transferring complete hashed API facts.
     /// Import runs only in a publisher-owned checkout; remote origin, branch ancestry and atomic Git publication
     /// are the protected workflow's responsibility. Ordinary queries never import or synchronize content.
@@ -51,7 +53,7 @@ public static class DocumentationCommand
         ArgumentNullException.ThrowIfNull(arguments);
         if (arguments.Length > 0 && arguments[0] is "api-package" or "api-import")
             return await DocumentationApiPackage.ExecuteAsync(arguments[0], arguments[1..], cancellationToken).ConfigureAwait(false);
-        if (arguments.Length > 0 && arguments[0] is "api-plan" or "api-check" or "api-sync")
+        if (arguments.Length > 0 && arguments[0] is "api-plan" or "api-check" or "api-sync" or "api-review")
             return await DocumentationApiSynchronization.ExecuteAsync(arguments[0], arguments[1..], cancellationToken).ConfigureAwait(false);
         if (arguments.Length == 0 || arguments[0] is not ("index" or "search" or "read" or "symbol" or "resource" or "status" or "catalog"))
             throw new ArgumentException("Usage: docs <index|search|read|symbol|resource|status|catalog> --engine-root ROOT [--cache-root PATH] [--format text|json]. Index requires --docs-root CHECKOUT; reads require a prepared snapshot.");

@@ -15,6 +15,7 @@ internal sealed record DocumentationApiFragment(
     string symbol,
     string source,
     string? reviewed,
+    bool outdated,
     YamlMappingNode metadata
 )
 {
@@ -34,7 +35,10 @@ internal sealed record DocumentationApiFragment(
             throw new InvalidDataException("API source must be xml or manual: " + path);
         string uid = Field("uid") ?? throw new InvalidDataException("API fragment has no stable identity: " + path);
         string body = text[(block.Span.End + 1)..];
-        return new(path, text, body, uid, symbol, source, Field("reviewed"), map);
+        string? stale = Field("outdated");
+        if (stale is not null && stale is not ("true" or "false"))
+            throw new InvalidDataException("API outdated must be true or false: " + path);
+        return new(path, text, body, uid, symbol, source, Field("reviewed"), stale == "true", map);
 
         string? Field(string name) => map.Children.TryGetValue(new YamlScalarNode(name), out YamlNode? node)
             ? node is YamlScalarNode scalar ? scalar.Value : throw new InvalidDataException("API frontmatter requires a scalar " + name + ": " + path)

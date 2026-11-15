@@ -17,6 +17,7 @@ internal sealed record DocumentationApiOrigin(
     string id,
     string path,
     string source,
+    string editorialStatus,
     string? scope,
     string revision,
     string[] surfaces
@@ -99,9 +100,13 @@ internal static class DocumentationApiComposition
                 text.Append(body[..section].Trim()).Append("\n\n");
                 body = body[section..].Trim();
             }
-            if (fragment.metadata.Children.TryGetValue(new YamlScalarNode("source"), out YamlNode? source)
-                && source is YamlScalarNode { Value: "xml" })
-                text.Append("> [!TIP]\n> This explanation is synchronized from the source XML documentation.\n\n");
+            string status = Status(fragment, type);
+            text.Append("> [!").Append(status.ToUpperInvariant()).Append("]\n> ").Append(status switch
+            {
+                "Synced" => "This explanation is synchronized from the source XML documentation.",
+                "Outdated" => "The source declaration or XML documentation changed, or review was requested. This manual explanation needs review.",
+                _ => "This explanation is manually maintained with no outstanding source review. This status does not certify semantic correctness."
+            }).Append("\n\n");
             if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
             {
                 text.Append("## Required contracts\n\n");
@@ -117,9 +122,10 @@ internal static class DocumentationApiComposition
                 text.Append('\n');
             }
             text.Append("**Project:** `").Append(fact.project).Append("` · **API:** ").Append(fact.family)
-                .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope).Append("\n\n");
-            if (fact.baseType is not null) text.Append("**Inherits:** `").Append(fact.baseType).Append("`\n\n");
-            if (fact.interfaces.Count != 0) text.Append("**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`"))).Append("\n\n");
+                .Append(fact.scope is null ? "" : " · **Scope:** " + fact.scope);
+            if (fact.baseType is not null) text.Append("  \n**Inherits:** `").Append(fact.baseType).Append('`');
+            if (fact.interfaces.Count != 0) text.Append("  \n**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`")));
+            text.Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
             text.Append(Rebase(root, body, fragment.path, entry.path, fragment.source == "xml" ? 0 : 2)).Append("\n\n");
             DocumentationApiContentEntry[] members = byType.GetValueOrDefault(fact.key) ?? [];
@@ -164,7 +170,7 @@ internal static class DocumentationApiComposition
                     .Append(fact.id).Append(' ').Append(DocumentationMarkdown.Hash(variants.Key)).Append(" -->\n\n```csharp\n")
                     .Append(variants.Key).Append("\n```\n\n");
             }
-            origins.Add(new(ownerPath, fact.id, fragment.path, fragment.source, fact.scope, fact.revision,
+            origins.Add(new(ownerPath, fact.id, fragment.path, fragment.source, Status(fragment, contexts), fact.scope, fact.revision,
                 contexts.Select(context => context.surface).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()));
         }
     }
@@ -172,14 +178,21 @@ internal static class DocumentationApiComposition
     private static string Category(DocumentationApiFact fact) => fact.id.Contains(".#ctor", StringComparison.Ordinal) ? "Constructors"
         : fact.kind switch { "NamedType" => "Nested types", "Method" => "Methods", "Property" => "Properties", "Event" => "Events", "Field" => "Fields", _ => "Members" };
 
+    private static string Status(
+        DocumentationApiFragment fragment,
+        DocumentationApiFact[] contexts
+    ) => fragment.source == "xml" ? "Synced"
+        : DocumentationApiContent.IsOutdated(fragment, DocumentationApiContent.Contract(contexts)) ? "Outdated" : "Verified";
+
     private static string Header(
         DocumentationApiFragment fragment,
         DocumentationApiFact[] contexts,
         string title,
         IReadOnlyList<DocumentationApiFragment> ancestors
     ) {
-        // Only the in-memory projection changes. The authored frontmatter and prose remain byte-preserved.
+        // Query composition updates only its in-memory projection; synchronization owns persisted metadata.
         YamlMappingNode metadata = fragment.metadata;
+        metadata.Children[new YamlScalarNode("outdated")] = new YamlScalarNode(Status(fragment, contexts) == "Outdated" ? "true" : "false");
         metadata.Children[new YamlScalarNode("title")] = new YamlScalarNode(title);
         metadata.Children[new YamlScalarNode("owners")] = new YamlSequenceNode(new YamlScalarNode(contexts[0].project));
         metadata.Children[new YamlScalarNode("apiSurface")] = new YamlScalarNode(contexts[0].surface);

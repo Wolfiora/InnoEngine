@@ -100,11 +100,11 @@ internal static class DocumentationApiContent
             }
             if (existing?.source == "manual")
             {
-                // An unchanged file is never rewritten, even when declarations or XML changed.
-                if (existing.path != path) Edit(path, existing.text);
+                // Synchronization owns metadata; the authored body remains byte-for-byte intact.
+                Edit(path, Fragment(entry, fact, existing.body, existing));
                 if (string.IsNullOrWhiteSpace(existing.body) || Normalize(existing.body) == Normalize(DocumentationXml.Render(fact.documentation)))
                     warnings.Add(new(fact.key, path, "EmptyManual", "Manual ownership has no independent explanatory content."));
-                if (existing.reviewed != contract)
+                if (IsOutdated(existing, contract))
                     warnings.Add(new(fact.key, path, "ReviewRequired", "The current source contract has not been acknowledged by this manual fragment."));
             }
             else
@@ -170,30 +170,81 @@ internal static class DocumentationApiContent
         }
     }
 
+    internal static bool IsOutdated(
+        DocumentationApiFragment fragment,
+        string contract
+    ) => fragment.source == "manual" && (fragment.outdated || fragment.reviewed != contract);
+
+    internal static DocumentationApiPlan Review(
+        string root,
+        DocumentationBinding binding,
+        string page
+    ) {
+        string path = RequireApiPath(root, page);
+        DocumentationApiContentRegistry registry = JsonSerializer.Deserialize<DocumentationApiContentRegistry>(
+            File.ReadAllBytes(DocumentationApiFacts.Resolve(root, C_REGISTRY)))
+            ?? throw new InvalidDataException("Missing API content registry.");
+        if (registry.schema != "inno-api-content/1") throw new InvalidDataException("Unsupported API content registry.");
+        DocumentationApiContentEntry entry = registry.entries.SingleOrDefault(candidate => candidate.path == page)
+            ?? throw new InvalidDataException("Review requires one registered API page: " + page);
+        IReadOnlyDictionary<string, DocumentationApiFact[]> facts = DocumentationApiFacts.Read(root, binding);
+        if (!facts.TryGetValue(entry.symbol, out DocumentationApiFact[]? contexts))
+            throw new InvalidDataException("Removed API content cannot be marked verified: " + page);
+        DocumentationApiFragment fragment = DocumentationApiFragment.Read(page, File.ReadAllText(path))
+            ?? throw new InvalidDataException("Registered API page has no symbol: " + page);
+        if (fragment.symbol != entry.symbol || fragment.source != "manual")
+            throw new InvalidDataException("Review requires matching source: manual content: " + page);
+        if (string.IsNullOrWhiteSpace(fragment.body)
+            || Normalize(fragment.body) == Normalize(DocumentationXml.Render(contexts[0].documentation)))
+            throw new InvalidDataException("Write an independent explanation before acknowledging review: " + page);
+        var current = entry with { contract = Contract(contexts), title = DocumentationApiPresentation.Name(contexts[0], facts) };
+        string text = Fragment(current, contexts[0], fragment.body, fragment, acknowledgeReview: true);
+        return new(text == fragment.text ? [] : [new(page, DocumentationMarkdown.Hash(fragment.text), text)], [], 1);
+    }
+
     internal static string Fragment(
         DocumentationApiContentEntry entry,
         DocumentationApiFact fact,
         string body,
-        DocumentationApiFragment? previous = null
-    )
-        => "---\nuid: " + (previous?.uid ?? "api." + DocumentationMarkdown.Hash(entry.symbol)) + "\nsymbol: " + JsonSerializer.Serialize(entry.symbol)
-            + "\nsource: xml\nreviewed: " + entry.contract + "\ntitle: " + JsonSerializer.Serialize(entry.title)
-            + "\nkind: api\nowners: [" + fact.project + "]\napiSurface: " + fact.surface
-            + (fact.scope is null ? "" : "\napiScope: " + fact.scope) + Associations(previous) + "\n---\n\n" + body.Trim() + "\n";
+        DocumentationApiFragment? previous = null,
+        bool acknowledgeReview = false
+    ) {
+        bool manual = previous?.source == "manual";
+        var generated = new YamlMappingNode
+        {
+            { "uid", previous?.uid ?? "api." + DocumentationMarkdown.Hash(entry.symbol) },
+            { "symbol", entry.symbol },
+            { "title", entry.title },
+            { "kind", "api" },
+            { "owners", new YamlSequenceNode(new YamlScalarNode(fact.project)) },
+            { "apiSurface", fact.surface },
+            { "reviewed", manual && !acknowledgeReview ? previous!.reviewed ?? "" : entry.contract }
+        };
+        if (fact.scope is not null) generated.Add("apiScope", fact.scope);
+        var authored = new YamlMappingNode
+        {
+            { "source", manual ? "manual" : "xml" },
+            { "outdated", manual && !acknowledgeReview && IsOutdated(previous!, entry.contract) ? "true" : "false" }
+        };
+        if (previous is not null)
+            foreach (var field in previous.metadata.Children)
+            {
+                string key = ((YamlScalarNode)field.Key).Value!;
+                if (generated.Children.ContainsKey(field.Key) || authored.Children.ContainsKey(field.Key)
+                    || key is "apiScope" or "apiSurfaces") continue;
+                authored.Add(field.Key, field.Value);
+            }
+        return "---\n# Generated metadata. Maintained by API synchronization and review tooling.\n"
+            + Serialize(generated) + "\n\n# Authoring metadata. Edit these fields and the explanation below.\n"
+            + Serialize(authored) + "\n---" + (manual ? body : "\n\n" + body.Trim() + "\n");
+    }
 
-    private static string Associations(DocumentationApiFragment? fragment)
+    private static string Serialize(YamlMappingNode metadata)
     {
-        if (fragment is null) return "";
-        var metadata = new YamlMappingNode();
-        foreach (string key in new[] { "contracts", "aliases", "exampleMode", "exampleProjects" })
-            if (fragment.metadata.Children.TryGetValue(new YamlScalarNode(key), out YamlNode? value))
-                metadata.Add(new YamlScalarNode(key), value);
-        if (metadata.Children.Count == 0) return "";
         using var writer = new StringWriter();
         new YamlStream(new YamlDocument(metadata)).Save(writer, assignAnchors: false);
         string text = writer.ToString().ReplaceLineEndings("\n").TrimEnd();
-        if (text.EndsWith("\n...", StringComparison.Ordinal)) text = text[..^4];
-        return "\n" + text;
+        return text.EndsWith("\n...", StringComparison.Ordinal) ? text[..^4] : text;
     }
 
     internal static string Contract(IEnumerable<DocumentationApiFact> contexts)
