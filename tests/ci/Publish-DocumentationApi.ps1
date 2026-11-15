@@ -49,6 +49,18 @@ for ($attempt = 1; $attempt -le 3; $attempt++) {
     [void](Invoke-Git $checkout @('config', 'user.email', 'innoengine-api@users.noreply.github.com'))
     [void](Invoke-Git $checkout @('checkout', 'draft'))
     $expected = (Invoke-Git $checkout @('rev-parse', 'HEAD')) -join ''
+    # Compare complete canonical facts before any ancestry merge. A no-op export must
+    # not create even an ancestry-only draft push or invalidate its tooling binding.
+    $retainedPackage = Join-Path $workspacePath "retained-$attempt.json"
+    if (Test-Path -LiteralPath (Join-Path $checkout 'reference/engine.lock.json')) {
+        & $Dotnet $cli docs api-package --docs-root $checkout --package $retainedPackage
+        if ($LASTEXITCODE -ne 0) { throw 'Cannot verify retained API facts before publication.' }
+        $retained = Get-Content -LiteralPath $retainedPackage -Raw | ConvertFrom-Json
+        if ($retained.contentIdentity -ceq $packet.contentIdentity) {
+            Write-Output 'NoRelevantChanges: complete API/XML/source-location facts match; no binding, merge, commit or push.'
+            exit 0
+        }
+    }
     [void](Invoke-Git $checkout @('fetch', '--no-tags', 'origin', 'main:refs/remotes/origin/main'))
     if (!(Test-Ancestor $checkout 'origin/main' 'HEAD')) {
         # A human release merge remains in draft's ancestry; real conflicts fail without choosing a side.

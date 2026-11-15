@@ -52,6 +52,39 @@ public sealed class DocumentationReferenceTests : IDisposable
         Assert.Equal("src/Local/Local.csproj", plan.RootElement.GetProperty("buildProjects").EnumerateArray().Single().GetString());
         Assert.Equal("build/Foreign/Foreign.csproj", plan.RootElement.GetProperty("foreignOwners").EnumerateArray().Single().GetProperty("path").GetString());
         Assert.Equal(2, plan.RootElement.GetProperty("captures").GetArrayLength());
+        string localIdentity = plan.RootElement.GetProperty("inputIdentities").GetProperty("src/Local/Local.csproj").GetString()!;
+        string foreignIdentity = plan.RootElement.GetProperty("inputIdentities").GetProperty("build/Foreign/Foreign.csproj").GetString()!;
+        Assert.Equal(0, await DocumentationReferences.PlanExportAsync(["--engine-root", m_root, "--dotnet", host, "--output", output]));
+        using (JsonDocument repeated = JsonDocument.Parse(File.ReadAllBytes(output)))
+            Assert.Equal(localIdentity, repeated.RootElement.GetProperty("inputIdentities").GetProperty("src/Local/Local.csproj").GetString());
+        // Register a completed immutable owner payload, then plan again without running
+        // any Build/Restore/ResolveReferences target in this fixture.
+        string facts = JsonSerializer.Serialize(new { projects = new[] { new { project = "src/Local/Local.csproj", name = "Local", symbols = Array.Empty<object>() } } });
+        Write("completed/source.json", facts);
+        Write("completed/plan.json", File.ReadAllText(output));
+        Write("completed/producer.json", JsonSerializer.Serialize(new
+        {
+            configuration = "Debug", revision = new string('a', 40),
+            captures = new[] { new { path = "source.json", model = "source-clr", target = "fixture-host",
+                sha256 = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(facts))) } }
+        }));
+        Assert.Equal(0, await DocumentationReferences.PlanExportAsync(["--engine-root", m_root,
+            "--record-completed", Path.Combine(m_root, "completed")]));
+        Assert.Equal(0, await DocumentationReferences.PlanExportAsync(["--engine-root", m_root, "--dotnet", host, "--output", output]));
+        using (JsonDocument reused = JsonDocument.Parse(File.ReadAllBytes(output)))
+        {
+            Assert.Empty(reused.RootElement.GetProperty("buildProjects").EnumerateArray());
+            Assert.Equal(new string('a', 40), reused.RootElement.GetProperty("reusedOwners").GetProperty("fixture-host")
+                .GetProperty("src/Local/Local.csproj").GetProperty("producerRevision").GetString());
+        }
+        Write("src/Local/Added.cs", "public sealed class Added { }");
+        Assert.Equal(0, await DocumentationReferences.PlanExportAsync(["--engine-root", m_root, "--dotnet", host, "--output", output]));
+        using (JsonDocument changed = JsonDocument.Parse(File.ReadAllBytes(output)))
+        {
+            Assert.NotEqual(localIdentity, changed.RootElement.GetProperty("inputIdentities").GetProperty("src/Local/Local.csproj").GetString());
+            Assert.Equal(foreignIdentity, changed.RootElement.GetProperty("inputIdentities").GetProperty("build/Foreign/Foreign.csproj").GetString());
+            Assert.Equal("src/Local/Local.csproj", changed.RootElement.GetProperty("buildProjects").EnumerateArray().Single().GetString());
+        }
         byte[] original = File.ReadAllBytes(output);
         using var canceled = new CancellationTokenSource();
         canceled.Cancel();

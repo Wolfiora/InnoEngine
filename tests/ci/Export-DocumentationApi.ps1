@@ -37,7 +37,7 @@ $planPath = Join-Path $outputRoot 'plan.json'
 Invoke-Managed @($transport[0], 'docs', 'export-plan', '--engine-root', $engine, '--dotnet', $sdk,
     '--configuration', $Configuration, '--output', $planPath) (Join-Path $outputRoot 'plan.log')
 $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
-if ($plan.schema -cne 'inno-api-export-plan/1' -or @($plan.buildProjects).Count -eq 0) { throw 'API preparation has no valid owner plan.' }
+if ($plan.schema -cne 'inno-api-export-plan/1' -or @($plan.projects).Count -eq 0) { throw 'API preparation has no valid owner plan.' }
 
 # The SDK builds the union once. Normal product commands retain their Native preparation;
 # this explicitly scoped export only needs real managed references and generated bindings.
@@ -45,20 +45,37 @@ if ($plan.schema -cne 'inno-api-export-plan/1' -or @($plan.buildProjects).Count 
 # Its explicit operational dependency must survive the API owner's empty-surface optimization.
 $solutionPath = Join-Path $outputRoot 'managed-union.slnx'
 $managedOutputs = Join-Path $engine "artifacts/documentation-export/managed/$Configuration/$($plan.hostTarget)"
-& "$PSScriptRoot/Invoke-ManagedApiPreparation.ps1" -EngineRoot $engine -Configuration $Configuration -Dotnet $sdk `
-    -Projects (@($plan.buildProjects) + 'entry/InnoEngine.Build/InnoEngine.Build.csproj') -Output $solutionPath `
-    -ArtifactsPath $managedOutputs -Log (Join-Path $outputRoot 'managed-union.log')
-$cli = @(& $sdk msbuild (Join-Path $engine 'entry/InnoEngine.Build/InnoEngine.Build.csproj') -nologo `
-    "-p:Configuration=$Configuration" "-p:ArtifactsPath=$managedOutputs" -getProperty:TargetPath)
-if ($LASTEXITCODE -ne 0 -or $cli.Count -ne 1 -or !(Test-Path -LiteralPath $cli[0])) { throw 'The SDK did not identify the prepared Build entry.' }
-
+$scriptRequired = @($plan.reusedScripts.PSObject.Properties).Count -ne 2
+$buildProjects = @($plan.buildProjects)
+if ($scriptRequired) { $buildProjects += 'entry/InnoEngine.Build/InnoEngine.Build.csproj' }
+if ($buildProjects.Count -ne 0) {
+    & "$PSScriptRoot/Invoke-ManagedApiPreparation.ps1" -EngineRoot $engine -Configuration $Configuration -Dotnet $sdk -Projects $buildProjects -Output $solutionPath -ArtifactsPath $managedOutputs -Log (Join-Path $outputRoot 'managed-union.log')
+}
+$cli = $transport
+if ($scriptRequired) {
+    $cli = @(& $sdk msbuild (Join-Path $engine 'entry/InnoEngine.Build/InnoEngine.Build.csproj') -nologo "-p:Configuration=$Configuration" "-p:ArtifactsPath=$managedOutputs" -getProperty:TargetPath)
+    if ($LASTEXITCODE -ne 0 -or $cli.Count -ne 1 -or !(Test-Path -LiteralPath $cli[0])) { throw 'The SDK did not identify the prepared Build entry.' }
+}
+$reuseEvidence = [Collections.Generic.List[object]]::new()
 $captures = [Collections.Generic.List[object]]::new()
 foreach ($batch in $plan.captures) {
     $path = Join-Path $outputRoot ("source-$($batch.target).json")
     $arguments = @($cli[0], 'docs', 'export-api', '--engine-root', $engine, '--dotnet', $sdk,
         '--configuration', $Configuration, '--target', $batch.target, '--artifacts-path', $managedOutputs, '--output', $path)
     foreach ($project in $batch.projects) { $arguments += @('--project', $project) }
-    Invoke-Managed $arguments ($path + '.log')
+    if (@($batch.projects).Count -ne 0) {
+        Invoke-Managed $arguments ($path + '.log')
+        $facts = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+    } else { $facts = [pscustomobject][ordered]@{ model = 'source-clr'; configuration = $Configuration; target = $batch.target; sourceApiStatus = 'Unverified'; projects = @() } }
+    $retained = $plan.reusedOwners.PSObject.Properties[$batch.target]
+    if ($retained) {
+        foreach ($owner in $retained.Value.PSObject.Properties) {
+            $facts.projects = @($facts.projects) + $owner.Value.fact
+            $reuseEvidence.Add(@{ owner = $owner.Name; target = $batch.target; producerRevision = $owner.Value.producerRevision; inputIdentity = $owner.Value.inputIdentity; status = 'Reused' })
+        }
+    }
+    $facts.projects = @($facts.projects | Sort-Object project)
+    [IO.File]::WriteAllText($path, ($facts | ConvertTo-Json -Depth 100), [Text.UTF8Encoding]::new($false))
     $captures.Add(@{ path = [IO.Path]::GetFileName($path); sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant();
         model = 'source-clr'; configuration = $Configuration; target = $batch.target })
 }
@@ -66,12 +83,15 @@ foreach ($batch in $plan.captures) {
 # The normal script compiler produces both logical assemblies and origin metadata.
 # This empty workspace selects the engine's actual built-in exports, never host-type guesses.
 $scriptRoot = Join-Path $engine "artifacts/documentation-export/scripts/$Configuration/$($plan.hostTarget)"
+if ($scriptRequired) {
 [IO.Directory]::CreateDirectory((Join-Path $scriptRoot 'Assets')) | Out-Null
 Invoke-Managed @($cli[0], 'scripts', '--engine-root', $engine, '--dotnet', $sdk, '--project', $scriptRoot,
     '--output', (Join-Path $scriptRoot 'Export'), '--ide') (Join-Path $outputRoot 'script-projection.log')
 $logical = & "$PSScriptRoot/Get-DocumentationScriptReferences.ps1" -Project (Join-Path $scriptRoot 'Inno.EditorScripts.csproj')
+}
 foreach ($surface in @('runtime-script', 'editor-script')) {
     $path = Join-Path $outputRoot ($surface + '.json')
+    if ($scriptRequired) {
     $arguments = @($cli[0], 'docs', 'export-api', '--engine-root', $engine, '--dotnet', $sdk,
         '--configuration', $Configuration, '--target', $plan.hostTarget, '--surface', $surface,
         '--runtime-reference', $logical.runtime, '--framework-project', 'entry/InnoEngine.Build/InnoEngine.Build.csproj',
@@ -79,6 +99,13 @@ foreach ($surface in @('runtime-script', 'editor-script')) {
     if ($surface -eq 'editor-script') { $arguments += @('--editor-reference', $logical.editor) }
     foreach ($capture in $captures | Where-Object model -CEQ 'source-clr') { $arguments += @('--source-reference', (Join-Path $outputRoot $capture.path)) }
     Invoke-Managed $arguments ($path + '.log')
+    } else {
+        $retained = $plan.reusedScripts.PSObject.Properties[$surface].Value
+        [IO.File]::WriteAllText($path, ($retained.fact | ConvertTo-Json -Depth 100), [Text.UTF8Encoding]::new($false))
+        $reuseEvidence.Add(@{ owner = $surface; target = $plan.hostTarget; producerRevision = $retained.producerRevision; inputIdentity = $retained.inputIdentity; status = 'Reused' })
+    }
+    $facts = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
+    [IO.File]::WriteAllText($path, ($facts | ConvertTo-Json -Depth 100), [Text.UTF8Encoding]::new($false))
     $captures.Add(@{ path = [IO.Path]::GetFileName($path); sha256 = (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant();
         model = $surface; configuration = $Configuration; target = $plan.hostTarget })
 }
@@ -89,8 +116,9 @@ $receipt = @{ schema = 'inno-api-producer/1'; repository = 'https://github.com/W
     sourceTree = $tree; toolingRevision = $revision; hostTarget = $plan.hostTarget; configuration = $Configuration;
     sdkRuntime = $plan.sdkRuntime; projectManifestIdentity = (Get-FileHash -LiteralPath $projectsPath -Algorithm SHA256).Hash.ToLowerInvariant();
     planIdentity = (Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant();
-    captures = $captures.ToArray(); foreignOwners = $plan.foreignOwners }
+    captures = $captures.ToArray(); foreignOwners = $plan.foreignOwners; reused = $reuseEvidence.ToArray() }
 $pending = Join-Path $outputRoot 'producer.pending.json'
 [IO.File]::WriteAllText($pending, ($receipt | ConvertTo-Json -Depth 30), [Text.UTF8Encoding]::new($false))
 Move-Item -LiteralPath $pending -Destination (Join-Path $outputRoot 'producer.json')
+Invoke-Managed @($transport[0], 'docs', 'export-plan', '--engine-root', $engine, '--record-completed', $outputRoot) (Join-Path $outputRoot 'cache-publication.log')
 Write-Host "Exported $($captures.Count) API contexts from $revision on $($plan.hostTarget). Multi-host reconciliation is still required."

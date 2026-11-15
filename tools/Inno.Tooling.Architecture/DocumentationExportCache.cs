@@ -41,6 +41,29 @@ internal sealed class DocumentationExportCache : IDisposable
     /// <inheritdoc />
     public void Dispose() => m_activity.Dispose();
 
+    internal bool TryRead<T>(
+        string inputIdentity,
+        out T? value,
+        CancellationToken cancellationToken
+    ) {
+        string key = Hash(Encoding.UTF8.GetBytes(S_TOOL_IDENTITY + "\n" + inputIdentity));
+        string directory = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "entries", key));
+        string leasePath = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "leases", key + ".lock"));
+        using FileLease ownership = FileLease.AcquireAsync(leasePath, Timeout.InfiniteTimeSpan,
+            cancellationToken).AsTask().GetAwaiter().GetResult();
+        value = default;
+        if (!BuildArtifactManifest.IsComplete(directory, key, ["facts"])) return false;
+        try
+        {
+            value = JsonSerializer.Deserialize<T>(File.ReadAllBytes(Path.Combine(directory, "facts", "project.json")));
+            if (value is null) return false;
+            m_publisher.Record(directory, leasePath, [], null, null, cancellationToken);
+            m_reused++;
+            return true;
+        }
+        catch (JsonException) { return false; }
+    }
+
     internal T Capture<T>(
         string owner,
         string inputIdentity,

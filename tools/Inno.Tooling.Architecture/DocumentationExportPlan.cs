@@ -22,13 +22,18 @@ internal static class DocumentationExportPlan
         for (int index = 0; index < arguments.Length; index += 2)
         {
             string key = arguments[index];
-            if (key is not ("--engine-root" or "--dotnet" or "--output" or "--configuration" or "--artifacts-path")
+            if (key is not ("--engine-root" or "--dotnet" or "--output" or "--configuration" or "--artifacts-path" or "--record-completed")
                 || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException("Unknown, duplicate or incomplete API export planning option: " + key);
         }
         string Required(string key) => options.GetValueOrDefault(key)
             ?? throw new ArgumentException("Missing API export planning option: " + key);
         string root = Path.GetFullPath(Required("--engine-root"));
+        if (options.TryGetValue("--record-completed", out string? completed))
+        {
+            DocumentationPreparedExports.Record(root, Path.GetFullPath(completed), cancellationToken);
+            return 0;
+        }
         string dotnet = Path.GetFullPath(Required("--dotnet"));
         string output = Path.GetFullPath(Required("--output"));
         string configuration = options.GetValueOrDefault("--configuration", "Debug");
@@ -52,11 +57,19 @@ internal static class DocumentationExportPlan
         // an API owner and must not acquire a documentation page merely to run extraction.
         string entry = Path.Combine(root, "entry", "InnoEngine.Build", "InnoEngine.Build.csproj");
         string[] graphProjects = File.Exists(entry) ? [..projects, entry] : projects;
-        string graphText = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet, graphProjects, properties,
-            cancellationToken).ConfigureAwait(false);
-        using JsonDocument graph = JsonDocument.Parse(graphText);
-        var nodes = graph.RootElement.EnumerateArray().ToDictionary(node => Path.GetFullPath(node.GetProperty("Path").GetString()!),
-            node => node, OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var nodes = new Dictionary<string, JsonElement>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        while (graphProjects.Length != 0)
+        {
+            string graphText = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet, graphProjects, properties,
+                cancellationToken).ConfigureAwait(false);
+            using JsonDocument graph = JsonDocument.Parse(graphText);
+            foreach (JsonElement node in graph.RootElement.EnumerateArray())
+                nodes.Add(Path.GetFullPath(node.GetProperty("Path").GetString()!), node.Clone());
+            graphProjects = nodes.Values.SelectMany(node => node.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
+                .Select(reference => Path.GetFullPath(reference.GetProperty("FullPath").GetString()!))
+                .Distinct(nodes.Comparer).Where(project => !nodes.ContainsKey(project)).ToArray();
+        }
+        IReadOnlyDictionary<string, string> inputIdentities = DocumentationExportInputs.Capture(root, nodes);
         string[] hosts = nodes.Values.Select(node => Property(node, "InnoDevelopmentTarget")).Where(value => value.Length != 0)
             .Distinct(StringComparer.Ordinal).ToArray();
         if (hosts.Length != 1) throw new InvalidDataException("The actual development entry must resolve one SDK host target.");
@@ -69,6 +82,8 @@ internal static class DocumentationExportPlan
         var builds = new SortedSet<string>(StringComparer.Ordinal);
         var captures = new SortedDictionary<string, List<string>>(StringComparer.Ordinal);
         var foreign = new List<object>();
+        using var cache = new DocumentationExportCache(root, cancellationToken);
+        var reusedOwners = new Dictionary<string, Dictionary<string, JsonElement>>(StringComparer.Ordinal);
         foreach (string project in projects)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -90,16 +105,30 @@ internal static class DocumentationExportPlan
             if (local || empty)
             {
                 if (!captures.TryGetValue(context, out List<string>? batch)) captures.Add(context, batch = []);
-                batch.Add(relative);
-                if (!empty) builds.Add(relative);
+                string key = DocumentationPreparedExports.Key(relative, inputIdentities[relative], configuration, context);
+                if (cache.TryRead<JsonElement>(key, out JsonElement reused, cancellationToken))
+                {
+                    if (!reusedOwners.TryGetValue(context, out Dictionary<string, JsonElement>? retained)) reusedOwners.Add(context, retained = []);
+                    retained.Add(relative, reused);
+                }
+                else
+                {
+                    batch.Add(relative);
+                    if (!empty) builds.Add(relative);
+                }
             }
             else foreign.Add(new { path = relative, target, reason = "Requires its actual target SDK producer; another host cannot certify this nonempty API." });
         }
         cancellationToken.ThrowIfCancellationRequested();
+        string scriptInputIdentity = DocumentationPreparedExports.ScriptIdentity(inputIdentities);
+        var reusedScripts = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
+        foreach (string model in new[] { "runtime-script", "editor-script" })
+            if (cache.TryRead<JsonElement>(DocumentationPreparedExports.Key(model, scriptInputIdentity, configuration, host), out JsonElement reused, cancellationToken))
+                reusedScripts.Add(model, reused);
         AtomicFile.WriteAllBytes(output, JsonSerializer.SerializeToUtf8Bytes(new
         {
             schema = "inno-api-export-plan/1", configuration, hostTarget = host, sdkRuntime = runtimes[0],
-            projects = owners, buildProjects = builds,
+            projects = owners, buildProjects = builds, inputIdentities, scriptInputIdentity, reusedOwners, reusedScripts,
             captures = captures.Select(pair => new { target = pair.Key, projects = pair.Value }),
             foreignOwners = foreign,
             scope = "Evaluated source export preparation only. Empty authored surfaces do not certify generators or product execution. Closing input checks and complete multi-host reconciliation remain required."

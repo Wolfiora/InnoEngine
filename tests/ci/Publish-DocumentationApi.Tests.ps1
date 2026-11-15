@@ -82,6 +82,13 @@ try {
     if (((Invoke-FixtureGit $docsRemote @('rev-parse', 'main')) -join '') -cne $mainBefore) { throw 'The publisher modified main.' }
     if (((Invoke-FixtureGit $docsRemote @('show', 'draft:content/en/manual/task.md')) -join '') -cne 'A completely independent guide.') { throw 'The publisher changed independent manual content.' }
     [void](Invoke-FixtureGit $docsRemote @('show', 'draft:reference/api/content.json'))
+    # A release can advance main without changing the API payload. A repeated export
+    # must not push a merge commit solely to synchronize branch ancestry.
+    Write-Text (Join-Path $docs 'release-note.txt') 'Main-only release metadata.'
+    [void](Invoke-FixtureGit $docs @('checkout', 'main'))
+    [void](Invoke-FixtureGit $docs @('add', 'release-note.txt'))
+    [void](Invoke-FixtureGit $docs @('commit', '-m', 'fixture(docs): advance main without API changes'))
+    [void](Invoke-FixtureGit $docs @('push', $docsRemote, 'main'))
     & pwsh -NoProfile -File $publisher -EngineRoot $engine -Dotnet $Dotnet -BuildCli $BuildCli -Package $package -Workspace (Join-Path $root 'repeat')
     if ($LASTEXITCODE -or ((Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join '') -cne $first) { throw 'Identical API export created another commit.' }
     # Intercept only the fixture process's first push. A real competing author commits before
@@ -126,7 +133,8 @@ function git {
     if (!$concurrentLog.Contains('Recompute ownership')) { throw 'The competing push did not exercise ownership recomputation.' }
     $after = Join-Path $root 'after-race'
     [void](Invoke-FixtureGit $root @('clone', '--branch', 'draft', $docsRemote, $after))
-    if ([IO.File]::ReadAllText((Join-Path $after $fragment)) -cne $manual) { throw 'Concurrent manual prose was overwritten.' }
+    $expectedManual = $manual.Replace('outdated: false', 'outdated: true')
+    if ([IO.File]::ReadAllText((Join-Path $after $fragment)) -cne $expectedManual) { throw 'Concurrent manual prose was overwritten or changed XML did not require review.' }
     if (![IO.File]::ReadAllText((Join-Path $after 'reference/api/probe.json')).Contains('An updated XML explanation.')) { throw 'Source facts were not synchronized after the competing edit.' }
     $first = (Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join ''
     Write-Text (Join-Path $engine 'input.txt') 'A newer engine input.'

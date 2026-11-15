@@ -73,4 +73,10 @@ public sealed record DocumentationPageInfo(
     /// Gets the actual compilation surfaces available on this composed page.
     /// </summary>
     public IReadOnlyList<string> surfaces { get; init; } = [];
+
+    /// <summary>
+    /// Gets link and image destinations resolved by the canonical Markdown parser.
+    /// Adapters use these relationships for reverse impact selection without parsing Markdown again.
+    /// </summary>
+    public IReadOnlyList<string> links { get; init; } = [];
 }

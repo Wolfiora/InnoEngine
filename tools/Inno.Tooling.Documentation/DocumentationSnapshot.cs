@@ -79,7 +79,7 @@ public sealed class DocumentationSnapshot : IDisposable
                 page.symbols.ToDictionary(static symbol => symbol.id,
                     static symbol => new DocumentationSymbolInfo(symbol.anchor, symbol.signatureIdentity, symbol.code), StringComparer.Ordinal),
                 page.metadata.contracts, page.includes, page.codeBlocks, page.metadata.examples) { markdown = page.text, scope = page.metadata.apiScope,
-                    surfaces = page.metadata.apiSurfaces ?? [] });
+                    surfaces = page.metadata.apiSurfaces ?? [], links = page.links });
         }
         string contentIdentity = DocumentationMarkdown.Hash(string.Join('\n', pages.Select(static page => page.path + "\0" + page.contentIdentity)));
         return new(identity, contentIdentity, m_manifest.binding.repository, m_manifest.binding.revision,

@@ -267,7 +267,9 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Write("content/en/links.md", Page("links", "Links", "[Ownership][target]\n\n[target]: probe.md#ownership\n\n[Self](#links)\n\n[API](api.md#api-" + Hash(Encoding.UTF8.GetBytes(C_SYMBOL))[..16] + ")\n"));
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);
-        Assert.Contains((await snapshot.ExportCatalogAsync()).pages, page => page.id == "links");
+        DocumentationPageInfo page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "links");
+        Assert.Contains("probe.md#ownership", page.links);
+        Assert.Contains("#links", page.links);
     }
 
     [Fact]
