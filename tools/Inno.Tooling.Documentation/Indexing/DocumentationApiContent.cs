@@ -102,14 +102,14 @@ internal static class DocumentationApiContent
             {
                 // Synchronization owns metadata; the authored body remains byte-for-byte intact.
                 Edit(path, Fragment(entry, fact, existing.body, existing));
-                if (string.IsNullOrWhiteSpace(existing.body) || Normalize(existing.body) == Normalize(DocumentationXml.Render(fact.documentation)))
+                if (string.IsNullOrWhiteSpace(existing.body) || Normalize(existing.body) == Normalize(DocumentationXml.Read(fact.documentation).body))
                     warnings.Add(new(fact.key, path, "EmptyManual", "Manual ownership has no independent explanatory content."));
                 if (IsOutdated(existing, contract))
                     warnings.Add(new(fact.key, path, "ReviewRequired", "The current source contract has not been acknowledged by this manual fragment."));
             }
             else
             {
-                Edit(path, Fragment(entry, fact, DocumentationXml.Render(fact.documentation), existing));
+                Edit(path, Fragment(entry, fact, DocumentationXml.Read(fact.documentation).body, existing));
                 warnings.Add(new(fact.key, path, "XmlOnly", "This API still uses XML-synchronized prose."));
             }
         }
@@ -195,7 +195,7 @@ internal static class DocumentationApiContent
         if (fragment.symbol != entry.symbol || fragment.source != "manual")
             throw new InvalidDataException("Review requires matching source: manual content: " + page);
         if (string.IsNullOrWhiteSpace(fragment.body)
-            || Normalize(fragment.body) == Normalize(DocumentationXml.Render(contexts[0].documentation)))
+            || Normalize(fragment.body) == Normalize(DocumentationXml.Read(contexts[0].documentation).body))
             throw new InvalidDataException("Write an independent explanation before acknowledging review: " + page);
         var current = entry with { contract = Contract(contexts), title = DocumentationApiPresentation.Name(contexts[0], facts) };
         string text = Fragment(current, contexts[0], fragment.body, fragment, acknowledgeReview: true);

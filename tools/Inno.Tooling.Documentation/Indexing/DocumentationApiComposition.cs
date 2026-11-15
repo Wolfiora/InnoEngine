@@ -92,14 +92,9 @@ internal static class DocumentationApiComposition
             string header = Header(fragment, type, entry.title, ancestors);
             var text = new StringBuilder(header).Append("\n\n# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             string body = fragment.body.Trim();
-            if (fragment.source == "xml")
-            {
-                // The generated introduction is the XML summary. Keep the remaining Markdown sections independent of declarations.
-                MarkdownDocument document = Markdown.Parse(body);
-                int section = document.OfType<HeadingBlock>().Select(heading => heading.Span.Start).DefaultIfEmpty(body.Length).First();
-                text.Append(body[..section].Trim()).Append("\n\n");
-                body = body[section..].Trim();
-            }
+            // Summary is a source fact for both XML-managed and manually authored explanations.
+            string summary = DocumentationXml.Read(fact.documentation).summary;
+            if (summary.Length != 0) text.Append(summary).Append("\n\n");
             string status = Status(fragment, type);
             text.Append("> [!").Append(status.ToUpperInvariant()).Append("]\n> ").Append(status switch
             {
@@ -127,7 +122,7 @@ internal static class DocumentationApiComposition
             if (fact.interfaces.Count != 0) text.Append("  \n**Implements:** ").Append(string.Join(", ", fact.interfaces.Select(value => "`" + value + "`")));
             text.Append("\n\n");
             AppendSymbol(text, type, fragment, entry.path, 2, "Declaration");
-            text.Append(Rebase(root, body, fragment.path, entry.path, fragment.source == "xml" ? 0 : 2)).Append("\n\n");
+            text.Append(Rebase(root, body, fragment.path, entry.path, 0)).Append("\n\n");
             DocumentationApiContentEntry[] members = byType.GetValueOrDefault(fact.key) ?? [];
             if (members.Length != 0)
             {
@@ -142,7 +137,7 @@ internal static class DocumentationApiComposition
                             label += child.id.Contains('(') ? child.id[child.id.IndexOf('(')..] : " (" + child.kind + ")";
                         text.Append("| ").Append(group.Key).Append(" | [").Append(DocumentationApiPresentation.Cell(label)).Append("](")
                             .Append(Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, member.path).Replace('\\', '/'))
-                            .Append(") | ").Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(fragments[member.symbol].body))).Append(" |\n");
+                            .Append(") | ").Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Read(child.documentation).summary))).Append(" |\n");
                     }
                 }
             }

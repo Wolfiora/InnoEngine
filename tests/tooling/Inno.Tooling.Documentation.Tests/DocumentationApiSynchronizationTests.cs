@@ -112,7 +112,18 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
         Assert.Contains("outdated: true", File.ReadAllText(member));
-        Assert.Contains("Updated source documentation.", File.ReadAllText(Fragment(C_TYPE)));
+        Assert.True(string.IsNullOrWhiteSpace(Body(File.ReadAllText(Fragment(C_TYPE)))));
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo[] pages = (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api").ToArray();
+        Assert.All(pages, page => Assert.Contains("Updated source documentation.", page.markdown));
+        DocumentationPageInfo memberPage = Assert.Single(pages.Where(page => page.symbols.ContainsKey(C_MEMBER)));
+        Assert.True(memberPage.markdown.IndexOf("Updated source documentation.", StringComparison.Ordinal)
+            < memberPage.markdown.IndexOf("> [!OUTDATED]", StringComparison.Ordinal));
+        Assert.Contains("Use this count after the owner has published the snapshot.", memberPage.markdown);
+        Assert.Contains("Updated source documentation.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
+        Assert.Contains("| Updated source documentation. |", Assert.Single(pages.Where(page => page.symbols.ContainsKey(C_TYPE))).markdown);
     }
 
     [Fact]
@@ -190,7 +201,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Bind(description: "A fresh description.");
         await Sync();
         Assert.Contains("source: xml", File.ReadAllText(member));
-        Assert.Contains("A fresh description.", File.ReadAllText(member));
+        Assert.True(string.IsNullOrWhiteSpace(Body(File.ReadAllText(member))));
+        Assert.Contains("A fresh description.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
     }
 
     [Theory]
@@ -530,7 +542,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("persistent value", updated);
         Assert.Contains("exampleMode: host", updated);
         Assert.Contains("exampleProjects:", updated);
-        Assert.Contains("Fresh XML still needs", updated);
+        Assert.DoesNotContain("Fresh XML still needs", updated);
+        Assert.Contains("Fresh XML still needs", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
         await Sync();
         Assert.Equal(updated, File.ReadAllText(type));
     }
@@ -623,7 +636,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
         Assert.Contains("outdated: true", File.ReadAllText(member));
-        Assert.Contains("Updated package XML.", File.ReadAllText(Fragment(C_TYPE)));
+        Assert.Contains("Updated package XML.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
         byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
         JsonNode next = JsonNode.Parse(File.ReadAllText(package))!;
         next["revision"] = new string('c', 40);
@@ -685,7 +698,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             Assert.Equal(facts, File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json")));
         }
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
-        Assert.Contains("New import contract.", File.ReadAllText(Fragment(C_TYPE)));
+        Assert.Contains("New import contract.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
     }
 
     [Fact]
@@ -721,7 +734,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         SaveFacts(facts);
         await Sync();
         string prose = File.ReadAllText(Fragment(C_TYPE));
-        Assert.Contains("Owns a value.\n\nRelease it when finished.\n\n## Remarks", prose);
+        Assert.DoesNotContain("Owns a value.", prose);
+        Assert.DoesNotContain("Release it when finished.", prose);
+        Assert.Contains("## Remarks\n\nKeep the owner alive.", prose);
         Assert.Contains("## Type parameters", prose);
         Assert.Contains("## Returns\n\nThe current value.", prose);
         Assert.Contains("## Example", prose);
@@ -737,6 +752,30 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("Owns a value.", hit.text);
         Assert.Contains("Keep the owner alive.", hit.text);
         Assert.Equal(1, page.markdown.Split("Owns a value.", StringSplitOptions.None).Length - 1);
+    }
+
+    [Fact]
+    public async Task ManualBodySectionsRemainEditableWhileSummaryFollowsSource()
+    {
+        SetTypeDocumentation("<member><summary>Original summary.</summary><remarks>Original remarks.</remarks></member>");
+        await Sync();
+        string path = Fragment(C_TYPE);
+        string text = File.ReadAllText(path).Replace("source: xml", "source: manual", StringComparison.Ordinal);
+        string body = "\n\n## Remarks\n\nMy independently maintained ownership explanation.\n";
+        File.WriteAllText(path, text[..(text.Length - Body(text).Length)] + body);
+        SetTypeDocumentation("<member><summary>Updated source summary.</summary><remarks>Changed source remarks.</remarks></member>");
+        await Sync();
+        Assert.Equal(body, Body(File.ReadAllText(path)));
+        Assert.DoesNotContain("Updated source summary.", File.ReadAllText(path));
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
+        Assert.Contains("# Value\n\nUpdated source summary.\n\n> [!OUTDATED]", page.markdown);
+        Assert.Contains("## Remarks\n\nMy independently maintained ownership explanation.", page.markdown);
+        Assert.DoesNotContain("#### Remarks", page.markdown);
+        Assert.DoesNotContain("Changed source remarks.", page.markdown);
+        Assert.DoesNotContain("Original summary.", page.markdown);
     }
 
     [Fact]

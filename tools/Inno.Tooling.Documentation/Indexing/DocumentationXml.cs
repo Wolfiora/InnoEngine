@@ -7,14 +7,17 @@ using System.Xml.Linq;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
+internal sealed record DocumentationXmlContent(string summary, string body);
+
 internal static class DocumentationXml
 {
-    internal static string Render(string xml)
+    internal static DocumentationXmlContent Read(string xml)
     {
-        if (string.IsNullOrWhiteSpace(xml)) return "No XML description is available.\n";
+        if (string.IsNullOrWhiteSpace(xml)) return new("No XML description is available.", "");
         using var reader = XmlReader.Create(new StringReader(xml), new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null });
         XElement root = XElement.Load(reader);
-        return string.Join("\n\n", root.Elements().GroupBy(element => element.Name.LocalName)
+        string summary = "";
+        string body = string.Join("\n\n", root.Elements().GroupBy(element => element.Name.LocalName)
             .OrderBy(group => group.Key == "summary" ? 0 : 1).Select(group =>
         {
             string heading = group.Key switch
@@ -33,8 +36,14 @@ internal static class DocumentationXml
                 "seealso" => Node(element),
                 _ => throw new InvalidDataException("Unsupported API XML element: " + element.Name)
             }).Where(text => text.Length != 0));
-            return content.Length == 0 ? "" : (heading.Length == 0 ? "" : "## " + heading + "\n\n") + content;
-        }).Where(text => text.Length != 0)) + "\n";
+            if (group.Key == "summary")
+            {
+                summary = content;
+                return "";
+            }
+            return content.Length == 0 ? "" : "## " + heading + "\n\n" + content;
+        }).Where(text => text.Length != 0));
+        return new(summary, body.Length == 0 ? "" : body + "\n");
     }
 
     private static string Children(XElement element) => string.Concat(element.Nodes().Select(Node));

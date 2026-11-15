@@ -95,7 +95,7 @@ internal static class DocumentationApiNavigation
             ? DocumentationApiContent.QualifiedTitle(facts[type.symbol][0]) : type.title;
         text.Append("| [").Append(DocumentationApiPresentation.Cell(title)).Append("](")
             .Append(Relative(page, type.path)).Append(") | ")
-            .Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Render(facts[type.symbol][0].documentation))))
+            .Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Read(facts[type.symbol][0].documentation).summary)))
             .Append(" |\n");
     }
 
