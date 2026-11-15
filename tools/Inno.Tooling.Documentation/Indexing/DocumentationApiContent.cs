@@ -236,7 +236,7 @@ internal static class DocumentationApiContent
             }
         return "---\n# Generated metadata. Maintained by API synchronization and review tooling.\n"
             + Serialize(generated) + "\n\n# Authoring metadata. Edit these fields and the explanation below.\n"
-            + Serialize(authored) + "\n---" + (manual ? body : "\n\n" + body.Trim() + "\n");
+            + Serialize(authored) + "\n---" + (manual ? body : body.Length == 0 ? "\n" : "\n\n" + body.Trim() + "\n");
     }
 
     private static string Serialize(YamlMappingNode metadata)
