@@ -16,6 +16,9 @@ This change implements the approved November 16 documentation CI/API-export plan
 - Owner planning, repeated identity, immutable payload reuse, original producer provenance, new Compile item invalidation and cancellation: passed.
 - Publisher fixture: first publication, identical no-op despite advanced main, concurrent manual takeover, outdated metadata after XML changes and stale source rejection: passed. The first run exposed an outdated fixture expectation that incorrectly forbade the intentional outdated metadata update; original diagnostic retained.
 - Engine Architecture managed build: passed, zero warnings/errors.
-- Actual remote export and Docs CI: pending publication of this implementation.
+- Remote API export run [43758842003](https://github.com/Wolfiora/InnoEngine/actions/runs/43758842003): Windows/macOS Debug/Release and complete package reconciliation passed. The preceding first preflight failure was command-name recursion; it was corrected before retry.
+- Preflight fixture: unchanged and README-only inputs skip extraction; new and deleted source membership require evaluation.
+- Restored immutable snapshot regression: passed. Restored payloads acquire fresh local generation ownership; confirming a protected snapshot does not wait on its existing reader.
+- Docs CI and publication candidate: tracked in the Docs implementation record. Human merge and actual deployment remain separate actions.
 
 No stress tests, repeated performance matrix or formal release was run. Source changes from another session in Inno.Editor.Assets/Properties/ScriptingApi.cs are excluded.
