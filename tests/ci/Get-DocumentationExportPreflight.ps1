@@ -2,14 +2,14 @@ param([string] $Output = 'artifacts/documentation-export/preflight.json')
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $root = [IO.Path]::GetFullPath('../..', $PSScriptRoot)
-function Git([string[]] $Arguments) {
+function Invoke-InputGit([string[]] $Arguments) {
     $value = @(& git -C $root @Arguments)
     if ($LASTEXITCODE -ne 0) { throw 'Cannot establish API export inputs.' }
     return $value
 }
 function Inputs([string] $Revision) {
     $entries = [ordered]@{}
-    foreach ($line in (Git @('ls-tree', '-r', $Revision))) {
+    foreach ($line in (Invoke-InputGit @('ls-tree', '-r', $Revision))) {
         if ($line -cnotmatch '^([0-9]+) (blob|commit) ([a-f0-9]{40})\t(.+)$') { throw 'Invalid Git input entry.' }
         $file = $Matches[4]; $identity = $Matches[3]
         # Only known non-executable repository guidance is excluded. Unknown inputs,
@@ -20,7 +20,7 @@ function Inputs([string] $Revision) {
     if ($entries.Count -eq 0) { throw 'API input discovery is unexpectedly empty.' }
     return $entries
 }
-$revision = (Git @('rev-parse', 'HEAD')) -join ''
+$revision = (Invoke-InputGit @('rev-parse', 'HEAD')) -join ''
 $current = Inputs $revision
 $baseline = $null
 if ($env:GH_TOKEN) {
@@ -34,7 +34,7 @@ if ($env:GH_TOKEN) {
         $artifacts = Invoke-RestMethod "https://api.github.com/repos/Wolfiora/InnoEngine/actions/runs/$($run.id)/artifacts?per_page=100" -Headers $headers
         if (@($artifacts.artifacts | Where-Object { $_.name -ceq "documentation-api-package-$($run.run_attempt)" -and !$_.expired -and $_.digest -cmatch '^sha256:[a-f0-9]{64}$' }).Count -ne 1) { continue }
         $baseline = $run.head_sha
-        [void](Git @('fetch', '--no-tags', 'origin', $baseline))
+        [void](Invoke-InputGit @('fetch', '--no-tags', 'origin', $baseline))
         break
     }
 }
