@@ -45,6 +45,31 @@ public sealed class DocumentationSnapshotTests : IDisposable
     }
 
     [Fact]
+    public async Task RestoredImmutablePayloadsAcquireLocalOwnershipBeforeOpening()
+    {
+        DocumentationResult first = await IndexAsync();
+        string imported = Path.Combine(m_root, "artifacts", "imported");
+        string manifest = Path.Combine("generations", first.snapshot!, "manifest.json");
+        foreach (string file in Directory.GetFiles(cache, "page.json", SearchOption.AllDirectories)
+            .Append(Path.Combine(cache, "current.json")).Append(Path.Combine(cache, manifest)))
+        {
+            string destination = Path.Combine(imported, Path.GetRelativePath(cache, file));
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.Copy(file, destination);
+        }
+        byte[] original = File.ReadAllBytes(Path.Combine(imported, manifest));
+        DocumentationResult restored = await DocumentationStore.IndexAsync(m_root, source, imported);
+        Assert.Equal(first.snapshot, restored.snapshot);
+        Assert.Contains("parsed 0", restored.message);
+        Assert.Equal(original, File.ReadAllBytes(Path.Combine(imported, manifest)));
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(imported, restored.snapshot);
+        Assert.NotEmpty((await snapshot.ExportCatalogAsync()).pages);
+        // Confirming an already protected snapshot must not wait on its reading lease.
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        Assert.Equal(restored.snapshot, (await DocumentationStore.IndexAsync(m_root, source, imported, cancellation.Token)).snapshot);
+    }
+
+    [Fact]
     public async Task PlatformInventoryDoesNotRequireOrExposeImplementationGuides()
     {
         JsonNode projects = JsonNode.Parse(File.ReadAllText(Path.Combine(source, "reference/projects/catalog.json")))!;

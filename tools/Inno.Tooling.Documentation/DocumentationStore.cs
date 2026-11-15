@@ -202,7 +202,18 @@ public static class DocumentationStore
         DocumentationReferenceStore.Verify(references);
         RecordPhase("FreshnessValidation");
         if (previous?.identity == identity)
+        {
+            // Immutable CI payloads deliberately omit process-local ownership and leases.
+            // Adopt an unchanged restored generation without rewriting it or waiting on
+            // existing readers of a generation that is already registered locally.
+            using FileLease? restored = File.Exists(generationLease) ? null
+                : await FileLease.AcquireAsync(generationLease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+            publisher.EnsureImmutableRegistration(generation, generationLease,
+                entries.Values.Select(page => Path.Combine(output, "pages", page.key))
+                    .Concat(references.references.Select(reference => Path.Combine(output, "references", reference.identity)))
+                    .Distinct(StringComparer.Ordinal).ToArray(), null, cancellationToken);
             return Finish($"Confirmed {pages.Count} pages; parsed {parsed}, reused {pages.Count - parsed}. Existing generation retained without rewriting its manifest.");
+        }
         using FileLease publishing = await FileLease.AcquireAsync(generationLease, Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
         AtomicFile.WriteAllBytes(Path.Combine(generation, "manifest.json"), JsonSerializer.SerializeToUtf8Bytes(manifest, json));
         publisher.Record(generation, generationLease, entries.Values.Select(page => Path.Combine(output, "pages", page.key))
