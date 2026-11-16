@@ -5682,8 +5682,8 @@
       "check": "full source section preservation + semantic review",
       "translation": {
         "language": "en",
-        "approval": "User-approved English modernization and subsequent API automatic synchronization / Docs draft-main scope and editorial amendments",
-        "review": ".agents/records/decisions/API_DRAFT_RULE_AMENDMENT.md",
+        "approval": "User-approved named API authors, editable description overrides and tool-maintained contracts (2026-11-16)",
+        "review": ".agents/records/decisions/API_AUTHOR_METADATA_RULE_AMENDMENT.md",
         "lines": [
           {
             "ordinal": 1,
@@ -5698,7 +5698,7 @@
           {
             "ordinal": 3,
             "sourceHash": "3b0b7137ff392ff0bf8bd7d13053824b6d85875abc0d96b90518329f42bc5a8d",
-            "targetHash": "862f7d90538784073ed6c87ec394f7acc08f56fcffb112ae3ff950053036bddf"
+            "targetHash": "8af5f7bad6857a615a9093d57f808ef733dfa4f39fae7b13284a926035759c84"
           },
           {
             "ordinal": 4,

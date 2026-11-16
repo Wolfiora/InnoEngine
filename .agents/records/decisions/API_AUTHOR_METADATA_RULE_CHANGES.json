@@ -1,0 +1,13 @@
+{
+  "approval": "Explicit user request on 2026-11-16 to replace the manual marker with the author name.",
+  "changes": [
+    {
+      "unit": "documentation-standard-2",
+      "ordinal": 3,
+      "before": "Each member receives source facts and XML default explanations of behavior/results, usage constraints and failures. Authors can enrich individual type/member prose with source: manual; missing or stale editorial work is a non-blocking warning, not proof of semantic completeness. Source links do not replace use contracts. Resolve inheritdoc and retain local additions; explain eligible generated members without editing generated source.",
+      "after": "Each member receives source facts and XML default explanations of behavior/results, usage constraints and failures. Authors can enrich individual type/member prose with source: FLwolfy; missing or stale editorial work is a non-blocking warning, not proof of semantic completeness. Source links do not replace use contracts. Resolve inheritdoc and retain local additions; explain eligible generated members without editing generated source.",
+      "beforeHash": "862f7d90538784073ed6c87ec394f7acc08f56fcffb112ae3ff950053036bddf",
+      "afterHash": "8af5f7bad6857a615a9093d57f808ef733dfa4f39fae7b13284a926035759c84"
+    }
+  ]
+}
