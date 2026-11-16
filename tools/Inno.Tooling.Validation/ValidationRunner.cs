@@ -183,6 +183,8 @@ internal static class ValidationRunner
                                 throw new InvalidDataException("Required external documentation snapshot is unavailable.");
                             documentationCatalog ??= await documentationSnapshot.ExportCatalogAsync(cancellation).ConfigureAwait(false);
                             string[] missing = plan.inputSets.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal))
+                                // Platform implementations remain source provenance, not reader-facing documentation owners.
+                                .Where(static path => !path.StartsWith("platforms/", StringComparison.Ordinal))
                                 .Select(static path => Path.GetFileNameWithoutExtension(path))
                                 .Where(name => !documentationCatalog.projects.TryGetValue(name, out string? entry) || entry is null).ToArray();
                             if (missing.Length != 0)

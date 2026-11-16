@@ -13,6 +13,49 @@ namespace Inno.Tooling.Validation.Tests;
 
 public sealed class ValidationDocumentationTests
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PlatformProvenanceDoesNotRequireReaderEntriesButRequiredOwnersRemainChecked(bool missingEntry)
+    {
+        using var repository = new ValidationRepository();
+        const string C_PLATFORM = "platforms/Fixture/Platform/Platform.csproj";
+        repository.Write(C_PLATFORM, ValidationRepository.Project());
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Retain platform implementation provenance");
+        var docs = new ValidationDocumentationFixture(repository);
+        docs.Initialize();
+        if (missingEntry)
+            docs.Write("content/en/Other.md", ValidationDocumentationFixture.Page("Other", "This is not a project entry."));
+        DocumentationResult indexed = await docs.IndexAsync();
+        using (DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(docs.cache, indexed.snapshot))
+        {
+            DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+            Assert.False(catalog.projects.ContainsKey("Platform"));
+            DocumentationReferenceInfo inventory = catalog.references.Single(reference => reference.model == "project-inventory");
+            Assert.Contains(C_PLATFORM, Encoding.UTF8.GetString(await snapshot.ReadReferenceAsync(inventory.path)));
+        }
+        repository.Write("src/Example/Changed.cs", "namespace Example; internal sealed class Changed { }");
+        using JsonDocument plan = await docs.PlanAsync(indexed);
+        Assert.True(plan.RootElement.GetProperty("inputSets").TryGetProperty(C_PLATFORM, out _));
+        // Execute this real catalog obligation independently of unrelated build/test prerequisites.
+        JsonNode execution = JsonNode.Parse(plan.RootElement.GetRawText())!;
+        execution["checks"] = new JsonArray(plan.RootElement.GetProperty("checks").EnumerateArray()
+            .Where(check => check.GetProperty("id").GetString() == "documentation")
+            .Select(check => JsonNode.Parse(check.GetRawText())).ToArray());
+        repository.Write("artifacts/plan/plan.json", execution.ToJsonString());
+        if (missingEntry)
+        {
+            await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
+            using JsonDocument result = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/run/results.json")));
+            JsonElement check = Assert.Single(result.RootElement.GetProperty("results").EnumerateArray());
+            Assert.Equal("Failed", check.GetProperty("status").GetString());
+            Assert.Equal("Required canonical project entries are missing: Other", check.GetProperty("detail").GetString());
+        }
+        else
+            Assert.Equal(0, await repository.RunAsync());
+    }
+
     [Fact]
     public async Task ProjectedReferenceChangesSelectTheirCompilerAndIgnoreUnrelatedBatchOwners()
     {
@@ -182,7 +225,7 @@ public sealed class ValidationDocumentationTests
     public async Task EmptyForeignProductSurfaceDoesNotClaimForeignExecutionOrRequireItsBuild()
     {
         using var repository = new ValidationRepository();
-        const string C_FOREIGN = "platforms/Foreign/player/Foreign.Player/Foreign.Player.csproj";
+        const string C_FOREIGN = "src/Foreign/Foreign.Player/Foreign.Player.csproj";
         repository.Write("Product.props", "<Project />");
         repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
             "<PropertyGroup><InnoDevelopmentTarget>host-fixture</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
@@ -193,7 +236,7 @@ public sealed class ValidationDocumentationTests
         repository.Git("commit", "-m", "Declare an internal foreign product entry");
         var docs = new ValidationDocumentationFixture(repository);
         docs.Initialize();
-        repository.Write("platforms/Foreign/player/Foreign.Player/Entry.cs", "namespace Foreign; internal static class Entry { }");
+        repository.Write("src/Foreign/Foreign.Player/Entry.cs", "namespace Foreign; internal static class Entry { }");
         repository.Write("src/Example/Changed.cs", "namespace Example; internal class Changed { }");
         using JsonDocument plan = await docs.PlanAsync(await docs.IndexAsync());
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
