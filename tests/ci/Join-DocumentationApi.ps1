@@ -96,8 +96,10 @@ $manifests = @()
 foreach ($item in $selected | Sort-Object { $_.capture.configuration }, { $_.capture.target }, { $_.capture.model }) {
     $capture = $item.capture
     $path = "reference/api/$($capture.configuration)-$($capture.target)-$($capture.model).json"
-    [IO.File]::WriteAllText((Join-Path $outputRoot $path), $item.text, [Text.UTF8Encoding]::new($false))
-    $manifests += @{ path = $path; sha256 = $capture.sha256; model = $capture.model; configuration = $capture.configuration;
+    # Verify producer bytes above, then publish LF bytes with matching repository identities.
+    $destination = Join-Path $outputRoot $path
+    [IO.File]::WriteAllText($destination, $item.text.Replace("`r`n", "`n"), [Text.UTF8Encoding]::new($false))
+    $manifests += @{ path = $path; sha256 = (Get-FileHash -LiteralPath $destination -Algorithm SHA256).Hash.ToLowerInvariant(); model = $capture.model; configuration = $capture.configuration;
         target = $capture.target; sourceRevision = $ExpectedCommit; sourceTree = $tree }
 }
 foreach ($project in $inventory) {
@@ -106,7 +108,7 @@ foreach ($project in $inventory) {
     $project.surfaces = @($surfaces)
 }
 $projectPath = Join-Path $outputRoot 'reference/projects/catalog.json'
-[IO.File]::WriteAllText($projectPath, (ConvertTo-Json -InputObject @($inventory) -Depth 30), [Text.UTF8Encoding]::new($false))
+[IO.File]::WriteAllText($projectPath, (ConvertTo-Json -InputObject @($inventory) -Depth 30).Replace("`r`n", "`n"), [Text.UTF8Encoding]::new($false))
 $binding = @{ repository = 'https://github.com/Wolfiora/InnoEngine'; revision = $ExpectedCommit; sourceTree = $tree;
     toolingRevision = $ExpectedCommit; projectManifest = 'reference/projects/catalog.json';
     projectManifestIdentity = (Get-FileHash -LiteralPath $projectPath -Algorithm SHA256).Hash.ToLowerInvariant(); apiManifests = $manifests }

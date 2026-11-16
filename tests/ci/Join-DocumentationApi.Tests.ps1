@@ -71,6 +71,22 @@ function Case([string] $Name, [scriptblock] $Change, [bool] $Accept) {
     if ($accepted -ne $Accept) { throw "Aggregation case $Name expected $Accept, got $accepted. $failure" }
 }
 Case 'complete-real-inventory' {} $true
+Case 'crlf-producer' { param($s)
+    foreach ($capture in $s.data.captures) {
+        $path = Join-Path $s.directory $capture.path
+        Write-Text $path ([IO.File]::ReadAllText($path).Replace("`r`n", "`n").Replace("`n", "`r`n"))
+        $capture.sha256 = Hash $path
+    }
+} $true
+$canonicalRoot = Join-Path $root 'artifacts/crlf-producer/output'
+$canonicalBinding = Get-Content (Join-Path $canonicalRoot 'reference/engine.lock.json') -Raw | ConvertFrom-Json
+foreach ($file in @($canonicalBinding.projectManifest) + @($canonicalBinding.apiManifests.path)) {
+    if ([IO.File]::ReadAllText((Join-Path $canonicalRoot $file)).Contains("`r")) { throw 'Published facts must use LF before Git stores them.' }
+}
+foreach ($capture in $canonicalBinding.apiManifests) {
+    if ((Hash (Join-Path $canonicalRoot $capture.path)) -cne $capture.sha256) { throw 'Canonical capture hash differs from its binding.' }
+}
+if ((Hash (Join-Path $canonicalRoot $canonicalBinding.projectManifest)) -cne $canonicalBinding.projectManifestIdentity) { throw 'Canonical inventory hash differs from its binding.' }
 Case 'stale-source' { param($s) $s.data.revision = 'f' * 40 } $false
 Case 'wrong-source-tree' { param($s) $s.data.sourceTree = 'f' * 40 } $false
 Case 'foreign-repository' { param($s) $s.data.repository = 'https://example.invalid/foreign' } $false
