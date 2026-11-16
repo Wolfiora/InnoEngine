@@ -26,7 +26,11 @@ internal static class DocumentationApiNavigation
         {
             DocumentationApiFact fact = facts[type.symbol][0];
             string current = fact.family == "scripting" ? "scripting/" + fact.scope!.ToLowerInvariant() : "engine";
-            if (fact.family == "scripting") categories[current] = fact.scope!;
+            if (fact.family == "scripting")
+            {
+                categories[current] = fact.scope!;
+                current += "/_projects";
+            }
             string[] names = (fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project).Split('.');
             foreach (string name in names)
             {
@@ -42,7 +46,7 @@ internal static class DocumentationApiNavigation
                 .Append(category.Value).Append("\n\n");
             if (category.Key == "engine") text.Append("Browse public C# contracts from src/ and build/ by their owning project. All other source roots, tests and fixtures are outside Engine API.\n\n");
             else if (category.Key == "scripting") text.Append("Browse the actual projected script API by its declared scope. Runtime contracts are also available to Editor scripts; Authoring annotations are compilation-time contracts.\n\n");
-            else text.Append("Find types in this ").Append(category.Key.StartsWith("scripting/", StringComparison.Ordinal) ? "declared script scope" : "project category").Append(". Each type links to its exact declarations and member contracts.\n\n");
+            else text.Append("Find types in this ").Append(category.Key.StartsWith("scripting/", StringComparison.Ordinal) && category.Key.Count(character => character == '/') == 1 ? "declared script scope" : "project category").Append(". Each type links to its exact declarations and member contracts.\n\n");
             var children = categories.Where(child => Parent(child.Key) == category.Key).ToArray();
             if (children.Length != 0)
             {
@@ -67,6 +71,7 @@ internal static class DocumentationApiNavigation
                 foreach (DocumentationApiContentEntry type in direct) AppendType(text, path, type, direct, facts, fragments);
                 text.Append('\n');
             }
+            if (types.Any(type => type.path == path)) throw new InvalidDataException("API category conflicts with a registered type: " + path);
             pages.Add(path, text.ToString());
         }
         return pages;
@@ -92,12 +97,16 @@ internal static class DocumentationApiNavigation
 
     private static string Category(DocumentationApiFact fact)
     {
-        string root = fact.family == "scripting" ? "scripting/" + fact.scope!.ToLowerInvariant() : "engine";
+        string root = fact.family == "scripting" ? "scripting/" + fact.scope!.ToLowerInvariant() + "/_projects" : "engine";
         string project = fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project;
         return root + "/" + string.Join('/', project.Split('.').Select(DocumentationApiContent.Slug));
     }
 
-    private static string Parent(string path) => path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";
+    private static string Parent(string path)
+    {
+        string parent = path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";
+        return parent.EndsWith("/_projects", StringComparison.Ordinal) ? parent[..^10] : parent;
+    }
     private static string Relative(
         string from,
         string to
