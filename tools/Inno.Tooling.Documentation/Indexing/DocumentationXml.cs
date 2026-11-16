@@ -7,8 +7,10 @@ using System.Xml.Linq;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationXmlContent(string[] summaries, string body)
-{
+internal sealed record DocumentationXmlContent(
+    string[] summaries,
+    string body
+) {
     internal string summary => string.Join("\n\n", summaries);
 }
 
