@@ -47,7 +47,9 @@ internal sealed class ValidationDocumentationFixture(ValidationRepository reposi
                 configuration = "Debug", sourceRevision = revision, sourceTree = tree
             } }
         }));
-        foreach (var owner in owners)
+        // Keep the complete project graph as provenance, but do not author pages
+        // for platform implementations excluded from the documentation catalog.
+        foreach (var owner in owners.Where(owner => !owner.path.StartsWith("platforms/", StringComparison.Ordinal)))
             Write("content/en/" + owner.name + ".md", "---\nuid: " + owner.entry + "\nkind: project\nowners: [" + owner.name
                 + "]\napiSurface: source-clr\n---\n# " + owner.name + "\n\nRead this owner's contract.\n");
     }

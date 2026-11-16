@@ -719,7 +719,7 @@ public sealed class ValidationPlanningTests
         repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
             "<PropertyGroup><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
             + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
-        const string C_OWNER = "platforms/Fixture/editor/Product/Product.csproj";
+        const string C_OWNER = "src/Fixture/Product/Product.csproj";
         repository.Write(C_OWNER, ValidationRepository.Project("<PropertyGroup><InnoProductId>editor</InnoProductId><InnoProductTarget>"
             + (matchingTarget ? "fixture-target" : "foreign-target") + "</InnoProductTarget></PropertyGroup>"));
         repository.Git("add", ".");

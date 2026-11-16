@@ -17,7 +17,7 @@ public sealed class ValidationDocumentationInputTests
     public async Task EmptyForeignSurfaceRetainsSourceProofWithoutRestoringOrBuildingTheProduct()
     {
         using var repository = new ValidationRepository();
-        const string C_FOREIGN = "platforms/Foreign/player/Foreign.Player/Foreign.Player.csproj";
+        const string C_FOREIGN = "src/Foreign/Foreign.Player/Foreign.Player.csproj";
         repository.Write("Product.props", "<Project />");
         repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
             "<PropertyGroup><InnoDevelopmentTarget>host-fixture</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
@@ -28,7 +28,7 @@ public sealed class ValidationDocumentationInputTests
         repository.Git("commit", "-m", "Declare the foreign source-only product boundary");
         var docs = new ValidationDocumentationFixture(repository);
         docs.Initialize();
-        repository.Write("platforms/Foreign/player/Foreign.Player/Entry.cs", "namespace Foreign; internal static class Entry { }");
+        repository.Write("src/Foreign/Foreign.Player/Entry.cs", "namespace Foreign; internal static class Entry { }");
         // Retain the fixture's existing behavioral consumer while this test executes only
         // the source-inspection obligations, just as the foreign-boundary planning fixture does.
         repository.Write("src/Example/Changed.cs", "namespace Example; internal sealed class Changed { }");
