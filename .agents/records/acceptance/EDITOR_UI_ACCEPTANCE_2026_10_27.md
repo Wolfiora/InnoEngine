@@ -1,6 +1,6 @@
 # Editor UI acceptance — 2026-10-27
 
-[Current acceptance](current.md) · [Architecture](../../../docs/architecture/editor-ui.md) · [Implementation ledger](../history/EDITOR_UI_IMPLEMENTATION_PLAN.md)
+[Current acceptance](current.md) · [Architecture](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/editor-ui.md) · [Implementation ledger](../history/EDITOR_UI_IMPLEMENTATION_PLAN.md)
 
 ## Scope and conclusion
 

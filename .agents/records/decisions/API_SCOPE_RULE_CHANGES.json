@@ -1,0 +1,68 @@
+{
+  "approval": "Explicit user instructions: cross-platform documentation; Engine API only src/ and build/.",
+  "changes": [
+    {
+      "unit": "wiki",
+      "ordinal": 4,
+      "sourceHash": "103c5e61c0f120534a56a37d455c285452c869f8e2ce24a72806cd9a1ad4f16b",
+      "previousTargetHash": "514fe3da1bab404bab0253872340f8dd6ed56cfb6a23d67b7bb36a3deb9c712c",
+      "targetHash": "f69c49e7f0c709879f599f30063db2086b783e60971508865aff02748a194ae0",
+      "before": "- Every actual csproj has one authoritative project entry, identified by source inventory and explicit owner metadata. Do not infer ownership from translated titles or filenames.",
+      "after": "- Every documented project outside platforms/ has one authoritative project entry, identified by source inventory and explicit owner metadata. Do not infer ownership from translated titles or filenames."
+    },
+    {
+      "unit": "wiki",
+      "ordinal": 5,
+      "sourceHash": "2568dc23c50d9799f22535715a1d496259248c52318d5280129d71d928a350af",
+      "previousTargetHash": "22c434b93df9572e3c794e13db54dd7e60bfaf4741d6d8214474567643dcb749",
+      "targetHash": "a77e7aac30183eb14f83cc9c085ab9821dec19ae63f8bd6eafffaa48aaaa758b",
+      "before": "- Engine project entries cover responsibility/boundaries, dependencies/initialization, all public APIs, important protected extension points for derived implementers, common workflows, compilable examples, errors/lifetimes/reload and related navigation. All backend, extern, test/fixture and non-C# API references are excluded under the approved API draft/main plan; retain useful integration guides without excluded member-reference obligations.",
+      "after": "- Engine project entries cover responsibility/boundaries, dependencies/initialization, all public APIs, important protected extension points for derived implementers, common workflows, compilable examples, errors/lifetimes/reload and related navigation. Engine API outside src/ and build/, test/fixture and non-C# API references are excluded under the approved API draft/main plan; retain useful integration guides without excluded member-reference obligations."
+    },
+    {
+      "unit": "wiki",
+      "ordinal": 7,
+      "sourceHash": "d84e481c7e94dccb3d7646f58403de71f291ddf796eb607f6762b5a8cd1d077a",
+      "previousTargetHash": "16d5667d1f48b04f59a50de917b7839d5f113d7b369539f5a131b3d70b0230be",
+      "targetHash": "8495ee4427e26bb8a6ee37d6de19f92de7513ef9419398bcb4cf6e86a8a61b5e",
+      "before": "- Adding, deleting, renaming or changing eligible APIs maintains source XML; master-to-draft synchronization updates their reference facts, fragments and derived navigation. Maintain affected Manual workflows separately on Docs draft. New projects receive their authoritative entry and coverage registration; paired PR metadata is not required.",
+      "after": "- Adding, deleting, renaming or changing eligible APIs maintains source XML; master-to-draft synchronization updates their reference facts, fragments and derived navigation. Maintain affected Manual workflows separately on Docs draft. New eligible projects receive their authoritative entry and coverage registration; paired PR metadata is not required."
+    },
+    {
+      "unit": "documentation-standard-1",
+      "ordinal": 2,
+      "sourceHash": "3ad78594488a55898157dd4797129137e2d9490d878880ac4ab400db68dc1b2c",
+      "previousTargetHash": "51fc2bb90b08ef5348ba65deb3d223b446d476c77fa393682c779b6a092753cc",
+      "targetHash": "25268c99b4275a51af3324a645d483d8bbd0dedd5c810415914d7ed2b2eec177",
+      "before": "Every actual project has one authoritative project entry and appears in its category navigation. Test-project pages explain verification scope, fixtures, prerequisites and execution rather than presenting test methods as product APIs. Current usage documentation belongs in InnoEngine.Docs; dated plans, execution records and historical acceptance remain in the owning repository's .agents/records/.",
+      "after": "Every documented project outside platforms/ has one authoritative project entry and appears in its category navigation. Test-project pages explain verification scope, fixtures, prerequisites and execution rather than presenting test methods as product APIs. Current usage documentation belongs in InnoEngine.Docs; dated plans, execution records and historical acceptance remain in the owning repository's .agents/records/."
+    },
+    {
+      "unit": "documentation-standard-2",
+      "ordinal": 2,
+      "sourceHash": "136d19292806db2f5054d6c1bd11df0679805d5c21fd298c3815a20498a801bf",
+      "previousTargetHash": "d427cc64883e16b3bd3b1146ea8229ef572562f71840f7fcc4c3c76d99520564",
+      "targetHash": "176898b6017d0a25a8e4a64a6c03d4072bf6c4b1d5a4455945606435dba7eaf2",
+      "before": "Map engine public types, constructors, members, enum values and protected members usable by external derived types individually. Signatures preserve overloads, nullability, defaults and generic constraints; types also preserve inheritance, interfaces and delegate signatures. Synthesized public record members are in scope. Under the approved API draft/main plan, all backend, extern, test/fixture and non-C# API references are excluded; eligible engine, Editor, Build/tooling and actual script-projected contracts remain in scope.",
+      "after": "Map engine public types, constructors, members, enum values and protected members usable by external derived types individually. Signatures preserve overloads, nullability, defaults and generic constraints; types also preserve inheritance, interfaces and delegate signatures. Synthesized public record members are in scope. Under the approved API draft/main plan, Engine API is limited to src/ and build/ C# owners, with tests and fixtures excluded; actual script-projected contracts remain in scope."
+    },
+    {
+      "unit": "documentation-standard-5",
+      "ordinal": 2,
+      "sourceHash": "9582c6a1e89590bebf7a314b634ae5e0ad35ff98d0d750b5f68ae3e44016e448",
+      "previousTargetHash": "b9e5c23c3f36545a5d2196c2a26abb8df2fa2af778469d2b3eb507697eaeb3c4",
+      "targetHash": "546b13605ada9ad14e78010fe2d6dde5ad44c3007df3172ec6a51d382951f46c",
+      "before": "Backend projects retain useful engine integration guidance covering initialization, ownership, callbacks, threads and shutdown. Their type/member references, extern, tests/fixtures and non-C# API references are excluded under the approved API draft/main plan. Derive scope from the actual project inventory without a second project list. Eligible API includes resolve within the selected snapshot; cycles and path escapes fail, and moves repair incoming anchors. Native correctness, implementation tests, deployment validation and legal provenance remain required.",
+      "after": "Backend projects retain useful engine integration guidance covering initialization, ownership, callbacks, threads and shutdown. Engine API is limited to src/ and build/; backend type/member references, tools, entries, platforms, extern, tests/fixtures and non-C# API references are excluded under the approved API draft/main plan. Derive scope from the actual project inventory without a second project list. Eligible API includes resolve within the selected snapshot; cycles and path escapes fail, and moves repair incoming anchors. Native correctness, implementation tests, deployment validation and legal provenance remain required."
+    },
+    {
+      "unit": "documentation-standard-6",
+      "ordinal": 6,
+      "sourceHash": "a9ca4f5ff5cefd378615f369f1872e4145ecafa56f49de0e0819da0394886a4a",
+      "previousTargetHash": "c98618600515c0440f867d8337b7b7cde42aa4ec4ee950cf88e839c1a239bd39",
+      "targetHash": "f63c773829fb474f8dc34e9b7196c88ef8c65a4e8f7154a38f3e17bb30fb940d",
+      "before": "With an SDK selected, API models enumerate actual Compile items and conditional symbols. Selected engine generated types, nested types and partial members enter the same inventory; obj or Generated placement alone is not an exclusion. All backend, extern, test/fixture and non-C# API references are excluded, and other targets' unselected generated files are outside the current contract. Documentation scope does not disable extraction capabilities needed by architecture or ABI tests. Extraction does not execute Roslyn source generators, replace post-generation assembly boundary checks or verify every product configuration.",
+      "after": "With an SDK selected, API models enumerate actual Compile items and conditional symbols. Selected engine generated types, nested types and partial members enter the same inventory; obj or Generated placement alone is not an exclusion. Engine API outside src/ and build/, test/fixture and non-C# API references are excluded, and other targets' unselected generated files are outside the current contract. Documentation scope does not disable extraction capabilities needed by architecture or ABI tests. Extraction does not execute Roslyn source generators, replace post-generation assembly boundary checks or verify every product configuration."
+    }
+  ]
+}

@@ -28,8 +28,11 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
     $accepted = $false
     $diagnostic = ''
     try {
-        $null = & (Join-Path $PSScriptRoot 'Test-ValidationReport.ps1') -PlanPath $planFile -ResultsPath $resultFile `
+        $receipt = & (Join-Path $PSScriptRoot 'Test-ValidationReport.ps1') -PlanPath $planFile -ResultsPath $resultFile `
             -ExpectedCommit $state.expectedCommit -JobConclusion $state.conclusion
+        if ($null -ne $state.plan.documentation -and $receipt.documentation.snapshot -cne $state.plan.documentation.snapshot) {
+            throw 'Reconciliation lost the explicitly selected documentation snapshot.'
+        }
         $accepted = $true
     } catch { $diagnostic = $_.Exception.Message }
     $cases.Add(@{ name = $Name; expectedAcceptance = $Accept; accepted = $accepted; diagnostic = $diagnostic })
@@ -68,9 +71,35 @@ Invoke-Case 'compiled-malformed-dependency-inputs' {
     $s.evidence.results[0].dependencyIdentity = 'version-only'
 } $false
 Invoke-Case 'failed-prerequisite' { param($s) $s.plan.checks[0].prerequisites = @('missing-build') } $false
+foreach ($kind in @('documentation-api', 'documentation-examples')) {
+    Invoke-Case "$kind-complete" {
+        param($s)
+        $s.plan.checks[0].kind = $kind
+        $s.plan.checks[0].inputs = @('@src/Example/Example.csproj', '@tooling')
+        $s.evidence.results[0].outputs = @{ 'bin/example' = $hash }
+        $s.evidence.results[0].dependencyIdentity = $hash
+    } $true
+    Invoke-Case "$kind-empty-outputs" {
+        param($s)
+        $s.plan.checks[0].kind = $kind
+        $s.plan.checks[0].inputs = @('@src/Example/Example.csproj', '@tooling')
+        $s.evidence.results[0].dependencyIdentity = $hash
+    } $false
+}
 Invoke-Case 'explicit-inapplicable' {
     param($s)
     $s.plan.checks += @{ id = 'foreign-device'; kind = 'products'; exclusion = 'Requires another explicit device environment.' }
     $s.evidence.results += @{ id = 'foreign-device'; status = 'NotApplicable'; inputIdentity = $hash; outputs = $null }
 } $true
+function Add-DocumentationSnapshot($State) {
+    $State.plan.documentation = @{ sourceTree = 'c' * 40; snapshot = 'd' * 64 }
+    $State.plan.checks += @{ id = 'documentation'; kind = 'documentation'; exclusion = $null; documentation = @{ contentIdentity = 'e' * 64 }; prerequisites = @() }
+    $State.evidence.results += @{ id = 'documentation'; status = 'Passed'; inputIdentity = $hash; outputs = @{} }
+}
+Invoke-Case 'selected-documentation-needs-no-paired-pr' { param($s) Add-DocumentationSnapshot $s } $true
+Invoke-Case 'missing-documentation-check' { param($s) Add-DocumentationSnapshot $s; $s.plan.checks = @($s.plan.checks[0]); $s.evidence.results = @($s.evidence.results[0]) } $false
+foreach ($field in @('sourceTree', 'snapshot')) {
+    Invoke-Case "invalid-documentation-$field" { param($s) Add-DocumentationSnapshot $s; $s.plan.documentation[$field] = 'invalid' } $false
+}
+Invoke-Case 'invalid-documentation-content' { param($s) Add-DocumentationSnapshot $s; $s.plan.checks[1].documentation.contentIdentity = 'invalid' } $false
 Write-Output "Passed $($cases.Count) aggregate contract cases. Evidence: $run"

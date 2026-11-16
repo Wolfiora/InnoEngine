@@ -1,42 +1,42 @@
-# validation
+# Validation
 
-按完整规则单元加载；路由与来源见 [规则登记](coverage.json)。
+Load complete rule units. The [registry](coverage.json) owns routing and provenance.
 
 <!-- rule-unit: tests -->
 <a id="tests"></a>
-## 8. 测试边界
+## 8. Test boundaries
 
-- 允许修改本任务必需的回归、公共契约与验证工具测试；保持原有断言和失败场景。禁止无关测试重写、弱化断言、测试专用生产入口、InternalsVisibleTo 或反射穿透。
-- 测试范围来自实际影响图、行为契约和执行前提；不能用测试过滤掩盖原生构建依赖。
+- Changes to regression, public-contract and validation-tool tests required by the task are permitted. Preserve existing assertions and failure scenarios. Unrelated test rewrites, weaker assertions, production entry points only for tests, InternalsVisibleTo and reflection bypasses are prohibited.
+- Select tests from the actual impact graph, behavioral contracts and execution prerequisites. Test filters must not conceal native build dependencies.
 <!-- /rule-unit: tests -->
 
 <!-- rule-unit: compilation -->
 <a id="compilation"></a>
-## 9. 编译安全约束
-- 每次对话结束前，当前改动目标范围内（非 tests 以外）不应引入可见编译错误。
-- 发现潜在编译风险时，要在提交说明中显式标注。
+## 9. Compilation safety
+- Before ending a conversation, do not leave visible compilation errors introduced within the changed target scope, including non-test code.
+- Explicitly identify potential compilation risks in the delivery description.
 <!-- /rule-unit: compilation -->
 
 <!-- rule-unit: completion -->
 <a id="completion"></a>
-## 19. 新系统完成标准
-- 新功能必须先定义清晰的程序集/领域边界与最小公开入口，再实现具体 UI 或平台适配；平台、存储、编译器和 presentation 通过可替换契约隔离，禁止把临时流程堆入 Panel、Application 或静态工具类。
-- 扩展发现优先由明确的基类或接口完成：当继承/接口本身已完整表达“这是一个扩展”且不需要额外声明数据时，禁止再增加无参数 marker Attribute。Attribute 只用于携带稳定 ID、顺序、作用域、允许多实例等无法由类型关系表达的参数或显式可选语义；不得让继承与无参数 Attribute 成为必须同步的双重注册条件。
-- 可发现扩展的不可变 Stable ID 必须作为参数写入该扩展协议的 Attribute，并由 Registry 在构造实例前读取；禁止要求扩展通过 `abstract`/`virtual`/`override` 实例成员返回编译期常量 ID，也禁止 Attribute ID 与实例 ID 双重声明。基类或接口只表达行为契约；Attribute 承载 ID、顺序、作用域、允许多实例等不可变发现元数据。只有确实由运行时状态生成且不参与类型发现或持久路由的身份，才可以是实例属性。
-- 默认一次完成源码、调用方、项目引用、解决方案归类、公开 XML、Wiki、成功/失败/边界测试与必要构建验证。不得留下占位实现、静默 fallback、重复协议或“以后再重构”的妥协路径。
-- 公开 API 必须少而完整；能由引擎可靠推导的信息不得要求用户创建 companion asset、重复填写清单或修改无关调用方。新增公开 API 时必须在交付说明中列出其必要性与稳定语义。
-- 绝对禁止使用 `InternalsVisibleTo`、测试专用后门、反射穿透或扩大 `internal` 成员可见性来简化测试。测试只能通过真实公开契约和可替换 public boundary 验证行为。
-- 新项目和功能文件必须按职责归类，文件名与主类型一致；一个文件只承载紧密相关的契约或实现，不使用含义模糊的 helper/internal 目录，也不把互不相关的类型收进巨型文件。
+## 19. Completion requirements for new systems
+- Define clear assembly/domain boundaries and minimal public entry points before implementing UI or platform adapters. Isolate platforms, storage, compilers and presentation behind replaceable contracts. Do not accumulate temporary workflows in Panel, Application or static utility classes.
+- Prefer explicit base classes or interfaces for extension discovery. When inheritance or an interface completely identifies an extension and no additional declaration data is required, do not add a parameterless marker Attribute. Attributes carry parameters or explicitly optional semantics that type relationships cannot express, such as stable IDs, ordering, scope and multiple-instance permission. Never make inheritance and a parameterless Attribute two registration conditions that must be synchronized.
+- Put a discoverable extension's immutable Stable ID in its protocol Attribute and read it in the Registry before constructing an instance. Do not require abstract/virtual/override instance members to return compile-time constant IDs, or declare an ID both on an Attribute and an instance. Base classes and interfaces express behavior; Attributes carry immutable discovery metadata such as ID, ordering, scope and multiple-instance permission. Only identities genuinely generated from runtime state, and excluded from type discovery and persistent routing, may be instance properties.
+- Complete source, callers, project references, solution classification, public XML, documentation, success/failure/boundary tests and necessary build verification together by default. Do not leave placeholders, silent fallbacks, duplicate protocols or compromises deferred to a future refactor.
+- Keep public APIs small and complete. Do not ask users to create companion assets, repeat manifests or change unrelated callers for information the engine can reliably derive. Explain each new public API's necessity and stable semantics in the delivery description.
+- InternalsVisibleTo, test backdoors, reflection bypasses and widening internal member visibility to simplify tests are strictly prohibited. Test behavior through real public contracts and replaceable public boundaries only.
+- Classify new projects and feature files by responsibility; match each filename to its primary type. A file contains closely related contracts or implementation only. Avoid ambiguous helper/internal directories and giant files containing unrelated types.
 <!-- /rule-unit: completion -->
 
 <!-- rule-unit: review -->
 <a id="review"></a>
-## 30. 完成前的深层自查与交付说明
+## 30. Semantic review and delivery
 
-- 不得在 `BindGen-CS` 仓库创建或保留 `Agent.md`、`AGENTS.md` 及其大小写变体；引擎的代理工作约束只记录在引擎自己的规范中。
-- 每次交付前必须主动自问：当前实现是否达到职责清楚、代码整洁、真实解耦且易于扩展的要求。检查必须深入实际执行链、依赖方向、输入来源、失败处理、并发协议和资源生命周期；不得仅凭目录、类型名或接口数量判断架构质量。
-- 检查新增或修改的基础能力是否能够直接复用 Core IO、Events、Identity、Serialization 等既有契约；在不破坏领域边界的前提下消除重复协议、平行管理器和重复实现。
-- 通过真实调用方、可替换边界及适用验证确认扩展能力。新增 backend 或平台时需要修改哪些 owner，必须能够从实际代码说明；不得用未执行的测试或抽象声明代替证据。
-- 每次最终交付必须简要说明上述自查结果、实际验证证据及尚未解决或无法执行的事项。没有完成验证时明确说明，不得宣称已经达到完美或全部通过。
-- 每次准备结束执行前，逐项复核本轮 issue 的实际解决条件、获批计划的功能与验收、架构清晰度、基础能力复用及新增回归。仍有可推进的工作时必须更新剩余执行计划并自动继续，不重复请求批准；仅在全部适用工作完成或明确记录无法独立解除的外部阻塞后交付，不能以阶段性进展或 CI 通过代替整个计划完成。
+- Do not create or retain Agent.md, AGENTS.md or case variants in the BindGen-CS repository. Engine agent requirements belong only in the engine's own rules.
+- Before every delivery, actively assess clear responsibilities, clean code, actual decoupling and extensibility. Inspect execution paths, dependency direction, input authority, failure handling, concurrency protocols and resource lifetimes. Directory names, type names and interface counts do not establish architectural quality.
+- Check whether new or changed foundational capabilities can directly reuse existing Core IO, Events, Identity, Serialization and other contracts. Eliminate duplicate protocols, parallel managers and implementations while preserving domain boundaries.
+- Verify extensibility through real callers, replaceable boundaries and applicable validation. Explain from actual code which owners must change to add a backend or platform. Unexecuted tests and abstract declarations are not evidence.
+- Every final delivery must briefly state this review's findings, actual validation evidence and unresolved or unavailable work. If verification is incomplete, say so; do not claim perfection or that everything passed.
+- Before ending execution, reconcile the issue's actual resolution criteria, all approved implementation and acceptance requirements, architectural clarity, foundational reuse and new regressions. When actionable work remains, update the remaining execution plan and continue automatically without requesting repeated approval. Deliver only after all applicable work is complete or external blockers that cannot be resolved independently are explicitly recorded. Stage progress or passing CI does not establish completion of the entire plan.
 <!-- /rule-unit: review -->

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,9 +39,26 @@ internal static class ValidationEnvironment
         string hostRoot = Path.GetDirectoryName(sdk.hostPath)!;
         var files = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
         {
-            sdk.hostPath, sdkRoot, RuntimeEnvironment.GetRuntimeDirectory(),
-            Path.GetDirectoryName(typeof(ValidationCommand).Assembly.Location)!
+            sdk.hostPath, sdkRoot, RuntimeEnvironment.GetRuntimeDirectory()
         };
+        // The CLI output directory can also contain Editor, backend and documentation assemblies.
+        // Only this tool's actual assembly-reference closure is an execution-environment input.
+        var pending = new Queue<Assembly>();
+        var examined = new HashSet<Assembly>();
+        pending.Enqueue(typeof(ValidationCommand).Assembly);
+        while (pending.TryDequeue(out Assembly? assembly))
+        {
+            cancellation.ThrowIfCancellationRequested();
+            if (!examined.Add(assembly))
+                continue;
+            if (assembly.IsDynamic || string.IsNullOrWhiteSpace(assembly.Location))
+                throw new InvalidDataException("Validation requires file-backed tool dependencies: " + assembly.FullName);
+            files.Add(assembly.Location);
+            AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(assembly)
+                ?? throw new InvalidDataException("Validation dependency has no loading context: " + assembly.FullName);
+            foreach (AssemblyName dependency in assembly.GetReferencedAssemblies())
+                pending.Enqueue(context.LoadFromAssemblyName(dependency));
+        }
         foreach (string directory in new[] { "shared", "host" })
             if (Directory.Exists(Path.Combine(hostRoot, directory)))
                 files.Add(Path.Combine(hostRoot, directory));

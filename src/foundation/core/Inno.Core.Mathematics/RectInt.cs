@@ -146,7 +146,7 @@ public struct RectInt : IEquatable<RectInt>
     public bool Contains(Vector2Int p) => Contains(p.x, p.y);
 
     /// <summary>
-    /// Creates a rectangle from inclusive minimum and maximum corner values.
+    /// Creates a rectangle from minimum and maximum boundaries; point containment excludes the maximum boundary.
     /// </summary>
     /// <param name="min">
     /// The min consumed by from min max; ownership remains with the caller unless explicitly stated otherwise.

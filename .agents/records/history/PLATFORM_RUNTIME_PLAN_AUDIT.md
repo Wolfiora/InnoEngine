@@ -1,6 +1,6 @@
 # 完整 Plan 逐项核对
 
-[架构索引](../../../docs/architecture/README.md) · [批准的 Plan](PLATFORM_RUNTIME_REFACTOR_PLAN.md) · [验收报告](PLATFORM_RUNTIME_ACCEPTANCE.md) · [当前架构](../../../docs/architecture/platform-and-products.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [批准的 Plan](PLATFORM_RUNTIME_REFACTOR_PLAN.md) · [验收报告](PLATFORM_RUNTIME_ACCEPTANCE.md) · [当前架构](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/platform-and-products.md)
 
 本页将批准的执行规格与当前实现、实际证据对应起来。目录树中的未来节点、生成物和产物不能作为
 尚未实现的生产源码；同样，测试通过不能代替没有执行过的平台实机验收。

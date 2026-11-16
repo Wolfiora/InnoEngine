@@ -1,6 +1,6 @@
 # 新项目默认 Editor 布局验收
 
-[Issue #47](https://github.com/Wolfiora/InnoEngine/issues/47) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26) · [执行台账](../history/EDITOR_UI_CLOSURE_PLAN.md) · [Host Wiki](../../../docs/modules/editor/Inno.Editor.Hosting.md)
+[Issue #47](https://github.com/Wolfiora/InnoEngine/issues/47) · [PR #26](https://github.com/Wolfiora/InnoEngine/pull/26) · [执行台账](../history/EDITOR_UI_CLOSURE_PLAN.md) · [Host Wiki](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/editor/Inno.Editor.Hosting.md)
 
 ## 结果与范围
 

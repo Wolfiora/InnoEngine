@@ -1,6 +1,6 @@
 # 提交前再次核查与补充修复（2026-10-02）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [上一轮八项修复](PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md) · [当前问题入口](../open-items.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [上一轮八项修复](PRECOMMIT_REPAIR_ACCEPTANCE_2026_10_02.md) · [当前问题入口](../open-items.md)
 
 后续的目录安全、导出退休、输入边界与封装检查见[最新全范围复核](PRECOMMIT_FULL_AUDIT_2026_10_02.md)。
 本页统计保留为该轮验证证据。
@@ -93,8 +93,8 @@ Foundation、Shell、Player Runtime 仍不通过 `OperatingSystem.IsBrowser` 决
 软件渲染记录了 316 条重复 warning（310 条 WebGL capability 查询、2 条 ScriptProcessorNode 弃用、4 条 driver 性能提示），
 它们继续属于下方已知限制，没有将 error 为 0 描述成 warning 为 0。
 
-截图：[白天](../../../docs/architecture/images/flappybird-recheck-day-2026-10-02.png)、[夜间](../../../docs/architecture/images/flappybird-recheck-night-2026-10-02.png)、
-[Score/Best 1](../../../docs/architecture/images/flappybird-recheck-game-over-2026-10-02.png)。
+截图：[白天](visual-evidence/flappybird-recheck-day-2026-10-02.png)、[夜间](visual-evidence/flappybird-recheck-night-2026-10-02.png)、
+[Score/Best 1](visual-evidence/flappybird-recheck-game-over-2026-10-02.png)。
 
 首次 Support Pack 验证被 Windows PowerShell 5 的 native stderr/Stop 处理打断：
 HarfBuzz 上游 CMake 警告被测试脚本当作终止错误。改用 PowerShell 7、按进程 exit code 判定后继续成功。

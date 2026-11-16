@@ -1,6 +1,6 @@
 # Issues 与审查记录
 
-[Wiki 首页](../../../../docs/README.md) · [架构治理](../../../../docs/architecture/README.md)
+[Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [架构治理](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md)
 
 本目录保存历史问题编号、审查原文、设计决策与整改证据。
 当前 C01–C18 收口状态见[2026-09-07 续轮报告](../ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)；

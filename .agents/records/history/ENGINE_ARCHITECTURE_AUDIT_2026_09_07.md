@@ -1,15 +1,15 @@
 # 2026-09-07 至 09-08 架构审计记录（历史）
 
-[当前项目总览](../../../docs/architecture/overview.md) · [架构索引](../../../docs/architecture/README.md)
+[当前项目总览](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md)
 
 本页保留早期审计与收口讨论，不作为当前目录、API 或验收结果。当前源码边界与本轮证据请从上面的总览入口查阅。
 
 # InnoEngine 完整项目架构 Overview 与本体收口方案
 
-[架构治理](../../../docs/architecture/README.md) · [Identity、可恢复引用与热重载标准](../../../docs/architecture/identity-and-reload.md) · [Wiki 首页](../../../docs/README.md) · [当前问题入口](../open-items.md)
+[架构治理](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Identity、可恢复引用与热重载标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [当前问题入口](../open-items.md)
 
 > 当前源码归属更新：2026-10-05。最新平台、托管部署、模块来源、Native 与 Build 边界见
-> [平台运行时架构](../../../docs/architecture/platform-and-products.md)，本次验证见
+> [平台运行时架构](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/platform-and-products.md)，本次验证见
 > [平台运行时验收](PLATFORM_RUNTIME_ACCEPTANCE.md)。下方 2026-09 审计段保留为历史记录，
 > 其中的测试数量、旧目录与实施状态不作为当前实现声明。
 
@@ -423,7 +423,7 @@ InnoEngine
 2026-10-02 共享宿主调整：Player Runtime 通过策略契约组合模块激活、帧调度、线程、日志与存储；
 共享 Foundation/Shell/Player 不判断 Browser。每组件只有一个 Native 项目，目标 ABI 使用 BGCS
 profile 和独立输出。所有构建、清理、Shader、Support Pack 和架构检查由一个 Build CLI 组合；
-工具链和验证器均为库。当前边界见 [Web 宿主架构](../../../docs/architecture/web-player.md)，
+工具链和验证器均为库。当前边界见 [Web 宿主架构](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/web-player.md)，
 实际验证结果见 [本轮验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md)。
 
 测试项目完整按领域归属：
@@ -907,7 +907,7 @@ Dispose 必须停止接受新工作、取消可取消工作、等待已接受工
 
 ### 9.3 Hot reload
 
-所有可热重载领域统一遵循 [Identity、可恢复引用与热重载强制标准](../../../docs/architecture/identity-and-reload.md)：
+所有可热重载领域统一遵循 [Identity、可恢复引用与热重载强制标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md)：
 
 1. 从 immutable source/generation 构建完整 candidate。
 2. 在 candidate 内验证 Stable ID、依赖、资源与 capability。

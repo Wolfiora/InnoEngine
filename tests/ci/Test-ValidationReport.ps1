@@ -22,6 +22,17 @@ if ($plan.tree -cnotmatch '^[0-9a-f]{64}$' -or $evidence.tree -cne $plan.tree -o
 }
 $checks = @($plan.checks)
 $results = @($evidence.results)
+$documentation = $null
+if ($null -ne $plan.documentation) {
+    $catalogChecks = @($checks | Where-Object { $_.id -ceq 'documentation' -and $_.kind -ceq 'documentation' -and $null -eq $_.exclusion })
+    if ($catalogChecks.Count -ne 1 -or $plan.documentation.sourceTree -cnotmatch '^[a-f0-9]{40}$' `
+        -or $plan.documentation.snapshot -cnotmatch '^[a-f0-9]{64}$' `
+        -or $catalogChecks[0].documentation.contentIdentity -cnotmatch '^[a-f0-9]{64}$') {
+        throw 'Explicit documentation validation requires a complete selected snapshot identity.'
+    }
+    $documentation = [pscustomobject]@{ sourceTree = $plan.documentation.sourceTree; snapshot = $plan.documentation.snapshot;
+        contentIdentity = $catalogChecks[0].documentation.contentIdentity }
+}
 if ($checks.Count -eq 0 -or @($checks | Where-Object { $null -eq $_.exclusion }).Count -eq 0 -or $checks.Count -ne $results.Count) {
     throw 'The required plan is empty or results are missing or unplanned.'
 }
@@ -41,11 +52,11 @@ foreach ($check in $checks) {
     } else {
         if ($null -eq $result.outputs) { throw "Required output evidence is missing: $($check.id)" }
         $compiled = $check.kind -cin @('build', 'test', 'api', 'products', 'support-pack', 'release-bundle') -or
-            ($check.kind -ceq 'wiki' -and @($check.inputs | Where-Object { $_ -like '@*' -and $_ -cne '@tooling' }).Count -gt 0)
+            ($check.kind -cin @('documentation-api', 'documentation-examples') -and @($check.inputs | Where-Object { $_ -like '@*' -and $_ -cne '@tooling' -and $_ -cne '@native-sources' }).Count -gt 0)
         if ($compiled -and $result.dependencyIdentity -cnotmatch '^[0-9a-f]{64}$') {
             throw "Restored dependency evidence is missing: $($check.id)"
         }
-        if ($check.kind -in @('build', 'test', 'api', 'products') -and @($result.outputs.PSObject.Properties).Count -eq 0) {
+        if ($compiled -and @($result.outputs.PSObject.Properties).Count -eq 0) {
             throw "Compiled output discovery is empty: $($check.id)"
         }
         foreach ($output in $result.outputs.PSObject.Properties) {
@@ -59,6 +70,14 @@ foreach ($check in $checks) {
         }
     }
 }
+$sourceApi = if ($null -ne $documentation) {
+    @( & (Join-Path $PSScriptRoot 'Get-DocumentationSourceReceipt.ps1') -Plan $plan -Evidence $evidence `
+        -Context $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+} else { @() }
+$sourceExamples = if ($null -ne $documentation) {
+    @( & (Join-Path $PSScriptRoot 'Get-DocumentationExampleReceipt.ps1') -Plan $plan -Evidence $evidence `
+        -Context $documentation -Directory (Split-Path ([IO.Path]::GetFullPath($PlanPath)) -Parent))
+} else { @() }
 [pscustomobject]@{
     commit = $ExpectedCommit
     tree = $plan.tree
@@ -66,6 +85,9 @@ foreach ($check in $checks) {
     full = [bool]$plan.full
     planIdentity = $identity
     resultsIdentity = (Get-FileHash -LiteralPath $ResultsPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    documentation = $documentation
+    sourceApi = @($sourceApi)
+    sourceExamples = @($sourceExamples)
     required = @($checks | Where-Object { $null -eq $_.exclusion }).Count
     passed = @($results | Where-Object status -CEQ 'Passed').Count
     reused = @($results | Where-Object status -CEQ 'Reused').Count

@@ -276,7 +276,7 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 b
     ) => (a - b).Length();
     /// <summary>
-    /// Interpolates linearly between two values without clamping the interpolation factor.
+    /// Interpolates linearly after clamping the interpolation factor to [0, 1].
     /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.
@@ -321,11 +321,13 @@ public struct Vector3 : IEquatable<Vector3>
         dir - 2f * Dot(dir, normal) * normal;
     
     /// <summary>
-    /// The column vector transform. It performs as below m * v (not v * m).
+    /// Transforms a position as a column vector with an implicit homogeneous coordinate of one.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>
+    /// The transformed XYZ components, including translation. No perspective divide is performed.
+    /// </returns>
     /// <param name="position">
-    /// The position consumed by transform; ownership remains with the caller unless explicitly stated otherwise.
+    /// The input position.
     /// </param>
     /// <param name="matrix">
     /// The transformation matrix applied to the supplied value.
@@ -355,7 +357,7 @@ public struct Vector3 : IEquatable<Vector3>
     }
 
     /// <summary>
-    /// Transforms a normal by a matrix (ignores translation).
+    /// Applies the matrix's upper-left 3-by-3 linear transform without translation.
     /// </summary>
     /// <param name="normal">
     /// The surface normal used by the operation.
@@ -364,7 +366,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// The transformation matrix applied to the supplied value.
     /// </param>
     /// <returns>
-    /// The validated vector3 that represents the completed operation.
+    /// The transformed components without normalization or an automatically computed inverse transpose.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector3 TransformNormal(

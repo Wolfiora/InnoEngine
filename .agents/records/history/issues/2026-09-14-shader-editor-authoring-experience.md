@@ -1,6 +1,6 @@
 # Shader Editor 创作体验与函数库模型收口
 
-[Issues 索引](README.md) · [Shader Editor](../../../../docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md) · [Shader 模型](../../../../docs/modules/rendering/Inno.Rendering.Shaders.md)
+[Issues 索引](README.md) · [Shader Editor](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md) · [Shader 模型](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/rendering/Inno.Rendering.Shaders.md)
 
 ## 目标与不变量
 

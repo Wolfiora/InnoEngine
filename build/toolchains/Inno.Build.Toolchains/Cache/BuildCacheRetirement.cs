@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.IO;
@@ -125,13 +126,17 @@ internal static class BuildCacheRetirement
             {
                 bounded.Token.ThrowIfCancellationRequested();
                 try { owner.RetireMetadata(bounded.Token); }
-                catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException)
+                catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException
+                    or InvalidDataException or JsonException)
                 {
+                    // Payload retirement has already committed. Keep invalid metadata and report
+                    // the failure without losing completed work or another owner's cleanup result.
                     failures[owner.directory] = failure.Message;
                 }
             }
             try { BuildCacheInventoryProgress.PruneRetired(workspace, owners, bounded.Token); }
-            catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException)
+            catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException
+                or InvalidDataException or JsonException)
             {
                 failures[Path.Combine(workspace, "artifacts", "cache-owners", "inventory")] = failure.Message;
             }

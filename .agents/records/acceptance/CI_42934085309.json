@@ -1,0 +1,91 @@
+{
+  "run": "https://github.com/Wolfiora/InnoEngine/actions/runs/42934085309",
+  "input": "06433bd4d3dcb323694b84c0431d5024bd6aaed1",
+  "artifactSha256": "0f64d4090e43220c4485e8718b381f2f1044168393760747e96be63a53127f09",
+  "platform": "macos-15",
+  "statuses": [
+    {
+      "status": "Blocked",
+      "count": 3
+    },
+    {
+      "status": "Failed",
+      "count": 3
+    },
+    {
+      "status": "NotApplicable",
+      "count": 5
+    },
+    {
+      "status": "Passed",
+      "count": 327
+    }
+  ],
+  "unsuccessful": [
+    {
+      "id": "documentation",
+      "status": "Failed",
+      "detail": "Documentation ownership, content or links failed."
+    },
+    {
+      "id": "wiki:managed",
+      "status": "Blocked",
+      "detail": "Required prerequisites did not pass: documentation (Failed). Dependent work was not executed."
+    },
+    {
+      "id": "test-execution:managed",
+      "status": "Failed",
+      "detail": "The test union did not complete successfully. See managed-tests.log for the first failure."
+    },
+    {
+      "id": "test:tests/tooling/Inno.Tooling.Validation.Tests/Inno.Tooling.Validation.Tests.csproj",
+      "status": "Failed",
+      "detail": "Test failed: Inno.Tooling.Validation.Tests.ValidationCompletionTests.ChangedUnionRootsRecompileWithoutCleaningUnchangedDependencies. See _iad20-gt1026-eecccab0-9ee4-4321-bbcb-f3ae518a0ab8-F6D51D926449_2026-11-11_01_10_29_net10.0.trx.\nTest failed: Inno.Tooling.Validation.Tests.ValidationCompletionTests.FailedClosingReadCannotCertifyOtherwisePassingIntermediateResults. See _iad20-gt1026-eecccab0-9ee4-4321-bbcb-f3ae518a0ab8-F6D51D926449_2026-11-11_01_10_29_net10.0.trx.\nTest failed: Inno.Tooling.Validation.Tests.ValidationCompletionTests.ChangedPropertyVariantsCannotReuseAnUncleanedOutput. See _iad20-gt1026-eecccab0-9ee4-4321-bbcb-f3ae518a0ab8-F6D51D926449_2026-11-11_01_10_29_net10.0.trx.\nTest failed: Inno.Tooling.Validation.Tests.ValidationCompletionTests.ChangedRootsCompileReferencesSelectedDuringBuild. See _iad20-gt1026-eecccab0-9ee4-4321-bbcb-f3ae518a0ab8-F6D51D926449_2026-11-11_01_10_29_net10.0.trx."
+    },
+    {
+      "id": "wiki:native",
+      "status": "Blocked",
+      "detail": "Required prerequisites did not pass: documentation (Failed). Dependent work was not executed."
+    },
+    {
+      "id": "release-bundle",
+      "status": "Blocked",
+      "detail": "Required prerequisites did not pass: documentation (Failed), test:tests/tooling/Inno.Tooling.Validation.Tests/Inno.Tooling.Validation.Tests.csproj (Failed), wiki:managed (Blocked), wiki:native (Blocked). Dependent work was not executed."
+    }
+  ],
+  "largestRecordedChecks": [
+    {
+      "id": "build:backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj",
+      "seconds": 3062.4918652
+    },
+    {
+      "id": "test:backends/FileSystem/tests/Inno.Adapter.Content.FileSystem.Tests/Inno.Adapter.Content.FileSystem.Tests.csproj",
+      "seconds": 2207.2986857
+    },
+    {
+      "id": "test-execution:managed",
+      "seconds": 2205.715609
+    },
+    {
+      "id": "native-hot-builds",
+      "seconds": 2042.3066158
+    },
+    {
+      "id": "test:backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/Inno.Adapter.Rendering.Bgfx.Tests.csproj",
+      "seconds": 1774.2982621
+    },
+    {
+      "id": "release-build:entry/InnoEngine.Editor/InnoEngine.Editor.csproj",
+      "seconds": 1109.8083303
+    },
+    {
+      "id": "support-pack",
+      "seconds": 553.4120345
+    },
+    {
+      "id": "build:backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Inno.Build.Toolchains.Bgfx.csproj",
+      "seconds": 203.2900613
+    }
+  ],
+  "caveat": "Union preparation and union test time are assigned to the check that initiates them; these are not per-project execution costs."
+}

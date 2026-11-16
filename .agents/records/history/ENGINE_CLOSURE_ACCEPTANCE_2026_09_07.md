@@ -2,7 +2,7 @@
 
 > 本页保留前轮证据；当前状态见[续轮收口报告](ENGINE_CLOSURE_CONTINUATION_2026_09_07.md)。后续已实现 Subsystem 启动政策、启动失败 owner、Play 退休与跨 root 资产 IO 共享，整项未完成范围仍明确列出。
 
-[架构索引](../../../docs/architecture/README.md) · [实施清单 C01–C18](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) · [Overview](../../../docs/architecture/overview.md) · [Identity / Recovery 标准](../../../docs/architecture/identity-and-reload.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [实施清单 C01–C18](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) · [Overview](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [Identity / Recovery 标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md)
 
 ## 验收结论
 

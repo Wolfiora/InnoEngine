@@ -16,8 +16,14 @@ internal sealed class AssemblyDocumentationProvider : DocumentationProvider
     private readonly Lazy<IReadOnlyDictionary<string, string>> m_members;
 
     internal AssemblyDocumentationProvider(string path)
+        : this(path, File.ReadAllBytes(path))
     {
-        byte[] document = File.ReadAllBytes(path);
+    }
+
+    internal AssemblyDocumentationProvider(
+        string path,
+        byte[] document
+    ) {
         m_members = new(() => ReadMembers(path, document));
     }
 

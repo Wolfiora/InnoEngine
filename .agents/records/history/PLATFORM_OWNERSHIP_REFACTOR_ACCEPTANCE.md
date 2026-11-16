@@ -1,6 +1,6 @@
 # 平台归属重构验收记录
 
-[架构索引](../../../docs/architecture/README.md) · [执行计划](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md) · [项目总览](../../../docs/architecture/overview.md) · [扩展指南](../../../docs/development/adding-platform.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [执行计划](PLATFORM_OWNERSHIP_REFACTOR_PLAN.md) · [项目总览](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [扩展指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md)
 
 ## 当前状态
 

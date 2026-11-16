@@ -695,16 +695,17 @@ public struct Matrix : IEquatable<Matrix>
     /// The transformation matrix applied to the supplied value.
     /// </param>
     /// <param name="scale">
-    /// The scale consumed by decompose; ownership remains with the caller unless explicitly stated otherwise.
+    /// Receives basis-column lengths, with the X sign negated for a negative determinant.
     /// </param>
     /// <param name="rotation">
-    /// The rotation applied to the supplied value.
+    /// Receives the rotation derived from normalized basis columns, or identity when a scale is too small.
     /// </param>
     /// <param name="translation">
-    /// The translation consumed by decompose; ownership remains with the caller unless explicitly stated otherwise.
+    /// Receives the last-column XYZ translation.
     /// </param>
     /// <returns>
-    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
+    /// False when a basis-column length is at most the default tolerance; otherwise true.
+    /// Success does not certify that a matrix with shear or perspective is a pure TRS transform.
     /// </returns>
     public static bool Decompose(
         Matrix m,
@@ -784,13 +785,13 @@ public struct Matrix : IEquatable<Matrix>
     }
 
     /// <summary>
-    /// Returns the inverse of a matrix. If the matrix is non-invertible, returns <see cref="identity"/>.
+    /// Returns the inverse, or identity when the absolute determinant is below the default tolerance.
     /// </summary>
     /// <param name="m">
     /// Source matrix.
     /// </param>
     /// <returns>
-    /// Inverse matrix, or <see cref="identity"/> when not invertible.
+    /// Inverse matrix, or <see cref="identity"/> when the absolute determinant is less than <see cref="MathHelper.C_TOLERANCE"/>.
     /// </returns>
     public static Matrix Invert(Matrix m)
     {

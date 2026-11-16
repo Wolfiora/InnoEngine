@@ -1,6 +1,6 @@
 # Backend 运行接入与构建成本整改验收
 
-[架构索引](../../../docs/architecture/README.md) · [执行计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md) · [平台扩展](../../../docs/development/adding-platform.md) · [Wiki 首页](../../../docs/README.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [执行计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md) · [平台扩展](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md)
 
 ## 当前状态
 

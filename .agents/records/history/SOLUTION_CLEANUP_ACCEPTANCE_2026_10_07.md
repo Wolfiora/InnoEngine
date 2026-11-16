@@ -1,6 +1,6 @@
 # Solution 覆核与架构边界验收（2026-10-07）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [项目与依赖总览](../../../docs/architecture/overview.md) · [开发规范](../../rulebook/coding.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [项目与依赖总览](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md) · [开发规范](../../rulebook/coding.md)
 
 ## 1. 范围与结论
 

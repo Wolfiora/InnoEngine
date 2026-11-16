@@ -1,6 +1,6 @@
 # Windows Editor 启动配置、还原闭包与 Viewport 移动修复
 
-[架构索引](../../../docs/architecture/README.md) · [产品启动](../../../docs/platform/PRODUCT_STARTUP.md) · [Task Hosting](../../../docs/development/build/Inno.Build.TaskHosting.md) · [ImGui SDL](../../../docs/backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [产品启动](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md) · [Task Hosting](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.TaskHosting.md) · [ImGui SDL](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/backends/ImGui/Inno.Adapter.Presentation.ImGui.Sdl3.md)
 
 ## 用户报告与根因
 

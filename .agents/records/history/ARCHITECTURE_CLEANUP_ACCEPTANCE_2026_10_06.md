@@ -1,6 +1,6 @@
 # 2026-10-06 架构整改验收
 
-[架构索引](../../../docs/architecture/README.md) · [完整执行计划](ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md) · [当前项目总览](../../../docs/architecture/overview.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [完整执行计划](ARCHITECTURE_CLEANUP_PLAN_2026_10_06.md) · [当前项目总览](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md)
 
 **A01–A08 的源码整改、当前消费者及本机必需验证已完成。** 最终 Release Solution、Debug Editor 构建均为零警告、零错误；仓库架构验证通过。Windows CoreCLR、Windows NativeAOT、Web 解释执行和 Web AOT 四条 FlappyBird 路径重新发布并实际运行。
 
@@ -197,7 +197,7 @@ Native 全链为七个 binding component、八个 native product、七个 native
 
 新内容来源只实现 `IPlayerContentSource` 并返回共同 Reader 验证的 store；注入平台 composition，不改 Asset/运行服务。新平台增加 host/frame driver、SDK toolchain、packager/validator、所需 managed compiler，在唯一 Build Composition 注册配对；系统事件仍进入 Core Events。新图形后端实现 device/capability/commands 和 authoring toolchain，handle 留在 Adapter/Native。新部署实现 `IManagedDeploymentCompiler`，声明真实能力，并验收 SDK 发布/链接/回调；替换 CoreCLR Wasm 不能只改 ID。
 
-详见[平台接入指南](../../../docs/development/adding-platform.md)、[Content](../../../docs/modules/assets/Inno.Content.md)、[Build Composition](../../../docs/development/build/Inno.Build.Composition.md)。平台无关是共同机制不依赖具体平台，宿主、SDK、系统生命周期和能力验证仍各有边界。
+详见[平台接入指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md)、[Content](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/assets/Inno.Content.md)、[Build Composition](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.Composition.md)。平台无关是共同机制不依赖具体平台，宿主、SDK、系统生命周期和能力验证仍各有边界。
 
 BGCS 以自己的 NativeApi/CppFacade fixture 验收，没有引擎 reference 或游戏专用定义：NativeAOT、Wasm 解释执行、Wasm AOT 各 56 项实际调用通过，覆盖 DllImport/LibraryImport/FunctionTable。注入错误原生返回值后首个 scalar 检查明确失败。见 BGCS 独立报告（历史位置 `../../../artifacts/acceptance/architecture-cleanup/BGCS_INDEPENDENT_ACCEPTANCE.md`，当前不可用）及独立汇总（历史位置 `../../../artifacts/acceptance/architecture-cleanup/results/bgcs-independent-summary-final.json`，当前不可用）。引擎 binding、Plugin、FlappyBird 是另外的联调证据。
 

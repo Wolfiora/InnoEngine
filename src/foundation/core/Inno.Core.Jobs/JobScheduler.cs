@@ -16,7 +16,8 @@ public sealed class JobScheduler : IDisposable
     /// The execution strategy owned by the scheduler.
     /// </param>
     /// <param name="options">
-    /// Worker-pool settings used when <paramref name="mode"/> is <see cref="JobExecutionMode.WorkerPool"/>.
+    /// Frame admission and main-thread queue limits for either strategy; worker count applies only to
+    /// <see cref="JobExecutionMode.WorkerPool"/>.
     /// </param>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="mode"/> is not a defined execution strategy.

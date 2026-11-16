@@ -2,7 +2,7 @@
 
 日期：2026-10-24。环境：Windows x64，.NET SDK 10.0.402 / runtime 10.0.13 / C# 14，当前 `dotnet10` 工作区。源码 HEAD 为 `06598ce0d07acf33b71eda58c846c3d6154ff32a`，叠加审计开始时已有修改；不是一个干净提交的发行验收。
 
-[当前问题](../open-items.md) · [当前验收](current.md) · [身份与重载标准](../../../docs/architecture/identity-and-reload.md)
+[当前问题](../open-items.md) · [当前验收](current.md) · [身份与重载标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md)
 
 ## 1. 验收结论
 

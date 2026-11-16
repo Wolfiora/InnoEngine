@@ -1,6 +1,6 @@
 # Foundation 引导请求身份与 Rider 文件占用验收
 
-[Task Hosting 契约](../../../docs/development/build/Inno.Build.TaskHosting.md) · [构建缓存架构](../../../docs/architecture/build-and-cache.md)
+[Task Hosting 契约](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.TaskHosting.md) · [构建缓存架构](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/build-and-cache.md)
 
 ## 诊断结论
 

@@ -39,8 +39,7 @@ internal sealed class BuildWorkspace : IDisposable
         AssetPipeline assets,
         PluginEnvironment plugins,
         ScriptCompiler compiler,
-        string projectDirectory,
-        BuildPipeline pipeline
+        string projectDirectory
     ) {
         m_engine = engine;
         m_settings = settings;
@@ -48,11 +47,15 @@ internal sealed class BuildWorkspace : IDisposable
         m_plugins = plugins;
         m_compiler = compiler;
         m_projectDirectory = projectDirectory;
-        this.pipeline = pipeline;
     }
 
-    internal BuildPipeline pipeline { get; }
     internal ProjectId projectId => m_settings.projectId;
+
+    internal BuildPipeline CreatePipeline(
+        BuildCompositionContext context,
+        string supportPackRoot,
+        ToolRunner tools
+    ) => BuildComposition.CreatePipeline(context, m_engine, m_assets, m_plugins, m_settings, m_compiler, supportPackRoot, tools);
 
     internal AssetPath ImportSample(
         AssetPath source,
@@ -96,10 +99,11 @@ internal sealed class BuildWorkspace : IDisposable
 
     internal string ExportProjectScripts(
         string outputDirectory,
-        bool generateIdeProjects
+        bool generateIdeProjects,
+        CancellationToken cancellationToken
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
-        ScriptCompilationResult result = m_compiler.CompileAuthoringGenerationAsync()
+        ScriptCompilationResult result = m_compiler.CompileAuthoringGenerationAsync(cancellationToken: cancellationToken)
             .GetAwaiter().GetResult();
         if (!result.success)
             throw new InvalidOperationException("Project script compilation failed:" + Environment.NewLine
@@ -107,6 +111,7 @@ internal sealed class BuildWorkspace : IDisposable
                     result.diagnostics.Select(static diagnostic => diagnostic.message)));
         if (generateIdeProjects)
             m_compiler.GenerateProjectFiles();
+        cancellationToken.ThrowIfCancellationRequested();
         string[] assemblies = result.moduleDeployments
             .Where(static request => request.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
             .SelectMany(static request => new[] { request.mainAssemblyPath }
@@ -115,13 +120,14 @@ internal sealed class BuildWorkspace : IDisposable
             .ToArray();
         string destination = Path.GetFullPath(outputDirectory);
         Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        using ProcessOwnedDirectory stagingOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!)
+        using ProcessOwnedDirectory stagingOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken)
             .AsTask().GetAwaiter().GetResult();
         string staging = stagingOwner.directory;
         try
         {
             foreach (string assembly in assemblies)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 File.Copy(assembly, Path.Combine(staging, Path.GetFileName(assembly)));
                 string symbols = Path.ChangeExtension(assembly, ".pdb");
                 if (File.Exists(symbols))
@@ -129,6 +135,7 @@ internal sealed class BuildWorkspace : IDisposable
             }
             try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 AtomicDirectory.Install(staging, destination);
             }
             catch (DirectoryCleanupException cleanupFailure)
@@ -145,10 +152,10 @@ internal sealed class BuildWorkspace : IDisposable
 
     internal static BuildWorkspace Open(
         string projectDirectory,
-        string supportPackRoot,
-        BuildCompositionContext context,
-        ToolRunner tools
+        string dotnetHost,
+        CancellationToken cancellationToken
     ) {
+        cancellationToken.ThrowIfCancellationRequested();
         string projectRoot = Path.GetFullPath(projectDirectory);
         string assetsRoot = Path.Combine(projectRoot, "Assets");
         string pluginsRoot = Path.Combine(projectRoot, "Plugins");
@@ -215,16 +222,15 @@ internal sealed class BuildWorkspace : IDisposable
                 new ScriptCompilerOptions
                 {
                     projectRootDirectory = projectRoot,
-                    compilationEnvironment = new SdkScriptCompilationEnvironment(context.dotnetHost, projectRoot)
+                    compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
                 },
                 assets,
                 plugins);
-            ActivateAuthoring(engine, plugins, compiler, Path.Combine(libraryRoot, "Build", "Metadata"));
+            ActivateAuthoring(engine, plugins, compiler, Path.Combine(libraryRoot, "Build", "Metadata"), cancellationToken);
             engine.generations.Wait();
             assets.CompleteExtensionDiscovery();
             assets.Rescan();
-            BuildPipeline pipeline = BuildComposition.CreatePipeline(context, engine, assets, plugins, settings, compiler, supportPackRoot, tools);
-            return new BuildWorkspace(engine, settings, assets, plugins, compiler, projectRoot, pipeline);
+            return new BuildWorkspace(engine, settings, assets, plugins, compiler, projectRoot);
         }
         catch
         {
@@ -257,11 +263,12 @@ internal sealed class BuildWorkspace : IDisposable
         EngineHost engine,
         PluginEnvironment plugins,
         ScriptCompiler compiler,
-        string artifactRootDirectory
+        string artifactRootDirectory,
+        CancellationToken cancellationToken
     ) {
         // Asset importers and graph extensions belong to the authoring generation, including in a
         // headless build. Compiling only Player scripts would export unresolved/last-good asset state.
-        ScriptCompilationResult result = compiler.CompileAuthoringGenerationAsync().GetAwaiter().GetResult();
+        ScriptCompilationResult result = compiler.CompileAuthoringGenerationAsync(cancellationToken: cancellationToken).GetAwaiter().GetResult();
         if (!result.success)
             throw new InvalidOperationException("Build authoring compilation failed:" + Environment.NewLine
                 + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message)));

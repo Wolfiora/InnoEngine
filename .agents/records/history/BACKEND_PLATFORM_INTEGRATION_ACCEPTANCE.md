@@ -1,6 +1,6 @@
 # 平台、后端与集成边界整改验收
 
-[架构索引](../../../docs/architecture/README.md) · [批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md) · [剩余实机验收](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [批准计划](BACKEND_PLATFORM_INTEGRATION_PLAN.md) · [剩余实机验收](BACKEND_PLATFORM_INTEGRATION_HANDOFF.md)
 
 ## 当前结论
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | BgfxBuildProfile 放在平台中是否让平台和 backend 耦合 | 四个真实 BGFX integration 程序集拥有 Native/Shader profile 与 compiler 工厂。Windows/macOS/Browser/Linux 基础构建模块不引用 backend；集成依赖对应平台与 backend，Standard Distribution 唯一绑定。 |
 | SDL、MiniAudio 等是否也有同类问题 | Windows/macOS/Browser SDL integration 提供初始化、窗口、surface、焦点与能力。ImGui 使用 SDL 应用的唯一窗口目录和 surface，交互参数显式注入；删除 WindowsX64 FramebufferScale 返回 ABI。MiniAudio/Text/RmlUi 使用显式链接请求，没有机械新增逐平台空项目。 |
-| 如何使新增平台、backend 和部署清晰 | 平台拥有目标/SDK/packager，backend 拥有领域实现/recipe/compiler，有真实差异才建 integration。GameBuildContribution 完整绑定 packager/compiler；新 backend 不改平台 packager，新平台不改共同 Runtime。步骤和文件树见[扩展指南](../../../docs/development/adding-platform.md)。 |
+| 如何使新增平台、backend 和部署清晰 | 平台拥有目标/SDK/packager，backend 拥有领域实现/recipe/compiler，有真实差异才建 integration。GameBuildContribution 完整绑定 packager/compiler；新 backend 不改平台 packager，新平台不改共同 Runtime。步骤和文件树见[扩展指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/adding-platform.md)。 |
 
 ```text
 Standard Distribution / 平台产品

@@ -59,7 +59,7 @@ public sealed class ModuleHost : IDisposable
     }
 
     /// <summary>
-    /// Creates a module host, discovers assemblies in its owning load context, and publishes the first catalog.
+    /// Creates a module host from the explicitly supplied assembly source and publishes its first catalog.
     /// </summary>
     /// <param name="options">
     /// The validated configuration that controls this operation.
@@ -160,7 +160,7 @@ public sealed class ModuleHost : IDisposable
     }
 
     /// <summary>
-    /// Loads and activates a new shadow-copied assembly module.
+    /// Prepares and activates a new module contribution through its selected source.
     /// </summary>
     /// <param name="request">
     /// The validated immutable request that defines this operation.

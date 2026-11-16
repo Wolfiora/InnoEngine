@@ -1,62 +1,48 @@
-# 当前源码验收
+# Current acceptance
 
-本次文档与 Agent 信息架构的局部交付见 [阶段报告](DOCS_AGENT_INFORMATION_ARCHITECTURE_ACCEPTANCE.md)。以下引擎和 UI 结果保留各自原始提交与执行范围，不因文档迁移获得新认证。
+[Open work](../open-items.md) · [Implementation ledger](../plans/ENGLISH_DOCUMENTATION_MODERNIZATION.md) · [Historical evidence](README.md)
 
-[架构索引](../../../docs/architecture/README.md) · [当前问题](../open-items.md) · [Wiki 首页](../../../docs/README.md)
+The approved API draft/main replacement is **in progress**. Its current implementation and exact local evidence are recorded in [API draft pipeline acceptance](API_DRAFT_PIPELINE_2026_11_13.md). Mandatory paired PRs and the full-engine documentation publication certificate are retired responsibilities; they are no longer completion gates for this design. Current API producer, example preparation, remote draft synchronization and publication evidence remain outstanding.
 
-AI 工作流改造仍在 [#75 实施验收](../plans/AI_PIPELINE_IMPLEMENTATION.md) 中，不能继承下述历史 UI 认证。原生性能测试已归属独立 performance 项目，完整 checkout 文档反馈的五轮 warm 中位数为 28.8805035 秒；当前 Windows/macOS 矩阵、完整产品与发布演练以该记录中的实际结果和阻塞为准。
+The following observations describe the preceding implementation and retain their original inputs. They are historical evidence, not certification of the replacement.
 
-当前 Editor UI 的分层、Session、Selection、History、插件调用方及十一项评价见[完整计划验收](EDITOR_UI_FINAL_ACCEPTANCE_2026_10_30.md)、[当前 UI 架构](../../../docs/architecture/editor-ui.md)及[issue 闭合台账](../history/EDITOR_UI_CLOSURE_PLAN.md)。生产实现 `dd5979c6` 的本地适用功能与验收已完成。最终交付 SHA、只含文档/证据的后续差异、精确提交 CI 与 PR Ready 状态以 [PR #26 验证附件](https://github.com/Wolfiora/InnoEngine/pull/26#issuecomment-6516741338)为准；本地结果不代替该附件，也不复用历史提交的绿色结果。
+## Previous implementation evidence
 
-| 当前 UI 范围 | 本地结果 |
+| Area | Current result and evidence |
 | --- | --- |
-| 源码、工具、入口和产品准备 | 11/11 阶段通过 |
-| Contracts / Workflows / Visual / Lifecycle | 分别 822 / 704 / 524 / 15 次通过；Contracts 另有 2 次 Unix 专用测试在 Windows 未执行；各 profile 有重叠，不累加为独立测试数量 |
-| Core Serialization / Scene / Core IO | 97/97、67/67、41/41 通过 |
-| 工程、公开依赖、XML、Wiki | 241 工程求值；34,582 API inventory；197/197 实际编译示例通过 |
-| Windows Editor | Debug/Release × D3D11/D3D12/Vulkan 六组通过，实际界面工作流及每类 Panel 100 次开关 |
-| 原生输入与尺度 | 真实 Context、公开输入、56 个 Zoom/DPI/尺寸组合；模拟 metrics 与物理设备分开 |
-| 生命周期 | 文档 100 次、十次连续 reload、严格代际回收和失败/恢复边界通过 |
-| 受控性能 | 150 条成对记录；图尾部额外十进程复验；原始回退保留，无未解决的可重复门槛回退 |
+| Source integration | Master/logo commit `259e8a636c19c447f2c703c0a64e2f070f9030c3` is merged into `ai-pipeline`; no other-session source edit was included. |
+| Content migration | All 454 original product files have verified dispositions: 364 reviewed destinations, 73 approved native/generated API retirements and 17 byte-identical historical images. See [legacy cutover](DOCUMENTATION_LEGACY_CUTOVER_2026_11_12.md). |
+| Website and coverage | The current projection contains 3,656 pages, all 252 project entries and 18,874 selected declarations: 12,276 host and 6,598 actual Runtime/Editor script declarations. Docs run `43264382083` passed production rendering, 190 Node cases and 87 browser journeys at `a36a3971`; its source job blocked absent authenticated evidence. The certificate follow-up passed 199 local Node cases and the complete rendered projection. Six real task queries reach their authoritative guides first. Page counts are not behavioral proof. |
+| Queries | Independent `Inno.Tooling.Documentation`, explicit preparation, immutable snapshot readers and structured transport-independent requests. [Protected snapshots](DOCUMENTATION_REFERENCE_SNAPSHOTS_2026_11_11.md), [writer samples](DOCUMENTATION_WRITER_CONCURRENCY.md) and [query preparation](DOCUMENTATION_QUERY_PREPARATION.md) retain their actual test and measurement scopes. |
+| Rules and skills | All 241 original rules and 58 complete units remain registered in English. Eight documentation units now have one authority in Docs. [Rule ownership acceptance](DOCUMENTATION_RULE_AUTHORITY_2026_11_12.md) covers explicit loading, provenance, budgets and rejection behavior. |
+| Validation selection | Actual project/tool input closures, explicit prerequisites, distinct evidence layers and the [private Console dependency regression](CI_43067538817.md). Necessary behavioral consumers remain selected. |
+| Source inspection | Read-only evaluated reference preparation and actual empty Browser/macOS Player surfaces are implemented. [Missing-capture execution](CI_MISSING_REFERENCE_CAPTURE_2026_11_12.md) retains blocked requirements rather than green empty discovery. |
+| Evidence and publication | [Source certificates](DOCUMENTATION_SOURCE_CERTIFICATES_2026_11_12.md), [protected relay](DOCUMENTATION_EVIDENCE_RELAY_2026_11_12.md), and [unchanged-input compatibility](DOCUMENTATION_INPUT_COMPATIBILITY_2026_11_12.md) have local positive/negative checks. Docs projection and source certification are separate; retrying late evidence consumes the successful preview artifact. Final hosted compatibility and protected activation remain outstanding. |
+| Legacy | Engine product documentation, old Wiki/query implementations, old switches and duplicate documentation-rule text are removed. Historical evidence and legal provenance remain. |
 
-原始 producer 已恢复为可运行且输入可核对的对照；此前基线建立失败不再是当前阻塞。图尾部初始十帧采样出现回退，增加既有采样轮数后未重现持续 P95 回退；两批结果均在报告中，不把初次失败改写为通过。完整检查最差 P95 24.5695 ms，接近 25 ms 预算，不能声称性能余量无限。
+## Hosted evidence
 
-真实物理显示器、OS IME、人工 Mac 和主观可用性未执行；真实 Mac 自动结果由精确提交 CI 附件提供。32 项完整解决的 issue 在分支验证后仍保持 Open，等待 PR 合并；更广文档 issue #18 仅部分相关。整个引擎其他开放问题见[当前问题](../open-items.md)，本轮 UI 完成不表示它们也已解决。
+The [full matrix and draft-release record](FULL_MATRIX_AND_DRAFT_RELEASE_2026_11_13.md) records 340 passed Windows checks and 338 passed macOS checks at `4471fe4d`, all ten warm samples without Native producer or binding-generator execution, and actual Debug/Release 1,000-cycle panel journeys. Its aggregate failed on repeated input serialization; [normalized source evidence](SOURCE_CERTIFICATE_NORMALIZATION_2026_11_13.md) preserves the original failure and exact local repair. The later script candidate run `43264340393` remains in progress at this checkpoint.
 
-当前依赖通过标准 `.csproj` / `PackageReference` 和 SDK Restore 解析，源码不保存独立依赖锁清单；本轮范围与证据见[标准 NuGet 还原验收](STANDARD_NUGET_RESTORE_ACCEPTANCE_2026_10_26.md)。基线保持 .NET SDK 10.0.402、C# 14、BGCS 4.1.2。
+Draft-release run `43263420182` successfully uploaded the exact qualified default-branch Editor and Support Pack artifacts and retained draft release `443247193`. No formal publication occurred. This closes the artifact-upload rehearsal for that default-branch source, not source acceptance for the unmerged feature branch.
 
-新项目的默认 `editor.ini` 已完成本地专项验收，见[默认布局报告](EDITOR_DEFAULT_LAYOUT_ACCEPTANCE_2026_10_29.md)。标准 Host 提供布局，Core 复用原子文档写入；已有文件不被默认值重置。该结果不替代完整 UI 原计划或最终提交的 CI。
+Engine [run 43164720103](https://github.com/Wolfiora/InnoEngine/actions/runs/43164720103) completed with Windows success and diagnosed macOS failures. The [retained analysis](CI_43164720103.md) records their actual scope and corrections. Full [run 43191512147](https://github.com/Wolfiora/InnoEngine/actions/runs/43191512147) tests `977655a3` with its exact Docs candidate. Its macOS checks passed before a [script-example receipt format failure](CI_43191512147.md). Subsequent rule batching, input compatibility and receipt corrections do not belong to that run and need matching acceptance.
 
-此前 BGCS 消费与三项优先修复的独立证据见[BGCS 4.1.2 消费验收](BGCS412_CONSUMER_ACCEPTANCE_2026_10_25.md)及[专项报告](PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)。历史通过数量不能当作当前源码已重跑。
+The retained [Windows failure analysis](CI_43067538817.md) records 331 passed checks, five failures and one blocked release bundle. The diagnosed reference bootstrap and script CLI failures were corrected before the current run. Its ten warm samples preserve all original observations; no third-party producer or binding generator ran in those warm builds. That result does not certify the corrected candidate.
 
-以下表格保留此前 BGCS 消费验收的独立范围和数量；不与本轮标准还原检查重复累计，也不代表本轮重跑完整产品矩阵。
+Docs [run 43210727247](https://github.com/Wolfiora/InnoEngine.Docs/actions/runs/43210727247) passed projection, 188 Node cases and 72 browser journeys, then failed the independent source-certification job because authenticated matching source evidence was not available. Earlier failed attempts remain preserved. Missing source evidence remains blocked; the successful projection does not need rebuilding solely to retry that gate.
 
-## 此前 BGCS 专项证据
+## Required completion work
 
-| 范围 | 当前结果 |
-| --- | --- |
-| BGCS 包身份 | 公共 NuGet 恢复；该次检查的 BGCS 包族均为 4.1.2 |
-| Binding / native / Task 构建契约 | 65 项通过；含真实 MSBuild Restore 求值回归、SDK 生成、身份、取消与完整产物检查 |
-| 独立 Restore 回归 | 9 项通过；owned Restore、静态图及 generator restore scope |
-| 架构 / XML / Wiki | 238/238 工程通过；33,567 API symbols；196 示例通过 |
-| Build 入口与独立 binding owner | 零警告、零错误；七个 HostSource owner 正式生成及检查通过 |
-| Browser native | 五组件官方生成、原生编译与原子发布通过 |
-| Browser 产品 | Mono 解释执行和 AOT 均正式发布，各完成 3,000 帧、输入、存储读取和有序退出 |
-| Windows Player | CoreCLR / NativeAOT 正式发布，D3D11、D3D12、Vulkan 各完成 300 帧并退出，共六次 |
-| BGCS 完整性 | 148 个包文件未改变；仓库 clean；Agent 文件 0 |
+1. Finish the current platform run, inspect actual failures and reconcile follow-up tooling changes; the macOS Editor source facts have been retrieved.
+2. Bind the final engine and Docs candidates, complete source/API and executable-example certification, and reconcile every required hosted result.
+3. Exercise protected evidence import, paired-candidate ordering and verified Pages promotion within actual permissions and review requirements. The qualified default-branch draft upload rehearsal is complete.
+4. Reconcile final query/performance observations, migration inventory and legacy removal against the final inputs. Do not repeat valid checks solely for commits or reports.
 
-当前 Browser 平台继续使用官方 LibraryImport，桌面 FunctionTable 保持。BGCS 4.1.2 会在发布前拒绝 Browser FunctionTable；独立公开 SDK 探针确认拒绝后 last-good 文件不变，并确认 eligible frontend / emission 缓存冷 miss、热 hit。两个 SDK issue 已由上游关闭，本地消费复验通过；没有 SDK / generated 补丁。
+The Docs repository is public, with `main`, Pages custom Actions and required `Documentation validation`. The engine requires `Engine validation`. Configuration is not a successful deployment. Repository-level App credentials were absent; organization credential inspection returned HTTP 403. Restricted GitHub App installation/credentials and protected default-branch activation remain external prerequisites. Draft PRs are not merged or made ready automatically, formal releases remain user-controlled, and #75 remains open.
 
-本轮构建专项合计 74 项通过，0 失败 / 跳过，不重复计入此前 Coroutine / Runtime 的 142 项。本次发现的旧 package content 与新 SDK DLL 混装由 owned Restore / compilation 求值隔离修复；初始失败、哈希证明及最终复验见报告。
+## Preservation and disk ownership
 
-## 此前 BGCS 专项的矩阵与问题
+The unrelated Editor Assets source edit retains its original hash and is excluded from commits. Local output uses registered owners and reader protection. Obsolete Docs generations, exited-process payloads and the owned 18.3 GB Debug validation workspace were retired; an unverifiable metadata owner was retained and reported. First-failure archives remain intact. C-drive free space was approximately 46 GiB at the latest check; this is a point-in-time observation, not a cleanup entitlement.
 
-- 该次 BGCS 专项没有本地 macOS / Metal 设备验收；后续 Editor 的 Mac 自动 CI 结果见上方最新复审，人工设备检查仍未执行。
-- Windows Player 六条有界图形路径已通过；Editor Debug/Release、完整视觉、焦点、DPI、音频及长期运行矩阵未在本轮重跑。
-- 示例产品已观察存储读取，尚未触发新的最高分写入，不能宣称分数跨启动存储已验收。
-- 非致命 console 资源诊断仍待归因；自动维护预算、热构建成本及其他审计问题继续开放，均按报告链接进入 issue。
-- 没有使用 computer use，也没有把 CLI/MSBuild 回归当作实际点击 Rider Run 的证明。
-
-## 历史证据
-
-[全仓核心审计](FULL_ENGINE_AUDIT_2026_10_24.md)、[三项优先修复](PRIORITY_FIX_ACCEPTANCE_2026_10_25.md)、[BGCS 4.1.1 消费验收](BGCS411_CONSUMER_ACCEPTANCE_2026_10_24.md)及更早平台记录按其 revision / 检查范围保留。本页当前结果优先；历史通过数量不重复计入本轮。
+Earlier acceptance remains in [the baseline summary](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/.agents/records/acceptance/current.md) and unchanged reports. Manual physical-device, IME, subjective usability and unsupported-platform scenarios remain unverified unless matching evidence explicitly records them. No historical green result is promoted to current certification.

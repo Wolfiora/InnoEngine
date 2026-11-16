@@ -1,6 +1,6 @@
 # 平台职责与缓存治理交付文件树
 
-[验收报告](PLATFORM_OWNERSHIP_CACHE_ACCEPTANCE_2026_10_22.md) · [职责与依赖](../../../docs/architecture/platform-and-products.md)
+[验收报告](PLATFORM_OWNERSHIP_CACHE_ACCEPTANCE_2026_10_22.md) · [职责与依赖](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/platform-and-products.md)
 
 下列为本轮新增或修改且仍存在的手写源码、配置、生成结果与文档位置。未改业务文件继续归属于原 owner；包括本轮锁文件和记录页。生成结果仅由正式 BGCS 流程更新。
 

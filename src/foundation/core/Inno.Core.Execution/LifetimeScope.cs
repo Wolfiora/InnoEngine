@@ -209,9 +209,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// Releases a quiescent lifetime, attempting every resource even when release fails.
+    /// Releases a quiescent lifetime in reverse registration order, continuing after ordinary cleanup failures.
     /// </summary>
     /// <remarks>
+    /// Pending retirement retains the current resource and all remaining dependencies for a later attempt.
     /// Concurrent or reentrant retirement reports pending work without invoking a resource twice.
     /// </remarks>
     /// <exception cref="InvalidOperationException">

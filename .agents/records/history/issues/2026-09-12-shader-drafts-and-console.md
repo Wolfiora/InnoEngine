@@ -1,6 +1,6 @@
 # Shader 草稿保存与 Console 布局修复验收
 
-[问题索引](README.md) · [Shader Editor](../../../../docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md) · [统一 Shader 实施记录](2026-09-11-unified-shader-implementation.md)
+[问题索引](README.md) · [Shader Editor](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/editor/Inno.Editor.Panel.ShaderEditor.md) · [统一 Shader 实施记录](2026-09-11-unified-shader-implementation.md)
 
 ## 范围与最新决策
 

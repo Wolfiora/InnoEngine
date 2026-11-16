@@ -3,18 +3,54 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Linq;
 
 namespace Inno.Scripting.Compiler;
 
 internal static class ScriptApiDocumentationBuilder
 {
+    internal const string C_SCHEMA = "inno-script-documentation/2";
+
+    internal sealed record Inputs(
+        string identity,
+        IReadOnlyDictionary<string, byte[]?> documents
+    );
+
+    internal static Inputs Capture(IReadOnlyList<ScriptApiTypeExport> exports)
+    {
+        var documents = new Dictionary<string, byte[]?>(StringComparer.Ordinal);
+        var identity = new StringBuilder(C_SCHEMA);
+        foreach (Assembly assembly in exports.Select(static export => export.type.Assembly).Distinct()
+            .OrderBy(static assembly => assembly.GetName().Name, StringComparer.Ordinal))
+        {
+            string path = Path.ChangeExtension(assembly.Location, ".xml");
+            byte[]? bytes = File.Exists(path) ? File.ReadAllBytes(path) : null;
+            documents.Add(path, bytes);
+            identity.Append('\n').Append(assembly.GetName().Name).Append(':')
+                .Append(bytes is null ? "missing" : Convert.ToHexStringLower(SHA256.HashData(bytes)));
+        }
+        return new(Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(identity.ToString()))), documents);
+    }
+
+    internal static void Verify(Inputs inputs)
+    {
+        foreach (var input in inputs.documents)
+        {
+            bool exists = File.Exists(input.Key);
+            if (exists != (input.Value is not null) || exists && !File.ReadAllBytes(input.Key).AsSpan().SequenceEqual(input.Value))
+                throw new IOException("Script API source documentation changed during reference preparation: " + input.Key);
+        }
+    }
+
     internal static void Write(
         string outputPath,
         string assemblyName,
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlyDictionary<string, string> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings,
+        Inputs inputs
     ) {
         var outputMembers = new List<XElement>();
         var emittedNames = new HashSet<string>(StringComparer.Ordinal);
@@ -23,9 +59,11 @@ internal static class ScriptApiDocumentationBuilder
                      static export => export.type.Assembly))
         {
             string documentationPath = Path.ChangeExtension(group.Key.Location, ".xml");
-            if (!File.Exists(documentationPath))
+            byte[]? bytes = inputs.documents[documentationPath];
+            if (bytes is null)
                 continue;
-            XDocument source = XDocument.Load(documentationPath, LoadOptions.PreserveWhitespace);
+            using var stream = new MemoryStream(bytes, writable: false);
+            XDocument source = XDocument.Load(stream, LoadOptions.PreserveWhitespace);
             XElement[] members = source.Root?
                 .Element("members")?
                 .Elements("member")
@@ -73,10 +111,24 @@ internal static class ScriptApiDocumentationBuilder
             }
         }
 
+        // Origin data is emitted from the same resolved exports as the logical facade.
+        // Documentation consumers must still select members from the actual reference assembly.
+        var origins = exports.Select(export =>
+        {
+            string sourceId = "T:" + GetDocumentationTypeName(export.type);
+            string logicalId = sourceId;
+            foreach ((string sourceName, string targetName) in replacements)
+                logicalId = logicalId.Replace(sourceName, targetName, StringComparison.Ordinal);
+            return new XElement("type", new XAttribute("id", logicalId),
+                new XAttribute("source", sourceId),
+                new XAttribute("assembly", export.type.Assembly.GetName().Name
+                    ?? throw new InvalidOperationException("An exported type has no assembly identity.")));
+        }).OrderBy(static origin => (string?)origin.Attribute("id"), StringComparer.Ordinal);
         var document = new XDocument(
             new XDeclaration("1.0", "utf-8", null),
             new XElement("doc",
                 new XElement("assembly", new XElement("name", assemblyName)),
+                new XElement("provenance", new XAttribute("format", C_SCHEMA), origins),
                 new XElement("members", outputMembers.OrderBy(
                     static member => member.Attribute("name")?.Value,
                     StringComparer.Ordinal))));

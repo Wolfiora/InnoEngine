@@ -1,6 +1,6 @@
 # 本体收口累积验收：2026-09-07—09-08
 
-[架构索引](../../../docs/architecture/README.md) · [前轮报告](ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md) · [完整实施清单](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) · [Overview](../../../docs/architecture/overview.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [前轮报告](ENGINE_CLOSURE_ACCEPTANCE_2026_09_07.md) · [完整实施清单](ENGINE_CONSOLIDATION_IMPLEMENTATION.md) · [Overview](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/overview.md)
 
 **本页为之前的累积证据；当前状态请看 [2026-09-08 实现交付与集中验收](ENGINE_CLOSURE_IMPLEMENTATION_2026_09_08.md)。本页历史“尚未完成”不是新的工作清单。自动续跑已按用户要求暂停。**
 

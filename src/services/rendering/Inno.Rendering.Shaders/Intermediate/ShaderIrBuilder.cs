@@ -307,7 +307,7 @@ public sealed partial class ShaderIrBuilder
     /// Exactly the input/inout parameters by public name; output-only parameters are not supplied.
     /// </param>
     /// <returns>
-    /// Named results: return, followed by output.&lt;name&gt; for out/inout parameters.
+    /// Named results: <c>return</c>, followed by <c>output.&lt;name&gt;</c> for out/inout parameters.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// The module failed, implementation is absent, or input names/types do not match.

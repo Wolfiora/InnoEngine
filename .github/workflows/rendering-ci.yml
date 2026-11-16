@@ -23,6 +23,7 @@ on:
 permissions:
   contents: read
   actions: read
+  pull-requests: read
 
 concurrency:
   group: engine-validation-${{ github.workflow }}-${{ github.ref }}
@@ -45,6 +46,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - id: select
         shell: pwsh
@@ -70,13 +72,6 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Fetch pinned native sources without unrelated submodule history
-        shell: pwsh
-        run: |
-          git submodule sync --recursive
-          if ($LASTEXITCODE -ne 0) { throw 'Pinned submodule URL synchronization failed.' }
-          git -c protocol.version=2 submodule update --init --recursive --depth=1
-          if ($LASTEXITCODE -ne 0) { throw 'Pinned native source checkout failed.' }
       - uses: ./.github/actions/setup-dotnet
         id: sdk
       - uses: microsoft/setup-msbuild@6fb02220983dee41ce7ae257b6f4d8f9bf5ed4ce # v2
@@ -180,6 +175,7 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
           CADENCE_CONCLUSION: ${{ needs.cadence.result }}
           SHOULD_RUN: ${{ needs.cadence.outputs.run }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           if ($env:CADENCE_CONCLUSION -cne 'success') { throw 'Cadence selection did not succeed.' }
           if ($env:SHOULD_RUN -ceq 'false') {

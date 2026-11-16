@@ -1,0 +1,62 @@
+[
+  {
+    "ordinal": 5,
+    "sourceHash": "2568dc23c50d9799f22535715a1d496259248c52318d5280129d71d928a350af",
+    "targetHash": "22c434b93df9572e3c794e13db54dd7e60bfaf4741d6d8214474567643dcb749",
+    "before": "- Engine project entries cover responsibility/boundaries, dependencies/initialization, all public APIs, important protected extension points for derived implementers, common workflows, compilable examples, errors/lifetimes/reload and related navigation. Backend-native and generated binding APIs are excluded under the approved 2026-11-11 scope; their concise integration overviews do not create raw-binding API/example obligations.",
+    "after": "- Engine project entries cover responsibility/boundaries, dependencies/initialization, all public APIs, important protected extension points for derived implementers, common workflows, compilable examples, errors/lifetimes/reload and related navigation. All backend, extern, test/fixture and non-C# API references are excluded under the approved API draft/main plan; retain useful integration guides without excluded member-reference obligations.",
+    "previousTargetHash": "899b6f9f0862475b13ab5c0b8e932f8e3331d53947d8d8c452c8ecb6ce98c0e4",
+    "unit": "wiki",
+    "approval": "User-approved API automatic synchronization and Docs draft/main plan"
+  },
+  {
+    "ordinal": 7,
+    "sourceHash": "d84e481c7e94dccb3d7646f58403de71f291ddf796eb607f6762b5a8cd1d077a",
+    "targetHash": "16d5667d1f48b04f59a50de917b7839d5f113d7b369539f5a131b3d70b0230be",
+    "before": "- Adding, deleting, renaming or changing public API behavior updates the corresponding project entry and category navigation in the same paired change. New projects receive their authoritative entry and coverage registration.",
+    "after": "- Adding, deleting, renaming or changing eligible APIs maintains source XML; master-to-draft synchronization updates their reference facts, fragments and derived navigation. Maintain affected Manual workflows separately on Docs draft. New projects receive their authoritative entry and coverage registration; paired PR metadata is not required.",
+    "previousTargetHash": "ff9bfa908630fcb2084bb98403c1d19e70163d171069b4f880acdef651435362",
+    "unit": "wiki",
+    "approval": "User-approved API automatic synchronization and Docs draft/main plan"
+  },
+  {
+    "ordinal": 2,
+    "sourceHash": "136d19292806db2f5054d6c1bd11df0679805d5c21fd298c3815a20498a801bf",
+    "targetHash": "d427cc64883e16b3bd3b1146ea8229ef572562f71840f7fcc4c3c76d99520564",
+    "before": "Map engine public types, constructors, members, enum values and protected members usable by external derived types individually. Signatures preserve overloads, nullability, defaults and generic constraints; types also preserve inheritance, interfaces and delegate signatures. Synthesized public record members are in scope. Under the user-approved 2026-11-11 scope amendment, backend-native and generated binding APIs are excluded; managed engine adapters and script-projected engine APIs remain in scope.",
+    "after": "Map engine public types, constructors, members, enum values and protected members usable by external derived types individually. Signatures preserve overloads, nullability, defaults and generic constraints; types also preserve inheritance, interfaces and delegate signatures. Synthesized public record members are in scope. Under the approved API draft/main plan, all backend, extern, test/fixture and non-C# API references are excluded; eligible engine, Editor, Build/tooling and actual script-projected contracts remain in scope.",
+    "previousTargetHash": "19361dcab2d94174e7762ed1ac914f4a426058e1dc81335df1bda83888ed6f40",
+    "unit": "documentation-standard-2",
+    "approval": "User-approved API automatic synchronization and Docs draft/main plan"
+  },
+  {
+    "ordinal": 3,
+    "sourceHash": "3b0b7137ff392ff0bf8bd7d13053824b6d85875abc0d96b90518329f42bc5a8d",
+    "targetHash": "862f7d90538784073ed6c87ec394f7acc08f56fcffb112ae3ff950053036bddf",
+    "before": "Each member describes declaration, behavior/results, usage constraints and failure information. Source links locate implementation but do not replace usage documentation. Resolve inheritdoc to the actual inherited contract, retaining local additions. Explain generated constants/members according to their real semantics without modifying generated source to add documentation.",
+    "after": "Each member receives source facts and XML default explanations of behavior/results, usage constraints and failures. Authors can enrich individual type/member prose with source: manual; missing or stale editorial work is a non-blocking warning, not proof of semantic completeness. Source links do not replace use contracts. Resolve inheritdoc and retain local additions; explain eligible generated members without editing generated source.",
+    "previousTargetHash": "6d53cd3faf326924fb5c730ba24f2770df44494f89d764954406cedf06ddcfef",
+    "unit": "documentation-standard-2",
+    "approval": "User-approved API automatic synchronization and Docs draft/main plan"
+  },
+  {
+    "ordinal": 2,
+    "sourceHash": "9582c6a1e89590bebf7a314b634ae5e0ad35ff98d0d750b5f68ae3e44016e448",
+    "targetHash": "b9e5c23c3f36545a5d2196c2a26abb8df2fa2af778469d2b3eb507697eaeb3c4",
+    "before": "Each backend-native project retains only a concise engine integration overview with the initialization, ownership, callback, thread and shutdown constraints needed by engine consumers. Do not extract, generate or translate third-party ABI or raw binding type/member references or tutorials. The existing project inventory records this scope, without a second project list. Engine API includes still resolve within the selected snapshot; cycles and path escapes fail, and moves repair incoming anchors. Native correctness, implementation tests, deployment validation and legal provenance remain required. This replaces the former full ABI documentation obligation under the user-approved 2026-11-11 amendment.",
+    "after": "Backend projects retain useful engine integration guidance covering initialization, ownership, callbacks, threads and shutdown. Their type/member references, extern, tests/fixtures and non-C# API references are excluded under the approved API draft/main plan. Derive scope from the actual project inventory without a second project list. Eligible API includes resolve within the selected snapshot; cycles and path escapes fail, and moves repair incoming anchors. Native correctness, implementation tests, deployment validation and legal provenance remain required.",
+    "previousTargetHash": "b64bb3f82e4b9bab3618f42da267d2f077d17973e0e4efb14df75e2806745fa9",
+    "unit": "documentation-standard-5",
+    "approval": "User-approved API automatic synchronization and Docs draft/main plan"
+  },
+  {
+    "ordinal": 6,
+    "sourceHash": "a9ca4f5ff5cefd378615f369f1872e4145ecafa56f49de0e0819da0394886a4a",
+    "targetHash": "c98618600515c0440f867d8337b7b7cde42aa4ec4ee950cf88e839c1a239bd39",
+    "before": "With an SDK selected, API models enumerate actual Compile items and conditional symbols. Selected engine generated types, nested types and partial members enter the same inventory; obj or Generated placement alone is not an exclusion. Backend-native and generated binding APIs are outside product documentation scope, and other targets' unselected generated files are outside the current contract. Documentation scope does not disable extraction capabilities needed by architecture or ABI tests. Extraction does not execute Roslyn source generators, replace post-generation assembly boundary checks or verify every product configuration.",
+    "after": "With an SDK selected, API models enumerate actual Compile items and conditional symbols. Selected engine generated types, nested types and partial members enter the same inventory; obj or Generated placement alone is not an exclusion. All backend, extern, test/fixture and non-C# API references are excluded, and other targets' unselected generated files are outside the current contract. Documentation scope does not disable extraction capabilities needed by architecture or ABI tests. Extraction does not execute Roslyn source generators, replace post-generation assembly boundary checks or verify every product configuration.",
+    "previousTargetHash": "bb4dc90c70e1f9f8599d697417104faf77fe77cc5f73681bdec826c7c62a8042",
+    "unit": "documentation-standard-6",
+    "approval": "User-approved API automatic synchronization and Docs draft/main plan"
+  }
+]

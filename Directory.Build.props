@@ -2,6 +2,12 @@
   <Import Project="build/msbuild/Inno.Packages.props" />
   <Import Project="$(InnoProductBuildProperties)" Condition="'$(InnoProductBuildProperties)' != ''" />
 
+  <!-- API preparation compiles real managed implementations and generated declarations,
+       but does not prepare runnable product assets or native deployment. -->
+  <PropertyGroup Condition="'$(InnoBuildPurpose)' == 'ApiReferences'">
+    <InnoPrepareProductNative>false</InnoPrepareProductNative>
+  </PropertyGroup>
+
   <PropertyGroup>
     <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>

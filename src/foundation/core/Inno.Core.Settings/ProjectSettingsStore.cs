@@ -113,9 +113,13 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     }
 
     /// <summary>
-    /// Gets the monotonic revision of the active effective settings snapshot.
+    /// Gets the revision of the active effective settings snapshot.
     /// Runtime extensions may compare this value without registering reload-unsafe static delegates.
     /// </summary>
+    /// <remarks>
+    /// Pair this value with ownerId. Successful updates advance the revision; a failed generation transaction
+    /// restores the previous revision with its effective values. Candidate revisions are not durable identities.
+    /// </remarks>
     public long revision
     {
         get
@@ -131,7 +135,7 @@ public sealed class ProjectSettingsStore : IDisposable, IProjectSettingsLookup
     /// <returns>
     /// A strict last-in-first-out execution scope owned by the caller.
     /// </returns>
-    /// <exception cref="ObjectDisposedException">
+    /// <exception cref="InvalidOperationException">
     /// Thrown after this settings store has been disposed.
     /// </exception>
     public IDisposable EnterExecutionScope()

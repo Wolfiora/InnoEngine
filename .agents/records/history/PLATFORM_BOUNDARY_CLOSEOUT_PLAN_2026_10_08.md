@@ -1,6 +1,6 @@
 # 平台边界收口与静态图还原修复
 
-[架构索引](../../../docs/architecture/README.md) · [问题复核](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [问题复核](PLATFORM_OWNERSHIP_PLAN_AUDIT_2026_10_08.md)
 
 ## 目标和执行顺序
 

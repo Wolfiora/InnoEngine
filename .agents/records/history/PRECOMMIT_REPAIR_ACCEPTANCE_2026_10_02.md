@@ -1,6 +1,6 @@
 # 提交前 1–8 项修复验收（2026-10-02）
 
-[架构索引](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [共享宿主验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md) · [当前问题入口](../open-items.md)
+[架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [共享宿主验收](WEB_HOST_REFACTOR_ACCEPTANCE_2026_10_02.md) · [当前问题入口](../open-items.md)
 
 ## 范围与结论
 
@@ -42,9 +42,9 @@ Minimap 缓存只保存 ID 和数值 geometry，不捕获插件 Type、实例或
 Native 组合库的 public reference 只有共同构建契约；具体工具链引用属于实现依赖。
 各项目 Wiki、Build 索引、solution 归类和架构规则已经同步。
 
-相关说明：[Core Events](../../../docs/modules/core/Inno.Core.Events.md)、[Logging](../../../docs/modules/core/Inno.Core.Logging.md)、
-[Graph](../../../docs/modules/core/Inno.Core.Graphs.md)、[Toolchains](../../../docs/development/build/Inno.Build.Toolchains.md)、
-[Host Native 组合](../../../docs/development/build/Inno.Build.Toolchains.md)、Browser Toolchain（历史位置 `../../../docs/platform/Browser/Inno.Build.Browser.md`，当前不可用）。
+相关说明：[Core Events](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/core/Inno.Core.Events.md)、[Logging](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/core/Inno.Core.Logging.md)、
+[Graph](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/core/Inno.Core.Graphs.md)、[Toolchains](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.Toolchains.md)、
+[Host Native 组合](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/Inno.Build.Toolchains.md)、Browser Toolchain（历史位置 `../../../docs/platform/Browser/Inno.Build.Browser.md`，当前不可用）。
 
 BGCS 新增的是配套工具链数据，不是手写修改第三方实现：
 `BindGen-CS/extern/clang-resource/Headers.zip` 内含 275 个未经修改的 LLVM 20.1.8 builtin headers，附许可和来源。
@@ -126,8 +126,8 @@ Gameplay 自动控制在白天运行，以可见鸟 sprite 的颜色定位发出
 上游 ScriptProcessorNode 弃用提示和 SwiftShader render-pass 性能提示。
 这些没有进入本轮八项源码修正；报告没有把 runtime error 为 0 写成浏览器 warning 为 0，也没有声称可听音频或硬件 GPU 性能通过。
 
-截图：[白天](../../../docs/architecture/images/flappybird-repair-day-2026-10-02.png)、[夜间](../../../docs/architecture/images/flappybird-repair-night-2026-10-02.png)、
-[Score/Best 1](../../../docs/architecture/images/flappybird-repair-game-over-2026-10-02.png)。
+截图：[白天](visual-evidence/flappybird-repair-day-2026-10-02.png)、[夜间](visual-evidence/flappybird-repair-night-2026-10-02.png)、
+[Score/Best 1](visual-evidence/flappybird-repair-game-over-2026-10-02.png)。
 
 ## 证据位置
 

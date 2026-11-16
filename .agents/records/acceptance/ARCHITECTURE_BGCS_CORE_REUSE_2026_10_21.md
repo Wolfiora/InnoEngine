@@ -4,7 +4,7 @@
 
 日期：2026-10-21。范围为当前四仓库工作区；本页不将架构门禁视为全源码行为证明。
 
-[阶段验收](NET10_BGCS301_FINAL_ACCEPTANCE_2026_10_20.md) · [当前问题](../open-items.md) · [Identity 强制标准](../../../docs/architecture/identity-and-reload.md)
+[阶段验收](NET10_BGCS301_FINAL_ACCEPTANCE_2026_10_20.md) · [当前问题](../open-items.md) · [Identity 强制标准](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/identity-and-reload.md)
 
 ## 对三个问题的回答
 

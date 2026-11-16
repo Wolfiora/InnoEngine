@@ -1,6 +1,6 @@
 # 两个开发入口验收（2026-10-10）
 
-[设计与边界](../../../docs/development/entry/README.md) · [架构索引](../../../docs/architecture/README.md) · [启动指南](../../../docs/platform/PRODUCT_STARTUP.md)
+[设计与边界](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/entry/README.md) · [架构索引](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [启动指南](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/platform/PRODUCT_STARTUP.md)
 
 ## 用户问题与源码结果
 

@@ -100,7 +100,7 @@ public struct Vector4Int : IEquatable<Vector4Int>
     ) =>
         a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
     /// <summary>
-    /// Interpolates linearly between two values without clamping the interpolation factor.
+    /// Clamps the interpolation factor to [0, 1] and truncates each interpolated component to an integer.
     /// </summary>
     /// <param name="a">
     /// The first operand or interpolation endpoint.

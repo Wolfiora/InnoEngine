@@ -1,6 +1,6 @@
 # Scene View System 失效与 Play 后插件退休失败
 
-[Issues 索引](README.md) · [Rendering Runtime](../../../../docs/modules/rendering/Inno.Rendering.Runtime.md) · [Scripting](../../../../docs/modules/editor/Inno.Editor.Scripting.md)
+[Issues 索引](README.md) · [Rendering Runtime](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/rendering/Inno.Rendering.Runtime.md) · [Scripting](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/modules/editor/Inno.Editor.Scripting.md)
 
 ## 结论
 

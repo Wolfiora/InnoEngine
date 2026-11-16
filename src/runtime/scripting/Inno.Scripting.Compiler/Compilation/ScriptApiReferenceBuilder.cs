@@ -55,15 +55,17 @@ internal static class ScriptApiReferenceBuilder
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        string contractFingerprint = CreateFingerprint(profile);
-        string fingerprint = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
-            string.Join('|', contractFingerprint, environment.fingerprint, baseReferences?.artifactFingerprint ?? string.Empty))));
-        string directory = Path.Combine(options.scriptApiDirectory, profile.name, fingerprint);
-        Directory.CreateDirectory(directory);
-        string[] implementationPaths = GetImplementationPaths(profile, environment);
         ScriptApiTypeExport[] allExports = profile.exports
             .SelectMany(static export => export.exports)
             .ToArray();
+        ScriptApiDocumentationBuilder.Inputs documentationInputs = ScriptApiDocumentationBuilder.Capture(allExports);
+        string contractFingerprint = CreateFingerprint(profile);
+        string fingerprint = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
+            string.Join('|', contractFingerprint, environment.fingerprint, baseReferences?.artifactFingerprint ?? string.Empty,
+                documentationInputs.identity))));
+        string directory = Path.Combine(options.scriptApiDirectory, profile.name, fingerprint);
+        Directory.CreateDirectory(directory);
+        string[] implementationPaths = GetImplementationPaths(profile, environment);
         HashSet<Type> exportedTypes = allExports
             .Select(static export => export.type)
             .ToHashSet();
@@ -119,10 +121,12 @@ internal static class ScriptApiReferenceBuilder
                     assemblyName,
                     logicalExports,
                     profile.namespaceMappings,
-                    profile.typeMappings);
+                    profile.typeMappings,
+                    documentationInputs);
             }
             ideReferencePaths.Add(referencePath);
         }
+        ScriptApiDocumentationBuilder.Verify(documentationInputs);
         ScriptApiArtifactCache.Collect(
             options.scriptApiDirectory,
             new[] { directory, baseReferences?.cacheDirectory });
@@ -294,7 +298,8 @@ internal static class ScriptApiReferenceBuilder
         string assemblyName,
         IReadOnlyList<ScriptApiTypeExport> exports,
         IReadOnlyList<ScriptApiNamespaceMapping> namespaceMappings,
-        IReadOnlyList<ScriptApiTypeMapping> typeMappings
+        IReadOnlyList<ScriptApiTypeMapping> typeMappings,
+        ScriptApiDocumentationBuilder.Inputs documentationInputs
     ) {
         Dictionary<string, string> mappings = namespaceMappings
             .GroupBy(static mapping => mapping.implementationNamespace, StringComparer.Ordinal)
@@ -307,7 +312,8 @@ internal static class ScriptApiReferenceBuilder
             assemblyName,
             exports,
             mappings,
-            typeMappings);
+            typeMappings,
+            documentationInputs);
     }
 
     private static string CreateFingerprint(ScriptApiProfile profile)

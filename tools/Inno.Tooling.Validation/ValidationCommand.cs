@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation;
 
@@ -20,12 +21,16 @@ public static class ValidationCommand
     /// <param name="arguments">
     /// The operation followed by explicit engine-root, base, dotnet, configuration, artifacts-path, output, plan,
     /// evidence, full, extended, cache-input or cache-output options. Cache archives contain immutable native payloads only.
+    /// Explicit docs-cache-root and docs-snapshot options select protected external documentation facts.
+    /// Optional docs-base-snapshot identifies changed pages and facts without rescanning an authoring checkout.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels child processes while retaining the first failure and completed diagnostics.
     /// </param>
     /// <returns>
-    /// Zero only when the requested operation succeeds and every required result is present and successful; otherwise one.
+    /// Zero when the requested operation succeeds, one for unsuccessful execution, or two when planning requires
+    /// explicitly prepared inputs. A blocked preparation report is written to preparation.json instead of producing
+    /// a new executable plan. The command never fetches native source inputs automatically.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// An operation or option is unknown, duplicated or missing its value.
@@ -47,7 +52,7 @@ public static class ValidationCommand
         for (int index = 1; index < arguments.Length; index += 2)
         {
             string key = arguments[index];
-            if (key is not ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output")
+            if (key is not ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot")
                 || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException($"Unknown, duplicate or incomplete validation option: {key}");
         }
@@ -59,10 +64,27 @@ public static class ValidationCommand
             options.GetValueOrDefault("--configuration", "Debug"))));
         string dotnet = options.GetValueOrDefault("--dotnet", "dotnet");
         Directory.CreateDirectory(output);
-        ValidationPlan plan = options.TryGetValue("--plan", out string? planPath)
-            ? Read<ValidationPlan>(planPath)
-            : await ValidationPlanner.CreateAsync(root, options.GetValueOrDefault("--base", "HEAD"), dotnet,
-                options.GetValueOrDefault("--configuration", "Debug"), artifacts, full, cancellationToken, extended).ConfigureAwait(false);
+        if (options.ContainsKey("--plan") && (options.ContainsKey("--docs-cache-root") || options.ContainsKey("--docs-snapshot")
+            || options.ContainsKey("--docs-base-snapshot")))
+            throw new ArgumentException("A supplied plan already fixes its documentation selection; regenerate the plan to change it.");
+        ValidationPlan plan;
+        if (options.TryGetValue("--plan", out string? planPath))
+            plan = Read<ValidationPlan>(planPath);
+        else
+        {
+            ValidationPlanningResult selected = await ValidationPlanner.CreateAsync(root, options.GetValueOrDefault("--base", "HEAD"), dotnet,
+                options.GetValueOrDefault("--configuration", "Debug"), artifacts, full, cancellationToken, extended,
+                options.GetValueOrDefault("--docs-cache-root"), options.GetValueOrDefault("--docs-snapshot"),
+                options.GetValueOrDefault("--docs-base-snapshot")).ConfigureAwait(false);
+            if (selected.preparation is not null)
+            {
+                await File.WriteAllTextAsync(Path.Combine(output, "preparation.json"), JsonSerializer.Serialize(selected.preparation,
+                    new JsonSerializerOptions { WriteIndented = true }), cancellationToken).ConfigureAwait(false);
+                Console.WriteLine("Planning blocked: " + selected.preparation.reason + " No new executable plan was produced. " + output);
+                return 2;
+            }
+            plan = selected.plan ?? throw new InvalidDataException("Planning produced neither an executable plan nor explicit preparation requirements.");
+        }
         if (!Path.GetFullPath(plan.root).Equals(root, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
             throw new InvalidDataException("The supplied plan belongs to another workspace.");
         if (plan.checks.Length == 0 || plan.checks.Select(static check => check.id).Distinct(StringComparer.Ordinal).Count() != plan.checks.Length)
@@ -87,6 +109,11 @@ public static class ValidationCommand
         {
             if (previous is null)
                 throw new ArgumentException("Evidence reconciliation requires --evidence FILE.");
+            using DocumentationSnapshot? documentation = plan.documentation is null ? null
+                : await DocumentationStore.OpenAsync(plan.documentation.cacheRoot, plan.documentation.snapshot,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (documentation is not null)
+                _ = await ValidationDocumentation.ReadCatalogAsync(plan, documentation, cancellationToken).ConfigureAwait(false);
             using var outputOwnership = plan.checks.Any(static check => check.kind == "build" && check.exclusion is null)
                 ? await ValidationWorkspace.AcquireReadAsync(plan, cancellationToken).ConfigureAwait(false) : null;
             Dictionary<string, string> current = await ValidationInputs.CaptureAsync(root, cancellationToken).ConfigureAwait(false);

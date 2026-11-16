@@ -20,7 +20,7 @@ internal static class ProjectBuildWorkflow
         BuildCommand command = BuildCommand.Parse(arguments);
         string engineRoot = BuildCommandContext.ResolveEngineRoot(command.engineRoot);
         int exitCode = await ExecuteAsync(command, engineRoot, cancellationToken).ConfigureAwait(false);
-        if (exitCode == 0)
+        if (exitCode == 0 && command.kind is BuildCommandKind.Game or BuildCommandKind.Plugin)
         {
             try
             {
@@ -40,6 +40,15 @@ internal static class ProjectBuildWorkflow
         string engineRoot,
         CancellationToken cancellationToken
     ) {
+        if (command.kind is BuildCommandKind.Scripts or BuildCommandKind.ImportSample)
+        {
+            string dotnet = StandardBuildEnvironment.ResolveManagedHost(command.dotnetHost);
+            using BuildWorkspace authoring = BuildWorkspace.Open(command.projectDirectory, dotnet, cancellationToken);
+            Console.WriteLine(command.kind == BuildCommandKind.Scripts
+                ? authoring.ExportProjectScripts(command.outputDirectory, command.generateIdeProjects, cancellationToken)
+                : authoring.ImportSample(command.sampleSource, cancellationToken).ToString());
+            return 0;
+        }
         string application = Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!;
         BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost);
         using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, engineRoot, cancellationToken).ConfigureAwait(false);
@@ -49,17 +58,8 @@ internal static class ProjectBuildWorkflow
             tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant() + extension));
         string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
         var tools = new ToolRunner(executables, includes, context.host.services.workspaces);
-        using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, command.supportPackRoot, context, tools);
-        if (command.kind == BuildCommandKind.ImportSample)
-        {
-            Console.WriteLine(workspace.ImportSample(command.sampleSource, cancellationToken));
-            return 0;
-        }
-        if (command.kind == BuildCommandKind.Scripts)
-        {
-            Console.WriteLine(workspace.ExportProjectScripts(command.outputDirectory, command.generateIdeProjects));
-            return 0;
-        }
+        using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, context.dotnetHost, cancellationToken);
+        BuildPipeline pipeline = workspace.CreatePipeline(context, command.supportPackRoot, tools);
         var progress = new ConsoleBuildProgress();
         BuildResult result;
         if (command.kind == BuildCommandKind.Game)
@@ -67,14 +67,14 @@ internal static class ProjectBuildWorkflow
             GameBuildRequest request = command.CreateGameRequest(workspace.LoadGameProfile(command.profilePath, command.gameTarget));
             // The command-line host has no UI scheduler. Keep the authoring owner on this thread
             // while preparing external tools, then capture its build snapshot before the first await.
-            using PlayerSupportPackLease prepared = workspace.pipeline.EnsurePlayerSupportPackAsync(
+            using PlayerSupportPackLease prepared = pipeline.EnsurePlayerSupportPackAsync(
                     request.profile.target, request.profile.managedDeployment, cancellationToken)
                 .GetAwaiter().GetResult();
-            result = await workspace.pipeline.BuildGameAsync(request, progress, cancellationToken);
+            result = await pipeline.BuildGameAsync(request, progress, cancellationToken);
         }
         else if (command.kind == BuildCommandKind.Plugin)
         {
-            result = await workspace.pipeline.BuildPluginAsync(
+            result = await pipeline.BuildPluginAsync(
                 command.CreatePluginRequest(workspace.projectId), progress, cancellationToken);
         }
         else

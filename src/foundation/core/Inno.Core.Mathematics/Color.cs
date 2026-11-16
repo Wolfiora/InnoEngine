@@ -4,8 +4,12 @@ using System.Runtime.CompilerServices;
 namespace Inno.Core.Mathematics;
 
 /// <summary>
-/// Represents an RGBA color with float components in the range [0, 1].
+/// Represents mutable RGBA channels whose constructor clamps finite inputs to [0, 1].
 /// </summary>
+/// <remarks>
+/// Direct field writes bypass constructor clamping. Keep channels finite and normalized before byte conversion.
+/// This value does not encode a color space or distinguish straight from premultiplied alpha.
+/// </remarks>
 public struct Color : IEquatable<Color>
 {
     /// <summary>
@@ -26,19 +30,19 @@ public struct Color : IEquatable<Color>
     public float a;
 
     /// <summary>
-    /// Creates a validated color instance.
+    /// Creates a color by clamping each supplied channel to [0, 1].
     /// </summary>
     /// <param name="r">
-    /// The r consumed by color; ownership remains with the caller unless explicitly stated otherwise.
+    /// The red channel.
     /// </param>
     /// <param name="g">
-    /// The g consumed by color; ownership remains with the caller unless explicitly stated otherwise.
+    /// The green channel.
     /// </param>
     /// <param name="b">
-    /// The second operand or interpolation endpoint.
+    /// The blue channel.
     /// </param>
     /// <param name="a">
-    /// The first operand or interpolation endpoint.
+    /// The alpha channel; one is opaque.
     /// </param>
     public Color(
         float r,
@@ -56,19 +60,19 @@ public struct Color : IEquatable<Color>
     /// Creates a normalized color from byte channel values.
     /// </summary>
     /// <param name="r">
-    /// The r consumed by from bytes; ownership remains with the caller unless explicitly stated otherwise.
+    /// The red byte channel.
     /// </param>
     /// <param name="g">
-    /// The g consumed by from bytes; ownership remains with the caller unless explicitly stated otherwise.
+    /// The green byte channel.
     /// </param>
     /// <param name="b">
-    /// The second operand or interpolation endpoint.
+    /// The blue byte channel.
     /// </param>
     /// <param name="a">
-    /// The first operand or interpolation endpoint.
+    /// The alpha byte channel; 255 is opaque.
     /// </param>
     /// <returns>
-    /// The validated color that represents the completed operation.
+    /// A color with each byte channel divided by 255.
     /// </returns>
     public static Color FromBytes(
         byte r,
@@ -80,10 +84,10 @@ public struct Color : IEquatable<Color>
     }
     
     /// <summary>
-    /// Converts normalized color channels to clamped byte values.
+    /// Converts normalized color channels to bytes by multiplying by 255 and truncating.
     /// </summary>
     /// <returns>
-    /// The validated (byte r, byte g, byte b, byte a) that represents the completed operation.
+    /// Red, green, blue and alpha bytes. Inputs must already be finite and in [0, 1]; conversion does not clamp field writes.
     /// </returns>
     public (byte R, byte G, byte B, byte A) ToBytes()
     {
@@ -96,11 +100,15 @@ public struct Color : IEquatable<Color>
     }
     
     /// <summary>
-    /// Packs the color channels into an unsigned ARGB value.
+    /// Packs normalized channels into the existing unsigned 0xAABBGGRR representation.
     /// </summary>
     /// <returns>
-    /// The validated uint that represents the completed operation.
+    /// Alpha in bits 24-31, blue in 16-23, green in 8-15 and red in 0-7.
     /// </returns>
+    /// <remarks>
+    /// Despite this member's name, the current numeric layout is ABGR. It yields RGBA bytes on a little-endian host.
+    /// Channels must already be finite and normalized; no color-space conversion or premultiplication is performed.
+    /// </remarks>
     public uint ToUInt32ARGB()
     {
         byte red = (byte)(r * 255);

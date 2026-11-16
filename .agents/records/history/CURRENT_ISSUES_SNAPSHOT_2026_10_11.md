@@ -9,14 +9,14 @@ Rebuild/engine 不再附带发布 Release Player Support Pack；缺省 Rebuild �
 默认和 SourceDebug 构建、232 项有效引用图、14 项定向回归、完整本机 Rebuild 和统一 Editor 重启已通过。
 原生目录选择器/Rider 菜单人工交互、macOS/Linux 实机及本轮 Web/AOT 发布未实测；历史准备耗时和第三方 Native 警告独立记录，后续日常启动整改以最新报告为准。
 
-[架构治理](../../../docs/architecture/README.md) · [Wiki 首页](../../../docs/README.md) · [正式问题台账](issues/2026-08-31-complete-issue-register.md)
+[架构治理](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/architecture/README.md) · [Wiki 首页](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/README.md) · [正式问题台账](issues/2026-08-31-complete-issue-register.md)
 
 2026-10-10 Editor 后续问题：已定位并修复 Task restore 继承 Rider SolutionPath 导致 Windows 构建要求 wasm-tools，
 以及 Viewport metrics 回写请求几何造成拖动冲突。日常 Rider 配置整理为 Editor/Build，Player 与多进程测试 fixture 保留实际职责。
 当前执行结果与界面重载限制见[本轮修复验收](EDITOR_STARTUP_VIEWPORT_ACCEPTANCE_2026_10_10.md)。
 
 2026-10-10 CI 核查：GitHub `dynamic / submit-nuget` 因未 checkout 同级 BindGen-CS，还原 Tasks 时出现三个 `MSB4025`。
-新增仓库自管的[依赖图 workflow 与切换说明](../../../docs/development/build/DEPENDENCY_SUBMISSION.md)；远端运行和自动扫描设置切换尚未完成。
+新增仓库自管的[依赖图 workflow 与切换说明](https://github.com/Wolfiora/InnoEngine/blob/a4e44769715c0577fb0a4c13b2d14ad998ddd8e1/docs/development/build/DEPENDENCY_SUBMISSION.md)；远端运行和自动扫描设置切换尚未完成。
 同时发现 `rendering-ci.yml` 使用旧项目路径和已删除的工具入口。本轮已同步两个 entry、固定 BGCS 子模块与 SourceDebug 源码配置；远端 workflow 尚未执行，不能据本地验收宣称 GitHub CI 全部通过。
 
 2026-10-09–10-10：SDL 共同窗口操作、BGFX 运行 surface 注入、附加窗口退休 R02-L、绑定/Task 成本 R03 的源码与本机可自动执行验收已完成，见[计划](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_PLAN.md)和[本轮验收](BACKEND_RUNTIME_BOUNDARY_OPTIMIZATION_ACCEPTANCE.md)。708 项回归通过，四条最终 Player 发布/运行、普通 Editor Debug/Release、真实后台 reload 与 229 项有效 MSBuild 图通过。Native 热阶段均值 84.915→24.475 秒，但整次热构建均值 236.338→250.723 秒，没有整体加速结论。最终 GUI reload 因 Computer Use 访问拒绝未执行；macOS/Linux 实机、多屏 DPI、声学和未覆盖的 GUI 操作保留证据缺口，不标记无保留实机验收完成。

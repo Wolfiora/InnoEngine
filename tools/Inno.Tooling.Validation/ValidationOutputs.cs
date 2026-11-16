@@ -17,7 +17,9 @@ internal static class ValidationOutputs
         Dictionary<string, string>? directoryCache = null
     ) {
         var outputs = new Dictionary<string, string>(StringComparer.Ordinal);
-        if (check.kind is not ("build" or "test" or "api" or "wiki" or "products" or "support-pack" or "release-bundle") || check.kind == "wiki" && !check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources")))
+        if (check.kind is not ("build" or "test" or "api" or "documentation-api" or "documentation-examples" or "products" or "support-pack" or "release-bundle")
+            || check.kind is "documentation-api" or "documentation-examples"
+            && !check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources")))
             return outputs;
         var directories = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         if (check.kind is "support-pack" or "release-bundle")

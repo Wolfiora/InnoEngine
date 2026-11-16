@@ -92,7 +92,9 @@ internal sealed class BuildCommand
             BuildCommandKind.Scripts => ["ide"],
             _ => []
         };
-        var allowed = new HashSet<string>(["engine-root", "tools-target", "dotnet", "project", "support-packs", "output", ..specific], StringComparer.Ordinal);
+        string[] preparation = kind is BuildCommandKind.Game or BuildCommandKind.Plugin
+            ? ["tools-target", "support-packs"] : [];
+        var allowed = new HashSet<string>(["engine-root", "dotnet", "project", "output", ..preparation, ..specific], StringComparer.Ordinal);
         foreach (string key in values.Keys)
             if (!allowed.Contains(key))
                 throw new ArgumentException($"Unknown argument '--{key}' for '{args[0]}'.");
@@ -140,6 +142,6 @@ internal sealed class BuildCommand
            + "  Project commands accept [--engine-root <checkout>] for an executable outside the source checkout.\n"
            + "  InnoEngine.Build game --tools-target <native-target> --project <dir> --support-packs <dir> --output <dir> [--profile <BuildProfile.inno>] --target <target> [--deployment <provider-id>] [--startup-scene <scene>]\n"
            + "  InnoEngine.Build plugin --tools-target <native-target> --project <dir> --output <package.iplugin> --display-name <name> [--dependencies <id,id>] [--include-dependencies]\n"
-           + "  InnoEngine.Build import-sample --tools-target <native-target> --project <dir> --source <plugin-id::~Sample>\n"
-           + "  InnoEngine.Build scripts --tools-target <native-target> --project <dir> --output <dir> [--ide]";
+           + "  InnoEngine.Build import-sample --project <dir> --source <plugin-id::~Sample> [--dotnet <SDK>]\n"
+           + "  InnoEngine.Build scripts --project <dir> --output <dir> [--dotnet <SDK>] [--ide]";
 }

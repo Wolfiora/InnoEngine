@@ -17,7 +17,7 @@ internal sealed class DocumentationSourceModels
     private readonly IReadOnlyList<MetadataReference> m_references;
     private readonly IReadOnlyList<MetadataReference> m_frameworkReferences;
     private readonly HashSet<string> m_projectNames;
-    private readonly WikiProjectReferences? m_projectReferences;
+    private readonly DocumentationProjectReferences? m_projectReferences;
     private readonly CancellationToken m_cancellation;
     private readonly ICollection<string>? m_failures;
     private readonly HashSet<string> m_unavailableProjects = new(StringComparer.OrdinalIgnoreCase);
@@ -28,7 +28,7 @@ internal sealed class DocumentationSourceModels
     internal DocumentationSourceModels(
         string repositoryRoot,
         string configuration,
-        WikiProjectReferences? projectReferences = null,
+        DocumentationProjectReferences? projectReferences = null,
         CancellationToken cancellationToken = default,
         ICollection<string>? failures = null
     ) {
@@ -38,7 +38,7 @@ internal sealed class DocumentationSourceModels
         string[] projects = new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" }
             .SelectMany(folder => RepositorySourceInventory.Files(
                 Path.Combine(repositoryRoot, folder), "*.csproj"))
-            .Where(path => IsSourcePath(path) && !WikiProjectCoverageValidator.IsDeclaredTestProject(path))
+            .Where(path => IsSourcePath(path) && !RepositorySourceInventory.IsDeclaredTestProject(path))
             .ToArray();
         m_projectNames = projects.Select(Path.GetFileNameWithoutExtension)
             .OfType<string>().ToHashSet(StringComparer.Ordinal);

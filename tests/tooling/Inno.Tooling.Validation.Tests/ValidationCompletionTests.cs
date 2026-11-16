@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Testing.Source;
+using Inno.Tooling.Documentation;
 using Xunit;
 
 namespace Inno.Tooling.Validation.Tests;
@@ -23,7 +24,8 @@ public sealed class ValidationCompletionTests
     private static async Task ChangedUnionRootsAsync(bool variant, bool lateSelection = false)
     {
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
+        // Source capture and three real compilation cycles prove content correctness, not a short latency budget.
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
         const string C_FIXTURE = "tests/input/fixtures/Inno.Input.CompilationFixture";
         const string C_PROJECT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
         const string C_TEST = "tests/input/Inno.Input.Tests/UnionCompilationProbe.cs";
@@ -70,16 +72,6 @@ public sealed class ValidationCompletionTests
                 </Project>
                 """, StringComparison.Ordinal));
         }
-        repository.Write("docs/development/testing/Inno.Input.CompilationFixture.md", """
-            # Inno.Input.CompilationFixture
-
-            实际编译依赖验收 fixture。`Probe.Read()` 返回本次源码编译的整数值，无资源所有权转移。
-
-            <!-- api: T:Inno.Input.CompilationFixture.Probe 9c468c0c8fa3aea2a078ea624ebe2929e3fed537d09564bcbb2c7745d1c0912d -->
-            <!-- api: M:Inno.Input.CompilationFixture.Probe.Read 7edd9c40bdee248e7e49e6c1af581edc0817c59232964962098e5202bf55a1ff -->
-            """);
-        const string C_INDEX = "docs/development/testing/README.md";
-        repository.Write(C_INDEX, File.ReadAllText(repository.PathOf(C_INDEX)) + "\n[Compilation fixture](Inno.Input.CompilationFixture.md)\n");
         repository.Write("Directory.Build.targets", File.ReadAllText(repository.PathOf("Directory.Build.targets")).Replace("</Project>", """
             <Target Name="RecordDependencyBuild" AfterTargets="Build" Condition="'$(MSBuildProjectName)' == 'Inno.Core.IO'">
               <WriteLinesToFile File="$(ArtifactsPath)/dependency-builds.log" Lines="$(MSBuildProjectFullPath)" Overwrite="false" />
@@ -90,6 +82,10 @@ public sealed class ValidationCompletionTests
             "--solution-folder", "tests/input/fixtures");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the compilation dependency and its real assertion");
+        var documentation = new ValidationDocumentationFixture(repository);
+        documentation.Initialize();
+        await documentation.CaptureAsync(C_FIXTURE + "/Inno.Input.CompilationFixture.csproj");
+        DocumentationResult documentationSnapshot = await documentation.IndexAsync();
 
         string dependencyOutput = string.Empty;
         string dependencyBuildLog = string.Empty;
@@ -124,7 +120,7 @@ public sealed class ValidationCompletionTests
                     .Replace("Assert.Equal(" + (value - 1), "Assert.Equal(" + value, StringComparison.Ordinal));
                 File.SetLastWriteTimeUtc(path, timestamp);
             }
-            using (JsonDocument plan = await repository.PlanAsync())
+            using (JsonDocument plan = await documentation.PlanAsync(documentationSnapshot))
             {
                 Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
                 Assert.Equal(2, plan.RootElement.GetProperty("owners").GetArrayLength());
@@ -172,6 +168,14 @@ public sealed class ValidationCompletionTests
                 throw new InvalidOperationException("Union compilation failed for value " + value + ":\n"
                     + diagnostics, failure);
             }
+            if (variant && value >= 3)
+            {
+                using JsonDocument resolved = JsonDocument.Parse(File.ReadAllText(repository.PathOf(output + "/managed-resolved-sdk-graph.json")));
+                JsonElement owner = resolved.RootElement.EnumerateArray().Single(snapshot => snapshot.GetProperty("Path").GetString()!
+                    .EndsWith("Inno.Input.CompilationFixture.csproj", StringComparison.Ordinal));
+                Assert.Contains(owner.GetProperty("Variants").EnumerateArray(), instance =>
+                    instance.GetProperty("Properties").GetProperty("TargetPath").GetString() != owner.GetProperty("Properties").GetProperty("TargetPath").GetString());
+            }
             if (value == 3)
             {
                 outputTimestamp = File.GetLastWriteTimeUtc(dependencyOutput);
@@ -188,6 +192,15 @@ public sealed class ValidationCompletionTests
                     Assert.Equal(dependencyBuilds, File.ReadAllLines(dependencyBuildLog).Length);
                 }
                 Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
+                if (variant)
+                {
+                    using DocumentationSnapshot reader = await DocumentationStore.OpenAsync(documentation.cache, documentationSnapshot.snapshot);
+                    DocumentationCatalogReport catalog = await reader.ExportCatalogAsync();
+                    string reference = catalog.references.Single(item => item.model == "source-clr").identity;
+                    File.WriteAllText(Path.Combine(documentation.cache, "references", reference, "reference.json"), "damaged immutable source facts");
+                    InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf(output + "/results.json")));
+                    Assert.Contains("integrity mismatch", failure.Message);
+                }
             }
         }
     }
@@ -302,7 +315,7 @@ public sealed class ValidationCompletionTests
             + "while (-not (Test-Path -LiteralPath '" + release.Replace("'", "''", StringComparison.Ordinal) + "')) { Start-Sleep -Milliseconds 10 }\n");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare a coordinated closing-read failure fixture");
-        repository.Write("docs/README.md", File.ReadAllText(repository.PathOf("docs/README.md")) + "\n收尾证据验收。\n");
+        repository.Write("README.md", File.ReadAllText(repository.PathOf("README.md")) + "\nClosing evidence acceptance.\n");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(plan.RootElement.GetProperty("owners").EnumerateArray());
         Task<int> execution = repository.RunAsync(cancellation.Token);

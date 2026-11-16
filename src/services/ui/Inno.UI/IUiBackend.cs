@@ -123,10 +123,11 @@ public interface IUiBackend : IDisposable
     /// The target document element ID.
     /// </param>
     /// <param name="text">
-    /// Escaped Unicode replacement text.
+    /// Plain Unicode replacement text; the implementation escapes it for its source language.
     /// </param>
     /// <returns>
-    /// True when the element exists and its text was changed.
+    /// True when the element exists and the replacement was applied; false when the element is absent.
+    /// This is not a comparison with the preceding text.
     /// </returns>
     bool SetText(
         UiContextHandle context,
@@ -150,7 +151,8 @@ public interface IUiBackend : IDisposable
     /// Explicitly tagged replacement document fragment.
     /// </param>
     /// <returns>
-    /// True when the element exists and its content was changed.
+    /// True when the element exists and the fragment was applied; false when the element is absent.
+    /// This is not a comparison with the preceding content.
     /// </returns>
     bool SetContent(
         UiContextHandle context,
@@ -177,7 +179,8 @@ public interface IUiBackend : IDisposable
     /// New attribute value.
     /// </param>
     /// <returns>
-    /// True when the element exists and its attribute was changed.
+    /// True when the element exists and the attribute was assigned; false when the element is absent.
+    /// This is not a comparison with the preceding value.
     /// </returns>
     bool SetAttribute(
         UiContextHandle context,
@@ -205,7 +208,8 @@ public interface IUiBackend : IDisposable
     /// Whether the CSS class is enabled.
     /// </param>
     /// <returns>
-    /// True when the element exists and its class was changed.
+    /// True when the element exists and its class state was assigned; false when the element is absent.
+    /// This is not a comparison with the preceding state.
     /// </returns>
     bool SetClass(
         UiContextHandle context,

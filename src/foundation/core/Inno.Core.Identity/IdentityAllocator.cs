@@ -44,8 +44,12 @@ public sealed class IdentityAllocator
     public static IdentityAllocator current => S_CURRENT_SCOPE.current;
 
     /// <summary>
-    /// Gets the number of currently registered live identity objects.
+    /// Gets the number of currently registered identity entries.
     /// </summary>
+    /// <remarks>
+    /// Registry entries are weak. An entry whose object has been collected may remain counted until a lookup
+    /// or registration observes and removes it. This property is not a strong-reference count or a liveness test.
+    /// </remarks>
     public int count => m_registry.count;
 
     /// <summary>
@@ -83,11 +87,18 @@ public sealed class IdentityAllocator
     /// The identity object owned by this runtime session.
     /// </param>
     /// <param name="persistentId">
-    /// An optional explicit persistent identity; an identity is generated when omitted or empty.
+    /// An optional persistent identity override. When omitted, the object's existing persistent identity is retained.
+    /// An empty resolved identity is replaced with a newly generated identity.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when the object was newly registered; otherwise, <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="obj"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when a different live object is already registered with the resolved persistent identity.
+    /// </exception>
     public bool Register(
         IdentityObject obj,
         Guid? persistentId = null
@@ -132,6 +143,9 @@ public sealed class IdentityAllocator
     /// <returns>
     /// <see langword="true"/> when the object was registered; otherwise, <see langword="false"/>.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="obj"/> is null.
+    /// </exception>
     /// <exception cref="AggregateException">
     /// Thrown after removal when one or more observers fail.
     /// </exception>
