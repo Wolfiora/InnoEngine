@@ -31,8 +31,13 @@ internal sealed record DocumentationApiFragment(
         string? symbol = Field("symbol");
         if (symbol is null) return null;
         string source = Field("source") ?? "xml";
-        if (source is not ("xml" or "manual"))
-            throw new InvalidDataException("API source must be xml or manual: " + path);
+        if (string.IsNullOrWhiteSpace(source))
+            throw new InvalidDataException("API source must be xml or a nonempty author name: " + path);
+        if (map.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
+            && !IsNull(description)
+            && (description is not YamlSequenceNode items || items.Children.Count == 0
+                || items.Children.Any(item => item is not YamlScalarNode scalar || (string.IsNullOrWhiteSpace(scalar.Value) || IsNull(scalar)))))
+            throw new InvalidDataException("API description must be null or a nonempty list of text: " + path);
         string uid = Field("uid") ?? throw new InvalidDataException("API fragment has no stable identity: " + path);
         string body = text[(block.Span.End + 1)..];
         string? stale = Field("outdated");
@@ -44,6 +49,21 @@ internal sealed record DocumentationApiFragment(
             ? node is YamlScalarNode scalar ? scalar.Value : throw new InvalidDataException("API frontmatter requires a scalar " + name + ": " + path)
             : null;
     }
+
+    private static bool IsNull(YamlNode node)
+        => node is YamlScalarNode { Style: YamlDotNet.Core.ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };
+
+    internal string[] Summaries(string documentation)
+    {
+        if (metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? value)
+            && value is YamlSequenceNode sequence)
+            return sequence.Children.Cast<YamlScalarNode>().Select(item => item.Value!).ToArray();
+        return DocumentationXml.Read(documentation).summaries.ToArray();
+    }
+
+    internal string TableDescription(string documentation)
+        => string.Join("<br><br>", Summaries(documentation).Select(summary => DocumentationApiPresentation.Cell(
+            Markdown.ToPlainText(summary).Trim())));
 
     internal static YamlMappingNode ReadMetadata(
         string path,

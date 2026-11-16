@@ -98,7 +98,7 @@ internal static class DocumentationApiContent
                 if (existing is not null && existing.symbol != fact.key) throw new InvalidDataException("Registered API identity changed: " + old.path);
                 if (old.path != path && existing is not null) Edit(old.path, null);
             }
-            if (existing?.source == "manual")
+            if (existing is not null && existing.source != "xml")
             {
                 // Synchronization owns metadata; the authored body remains byte-for-byte intact.
                 Edit(path, Fragment(entry, fact, existing.body, existing));
@@ -173,7 +173,7 @@ internal static class DocumentationApiContent
     internal static bool IsOutdated(
         DocumentationApiFragment fragment,
         string contract
-    ) => fragment.source == "manual" && (fragment.outdated || fragment.reviewed != contract);
+    ) => fragment.source != "xml" && (fragment.outdated || fragment.reviewed != contract);
 
     internal static DocumentationApiPlan Review(
         string root,
@@ -192,8 +192,8 @@ internal static class DocumentationApiContent
             throw new InvalidDataException("Removed API content cannot be marked verified: " + page);
         DocumentationApiFragment fragment = DocumentationApiFragment.Read(page, File.ReadAllText(path))
             ?? throw new InvalidDataException("Registered API page has no symbol: " + page);
-        if (fragment.symbol != entry.symbol || fragment.source != "manual")
-            throw new InvalidDataException("Review requires matching source: manual content: " + page);
+        if (fragment.symbol != entry.symbol || fragment.source == "xml")
+            throw new InvalidDataException("Review requires matching named-author content: " + page);
         if (string.IsNullOrWhiteSpace(fragment.body)
             || Normalize(fragment.body) == Normalize(DocumentationXml.Read(contexts[0].documentation).body))
             throw new InvalidDataException("Write an independent explanation before acknowledging review: " + page);
@@ -209,7 +209,7 @@ internal static class DocumentationApiContent
         DocumentationApiFragment? previous = null,
         bool acknowledgeReview = false
     ) {
-        bool manual = previous?.source == "manual";
+        bool manual = previous is not null && previous.source != "xml";
         var generated = new YamlMappingNode
         {
             { "uid", previous?.uid ?? "api." + DocumentationMarkdown.Hash(entry.symbol) },
@@ -221,9 +221,11 @@ internal static class DocumentationApiContent
             { "reviewed", manual && !acknowledgeReview ? previous!.reviewed ?? "" : entry.contract }
         };
         if (fact.scope is not null) generated.Add("apiScope", fact.scope);
+        generated.Add("contracts", previous is not null && previous.metadata.Children.TryGetValue(new YamlScalarNode("contracts"), out YamlNode? contracts) ? contracts : new YamlSequenceNode());
         var authored = new YamlMappingNode
         {
-            { "source", manual ? "manual" : "xml" },
+            { "source", manual ? previous!.source : "xml" },
+            { "description", previous is not null && previous.metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description) ? description : new YamlScalarNode("null") { Style = YamlDotNet.Core.ScalarStyle.Plain } },
             { "outdated", manual && !acknowledgeReview && IsOutdated(previous!, entry.contract) ? "true" : "false" }
         };
         if (previous is not null)

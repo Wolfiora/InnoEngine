@@ -99,7 +99,7 @@ try {
     [void](Invoke-FixtureGit $author @('config', 'user.email', 'author@example.invalid'))
     $registry = Get-Content (Join-Path $author 'reference/api/content.json') -Raw | ConvertFrom-Json
     $fragment = $registry.entries[0].path
-    $manual = [IO.File]::ReadAllText((Join-Path $author $fragment)).Replace('source: xml', 'source: manual') + "`nA concurrent author owns this explanation.`n"
+    $manual = [IO.File]::ReadAllText((Join-Path $author $fragment)).Replace('source: xml', 'source: FLwolfy') + "`nA concurrent author owns this explanation.`n"
     Write-Text (Join-Path $author $fragment) $manual
     [void](Invoke-FixtureGit $author @('add', '--', $fragment))
     [void](Invoke-FixtureGit $author @('commit', '-m', 'docs(api): take ownership during synchronization'))

@@ -19,7 +19,7 @@ namespace Inno.Tooling.Documentation.Indexing;
 internal static class DocumentationMarkdown
 {
     // Changes to parsing, tokenization or cached contracts must change this schema identity.
-    internal const string C_SCHEMA = "inno-doc/5;markdig/1.5.1;yaml/16.3.0;tokens/1";
+    internal const string C_SCHEMA = "inno-doc/6;markdig/1.5.1;yaml/16.3.0;tokens/1";
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder()
         .UseYamlFrontMatter().UsePipeTables().UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
         .UseGenericAttributes().Build();
@@ -72,6 +72,7 @@ internal static class DocumentationMarkdown
             // Ordinary documentation has no executable HTML surface. Layout belongs to the website theme.
             string remaining = Regex.Replace(fragment, @"<!--(?:(?!-->)[\s\S])*-->", string.Empty);
             remaining = Regex.Replace(remaining, "<a id=\"api-[a-f0-9]+\">|</a>", string.Empty);
+            remaining = remaining.Replace("<br>", string.Empty, StringComparison.Ordinal);
             if (!string.IsNullOrWhiteSpace(remaining))
                 throw new InvalidDataException("Documentation permits only comments and explicit API anchors as HTML: " + path);
         }

@@ -89,7 +89,7 @@ internal static class DocumentationApiComposition
                 if (!visited.Add(ancestor)) throw new InvalidDataException("Cyclic API containment: " + fact.key);
                 ancestors.Add(fragments[ancestor]);
             }
-            string header = Header(fragment, type, entry.title, ancestors);
+            string header = Header(fragment, type, entry.title, ancestors, out YamlMappingNode headerMetadata);
             var text = new StringBuilder(header).Append("\n\n");
             string body = fragment.body.Trim();
             string status = Status(fragment, type);
@@ -102,10 +102,10 @@ internal static class DocumentationApiComposition
             text.Append("# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             // Preserve XML element boundaries: multiple paragraphs in one summary are still one item.
             DocumentationXmlContent xml = DocumentationXml.Read(fact.documentation);
-            string summary = string.Join("\n\n", xml.summaries.Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal)));
+            string summary = string.Join("\n\n", fragment.Summaries(fact.documentation).Select(part => "- " + part.Replace("\n", "\n  ", StringComparison.Ordinal)));
             if (summary.Length != 0)
                 text.Append("> ").Append(summary.Replace("\n", "\n> ", StringComparison.Ordinal)).Append("\n\n");
-            if (fragment.metadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
+            if (headerMetadata.Children[new YamlScalarNode("contracts")] is YamlSequenceNode contracts && contracts.Children.Count != 0)
             {
                 text.Append("## Required contracts\n\n");
                 foreach (YamlScalarNode contract in contracts.Children)
@@ -144,7 +144,7 @@ internal static class DocumentationApiComposition
                             label += child.id.Contains('(') ? child.id[child.id.IndexOf('(')..] : " (" + child.kind + ")";
                         text.Append("| ").Append(group.Key).Append(" | [").Append(DocumentationApiPresentation.Cell(label)).Append("](")
                             .Append(Path.GetRelativePath(Path.GetDirectoryName(entry.path)!, member.path).Replace('\\', '/'))
-                            .Append(") | ").Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Read(child.documentation).summary))).Append(" |\n");
+                            .Append(") | ").Append(fragments[member.symbol].TableDescription(child.documentation)).Append(" |\n");
                     }
                 }
             }
@@ -152,6 +152,9 @@ internal static class DocumentationApiComposition
                 .Append('/').Append(fact.source).Append("#L").Append(fact.line).Append(")\n");
             pages.Add(entry.path, text.ToString());
         }
+        // Category tables and queries use the same effective summaries as type pages.
+        foreach (var category in DocumentationApiNavigation.Create(registry.entries, facts, DocumentationApiPresentation.ProjectDescriptions(root), fragments))
+            pages[category.Key] = category.Value;
         return new(pages, inputs, origins);
 
         void AppendSymbol(
@@ -190,10 +193,13 @@ internal static class DocumentationApiComposition
         DocumentationApiFragment fragment,
         DocumentationApiFact[] contexts,
         string title,
-        IReadOnlyList<DocumentationApiFragment> ancestors
+        IReadOnlyList<DocumentationApiFragment> ancestors,
+        out YamlMappingNode metadata
     ) {
         // Query composition updates only its in-memory projection; synchronization owns persisted metadata.
-        YamlMappingNode metadata = fragment.metadata;
+        metadata = new(fragment.metadata.Children);
+        // Render the authoring list into content rather than the site's scalar SEO field.
+        metadata.Children.Remove(new YamlScalarNode("description"));
         metadata.Children[new YamlScalarNode("outdated")] = new YamlScalarNode(Status(fragment, contexts) == "Outdated" ? "true" : "false");
         metadata.Children[new YamlScalarNode("title")] = new YamlScalarNode(title);
         metadata.Children[new YamlScalarNode("owners")] = new YamlSequenceNode(new YamlScalarNode(contexts[0].project));

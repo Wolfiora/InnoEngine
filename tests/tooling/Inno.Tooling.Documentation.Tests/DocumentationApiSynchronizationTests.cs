@@ -58,7 +58,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string[] paths = new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment).ToArray();
         Assert.Equal(4, paths.Distinct().Count());
-        string manual = File.ReadAllText(paths[2]).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        string manual = File.ReadAllText(paths[2]).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nKeep the target alive while the operation runs.\n";
         File.WriteAllText(paths[2], manual);
         SetTypes((C_TYPE, "public class Inno.Probe.Value"),
@@ -105,7 +105,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string manual = File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nUse this count after the owner has published the snapshot.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated source documentation.");
@@ -131,7 +131,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string manual = File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nKeep this independently authored lifetime constraint.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated XML requires a review.");
@@ -181,7 +181,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string relative = Path.GetRelativePath(m_root, member).Replace('\\', '/');
         Task<int> Review(string path) => DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", path]);
         await Assert.ThrowsAsync<InvalidDataException>(() => Review(relative));
-        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal));
+        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal));
         await Assert.ThrowsAsync<InvalidDataException>(() => Review(relative));
         await Assert.ThrowsAsync<InvalidDataException>(() => Review("content/en/manual/task.md"));
         File.AppendAllText(member, "\nIndependent explanation.\n");
@@ -212,7 +212,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        if (manual) File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal));
+        if (manual) File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal));
         string before = File.ReadAllText(member);
         Bind(member: false);
         await Sync();
@@ -221,11 +221,11 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     }
 
     [Fact]
-    public async Task UnknownSourceCannotOverwriteAnyContent()
+    public async Task BlankAuthorCannotOverwriteAnyContent()
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string invalid = File.ReadAllText(member).Replace("source: xml", "source: manul", StringComparison.Ordinal);
+        string invalid = File.ReadAllText(member).Replace("source: xml", "source: \"\"", StringComparison.Ordinal);
         File.WriteAllText(member, invalid);
         Bind(description: "New XML.");
         await Assert.ThrowsAsync<InvalidDataException>(Sync);
@@ -354,14 +354,14 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string manual = File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nRead the count only after publication.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated XML.", countType: "long");
         await Sync();
         Write("content/en/manual/ownership.md", "---\nuid: manual.ownership\ntitle: Ownership and retirement\nkind: explanation\n---\n\n# Ownership and retirement\n\n## Release\n\nKeep the owner alive until all borrows end.\n");
         string typePath = Fragment(C_TYPE);
-        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("kind: api", "kind: api\ncontracts: [manual.ownership#release]\nexampleMode: host\nexampleProjects: [Inno.Probe]", StringComparison.Ordinal));
+        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("contracts: []", "contracts: [manual.ownership#release]\nexampleMode: host\nexampleProjects: [Inno.Probe]", StringComparison.Ordinal));
         string cache = Path.Combine(m_root, "artifacts", "query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -379,7 +379,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains(Path.GetRelativePath(m_root, member).Replace('\\', '/'), catalog.sourceFiles.Keys);
         DocumentationResult result = await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", "source-clr"));
         DocumentationHit hit = Assert.Single(result.hits);
-        Assert.Equal("manual", hit.contentSourceKind);
+        Assert.Equal("Ada Example", hit.contentSourceKind);
         Assert.Contains("public long Inno.Probe.Value.count", hit.text);
         Assert.Contains("Read the count only after publication.", hit.text);
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
@@ -408,7 +408,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/engine.lock.json", binding.ToJsonString());
         await Sync();
         string member = Fragment(C_MEMBER);
-        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\n```csharp\nvar count = value.count;\n```\n");
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
@@ -421,7 +421,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
 
     [Theory]
     [InlineData("xml", true)]
-    [InlineData("manual", false)]
+    [InlineData("Ada Example", false)]
     [InlineData("", true)]
     public async Task EditorialNoticeFollowsOwnershipAndSourceLinkEndsThePage(string source, bool notice)
     {
@@ -494,7 +494,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string current = Fragment(C_MEMBER);
         string legacy = Path.Combine(Path.GetDirectoryName(current)!, "_members/count.md");
         Directory.CreateDirectory(Path.GetDirectoryName(legacy)!);
-        string text = File.ReadAllText(current).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        string text = File.ReadAllText(current).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nKeep the original explanation. [Owner](../index.md).\n";
         File.WriteAllText(legacy, text);
         File.Delete(current);
@@ -508,7 +508,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Assert.False(File.Exists(legacy));
         Assert.Contains("Keep the original explanation. [Owner](index.md).", File.ReadAllText(current));
-        Assert.Contains("source: manual", File.ReadAllText(current));
+        Assert.Contains("source: Ada Example", File.ReadAllText(current));
         string guide = File.ReadAllText(Path.Combine(m_root, "content/en/manual/count.md"));
         Assert.DoesNotContain("_members", guide);
         Assert.DoesNotContain("index.md#api-", guide);
@@ -533,7 +533,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string type = Fragment(C_TYPE);
-        string text = File.ReadAllText(type).Replace("kind: api", "contracts: [manual.ownership#release]\naliases: [persistent value]\nexampleMode: host\nexampleProjects: [Inno.Probe]\nkind: api", StringComparison.Ordinal);
+        string text = File.ReadAllText(type).Replace("contracts: []", "contracts: [manual.ownership#release]\naliases: [persistent value]\nexampleMode: host\nexampleProjects: [Inno.Probe]", StringComparison.Ordinal);
         File.WriteAllText(type, text);
         Bind(description: "Fresh XML still needs shared ownership guidance.");
         await Sync();
@@ -626,7 +626,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string manual = File.ReadAllText(member).Replace("source: xml", "source: manual", StringComparison.Ordinal)
+        string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nRead this value only after publication.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated package XML.");
@@ -710,7 +710,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await DocumentationCommand.ExecuteAsync(["api-package", "--docs-root", m_root, "--package", package]);
         Bind();
         string member = Fragment(C_MEMBER);
-        string invalid = File.ReadAllText(member).Replace("source: xml", "source: manul", StringComparison.Ordinal);
+        string invalid = File.ReadAllText(member).Replace("source: xml", "source: \"\"", StringComparison.Ordinal);
         File.WriteAllText(member, invalid);
         byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
         byte[] facts = File.ReadAllBytes(Path.Combine(m_root, "reference/api/probe.json"));
@@ -757,6 +757,54 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     }
 
     [Fact]
+    public async Task NamedAuthorAndDescriptionsSurviveSyncAndReachTablesAndQueries()
+    {
+        await Sync();
+        string typePath = Fragment(C_TYPE);
+        string memberPath = Fragment(C_MEMBER);
+        File.WriteAllText(typePath, File.ReadAllText(typePath).Replace("description: null", "description: [Custom type introduction, Second type paragraph]", StringComparison.Ordinal));
+        string original = File.ReadAllText(memberPath).Replace("source: xml", "source: Ada Lovelace", StringComparison.Ordinal)
+            .Replace("description: null", "description: [Custom member introduction, Second member paragraph]", StringComparison.Ordinal);
+        string body = "\n\n## Remarks\n\nKeep this author explanation byte for byte.\n";
+        File.WriteAllText(memberPath, original[..(original.Length - Body(original).Length)] + body);
+        Bind(description: "Changed XML.", countType: "long");
+        await Sync();
+        string saved = File.ReadAllText(memberPath);
+        Assert.Contains("source: Ada Lovelace", saved);
+        Assert.Contains("outdated: true", saved);
+        Assert.Equal(body, Body(saved));
+        Assert.True(saved.IndexOf("contracts:", StringComparison.Ordinal) < saved.IndexOf("# Authoring metadata", StringComparison.Ordinal));
+        string cache = Path.Combine(m_root, "artifacts/query");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
+        DocumentationPageInfo type = Assert.Single(catalog.pages.Where(page => page.symbols.ContainsKey(C_TYPE)));
+        DocumentationPageInfo member = Assert.Single(catalog.pages.Where(page => page.symbols.ContainsKey(C_MEMBER)));
+        Assert.Contains("> - Custom type introduction", type.markdown);
+        Assert.Contains("Custom member introduction<br><br>Second member paragraph", type.markdown);
+        Assert.Contains("> - Second member paragraph", member.markdown);
+        Assert.Contains("public long", member.markdown);
+        Assert.Contains(catalog.pages, page => page.markdown.Contains("Custom type introduction<br><br>Second type paragraph", StringComparison.Ordinal));
+        DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits);
+        Assert.Contains("Custom member introduction", hit.text);
+        Assert.DoesNotContain("Changed XML.", member.markdown);
+    }
+
+    [Theory]
+    [InlineData("[]")]
+    [InlineData("wrong scalar")]
+    [InlineData("[null]")]
+    public async Task InvalidDescriptionDoesNotOverwriteContent(string value)
+    {
+        await Sync();
+        string path = Fragment(C_TYPE);
+        string invalid = File.ReadAllText(path).Replace("description: null", "description: " + value, StringComparison.Ordinal);
+        File.WriteAllText(path, invalid);
+        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        Assert.Equal(invalid, File.ReadAllText(path));
+    }
+
+    [Fact]
     public async Task PartialSummariesRemainSeparateQuotedItemsWithoutSplittingTheirParagraphs()
     {
         SetTypeDocumentation("""
@@ -786,7 +834,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         SetTypeDocumentation("<member><summary>Original summary.</summary><remarks>Original remarks.</remarks></member>");
         await Sync();
         string path = Fragment(C_TYPE);
-        string text = File.ReadAllText(path).Replace("source: xml", "source: manual", StringComparison.Ordinal);
+        string text = File.ReadAllText(path).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal);
         string body = "\n\n## Remarks\n\nMy independently maintained ownership explanation.\n";
         File.WriteAllText(path, text[..(text.Length - Body(text).Length)] + body);
         SetTypeDocumentation("<member><summary>Updated source summary.</summary><remarks>Changed source remarks.</remarks></member>");

@@ -13,7 +13,8 @@ internal static class DocumentationApiNavigation
     internal static IReadOnlyDictionary<string, string> Create(
         IEnumerable<DocumentationApiContentEntry> entries,
         IReadOnlyDictionary<string, DocumentationApiFact[]> facts,
-        IReadOnlyDictionary<string, string> descriptions
+        IReadOnlyDictionary<string, string> descriptions,
+        IReadOnlyDictionary<string, DocumentationApiFragment>? fragments = null
     ) {
         var pages = new SortedDictionary<string, string>(StringComparer.Ordinal);
         DocumentationApiContentEntry[] types = entries.Where(entry => entry.type == entry.symbol && facts.ContainsKey(entry.symbol)).ToArray();
@@ -69,14 +70,14 @@ internal static class DocumentationApiNavigation
                 {
                     text.Append("## ").Append(letter.Key).Append("\n\n");
                     text.Append("| Type | Purpose |\n| --- | --- |\n");
-                    foreach (DocumentationApiContentEntry type in letter) AppendType(text, path, type, direct, facts);
+                    foreach (DocumentationApiContentEntry type in letter) AppendType(text, path, type, direct, facts, fragments);
                     text.Append('\n');
                 }
             }
             else if (direct.Length != 0)
             {
                 text.Append("## Types\n\n| Type | Purpose |\n| --- | --- |\n");
-                foreach (DocumentationApiContentEntry type in direct) AppendType(text, path, type, direct, facts);
+                foreach (DocumentationApiContentEntry type in direct) AppendType(text, path, type, direct, facts, fragments);
                 text.Append('\n');
             }
             pages.Add(path, text.ToString());
@@ -89,13 +90,16 @@ internal static class DocumentationApiNavigation
         string page,
         DocumentationApiContentEntry type,
         DocumentationApiContentEntry[] siblings,
-        IReadOnlyDictionary<string, DocumentationApiFact[]> facts
+        IReadOnlyDictionary<string, DocumentationApiFact[]> facts,
+        IReadOnlyDictionary<string, DocumentationApiFragment>? fragments
     ) {
         string title = siblings.Count(sibling => sibling.title == type.title) > 1
             ? DocumentationApiContent.QualifiedTitle(facts[type.symbol][0]) : type.title;
         text.Append("| [").Append(DocumentationApiPresentation.Cell(title)).Append("](")
             .Append(Relative(page, type.path)).Append(") | ")
-            .Append(DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Read(facts[type.symbol][0].documentation).summary)))
+            .Append(fragments is not null && fragments.TryGetValue(type.symbol, out var fragment)
+                ? fragment.TableDescription(facts[type.symbol][0].documentation)
+                : DocumentationApiPresentation.Cell(DocumentationApiPresentation.Summary(DocumentationXml.Read(facts[type.symbol][0].documentation).summary)))
             .Append(" |\n");
     }
 
