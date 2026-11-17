@@ -28,7 +28,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         const string C_PAGE = "content/en/architecture/projects/probe.md";
         Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
             entries = new[] { new { path = C_PAGE, uid = "project.probe", project = "Inno.Probe" } } }));
-        Write(C_PAGE, "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\ndescription: null\n---\n");
+        Write(C_PAGE, "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\n---\n");
         await Sync();
         string path = Path.Combine(m_root, C_PAGE);
         Assert.Contains("The value contract.", File.ReadAllText(path));

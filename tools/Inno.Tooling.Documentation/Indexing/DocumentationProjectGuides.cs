@@ -165,7 +165,7 @@ internal static class DocumentationProjectGuides
         var authored = new YamlMappingNode
         {
             { "source", fragment.source },
-            { "description", fragment.metadata.Children.TryGetValue(new YamlScalarNode("description"), out var description) ? description : new YamlScalarNode("null") },
+            { "description", fragment.metadata.Children.TryGetValue(new YamlScalarNode("description"), out var description) ? description : new YamlScalarNode("null") { Style = YamlDotNet.Core.ScalarStyle.Plain } },
             { "outdated", outdated ? "true" : "false" }
         };
         foreach (var field in fragment.metadata.Children)
