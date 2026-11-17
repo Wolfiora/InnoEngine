@@ -68,7 +68,7 @@ internal static class DocumentationProjectGuides
                 warnings.Add(new(entry.project, entry.path, "RemovedProject", "The source project is absent; the registered guide is retained for editorial resolution."));
             else if (stale)
                 warnings.Add(new(entry.project, entry.path, "ReviewRequired", "Project facts or XML changed; review this explanation."));
-            if (!manual)
+            if (!manual || string.IsNullOrWhiteSpace(fragment.body) || fragment.body.Trim() == Body(entry, contexts).Trim())
                 warnings.Add(new(entry.project, entry.path, "ManualExplanationRequired", "This project guide uses generated source information."));
             string updated = Metadata(entry, fragment, manual && reviewPage is null ? fragment.reviewed ?? "" : contract, stale)
                 + (manual || project is null ? fragment.body : "\n\n" + Body(entry, contexts));
@@ -184,7 +184,8 @@ internal static class DocumentationProjectGuides
         foreach (var type in types)
         {
             var fact = type.First();
-            text.Append("### ").Append(WebUtility.HtmlEncode(fact.id[2..])).Append("\n\n");
+            text.Append("### ").Append(WebUtility.HtmlEncode(fact.id[2..])).Append(" (")
+                .Append(fact.scope ?? fact.family).Append(")\n\n");
             foreach (string summary in DocumentationXml.Read(fact.documentation).summaries) text.Append(summary).Append("\n\n");
         }
         if (!types.Any()) text.Append("No public type XML is present for this project in the selected API snapshot.\n");
