@@ -155,6 +155,9 @@ internal static class DocumentationApiContent
         }
         Edit(C_REGISTRY, JsonSerializer.Serialize(new DocumentationApiContentRegistry("inno-api-content/1", entries.OrderBy(entry => entry.symbol, StringComparer.Ordinal).ToArray(), navigation.Keys.Order(StringComparer.Ordinal).ToArray()),
             new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }) + "\n");
+        DocumentationApiPlan guides = DocumentationProjectGuides.Plan(root, binding, facts);
+        foreach (var edit in guides.edits) edits[edit.path] = edit;
+        warnings.AddRange(guides.warnings);
         return new(edits.Values.OrderBy(edit => edit.path, StringComparer.Ordinal).ToArray(), warnings, facts.Count);
 
         void Edit(
@@ -180,6 +183,8 @@ internal static class DocumentationApiContent
         DocumentationBinding binding,
         string page
     ) {
+        if (page.StartsWith("content/en/architecture/projects/", StringComparison.Ordinal))
+            return DocumentationProjectGuides.Plan(root, binding, DocumentationApiFacts.Read(root, binding), page);
         string path = RequireApiPath(root, page);
         DocumentationApiContentRegistry registry = JsonSerializer.Deserialize<DocumentationApiContentRegistry>(
             File.ReadAllBytes(DocumentationApiFacts.Resolve(root, C_REGISTRY)))

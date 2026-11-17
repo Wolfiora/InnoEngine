@@ -155,6 +155,7 @@ internal static class DocumentationApiComposition
         // Category tables and queries use the same effective summaries as type pages.
         foreach (var category in DocumentationApiNavigation.Create(registry.entries, facts, DocumentationApiPresentation.ProjectDescriptions(root), fragments))
             pages[category.Key] = category.Value;
+        DocumentationProjectGuides.Compose(root, binding, facts, fragments, entries, pages, inputs);
         return new(pages, inputs, origins);
 
         void AppendSymbol(

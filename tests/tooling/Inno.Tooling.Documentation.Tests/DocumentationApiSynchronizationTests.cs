@@ -22,6 +22,48 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
+    [Fact]
+    public async Task ProjectGuideOwnershipPreservesProseAndRequiresReviewAfterSourceChanges()
+    {
+        const string C_PAGE = "content/en/architecture/projects/probe.md";
+        Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
+            entries = new[] { new { path = C_PAGE, uid = "project.probe", project = "Inno.Probe" } } }));
+        Write(C_PAGE, "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\ndescription: null\n---\n");
+        await Sync();
+        string path = Path.Combine(m_root, C_PAGE);
+        Assert.Contains("The value contract.", File.ReadAllText(path));
+        string first = File.ReadAllText(path);
+        await Sync();
+        Assert.Equal(first, File.ReadAllText(path));
+        string manual = first.Replace("source: xml", "source: Ada Example", StringComparison.Ordinal) + "\nIndependent lifetime guidance.\n";
+        File.WriteAllText(path, manual);
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", C_PAGE]));
+        Bind(description: "Changed XML contract.");
+        await Sync();
+        Assert.Equal(Body(manual), Body(File.ReadAllText(path)));
+        Assert.Contains("outdated: true", File.ReadAllText(path));
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", C_PAGE]));
+        Assert.Contains("outdated: false", File.ReadAllText(path));
+        string cache = Path.Combine(m_root, "artifacts/project-query");
+        var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        var page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe");
+        Assert.Contains("[!VERIFIED]", page.markdown);
+        Assert.Contains("Independent lifetime guidance.", page.markdown);
+        Assert.Contains("src/Inno.Probe.csproj", page.markdown);
+    }
+
+    [Fact]
+    public async Task ProjectGuideRegistryCannotClaimUnrelatedManualPages()
+    {
+        Write("content/en/manual/keep.md", "Preserve this unrelated guide.");
+        Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
+            entries = new[] { new { path = "content/en/manual/keep.md", uid = "manual.keep", project = "Inno.Probe" } } }));
+        await Assert.ThrowsAsync<InvalidDataException>(() => Sync(CancellationToken.None));
+        Assert.Equal("Preserve this unrelated guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/keep.md")));
+    }
+
     [Theory]
     [InlineData("T:Inno.Probe.Value`1", "public class Inno.Probe.Value<TValue>", "Value<TValue>")]
     [InlineData("T:Inno.Probe.Value`2", "public class Inno.Probe.Value<TTarget, TArgument>", "Value<TTarget, TArgument>")]
