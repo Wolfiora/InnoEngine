@@ -10,8 +10,15 @@ using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
 
-internal sealed record DocumentationProjectGuide(string path, string uid, string project);
-internal sealed record DocumentationProjectGuideRegistry(string schema, DocumentationProjectGuide[] entries);
+internal sealed record DocumentationProjectGuide(
+    string path,
+    string uid,
+    string project
+);
+internal sealed record DocumentationProjectGuideRegistry(
+    string schema,
+    DocumentationProjectGuide[] entries
+);
 
 internal static class DocumentationProjectGuides
 {
