@@ -5,7 +5,7 @@ $revision = 'a'*40
 $original = $env:GH_TOKEN
 $retiredTag = 'backend-prebuilts-2020.01.01.1'
 $retiredObject = 'f'*40
-$server = @{release=$null;tag=$null;reference=$null;uploads=@{};interrupted=$false}
+$server = @{release=$null;tag=$null;reference=$null;uploads=@{};interrupted=$false;denyDraft=$false;wrongDigest=$false;recoveredPlaceholder=$false;changedPlaceholder=$false}
 function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
     if ($Uri -like '*/actions/runs?status=*') { return @{total_count=0;workflow_runs=@()} }
     if ($Uri.EndsWith('/releases/3')) {
@@ -16,6 +16,7 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
     if ($Uri.EndsWith("/git/refs/tags/$retiredTag") -and $Method -ceq 'Delete') { $server.retiredRef = $null; return }
     if ($Uri -like '*/releases?per_page=*') { if ($server.release) { return $server.release }; return }
     if ($Uri -like '*/releases' -and $Method -ceq 'Post') {
+        if ($server.denyDraft) { throw 'Release write permission denied.' }
         if ($server.release) { throw 'Created a duplicate release.' }
         $server.release = $Body | ConvertFrom-Json -AsHashtable
         $server.release.id = 7
@@ -26,8 +27,10 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
     }
     if ($Uri -like 'https://fixture.invalid/uploads?name=*') {
         $name = $Uri.Split('=')[-1]
+        if ($server.wrongDigest) { return @{id=99;name=$name;state='uploaded';digest='sha256:'+('0'*64)} }
         if ($server.uploads.Count -eq 1 -and !$server.interrupted) {
             $server.interrupted = $true
+            $server.release.assets += @{id=98;name=$name;state='starter';size=0;digest=$null}
             throw 'Interrupted test upload'
         }
         if ($server.uploads.ContainsKey($name)) { throw 'Uploaded the same asset twice.' }
@@ -36,7 +39,17 @@ function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
         $server.release.assets += $asset
         return $asset
     }
+    if ($Uri.EndsWith('/releases/assets/98') -and $Method -ceq 'Delete') {
+        $server.release.assets = @($server.release.assets | Where-Object id -NE 98)
+        $server.recoveredPlaceholder = $true
+        return
+    }
     if ($Uri -like '*/releases/7') {
+        if ($server.changedPlaceholder) {
+            $current = $server.release | ConvertTo-Json -Depth 5 | ConvertFrom-Json -AsHashtable
+            ($current.assets | Where-Object state -CEQ 'starter').id = 99
+            return $current
+        }
         if ($Method -ceq 'Patch') { $server.release.draft = $false }
         return $server.release
     }
@@ -93,10 +106,22 @@ try {
     try { Publish; throw 'An incomplete SDK matrix passed.' } catch { if ($_.Exception.Message -cne 'Missing verified SDK product matrix.') { throw } }
     if ($server.release) { throw 'An incomplete SDK matrix created a draft.' }
     [IO.File]::WriteAllBytes($proofPath,$completeProof)
+    $server.denyDraft = $true
+    try { Publish; throw 'A denied publication passed.' } catch { if ($_.Exception.Message -cne 'Release write permission denied.') { throw } }
+    if ($server.release -or $server.tag) { throw 'Permission failure published an asset.' }
+    $server.denyDraft = $false
+    $server.wrongDigest = $true
+    try { Publish; throw 'An incorrect upload receipt passed.' } catch { if ($_.Exception.Message -notlike 'GitHub failed to verify *') { throw } }
+    if (!$server.release.draft -or $server.reference) { throw 'A mismatched upload became consumable.' }
+    $server.wrongDigest = $false
     try { Publish; throw 'The interrupted upload passed.' } catch { if ($_.Exception.Message -cne 'Interrupted test upload') { throw } }
     if (!$server.release.draft -or $server.tag -or $server.uploads.Count -ne 1) { throw 'A partial release became consumable.' }
+    $server.changedPlaceholder = $true
+    try { Publish; throw 'Replaced draft asset passed.' } catch { if ($_.Exception.Message -cne 'The interrupted upload changed before recovery.') { throw } }
+    if ($server.recoveredPlaceholder -or !$server.release.draft) { throw 'A changed asset was deleted.' }
+    $server.changedPlaceholder = $false
     $result = Publish
-    if ($result -notlike 'Published *' -or $server.release.draft -or !$server.reference -or $server.uploads.Count -ne $platforms.Count) { throw 'Recovery did not publish the complete target set.' }
+    if ($result -notlike 'Published *' -or $server.release.draft -or !$server.reference -or !$server.recoveredPlaceholder -or $server.uploads.Count -ne $platforms.Count) { throw 'Recovery did not publish the complete target set.' }
     $result = Publish
     if ($result -notlike 'Reused *' -or $server.uploads.Count -ne $platforms.Count) { throw 'An identical retry changed release ownership.' }
 

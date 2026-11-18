@@ -122,7 +122,16 @@ if (!$draft.draft -or !$draft.prerelease -or $draft.tag_name -cne $publication.t
 }
 $upload = ([string]$draft.upload_url).Split('{')[0]
 foreach ($name in $archives.Keys | Sort-Object) {
-    if (@($draft.assets | Where-Object name -CEQ $name).Count) { continue }
+    $existing = @($draft.assets | Where-Object name -CEQ $name)
+    if ($existing.Count) {
+        if ($existing[0].state -ceq 'uploaded') { continue }
+        $current = Invoke-RestMethod -Uri "$base/releases/$($draft.id)" -Headers $headers
+        $placeholder = @($current.assets | Where-Object name -CEQ $name)
+        if (!$current.draft -or !$current.prerelease -or $current.id -ne $draft.id -or $current.target_commitish -cne $Revision -or
+            $current.tag_name -cne $publication.tag -or $placeholder.Count -ne 1 -or $placeholder[0].id -ne $existing[0].id -or
+            $placeholder[0].state -cne 'starter' -or $placeholder[0].size -ne 0) { throw 'The interrupted upload changed before recovery.' }
+        Invoke-RestMethod -Method Delete -Uri "$base/releases/assets/$($placeholder[0].id)" -Headers $headers | Out-Null
+    }
     $uploaded = Invoke-RestMethod -Method Post -Uri "${upload}?name=$name" -Headers $headers -ContentType application/octet-stream -InFile $archives[$name]
     if ($uploaded.name -cne $name -or $uploaded.digest -cne ('sha256:' + $digests[$name]) -or $uploaded.state -cne 'uploaded') {
         throw "GitHub failed to verify $name. Retained draft $($draft.id)."

@@ -26,7 +26,12 @@ if ($published.Count -gt 3 -or $drafts.Count -gt 1) { throw 'Resolve the existin
 foreach ($release in $owned) {
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($asset in $release.assets) {
-        if (!$seen.Add($asset.name) -or $asset.name -cnotmatch '^[a-z0-9]+-prebuilt-backends\.zip$' -or ($release.draft -and $asset.name -cnotin $registry.asset) -or $asset.state -cne 'uploaded' -or $asset.digest -cnotmatch '^sha256:[0-9a-f]{64}$') {
+        if (!$seen.Add($asset.name) -or $asset.name -cnotmatch '^[a-z0-9]+-prebuilt-backends\.zip$' -or ($release.draft -and $asset.name -cnotin $registry.asset)) {
+            throw "Unexpected or incomplete asset on $($release.tag_name)."
+        }
+        # An interrupted GitHub upload can leave a zero-byte placeholder in an owned draft.
+        if ($release.draft -and $asset.state -ceq 'starter' -and $asset.size -eq 0 -and [string]$asset.id -cmatch '^[1-9][0-9]*$') { continue }
+        if ($asset.state -cne 'uploaded' -or $asset.digest -cnotmatch '^sha256:[0-9a-f]{64}$') {
             throw "Unexpected or incomplete asset on $($release.tag_name)."
         }
     }
@@ -49,7 +54,7 @@ $operation = 'create'
 $id = $null
 if ($drafts.Count) {
     $draft = $drafts[0]
-    if ($draft.target_commitish -cne $Revision -or @($draft.assets | Where-Object { $_.digest -cne ('sha256:' + $Digests[$_.name]) }).Count) {
+    if ($draft.target_commitish -cne $Revision -or @($draft.assets | Where-Object { $_.state -ceq 'uploaded' -and $_.digest -cne ('sha256:' + $Digests[$_.name]) }).Count) {
         throw "An interrupted backend draft belongs to a different producer or asset set: $($draft.tag_name)."
     }
     $operation = 'resume'
