@@ -62,3 +62,13 @@ The Core probe changed the same mathematics test as the previous measurements. T
 | PR profile | [44395534813](https://github.com/Wolfiora/InnoEngine/actions/runs/44395534813) | 265 s | 282 s |
 
 The branch passed four required checks, including all 19 mathematics tests. Backend downloads, compilations, deployments and backend tests were zero. The branch met its five-minute target. Its previous wall time was 236 seconds. The PR-profile median met the ten-minute target at 282 seconds wall time. Its previous median was 564 seconds. Active time rose from 234 to 265 seconds, so the reduction in wall time cannot be attributed to faster computation. On the median active run, routing took 12 seconds, the slower host took 206 seconds, backend matrix reconciliation took 17 seconds and the final gate took 30 seconds. These samples measure managed changes only.
+
+The acquisition job was subsequently removed from the critical path when every host completes its frozen plan independently. Three real runs of the same two-host PR probe passed with the acquisition jobs skipped. The final gate still required both hosts' complete receipts.
+
+| Final PR-profile sample | Active critical path | Wall time |
+| --- | --- | --- |
+| [44397503485](https://github.com/Wolfiora/InnoEngine/actions/runs/44397503485) | 259 s | 271 s |
+| [44397510265](https://github.com/Wolfiora/InnoEngine/actions/runs/44397510265) | 253 s | 265 s |
+| [44397515882](https://github.com/Wolfiora/InnoEngine/actions/runs/44397515882) | 247 s | 259 s |
+
+The final median was 265 seconds including queueing, 53.0% below the 564-second baseline. Median active time was 253 seconds, 8.1% above the 234-second baseline. None of these six PR samples needed a backend archive. The additional native-consumer and producer scenarios measure a different cost.

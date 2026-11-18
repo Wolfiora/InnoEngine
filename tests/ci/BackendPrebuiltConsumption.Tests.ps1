@@ -9,7 +9,14 @@ $consumer = Join-Path $workspace 'consumer'
 $fixture = Join-Path $workspace 'probe'
 $project = Join-Path $repository 'backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj'
 $success = $false
+# This probe owns its source and package directories. The outer validation worker
+# can already be consuming another verified package for the real engine product.
+$ambient = @{}
+foreach ($name in @('InnoBackendPackageDirectory','InnoBackendPrebuiltRoot','InnoBackendHostTarget','InnoNativeDependencyManifest')) {
+    $ambient[$name] = [Environment]::GetEnvironmentVariable($name)
+}
 try {
+    foreach ($name in $ambient.Keys) { [Environment]::SetEnvironmentVariable($name,$null) }
     [IO.Directory]::CreateDirectory($fixture) | Out-Null
     & $Dotnet build $project --configuration Debug --artifacts-path $source "-p:InnoBackendExportRoot=$staging" "-p:InnoBackendExportArtifactsPath=$source" -m:2 --nologo
     if ($LASTEXITCODE) { throw 'The SDL source producer failed.' }
@@ -50,6 +57,7 @@ Console.WriteLine(backend.GetName().Name);
     $global:LASTEXITCODE = 0
     $success = $true
 } finally {
+    foreach ($name in $ambient.Keys) { [Environment]::SetEnvironmentVariable($name,$ambient[$name]) }
     if ($success) { [IO.Directory]::Delete($workspace, $true) }
     else { Write-Warning "Retained backend integration probe at $workspace." }
 }
