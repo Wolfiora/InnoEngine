@@ -6,7 +6,7 @@ Manual producer run `44181196358` built Windows x64 in 78m21s, macOS Arm64 in 67
 
 The hosted publish job (134779747972) returned HTTP 403. Its token had Contents write permission, but this source changes workflows relative to master. The repository owner's separately authorized publication reused the same publisher, verified all five original GitHub artifact digests and both complete host receipts, then uploaded and verified the accepted assets. The hosted run retains its failure status. [GitHub release permissions](https://docs.github.com/en/rest/releases/releases#create-a-release)
 
-Release `native-deps-f693bd5fa2e202e9861b6978b3930d3131b22126-44181196358-1` contains 32 files including its selector. The adopted selector binds 52 component selections and 1 aggregate selection across 2 targets. Each archive digest matched the uploaded digest. Cold published-consumer run `44301436204` started with empty caches on both hosts, ran the SDL and Core mathematics owners, and checked every downloaded archive digest. The cold run skipped its dependent warm probe because GitHub propagated a skipped prerequisite. Two fresh runners in dedicated run `44305208577` then restored the exact cache keys and verified the same bytes.
+Release `native-deps-f693bd5fa2e202e9861b6978b3930d3131b22126-44181196358-1` contains 32 files including its selector. The adopted selector binds 52 Windows x64 and macOS Arm64 component selections plus one Browser Wasm32 aggregate selection, covering three targets. Each archive digest matched the uploaded digest. Cold published-consumer run `44301436204` started with empty caches on both hosts, ran the SDL and Core mathematics owners, and checked every downloaded archive digest. The cold run skipped its dependent warm probe because GitHub propagated a skipped prerequisite. Two fresh runners in dedicated run `44305208577` then restored the exact cache keys and verified the same bytes.
 
 Weekly run `44271552325` passed ten required checks on each platform and marked 81 explicitly inapplicable. Ten unchanged Editor builds per host had zero third-party compiler processes and zero binding generations. Median build times were 52.581s on Windows and 67.914s on macOS. Weekly scope included lifecycle and performance checks and excluded cold production and release packaging.
 
@@ -22,6 +22,20 @@ The branch probe changed a single Core mathematics test. The PR-profile probe us
 
 The measured PR median changed by +23.8%. This workload missed the 50% relative improvement target. The previous workflow already selected managed work only. In the median final run, routing took 20s, the slower host took 187s, and the gate took 27s. The host's principal steps were Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 10s, setup-dotnet 19s, freeze-validation 59s, Run frozen shards on the image that captured their environment 84s. This sample measures one controlled workload.
 
+## How a change reaches the gate
+
+The event chooses the depth of validation. A branch without an open PR gets fast checks. An open PR or merge-queue candidate gets affected integration tests on the registered hosts. A master push covers affected product and release behavior. Nightly checks the full functional matrix and can reuse matching, complete acceptance. Weekly runs performance and lifecycle checks. API export has its own preflight and publishes to Docs draft after integration.
+
+The planner reads evaluated SDK inputs, project references and product declarations. It records which checks this candidate needs and the reason for each selection. Within each runner the workers share a frozen environment. Independent managed and native work gets separate writable output directories. The final gate checks the expected hosts, checks and evidence digests. A missing required receipt fails the gate.
+
+| Change | Branch feedback | What the PR proves |
+| --- | --- | --- |
+| Edit one Core mathematics test | Compile the affected managed closure and run its selected tests. | Run the selected managed behavior without downloading native libraries or preparing the Editor. |
+| Edit functionality that loads SDL | Run applicable fast managed checks. | Download the selected archives on a cold runner or restore the exact cache key on a warm runner. Verify the bytes, build the affected engine code and exercise the native consumer. |
+| Change third-party source, binding inputs or a native recipe | Fast managed checks can still run independently. | A mismatched selection blocks that consumer. The manual Native dependencies workflow produces and certifies a matching release. Adopt its selector in the branch and rerun the consumer. |
+
+The Release is the durable copy of third-party binaries. Actions Cache accelerates downloads. Eviction causes another download. Managed engine assemblies, the Editor, Player and Support Packs still follow their own source and output identities.
+
 ## Regression and evidence scope
 
 - Local functional snapshot `8b772406b7467a74ade0d75d96851c2ee62e76ac` completed 355 required checks (306 passed, 49 reused), plus seven explicit exclusions. Windows executed 1,016 native cases. The migration inventory accounts for all 2,190 original test methods.
@@ -30,6 +44,8 @@ The measured PR median changed by +23.8%. This workload missed the 50% relative 
 - The full certification used the source identified above. Subsequent focused checks cover incomplete discovery, parallel worker output, weekly scope and exact download cache keys. During earlier timing run `44288425695`, a second concurrent SDK query exited 137 on macOS. The final planner shares one selected SDK across its managed, native and release graph captures. Six selector tests check cross-platform UTF-8 and LF bytes. Fifteen publication contracts cover permission failures, draft identity, immutable assets and resumption after an interrupted upload. Four real SDK tests passed, including closing freshness and reference-pack invalidation. The original failed run is excluded from the corrected-source sample.
 - The existing master ruleset requires the GitHub Actions `Engine validation` check. PR #84 was closed upstream without merging and its exact tip is included in the optimization branch. Default-branch schedules and API publication to Docs draft activate after integration.
 
+The implementation commit `80f4cccd898bbf3b64103cc49182bdc432fe0c01` passed its branch gate in [run 44306564151](https://github.com/Wolfiora/InnoEngine/actions/runs/44306564151).
+
 ## Local storage
 
-Registered retirement recovered 4,004,084,787 logical bytes. SDK clean removed obsolete task-owned compiled outputs. Direct recursive deletion of older diagnostic directories was rejected by automatic approval review, so disk recovery used registered retirement, SDK clean and reversible compression. At delivery the C drive had 34.1 GiB free.
+Registered retirement recovered 4,004,084,787 logical bytes. SDK clean removed obsolete task-owned compiled outputs. Automatic approval review blocked recursive deletion of older diagnostic directories and the temporary publication directory. Registered retirement, SDK clean and reversible compression recovered disk space. Exact removal of the five completed transfer ZIPs also reclaimed 86,055,281 bytes. At delivery the C drive had 34.1 GiB free.
