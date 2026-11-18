@@ -343,6 +343,34 @@ public sealed class ValidationShardExecutionTests
     }
 
     [Fact]
+    public async Task IndependentManagedExecutionRecordsExcludedNativeChecksWithoutOpeningTheirSdkContext()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("tests/Native/Native.csproj", ValidationRepository.Project(
+            "<PropertyGroup><IsTestProject>true</IsTestProject><InnoTestNativeProduct>editor</InnoTestNativeProduct><InnoValidationLayer>native</InnoValidationLayer></PropertyGroup>"));
+        repository.Write("tests/ci/Test-AgentRules.ps1", "Write-Output 'Managed change'");
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare a separately deployed native test");
+        using JsonDocument generated = await repository.PlanAsync(profile: "fast", backendStore: "artifacts/b");
+        repository.Write("artifacts/packages.json", "[]");
+        string frozen = repository.PathOf("artifacts/bound.json");
+        Assert.Equal(0, await ValidationCommand.ExecuteAsync(["bind-backends", "--packages", repository.PathOf("artifacts/packages.json"),
+            "--plan", repository.PathOf("artifacts/plan/plan.json"), "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--output", frozen]));
+        JsonObject plan = JsonNode.Parse(File.ReadAllText(frozen))!.AsObject();
+        Assert.Null(plan["contexts"]!["native"]);
+        JsonNode excluded = plan["checks"]!.AsArray().Single(check => check!["id"]!.GetValue<string>() == "test:tests/Native/Native.csproj")!;
+        Assert.NotNull(excluded["exclusion"]);
+        JsonNode policy = plan["checks"]!.AsArray().Single(check => check!["id"]!.GetValue<string>() == "instructions")!;
+        plan["checks"] = new JsonArray(policy.DeepClone(), excluded.DeepClone());
+        repository.Write("artifacts/selected.json", plan.ToJsonString());
+        Assert.Equal(0, await ValidationCommand.ExecuteAsync(["run", "--engine-root", repository.PathOf("."), "--dotnet", repository.dotnet,
+            "--plan", repository.PathOf("artifacts/selected.json"), "--output", repository.PathOf("artifacts/executed")]));
+        using JsonDocument evidence = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/executed/results.json")));
+        Assert.Equal("NotApplicable", evidence.RootElement.GetProperty("results")[1].GetProperty("status").GetString());
+    }
+
+    [Fact]
     public async Task IndependentShardReceiptsRequireCompleteExactCandidateCoverage()
     {
         using var repository = new ValidationRepository();

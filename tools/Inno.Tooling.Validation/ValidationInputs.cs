@@ -159,11 +159,9 @@ internal static class ValidationInputs
         ValidationPlan plan,
         ValidationCheck check
     ) {
-        if (plan.backendPackages is null)
+        if (plan.backendPackages is null || check.exclusion is not null || check.context is null)
             yield break;
-        ValidationContext? context = check.context is null ? null : plan.contexts[check.context];
-        if (context is null || check.exclusion is not null)
-            yield break;
+        ValidationContext context = plan.contexts[check.context];
         string configuration = context.properties.GetValueOrDefault("Configuration", plan.configuration);
         string[] owners = check.inputs.Where(static key => key.StartsWith("@backends/", StringComparison.Ordinal))
             .Select(input => plan.backendHost + "/" + configuration + "/" + input[1..]).ToArray();

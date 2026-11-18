@@ -8,9 +8,9 @@ $runner = $hostsRegistered[0].runner
 $target = $hostsRegistered[0].target
 $owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runner-attempt-1")).FullName
 $file = Join-Path $owner 'acquisition.json'
-function Join-Requests([array]$Packages, [string]$Commit=$revision) {
+function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets) {
     [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages} -Depth 8))
-    & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision
+    & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
 }
 try {
     $none = Join-Requests @()
@@ -18,6 +18,11 @@ try {
     $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12}
     $warm = Join-Requests @($prior)
     if ($warm.producers.Count -or $warm.platforms.Count -ne 1 -or $warm.platforms[0].nativeInputs) { throw 'A matching backend ZIP scheduled source production.' }
+    $cold = Join-Requests @($prior) $revision $target
+    if ($cold.producers.Count -ne 1 -or $cold.producers[0].sha256 -or $cold.producers[0].assetId) { throw 'A manual cold rebuild restored an old producer seed.' }
+    $blocked = $false
+    try { $null = Join-Requests @($prior) $revision 'unregistered-target' } catch { $blocked = $_.Exception.Message.Contains('No frozen backend platform') }
+    if (!$blocked) { throw 'An unknown manual rebuild target was accepted.' }
     $cross = $platforms | Where-Object { $_.target -cne $target -and $_.runner -ceq $runner } | Select-Object -First 1
     if ($cross) {
         $changed = @{target=$cross.target;operation='produce';sha256=$null;assetId=$null}

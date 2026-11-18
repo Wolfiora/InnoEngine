@@ -2,7 +2,8 @@ param(
     [Parameter(Mandatory)][string]$Received,
     [Parameter(Mandatory)][string[]]$Hosts,
     [Parameter(Mandatory)][string]$Revision,
-    [int]$Attempt = 1
+    [int]$Attempt = 1,
+    [string]$RebuildTargets
 )
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -39,6 +40,16 @@ foreach ($hostName in $Hosts) {
         $names = @($seen | Sort-Object -CaseSensitive)
         $pattern = if ($names.Count -eq 1) { "backend-candidate-$($names[0])" } else { "backend-candidate-{$($names -join ',')}" }
         $deferred += [pscustomobject]@{runner=$hostName;target=$hostRegistration[0].target;pattern=$pattern}
+    }
+}
+if ($RebuildTargets) {
+    $requested = @($RebuildTargets.Split(',') | ForEach-Object { $_.Trim() })
+    if (@($requested | Sort-Object -CaseSensitive -Unique).Count -ne $requested.Count) { throw 'Duplicate manual rebuild target.' }
+    foreach ($name in $requested) {
+        if ($name -cnotin $platforms.target -or !$targets.Contains($name)) { throw "No frozen backend platform to rebuild: $name." }
+        $targets[$name].operation = 'produce'
+        $targets[$name].sha256 = $null
+        $targets[$name].assetId = $null
     }
 }
 # Cross-target builds need an independently acquired native tools host. The planner names that

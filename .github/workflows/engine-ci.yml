@@ -16,6 +16,9 @@ on:
         description: Successful default-branch run whose missing functional checks should be completed
         type: string
         default: '0'
+      rebuild_backends:
+        description: Optional comma-separated platform IDs for a cold rebuild during full acceptance
+        type: string
       full:
         description: Run complete functional acceptance
         type: boolean
@@ -63,6 +66,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE: ${{ github.sha }}
           REQUESTED_PROFILE: ${{ inputs.profile }}
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           SOURCE_RUN_ID: ${{ inputs.source_run }}
           BASELINE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
@@ -73,6 +77,9 @@ jobs:
           } else {
             $selected = ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
               -Commit $env:CANDIDATE -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL | ConvertFrom-Json
+          }
+          if ($env:REBUILD_TARGETS -and ($env:GITHUB_EVENT_NAME -cne 'workflow_dispatch' -or $selected.profile -cne 'full')) {
+            throw 'Explicit backend rebuilds require a manual full acceptance run.'
           }
           if ($env:SOURCE_RUN_ID -and $env:SOURCE_RUN_ID -cne '0') {
             $event = Get-Content $env:GITHUB_EVENT_PATH -Raw | ConvertFrom-Json
@@ -207,6 +214,7 @@ jobs:
       - id: decision
         shell: pwsh
         env:
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           HOSTS: ${{ needs.route.outputs.hosts }}
         run: |
           if (Test-Path artifacts/validation/ci-plan/pending.json) {
@@ -214,7 +222,7 @@ jobs:
           }
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
           $single = @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1
-          $direct = $single -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
+          $direct = !$env:REBUILD_TARGETS -and $single -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
           if ($direct) {
             $digest = $decision.packages[0].sha256
             if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Direct backend consumption requires an exact archive digest.' }
@@ -222,7 +230,7 @@ jobs:
           }
           "deferred=$(($decision.packages.Count -gt 0 -and !$direct).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
+        if: inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
         with:
           name: backend-request-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
           path: artifacts/backend-request/acquisition.json
@@ -266,7 +274,7 @@ jobs:
 
   backend-matrix:
     needs: [route, plan]
-    if: ${{ !cancelled() && needs.plan.result == 'success' && (fromJSON(needs.route.outputs.hosts).include[1] != null || needs.plan.outputs.deferred != 'false') }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && (inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || needs.plan.outputs.deferred != 'false') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -286,8 +294,9 @@ jobs:
         shell: pwsh
         env:
           HOSTS: ${{ needs.route.outputs.hosts }}
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
-          $jobs = ./tests/ci/Join-BackendAcquisitions.ps1 -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
+          $jobs = ./tests/ci/Join-BackendAcquisitions.ps1 -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
             -Revision $env:GITHUB_SHA -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)
           foreach ($name in 'platforms','producers','deferred') {
             "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
@@ -330,13 +339,15 @@ jobs:
           path: artifacts/candidates
       - name: Bind verified platform archives and the runner SDK
         shell: pwsh
+        env:
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
           $plan = Get-Content artifacts/validation/ci-plan/plan.json -Raw | ConvertFrom-Json
           if ($plan.commit -cne $env:GITHUB_SHA) { throw 'The transferred plan belongs to a different candidate.' }
           if ($plan.nativeRequests.Count) { $null = ./tests/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($plan.nativeRequests.target) }
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
           ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
-            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates
+            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -RebuildTargets $env:REBUILD_TARGETS
       - uses: ./.github/actions/execute-validation
         with:
           platform: ${{ matrix.runner }}
@@ -367,6 +378,7 @@ jobs:
           PLAN_RESULT: ${{ needs.plan.result }}
           MATRIX_RESULT: ${{ needs.backend-matrix.result }}
           DEFERRED: ${{ needs.plan.outputs.deferred }}
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           BACKENDS_RESULT: ${{ needs.backends.result }}
           BACKENDS_REQUIRED: ${{ needs.backend-matrix.outputs.required }}
           EXECUTION_RESULT: ${{ needs.execution.result }}
@@ -393,7 +405,7 @@ jobs:
             if (-not $decision.reusable) { throw 'The final gate did not receive every matching acceptance proof.' }
             exit 0
           }
-          $direct = @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1 -and $env:DEFERRED -ceq 'false'
+          $direct = !$env:REBUILD_TARGETS -and @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1 -and $env:DEFERRED -ceq 'false'
           if ($direct) {
             if ($env:MATRIX_RESULT -cne 'skipped') { throw 'Unexpected production matrix for an independently executed host.' }
             $env:BACKENDS_REQUIRED = 'false'

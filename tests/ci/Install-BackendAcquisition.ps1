@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$EntryAssembly,
     [Parameter(Mandatory)][string]$Downloads,
     [string]$Candidates,
+    [string]$RebuildTargets,
     [string]$Dotnet = 'dotnet',
     [string]$Repository = $env:GITHUB_REPOSITORY,
     [string]$ApiUrl = 'https://api.github.com'
@@ -50,6 +51,11 @@ $receipts = @(foreach ($package in $request.packages) {
 $receiptPath = Join-Path (Split-Path ([IO.Path]::GetFullPath($Acquisition)) -Parent) 'packages.json'
 [IO.File]::WriteAllText($receiptPath, (ConvertTo-Json -InputObject $receipts -Depth 5 -Compress))
 $testEvidence = Join-Path (Split-Path $receiptPath -Parent) 'backend-test-evidence.json'
-[IO.File]::WriteAllText($testEvidence, (ConvertTo-Json -InputObject @($request.testEvidence) -Depth 20 -Compress))
+$certificates = @($request.testEvidence)
+if ($RebuildTargets) {
+    $requested = @($RebuildTargets.Split(',') | ForEach-Object { $_.Trim() })
+    if (@($request.packages | Where-Object { $_.target -cin $requested }).Count) { $certificates = @() }
+}
+[IO.File]::WriteAllText($testEvidence, (ConvertTo-Json -InputObject $certificates -Depth 20 -Compress))
 & $dotnetPath $entry validate bind-backends --test-evidence $testEvidence --packages $receiptPath --plan $PlanPath --engine-root $root --dotnet $dotnetPath --output $PlanPath
 if ($LASTEXITCODE) { throw 'The installed backend packages do not cover the frozen checks.' }
