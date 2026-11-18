@@ -22,6 +22,10 @@ function Get-Releases {
         if ($rows.Count -lt 100) { break }
     }
 }
+function Get-OptionalResource([string]$Path) {
+    try { return Invoke-RestMethod -Headers $headers -Uri "$base/$Path" }
+    catch { if ($_.Exception.Response.StatusCode -ne [Net.HttpStatusCode]::NotFound) { throw }; return $null }
+}
 function Get-OtherReaders {
     foreach ($status in 'queued','in_progress','requested','waiting','pending') {
         $runs = Invoke-RestMethod -Headers $headers -Uri "$base/actions/runs?status=$status&per_page=100"
@@ -104,6 +108,13 @@ if ($publication.operation -ceq 'resume') {
 } else {
     $body = @{tag_name=$publication.tag; target_commitish=$Revision; name=$publication.title; draft=$true; prerelease=$true
         body="Certified backend assemblies, native libraries and build tools for engine CI. Each platform ZIP includes its file inventory. Source revision: $Revision." }
+    if ($publication.retire) {
+        $old = $releases | Where-Object id -EQ $publication.retire.id
+        $catalog = Get-BackendCatalog $base $headers $old
+        $ref = Invoke-RestMethod -Uri "$base/git/ref/tags/$($old.tag_name)" -Headers $headers
+        if ($ref.object.type -cne 'tag' -or $catalog.revision -cne $old.target_commitish) { throw 'Cannot freeze the retiring release identity.' }
+        $body.body += "`n`n<!-- backend-retirement $($old.id) $($old.tag_name) $($catalog.revision) $($ref.object.sha) -->"
+    }
     $draft = Invoke-RestMethod -Method Post -Uri "$base/releases" -Headers $headers -ContentType application/json -Body ($body | ConvertTo-Json)
 }
 if (!$draft.draft -or !$draft.prerelease -or $draft.tag_name -cne $publication.tag -or $draft.target_commitish -cne $Revision) {
@@ -147,16 +158,33 @@ if ($catalogRef) {
     $null = Invoke-RestMethod -Method Post -Uri "$base/git/refs" -Headers $headers -ContentType application/json -Body (
         @{ref="refs/tags/$tagName"; sha=$object.sha} | ConvertTo-Json -Compress)
 }
-if ($publication.retire) {
+$retirement = [regex]::Match([string]$ready.body, '(?m)^<!-- backend-retirement ([1-9][0-9]*) (backend-prebuilts-[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[1-9][0-9]*) ([a-f0-9]{40}) ([a-f0-9]{40}) -->$')
+if ($publication.retire -and (!$retirement.Success -or $retirement.Groups[1].Value -cne [string]$publication.retire.id -or
+    $retirement.Groups[2].Value -cne $publication.retire.tag)) { throw 'The draft does not own the expected retirement.' }
+if ($retirement.Success) {
     $readers = @(Get-OtherReaders)
     if ($readers.Count) { throw "Retained draft $($draft.id) while runs $($readers -join ', ') can acquire the rollback release." }
-    $old = Invoke-RestMethod -Uri "$base/releases/$($publication.retire.id)" -Headers $headers
-    $tag = $publication.retire.tag
-    $previousCatalog = Get-BackendCatalog $base $headers $old
-    if ($old.tag_name -cne $tag -or $old.draft -or !$old.prerelease -or $old.target_commitish -cnotmatch '^[0-9a-f]{40}$' -or
-        $previousCatalog.revision -cne $old.target_commitish) { throw "Release or dedicated tag ownership changed for $tag." }
-    Invoke-RestMethod -Method Delete -Uri "$base/releases/$($old.id)" -Headers $headers | Out-Null
-    Invoke-RestMethod -Method Delete -Uri "$base/git/refs/tags/$tag" -Headers $headers | Out-Null
+    $oldId = $retirement.Groups[1].Value
+    $tag = $retirement.Groups[2].Value
+    $source = $retirement.Groups[3].Value
+    $objectId = $retirement.Groups[4].Value
+    if ($tag -ceq $ready.tag_name -or @($releases | Where-Object { $_.tag_name -ceq $tag -and [string]$_.id -cne $oldId }).Count) {
+        throw 'The retiring tag belongs to a different release.'
+    }
+    $old = Get-OptionalResource "releases/$oldId"
+    $ref = Get-OptionalResource "git/ref/tags/$tag"
+    if ($ref -and ($ref.object.type -cne 'tag' -or $ref.object.sha -cne $objectId)) { throw "Retiring tag $tag was replaced." }
+    if ($old) {
+        if (!$ref -or $old.tag_name -cne $tag -or $old.draft -or !$old.prerelease -or $old.target_commitish -cne $source -or
+            (Get-BackendCatalog $base $headers $old).revision -cne $source) { throw "Release ownership changed for $tag." }
+        Invoke-RestMethod -Method Delete -Uri "$base/releases/$oldId" -Headers $headers | Out-Null
+    }
+    if ($ref) {
+        $object = Invoke-RestMethod -Uri "$base/git/tags/$objectId" -Headers $headers
+        if ($object.tag -cne $tag -or $object.object.sha -cne $source -or $object.object.type -cne 'commit' -or
+            (Read-BackendTagCatalog $object.message).revision -cne $source) { throw "Unexpected retirement catalog for $tag." }
+        Invoke-RestMethod -Method Delete -Uri "$base/git/refs/tags/$tag" -Headers $headers | Out-Null
+    }
 }
 $published = Invoke-RestMethod -Method Patch -Uri "$base/releases/$($draft.id)" -Headers $headers -ContentType application/json -Body '{"draft":false,"prerelease":true,"make_latest":"false"}'
 if ($published.draft -or !$published.prerelease -or $published.tag_name -cne $publication.tag) { throw 'The backend release was not published as certified.' }

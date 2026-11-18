@@ -47,6 +47,8 @@ public sealed class BackendInputTests
         repository.Write(C_STORE + "/fixture/manifest.json", inventory);
         Assert.Equal(0, await Bind());
         using JsonDocument bound = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/bound.json")));
+        JsonElement owners = bound.RootElement.GetProperty("backendOwnerPayloads");
+        Assert.Equal("fixture/Debug/" + C_PROJECT, Assert.Single(owners.EnumerateObject()).Name);
         Assert.Equal(Digest("archive"), bound.RootElement.GetProperty("backendPackages")[0].GetProperty("sha256").GetString());
 
         Task<int> Bind() => ValidationCommand.ExecuteAsync(["bind-backends", "--packages", repository.PathOf("artifacts/packages.json"),

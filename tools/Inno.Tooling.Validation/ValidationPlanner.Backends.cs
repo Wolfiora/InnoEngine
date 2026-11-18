@@ -41,6 +41,7 @@ internal static partial class ValidationPlanner
         var assets = new JsonArray();
         var aggregates = new JsonArray();
         var managed = new Dictionary<(string target, string configuration, string owner), string>();
+        var payloads = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         foreach (BackendPackageReceipt receipt in receipts)
         {
             string directory = PathBoundary.Resolve(store, receipt.target);
@@ -74,6 +75,10 @@ internal static partial class ValidationPlanner
                 if (managed.TryGetValue(variant, out string? prior) && prior != input)
                     throw new InvalidDataException("A backend owner has conflicting compiler inputs: " + owner);
                 managed[variant] = input;
+                string key = receipt.target + "/" + variant.Item2 + "/" + owner;
+                if (!payloads.TryGetValue(key, out Dictionary<string, string>? filesByPath))
+                    payloads[key] = filesByPath = new(StringComparer.Ordinal);
+                filesByPath.Add(file.GetProperty("path").GetString()!, file.GetProperty("sha256").GetString()!);
             }
         }
         string selectionPath = PathBoundary.RequireUnlinkedPath(plan.root, PathBoundary.Resolve(plan.root, plan.nativeDependencies));
@@ -96,7 +101,11 @@ internal static partial class ValidationPlanner
             if (!assets.Concat(aggregates).Any(asset => asset?["target"]?.GetValue<string>() == request.target
                 && string.Equals(asset["configuration"]?.GetValue<string>(), request.configuration, StringComparison.OrdinalIgnoreCase) && asset["product"]?.GetValue<string>() == request.product))
                 throw new InvalidDataException($"Missing native product {request.product} for {request.target}/{request.configuration}.");
-        var bound = plan with { backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray() };
+        var bound = plan with
+        {
+            backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray(),
+            backendOwnerPayloads = payloads.ToDictionary(static pair => pair.Key, static pair => ValidationInputs.Identity(pair.Value), StringComparer.Ordinal)
+        };
         if (evidence is not null)
         {
             var certificates = JsonSerializer.Deserialize<ValidationResult[]>(File.ReadAllBytes(evidence))

@@ -3,8 +3,17 @@ $root = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/backend-pu
 $platforms = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/native-targets.json') -Raw | ConvertFrom-Json)
 $revision = 'a'*40
 $original = $env:GH_TOKEN
+$retiredTag = 'backend-prebuilts-2020.01.01.1'
+$retiredObject = 'f'*40
 $server = @{release=$null;tag=$null;reference=$null;uploads=@{};interrupted=$false}
 function Invoke-RestMethod($Method,$Uri,$Headers,$ContentType,$Body,$InFile) {
+    if ($Uri -like '*/actions/runs?status=*') { return @{total_count=0;workflow_runs=@()} }
+    if ($Uri.EndsWith('/releases/3')) {
+        throw [Microsoft.PowerShell.Commands.HttpResponseException]::new('Retired release',[Net.Http.HttpResponseMessage]::new([Net.HttpStatusCode]::NotFound))
+    }
+    if ($Uri.EndsWith("/git/ref/tags/$retiredTag")) { return $server.retiredRef }
+    if ($Uri.EndsWith("/git/tags/$retiredObject")) { return @{tag=$retiredTag;object=$server.tag.object;message=$server.tag.message} }
+    if ($Uri.EndsWith("/git/refs/tags/$retiredTag") -and $Method -ceq 'Delete') { $server.retiredRef = $null; return }
     if ($Uri -like '*/releases?per_page=*') { if ($server.release) { return $server.release }; return }
     if ($Uri -like '*/releases' -and $Method -ceq 'Post') {
         if ($server.release) { throw 'Created a duplicate release.' }
@@ -90,6 +99,16 @@ try {
     if ($result -notlike 'Published *' -or $server.release.draft -or !$server.reference -or $server.uploads.Count -ne $platforms.Count) { throw 'Recovery did not publish the complete target set.' }
     $result = Publish
     if ($result -notlike 'Reused *' -or $server.uploads.Count -ne $platforms.Count) { throw 'An identical retry changed release ownership.' }
+
+    # Resume across the remote boundary where the old release was deleted and its tag still exists.
+    $server.release.draft = $true
+    $server.release.body += "`n`n<!-- backend-retirement 3 $retiredTag $revision $retiredObject -->"
+    $server.retiredRef = @{object=@{type='tag';sha='0'*40}}
+    try { Publish; throw 'A replaced tag could be retired.' } catch { if ($_.Exception.Message -notlike 'Retiring tag * was replaced.') { throw } }
+    if (!$server.release.draft -or !$server.retiredRef) { throw 'A changed tag was removed.' }
+    $server.retiredRef.object.sha = $retiredObject
+    $result = Publish
+    if ($result -notlike 'Published *' -or $server.retiredRef -or $server.release.draft) { throw 'Interrupted retirement left an orphaned tag.' }
 } finally {
     $env:GH_TOKEN = $original
     if ([IO.Directory]::Exists($root)) { [IO.Directory]::Delete($root,$true) }

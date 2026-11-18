@@ -178,6 +178,8 @@ jobs:
             -OutputPath artifacts/validation/acceptance-reuse.json
 
   plan:
+    outputs:
+      deferred: ${{ steps.decision.outputs.deferred }}
     needs: [route, preflight, acceptance-reuse]
     if: ${{ !cancelled() && needs.route.result == 'success' && needs.route.outputs.run == 'true' && ((needs.preflight.result == 'skipped' && needs.acceptance-reuse.result == 'skipped') || (needs.acceptance-reuse.result == 'success' && needs.acceptance-reuse.outputs.reusable == 'false')) }}
     runs-on: ${{ matrix.runner }}
@@ -204,20 +206,30 @@ jobs:
           path: artifacts
       - id: decision
         shell: pwsh
+        env:
+          HOSTS: ${{ needs.route.outputs.hosts }}
         run: |
           if (Test-Path artifacts/validation/ci-plan/pending.json) {
             Move-Item -LiteralPath artifacts/validation/ci-plan/pending.json -Destination artifacts/validation/ci-plan/plan.json
           }
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
-          "required=$(($decision.packages.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          $single = @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1
+          $direct = $single -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
+          if ($direct) {
+            $digest = $decision.packages[0].sha256
+            if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Direct backend consumption requires an exact archive digest.' }
+            "digest=$digest" >> $env:GITHUB_OUTPUT
+          }
+          "deferred=$(($decision.packages.Count -gt 0 -and !$direct).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
         with:
           name: backend-request-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
           path: artifacts/backend-request/acquisition.json
           if-no-files-found: error
           retention-days: 7
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: steps.decision.outputs.required == 'true'
+        if: steps.decision.outputs.deferred == 'true'
         with:
           name: backend-freeze-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
           path: |
@@ -226,22 +238,35 @@ jobs:
             artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/
           if-no-files-found: error
           retention-days: 7
-      - name: Bind an independent managed plan on its original runner
-        if: steps.decision.outputs.required == 'false'
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: steps.decision.outputs.digest
+        id: direct-cache
+        with:
+          key: backend-platform-${{ steps.decision.outputs.digest }}
+          path: artifacts/backend-downloads/${{ steps.decision.outputs.digest }}.zip
+      - name: Bind the frozen plan on its original runner
+        if: steps.decision.outputs.deferred == 'false'
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
           ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
             -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: steps.decision.outputs.digest && steps.direct-cache.outputs.cache-hit != 'true'
+        with:
+          key: backend-platform-${{ steps.decision.outputs.digest }}
+          path: artifacts/backend-downloads/${{ steps.decision.outputs.digest }}.zip
       - uses: ./.github/actions/execute-validation
-        if: steps.decision.outputs.required == 'false'
+        if: steps.decision.outputs.deferred == 'false'
         with:
           platform: ${{ matrix.runner }}
           source-run: ${{ inputs.source_run || '0' }}
 
   backend-matrix:
     needs: [route, plan]
-    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && (fromJSON(needs.route.outputs.hosts).include[1] != null || needs.plan.outputs.deferred != 'false') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -341,6 +366,7 @@ jobs:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           PLAN_RESULT: ${{ needs.plan.result }}
           MATRIX_RESULT: ${{ needs.backend-matrix.result }}
+          DEFERRED: ${{ needs.plan.outputs.deferred }}
           BACKENDS_RESULT: ${{ needs.backends.result }}
           BACKENDS_REQUIRED: ${{ needs.backend-matrix.outputs.required }}
           EXECUTION_RESULT: ${{ needs.execution.result }}
@@ -367,7 +393,12 @@ jobs:
             if (-not $decision.reusable) { throw 'The final gate did not receive every matching acceptance proof.' }
             exit 0
           }
-          if ($env:SHOULD_RUN -cne 'true' -or $env:PLAN_RESULT -cne 'success' -or $env:MATRIX_RESULT -cne 'success' -or
+          $direct = @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1 -and $env:DEFERRED -ceq 'false'
+          if ($direct) {
+            if ($env:MATRIX_RESULT -cne 'skipped') { throw 'Unexpected production matrix for an independently executed host.' }
+            $env:BACKENDS_REQUIRED = 'false'
+          }
+          if ($env:SHOULD_RUN -cne 'true' -or $env:PLAN_RESULT -cne 'success' -or (!$direct -and $env:MATRIX_RESULT -cne 'success') -or
               ($env:BACKENDS_REQUIRED -ceq 'true' -and ($env:BACKENDS_RESULT -cne 'success' -or $env:EXECUTION_RESULT -cne 'success')) -or
               ($env:BACKENDS_REQUIRED -ceq 'false' -and ($env:BACKENDS_RESULT -cne 'skipped' -or $env:EXECUTION_RESULT -cne 'skipped')) -or
               $env:BACKENDS_REQUIRED -cnotin @('true','false') -or
