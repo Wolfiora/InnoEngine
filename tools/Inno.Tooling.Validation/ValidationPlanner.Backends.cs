@@ -18,7 +18,8 @@ internal sealed record BackendInputPlan(
     string configuration,
     Dictionary<string, string> projects,
     string[] required,
-    string[] tests
+    string[] tests,
+    string[] missingNativeProducts
 );
 
 internal static partial class ValidationPlanner
@@ -40,6 +41,7 @@ internal static partial class ValidationPlanner
         string store = PathBoundary.RequireUnlinkedPath(plan.root, PathBoundary.Resolve(plan.root, plan.backendStore));
         var assets = new JsonArray();
         var aggregates = new JsonArray();
+        var coverage = new JsonArray();
         var managed = new Dictionary<(string target, string configuration, string owner), string>();
         var payloads = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         foreach (BackendPackageReceipt receipt in receipts)
@@ -58,7 +60,7 @@ internal static partial class ValidationPlanner
             if (Convert.ToHexStringLower(SHA256.HashData(native)) != selection.GetProperty("sha256").GetString())
                 throw new InvalidDataException("The native selection changed after installation: " + receipt.target);
             JsonNode catalog = JsonNode.Parse(native) ?? throw new InvalidDataException("Missing native selection.");
-            foreach (var family in new[] { ("assets", assets), ("aggregates", aggregates) })
+            foreach (var family in new[] { ("assets", assets), ("aggregates", aggregates), ("requests", coverage) })
             foreach (JsonNode? item in catalog[family.Item1]!.AsArray())
             {
                 if (item?["target"]?.GetValue<string>() != receipt.target)
@@ -82,7 +84,7 @@ internal static partial class ValidationPlanner
             }
         }
         string selectionPath = PathBoundary.RequireUnlinkedPath(plan.root, PathBoundary.Resolve(plan.root, plan.nativeDependencies));
-        byte[] selectionBytes = JsonSerializer.SerializeToUtf8Bytes(new { layout = "platform-packages", assets, aggregates });
+        byte[] selectionBytes = JsonSerializer.SerializeToUtf8Bytes(new { layout = "platform-packages", assets, aggregates, requests = coverage });
         string host = plan.backendHost ?? "";
         var requests = plan.nativeRequests ?? [];
         if (!plan.backendRequired && receipts.Length != 0)
@@ -93,14 +95,12 @@ internal static partial class ValidationPlanner
         foreach (var (target, configuration) in contexts.Where(_ => plan.backendRequired))
         {
             BackendInputPlan expected = await BackendInputsAsync(plan, target, cancellation, selectionBytes, configuration).ConfigureAwait(false);
+            if (expected.missingNativeProducts.Length != 0)
+                throw new InvalidDataException($"Missing native product for {target}/{configuration}: {string.Join(", ", expected.missingNativeProducts)}.");
             foreach (string owner in expected.required)
                 if (!managed.TryGetValue((target, configuration, owner), out string? actual) || actual != expected.projects[owner])
                     throw new InvalidDataException($"Missing or stale backend owner {owner} for {target}/{configuration}.");
         }
-        foreach (var request in requests)
-            if (!assets.Concat(aggregates).Any(asset => asset?["target"]?.GetValue<string>() == request.target
-                && string.Equals(asset["configuration"]?.GetValue<string>(), request.configuration, StringComparison.OrdinalIgnoreCase) && asset["product"]?.GetValue<string>() == request.product))
-                throw new InvalidDataException($"Missing native product {request.product} for {request.target}/{request.configuration}.");
         var bound = plan with
         {
             backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray(),
@@ -128,6 +128,35 @@ internal static partial class ValidationPlanner
         static bool Digest(string? value) => value is { Length: 64 } && value.All(static c => char.IsAsciiHexDigitLower(c));
     }
 
+    private static string[] MissingNativeProducts(ValidationPlan plan, string target, string configuration, byte[]? selection)
+    {
+        string[] required = (plan.nativeRequests ?? []).Where(request => request.target == target && request.configuration == configuration)
+            .Select(static request => request.product).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        if (required.Length == 0 || selection is null)
+            return required;
+        using JsonDocument document = JsonDocument.Parse(selection);
+        if (!document.RootElement.TryGetProperty("requests", out JsonElement requests))
+            return required;
+        var available = new HashSet<(string? product, string? digest)>();
+        foreach (string family in new[] { "assets", "aggregates" })
+        foreach (JsonElement asset in document.RootElement.GetProperty(family).EnumerateArray())
+            if (asset.GetProperty("target").GetString() == target)
+                available.Add((asset.GetProperty("product").GetString(), asset.GetProperty("sha256").GetString()));
+        var certified = new HashSet<string>(StringComparer.Ordinal);
+        foreach (JsonElement request in requests.EnumerateArray())
+        {
+            if (request.GetProperty("target").GetString() != target || request.GetProperty("configuration").GetString() != configuration)
+                continue;
+            string product = request.GetProperty("product").GetString()!;
+            JsonElement digests = request.GetProperty("digests");
+            if (digests.GetArrayLength() == 0 || digests.EnumerateArray().Any(digest => !available.Contains((product, digest.GetString()))))
+                throw new InvalidDataException($"Incomplete certified native closure for {target}/{product}/{configuration}.");
+            if (!certified.Add(product))
+                throw new InvalidDataException($"Duplicate native closure for {target}/{product}/{configuration}.");
+        }
+        return required.Where(product => !certified.Contains(product)).ToArray();
+    }
+
     private sealed record BackendNativeProduct(
         string product,
         string target,
@@ -142,11 +171,14 @@ internal static partial class ValidationPlanner
         string? configuration = null
     ) {
         configuration ??= plan.configuration;
+        if (selectionBytes is null && plan.nativeDependencies is not null && File.Exists(Path.Combine(plan.root, plan.nativeDependencies)))
+            selectionBytes = File.ReadAllBytes(Path.Combine(plan.root, plan.nativeDependencies));
+        string[] missing = MissingNativeProducts(plan, target, configuration, selectionBytes);
         if (configuration != plan.configuration && !plan.contexts.ContainsKey("backend-" + configuration.ToLowerInvariant())
             && (plan.nativeRequests ?? []).Any(request => request.target == target && request.configuration == configuration)
             && !plan.checks.Any(check => check.exclusion is null && check.context is not null
                 && plan.contexts[check.context].properties.GetValueOrDefault("Configuration") == configuration))
-            return new(plan.commit, target, configuration, new(StringComparer.Ordinal), [], []);
+            return new(plan.commit, target, configuration, new(StringComparer.Ordinal), [], [], missing);
         ValidationContext graph = configuration == plan.configuration ? plan.contexts["managed"]
             : plan.contexts.GetValueOrDefault("backend-" + configuration.ToLowerInvariant())
                 ?? throw new InvalidDataException("The SDK graph has no captured configuration " + configuration);
@@ -191,8 +223,6 @@ internal static partial class ValidationPlanner
             }
         }
 
-        if (selectionBytes is null && plan.nativeDependencies is not null && File.Exists(Path.Combine(plan.root, plan.nativeDependencies)))
-            selectionBytes = File.ReadAllBytes(Path.Combine(plan.root, plan.nativeDependencies));
         if (selectionBytes is not null)
         {
             using JsonDocument dependencies = JsonDocument.Parse(selectionBytes);
@@ -267,7 +297,7 @@ internal static partial class ValidationPlanner
             required.UnionWith(Closure(C_BUILD).Where(IsBackend));
         return new(plan.commit, target, configuration, identities, required.Order(StringComparer.Ordinal).ToArray(),
             checks.Where(static check => check.kind == "test" && check.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
-                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray());
+                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing);
 
         IEnumerable<string> Closure(string project)
         {

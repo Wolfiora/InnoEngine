@@ -66,6 +66,7 @@ if ($required.Count) {
         $catalog = Get-BackendCatalog $base $headers $release
         $native = [ordered]@{
             assets = @($catalog.platforms.Values | ForEach-Object { $_.native.assets } | Where-Object { $_ })
+            requests = @($catalog.platforms.Values | ForEach-Object { $_.native.requests } | Where-Object { $_ })
             aggregates = @($catalog.platforms.Values | ForEach-Object { $_.native.aggregates } | Where-Object { $_ })
         }
         $selection = Join-Path $directory "$($release.tag_name).json"
@@ -88,11 +89,7 @@ if ($required.Count) {
                 $owners = $platform.configurations[$configuration]
                 $changed[$configuration] = @($current.required | Where-Object { !$owners -or $owners[$_] -cne $current.projects[$_] })
                 $cost += $changed[$configuration].Count
-            }
-            foreach ($request in $plan.nativeRequests | Where-Object target -CEQ $target) {
-                if (!@((@($platform.native.assets) + @($platform.native.aggregates)) | Where-Object {
-                    $_.configuration -ieq $request.configuration -and $_.product -ceq $request.product
-                }).Count) { $cost++ }
+                $cost += $current.missingNativeProducts.Count
             }
             $currentBest = $acquisitions[$target]
             if ($currentBest.Contains('cost') -and $cost -ge $currentBest.cost) { continue }

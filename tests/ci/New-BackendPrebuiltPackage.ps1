@@ -46,7 +46,8 @@ foreach ($configuration in $plans.Keys) {
     if ($missing.Count) { throw "Backend production omitted $configuration owners: $($missing -join ', ')." }
 }
 $native = Get-Content -LiteralPath $NativeSelection -Raw | ConvertFrom-Json -AsHashtable
-$selection = [ordered]@{}
+$selection = [ordered]@{requests=@($native.requests | Where-Object target -CEQ $Target)}
+if (!$selection.requests.Count) { throw 'The platform package lacks verified product requests.' }
 $nativeRoot = Split-Path ([IO.Path]::GetFullPath($NativeSelection)) -Parent
 $nativePayload = Join-Path $stagingRoot 'native'
 [IO.Directory]::CreateDirectory($nativePayload) | Out-Null

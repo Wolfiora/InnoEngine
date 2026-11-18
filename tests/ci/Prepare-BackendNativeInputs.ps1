@@ -33,7 +33,9 @@ Invoke-Native @('--operation','describe','--output',$productsPath)
 $products = @( (Get-Content -LiteralPath $productsPath -Raw | ConvertFrom-Json).products )
 if (!$products.Count) { throw 'The platform declares no native product closures.' }
 $selected = [ordered]@{assets=[ordered]@{};aggregates=[ordered]@{}}
+# Capture logical product requests independently of per-component configuration overrides.
 $imported = $false
+$requests = [Collections.Generic.List[object]]::new()
 foreach ($configuration in $registered[0].configurations) {
     foreach ($product in $products) {
         $arguments = @('--configuration',$configuration,'--product',$product)
@@ -64,6 +66,8 @@ foreach ($configuration in $registered[0].configurations) {
             $source = Get-Content -LiteralPath $fragment -Raw | ConvertFrom-Json -AsHashtable -Depth 80
             $digests = @(@($source.assets) + @($source.aggregates) | ForEach-Object sha256)
         }
+        $closure = @($digests | Sort-Object -Unique -CaseSensitive)
+        if (!$closure.Count) { throw "The producer selected an empty native closure for $product/$configuration." }
         foreach ($family in @('assets','aggregates')) {
             foreach ($item in $source[$family] | Where-Object { $_.target -ceq $Target -and $_.product -ceq $product -and $_.sha256 -cin $digests }) {
                 if ($item.asset -cnotmatch '^[A-Za-z0-9._-]+\.zip$' -or $item.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid native producer asset.' }
@@ -79,8 +83,9 @@ foreach ($configuration in $registered[0].configurations) {
                 if ((Get-FileHash -LiteralPath $file).Hash.ToLowerInvariant() -cne $item.sha256) { throw 'Native bytes changed during assembly.' }
             }
         }
+        $requests.Add([ordered]@{target=$Target; product=$product; configuration=$configuration; digests=$closure})
     }
 }
-$inventory = [ordered]@{}
+$inventory = [ordered]@{requests=$requests.ToArray()}
 foreach ($family in $selected.Keys) { $inventory[$family] = @($selected[$family].Keys | Sort-Object -CaseSensitive | ForEach-Object { $selected[$family][$_] }) }
 [IO.File]::WriteAllText((Join-Path $output 'selection.json'), (ConvertTo-Json $inventory -Depth 80 -Compress))

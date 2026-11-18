@@ -33,7 +33,7 @@ public sealed class BackendInputTests
             "--dotnet", repository.dotnet, "--output", inputPath]));
         using JsonDocument inputs = JsonDocument.Parse(File.ReadAllBytes(inputPath));
         string input = inputs.RootElement.GetProperty("projects").GetProperty(C_PROJECT).GetString()!;
-        string native = """{"assets":[],"aggregates":[]}""";
+        string native = """{"assets":[],"aggregates":[],"requests":[]}""";
         string inventory = JsonSerializer.Serialize(new { target = "fixture", files = new[] {
             new { owner = "fixture", configuration = "all", input = Digest(native), path = "native/selection.json", sha256 = Digest(native) },
             new { owner = C_PROJECT, configuration = "Debug", input, path = "managed/probe.dll", sha256 = Digest("probe") }
@@ -55,6 +55,37 @@ public sealed class BackendInputTests
             "--plan", repository.PathOf("artifacts/plan/plan.json"), "--engine-root", repository.PathOf("."),
             "--dotnet", repository.dotnet, "--output", repository.PathOf("artifacts/bound.json")]);
         static string Digest(string value) => System.Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+    }
+
+    [Theory]
+    [InlineData("Debug", true)]
+    [InlineData("Release", false)]
+    public async Task ProductCoverageUsesTheRequestedConfigurationWhenItsOnlyToolIsAlwaysRelease(
+        string certifiedConfiguration, bool expected
+    ) {
+        using var repository = new ValidationRepository();
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoDevelopmentTarget>fixture-target</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
+        repository.Write("Product.props", "<Project />");
+        repository.Write("tests/Tool.Tests/Tool.Tests.csproj", ValidationRepository.Project(
+            "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>native</InnoValidationLayer>"
+            + "<InnoTestNativeProduct>tool-only</InnoTestNativeProduct><InnoTestNativeTarget>fixture-target</InnoTestNativeTarget></PropertyGroup>"));
+        using JsonDocument plan = await repository.PlanAsync();
+        Assert.Contains(plan.RootElement.GetProperty("nativeRequests").EnumerateArray(), request =>
+            request.GetProperty("product").GetString() == "tool-only" && request.GetProperty("configuration").GetString() == "Debug");
+        string digest = new('a', 64);
+        repository.Write("artifacts/native.json", JsonSerializer.Serialize(new {
+            assets = System.Array.Empty<object>(),
+            aggregates = new[] { new { product = "tool-only", target = "fixture-target", configuration = "release", sha256 = digest } },
+            requests = new[] { new { product = "tool-only", target = "fixture-target", configuration = certifiedConfiguration, digests = new[] { digest } } }
+        }));
+        string output = repository.PathOf("artifacts/inputs.json");
+        Assert.Equal(0, await ValidationCommand.ExecuteAsync(["backend-inputs", "--plan", repository.PathOf("artifacts/plan/plan.json"),
+            "--target", "fixture-target", "--configuration", "Debug", "--engine-root", repository.PathOf("."), "--dotnet", repository.dotnet,
+            "--selection", repository.PathOf("artifacts/native.json"), "--output", output]));
+        using JsonDocument inputs = JsonDocument.Parse(File.ReadAllBytes(output));
+        Assert.Equal(!expected, inputs.RootElement.GetProperty("missingNativeProducts").EnumerateArray().Any(item => item.GetString() == "tool-only"));
     }
 
     [Fact]
