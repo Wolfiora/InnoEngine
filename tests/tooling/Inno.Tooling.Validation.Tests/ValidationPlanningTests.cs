@@ -115,6 +115,28 @@ public sealed class ValidationPlanningTests
     }
 
     [Fact]
+    public async Task HostRoutingProofContainsOnlyExclusiveSourcesOfUnreferencedHostTests()
+    {
+        using var repository = new ValidationRepository();
+        string otherHost = OperatingSystem.IsWindows() ? "macos" : "windows";
+        string settings = $"<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>contract</InnoValidationLayer><InnoValidationEnvironment>{otherHost}</InnoValidationEnvironment></PropertyGroup>";
+        repository.Write("tests/Foreign/Foreign.csproj", ValidationRepository.Project(settings));
+        repository.Write("tests/Foreign/Private.cs", "class PrivateTest {}");
+        repository.Write("tests/Foreign/Shared.cs", "class SharedTest {}");
+        repository.Write("tests/Referenced/Referenced.csproj", ValidationRepository.Project(settings));
+        repository.Write("tests/Referenced/Utility.cs", "class ReferencedTest {}");
+        repository.Write("tests/Consumer/Consumer.csproj", ValidationRepository.Project(
+            "<ItemGroup><Compile Include=\"../Foreign/Shared.cs\"/><ProjectReference Include=\"../Referenced/Referenced.csproj\"/></ItemGroup>"));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Declare independent and shared host test inputs");
+        using JsonDocument plan = await repository.PlanAsync();
+        string?[] excluded = plan.RootElement.GetProperty("hostExcludedSources").EnumerateArray().Select(static item => item.GetString()).ToArray();
+        Assert.Contains("tests/Foreign/Private.cs", excluded);
+        Assert.DoesNotContain("tests/Foreign/Shared.cs", excluded);
+        Assert.DoesNotContain("tests/Referenced/Utility.cs", excluded);
+    }
+
+    [Fact]
     public async Task SharedTestExecutionChangesSelectAllTestOwnersAndInvalidateOnlyTheirExecutionInputs()
     {
         using var repository = new ValidationRepository();

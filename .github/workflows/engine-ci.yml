@@ -55,6 +55,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          fetch-depth: 2
           persist-credentials: false
       - id: select
         shell: pwsh
@@ -63,6 +64,8 @@ jobs:
           CANDIDATE: ${{ github.sha }}
           REQUESTED_PROFILE: ${{ inputs.profile }}
           SOURCE_RUN_ID: ${{ inputs.source_run }}
+          BASELINE: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           if ($env:REQUESTED_PROFILE) {
             if ($env:REQUESTED_PROFILE -cnotin @('full', 'performance')) { throw 'Unsupported scheduled profile.' }
@@ -78,6 +81,9 @@ jobs:
           }
           $hosts = @(Get-Content .github/validation-hosts.json -Raw | ConvertFrom-Json | Where-Object { $selected.profile -cne 'fast' -or $_.fast })
           if ($hosts.Count -eq 0 -or @($hosts.runner | Sort-Object -Unique).Count -ne $hosts.Count) { throw 'Hosted execution registration is empty or duplicated.' }
+          if ($selected.run -and $selected.profile -ceq 'pull-request' -and $env:BASELINE) {
+            $hosts = @(./tests/ci/Select-ValidationHosts.ps1 -Hosts $hosts -Baseline $env:BASELINE -Candidate $env:CANDIDATE -DefaultBranch $env:DEFAULT_BRANCH)
+          }
           # Recheck an ordinary push immediately before scheduling expensive jobs; PR event delivery can race the first lookup.
           if (-not $env:REQUESTED_PROFILE -and $env:GITHUB_EVENT_NAME -ceq 'push' -and $selected.profile -ceq 'fast' -and $selected.run) {
             $selected = ./tests/ci/Get-ValidationCadence.ps1 -EventPath $env:GITHUB_EVENT_PATH -Event $env:GITHUB_EVENT_NAME `
@@ -407,6 +413,14 @@ jobs:
         with:
           name: engine-acceptance-evidence-attempt-${{ github.run_attempt }}
           path: artifacts/validation/joined/
+          if-no-files-found: error
+          retention-days: 30
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        with:
+          name: validation-host-routing-attempt-${{ github.run_attempt }}
+          path: artifacts/validation/host-routing.json
           if-no-files-found: error
           retention-days: 30
 

@@ -10,6 +10,7 @@ $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $received = [IO.Path]::GetFullPath($ReceivedDirectory, $repository)
 $available = @(Get-ChildItem -LiteralPath $received -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
 if ($Hosts.Count -eq 0 -or @($Hosts | Sort-Object -Unique).Count -ne $Hosts.Count) { throw 'The required hosted matrix is empty or duplicated.' }
+$routing = [ordered]@{}
 $certification = foreach ($platform in $Hosts) {
     $selectedPlan = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-plan-$platform" -MaximumAttempt $Attempt
     $planPath = Join-Path $selectedPlan.directory 'plan.json'
@@ -37,7 +38,10 @@ $certification = foreach ($platform in $Hosts) {
         throw 'The frozen plan or its joined result changed during transport.'
     }
     "$platform`: $($receipt.passed) passed, $($receipt.reused) reused, $($receipt.notApplicable) explicitly not applicable." >> $env:GITHUB_STEP_SUMMARY
+    $routing[$platform] = @($plan.hostExcludedSources | Where-Object { $_ })
     [pscustomobject]@{ platform = $platform; receipt = $receipt }
 }
+[IO.File]::WriteAllText((Join-Path $repository 'artifacts/validation/host-routing.json'),
+    (ConvertTo-Json @{commit=$ExpectedCommit;hosts=$routing} -Depth 6 -Compress))
 $certification | ConvertTo-Json -Depth 12 | Set-Content (Join-Path $repository 'artifacts/validation/certification.json')
 if (@($certification | Where-Object { -not $_.receipt.full }).Count -eq 0) { 'INNO_FULL_CERTIFICATION=true' >> $env:GITHUB_ENV }
