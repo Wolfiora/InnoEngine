@@ -23,7 +23,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
     [Fact]
-    public async Task ProjectGuideOwnershipPreservesProseAndRequiresReviewAfterSourceChanges()
+    public async Task ProjectGuideBecomesAuthoredOnEditAndTracksSubsequentSourceChanges()
     {
         const string C_PAGE = "content/en/architecture/projects/probe.md";
         Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
@@ -42,25 +42,24 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Assert.Equal(manual, File.ReadAllText(path));
         string cache = Path.Combine(m_root, "artifacts/project-query");
-        var pending = await DocumentationStore.IndexAsync(m_root, m_root, cache);
-        using (var pendingSnapshot = await DocumentationStore.OpenAsync(cache, pending.snapshot))
-            Assert.Contains("[!REVIEW-PENDING]", (await pendingSnapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe").markdown);
-        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", C_PAGE]));
-        string reviewed = File.ReadAllText(path);
+        var initial = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using (var initialSnapshot = await DocumentationStore.OpenAsync(cache, initial.snapshot))
+            Assert.Contains("[!AUTHORED]", (await initialSnapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe").markdown);
+        string original = File.ReadAllText(path);
         Bind(description: "The value\r\ncontract.");
         await Sync();
-        Assert.Equal(reviewed, File.ReadAllText(path));
+        Assert.Equal(original, File.ReadAllText(path));
         Bind(description: "Changed XML contract.");
         await Sync();
         Assert.Equal(Body(manual), Body(File.ReadAllText(path)));
-        Assert.Contains("outdated: true", File.ReadAllText(path));
+        Assert.Contains("outdatedFor:", File.ReadAllText(path));
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
-        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", C_PAGE]));
-        Assert.Contains("outdated: false", File.ReadAllText(path));
+        File.AppendAllText(path, "\nUpdated explanation.\n");
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
         var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         var page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe");
-        Assert.Contains("[!VERIFIED]", page.markdown);
+        Assert.Contains("[!AUTHORED]", page.markdown);
         Assert.Contains("Independent lifetime guidance.", page.markdown);
         Assert.Contains("src/Inno.Probe.csproj", page.markdown);
     }
@@ -121,7 +120,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Assert.Equal(paths, new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment));
         Assert.Equal(Body(manual), Body(File.ReadAllText(paths[2])));
-        Assert.Contains("outdated: true", File.ReadAllText(paths[2]));
+        Assert.Contains("outdatedFor:", File.ReadAllText(paths[2]));
         string navigation = File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md"));
         Assert.Contains("[Inno.Probe.Value&lt;TValue&gt;]", navigation);
         Assert.Contains("[Other.Value&lt;TValue&gt;]", navigation);
@@ -135,7 +134,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal("Value<TOwner, TArgument>", page.title);
         Assert.Contains("Keep the target alive", page.markdown);
         Assert.Equal(Body(manual), Body(File.ReadAllText(paths[2])));
-        Assert.Contains("outdated: true", File.ReadAllText(paths[2]));
+        Assert.Contains("outdatedFor:", File.ReadAllText(paths[2]));
     }
 
     [Fact]
@@ -164,7 +163,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Bind(description: "Updated source documentation.");
         await Sync();
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
-        Assert.Contains("outdated: true", File.ReadAllText(member));
+        Assert.Contains("outdatedFor:", File.ReadAllText(member));
         Assert.True(string.IsNullOrWhiteSpace(Body(File.ReadAllText(Fragment(C_TYPE)))));
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
@@ -180,38 +179,30 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     }
 
     [Fact]
-    public async Task ReviewAcknowledgesCurrentXmlWithoutChangingManualBodyAndCannotHideFutureChanges()
+    public async Task EditingADescriptionClearsAutomaticStalenessUntilTheNextSourceChange()
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
-            + "\nKeep this independently authored lifetime constraint.\n";
-        File.WriteAllText(member, manual);
-        Bind(description: "Updated XML\nrequires a review.");
+        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada", StringComparison.Ordinal));
+        Bind(description: "A changed\ncontract.");
         await Sync();
-        Assert.Contains("outdated: true", File.ReadAllText(member));
-        string relative = Path.GetRelativePath(m_root, member).Replace('\\', '/');
-        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", relative]));
-        string reviewed = File.ReadAllText(member);
-        Assert.Equal(Body(manual), Body(reviewed));
-        Assert.Contains("outdated: false", reviewed);
-        Assert.NotEqual(manual.Split("reviewed: ")[1].Split('\n')[0], reviewed.Split("reviewed: ")[1].Split('\n')[0]);
-        Bind(description: "Updated XML\r\nrequires a review.");
+        string path = Path.Combine(m_root, "artifacts/query");
+        async Task AssertStatus(string status)
+        {
+            var index = await DocumentationStore.IndexAsync(m_root, m_root, path);
+            using var snapshot = await DocumentationStore.OpenAsync(path, index.snapshot);
+            Assert.Contains("> [!" + status + "]", (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
+        }
+        await AssertStatus("OUTDATED");
+        File.WriteAllText(member, File.ReadAllText(member).Replace("description: null", "description:\n- An updated explanation.", StringComparison.Ordinal));
+        Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
+        await AssertStatus("AUTHORED");
+        Bind(description: "A changed\r\ncontract.");
         await Sync();
-        Assert.Equal(reviewed, File.ReadAllText(member));
-        string cache = Path.Combine(m_root, "artifacts/query");
-        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
-        using (DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot))
-            Assert.Contains("> [!VERIFIED]", (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
-        Bind(description: "Another source change.");
+        await AssertStatus("AUTHORED");
+        Bind(description: "A newer contract.");
         await Sync();
-        File.WriteAllText(member, File.ReadAllText(member).Replace("outdated: true", "outdated: false", StringComparison.Ordinal));
-        await Sync();
-        Assert.Contains("outdated: true", File.ReadAllText(member));
-        Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
-        indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
-        using DocumentationSnapshot stale = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        Assert.Contains("> [!OUTDATED]", (await stale.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
+        await AssertStatus("OUTDATED");
     }
 
     [Theory]
@@ -228,20 +219,16 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     }
 
     [Fact]
-    public async Task ReviewRejectsUnownedRemovedAndUnchangedDefaultContent()
+    public async Task LegacyStaleApiRetainsOutdatedStatusDuringMigration()
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        string relative = Path.GetRelativePath(m_root, member).Replace('\\', '/');
-        Task<int> Review(string path) => DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", path]);
-        await Assert.ThrowsAsync<InvalidDataException>(() => Review(relative));
-        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal));
-        await Assert.ThrowsAsync<InvalidDataException>(() => Review(relative));
-        await Assert.ThrowsAsync<InvalidDataException>(() => Review("content/en/manual/task.md"));
-        File.AppendAllText(member, "\nIndependent explanation.\n");
-        Bind(member: false);
+        string legacy = File.ReadAllText(member).Replace("sourceFingerprint:", "reviewed:", StringComparison.Ordinal)
+            .Replace("source: xml", "source: Ada", StringComparison.Ordinal).Replace("outdated: false", "outdated: true", StringComparison.Ordinal);
+        File.WriteAllText(member, legacy);
         await Sync();
-        await Assert.ThrowsAsync<InvalidDataException>(() => Review(relative));
+        Assert.Contains("outdatedFor:", File.ReadAllText(member));
+        Assert.DoesNotContain("reviewed:", File.ReadAllText(member));
     }
 
     private static string Body(string text) => text[(text.IndexOf("\n---", 4, StringComparison.Ordinal) + 4)..];
@@ -440,7 +427,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("public long Inno.Probe.Value.count", hit.text);
         Assert.Contains("Read the count only after publication.", hit.text);
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
-        Assert.Contains("outdated: true", File.ReadAllText(member));
+        Assert.Contains("outdatedFor:", File.ReadAllText(member));
         Assert.Contains(hit.text, Assert.Single((await snapshot.QueryAsync(new("read", hit.contentSource))).hits).text);
         Directory.Move(Path.Combine(m_root, "content"), Path.Combine(m_root, "unavailable-content"));
         Assert.Equal(hit.text, Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits).text);
@@ -692,7 +679,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Bind();
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
-        Assert.Contains("outdated: true", File.ReadAllText(member));
+        Assert.Contains("outdatedFor:", File.ReadAllText(member));
         Assert.Contains("Updated package XML.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
         byte[] binding = File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json"));
         JsonNode next = JsonNode.Parse(File.ReadAllText(package))!;
@@ -706,7 +693,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-import", "--docs-root", m_root, "--package", package]));
         Assert.Equal(binding, File.ReadAllBytes(Path.Combine(m_root, "reference/engine.lock.json")));
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
-        Assert.Contains("outdated: true", File.ReadAllText(member));
+        Assert.Contains("outdatedFor:", File.ReadAllText(member));
     }
 
     [Theory]
@@ -828,7 +815,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string saved = File.ReadAllText(memberPath);
         Assert.Contains("source: Ada Lovelace", saved);
-        Assert.Contains("outdated: true", saved);
+        Assert.Contains("outdatedFor:", saved);
         Assert.Equal(body, Body(saved));
         Assert.True(saved.IndexOf("contracts:", StringComparison.Ordinal) < saved.IndexOf("# Authoring metadata", StringComparison.Ordinal));
         string cache = Path.Combine(m_root, "artifacts/query");
