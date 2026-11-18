@@ -117,7 +117,7 @@ internal static class NativeDependencySource
                 pair,
                 index
             ) => raw[index] != pair.Value).Any())
-                throw new InvalidDataException("Native dependency source bytes changed. Run the manual Native Dependencies action and adopt its exact selection.");
+                throw new InvalidDataException("Native dependency source bytes changed. Produce the matching backend package for the requested target.");
         }
         Task<string> GitAsync(string[] arguments)
             => ToolchainEnvironment.CaptureOutputAsync("git", ["--literal-pathspecs", ..arguments], root, cancellation);

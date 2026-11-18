@@ -62,10 +62,10 @@ public sealed class NativeBindingGenerationTests : IDisposable
                 _
             ) => relative)]);
         using ProductNativeBuildResult produced = await new ComponentNativeProductExecutor().BuildAsync(context, plan, CancellationToken.None);
-        string selection = await NativeDependencyManifest.ExportAsync(context, plan, produced, "native-deps-fixture-1", Path.Combine(m_root, "artifacts", "export"));
+        string selection = await NativeDependencyManifest.ExportAsync(context, plan, produced, Path.Combine(m_root, "artifacts", "export"));
         using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(selection));
         JsonElement asset = manifest.RootElement.GetProperty("assets")[0];
-        string downloads = Path.Combine(consumer, "artifacts", "dependencies", "downloads");
+        string downloads = Path.Combine(consumer, "artifacts", "fixture-target", "native");
         Directory.CreateDirectory(downloads);
         File.Copy(Path.Combine(m_root, "artifacts", "export", asset.GetProperty("asset").GetString()!),
             Path.Combine(downloads, asset.GetProperty("sha256").GetString() + ".zip"));

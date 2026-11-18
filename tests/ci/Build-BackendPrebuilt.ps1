@@ -138,11 +138,10 @@ if ($HostTarget -cne $Target) {
     $source = Get-Content -LiteralPath $consumption -Raw | ConvertFrom-Json -AsHashtable -Depth 80
     $hostDirectory = [IO.Directory]::CreateDirectory((Join-Path $coldStore "$HostTarget/native")).FullName
     foreach ($family in @('assets','aggregates')) {
-        foreach ($item in $source[$family] | Where-Object { $_.target -ceq $HostTarget -and $_.product -ceq 'shader-tools' }) {
+        foreach ($item in $source[$family] | Where-Object { $_.target -ceq $HostTarget }) {
             if ($item.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid host tool digest.' }
             $file = "$($item.sha256).zip"
-            $origin = if ($source['layout'] -ceq 'platform-packages') { Join-Path (Split-Path $consumption) "$HostTarget/native/$file" }
-                else { Join-Path $root "artifacts/dependencies/downloads/$file" }
+            $origin = Join-Path (Split-Path $consumption) "$HostTarget/native/$file"
             $destination = Join-Path $hostDirectory $file
             if (!(Test-Path -LiteralPath $destination)) {
                 if ((Get-FileHash -LiteralPath $origin).Hash.ToLowerInvariant() -cne $item.sha256) { throw 'Host tool archive changed.' }

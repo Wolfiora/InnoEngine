@@ -11,4 +11,3 @@ assets/fonts/LICENSE-JetBrainsMono.txt -text -whitespace
 assets/fonts/icons/LICENSE-FontAwesome.txt -text -whitespace
 
 # Match the published native selector digest on every checkout host.
-build/dependencies/native-artifacts.json text eol=lf

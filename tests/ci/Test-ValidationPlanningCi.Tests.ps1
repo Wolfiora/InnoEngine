@@ -15,7 +15,6 @@ $originalDirectory = (Get-Location).Path
 $originalProtocols = $env:GIT_ALLOW_PROTOCOL
 $env:GIT_ALLOW_PROTOCOL = 'file'
 try {
-    $nativeScopes = @{}
     foreach ($case in $cases) {
         $root = Join-Path $directory $case.name
         $scripts = Join-Path $root 'tests/ci'
@@ -43,7 +42,7 @@ if ($Arguments[0] -ceq 'build') { 'prepared fixture entry' | Set-Content $assemb
 if ($Arguments[0] -ceq 'msbuild') { Write-Output $assembly; return }
 if ($Arguments[1] -ceq 'docs') { throw 'Engine CI must not prepare a paired Docs candidate.' }
 if ($Arguments[1] -cne 'validate' -or $Arguments[2] -cne 'plan') { throw 'Unexpected hosted planning operation.' }
-if ($Arguments -notcontains '--profile' -or $Arguments -notcontains '--native-dependencies' -or $Arguments -contains '--cache-input') { throw 'Hosted planning lost its explicit consume-only policy.' }
+if ($Arguments -notcontains '--profile' -or $Arguments -notcontains '--backend-store' -or $Arguments -contains '--native-dependencies' -or $Arguments -contains '--cache-input') { throw 'Hosted planning lost its explicit consume-only policy.' }
 $output = $Arguments[[Array]::IndexOf($Arguments, '--output') + 1]
 if ($case.prepare) {
     $attempts = Join-Path $PSScriptRoot 'artifacts/planning-attempts.txt'
@@ -105,11 +104,6 @@ $global:LASTEXITCODE = [int]$case.exit
         } elseif ($published -notmatch "(?m)^native=$($case.native.ToString().ToLowerInvariant())\r?$" -or $published -notmatch '(?m)^shards=\["architecture"\]\r?$') {
             throw "The prepared plan did not publish its actual environment requirement: $($case.name)"
         }
-        if (-not $case.throws) {
-            $key = [regex]::Match($published, '(?m)^nativeCacheScope=([a-f0-9]{64})\r?$')
-            if ($key.Success -ne $case.native) { throw 'Only native plans must publish a precise download cache scope.' }
-            if ($key.Success) { $nativeScopes.Add($case.name, $key.Groups[1].Value) }
-        }
         if ($case.prepare) {
             $attempts = @(Get-Content (Join-Path $root 'artifacts/planning-attempts.txt')).Count
             $expectedAttempts = 1
@@ -119,7 +113,6 @@ $global:LASTEXITCODE = [int]$case.exit
             }
         }
     }
-    if ($nativeScopes['prepared-native'] -ceq $nativeScopes['second-product']) { throw 'Different product requests share a sealed archive cache.' }
 } finally {
     $env:GITHUB_OUTPUT = $originalOutput
     $env:GIT_ALLOW_PROTOCOL = $originalProtocols

@@ -29,7 +29,7 @@ public sealed class ValidationPlanningTests
         JsonElement selected = Assert.Single(plan.RootElement.GetProperty("checks").EnumerateArray()
             .Where(check => check.GetProperty("kind").GetString() == "test" && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null));
         Assert.Equal("tests/Producer/Suite.csproj", selected.GetProperty("owner").GetString());
-        await Assert.ThrowsAsync<ArgumentException>(() => repository.PlanAsync(profile: "native-producer", nativeDependencies: "build/dependencies/native-artifacts.json"));
+        await Assert.ThrowsAsync<ArgumentException>(() => repository.PlanAsync(profile: "native-producer", nativeDependencies: "artifacts/backend-store/selection.json"));
     }
 
     [Fact]
@@ -41,7 +41,7 @@ public sealed class ValidationPlanningTests
             + "<InnoValidationRequiresNativeProducer>true</InnoValidationRequiresNativeProducer></PropertyGroup>"));
         repository.Write("tests/Warm/Suite.csproj", ValidationRepository.Project(
             "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>performance</InnoValidationLayer></PropertyGroup>"));
-        using JsonDocument plan = await repository.PlanAsync(profile: "performance", nativeDependencies: "build/dependencies/native-artifacts.json");
+        using JsonDocument plan = await repository.PlanAsync(profile: "performance", nativeDependencies: "artifacts/backend-store/selection.json");
         Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
         JsonElement required = Assert.Single(plan.RootElement.GetProperty("checks").EnumerateArray()
             .Where(item => item.GetProperty("kind").GetString() == "test" && item.GetProperty("exclusion").ValueKind == JsonValueKind.Null));
@@ -65,7 +65,7 @@ public sealed class ValidationPlanningTests
             <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>contract</InnoValidationLayer></PropertyGroup>
             <ItemGroup><InnoNativeDependency Include="player" TargetId="cross-target" Configuration="Release" /></ItemGroup>
             """));
-        using JsonDocument plan = await repository.PlanAsync(profile: "fast", nativeDependencies: "build/dependencies/native-artifacts.json");
+        using JsonDocument plan = await repository.PlanAsync(profile: "fast", nativeDependencies: "artifacts/backend-store/selection.json");
         Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
         Assert.Empty(plan.RootElement.GetProperty("nativeRequests").EnumerateArray());
@@ -91,7 +91,7 @@ public sealed class ValidationPlanningTests
         string output = repository.PathOf("artifacts/console-selection");
         int status = await ValidationCommand.ExecuteAsync(["plan", "--engine-root", repository.PathOf("."),
             "--dotnet", repository.dotnet, "--base", "HEAD", "--output", output,
-            "--native-dependencies", "build/dependencies/native-artifacts.json"]);
+            "--backend-store", "artifacts/backend-store"]);
         Assert.Equal(0, status);
         Assert.False(File.Exists(Path.Combine(output, "preparation.json")));
         using JsonDocument selection = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
@@ -100,7 +100,7 @@ public sealed class ValidationPlanningTests
         Assert.DoesNotContain("tests/build/Inno.Build.Tests/Inno.Build.Tests.csproj", owners);
         Assert.DoesNotContain("tests/build/Inno.Build.Integration.Tests/Inno.Build.Integration.Tests.csproj", owners);
         Assert.DoesNotContain("tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj", owners);
-        Assert.False(Directory.Exists(repository.PathOf("artifacts/dependencies/downloads")));
+        Assert.False(Directory.Exists(repository.PathOf("artifacts/backend-store")));
     }
 
     [Fact]

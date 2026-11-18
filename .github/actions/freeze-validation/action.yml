@@ -8,9 +8,6 @@ outputs:
   native:
     value: ${{ steps.freeze.outputs.native }}
     description: Whether this host requires native packages.
-  native-cache-scope:
-    value: ${{ steps.freeze.outputs.nativeCacheScope }}
-    description: Digest of the frozen native request set.
 runs:
   using: composite
   steps:

@@ -249,7 +249,7 @@ internal static partial class ValidationPlanner
                         path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
             if (backendStore is null && nativeDependencies is not null && !File.Exists(Path.Combine(root, nativeDependencies)))
                 throw new InvalidDataException("Native dependency selection is missing: " + nativeDependencies
-                    + ". Run the manual Native Dependencies action and adopt its published selection before native validation.");
+                    + ". Bind the matching backend package selection before native validation.");
             if (development is null)
                 throw new InvalidDataException("Native validation requires the existing development product declaration.");
             JsonElement host = development.Value.GetProperty("Properties");

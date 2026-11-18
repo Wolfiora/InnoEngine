@@ -9,8 +9,6 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $root = [IO.Path]::GetFullPath('../..',$PSScriptRoot)
-$revision = (& git -C $root rev-parse HEAD).Trim()
-if ($LASTEXITCODE -or $revision -cnotmatch '^[a-f0-9]{40}$') { throw 'Native production requires an exact source revision.' }
 $registered = @(Get-Content -LiteralPath (Join-Path $root '.github/native-targets.json') -Raw | ConvertFrom-Json | Where-Object target -CEQ $Target)
 if ($registered.Count -ne 1) { throw "Unknown producer platform $Target." }
 $output = [IO.Path]::GetFullPath($Directory,$root)
@@ -60,7 +58,7 @@ foreach ($configuration in $registered[0].configurations) {
                 }
                 $imported = $true
             }
-            Invoke-Native ($arguments + @('--operation','produce','--release',$revision,'--output',$output))
+            Invoke-Native ($arguments + @('--operation','produce','--output',$output))
             Invoke-Native ($arguments + @('--operation','verify-bindings'))
             $fragment = Join-Path $output "$product-$Target-$($configuration.ToLowerInvariant()).json"
             $source = Get-Content -LiteralPath $fragment -Raw | ConvertFrom-Json -AsHashtable -Depth 80

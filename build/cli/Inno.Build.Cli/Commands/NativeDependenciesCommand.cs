@@ -100,7 +100,7 @@ internal static class NativeDependenciesCommand
         if (identity != await ProductNativePreparation.FreezeAsync(context.BeginInputVerification("dependency-export"), product.plan, cancellation).ConfigureAwait(false))
             throw new InvalidOperationException("Native producer inputs changed before export.");
         Report("pre-export-verification");
-        string selection = await NativeDependencyManifest.ExportAsync(context, product.plan, products, options.Require("release"), options.Require("output"), cancellation).ConfigureAwait(false);
+        string selection = await NativeDependencyManifest.ExportAsync(context, product.plan, products, options.Require("output"), cancellation).ConfigureAwait(false);
         Report("export");
         if (identity != await ProductNativePreparation.FreezeAsync(context.BeginInputVerification("dependency-export-complete"), product.plan, cancellation).ConfigureAwait(false))
             throw new InvalidOperationException("Native producer inputs changed during export.");

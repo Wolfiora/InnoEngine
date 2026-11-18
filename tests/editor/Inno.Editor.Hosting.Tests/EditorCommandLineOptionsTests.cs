@@ -10,7 +10,7 @@ public sealed class EditorCommandLineOptionsTests
     [Fact]
     public void DependencySelectionRemainsExplicitAndCannotFallBackToSourcePreparation()
     {
-        string selection = Path.Combine(Path.GetTempPath(), "native-artifacts.json");
+        string selection = Path.Combine(Path.GetTempPath(), "selection.json");
         Assert.Equal(selection, EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection]).nativeDependencies);
         Assert.Null(EditorCommandLineOptions.Parse(["project"]).nativeDependencies);
         Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", "relative.json"]));

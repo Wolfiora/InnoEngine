@@ -61,7 +61,7 @@ public static partial class NativeDependencyManifest
         {
             await VerifySourcesAsync(engineRoot, aggregate[0].sources, cancellationToken).ConfigureAwait(false);
             RequireDigest(aggregate[0].sha256);
-            return[new(aggregate[0].release, aggregate[0].asset, aggregate[0].sha256)];
+            return[new(aggregate[0].asset, aggregate[0].sha256)];
         }
 
         var assets = new List<NativeDependencyAsset>();
@@ -71,13 +71,13 @@ public static partial class NativeDependencyManifest
         {
             DependencyAsset[] matches = selection.assets.Where(asset => asset.product == plan.productId && asset.component == step.id && asset.target == target && asset.configuration == (step.configuration ?? configuration) && asset.options == Options(step) && asset.nativeProject == step.component.nativeProject && asset.toolchainProject == step.component.toolchainProject).ToArray();
             if (matches.Length != 1)
-                throw new InvalidDataException($"Missing or ambiguous native dependency: {step.id}/{target}/{step.configuration ?? configuration}. Run the manual Native Dependencies action and adopt its exact selection.");
+                throw new InvalidDataException($"Missing or ambiguous native dependency: {step.id}/{target}/{step.configuration ?? configuration}. Produce the matching backend package for the requested target.");
             DependencyAsset selected = matches[0];
             if ((selected.binding is null) != (step.component.bindingDefinition is null))
                 throw new InvalidDataException("Native dependency binding ownership differs: " + step.id);
             selectedComponents.Add(step.id, selected);
             RequireDigest(selected.sha256);
-            assets.Add(new(selected.release, selected.asset, selected.sha256));
+            assets.Add(new(selected.asset, selected.sha256));
             foreach (var pair in selected.sources)
                 if (sources.TryGetValue(pair.Key, out string? previous) && previous != pair.Value)
                     throw new InvalidDataException("Native packages disagree about their shared source inputs.");
@@ -108,9 +108,6 @@ public static partial class NativeDependencyManifest
     /// <param name = "products">
     /// The complete borrowed result, in plan order.
     /// </param>
-    /// <param name = "release">
-    /// The unique release tag that will own these assets.
-    /// </param>
     /// <param name = "outputDirectory">
     /// An explicit checkout-owned export directory.
     /// </param>
@@ -127,15 +124,13 @@ public static partial class NativeDependencyManifest
         NativeBuildContext context,
         ProductNativeBuildPlan plan,
         ProductNativeBuildResult products,
-        string release,
         string outputDirectory,
         CancellationToken cancellationToken = default
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(release);
         string root = context.engineRoot;
         string output = PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(outputDirectory));
         if (products.aggregateDirectory is not null)
-            return await ExportAggregateAsync(context, plan, products, release, output, cancellationToken).ConfigureAwait(false);
+            return await ExportAggregateAsync(context, plan, products, output, cancellationToken).ConfigureAwait(false);
         if (products.Count != plan.steps.Count)
             throw new InvalidDataException("Dependency export requires the exact complete product closure.");
         Directory.CreateDirectory(output);
@@ -177,13 +172,13 @@ public static partial class NativeDependencyManifest
             await NativeArtifactTransfer.ExportAsync(root, archive, cancellationToken, selected).ConfigureAwait(false);
             using FileStream payload = File.OpenRead(archive);
             string digest = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellationToken).ConfigureAwait(false));
-            assets.Add(new(plan.productId, step.id, product.targetId, step.configuration ?? context.configuration, step.component.nativeProject, step.component.toolchainProject, Options(step), directory, product.fingerprint, product.sharedLibraryExtension, binding, sources, context.RequireToolchain().declarations.ToArray(), step.dependencies.ToDictionary(id => id, id => products.Single(product => product.component == id).fingerprint, StringComparer.Ordinal), release, asset, digest, revision));
+            assets.Add(new(plan.productId, step.id, product.targetId, step.configuration ?? context.configuration, step.component.nativeProject, step.component.toolchainProject, Options(step), directory, product.fingerprint, product.sharedLibraryExtension, binding, sources, context.RequireToolchain().declarations.ToArray(), step.dependencies.ToDictionary(id => id, id => products.Single(product => product.component == id).fingerprint, StringComparer.Ordinal), asset, digest, revision));
         }
 
         foreach (DependencyAsset asset in assets)
             await VerifySourcesAsync(root, asset.sources, cancellationToken).ConfigureAwait(false);
         string destination = Path.Combine(output, plan.productId + "-" + context.RequireToolchain().targetId + "-" + context.configuration + ".json");
-        AtomicFile.WriteAllBytes(destination, JsonSerializer.SerializeToUtf8Bytes(new Selection(assets.ToArray(), []), new JsonSerializerOptions { WriteIndented = true }));
+        AtomicFile.WriteAllBytes(destination, JsonSerializer.SerializeToUtf8Bytes(new Selection(assets.ToArray(), [], "platform-packages"), new JsonSerializerOptions { WriteIndented = true }));
         return destination;
         string Relative(string path) => Path.GetRelativePath(Path.Combine(root, "artifacts"), path).Replace('\\', '/');
     }
@@ -250,8 +245,8 @@ public static partial class NativeDependencyManifest
         string Archive(string digest)
         {
             RequireDigest(digest);
-            if (selection.layout is null)
-                return Path.Combine(root, "artifacts", "dependencies", "downloads", digest + ".zip");
+            if (selection.layout != "platform-packages")
+                throw new InvalidDataException("Native acquisition requires a bound platform package store.");
             if (!target.All(static value => char.IsAsciiLetterOrDigit(value) || value == '-'))
                 throw new InvalidDataException("The native payload requires a registered platform name.");
             string store = Path.GetDirectoryName(Path.GetFullPath(selectionPath))!;
@@ -344,7 +339,7 @@ public static partial class NativeDependencyManifest
         {
             DependencyAsset[] matches = selection.assets.Where(asset => asset.product == plan.productId && asset.component == step.id && asset.target == target && asset.configuration == (step.configuration ?? configuration) && asset.options == Options(step)).ToArray();
             if (matches.Length != 1)
-                throw new InvalidDataException($"Native dependency '{step.id}/{target}/{step.configuration ?? configuration}' requires exactly one matching artifact. Run the manual Native Dependencies action and adopt its exact selection.");
+                throw new InvalidDataException($"Native dependency '{step.id}/{target}/{step.configuration ?? configuration}' requires exactly one matching artifact. Produce the matching backend package for the requested target.");
             return matches[0];
         }
 
@@ -352,7 +347,7 @@ public static partial class NativeDependencyManifest
         {
             Dictionary<string, string> current = await NativeDependencySource.CaptureAsync(root, expectedSources.Keys, cancellationToken).ConfigureAwait(false);
             if (current.Count != expectedSources.Count || current.Any(pair => !expectedSources.TryGetValue(pair.Key, out string? value) || value != pair.Value))
-                throw new InvalidDataException("Native dependency sources changed. Run the manual Native Dependencies action and adopt its exact selection.");
+                throw new InvalidDataException("Native dependency sources changed. Produce the matching backend package for the requested target.");
         }
 
         string ResolveArtifact(
@@ -388,19 +383,18 @@ public static partial class NativeDependencyManifest
         {
             if (asset is null || asset.sources is null || asset.producerTools is null || asset.dependencies is null || string.IsNullOrWhiteSpace(asset.product) || string.IsNullOrWhiteSpace(asset.component) || string.IsNullOrWhiteSpace(asset.target) || string.IsNullOrWhiteSpace(asset.nativeProject) || string.IsNullOrWhiteSpace(asset.toolchainProject) || string.IsNullOrWhiteSpace(asset.options) || string.IsNullOrWhiteSpace(asset.directory))
                 throw new InvalidDataException("Native dependency asset is missing required provenance or ownership.");
-            ValidateAsset(asset.release, asset.asset, asset.sha256, asset.fingerprint, asset.sources, asset.producerRevision);
+            ValidateAsset(asset.asset, asset.sha256, asset.fingerprint, asset.sources, asset.producerRevision);
         }
 
         foreach (AggregateAsset asset in selection.aggregates)
         {
             if (asset is null || asset.sources is null || asset.producerTools is null || asset.bindings is null || string.IsNullOrWhiteSpace(asset.product) || string.IsNullOrWhiteSpace(asset.component) || string.IsNullOrWhiteSpace(asset.target) || string.IsNullOrWhiteSpace(asset.options) || string.IsNullOrWhiteSpace(asset.directory) || string.IsNullOrWhiteSpace(asset.aggregate))
                 throw new InvalidDataException("Native aggregate is missing required provenance or ownership.");
-            ValidateAsset(asset.release, asset.asset, asset.sha256, asset.fingerprint, asset.sources, asset.producerRevision);
+            ValidateAsset(asset.asset, asset.sha256, asset.fingerprint, asset.sources, asset.producerRevision);
         }
 
         return selection;
         static void ValidateAsset(
-            string release,
             string name,
             string digest,
             string fingerprint,
@@ -411,8 +405,8 @@ public static partial class NativeDependencyManifest
                 throw new InvalidDataException("Native dependency producer revision must be an exact commit.");
             RequireDigest(digest);
             RequireDigest(fingerprint);
-            if (string.IsNullOrWhiteSpace(release) || !(release == revision || release.StartsWith("native-deps-", StringComparison.Ordinal)) || string.IsNullOrWhiteSpace(name) || name != Path.GetFileName(name) || name.Contains('\\') || !name.EndsWith(".zip", StringComparison.Ordinal) || sources.Count == 0)
-                throw new InvalidDataException("Native dependency requires an exact release asset and nonempty source provenance.");
+            if (string.IsNullOrWhiteSpace(name) || name != Path.GetFileName(name) || name.Contains('\\') || !name.EndsWith(".zip", StringComparison.Ordinal) || sources.Count == 0)
+                throw new InvalidDataException("Native dependency requires a named native archive and nonempty source provenance.");
             foreach (string identity in sources.Values)
                 RequireDigest(identity);
         }
@@ -452,7 +446,6 @@ public static partial class NativeDependencyManifest
         Dictionary<string, string> sources,
         string[] producerTools,
         Dictionary<string, string> dependencies,
-        string release,
         string asset,
         string sha256,
         string producerRevision

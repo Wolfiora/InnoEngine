@@ -44,7 +44,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     public async Task SelectionIsReadOnlyAndRequiresNoArchive(bool aggregate)
     {
         var fixture = await PrepareAsync(aggregate);
-        string downloads = Path.Combine(fixture.consumer, "artifacts", "dependencies", "downloads");
+        string downloads = Path.Combine(fixture.consumer, "artifacts", "fixture-target", "native");
         foreach (string archive in Directory.GetFiles(downloads))
             File.Delete(archive);
         IReadOnlyList<NativeDependencyAsset> selected = await NativeDependencyManifest.SelectAsync(fixture.consumer, fixture.selection, "fixture-target", "release", fixture.plan);
@@ -78,7 +78,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
         var fixture = await PrepareAsync();
         JsonObject selection = JsonNode.Parse(File.ReadAllText(fixture.selection))!.AsObject();
         JsonObject asset = selection["assets"]![0]!.AsObject();
-        string archive = Path.Combine(fixture.consumer, "artifacts", "dependencies", "downloads", asset["sha256"]!.GetValue<string>() + ".zip");
+        string archive = Path.Combine(fixture.consumer, "artifacts", "fixture-target", "native", asset["sha256"]!.GetValue<string>() + ".zip");
         switch (damage)
         {
             case "missing":
@@ -208,9 +208,9 @@ public sealed class NativeDependencyManifestTests : IDisposable
         ) => relative)]);
         NativeBuildProduct? aggregateProduct = aggregate ? await Produce(context, new Dictionary<string, NativeBuildProduct>(), CancellationToken.None) : null;
         using ProductNativeBuildResult products = aggregateProduct is not null ? new ProductNativeBuildResult([aggregateProduct], new NativeBindingGenerationResult(new Dictionary<string, NativeBindingGenerationDescriptor>(), []), Path.Combine(aggregateProduct.directory, "Outputs"), Recipe(context)) : await new ComponentNativeProductExecutor().BuildAsync(context, plan, CancellationToken.None);
-        string selection = await NativeDependencyManifest.ExportAsync(context, plan, products, "native-deps-fixture-1", Path.Combine(producer, "artifacts", "export"));
+        string selection = await NativeDependencyManifest.ExportAsync(context, plan, products, Path.Combine(producer, "artifacts", "export"));
         var asset = JsonNode.Parse(File.ReadAllText(selection))![aggregate ? "aggregates" : "assets"]![0]!;
-        string downloads = Path.Combine(consumer, "artifacts", "dependencies", "downloads");
+        string downloads = Path.Combine(consumer, "artifacts", "fixture-target", "native");
         Directory.CreateDirectory(downloads);
         File.Copy(Path.Combine(producer, "artifacts", "export", asset["asset"]!.GetValue<string>()), Path.Combine(downloads, asset["sha256"]!.GetValue<string>() + ".zip"));
         string consumerSelection = Path.Combine(consumer, "artifacts", "selection.json");

@@ -19,7 +19,6 @@ public static partial class NativeDependencyManifest
         NativeBuildContext context,
         ProductNativeBuildPlan plan,
         ProductNativeBuildResult products,
-        string release,
         string output,
         CancellationToken cancellation
     ) {
@@ -35,10 +34,10 @@ public static partial class NativeDependencyManifest
         using FileStream payload = File.OpenRead(archive);
         string hash = Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellation).ConfigureAwait(false));
         string revision = (await ToolchainEnvironment.CaptureOutputAsync("git", ["rev-parse", "HEAD"], context.engineRoot, cancellation).ConfigureAwait(false)).Trim();
-        var asset = new AggregateAsset(plan.productId, product.component, product.targetId, context.configuration, PlanOptions(plan), Relative(product.directory), product.fingerprint, Path.GetRelativePath(product.directory, products.aggregateDirectory!).Replace('\\', '/'), product.sharedLibraryExtension, bindings, sources, context.RequireToolchain().declarations.ToArray(), release, assetName, hash, revision);
+        var asset = new AggregateAsset(plan.productId, product.component, product.targetId, context.configuration, PlanOptions(plan), Relative(product.directory), product.fingerprint, Path.GetRelativePath(product.directory, products.aggregateDirectory!).Replace('\\', '/'), product.sharedLibraryExtension, bindings, sources, context.RequireToolchain().declarations.ToArray(), assetName, hash, revision);
         string path = Path.Combine(output, plan.productId + "-" + product.targetId + "-" + context.configuration + ".json");
         await VerifySourcesAsync(context.engineRoot, sources, cancellation).ConfigureAwait(false);
-        AtomicFile.WriteAllBytes(path, JsonSerializer.SerializeToUtf8Bytes(new Selection([], [asset]), new JsonSerializerOptions { WriteIndented = true }));
+        AtomicFile.WriteAllBytes(path, JsonSerializer.SerializeToUtf8Bytes(new Selection([], [asset], "platform-packages"), new JsonSerializerOptions { WriteIndented = true }));
         return path;
         string Relative(string directory) => Path.GetRelativePath(Path.Combine(context.engineRoot, "artifacts"), directory).Replace('\\', '/');
     }
@@ -154,7 +153,7 @@ public static partial class NativeDependencyManifest
     ) {
         Dictionary<string, string> current = await NativeDependencySource.CaptureAsync(root, expected.Keys, cancellation).ConfigureAwait(false);
         if (current.Count != expected.Count || current.Any(pair => !expected.TryGetValue(pair.Key, out string? value) || value != pair.Value))
-            throw new InvalidDataException("Native dependency sources changed; publish a matching manual dependency release.");
+            throw new InvalidDataException("Native dependency sources changed. Produce the matching backend package for this target.");
     }
 
     private sealed record AggregateAsset(
@@ -170,7 +169,6 @@ public static partial class NativeDependencyManifest
         Dictionary<string, BindingAsset> bindings,
         Dictionary<string, string> sources,
         string[] producerTools,
-        string release,
         string asset,
         string sha256,
         string producerRevision

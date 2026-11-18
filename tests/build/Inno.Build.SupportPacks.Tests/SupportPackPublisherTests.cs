@@ -27,7 +27,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         string declaration = Path.Combine(m_root, "build", "distributions", "Inno.Build.Distribution.Standard", "Inno.Build.Distribution.Standard.csproj");
         Directory.CreateDirectory(Path.GetDirectoryName(declaration)!);
         File.WriteAllText(declaration, "<Project />");
-        string selection = Path.Combine(m_root, "native-artifacts.json");
+        string selection = Path.Combine(m_root, "selection.json");
         string output = Path.Combine(m_root, "Packs");
         int attempts = 0;
         var source = new PlanningSource((
