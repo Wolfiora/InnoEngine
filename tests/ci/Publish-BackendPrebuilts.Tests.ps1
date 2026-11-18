@@ -62,7 +62,11 @@ try {
                 try { $writer.Write((ConvertTo-Json $objects[$key] -Depth 8)) } finally { $writer.Dispose() }
             }
         } finally { $zip.Dispose() }
-        $plan = @{commit=$revision;tree='a'*64;environment='b'*64;full=$true;documentation=$null;nativeRequests=@(@{target=$platform.target})
+        $graph = @(@{Path='${workspace}/src/Player.csproj';Properties=@{InnoProductTarget=$platform.target;InnoProductId='player'}})
+        $checks = @($platform.configurations | ForEach-Object { @{configuration=$_;project='src/Player.csproj';product='player';seconds=2} })
+        @{commit=$revision;target=$platform.target;sha256=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant();checks=$checks} |
+            ConvertTo-Json -Depth 6 | Set-Content (Join-Path $directory 'consumption.json')
+        $plan = @{contexts=@{managed=@{sdkGraph=$graph}};commit=$revision;tree='a'*64;environment='b'*64;full=$true;documentation=$null;nativeRequests=@(@{target=$platform.target})
             backendPackages=@(@{target=$platform.target;sha256=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()})
             checks=@(@{id='consumer';kind='instructions';owner='engine';exclusion=$null;prerequisites=@()})}
         $plan | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $directory 'plan.json')
@@ -72,6 +76,14 @@ try {
             ConvertTo-Json -Depth 8 | Set-Content (Join-Path $directory 'results.json')
     }
     function Publish { & "$PSScriptRoot/Publish-BackendPrebuilts.ps1" -Directory $root -Repository 'fixture/engine' -Revision $revision -ApiUrl 'https://fixture.invalid' }
+    $proofPath = Join-Path (Join-Path $root $platforms[0].target) 'consumption.json'
+    $completeProof = [IO.File]::ReadAllBytes($proofPath)
+    $incomplete = Get-Content $proofPath -Raw | ConvertFrom-Json
+    $incomplete.checks = @()
+    $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
+    try { Publish; throw 'An incomplete SDK matrix passed.' } catch { if ($_.Exception.Message -cne 'Missing verified SDK product matrix.') { throw } }
+    if ($server.release) { throw 'An incomplete SDK matrix created a draft.' }
+    [IO.File]::WriteAllBytes($proofPath,$completeProof)
     try { Publish; throw 'The interrupted upload passed.' } catch { if ($_.Exception.Message -cne 'Interrupted test upload') { throw } }
     if (!$server.release.draft -or $server.tag -or $server.uploads.Count -ne 1) { throw 'A partial release became consumable.' }
     $result = Publish

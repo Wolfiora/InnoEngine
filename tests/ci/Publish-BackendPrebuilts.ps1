@@ -67,20 +67,19 @@ foreach ($platform in $targets) {
         $bound = @($plan.backendPackages | Where-Object target -CEQ $platform.target)
         $digest = (Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
         if (!$receipt -or $bound.Count -ne 1 -or $bound[0].sha256 -cne $digest) { throw "No matching certified ZIP for $($platform.target)." }
-        if (!$receipt.full) {
-            $sdk = Get-Content -LiteralPath (Join-Path $owner 'consumption.json') -Raw | ConvertFrom-Json
-            $products = @($plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $platform.target -and $_.Properties.InnoProductId })
-            if ($sdk.commit -cne $Revision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
-                $sdk.checks.Count -ne ($products.Count * $platform.configurations.Count)) { throw 'Missing verified SDK product matrix.' }
-            foreach ($configuration in $platform.configurations) {
-                foreach ($product in $products) {
-                    $relative = $product.Path.Replace('${workspace}', '').TrimStart('/','\').Replace('\','/')
-                    if (@($sdk.checks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.product -ceq $product.Properties.InnoProductId }).Count -ne 1) {
-                        throw "Missing distinct backend consumption proof for $relative/$configuration."
-                    }
+        $sdk = Get-Content -LiteralPath (Join-Path $owner 'consumption.json') -Raw | ConvertFrom-Json
+        $products = @($plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $platform.target -and $_.Properties.InnoProductId })
+        if ($sdk.commit -cne $Revision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
+            $sdk.checks.Count -ne ($products.Count * $platform.configurations.Count)) { throw 'Missing verified SDK product matrix.' }
+        foreach ($configuration in $platform.configurations) {
+            foreach ($product in $products) {
+                $relative = $product.Path.Replace('${workspace}', '').TrimStart('/','\').Replace('\','/')
+                if (@($sdk.checks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.product -ceq $product.Properties.InnoProductId }).Count -ne 1) {
+                    throw "Missing distinct backend consumption proof for $relative/$configuration."
                 }
             }
-        } elseif ($platform.target -cnotin @($plan.nativeRequests.target)) { throw 'Full acceptance omitted the native target.' }
+        }
+        if ($receipt.full -and $platform.target -cnotin @($plan.nativeRequests.target)) { throw 'Full acceptance omitted the native target.' }
         $ids = @($plan.checks | Where-Object { $_.kind -ceq 'test' -and $_.owner.StartsWith('tests/backends/') -and !$_.exclusion } | ForEach-Object id)
         $results = Get-Content -LiteralPath $resultsPath -Raw | ConvertFrom-Json -AsHashtable -Depth 70
         $testReceipts[$platform.target] = @($results.results | Where-Object { $_.id -cin $ids })
