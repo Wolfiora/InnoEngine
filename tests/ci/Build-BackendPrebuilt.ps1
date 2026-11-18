@@ -58,9 +58,9 @@ function Invoke-PlayerSupportPack([string]$Phase, [string]$Package, [string[]]$C
         '--native-dependencies',$Selection,'--dotnet',$dotnetPath,'--output',(Join-Path $work "pack-$Phase"))) { $info.ArgumentList.Add($argument) }
     if ($Package) { $info.Environment['InnoBackendPrebuiltRoot'] = $Package }
     if ($Phase -ceq 'produce') {
-        $packSdk = Join-Path $work 'pack-sdk'
-        $info.Environment['ArtifactsPath'] = $packSdk
-        $info.Environment['InnoBackendExportArtifactsPath'] = $packSdk
+        # The Support Pack owns a managed source snapshot. Its generator and composition
+        # outputs use SDK project directories inside that snapshot.
+        $info.Environment['InnoBackendExportProductTarget'] = $Target
         $info.Environment['InnoBackendExportRoot'] = $staging
         $info.Environment['InnoBackendCompileOwners'] = '|' + ($ChangedOwners -join '|') + '|'
     }
@@ -70,6 +70,7 @@ function Invoke-PlayerSupportPack([string]$Phase, [string]$Package, [string[]]$C
         if ($process.ExitCode) { throw "The platform's $Phase Support Pack failed for $Target." }
     } finally { $process.Dispose() }
 }
+$production = [ordered]@{}
 $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
     $planDirectory = Join-Path $work "plan-$configuration"
     Invoke-Sdk @($entry,'validate','plan','--engine-root',$root,'--base','HEAD','--profile','fast','--dotnet',$dotnetPath,
@@ -121,7 +122,8 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'produce' $previous $changed $consumption }
         elseif ($aggregate.Count) { throw "Missing declared aggregate SDK entry for $id/$configuration." }
     }
-    Write-Host "$Target/$configuration compiled $($changed.Count) backend owners and used $($matching.Count) certified owners."
+    $production[$configuration] = [ordered]@{sourceOwners=$changed;prebuiltOwners=@($matching | Sort-Object -CaseSensitive)}
+    Write-Host "$Target/$configuration selected $($changed.Count) backend owners for compilation and $($matching.Count) for prebuilt consumption."
     $inputs
 })
 $archive = @(& "$PSScriptRoot/New-BackendPrebuiltPackage.ps1" -Staging $staging -InputPlans $inputPlans -NativeSelection $native -Target $Target `
@@ -171,6 +173,6 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
         [ordered]@{configuration=$configuration; product=$product.Properties.InnoProductId; project=[IO.Path]::GetRelativePath($root,$project).Replace('\','/'); seconds=$clock.Elapsed.TotalSeconds}
     }
 })
-$receipt = [ordered]@{commit=$identity.commit;target=$Target;sha256=$digest;checks=$checks}
+$receipt = [ordered]@{commit=$identity.commit;target=$Target;sha256=$digest;bytes=[IO.FileInfo]::new($archive).Length;production=$production;checks=$checks}
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'consumption.json'),(ConvertTo-Json $receipt -Depth 8))
 $archive

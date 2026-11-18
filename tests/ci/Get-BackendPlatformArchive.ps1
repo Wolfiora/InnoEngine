@@ -9,6 +9,7 @@ $ErrorActionPreference = 'Stop'
 if ($Sha256 -cnotmatch '^[a-f0-9]{64}$' -or $AssetId -le 0) { throw 'Invalid backend asset digest or ID.' }
 $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath($Directory)).FullName
 $archive = Join-Path $owner "$Sha256.zip"
+$downloaded = 0L
 if (Test-Path -LiteralPath $archive -PathType Leaf) {
     if ((Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant() -cne $Sha256) { throw 'Cached backend ZIP differs from its catalog digest.' }
 } else {
@@ -19,5 +20,7 @@ if (Test-Path -LiteralPath $archive -PathType Leaf) {
     Invoke-WebRequest -Uri "$ApiUrl/repos/$Repository/releases/assets/$AssetId" -Headers $headers -OutFile $partial
     if ((Get-FileHash -LiteralPath $partial).Hash.ToLowerInvariant() -cne $Sha256) { throw 'Cold backend ZIP differs from its catalog digest.' }
     [IO.File]::Move($partial,$archive,$false)
+    $downloaded = [IO.FileInfo]::new($archive).Length
 }
+Write-Host "Backend platform archive $Sha256, $([IO.FileInfo]::new($archive).Length) bytes, $downloaded bytes transferred from Releases."
 $archive

@@ -105,4 +105,6 @@ if ($required.Count) {
 }
 $decision = [ordered]@{commit=$plan.commit; packages=@($acquisitions.Values);testEvidence=@($certificates.Values)}
 [IO.File]::WriteAllText((Join-Path $directory 'acquisition.json'), (ConvertTo-Json $decision -Depth 12))
+if (!$decision.packages.Count) { Write-Host 'No backend project or native product in the frozen plan. Backend transfer and compilation are both zero.' }
+foreach ($package in $decision.packages) { Write-Host "Backend platform $($package.target) selected $($package.operation)." }
 $decision

@@ -43,8 +43,10 @@
   </Target>
 
   <Target Name="ExportInnoBackendCompilerOutputs" AfterTargets="Build"
-          Condition="'$(InnoBackendExportRoot)' != '' and '$(InnoBackendExportArtifactsPath)' != '' and
-                     '$([MSBuild]::NormalizePath($(ArtifactsPath)))' == '$([MSBuild]::NormalizePath($(InnoBackendExportArtifactsPath)))'"
+          Condition="'$(InnoBackendExportRoot)' != '' and
+                     (('$(InnoBackendExportArtifactsPath)' != '' and '$(ArtifactsPath)' != '' and
+                       '$([MSBuild]::NormalizePath($(ArtifactsPath)))' == '$([MSBuild]::NormalizePath($(InnoBackendExportArtifactsPath)))') or
+                      ('$(InnoBackendExportProductTarget)' != '' and '$(InnoNativeTarget)' == '$(InnoBackendExportProductTarget)' and '$(InnoNativeBindingSelection)' != ''))"
           DependsOnTargets="GetInnoBackendCompilerOutputs">
     <GetFileHash Files="@(_InnoBackendCompilerFile)" Algorithm="SHA256">
       <Output TaskParameter="Items" ItemName="_InnoBackendExportFile" />
