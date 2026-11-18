@@ -411,7 +411,7 @@ public static partial class NativeDependencyManifest
                 throw new InvalidDataException("Native dependency producer revision must be an exact commit.");
             RequireDigest(digest);
             RequireDigest(fingerprint);
-            if (string.IsNullOrWhiteSpace(release) || !release.StartsWith("native-deps-", StringComparison.Ordinal) || string.IsNullOrWhiteSpace(name) || name != Path.GetFileName(name) || name.Contains('\\') || !name.EndsWith(".zip", StringComparison.Ordinal) || sources.Count == 0)
+            if (string.IsNullOrWhiteSpace(release) || !(release == revision || release.StartsWith("native-deps-", StringComparison.Ordinal)) || string.IsNullOrWhiteSpace(name) || name != Path.GetFileName(name) || name.Contains('\\') || !name.EndsWith(".zip", StringComparison.Ordinal) || sources.Count == 0)
                 throw new InvalidDataException("Native dependency requires an exact release asset and nonempty source provenance.");
             foreach (string identity in sources.Values)
                 RequireDigest(identity);

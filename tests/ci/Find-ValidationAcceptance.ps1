@@ -12,6 +12,11 @@ $planRoot = [IO.Path]::GetFullPath($PlanDirectory, $engine)
 $planPath = Join-Path $planRoot 'plan.json'
 $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
 $decision = @{ reusable = $false; platform = $Platform; commit = $plan.commit; reason = 'No retained trusted complete acceptance matches the current environment.' }
+if ($plan.backendStore -and $null -eq $plan.backendPackages) {
+    $decision.reason = 'This candidate requires backend production before it can match previous functional acceptance.'
+    $decision | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $planRoot 'acceptance-reuse.json')
+    return
+}
 if (-not $env:GH_TOKEN) { throw 'Acceptance discovery requires a repository read token.' }
 $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
 $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }

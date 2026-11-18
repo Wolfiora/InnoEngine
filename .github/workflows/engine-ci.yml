@@ -36,8 +36,8 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: engine-validation-${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'candidate' }}
-  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
+  group: engine-validation-${{ github.workflow }}-${{ github.ref }}-${{ (github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref_name == github.event.repository.default_branch)) && github.run_id || 'candidate' }}
+  cancel-in-progress: ${{ (github.event_name == 'push' && github.ref_name != github.event.repository.default_branch) || github.event_name == 'pull_request' || github.event_name == 'merge_group' }}
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -105,6 +105,30 @@ jobs:
         id: freeze
         with:
           profile: ${{ needs.route.outputs.profile }}
+      - uses: ./.github/actions/resolve-backends
+        id: acquisition
+      - name: Preserve the pending plan for a scheduled execution
+        shell: pwsh
+        run: Copy-Item artifacts/validation/ci-plan/plan.json artifacts/validation/ci-plan/pending.json
+      - name: Bind available packages before comparing complete acceptance
+        if: steps.acquisition.outputs.production != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: backend-nightly-plan-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: |
+            artifacts/validation/ci-plan/pending.json
+            artifacts/validation/ci-plan/entry.json
+            artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/
+            artifacts/backend-request/acquisition.json
+          if-no-files-found: error
+          retention-days: 1
       - name: Compare retained complete acceptance after current environment capture
         shell: pwsh
         env:
@@ -147,7 +171,7 @@ jobs:
             -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) -ExpectedCommit $env:GITHUB_SHA -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) `
             -OutputPath artifacts/validation/acceptance-reuse.json
 
-  execution:
+  plan:
     needs: [route, preflight, acceptance-reuse]
     if: ${{ !cancelled() && needs.route.result == 'success' && needs.route.outputs.run == 'true' && ((needs.preflight.result == 'skipped' && needs.acceptance-reuse.result == 'skipped') || (needs.acceptance-reuse.result == 'success' && needs.acceptance-reuse.outputs.reusable == 'false')) }}
     runs-on: ${{ matrix.runner }}
@@ -162,77 +186,136 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
-        id: freeze
+        if: needs.preflight.result == 'skipped'
         with:
           profile: ${{ needs.route.outputs.profile }}
+      - uses: ./.github/actions/resolve-backends
+        if: needs.preflight.result == 'skipped'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        if: needs.preflight.result == 'success'
+        with:
+          name: backend-nightly-plan-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: artifacts
+      - id: decision
+        shell: pwsh
+        run: |
+          if (Test-Path artifacts/validation/ci-plan/pending.json) {
+            Move-Item -LiteralPath artifacts/validation/ci-plan/pending.json -Destination artifacts/validation/ci-plan/plan.json
+          }
+          $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
+          "required=$(($decision.packages.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: always()
         with:
-          name: validation-plan-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
-          path: |
-            artifacts/validation/ci-plan/
-            !artifacts/validation/ci-plan/accepted/**
+          name: backend-request-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: artifacts/backend-request/acquisition.json
           if-no-files-found: error
-          retention-days: 30
-      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        if: steps.freeze.outputs.native == 'true'
-        id: dependencies
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: steps.decision.outputs.required == 'true'
         with:
-          key: native-downloads-${{ matrix.runner }}-${{ steps.freeze.outputs.native-cache-scope }}-${{ hashFiles('build/dependencies/native-artifacts.json') }}
-          path: artifacts/dependencies/downloads
-      - name: Run frozen shards on the image that captured their environment
-        id: workers
+          name: backend-freeze-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: |
+            artifacts/validation/ci-plan/plan.json
+            artifacts/validation/ci-plan/entry.json
+            artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Bind an independent managed plan on its original runner
+        if: steps.decision.outputs.required == 'false'
+        shell: pwsh
+        run: |
+          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
+      - uses: ./.github/actions/execute-validation
+        if: steps.decision.outputs.required == 'false'
+        with:
+          platform: ${{ matrix.runner }}
+          source-run: ${{ inputs.source_run || '0' }}
+
+  backend-matrix:
+    needs: [route, plan]
+    if: ${{ !cancelled() && needs.plan.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      platforms: ${{ steps.join.outputs.platforms }}
+      producers: ${{ steps.join.outputs.producers }}
+      deferred: ${{ steps.join.outputs.deferred }}
+      required: ${{ steps.join.outputs.required }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: backend-request-*-attempt-${{ github.run_attempt }}
+          path: artifacts/requests
+      - id: join
         shell: pwsh
         env:
-          VALIDATION_PLATFORM: ${{ matrix.runner }}
-          SOURCE_RUN_ID: ${{ inputs.source_run || '0' }}
-          GH_TOKEN: ${{ github.token }}
+          HOSTS: ${{ needs.route.outputs.hosts }}
         run: |
-          ./tests/ci/Invoke-ValidationWorkers.ps1 -Platform $env:VALIDATION_PLATFORM -ExpectedCommit $env:GITHUB_SHA `
-            -WorkerDirectory (Join-Path $env:RUNNER_TEMP 'inno-shards') -Attempt ([int]$env:GITHUB_RUN_ATTEMPT) -SourceRunId ([long]$env:SOURCE_RUN_ID)
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+          $jobs = ./tests/ci/Join-BackendAcquisitions.ps1 -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
+            -Revision $env:GITHUB_SHA -Attempt ([int]$env:GITHUB_RUN_ATTEMPT)
+          foreach ($name in 'platforms','producers','deferred') {
+            "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
+          }
+          "required=$(($jobs.platforms.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+
+  backends:
+    needs: backend-matrix
+    if: ${{ !cancelled() && needs.backend-matrix.result == 'success' && needs.backend-matrix.outputs.required == 'true' }}
+    uses: ./.github/workflows/backend-prebuilts.yml
+    with:
+      platforms: ${{ needs.backend-matrix.outputs.platforms }}
+      producers: ${{ needs.backend-matrix.outputs.producers }}
+
+  execution:
+    needs: [backend-matrix, backends]
+    if: ${{ !cancelled() && needs.backends.result == 'success' }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.backend-matrix.outputs.deferred) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          name: validation-joined-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
-          path: |
-            artifacts/validation/host-certification/results.json
-            artifacts/validation/host-certification/receipt.json
-          if-no-files-found: error
-          retention-days: 30
-      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        if: steps.workers.outcome == 'success' && steps.freeze.outputs.native == 'true' && steps.dependencies.outputs.cache-hit != 'true'
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          key: ${{ steps.dependencies.outputs.cache-primary-key }}
-          path: artifacts/dependencies/downloads
-      - uses: ./.github/actions/retain-validation
-        if: always() && steps.workers.outputs.architecture_directory != ''
+          name: backend-freeze-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: artifacts/validation
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: backend-request-${{ matrix.runner }}-attempt-${{ github.run_attempt }}
+          path: artifacts/backend-request
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: ${{ matrix.pattern }}
+          path: artifacts/candidates
+      - name: Bind verified platform archives and the runner SDK
+        shell: pwsh
+        run: |
+          $plan = Get-Content artifacts/validation/ci-plan/plan.json -Raw | ConvertFrom-Json
+          if ($plan.commit -cne $env:GITHUB_SHA) { throw 'The transferred plan belongs to a different candidate.' }
+          if ($plan.nativeRequests.Count) { $null = ./tests/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($plan.nativeRequests.target) }
+          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates
+      - uses: ./.github/actions/execute-validation
         with:
           platform: ${{ matrix.runner }}
-          shard: architecture
-          directory: ${{ steps.workers.outputs.architecture_directory }}
-          compiled: ${{ steps.workers.outputs.architecture_compiledOutputs }}
-          deliverables: ${{ steps.workers.outputs.architecture_deliverables }}
-      - uses: ./.github/actions/retain-validation
-        if: always() && steps.workers.outputs.managed_directory != ''
-        with:
-          platform: ${{ matrix.runner }}
-          shard: managed
-          directory: ${{ steps.workers.outputs.managed_directory }}
-          compiled: ${{ steps.workers.outputs.managed_compiledOutputs }}
-          deliverables: ${{ steps.workers.outputs.managed_deliverables }}
-      - uses: ./.github/actions/retain-validation
-        if: always() && steps.workers.outputs.native_directory != ''
-        with:
-          platform: ${{ matrix.runner }}
-          shard: native
-          directory: ${{ steps.workers.outputs.native_directory }}
-          compiled: ${{ steps.workers.outputs.native_compiledOutputs }}
-          deliverables: ${{ steps.workers.outputs.native_deliverables }}
+          source-run: ${{ inputs.source_run || '0' }}
 
   engine-validation:
     # Branch routing must never publish success under the pull-request merge gate's name.
     name: ${{ github.event_name == 'push' && github.ref_name != github.event.repository.default_branch && 'Branch validation' || 'Engine validation' }}
     if: always()
-    needs: [route, preflight, acceptance-reuse, execution]
+    needs: [route, preflight, acceptance-reuse, plan, backend-matrix, backends, execution]
     runs-on: windows-2022
     timeout-minutes: 15
     steps:
@@ -250,6 +333,10 @@ jobs:
         env:
           ROUTE_RESULT: ${{ needs.route.result }}
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
+          PLAN_RESULT: ${{ needs.plan.result }}
+          MATRIX_RESULT: ${{ needs.backend-matrix.result }}
+          BACKENDS_RESULT: ${{ needs.backends.result }}
+          BACKENDS_REQUIRED: ${{ needs.backend-matrix.outputs.required }}
           EXECUTION_RESULT: ${{ needs.execution.result }}
           REUSE_RESULT: ${{ needs.acceptance-reuse.result }}
           REUSED: ${{ needs.acceptance-reuse.outputs.reusable }}
@@ -274,7 +361,10 @@ jobs:
             if (-not $decision.reusable) { throw 'The final gate did not receive every matching acceptance proof.' }
             exit 0
           }
-          if ($env:SHOULD_RUN -cne 'true' -or $env:EXECUTION_RESULT -cne 'success' -or
+          if ($env:SHOULD_RUN -cne 'true' -or $env:PLAN_RESULT -cne 'success' -or $env:MATRIX_RESULT -cne 'success' -or
+              ($env:BACKENDS_REQUIRED -ceq 'true' -and ($env:BACKENDS_RESULT -cne 'success' -or $env:EXECUTION_RESULT -cne 'success')) -or
+              ($env:BACKENDS_REQUIRED -ceq 'false' -and ($env:BACKENDS_RESULT -cne 'skipped' -or $env:EXECUTION_RESULT -cne 'skipped')) -or
+              $env:BACKENDS_REQUIRED -cnotin @('true','false') -or
               ($env:GITHUB_EVENT_NAME -ceq 'schedule' -and $env:PREFLIGHT_RESULT -cne 'skipped' -and $env:REUSE_RESULT -cne 'success')) {
             throw 'One or more required execution jobs did not complete successfully.'
           }
@@ -319,3 +409,46 @@ jobs:
           path: artifacts/validation/joined/
           if-no-files-found: error
           retention-days: 30
+
+  publish-backends:
+    needs: [engine-validation, backend-matrix, backends]
+    if: >-
+      ${{ !cancelled() && needs.engine-validation.result == 'success' && needs.backends.result == 'success' &&
+      github.ref == format('refs/heads/{0}', github.event.repository.default_branch) &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule') &&
+      fromJSON(needs.backend-matrix.outputs.producers).include[0] != null }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      actions: read
+      contents: write
+    concurrency:
+      group: trusted-backend-publication
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: '{backend-candidate-*,validation-plan-*,validation-joined-*}'
+          path: artifacts/promotion
+      - name: Publish certified changes and retain the other platforms byte for byte
+        shell: pwsh
+        env:
+          MATRIX: ${{ needs.backend-matrix.outputs.producers }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $head = Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/$env:DEFAULT_BRANCH"
+          if ($head.object.sha -cne $env:GITHUB_SHA) { Write-Host 'A newer default-branch candidate owns promotion.'; return }
+          $producers = @((ConvertFrom-Json $env:MATRIX).include)
+          foreach ($item in $producers) {
+            $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
+            $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
+            Copy-Item -LiteralPath "$candidate/$($item.asset)","$candidate/consumption.json" -Destination $owner
+            Copy-Item -LiteralPath "artifacts/promotion/validation-plan-$($item.runner)-attempt-$env:GITHUB_RUN_ATTEMPT/plan.json" -Destination $owner
+            Copy-Item -LiteralPath "artifacts/promotion/validation-joined-$($item.runner)-attempt-$env:GITHUB_RUN_ATTEMPT/results.json" -Destination $owner
+          }
+          ./tests/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
+            -Revision $env:GITHUB_SHA -ApiUrl $env:GITHUB_API_URL -ChangedTargets $producers.target

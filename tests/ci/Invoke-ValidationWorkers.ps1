@@ -30,6 +30,14 @@ $execute = {
     $env:GITHUB_WORKSPACE = $checkout
     $env:GITHUB_OUTPUT = $stepOutput
     Set-Location -LiteralPath $checkout
+    $frozen = Get-Content -LiteralPath (Join-Path $planDirectory 'plan.json') -Raw | ConvertFrom-Json
+    if ($frozen.backendStore) {
+        # Nested SDK invocations (including Support Pack publishing) inherit the same verified
+        # platform inputs. These variables are scoped to this isolated worker process.
+        $env:InnoBackendPackageDirectory = [IO.Path]::GetFullPath($frozen.backendStore, $checkout)
+        $env:InnoBackendHostTarget = $frozen.backendHost
+        $env:InnoNativeDependencyManifest = [IO.Path]::GetFullPath($frozen.nativeDependencies, $checkout)
+    }
     ./tests/ci/Invoke-ValidationCi.ps1 -Stage Run -BaseRevision $commit -ExpectedCommit $commit `
         -Shard $shard -PlanDirectory $planDirectory -OutputDirectory "artifacts/validation/shards/$shard" `
         -PrerequisitesDirectory $prerequisites -SourceRunId $sourceRun

@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)][string]$Repository,
     [Parameter(Mandatory)][string]$Revision,
     [string]$ApiUrl = 'https://api.github.com',
+    [string[]]$ChangedTargets,
     [switch]$DryRun
 )
 $ErrorActionPreference = 'Stop'
@@ -14,23 +15,6 @@ if ($Repository -cnotmatch '^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$' -or $Revision -cn
 $base = "$ApiUrl/repos/$Repository"
 $headers = @{ Authorization="Bearer $env:GH_TOKEN"; Accept='application/vnd.github+json'; 'X-GitHub-Api-Version'='2022-11-28' }
 $targets = @(Get-Content (Join-Path $PSScriptRoot '../../.github/native-targets.json') -Raw | ConvertFrom-Json)
-$digests = @{}
-$archives = @{}
-foreach ($platform in $targets) {
-    $owner = Join-Path $Directory $platform.target
-    $archive = Join-Path $owner $platform.asset
-    $planPath = Join-Path $owner 'plan.json'
-    $resultsPath = Join-Path $owner 'results.json'
-    $receipt = & "$PSScriptRoot/Test-ValidationReport.ps1" -PlanPath $planPath -ResultsPath $resultsPath -ExpectedCommit $Revision -JobConclusion success
-    $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
-    $bound = @($plan.backendPackages | Where-Object target -CEQ $platform.target)
-    $digest = (Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
-    if (!$receipt.full -or $platform.target -cnotin @($plan.nativeRequests.target) -or $bound.Count -ne 1 -or $bound[0].sha256 -cne $digest -or $digests.ContainsKey($platform.asset)) {
-        throw "No matching certified platform ZIP for $($platform.target)."
-    }
-    $digests.Add($platform.asset, $digest)
-    $archives.Add($platform.asset, (Get-Item -LiteralPath $archive).FullName)
-}
 function Get-Releases {
     for ($page = 1; ; $page++) {
         $rows = @(Invoke-RestMethod -Uri "$base/releases?per_page=100&page=$page" -Headers $headers | Write-Output)
@@ -51,6 +35,59 @@ function Get-OtherReaders {
     }
 }
 $releases = @(Get-Releases)
+$digests = @{}
+$archives = @{}
+$testReceipts = @{}
+if (!$PSBoundParameters.ContainsKey('ChangedTargets')) { $ChangedTargets = @($targets.target) }
+if (!$ChangedTargets.Count -or @($ChangedTargets | Sort-Object -Unique).Count -ne $ChangedTargets.Count -or
+    @($ChangedTargets | Where-Object { $_ -cnotin $targets.target }).Count) { throw 'Invalid changed backend target matrix.' }
+$previous = $null
+if (@($targets | Where-Object { $_.target -cnotin $ChangedTargets }).Count) {
+    $latest = $releases | Where-Object { !$_.draft -and $_.prerelease -and $_.tag_name -cmatch '^backend-prebuilts-[0-9.]+' } |
+        Sort-Object -Property published_at,id -Descending | Select-Object -First 1
+    if (!$latest) { throw 'The initial release requires all registered platforms to be certified.' }
+    $previous = Get-BackendCatalog $base $headers $latest
+}
+foreach ($platform in $targets) {
+    if ($platform.target -cnotin $ChangedTargets) {
+        $prior = $previous.platforms[$platform.target]
+        if (!$prior -or $prior.asset -cne $platform.asset) { throw "No certified rollback bytes for $($platform.target)." }
+        $asset = $latest.assets | Where-Object name -CEQ $platform.asset
+        $archive = & "$PSScriptRoot/Get-BackendPlatformArchive.ps1" -Sha256 $prior.sha256 -AssetId $asset.id `
+            -Directory (Join-Path $Directory 'unchanged') -Repository $Repository -ApiUrl $ApiUrl
+        $digest = $prior.sha256
+        $testReceipts[$platform.target] = if ($prior.Contains('tests')) { @($prior.tests) } else { @() }
+    } else {
+        $owner = Join-Path $Directory $platform.target
+        $archive = Join-Path $owner $platform.asset
+        $planPath = Join-Path $owner 'plan.json'
+        $resultsPath = Join-Path $owner 'results.json'
+        $receipt = & "$PSScriptRoot/Test-ValidationReport.ps1" -PlanPath $planPath -ResultsPath $resultsPath -ExpectedCommit $Revision -JobConclusion success
+        $plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
+        $bound = @($plan.backendPackages | Where-Object target -CEQ $platform.target)
+        $digest = (Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
+        if (!$receipt -or $bound.Count -ne 1 -or $bound[0].sha256 -cne $digest) { throw "No matching certified ZIP for $($platform.target)." }
+        if (!$receipt.full) {
+            $sdk = Get-Content -LiteralPath (Join-Path $owner 'consumption.json') -Raw | ConvertFrom-Json
+            $products = @($plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $platform.target -and $_.Properties.InnoProductId })
+            if ($sdk.commit -cne $Revision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
+                $sdk.checks.Count -ne ($products.Count * $platform.configurations.Count)) { throw 'Missing verified SDK product matrix.' }
+            foreach ($configuration in $platform.configurations) {
+                foreach ($product in $products) {
+                    $relative = $product.Path.Replace('${workspace}', '').TrimStart('/','\').Replace('\','/')
+                    if (@($sdk.checks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.product -ceq $product.Properties.InnoProductId }).Count -ne 1) {
+                        throw "Missing distinct backend consumption proof for $relative/$configuration."
+                    }
+                }
+            }
+        } elseif ($platform.target -cnotin @($plan.nativeRequests.target)) { throw 'Full acceptance omitted the native target.' }
+        $ids = @($plan.checks | Where-Object { $_.kind -ceq 'test' -and $_.owner.StartsWith('tests/backends/') -and !$_.exclusion } | ForEach-Object id)
+        $results = Get-Content -LiteralPath $resultsPath -Raw | ConvertFrom-Json -AsHashtable -Depth 70
+        $testReceipts[$platform.target] = @($results.results | Where-Object { $_.id -cin $ids })
+    }
+    $digests.Add($platform.asset, $digest)
+    $archives.Add($platform.asset, (Get-Item -LiteralPath $archive).FullName)
+}
 $publication = & "$PSScriptRoot/Get-BackendReleasePlan.ps1" -Releases $releases -Digests $digests -Revision $Revision
 if ($publication.operation -ceq 'reuse') {
     $published = $releases | Where-Object id -EQ $publication.id
@@ -91,6 +128,7 @@ if (!$ready.draft -or !$ready.prerelease -or $ready.tag_name -cne $publication.t
 $platforms = [ordered]@{}
 foreach ($target in $targets) {
     $platforms[$target.target] = Get-BackendCatalogPlatform $archives[$target.asset] $target.asset $target.target $digests[$target.asset]
+    $platforms[$target.target].tests = @($testReceipts[$target.target] | Where-Object { $_ })
 }
 $message = ConvertTo-BackendTagMessage ([ordered]@{version=1; revision=$Revision; platforms=$platforms})
 $tagName = $publication.tag

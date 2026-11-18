@@ -1,5 +1,7 @@
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Text.Json;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,15 +65,26 @@ internal static class NativeDependenciesCommand
             return;
         }
 
-        if (operation == "select")
+        if (operation is "select" or "evaluate")
         {
-            var assets = await NativeDependencyManifest.SelectAsync(request.root, options.Require("native-dependencies"), request.target.value, request.configuration.ToLowerInvariant(), product.plan, cancellation).ConfigureAwait(false);
-            Inno.Core.IO.AtomicFile.WriteAllBytes(options.Require("output"), System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(assets));
+            string output = options.Require("output");
+            try
+            {
+                var assets = await NativeDependencyManifest.SelectAsync(request.root, options.Require("native-dependencies"),
+                    request.target.value, request.configuration.ToLowerInvariant(), product.plan, cancellation).ConfigureAwait(false);
+                byte[] result = operation == "select" ? JsonSerializer.SerializeToUtf8Bytes(assets)
+                    : JsonSerializer.SerializeToUtf8Bytes(new { matched = true, assets });
+                Inno.Core.IO.AtomicFile.WriteAllBytes(output, result);
+            }
+            catch (InvalidDataException failure) when (operation == "evaluate")
+            {
+                Inno.Core.IO.AtomicFile.WriteAllBytes(output, JsonSerializer.SerializeToUtf8Bytes(new { matched = false, reason = failure.Message }));
+            }
             return;
         }
 
         if (operation != "produce")
-            throw new ArgumentException("Native dependency operation must be describe, produce, select, verify-bindings, import-cache or export-cache.");
+            throw new ArgumentException("Unknown native dependency operation: " + operation);
         if (options.Read("native-dependencies", string.Empty).Length != 0)
             throw new ArgumentException("Dependency production cannot consume a prebuilt selection.");
         var phase = Stopwatch.StartNew();

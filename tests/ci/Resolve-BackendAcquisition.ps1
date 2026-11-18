@@ -26,7 +26,7 @@ function Get-CurrentInputs($Target, $Configuration, $Selection) {
     Get-Content -LiteralPath $output -Raw | ConvertFrom-Json -AsHashtable
 }
 $required = [ordered]@{}
-foreach ($registration in $targets) {
+foreach ($registration in $targets | Where-Object { $plan.backendRequired }) {
     $target = $registration.target
     $requests = @($plan.nativeRequests | Where-Object target -CEQ $target)
     if ($target -cne $plan.backendHost -and !$requests.Count) { continue }
@@ -46,6 +46,7 @@ foreach ($registration in $targets) {
 }
 if (@($plan.nativeRequests | Where-Object { $_.target -cnotin $targets.target }).Count) { throw 'A native request has no registered backend target.' }
 $acquisitions = [ordered]@{}
+$certificates = [ordered]@{}
 foreach ($target in $required.Keys) {
     $changes = [ordered]@{}
     foreach ($configuration in $required[$target].Keys) { $changes[$configuration] = @($required[$target][$configuration].required) }
@@ -72,6 +73,12 @@ if ($required.Count) {
         foreach ($target in $required.Keys) {
             if ($acquisitions[$target].operation -ceq 'consume' -or !$catalog.platforms.Contains($target)) { continue }
             $platform = $catalog.platforms[$target]
+            if ($platform.Contains('tests')) {
+                foreach ($test in $platform.tests) {
+                    $key = "$($test.id)/$($test.inputIdentity)"
+                    if (!$certificates.Contains($key)) { $certificates.Add($key,$test) }
+                }
+            }
             $registration = $targets | Where-Object target -CEQ $target
             if ($platform.asset -cne $registration.asset) { throw "Unexpected asset name for $target." }
             $changed = [ordered]@{}
@@ -96,6 +103,6 @@ if ($required.Count) {
         if (!@($acquisitions.Values | Where-Object operation -CEQ 'produce').Count) { break }
     }
 }
-$decision = [ordered]@{commit=$plan.commit; packages=@($acquisitions.Values)}
+$decision = [ordered]@{commit=$plan.commit; packages=@($acquisitions.Values);testEvidence=@($certificates.Values)}
 [IO.File]::WriteAllText((Join-Path $directory 'acquisition.json'), (ConvertTo-Json $decision -Depth 12))
 $decision

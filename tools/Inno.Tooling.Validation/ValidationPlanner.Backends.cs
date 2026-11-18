@@ -26,7 +26,8 @@ internal static partial class ValidationPlanner
     internal static async Task<ValidationPlan> BindBackendsAsync(
         ValidationPlan plan,
         string packages,
-        CancellationToken cancellation
+        CancellationToken cancellation,
+        string? evidence = null
     ) {
         if (plan.backendStore is null || plan.backendPackages is not null || plan.nativeDependencies is null)
             throw new InvalidDataException("Only a pending backend plan can bind platform packages.");
@@ -79,10 +80,12 @@ internal static partial class ValidationPlanner
         byte[] selectionBytes = JsonSerializer.SerializeToUtf8Bytes(new { layout = "platform-packages", assets, aggregates });
         string host = plan.backendHost ?? "";
         var requests = plan.nativeRequests ?? [];
+        if (!plan.backendRequired && receipts.Length != 0)
+            throw new InvalidDataException("An independent managed plan must not acquire backend packages.");
         var contexts = requests.Select(static request => (request.target, request.configuration))
             .Concat(plan.contexts.Values.Select(context => (host, context.properties.GetValueOrDefault("Configuration", plan.configuration))))
             .Distinct();
-        foreach (var (target, configuration) in contexts)
+        foreach (var (target, configuration) in contexts.Where(_ => plan.backendRequired))
         {
             BackendInputPlan expected = await BackendInputsAsync(plan, target, cancellation, selectionBytes, configuration).ConfigureAwait(false);
             foreach (string owner in expected.required)
@@ -93,13 +96,34 @@ internal static partial class ValidationPlanner
             if (!assets.Concat(aggregates).Any(asset => asset?["target"]?.GetValue<string>() == request.target
                 && string.Equals(asset["configuration"]?.GetValue<string>(), request.configuration, StringComparison.OrdinalIgnoreCase) && asset["product"]?.GetValue<string>() == request.product))
                 throw new InvalidDataException($"Missing native product {request.product} for {request.target}/{request.configuration}.");
+        var bound = plan with { backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray() };
+        if (evidence is not null)
+        {
+            var certificates = JsonSerializer.Deserialize<ValidationResult[]>(File.ReadAllBytes(evidence))
+                ?? throw new InvalidDataException("Missing backend test certification inventory.");
+            var selected = new List<ValidationResult>();
+            foreach (ValidationCheck check in bound.checks.Where(static check => check.kind == "test" && check.reusable && check.exclusion is null
+                && check.owner.StartsWith("tests/backends/", StringComparison.Ordinal)))
+            {
+                string identity = ValidationInputs.CheckIdentity(bound, check, bound.inputs);
+                ValidationResult? result = certificates.FirstOrDefault(item => item.id == check.id && item.inputIdentity == identity
+                    && item.status is ("Passed" or "Reused") && item.outputs is { Count: > 0 } && Digest(item.dependencyIdentity));
+                if (result is not null)
+                    selected.Add(result);
+            }
+            bound = bound with { backendTests = selected.ToArray() };
+        }
         AtomicFile.WriteAllBytes(selectionPath, selectionBytes);
-        return plan with { backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray() };
+        return bound;
 
         static bool Digest(string? value) => value is { Length: 64 } && value.All(static c => char.IsAsciiHexDigitLower(c));
     }
 
-    private sealed record BackendNativeProduct(string product, string target, string configuration);
+    private sealed record BackendNativeProduct(
+        string product,
+        string target,
+        string configuration
+    );
 
     internal static async Task<BackendInputPlan> BackendInputsAsync(
         ValidationPlan plan,
@@ -109,8 +133,13 @@ internal static partial class ValidationPlanner
         string? configuration = null
     ) {
         configuration ??= plan.configuration;
+        if (configuration != plan.configuration && !plan.contexts.ContainsKey("backend-" + configuration.ToLowerInvariant())
+            && (plan.nativeRequests ?? []).Any(request => request.target == target && request.configuration == configuration)
+            && !plan.checks.Any(check => check.exclusion is null && check.context is not null
+                && plan.contexts[check.context].properties.GetValueOrDefault("Configuration") == configuration))
+            return new(plan.commit, target, configuration, new(StringComparer.Ordinal), [], []);
         ValidationContext graph = configuration == plan.configuration ? plan.contexts["managed"]
-            : plan.contexts.Values.FirstOrDefault(context => context.properties.GetValueOrDefault("Configuration") == configuration)
+            : plan.contexts.GetValueOrDefault("backend-" + configuration.ToLowerInvariant())
                 ?? throw new InvalidDataException("The SDK graph has no captured configuration " + configuration);
         var owners = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         var properties = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);

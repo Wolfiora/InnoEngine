@@ -82,6 +82,7 @@ internal static class ValidationRunner
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         var compilationGraphs = new Dictionary<string, string>(StringComparer.Ordinal);
+        var reused = new Dictionary<string, ValidationResult>(StringComparer.Ordinal);
         var reusableCompilations = new Dictionary<string, bool>(StringComparer.Ordinal);
         foreach (ValidationCheck check in checks)
         {
@@ -95,7 +96,6 @@ internal static class ValidationRunner
             string dependencyIdentity = string.Empty;
             ValidationDocumentationInput[]? documentationInputs = null;
             var elapsed = Stopwatch.StartNew();
-            ValidationResult? old = previous?.results.SingleOrDefault(result => result.id == check.id);
             if (check.exclusion is not null)
             {
                 status = "NotApplicable";
@@ -116,11 +116,12 @@ internal static class ValidationRunner
             }
             else if (CanReuse(check))
             {
+                ValidationResult old = reused[check.id];
                 status = "Reused";
-                detail = check.kind == "test" ? old!.detail : continuation
+                detail = check.kind == "test" ? old.detail : continuation
                     ? "Exact retained functional evidence and output bytes match; source plan: " + previous!.planIdentity
                     : "Exact local deterministic input identity matches retained successful evidence.";
-                outputs = old!.outputs;
+                outputs = old.outputs;
                 dependencyIdentity = old.dependencyIdentity;
                 documentationInputs = old.documentationInputs;
                 if (check.kind == "build")
@@ -564,13 +565,19 @@ internal static class ValidationRunner
 
         bool MatchesRetained(ValidationCheck candidate)
         {
-            ValidationResult? retained = previous?.results.SingleOrDefault(result => result.id == candidate.id);
-            return (continuation || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
-                && candidate.layer != "performance"
-                && previous is { completed: true } && previous.environment == plan.environment && retained is { status: "Passed" or "Reused" }
-                && retained.inputIdentity == ValidationInputs.CheckIdentity(plan, candidate, current)
-                && dependencyInputs.Matches(candidate, retained.dependencyIdentity)
-                && ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests);
+            if (candidate.layer == "performance")
+                return false;
+            ValidationResult? retained = (continuation || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
+                && previous is { completed: true } && previous.environment == plan.environment
+                ? previous.results.SingleOrDefault(result => result.id == candidate.id) : null;
+            if (retained is null && candidate.kind == "test" && candidate.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
+                retained = plan.backendTests?.SingleOrDefault(result => result.id == candidate.id);
+            if (retained is not { status: "Passed" or "Reused" } || retained.inputIdentity != ValidationInputs.CheckIdentity(plan, candidate, current)
+                || !dependencyInputs.Matches(candidate, retained.dependencyIdentity)
+                || !ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests))
+                return false;
+            reused[candidate.id] = retained;
+            return true;
         }
     }
 

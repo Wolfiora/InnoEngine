@@ -149,7 +149,7 @@ internal static class ValidationInputs
         IReadOnlyDictionary<string, string> inputs
     ) => Identity(check.inputs.SelectMany(path => path.StartsWith('@') ? plan.inputSets[path[1..]] : [path])
         .Distinct(StringComparer.Ordinal).Select(path => new KeyValuePair<string, string>(path, inputs.GetValueOrDefault(path, "missing")))
-        .Concat(plan.backendPackages is not null && (check.context == "native" || check.inputs.Any(static key => key.StartsWith("@backends/", StringComparison.Ordinal)))
+        .Concat(plan.backendPackages is not null && (check.context is not null && plan.contexts[check.context].properties.ContainsKey("InnoNativeTarget") || check.inputs.Any(static key => key.StartsWith("@backends/", StringComparison.Ordinal)))
             ? plan.backendPackages.Select(static package => new KeyValuePair<string, string>("backend:" + package.target, package.sha256))
             : [])
         .Append(new("environment", plan.environment)).Append(new("configuration", plan.configuration))

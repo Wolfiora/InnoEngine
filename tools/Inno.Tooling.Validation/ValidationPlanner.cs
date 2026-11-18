@@ -391,6 +391,15 @@ internal static partial class ValidationPlanner
             Dictionary<string, ValidationProject> releaseProjects = nativeProjects;
             if (releaseContext != "native")
             {
+                if (backendStore is not null)
+                {
+                    var releaseInputsProperties = new Dictionary<string, string>(properties) { ["Configuration"] = "Release" };
+                    string backendCapture = await ManagedProjectGraphCapture.CaptureSelectedAsync(root, sdk,
+                        paths.Select(path => Path.Combine(root, path)).ToArray(), releaseInputsProperties, cancellation).ConfigureAwait(false);
+                    using JsonDocument backendGraph = JsonDocument.Parse(backendCapture);
+                    RequireCompilerInputs(backendGraph.RootElement);
+                    contexts.Add("backend-release", new(releaseInputsProperties, backendGraph.RootElement.Clone()));
+                }
                 var releaseProperties = new Dictionary<string, string>(contexts["native"].properties)
                 {
                     ["Configuration"] = "Release",

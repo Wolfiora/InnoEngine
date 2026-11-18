@@ -39,6 +39,37 @@ if ($PreviousPackage -or $PreviousSha256) {
     $manifest = Get-Content -LiteralPath (Join-Path $previous 'manifest.json') -Raw | ConvertFrom-Json
 }
 $staging = Join-Path $work 'staging'
+$nativeInventory = Get-Content -LiteralPath $native -Raw | ConvertFrom-Json
+function Invoke-PlayerSupportPack([string]$Phase, [string]$Package, [string[]]$ChangedOwners, [string]$Selection) {
+    # Use the platform's real publication path so static linkage, RID, binding selection and
+    # strip-symbol options are those used by engine releases. Its publisher owns the read leases.
+    $project = Join-Path $root 'entry/InnoEngine.Build/InnoEngine.Build.csproj'
+    $bootstrap = Join-Path $work 'cli'
+    if ($Phase -ceq 'produce') {
+        Invoke-Sdk @('build',$project,'--configuration','Release','--artifacts-path',$bootstrap,'--disable-build-servers','-m:2','-nr:false',
+            "-p:InnoBackendPrebuiltRoot=$staging")
+    }
+    $cli = @(& $dotnetPath msbuild $project -nologo -p:Configuration=Release "-p:ArtifactsPath=$bootstrap" -getProperty:TargetPath)
+    if ($LASTEXITCODE -or $cli.Count -ne 1) { throw 'The Support Pack producer entry could not be located.' }
+    $info = [Diagnostics.ProcessStartInfo]::new($dotnetPath)
+    $info.WorkingDirectory = $root
+    $info.UseShellExecute = $false
+    foreach ($argument in @($cli[0],'support-pack','--engine-root',$root,'--configuration','Release','--target',$Target,'--tools-target',$HostTarget,
+        '--native-dependencies',$Selection,'--dotnet',$dotnetPath,'--output',(Join-Path $work "pack-$Phase"))) { $info.ArgumentList.Add($argument) }
+    if ($Package) { $info.Environment['InnoBackendPrebuiltRoot'] = $Package }
+    if ($Phase -ceq 'produce') {
+        $packSdk = Join-Path $work 'pack-sdk'
+        $info.Environment['ArtifactsPath'] = $packSdk
+        $info.Environment['InnoBackendExportArtifactsPath'] = $packSdk
+        $info.Environment['InnoBackendExportRoot'] = $staging
+        $info.Environment['InnoBackendCompileOwners'] = '|' + ($ChangedOwners -join '|') + '|'
+    }
+    $process = [Diagnostics.Process]::Start($info)
+    try {
+        $process.WaitForExit()
+        if ($process.ExitCode) { throw "The platform's $Phase Support Pack failed for $Target." }
+    } finally { $process.Dispose() }
+}
 $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
     $planDirectory = Join-Path $work "plan-$configuration"
     Invoke-Sdk @($entry,'validate','plan','--engine-root',$root,'--base','HEAD','--profile','fast','--dotnet',$dotnetPath,
@@ -71,7 +102,7 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         "  <Project Path=`"$path`" />"
     }
     [IO.File]::WriteAllLines($solution, [string[]](@('<Solution>') + $owners + @('</Solution>')))
-    Invoke-Sdk (@('build',$solution) + $options)
+    Invoke-Sdk (@('build',$solution,'-p:Platform=Any CPU') + $options)
     $frozen = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $products = @($frozen.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId })
     if (!$products.Count) { throw "The SDK graph declares no products for $Target." }
@@ -81,11 +112,65 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         if ($LASTEXITCODE -or $properties.Count -ne 1 -or !(Test-Path -LiteralPath $properties[0] -PathType Leaf)) {
             throw "Missing declared product build properties for $path."
         }
-        Invoke-Sdk (@('build',$path) + $options + @("-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
-            "-p:InnoProductBuildProperties=$($properties[0])"))
+        $id = $product.Properties.InnoProductId
+        $aggregate = @($nativeInventory.aggregates | Where-Object { $_.product -ceq $id -and $_.target -ceq $Target -and $_.configuration -ieq $configuration })
+        if (!$aggregate.Count) {
+            Invoke-Sdk (@('build',$path) + $options + @("-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
+                "-p:InnoProductBuildProperties=$($properties[0])"))
+        }
+        if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'produce' $previous $changed $consumption }
+        elseif ($aggregate.Count) { throw "Missing declared aggregate SDK entry for $id/$configuration." }
     }
     Write-Host "$Target/$configuration compiled $($changed.Count) backend owners and used $($matching.Count) certified owners."
     $inputs
 })
-& "$PSScriptRoot/New-BackendPrebuiltPackage.ps1" -Staging $staging -InputPlans $inputPlans -NativeSelection $native -Target $Target `
-    -EntryAssembly $entry -Dotnet $dotnetPath -OutputDirectory $OutputDirectory
+$archive = @(& "$PSScriptRoot/New-BackendPrebuiltPackage.ps1" -Staging $staging -InputPlans $inputPlans -NativeSelection $native -Target $Target `
+    -EntryAssembly $entry -Dotnet $dotnetPath -OutputDirectory $OutputDirectory)[-1]
+$digest = (Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()
+$coldStore = [IO.Directory]::CreateDirectory((Join-Path $work 'certified')).FullName
+$installed = Join-Path $coldStore $Target
+Invoke-Sdk @($entry,'validate','import-backends','--archive',$archive,'--sha256',$digest,'--target',$Target,'--output',$installed)
+$packInputs = Get-Content -LiteralPath (Join-Path $installed 'native/selection.json') -Raw | ConvertFrom-Json -AsHashtable -Depth 80
+$coldInputs = [ordered]@{layout='platform-packages';assets=@($packInputs.assets);aggregates=@($packInputs.aggregates)}
+if ($HostTarget -cne $Target) {
+    $source = Get-Content -LiteralPath $consumption -Raw | ConvertFrom-Json -AsHashtable -Depth 80
+    $hostDirectory = [IO.Directory]::CreateDirectory((Join-Path $coldStore "$HostTarget/native")).FullName
+    foreach ($family in @('assets','aggregates')) {
+        foreach ($item in $source[$family] | Where-Object { $_.target -ceq $HostTarget -and $_.product -ceq 'shader-tools' }) {
+            if ($item.sha256 -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid host tool digest.' }
+            $file = "$($item.sha256).zip"
+            $origin = if ($source['layout'] -ceq 'platform-packages') { Join-Path (Split-Path $consumption) "$HostTarget/native/$file" }
+                else { Join-Path $root "artifacts/dependencies/downloads/$file" }
+            $destination = Join-Path $hostDirectory $file
+            if (!(Test-Path -LiteralPath $destination)) {
+                if ((Get-FileHash -LiteralPath $origin).Hash.ToLowerInvariant() -cne $item.sha256) { throw 'Host tool archive changed.' }
+                New-Item -ItemType HardLink -Path $destination -Target $origin | Out-Null
+            }
+            $coldInputs[$family] += $item
+        }
+    }
+}
+$coldSelection = Join-Path $coldStore 'selection.json'
+[IO.File]::WriteAllText($coldSelection,(ConvertTo-Json $coldInputs -Depth 80 -Compress))
+$checks = @(foreach ($configuration in $platform[0].configurations) {
+    $plan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/plan.json") -Raw | ConvertFrom-Json -AsHashtable -Depth 100
+    $sdk = Join-Path $work 'consume'
+    foreach ($product in $plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId }) {
+        $project = $product.Path.Replace('${workspace}', $root)
+        $properties = @(& $dotnetPath msbuild $project -nologo "-p:Configuration=$configuration" -getProperty:InnoProductBuildProperties)
+        if ($LASTEXITCODE -or $properties.Count -ne 1) { throw 'Consumer product properties could not be evaluated.' }
+        $clock = [Diagnostics.Stopwatch]::StartNew()
+        $id = $product.Properties.InnoProductId
+        $aggregate = @($nativeInventory.aggregates | Where-Object { $_.product -ceq $id -and $_.target -ceq $Target -and $_.configuration -ieq $configuration })
+        if (!$aggregate.Count) {
+            Invoke-Sdk @('build',$project,'--configuration',$configuration,'--artifacts-path',$sdk,'--disable-build-servers','-m:2','-nr:false',
+                "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
+                "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$($properties[0])")
+        }
+        if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'consume' $installed @() $coldSelection }
+        [ordered]@{configuration=$configuration; product=$product.Properties.InnoProductId; project=[IO.Path]::GetRelativePath($root,$project).Replace('\','/'); seconds=$clock.Elapsed.TotalSeconds}
+    }
+})
+$receipt = [ordered]@{commit=$identity.commit;target=$Target;sha256=$digest;checks=$checks}
+[IO.File]::WriteAllText((Join-Path $OutputDirectory 'consumption.json'),(ConvertTo-Json $receipt -Depth 8))
+$archive

@@ -48,8 +48,16 @@ internal sealed record ValidationPlan(
     ValidationShard[]? shards = null,
     string? backendStore = null,
     string? backendHost = null,
-    BackendPackageReceipt[]? backendPackages = null
-);
+    BackendPackageReceipt[]? backendPackages = null,
+    ValidationResult[]? backendTests = null
+) {
+    /// <summary>
+    /// Indicates whether executing a selected check requires backend assemblies or native products.
+    /// </summary>
+    public bool backendRequired => nativeRequests is { Length: > 0 } || Array.Exists(checks, static check =>
+        check.exclusion is null && check.context is not null && (check.owner.StartsWith("backends/", StringComparison.Ordinal)
+            || Array.Exists(check.inputs, static input => input.StartsWith("@backends/", StringComparison.Ordinal))));
+}
 
 internal sealed record BackendPackageReceipt(
     string target,

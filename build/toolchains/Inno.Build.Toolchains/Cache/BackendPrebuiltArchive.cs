@@ -19,17 +19,35 @@ public static class BackendPrebuiltArchive
     private const string C_MANIFEST = "manifest.json";
     private const long C_MAX_BYTES = 8L * 1024 * 1024 * 1024;
     private static readonly DateTimeOffset S_EPOCH = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
-    private sealed record FileRecord(string owner, string configuration, string input, string path, string sha256);
-    private sealed record Inventory(int version, string target, FileRecord[] files);
+    private sealed record FileRecord(
+        string owner,
+        string configuration,
+        string input,
+        string path,
+        string sha256
+    );
+    private sealed record Inventory(
+        int version,
+        string target,
+        FileRecord[] files
+    );
 
     /// <summary>
     /// Creates a fresh platform ZIP from an explicit inventory and an owned staging directory.
     /// Additional files in staging are never included. Every selected digest is checked while copying.
     /// </summary>
-    /// <param name="staging">Root of the exact logical files selected for this target.</param>
-    /// <param name="inventoryPath">JSON with version, target and current owner, configuration, input, path and SHA-256 records.</param>
-    /// <param name="archivePath">Destination for the completed platform ZIP.</param>
-    /// <param name="cancellationToken">Cancels copying without replacing the previous destination.</param>
+    /// <param name="staging">
+    /// Root of the exact logical files selected for this target.
+    /// </param>
+    /// <param name="inventoryPath">
+    /// JSON with version, target and current owner, configuration, input, path and SHA-256 records.
+    /// </param>
+    /// <param name="archivePath">
+    /// Destination for the completed platform ZIP.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels copying without replacing the previous destination.
+    /// </param>
     public static void Create(
         string staging,
         string inventoryPath,
@@ -81,11 +99,24 @@ public static class BackendPrebuiltArchive
     /// Checks a trusted archive digest, its declared target, inventory and payload before publishing a fresh consumer directory.
     /// The caller owns the destination and serializes its acquisition for the job.
     /// </summary>
-    /// <param name="archivePath">Downloaded or restored platform archive.</param>
-    /// <param name="sha256">Expected archive digest from the authenticated release or candidate receipt.</param>
-    /// <param name="target">Target selected by the consumer.</param>
-    /// <param name="destination">An absent directory under a consumer-owned staging parent.</param>
-    /// <param name="cancellationToken">Cancels extraction before publication.</param>
+    /// <param name="archivePath">
+    /// Downloaded or restored platform archive.
+    /// </param>
+    /// <param name="sha256">
+    /// Expected archive digest from the authenticated release or candidate receipt.
+    /// </param>
+    /// <param name="target">
+    /// Target selected by the consumer.
+    /// </param>
+    /// <param name="destination">
+    /// An absent directory under a consumer-owned staging parent.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels extraction before publication.
+    /// </param>
+    /// <returns>
+    /// A task that completes after the verified directory is installed.
+    /// </returns>
     public static async Task ExtractAsync(
         string archivePath,
         string sha256,

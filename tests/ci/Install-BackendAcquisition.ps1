@@ -25,28 +25,21 @@ $receipts = @(foreach ($package in $request.packages) {
     $target = $package.target
     $registered = @($registry | Where-Object target -CEQ $target)
     if ($registered.Count -ne 1) { throw "Unregistered backend platform: $target." }
-    if ($package.operation -ceq 'produce') {
-        if (!$Candidates) { throw "Backend production is required for $target. No certified candidate directory was supplied." }
-        $candidate = Join-Path $Candidates $target
+    $candidate = if ($Candidates) { Join-Path $Candidates "backend-candidate-$target" }
+    if ($candidate -and (Test-Path -LiteralPath (Join-Path $candidate 'candidate.json'))) {
         $archive = Join-Path $candidate $registered[0].asset
         $receipt = Get-Content -LiteralPath (Join-Path $candidate 'candidate.json') -Raw | ConvertFrom-Json
         if ($receipt.commit -cne $plan.commit -or $receipt.target -cne $target -or $receipt.asset -cne $registered[0].asset) {
             throw "The produced $target candidate belongs to another commit or asset."
         }
         $digest = $receipt.sha256
+        if ($receipt.PSObject.Properties['reused'] -and $receipt.reused -and $digest -cne $package.sha256) {
+            throw "The downloaded $target release differs from the frozen acquisition."
+        }
     } elseif ($package.operation -ceq 'consume') {
         $digest = $package.sha256
         if ($digest -cnotmatch '^[a-f0-9]{64}$' -or [string]$package.assetId -cnotmatch '^[1-9][0-9]*$') { throw 'Invalid exact backend asset identity.' }
-        $archive = Join-Path $downloadsRoot "$digest.zip"
-        if (!(Test-Path -LiteralPath $archive -PathType Leaf)) {
-            if ($Repository -cnotmatch '^[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$') { throw 'No repository configured for cold acquisition.' }
-            $partial = Join-Path $downloadsRoot ([Guid]::NewGuid().ToString('N') + '.partial')
-            $headers = @{Accept='application/octet-stream';'X-GitHub-Api-Version'='2022-11-28'}
-            if ($env:GH_TOKEN) { $headers.Authorization = "Bearer $env:GH_TOKEN" }
-            Invoke-WebRequest -Uri "$ApiUrl/repos/$Repository/releases/assets/$($package.assetId)" -Headers $headers -OutFile $partial
-            if ((Get-FileHash -LiteralPath $partial).Hash.ToLowerInvariant() -cne $digest) { throw 'Cold backend asset differs from its authenticated catalog.' }
-            [IO.File]::Move($partial,$archive,$false)
-        }
+        $archive = & "$PSScriptRoot/Get-BackendPlatformArchive.ps1" -Sha256 $digest -AssetId $package.assetId -Directory $downloadsRoot -Repository $Repository -ApiUrl $ApiUrl
     } else { throw "Unexpected acquisition operation for $target." }
     if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Incomplete backend archive digest.' }
     $installed = Join-Path $store $target
@@ -56,5 +49,7 @@ $receipts = @(foreach ($package in $request.packages) {
 })
 $receiptPath = Join-Path (Split-Path ([IO.Path]::GetFullPath($Acquisition)) -Parent) 'packages.json'
 [IO.File]::WriteAllText($receiptPath, (ConvertTo-Json -InputObject $receipts -Depth 5 -Compress))
-& $dotnetPath $entry validate bind-backends --packages $receiptPath --plan $PlanPath --engine-root $root --dotnet $dotnetPath --output $PlanPath
+$testEvidence = Join-Path (Split-Path $receiptPath -Parent) 'backend-test-evidence.json'
+[IO.File]::WriteAllText($testEvidence, (ConvertTo-Json -InputObject @($request.testEvidence) -Depth 20 -Compress))
+& $dotnetPath $entry validate bind-backends --test-evidence $testEvidence --packages $receiptPath --plan $PlanPath --engine-root $root --dotnet $dotnetPath --output $PlanPath
 if ($LASTEXITCODE) { throw 'The installed backend packages do not cover the frozen checks.' }

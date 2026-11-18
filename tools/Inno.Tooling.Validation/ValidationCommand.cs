@@ -71,6 +71,8 @@ public static class ValidationCommand
             bool allowed = transportOptions?.Contains(key, StringComparer.Ordinal) ?? key is ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--accepted-plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot" or "--profile" or "--native-dependencies" or "--shard" or "--prerequisites" or "--retained-outputs" or "--backend-store");
             if (arguments[0] == "backend-inputs" && key is ("--selection" or "--configuration"))
                 allowed = true;
+            if (arguments[0] == "bind-backends" && key == "--test-evidence")
+                allowed = true;
             if (!allowed || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException($"Unknown, duplicate or incomplete validation option: {key}");
         }
@@ -82,7 +84,7 @@ public static class ValidationCommand
             {
                 string engine = Path.GetFullPath(options["--engine-root"]);
                 ValidationPlan frozen = ValidationPlanTransport.Read(options["--plan"], engine, options["--dotnet"]);
-                ValidationPlan bound = await ValidationPlanner.BindBackendsAsync(frozen, options["--packages"], cancellationToken).ConfigureAwait(false);
+                ValidationPlan bound = await ValidationPlanner.BindBackendsAsync(frozen, options["--packages"], cancellationToken, options.GetValueOrDefault("--test-evidence")).ConfigureAwait(false);
                 Inno.Core.IO.AtomicFile.WriteAllBytes(options["--output"], ValidationPlanTransport.Write(bound));
             }
             else if (arguments[0] == "backend-inputs")
