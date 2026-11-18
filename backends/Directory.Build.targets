@@ -23,14 +23,20 @@
     </CoreBuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="GetInnoBackendCompilerOutputs" Returns="@(_InnoBackendCompilerFile)">
+  <!-- Both SDK entry points freeze evaluated inputs before source-only binding targets
+       materialize generated code and append their derived compiler symbols. -->
+  <Target Name="FreezeInnoBackendCompilerVariant" BeforeTargets="PrepareForBuild"
+          Condition="'$(InnoBackendExportRoot)' != '' or '$(_InnoConsumeBackend)' == 'true'">
     <PropertyGroup>
       <!-- SDK output owners can differ between a Player Support Pack snapshot and a checkout. The
            package identifies the actual compiler variant independently of either output directory. -->
       <_InnoBackendProductProps Condition="'$(InnoProductBuildProperties)' != ''">$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)..', '$(InnoProductBuildProperties)').Replace('\', '/'))</_InnoBackendProductProps>
-      <_InnoBackendOptions>$(InnoNativeTarget)|$(InnoToolTarget)|$(_InnoBackendProductProps)|$(InnoNativeBuildFingerprint)|$(BindGenExpectedFingerprint)|$(InnoNativeLibraryKind)|$(RuntimeIdentifier)|$(PlatformTarget)|$(Optimize)|$(DebugType)|$(DebugSymbols)|$(DefineConstants)|$(InnoBgfxShaderTarget)|$(InnoBgfxShaderApis)|$(InnoImGuiShaderTarget)|$(InnoImGuiShaderApis)</_InnoBackendOptions>
+      <_InnoBackendOptions>$(InnoNativeTarget)|$(InnoToolTarget)|$(_InnoBackendProductProps)|$(InnoNativeBuildFingerprint)|$(BindGenExpectedFingerprint)|$(InnoNativeLibraryKind)|$(InnoNativeRuntimeImports)|$(RuntimeIdentifier)|$(PlatformTarget)|$(Optimize)|$(DebugType)|$(DebugSymbols)|$(DefineConstants)|$(InnoBgfxShaderTarget)|$(InnoBgfxShaderApis)|$(InnoImGuiShaderTarget)|$(InnoImGuiShaderApis)</_InnoBackendOptions>
       <_InnoBackendVariant>$(MSBuildProjectName)/$(Configuration)/$(TargetFramework)/$([MSBuild]::StableStringHash('$(_InnoBackendOptions)', 'Sha256'))</_InnoBackendVariant>
     </PropertyGroup>
+  </Target>
+
+  <Target Name="GetInnoBackendCompilerOutputs" DependsOnTargets="FreezeInnoBackendCompilerVariant" Returns="@(_InnoBackendCompilerFile)">
     <ItemGroup>
       <_InnoBackendCompilerFile Include="@(IntermediateAssembly)" PackagePath="managed/$(_InnoBackendVariant)/lib/$(TargetFileName)" />
       <_InnoBackendCompilerFile Include="@(IntermediateRefAssembly)" Condition="'$(ProduceReferenceAssembly)' == 'true'"
