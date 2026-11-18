@@ -188,7 +188,8 @@ internal static class DocumentationApiComposition
         DocumentationApiFragment fragment,
         DocumentationApiFact[] contexts
     ) => fragment.source == "xml" ? "Synced"
-        : DocumentationApiContent.IsOutdated(fragment, DocumentationApiContent.Contract(contexts)) ? "Outdated" : "Verified";
+        : DocumentationApiContent.IsOutdated(fragment, DocumentationApiContent.Contract(contexts, normalizeXml: true),
+            DocumentationApiContent.Contract(contexts)) ? "Outdated" : "Verified";
 
     private static string Header(
         DocumentationApiFragment fragment,

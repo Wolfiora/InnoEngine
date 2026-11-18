@@ -29,15 +29,27 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/projects/content.json", JsonSerializer.Serialize(new { schema = "inno-project-guides/1",
             entries = new[] { new { path = C_PAGE, uid = "project.probe", project = "Inno.Probe" } } }));
         Write(C_PAGE, "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\n---\n");
+        Bind(description: "The value\ncontract.");
         await Sync();
         string path = Path.Combine(m_root, C_PAGE);
         Assert.Contains("The value contract.", File.ReadAllText(path));
         string first = File.ReadAllText(path);
         await Sync();
         Assert.Equal(first, File.ReadAllText(path));
-        string manual = first.Replace("source: xml", "source: Ada Example", StringComparison.Ordinal) + "\nIndependent lifetime guidance.\n";
+        string manual = first.Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
+            + "\nIndependent lifetime guidance.\n";
         File.WriteAllText(path, manual);
+        await Sync();
+        Assert.Equal(manual, File.ReadAllText(path));
+        string cache = Path.Combine(m_root, "artifacts/project-query");
+        var pending = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using (var pendingSnapshot = await DocumentationStore.OpenAsync(cache, pending.snapshot))
+            Assert.Contains("[!REVIEW-PENDING]", (await pendingSnapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe").markdown);
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", C_PAGE]));
+        string reviewed = File.ReadAllText(path);
+        Bind(description: "The value\r\ncontract.");
+        await Sync();
+        Assert.Equal(reviewed, File.ReadAllText(path));
         Bind(description: "Changed XML contract.");
         await Sync();
         Assert.Equal(Body(manual), Body(File.ReadAllText(path)));
@@ -45,7 +57,6 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-review", "--docs-root", m_root, "--page", C_PAGE]));
         Assert.Contains("outdated: false", File.ReadAllText(path));
-        string cache = Path.Combine(m_root, "artifacts/project-query");
         var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         var page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe");
@@ -176,7 +187,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
             + "\nKeep this independently authored lifetime constraint.\n";
         File.WriteAllText(member, manual);
-        Bind(description: "Updated XML requires a review.");
+        Bind(description: "Updated XML\nrequires a review.");
         await Sync();
         Assert.Contains("outdated: true", File.ReadAllText(member));
         string relative = Path.GetRelativePath(m_root, member).Replace('\\', '/');
@@ -185,6 +196,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(Body(manual), Body(reviewed));
         Assert.Contains("outdated: false", reviewed);
         Assert.NotEqual(manual.Split("reviewed: ")[1].Split('\n')[0], reviewed.Split("reviewed: ")[1].Split('\n')[0]);
+        Bind(description: "Updated XML\r\nrequires a review.");
         await Sync();
         Assert.Equal(reviewed, File.ReadAllText(member));
         string cache = Path.Combine(m_root, "artifacts/query");
@@ -380,7 +392,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
         DocumentationPageInfo script = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_MEMBER)));
         Assert.Contains("scripting/" + scope.ToLowerInvariant(), script.path);
-        Assert.Contains("## V", catalog.pages.Single(page => page.path == "content/en/api/scripting/" + scope.ToLowerInvariant() + "/index.md").markdown);
+        string scopePath = "content/en/api/scripting/" + scope.ToLowerInvariant();
+        string scopeIndex = catalog.pages.Single(page => page.path == scopePath + "/index.md").markdown;
+        Assert.Contains("[Probe](_projects/probe/index.md)", scopeIndex);
+        Assert.Contains("| [Value]", catalog.pages.Single(page => page.path == scopePath + "/_projects/probe/index.md").markdown);
         foreach (string surface in new[] { "runtime-script", "editor-script" })
         {
             DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", surface, scope: scope))).hits);

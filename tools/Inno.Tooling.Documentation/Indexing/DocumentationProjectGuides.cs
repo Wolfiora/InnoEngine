@@ -70,14 +70,18 @@ internal static class DocumentationProjectGuides
             if (reviewPage is not null && (project is null || !manual || string.IsNullOrWhiteSpace(fragment.body)
                 || fragment.body.Trim() == Body(entry, contexts).Trim()))
                 throw new InvalidDataException("Review requires an existing project and an independent named-author explanation.");
-            bool stale = manual && reviewPage is null && (project is null || DocumentationApiContent.IsOutdated(fragment, contract));
+            bool stale = manual && reviewPage is null && (project is null || IsOutdated(fragment, project, contexts, contract));
+            bool pending = manual && reviewPage is null && string.IsNullOrEmpty(fragment.reviewed);
             if (project is null)
                 warnings.Add(new(entry.project, entry.path, "RemovedProject", "The source project is absent; the registered guide is retained for editorial resolution."));
             else if (stale)
                 warnings.Add(new(entry.project, entry.path, "ReviewRequired", "Project facts or XML changed; review this explanation."));
+            else if (pending)
+                warnings.Add(new(entry.project, entry.path, "InitialReviewPending", "This project guide has no recorded source review."));
             if (!manual || string.IsNullOrWhiteSpace(fragment.body) || fragment.body.Trim() == Body(entry, contexts).Trim())
                 warnings.Add(new(entry.project, entry.path, "ManualExplanationRequired", "This project guide uses generated source information."));
-            string updated = Metadata(entry, fragment, manual && reviewPage is null ? fragment.reviewed ?? "" : contract, stale)
+            string reviewed = !manual ? "" : stale || pending ? fragment.reviewed ?? "" : contract;
+            string updated = Metadata(entry, fragment, reviewed, stale)
                 + (manual || project is null ? fragment.body : "\n\n" + Body(entry, contexts));
             if (updated != text) edits.Add(new(entry.path, DocumentationMarkdown.Hash(text), updated));
         }
@@ -103,8 +107,9 @@ internal static class DocumentationProjectGuides
             var fragment = Read(entry, pages[entry.path]);
             projects.TryGetValue(entry.project, out var project);
             var contexts = facts.Values.SelectMany(context => context).Where(fact => fact.project == entry.project).ToArray();
-            bool stale = project is null || DocumentationApiContent.IsOutdated(fragment, Identity(project, contexts));
-            string status = stale ? "OUTDATED" : fragment.source == "xml" ? "SYNCED" : "VERIFIED";
+            bool stale = project is null || IsOutdated(fragment, project, contexts, Identity(project, contexts));
+            string status = stale ? "OUTDATED" : fragment.source == "xml" ? "SYNCED"
+                : string.IsNullOrEmpty(fragment.reviewed) ? "REVIEW-PENDING" : "VERIFIED";
             string[] summaries = fragment.Summaries("");
             fragment.metadata.Children.Remove(new YamlScalarNode("description"));
             string header = "---\n" + Serialize(fragment.metadata) + "\n---";
@@ -154,7 +159,28 @@ internal static class DocumentationProjectGuides
     private static string Identity(
         DocumentationProject? project,
         DocumentationApiFact[] contexts
-    ) => DocumentationMarkdown.Hash(JsonSerializer.Serialize(project) + "\n" + DocumentationApiContent.Contract(contexts));
+    ) {
+        var identity = new
+        {
+            metadata = project is null ? null : project with { surfaces = project.surfaces.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray() },
+            symbols = contexts.GroupBy(fact => fact.key, StringComparer.Ordinal).OrderBy(group => group.Key, StringComparer.Ordinal)
+                .Select(group => new { symbol = group.Key, contract = DocumentationApiContent.Contract(group, normalizeXml: true) })
+        };
+        return DocumentationMarkdown.Hash(JsonSerializer.Serialize(identity));
+    }
+
+    private static bool IsOutdated(
+        DocumentationApiFragment fragment,
+        DocumentationProject project,
+        DocumentationApiFact[] contexts,
+        string contract
+    ) {
+        if (fragment.source == "xml") return false;
+        if (fragment.outdated) return true;
+        if (string.IsNullOrEmpty(fragment.reviewed) || fragment.reviewed == contract) return false;
+        string legacy = DocumentationMarkdown.Hash(JsonSerializer.Serialize(project) + "\n" + DocumentationApiContent.Contract(contexts));
+        return fragment.reviewed != legacy;
+    }
 
     private static string Metadata(
         DocumentationProjectGuide entry,
