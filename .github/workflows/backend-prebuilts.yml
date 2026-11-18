@@ -32,6 +32,11 @@ jobs:
         with:
           key: backend-platform-${{ matrix.sha256 }}
           path: artifacts/backend-downloads/${{ matrix.sha256 }}.zip
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: matrix.hostSeed.sha256
+        with:
+          key: backend-platform-${{ matrix.hostSeed.sha256 }}
+          path: artifacts/backend-downloads/${{ matrix.hostSeed.sha256 }}.zip
       - name: Acquire the exact prior platform and prepare requested native inputs
         shell: pwsh
         env:
@@ -42,9 +47,14 @@ jobs:
           $zip = if ($item.sha256) {
             ./tests/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.sha256 -AssetId $item.assetId -Directory artifacts/backend-downloads
           }
+          $hostInputs = @{}
+          if ($item.hostSeed) {
+            $hostInputs.HostSeedDigest = $item.hostSeed.sha256
+            $hostInputs.HostSeedZip = ./tests/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.hostSeed.sha256 -AssetId $item.hostSeed.assetId -Directory artifacts/backend-downloads
+          }
           ./tests/ci/Initialize-BackendProduction.ps1 -Target $item.target -HostTarget $item.hostTarget -Operation $item.operation `
             -OutputDirectory artifacts/backend-input -NativeDirectory artifacts/backend-native `
-            -PreviousZip $zip -PreviousDigest $item.sha256 -PrepareNative:$item.nativeInputs
+            -PreviousZip $zip -PreviousDigest $item.sha256 @hostInputs -PrepareNative:$item.nativeInputs
       - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         if: matrix.sha256 && steps.cache.outputs.cache-hit != 'true'
         with:

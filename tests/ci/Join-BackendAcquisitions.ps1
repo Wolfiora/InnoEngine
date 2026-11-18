@@ -60,6 +60,11 @@ foreach ($target in $targets.Values) {
     }
 }
 foreach ($target in $targets.Values) {
+    $target.hostSeed = $null
+    if ($target.operation -ceq 'produce' -and $target.hostTarget -cne $target.target) {
+        $hostPackage = $targets[$target.hostTarget]
+        if ($hostPackage.sha256) { $target.hostSeed = @{sha256=$hostPackage.sha256;assetId=$hostPackage.assetId} }
+    }
     $target.nativeInputs = @($targets.Values | Where-Object { $_.operation -ceq 'produce' -and ($_.target -ceq $target.target -or $_.hostTarget -ceq $target.target) }).Count -gt 0
 }
 [pscustomobject]@{ platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce'); deferred=$deferred }

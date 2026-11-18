@@ -27,6 +27,9 @@ try {
     if ($cross) {
         $changed = @{target=$cross.target;operation='produce';sha256=$null;assetId=$null}
         $candidate = Join-Requests @($prior,$changed)
+        if ($candidate.producers[0].hostSeed.sha256 -cne $prior.sha256 -or $candidate.producers[0].hostSeed.assetId -ne $prior.assetId) {
+            throw 'The cross-target managed SDK bootstrap lost the independently selected host package.'
+        }
         if ($candidate.producers.Count -ne 1 -or $candidate.producers[0].target -cne $cross.target -or !$candidate.platforms[0].nativeInputs) {
             throw 'Cross compilation failed to acquire the host tools independently.'
         }

@@ -6,6 +6,8 @@ param(
     [Parameter(Mandatory)][string]$NativeDirectory,
     [string]$PreviousZip,
     [string]$PreviousDigest,
+    [string]$HostSeedZip,
+    [string]$HostSeedDigest,
     [switch]$PrepareNative,
     [string]$Dotnet = 'dotnet'
 )
@@ -32,8 +34,11 @@ if ($Operation -ceq 'consume') {
 $dotnetPath = (Get-Command $Dotnet -CommandType Application | Select-Object -First 1).Source
 $work = [IO.Directory]::CreateDirectory((Join-Path $root 'artifacts/bn')).FullName
 $previous = $null
-if ($PreviousZip) {
+$hostSeed = $null
+if ($PreviousZip -or $HostSeedZip) {
     $entry = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $dotnetPath -LogPath "$work/bootstrap.log")
+}
+if ($PreviousZip) {
     $previous = Join-Path $work 'prior'
     & $dotnetPath $entry[0] validate import-backends --archive $PreviousZip --sha256 $PreviousDigest --target $Target --output $previous
     if ($LASTEXITCODE) { throw 'The native producer seed could not be verified.' }
@@ -56,20 +61,29 @@ $null = & "$PSScriptRoot/Initialize-NativeDependencyWorkloads.ps1" -Targets @($T
 $project = Join-Path $root 'entry/InnoEngine.Build/InnoEngine.Build.csproj'
 $sdk = Join-Path $work 'sdk'
 $properties = @()
-if ($previous -and $HostTarget -ceq $Target) {
+if ($HostTarget -ceq $Target) {
+    $hostSeed = $previous
+} elseif ($HostSeedZip) {
+    if ($HostSeedDigest -cnotmatch '^[a-f0-9]{64}$') { throw 'Cross-target producer bootstrap requires an exact host package digest.' }
+    $hostSeed = Join-Path $work 'host'
+    & $dotnetPath $entry[0] validate import-backends --archive $HostSeedZip --sha256 $HostSeedDigest --target $HostTarget --output $hostSeed
+    if ($LASTEXITCODE) { throw 'The SDK host package could not be verified.' }
+}
+if ($hostSeed) {
     $plan = Join-Path $work 'identity'
     & $dotnetPath $entry[0] validate plan --engine-root $root --dotnet $dotnetPath --base HEAD --profile fast --backend-store artifacts/bn/store --output $plan
     if ($LASTEXITCODE) { throw 'Could not evaluate producer bootstrap owners.' }
     $capture = Join-Path $work 'managed.json'
-    & $dotnetPath $entry[0] validate backend-inputs --engine-root $root --dotnet $dotnetPath --target $Target --plan "$plan/plan.json" `
-        --selection "$previous/native/selection.json" --output $capture
+    & $dotnetPath $entry[0] validate backend-inputs --engine-root $root --dotnet $dotnetPath --target $HostTarget --plan "$plan/plan.json" `
+        --selection "$hostSeed/native/selection.json" --output $capture
     if ($LASTEXITCODE) { throw 'Could not evaluate the managed producer bootstrap.' }
     $current = (Get-Content -LiteralPath $capture -Raw | ConvertFrom-Json -AsHashtable).projects
-    $matching = @((Get-Content -LiteralPath "$previous/manifest.json" -Raw | ConvertFrom-Json).files | Where-Object {
+    $matching = @((Get-Content -LiteralPath "$hostSeed/manifest.json" -Raw | ConvertFrom-Json).files | Where-Object {
         $_.configuration -ceq 'Debug' -and $_.path -clike 'managed/*' -and $current[$_.owner] -ceq $_.input
     } | ForEach-Object owner | Sort-Object -Unique)
     $changed = @($current.Keys | Where-Object { $_ -cnotin $matching })
-    $properties = @("-p:InnoBackendPrebuiltRoot=$previous","-p:InnoBackendExportRoot=$work/bootstrap-outputs",
+    Write-Host "$HostTarget SDK bootstrap selected $($changed.Count) backend owners for compilation and $($matching.Count) for prebuilt consumption."
+    $properties = @("-p:InnoBackendPrebuiltRoot=$hostSeed","-p:InnoBackendExportRoot=$work/bootstrap-outputs",
         "-p:InnoBackendExportArtifactsPath=$sdk",("-p:InnoBackendCompileOwners=|" + ($changed -join '|') + '|'))
 }
 & $dotnetPath build $project --configuration Debug --artifacts-path $sdk --disable-build-servers -m:2 -nr:false @properties
