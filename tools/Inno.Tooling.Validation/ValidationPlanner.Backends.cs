@@ -128,8 +128,12 @@ internal static partial class ValidationPlanner
         static bool Digest(string? value) => value is { Length: 64 } && value.All(static c => char.IsAsciiHexDigitLower(c));
     }
 
-    private static string[] MissingNativeProducts(ValidationPlan plan, string target, string configuration, byte[]? selection)
-    {
+    private static string[] MissingNativeProducts(
+        ValidationPlan plan,
+        string target,
+        string configuration,
+        byte[]? selection
+    ) {
         string[] required = (plan.nativeRequests ?? []).Where(request => request.target == target && request.configuration == configuration)
             .Select(static request => request.product).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         if (required.Length == 0 || selection is null)

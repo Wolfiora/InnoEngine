@@ -72,3 +72,14 @@ The acquisition job was subsequently removed from the critical path when every h
 | [44397515882](https://github.com/Wolfiora/InnoEngine/actions/runs/44397515882) | 247 s | 259 s |
 
 The final median was 265 seconds including queueing, 53.0% below the 564-second baseline. Median active time was 253 seconds, 8.1% above the 234-second baseline. None of these six PR samples needed a backend archive. The additional native-consumer and producer scenarios measure a different cost.
+
+### Product and platform comparison
+
+The controlled PR-profile probes below retain the same changed file and runner classes on each side of the migration. Counts come from the joined functional receipts on each host. Active time includes routing, the slower parallel host and the gate.
+
+| Baseline input | GitHub run | Active critical path | Wall time | Test cases per host |
+| --- | --- | --- | --- | --- |
+| ImGui Editor consumer of SDL | [44398269046](https://github.com/Wolfiora/InnoEngine/actions/runs/44398269046) | 849 s | 862 s | 94 |
+| SDL backend source | [44398313561](https://github.com/Wolfiora/InnoEngine/actions/runs/44398313561) | 2,900 s | 2,944 s | 969 |
+
+Both baseline SDL consumer jobs selected eight native component archives. A cold transfer of those archives required 23,452,130 bytes on Windows and 27,733,095 bytes on macOS. Each job reported 26 distinct backend outputs. Those output lines establish the size of the build graph and cannot establish the number of compiler invocations.
