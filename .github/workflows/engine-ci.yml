@@ -186,7 +186,9 @@ jobs:
 
   plan:
     outputs:
-      deferred: ${{ steps.decision.outputs.deferred }}
+      # A host that finished its own plan emits no job-level demand. The runner
+      # omits empty outputs, so matrix completion order cannot erase another host's request.
+      deferred: ${{ steps.decision.outputs.deferred == 'true' && 'true' || '' }}
     needs: [route, preflight, acceptance-reuse]
     if: ${{ !cancelled() && needs.route.result == 'success' && needs.route.outputs.run == 'true' && ((needs.preflight.result == 'skipped' && needs.acceptance-reuse.result == 'skipped') || (needs.acceptance-reuse.result == 'success' && needs.acceptance-reuse.outputs.reusable == 'false')) }}
     runs-on: ${{ matrix.runner }}
@@ -274,7 +276,7 @@ jobs:
 
   backend-matrix:
     needs: [route, plan]
-    if: ${{ !cancelled() && needs.plan.result == 'success' && (inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || needs.plan.outputs.deferred != 'false') }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && (inputs.rebuild_backends || needs.plan.outputs.deferred == 'true') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -405,9 +407,9 @@ jobs:
             if (-not $decision.reusable) { throw 'The final gate did not receive every matching acceptance proof.' }
             exit 0
           }
-          $direct = !$env:REBUILD_TARGETS -and @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1 -and $env:DEFERRED -ceq 'false'
+          $direct = !$env:REBUILD_TARGETS -and !$env:DEFERRED
           if ($direct) {
-            if ($env:MATRIX_RESULT -cne 'skipped') { throw 'Unexpected production matrix for an independently executed host.' }
+            if ($env:MATRIX_RESULT -cne 'skipped') { throw 'Unexpected production matrix after all hosts completed independently.' }
             $env:BACKENDS_REQUIRED = 'false'
           }
           if ($env:SHOULD_RUN -cne 'true' -or $env:PLAN_RESULT -cne 'success' -or (!$direct -and $env:MATRIX_RESULT -cne 'success') -or
