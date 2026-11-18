@@ -37,6 +37,14 @@ foreach ($receipt in Get-ChildItem -LiteralPath (Join-Path $stagingRoot 'receipt
     }
 }
 if (!$files.Count) { throw 'The backend producer emitted no managed compiler outputs.' }
+foreach ($configuration in $plans.Keys) {
+    $built = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    foreach ($file in $files.Values) {
+        if ($file.configuration -ceq $configuration -and $file.path -cmatch '/lib/[^/]+\.dll$') { $null = $built.Add($file.owner) }
+    }
+    $missing = @($plans[$configuration].projects.Keys | Where-Object { !$built.Contains($_) })
+    if ($missing.Count) { throw "Backend production omitted $configuration owners: $($missing -join ', ')." }
+}
 $native = Get-Content -LiteralPath $NativeSelection -Raw | ConvertFrom-Json -AsHashtable
 $selection = [ordered]@{}
 $nativeRoot = Split-Path ([IO.Path]::GetFullPath($NativeSelection)) -Parent

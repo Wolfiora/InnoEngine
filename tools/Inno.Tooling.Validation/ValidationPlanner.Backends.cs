@@ -91,13 +91,15 @@ internal static partial class ValidationPlanner
         }
         foreach (var request in requests)
             if (!assets.Concat(aggregates).Any(asset => asset?["target"]?.GetValue<string>() == request.target
-                && asset["configuration"]?.GetValue<string>() == request.configuration && asset["product"]?.GetValue<string>() == request.product))
+                && string.Equals(asset["configuration"]?.GetValue<string>(), request.configuration, StringComparison.OrdinalIgnoreCase) && asset["product"]?.GetValue<string>() == request.product))
                 throw new InvalidDataException($"Missing native product {request.product} for {request.target}/{request.configuration}.");
         AtomicFile.WriteAllBytes(selectionPath, selectionBytes);
         return plan with { backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray() };
 
         static bool Digest(string? value) => value is { Length: 64 } && value.All(static c => char.IsAsciiHexDigitLower(c));
     }
+
+    private sealed record BackendNativeProduct(string product, string target, string configuration);
 
     internal static async Task<BackendInputPlan> BackendInputsAsync(
         ValidationPlan plan,
@@ -112,6 +114,7 @@ internal static partial class ValidationPlanner
                 ?? throw new InvalidDataException("The SDK graph has no captured configuration " + configuration);
         var owners = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         var properties = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+        var tools = new Dictionary<string, HashSet<BackendNativeProduct>>(StringComparer.Ordinal);
         // All project roots and their evaluated product variants are in the primary SDK capture.
         // Additional execution contexts depend on the selected checks and cannot define package identity.
         foreach (JsonElement snapshot in graph.sdkGraph.EnumerateArray())
@@ -121,6 +124,7 @@ internal static partial class ValidationPlanner
             {
                 sources = owners[project.path] = new(StringComparer.Ordinal);
                 properties[project.path] = new(StringComparer.Ordinal);
+                tools[project.path] = [];
             }
             sources.UnionWith(project.inputs);
             foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
@@ -129,6 +133,14 @@ internal static partial class ValidationPlanner
                 string? variantTarget = effective.GetProperty("InnoNativeTarget").GetString();
                 if (!string.IsNullOrEmpty(variantTarget) && variantTarget != target)
                     continue;
+                foreach (JsonElement tool in variant.GetProperty("Items").GetProperty("InnoNativeDependency").EnumerateArray())
+                {
+                    string? hostTarget = tool.GetProperty("TargetId").GetString();
+                    string? toolConfiguration = tool.GetProperty("Configuration").GetString();
+                    tools[project.path].Add(new(tool.GetProperty("Identity").GetString()!,
+                        string.IsNullOrEmpty(hostTarget) ? plan.backendHost ?? target : hostTarget,
+                        (string.IsNullOrEmpty(toolConfiguration) ? configuration : toolConfiguration).ToLowerInvariant()));
+                }
                 foreach (string name in new[] { "AssemblyName", "TargetFramework", "RuntimeIdentifier", "DefineConstants", "Nullable", "AllowUnsafeBlocks", "LangVersion", "NETCoreSdkVersion" })
                     properties[project.path].Add(name + "=" + effective.GetProperty(name).GetString());
                 foreach (JsonElement package in variant.GetProperty("Items").GetProperty("PackageReference").EnumerateArray())
@@ -149,12 +161,13 @@ internal static partial class ValidationPlanner
             foreach (string family in new[] { "assets", "aggregates" })
             foreach (JsonElement asset in dependencies.RootElement.GetProperty(family).EnumerateArray())
             {
-                if (asset.GetProperty("target").GetString() != target
-                    || !string.Equals(asset.GetProperty("configuration").GetString(), configuration, StringComparison.OrdinalIgnoreCase))
-                    continue;
-                IEnumerable<string> consumers = family == "assets"
-                    ? new[] { asset.GetProperty("nativeProject").GetString()!, asset.GetProperty("toolchainProject").GetString()! }
-                    : asset.GetProperty("bindings").EnumerateObject().Select(static binding => binding.Name);
+                var product = new BackendNativeProduct(asset.GetProperty("product").GetString()!, asset.GetProperty("target").GetString()!,
+                    asset.GetProperty("configuration").GetString()!.ToLowerInvariant());
+                var consumers = tools.Where(pair => pair.Value.Contains(product)).Select(static pair => pair.Key).ToHashSet(StringComparer.Ordinal);
+                if (product.target == target && string.Equals(product.configuration, configuration, StringComparison.OrdinalIgnoreCase))
+                    consumers.UnionWith(family == "assets"
+                        ? new[] { asset.GetProperty("nativeProject").GetString()!, asset.GetProperty("toolchainProject").GetString()! }
+                        : asset.GetProperty("bindings").EnumerateObject().Select(static binding => binding.Name));
                 foreach (string owner in consumers.Where(owners.ContainsKey))
                 {
                     owners[owner].UnionWith(asset.GetProperty("sources").EnumerateObject().Select(static source => source.Name));
