@@ -309,7 +309,6 @@ public sealed class ValidationCompletionTests
     {
         using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
         using var external = new ValidationRepository();
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         string dependency = external.PathOf("Shared.props");
         const string C_PROJECT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
         repository.Write(C_PROJECT, File.ReadAllText(repository.PathOf(C_PROJECT)).Replace("</Project>",
@@ -325,6 +324,7 @@ public sealed class ValidationCompletionTests
         repository.Write("README.md", File.ReadAllText(repository.PathOf("README.md")) + "\nClosing evidence acceptance.\n");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.Empty(plan.RootElement.GetProperty("owners").EnumerateArray());
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         Task<int> execution = repository.RunAsync(cancellation.Token);
         try
         {
@@ -349,7 +349,9 @@ public sealed class ValidationCompletionTests
                 Assert.Contains(result.GetProperty("status").GetString(), new[] { "Passed", "Reused", "NotApplicable" }));
             Assert.False(results.RootElement.GetProperty("completed").GetBoolean());
             await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(evidence));
-            Assert.Equal(0, await repository.RunAsync(cancellation.Token, "artifacts/completed"));
+            // Recovery starts after the failed run and its evidence have been inspected. It owns its full execution budget.
+            using var recovery = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+            Assert.Equal(0, await repository.RunAsync(recovery.Token, "artifacts/completed"));
             Assert.Equal(0, await repository.EvidenceAsync(repository.PathOf("artifacts/completed/results.json")));
         }
         finally
