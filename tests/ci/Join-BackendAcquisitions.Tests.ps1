@@ -18,6 +18,9 @@ try {
     $prior = @{target=$target;operation='consume';sha256=('b'*64);assetId=12}
     $warm = Join-Requests @($prior)
     if ($warm.producers.Count -or $warm.platforms.Count -ne 1 -or $warm.platforms[0].nativeInputs) { throw 'A matching backend ZIP scheduled source production.' }
+    if ($warm.deferred[0].pattern -cne "backend-candidate-$target" -or $warm.deferred[0].destination -cne "artifacts/candidates/backend-candidate-$target") {
+        throw 'The single platform archive would lose its named directory during download.'
+    }
     $cold = Join-Requests @($prior) $revision $target
     if ($cold.producers.Count -ne 1 -or $cold.producers[0].sha256 -or $cold.producers[0].assetId) { throw 'A manual cold rebuild restored an old producer seed.' }
     $blocked = $false
@@ -27,6 +30,10 @@ try {
     if ($cross) {
         $changed = @{target=$cross.target;operation='produce';sha256=$null;assetId=$null}
         $candidate = Join-Requests @($prior,$changed)
+        $expectedNames = @(($target,$cross.target) | Sort-Object -CaseSensitive)
+        if ($candidate.deferred[0].pattern -cne "backend-candidate-{$($expectedNames -join ',')}" -or $candidate.deferred[0].destination -cne 'artifacts/candidates') {
+            throw 'Multiple platform archives must each extract beneath their own named directory.'
+        }
         if ($candidate.producers[0].hostSeed.sha256 -cne $prior.sha256 -or $candidate.producers[0].hostSeed.assetId -ne $prior.assetId) {
             throw 'The cross-target managed SDK bootstrap lost the independently selected host package.'
         }

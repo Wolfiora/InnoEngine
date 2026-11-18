@@ -291,7 +291,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: backend-request-*-attempt-${{ github.run_attempt }}
-          path: artifacts/requests
+          path: ${{ fromJSON(needs.route.outputs.hosts).include[1] == null && format('artifacts/requests/backend-request-{0}-attempt-{1}', fromJSON(needs.route.outputs.hosts).include[0].runner, github.run_attempt) || 'artifacts/requests' }}
       - id: join
         shell: pwsh
         env:
@@ -338,7 +338,7 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           pattern: ${{ matrix.pattern }}
-          path: artifacts/candidates
+          path: ${{ matrix.destination }}
       - name: Bind verified platform archives and the runner SDK
         shell: pwsh
         env:

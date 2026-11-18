@@ -39,7 +39,9 @@ foreach ($hostName in $Hosts) {
     if ($seen.Count) {
         $names = @($seen | Sort-Object -CaseSensitive)
         $pattern = if ($names.Count -eq 1) { "backend-candidate-$($names[0])" } else { "backend-candidate-{$($names -join ',')}" }
-        $deferred += [pscustomobject]@{runner=$hostName;target=$hostRegistration[0].target;pattern=$pattern}
+        # download-artifact extracts a single match directly into its destination.
+        $destination = if ($names.Count -eq 1) { "artifacts/candidates/$pattern" } else { 'artifacts/candidates' }
+        $deferred += [pscustomobject]@{runner=$hostName;target=$hostRegistration[0].target;pattern=$pattern;destination=$destination}
     }
 }
 if ($RebuildTargets) {
