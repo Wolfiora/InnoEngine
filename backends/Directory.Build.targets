@@ -1,0 +1,71 @@
+<Project>
+  <Import Project="../Directory.Build.targets" />
+
+  <!-- Record compiler outputs only. The SDK still owns project references, NuGet runtime assets,
+       content deployment and the final product graph on the consuming machine. -->
+  <PropertyGroup>
+    <_InnoBackendVariant>$(ArtifactsProjectName)/$(ArtifactsPivots)/$(TargetFramework)</_InnoBackendVariant>
+    <_InnoBackendVariant Condition="'$(BindGenExpectedFingerprint)' != ''">$(_InnoBackendVariant)/$(BindGenExpectedFingerprint)</_InnoBackendVariant>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(InnoBackendPrebuiltRoot)' != ''">
+    <CoreBuildDependsOn>
+      BuildOnlySettings;
+      PrepareForBuild;
+      ResolveReferences;
+      ImportInnoBackendCompilerOutputs;
+      GetTargetPath;
+      PrepareForRun;
+      IncrementalClean
+    </CoreBuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetInnoBackendCompilerOutputs" Returns="@(_InnoBackendCompilerFile)">
+    <Error Condition="'$(ArtifactsPath)' == '' or '$(ArtifactsProjectName)' == '' or '$(ArtifactsPivots)' == ''"
+           Text="Backend prebuilts require an explicit SDK artifacts owner." />
+    <ItemGroup>
+      <_InnoBackendCompilerFile Include="@(IntermediateAssembly)" PackagePath="managed/$(_InnoBackendVariant)/lib/$(TargetFileName)" />
+      <_InnoBackendCompilerFile Include="@(IntermediateRefAssembly)" Condition="'$(ProduceReferenceAssembly)' == 'true'"
+                                PackagePath="managed/$(_InnoBackendVariant)/ref/$(TargetFileName)" />
+      <_InnoBackendCompilerFile Include="$(DocumentationFile)" Condition="'$(DocumentationFile)' != ''"
+                                PackagePath="managed/$(_InnoBackendVariant)/lib/$(TargetName).xml" />
+      <_InnoBackendCompilerFile Include="@(_DebugSymbolsIntermediatePath)" Condition="'$(DebugType)' != 'embedded' and '$(DebugType)' != 'none' and '$(DebugSymbols)' != 'false'"
+                                PackagePath="managed/$(_InnoBackendVariant)/lib/$(TargetName).pdb" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ExportInnoBackendCompilerOutputs" AfterTargets="Build"
+          Condition="'$(InnoBackendExportRoot)' != ''" DependsOnTargets="GetInnoBackendCompilerOutputs">
+    <GetFileHash Files="@(_InnoBackendCompilerFile)" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="_InnoBackendExportFile" />
+    </GetFileHash>
+    <ItemGroup>
+      <_InnoExistingBackendFile Include="@(_InnoBackendExportFile->'$(InnoBackendExportRoot)/%(PackagePath)')"
+                                Condition="Exists('$(InnoBackendExportRoot)/%(_InnoBackendExportFile.PackagePath)')" />
+    </ItemGroup>
+    <GetFileHash Files="@(_InnoExistingBackendFile)" Algorithm="SHA256" MetadataName="ExistingHash">
+      <Output TaskParameter="Items" ItemName="_InnoComparedBackendFile" />
+    </GetFileHash>
+    <Error Condition="'%(_InnoComparedBackendFile.ExistingHash)' != '%(_InnoComparedBackendFile.FileHash)'"
+           Text="Backend variants produced conflicting bytes for %(_InnoComparedBackendFile.Identity)." />
+    <Copy SourceFiles="@(_InnoBackendExportFile)" DestinationFiles="@(_InnoBackendExportFile->'$(InnoBackendExportRoot)/%(PackagePath)')" />
+    <PropertyGroup>
+      <_InnoBackendOwner>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)..', '$(MSBuildProjectFullPath)').Replace('\', '/'))</_InnoBackendOwner>
+    </PropertyGroup>
+    <MakeDir Directories="$(InnoBackendExportRoot)/receipts/$(_InnoBackendVariant)" />
+    <WriteLinesToFile File="$(InnoBackendExportRoot)/receipts/$(_InnoBackendVariant)/files.txt"
+                      Lines="@(_InnoBackendExportFile->'$(_InnoBackendOwner)|$(Configuration)|%(PackagePath)|%(FileHash)')"
+                      Overwrite="true" Encoding="UTF-8" />
+  </Target>
+
+  <Target Name="ImportInnoBackendCompilerOutputs" DependsOnTargets="GetInnoBackendCompilerOutputs">
+    <Error Condition="!Exists('$(InnoBackendPrebuiltRoot)/%(_InnoBackendCompilerFile.PackagePath)')"
+           Text="Missing backend prebuilt %(_InnoBackendCompilerFile.PackagePath) for $(MSBuildProjectFullPath)." />
+    <Copy SourceFiles="@(_InnoBackendCompilerFile->'$(InnoBackendPrebuiltRoot)/%(PackagePath)')" DestinationFiles="@(_InnoBackendCompilerFile)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+  <Target Name="RejectInnoBackendSourceCompilation" BeforeTargets="CoreCompile" Condition="'$(InnoBackendPrebuiltRoot)' != ''">
+    <Error Text="Source compilation of $(MSBuildProjectName) is forbidden when consuming backend prebuilts." />
+  </Target>
+</Project>

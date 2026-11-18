@@ -19,6 +19,7 @@ public static class ValidationCommand
     /// Executes planning, checks, evidence reconciliation, shard joining or exact functional acceptance comparison.
     /// </summary>
     /// <param name="arguments">
+    /// Pack-backends writes the selected staging inventory into a platform archive. Import-backends verifies an archive digest and target before installation.
     /// The operation followed by explicit engine-root, base, dotnet, configuration, artifacts-path, output, plan,
     /// evidence, full, extended, cache-input or cache-output options. Cache archives contain immutable native payloads only.
     /// Explicit docs-cache-root and docs-snapshot options select protected external documentation facts.
@@ -53,15 +54,31 @@ public static class ValidationCommand
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
-        if (arguments.Length == 0 || arguments[0] is not ("plan" or "run" or "full" or "evidence" or "join" or "acceptance" or "resume"))
-            throw new ArgumentException("Usage: validate <plan|run|full|evidence|join|acceptance|resume> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]");
+        if (arguments.Length == 0 || arguments[0] is not ("plan" or "run" or "full" or "evidence" or "join" or "acceptance" or "resume" or "pack-backends" or "import-backends"))
+            throw new ArgumentException("Usage: validate <plan|run|full|evidence|join|acceptance|resume|pack-backends|import-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]");
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
+        string[]? transportOptions = arguments[0] switch
+        {
+            "pack-backends" => ["--artifacts-path", "--inventory", "--output"],
+            "import-backends" => ["--archive", "--sha256", "--target", "--output"],
+            _ => null
+        };
         for (int index = 1; index < arguments.Length; index += 2)
         {
             string key = arguments[index];
-            if (key is not ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--accepted-plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot" or "--profile" or "--native-dependencies" or "--shard" or "--prerequisites" or "--retained-outputs")
-                || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
+            bool allowed = transportOptions?.Contains(key, StringComparer.Ordinal) ?? key is ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--accepted-plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot" or "--profile" or "--native-dependencies" or "--shard" or "--prerequisites" or "--retained-outputs");
+            if (!allowed || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException($"Unknown, duplicate or incomplete validation option: {key}");
+        }
+        if (transportOptions is not null)
+        {
+            if (transportOptions.Any(key => !options.ContainsKey(key)))
+                throw new ArgumentException("Required backend transport options: " + string.Join(", ", transportOptions));
+            if (arguments[0] == "pack-backends")
+                BackendPrebuiltArchive.Create(options["--artifacts-path"], options["--inventory"], options["--output"], cancellationToken);
+            else
+                await BackendPrebuiltArchive.ExtractAsync(options["--archive"], options["--sha256"], options["--target"], options["--output"], cancellationToken).ConfigureAwait(false);
+            return 0;
         }
         string root = Path.GetFullPath(options.GetValueOrDefault("--engine-root", Directory.GetCurrentDirectory()));
         bool extended = options.TryGetValue("--extended", out string? depth) && bool.Parse(depth);
