@@ -108,7 +108,7 @@ internal static class DocumentationApiContent
                 if (string.IsNullOrWhiteSpace(existing.body) || Normalize(existing.body) == Normalize(DocumentationXml.Read(fact.documentation).body))
                     warnings.Add(new(fact.key, path, "EmptyManual", "Manual ownership has no independent explanatory content."));
                 if (stale)
-                    warnings.Add(new(fact.key, path, "Outdated", "The authored explanation is marked outdated for the current source."));
+                    warnings.Add(new(fact.key, path, "ReviewRequired", "The authored explanation is marked outdated for the current source."));
             }
             else
             {

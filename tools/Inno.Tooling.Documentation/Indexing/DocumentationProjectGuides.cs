@@ -69,7 +69,7 @@ internal static class DocumentationProjectGuides
             if (project is null)
                 warnings.Add(new(entry.project, entry.path, "RemovedProject", "The source project is absent; the registered guide is retained for editorial resolution."));
             else if (stale)
-                warnings.Add(new(entry.project, entry.path, "Outdated", "The authored project guide is outdated."));
+                warnings.Add(new(entry.project, entry.path, "ReviewRequired", "The authored project guide is outdated."));
             if (!manual || string.IsNullOrWhiteSpace(fragment.body) || fragment.body.Trim() == Body(entry, contexts).Trim())
                 warnings.Add(new(entry.project, entry.path, "ManualExplanationRequired", "This project guide uses generated source information."));
             string updated = Metadata(entry, fragment, contract, staleProse)
