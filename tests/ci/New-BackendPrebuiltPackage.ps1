@@ -48,6 +48,17 @@ foreach ($configuration in $plans.Keys) {
 $native = Get-Content -LiteralPath $NativeSelection -Raw | ConvertFrom-Json -AsHashtable
 $selection = [ordered]@{requests=@($native.requests | Where-Object target -CEQ $Target)}
 if (!$selection.requests.Count) { throw 'The platform package lacks verified product requests.' }
+$verified = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+foreach ($request in $selection.requests) {
+    if (!$plans.ContainsKey($request.configuration) -or !$request.product -or !$request.digests.Count) {
+        throw 'Native product coverage has no matching planned configuration or payload.'
+    }
+    foreach ($digest in $request.digests) {
+        if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid native product payload digest.' }
+        $null = $verified.Add("$($request.product)/$digest")
+    }
+}
+$present = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 $nativeRoot = Split-Path ([IO.Path]::GetFullPath($NativeSelection)) -Parent
 $nativePayload = Join-Path $stagingRoot 'native'
 [IO.Directory]::CreateDirectory($nativePayload) | Out-Null
@@ -55,9 +66,10 @@ foreach ($family in @('assets', 'aggregates')) {
     if (!$native.Contains($family)) { throw "Missing native closure inventory $family." }
     $selection[$family] = @($native[$family] | Where-Object target -CEQ $Target)
     foreach ($item in $selection[$family]) {
-        if (!$plans.ContainsKey($item.configuration) -or $item.asset -cnotmatch '^[a-zA-Z0-9._-]+\.zip$' -or $item.sha256 -cnotmatch '^[a-f0-9]{64}$') {
+        if (!$verified.Contains("$($item.product)/$($item.sha256)") -or $item.asset -cnotmatch '^[a-zA-Z0-9._-]+\.zip$' -or $item.sha256 -cnotmatch '^[a-f0-9]{64}$') {
             throw 'The native component receipt does not belong to a requested build context.'
         }
+        $null = $present.Add("$($item.product)/$($item.sha256)")
         $name = "native/$($item.sha256).zip"
         if ($files.ContainsKey($name)) { continue }
         $source = Join-Path $nativeRoot $item.asset
@@ -66,6 +78,7 @@ foreach ($family in @('assets', 'aggregates')) {
         Add-File $item.component $item.configuration $item.fingerprint $name $item.sha256
     }
 }
+if (!$verified.SetEquals($present)) { throw 'A certified native product references a missing payload.' }
 if (($selection.assets.Count + $selection.aggregates.Count) -eq 0) { throw "No native payloads were selected for $Target." }
 $selectionFile = Join-Path $nativePayload 'selection.json'
 [IO.File]::WriteAllText($selectionFile, (ConvertTo-Json $selection -Depth 70 -Compress))

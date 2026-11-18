@@ -75,17 +75,26 @@ public sealed class BackendInputTests
         Assert.Contains(plan.RootElement.GetProperty("nativeRequests").EnumerateArray(), request =>
             request.GetProperty("product").GetString() == "tool-only" && request.GetProperty("configuration").GetString() == "Debug");
         string digest = new('a', 64);
-        repository.Write("artifacts/native.json", JsonSerializer.Serialize(new {
-            assets = System.Array.Empty<object>(),
-            aggregates = new[] { new { product = "tool-only", target = "fixture-target", configuration = "release", sha256 = digest } },
-            requests = new[] { new { product = "tool-only", target = "fixture-target", configuration = certifiedConfiguration, digests = new[] { digest } } }
-        }));
+        WriteSelection(digest);
         string output = repository.PathOf("artifacts/inputs.json");
-        Assert.Equal(0, await ValidationCommand.ExecuteAsync(["backend-inputs", "--plan", repository.PathOf("artifacts/plan/plan.json"),
-            "--target", "fixture-target", "--configuration", "Debug", "--engine-root", repository.PathOf("."), "--dotnet", repository.dotnet,
-            "--selection", repository.PathOf("artifacts/native.json"), "--output", output]));
+        Assert.Equal(0, await Evaluate());
         using JsonDocument inputs = JsonDocument.Parse(File.ReadAllBytes(output));
         Assert.Equal(!expected, inputs.RootElement.GetProperty("missingNativeProducts").EnumerateArray().Any(item => item.GetString() == "tool-only"));
+        if (expected)
+        {
+            WriteSelection(new string('b', 64));
+            await Assert.ThrowsAsync<InvalidDataException>(() => Evaluate());
+        }
+
+        void WriteSelection(string certifiedDigest) => repository.Write("artifacts/native.json", JsonSerializer.Serialize(new {
+            assets = System.Array.Empty<object>(),
+            aggregates = new[] { new { product = "tool-only", target = "fixture-target", configuration = "release", sha256 = digest } },
+            requests = new[] { new { product = "tool-only", target = "fixture-target", configuration = certifiedConfiguration, digests = new[] { certifiedDigest } } }
+        }));
+
+        Task<int> Evaluate() => ValidationCommand.ExecuteAsync(["backend-inputs", "--plan", repository.PathOf("artifacts/plan/plan.json"),
+            "--target", "fixture-target", "--configuration", "Debug", "--engine-root", repository.PathOf("."), "--dotnet", repository.dotnet,
+            "--selection", repository.PathOf("artifacts/native.json"), "--output", output]);
     }
 
     [Fact]
