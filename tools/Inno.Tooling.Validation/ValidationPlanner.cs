@@ -12,7 +12,7 @@ using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation;
 
-internal static class ValidationPlanner
+internal static partial class ValidationPlanner
 {
     internal static async Task<ValidationPlanningResult> CreateAsync(
         string root,

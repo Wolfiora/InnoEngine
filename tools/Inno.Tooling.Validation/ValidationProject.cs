@@ -20,7 +20,8 @@ internal sealed record ValidationProject(
 ) {
     internal static ValidationProject Read(
         string root,
-        JsonElement snapshot
+        JsonElement snapshot,
+        string? backendTarget = null
     ) {
         JsonElement properties = snapshot.GetProperty("Properties");
         string Value(string name) => properties.GetProperty(name).GetString() ?? string.Empty;
@@ -34,6 +35,9 @@ internal sealed record ValidationProject(
         bool native = false;
         foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
         {
+            string? variantTarget = variant.GetProperty("Properties").GetProperty("InnoNativeTarget").GetString();
+            if (backendTarget is not null && !string.IsNullOrEmpty(variantTarget) && variantTarget != backendTarget)
+                continue;
             foreach (JsonElement import in variant.GetProperty("Imports").EnumerateArray())
                 inputs.Add(Relative(import.GetString()!));
             foreach (JsonProperty group in variant.GetProperty("Items").EnumerateObject())

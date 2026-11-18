@@ -54,11 +54,12 @@ public static class ValidationCommand
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
-        if (arguments.Length == 0 || arguments[0] is not ("plan" or "run" or "full" or "evidence" or "join" or "acceptance" or "resume" or "pack-backends" or "import-backends"))
-            throw new ArgumentException("Usage: validate <plan|run|full|evidence|join|acceptance|resume|pack-backends|import-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]");
+        if (arguments.Length == 0 || arguments[0] is not ("plan" or "run" or "full" or "evidence" or "join" or "acceptance" or "resume" or "pack-backends" or "import-backends" or "backend-inputs"))
+            throw new ArgumentException("Usage: validate <plan|run|full|evidence|join|acceptance|resume|pack-backends|import-backends|backend-inputs> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]");
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         string[]? transportOptions = arguments[0] switch
         {
+            "backend-inputs" => ["--plan", "--engine-root", "--dotnet", "--target", "--output"],
             "pack-backends" => ["--artifacts-path", "--inventory", "--output"],
             "import-backends" => ["--archive", "--sha256", "--target", "--output"],
             _ => null
@@ -74,7 +75,14 @@ public static class ValidationCommand
         {
             if (transportOptions.Any(key => !options.ContainsKey(key)))
                 throw new ArgumentException("Required backend transport options: " + string.Join(", ", transportOptions));
-            if (arguments[0] == "pack-backends")
+            if (arguments[0] == "backend-inputs")
+            {
+                string engine = Path.GetFullPath(options["--engine-root"]);
+                ValidationPlan frozen = ValidationPlanTransport.Read(options["--plan"], engine, options["--dotnet"]);
+                var selection = await ValidationPlanner.BackendInputsAsync(frozen, options["--target"], cancellationToken).ConfigureAwait(false);
+                Inno.Core.IO.AtomicFile.WriteAllBytes(options["--output"], JsonSerializer.SerializeToUtf8Bytes(selection));
+            }
+            else if (arguments[0] == "pack-backends")
                 BackendPrebuiltArchive.Create(options["--artifacts-path"], options["--inventory"], options["--output"], cancellationToken);
             else
                 await BackendPrebuiltArchive.ExtractAsync(options["--archive"], options["--sha256"], options["--target"], options["--output"], cancellationToken).ConfigureAwait(false);

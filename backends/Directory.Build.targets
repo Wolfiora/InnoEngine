@@ -4,10 +4,13 @@
   <!-- Record compiler outputs only. The SDK still owns project references, NuGet runtime assets,
        content deployment and the final product graph on the consuming machine. -->
   <PropertyGroup>
+    <_InnoBackendOwner>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)..', '$(MSBuildProjectFullPath)').Replace('\', '/'))</_InnoBackendOwner>
+    <_InnoConsumeBackend Condition="'$(InnoBackendPrebuiltRoot)' != ''">true</_InnoConsumeBackend>
+    <_InnoConsumeBackend Condition="'$(InnoBackendExportRoot)' != '' and $([System.String]::Copy('$(InnoBackendCompileOwners)').Contains('|$(_InnoBackendOwner)|'))">false</_InnoConsumeBackend>
     <_InnoBackendVariant>$(ArtifactsProjectName)/$(ArtifactsPivots)/$(TargetFramework)</_InnoBackendVariant>
     <_InnoBackendVariant Condition="'$(BindGenExpectedFingerprint)' != ''">$(_InnoBackendVariant)/$(BindGenExpectedFingerprint)</_InnoBackendVariant>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(InnoBackendPrebuiltRoot)' != ''">
+  <PropertyGroup Condition="'$(_InnoConsumeBackend)' == 'true'">
     <CoreBuildDependsOn>
       BuildOnlySettings;
       PrepareForBuild;
@@ -48,9 +51,6 @@
     <Error Condition="'%(_InnoComparedBackendFile.ExistingHash)' != '%(_InnoComparedBackendFile.FileHash)'"
            Text="Backend variants produced conflicting bytes for %(_InnoComparedBackendFile.Identity)." />
     <Copy SourceFiles="@(_InnoBackendExportFile)" DestinationFiles="@(_InnoBackendExportFile->'$(InnoBackendExportRoot)/%(PackagePath)')" />
-    <PropertyGroup>
-      <_InnoBackendOwner>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)..', '$(MSBuildProjectFullPath)').Replace('\', '/'))</_InnoBackendOwner>
-    </PropertyGroup>
     <MakeDir Directories="$(InnoBackendExportRoot)/receipts/$(_InnoBackendVariant)" />
     <WriteLinesToFile File="$(InnoBackendExportRoot)/receipts/$(_InnoBackendVariant)/files.txt"
                       Lines="@(_InnoBackendExportFile->'$(_InnoBackendOwner)|$(Configuration)|%(PackagePath)|%(FileHash)')"
@@ -65,7 +65,7 @@
     </Copy>
   </Target>
 
-  <Target Name="RejectInnoBackendSourceCompilation" BeforeTargets="CoreCompile" Condition="'$(InnoBackendPrebuiltRoot)' != ''">
+  <Target Name="RejectInnoBackendSourceCompilation" BeforeTargets="CoreCompile" Condition="'$(_InnoConsumeBackend)' == 'true'">
     <Error Text="Source compilation of $(MSBuildProjectName) is forbidden when consuming backend prebuilts." />
   </Target>
 </Project>

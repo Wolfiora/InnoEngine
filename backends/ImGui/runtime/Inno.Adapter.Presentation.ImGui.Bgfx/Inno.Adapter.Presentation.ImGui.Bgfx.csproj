@@ -20,7 +20,7 @@
     <ProjectReference Include="../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
   </ItemGroup>
 
-  <Target Name="CompileImGuiShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(InnoBackendPrebuiltRoot)' == '' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'">
+  <Target Name="CompileImGuiShaderGraphs" DependsOnTargets="PrepareInnoBuildTaskHost" Condition="'$(_InnoConsumeBackend)' != 'true' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'">
     <PropertyGroup>
       <_InnoShaderIntermediateRoot>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)', '$(MSBuildProjectDirectory)'))</_InnoShaderIntermediateRoot>
     </PropertyGroup>
@@ -37,7 +37,7 @@
       ToolTarget="$(InnoToolTarget)" />
   </Target>
 
-  <Target Name="IncludeImGuiShaderArtifacts" Condition="'$(InnoBackendPrebuiltRoot)' == '' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileImGuiShaderGraphs">
+  <Target Name="IncludeImGuiShaderArtifacts" Condition="'$(_InnoConsumeBackend)' != 'true' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(InnoBuildPurpose)' != 'ApiReferences'" BeforeTargets="AssignTargetPaths" DependsOnTargets="CompileImGuiShaderGraphs">
     <ItemGroup>
       <EmbeddedResource Include="@(_ImGuiShaderApi-&gt;'$(IntermediateOutputPath)Shaders/%(Identity)/Outputs/%(Identity).bin')">
         <LogicalName>Inno.BuiltInShaders.ImGui.%(Filename)</LogicalName>
