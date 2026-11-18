@@ -43,7 +43,10 @@ for ($iteration = 1; $iteration -le $Iterations; $iteration++) {
     if ($LASTEXITCODE -ne 0) { throw "Hot build $iteration failed; see $log." }
     $timer.Stop()
     $content = Get-Content -LiteralPath $log -Raw
-    $preparations = [regex]::Matches($content, 'INNO-NATIVE-PREPARE[^\r\n]*processes=(\d+)[^\r\n]*bindingGenerations=(\d+)')
+    $consumeOnly = -not [string]::IsNullOrWhiteSpace($selection.properties.InnoNativeDependencyManifest)
+    $operation = if ($consumeOnly) { 'CONSUME' } else { 'PREPARE' }
+    if ($consumeOnly -and $content -match 'INNO-NATIVE-PREPARE') { throw 'Consume-only sampling invoked a source producer.' }
+    $preparations = [regex]::Matches($content, "INNO-NATIVE-$operation[^\r\n]*processes=(\d+)[^\r\n]*bindingGenerations=(\d+)")
     if ($preparations.Count -eq 0) { throw "Build $iteration did not report its Native preparation counters." }
     foreach ($preparation in $preparations) {
         if ($preparation.Groups[1].Value -ne '0' -or $preparation.Groups[2].Value -ne '0') {
@@ -51,7 +54,7 @@ for ($iteration = 1; $iteration -le $Iterations; $iteration++) {
         }
     }
     $requests = [regex]::Matches($content, 'INNO-NATIVE-PREPARE request=([a-f0-9]{64})[^\r\n]*reusedPreparation=(\d+)')
-    if ($requests.Count -ne $preparations.Count) { throw "Build $iteration lacks complete frozen request identities." }
+    if (-not $consumeOnly -and $requests.Count -ne $preparations.Count) { throw "Build $iteration lacks complete frozen request identities." }
     foreach ($request in $requests | Group-Object { $_.Groups[1].Value }) {
         if (@($request.Group | Where-Object { $_.Groups[2].Value -eq '0' }).Count -gt 1) {
             throw "Build $iteration prepared the same frozen native request more than once: $($request.Name)"

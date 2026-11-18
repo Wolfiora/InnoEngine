@@ -338,7 +338,15 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
         DocumentationPageInfo script = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_MEMBER)));
         Assert.Contains("scripting/" + scope.ToLowerInvariant(), script.path);
-        Assert.Contains("## V", catalog.pages.Single(page => page.path == "content/en/api/scripting/" + scope.ToLowerInvariant() + "/index.md").markdown);
+        string scopeDirectory = "content/en/api/scripting/" + scope.ToLowerInvariant();
+        DocumentationPageInfo scopePage = catalog.pages.Single(page => page.path == scopeDirectory + "/index.md");
+        Assert.Contains("_projects/probe/index.md", scopePage.markdown);
+        DocumentationPageInfo projectPage = catalog.pages.Single(page => page.path == scopeDirectory + "/_projects/probe/index.md");
+        Assert.Contains("## Types", projectPage.markdown);
+        DocumentationPageInfo typePage = Assert.Single(catalog.pages.Where(page => page.kind == "api" && page.scope == scope && page.symbols.ContainsKey(C_TYPE)));
+        string typeLink = Path.GetRelativePath(Path.GetDirectoryName(projectPage.path)!, typePage.path).Replace('\\', '/');
+        Assert.Contains("](" + typeLink + ")", projectPage.markdown);
+        Assert.DoesNotContain("/_projects/", script.path);
         foreach (string surface in new[] { "runtime-script", "editor-script" })
         {
             DocumentationHit hit = Assert.Single((await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe", surface, scope: scope))).hits);

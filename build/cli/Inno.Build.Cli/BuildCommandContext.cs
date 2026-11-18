@@ -14,17 +14,22 @@ internal sealed class BuildCommandContext
 {
     internal BuildCommandContext(BuildCommandLine options)
     {
+        nativeDependencies = options.Read("native-dependencies", string.Empty);
         root = ResolveEngineRoot(options.Read("engine-root", string.Empty));
+        if (nativeDependencies.Length > 0)
+            nativeDependencies = Path.GetFullPath(nativeDependencies, root);
         configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
         configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
         toolsTarget = new BuildTargetId(options.Require("tools-target"));
         target = new BuildTargetId(options.Read("target", toolsTarget.value));
         string dotnet = ToolchainEnvironment.ResolveExecutable(options.Read("dotnet", "dotnet"));
-        composition = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!, toolsTarget, dotnet);
+        composition = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!, toolsTarget, dotnet,
+            nativeDependencies.Length == 0 ? null : nativeDependencies);
         distribution = StandardBuildDistribution.Create(composition).build;
     }
 
+    internal string nativeDependencies { get; }
     internal string root { get; }
     internal string configuration { get; }
     internal BuildTargetId target { get; }
@@ -47,7 +52,8 @@ internal sealed class BuildCommandContext
         string project = platform?.editorProject
             ?? throw new NotSupportedException($"Target '{target}' does not provide an Editor product.");
         var native = new NativeBuildContext(root, configuration.ToLowerInvariant());
-        await distribution.ResolveNativeToolchain(target.value).ResolveAsync(native, composition.host,
+        if (nativeDependencies.Length == 0)
+            await distribution.ResolveNativeToolchain(target.value).ResolveAsync(native, composition.host,
             target.value, cancellationToken).ConfigureAwait(false);
         return Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj");
     }
@@ -55,6 +61,7 @@ internal sealed class BuildCommandContext
     internal string[] ProductArguments(string project) =>
     [
         project, "--configuration", configuration,
-        "--disable-build-servers", "-m:1", "-nodeReuse:false"
+        "--disable-build-servers", "-m:1", "-nodeReuse:false",
+        ..(nativeDependencies.Length == 0 ? Array.Empty<string>() : ["-p:InnoNativeDependencyManifest=" + nativeDependencies])
     ];
 }

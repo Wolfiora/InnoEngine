@@ -9,7 +9,8 @@ $root = Join-Path $engineRoot ('artifacts/validation/api-publication/' + [Guid]:
 New-Item -ItemType Directory -Path $root | Out-Null
 if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
 if (!$BuildCli) {
-    $BuildCli = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log')
+    $BuildCli = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
+        -WorkspaceDirectory (Join-Path $root 'artifacts/bootstrap')
 }
 if (!(Test-Path -LiteralPath $BuildCli -PathType Leaf)) { throw 'The actual managed API transport is required.' }
 $oldConfig = $env:GIT_CONFIG_GLOBAL

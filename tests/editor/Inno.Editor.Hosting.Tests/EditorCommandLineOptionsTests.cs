@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Inno.Editor.Hosting;
 using Xunit;
 
@@ -6,6 +7,17 @@ namespace Inno.Editor.Hosting.Tests;
 
 public sealed class EditorCommandLineOptionsTests
 {
+    [Fact]
+    public void DependencySelectionRemainsExplicitAndCannotFallBackToSourcePreparation()
+    {
+        string selection = Path.Combine(Path.GetTempPath(), "native-artifacts.json");
+        Assert.Equal(selection, EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection]).nativeDependencies);
+        Assert.Null(EditorCommandLineOptions.Parse(["project"]).nativeDependencies);
+        Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", "relative.json"]));
+        Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", ""]));
+        Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection, "--native-dependencies", selection]));
+    }
+
     [Fact]
     public void HiddenStartupUsesTheSameBoundedProductOptions()
     {

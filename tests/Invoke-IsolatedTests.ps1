@@ -6,6 +6,7 @@ param(
     [string]$ToolTarget,
     [string]$ProductProperties,
     [string]$ArtifactsPath,
+    [string]$NativeDependencies,
     [string]$Filter,
     [string]$TemporaryDirectory,
     [Parameter(Mandatory)][string]$SdkSnapshot,
@@ -22,6 +23,15 @@ $assemblyEnvironment = @('--environment', "DOTNET_HOST_PATH=$Dotnet",
     '--environment', "PATH=$sdkDirectory$([IO.Path]::PathSeparator)$env:PATH")
 
 $repositoryRoot = Split-Path $PSScriptRoot -Parent
+$executionEnvironment = @('--environment', "INNO_TESTING_REPOSITORY_ROOT=$repositoryRoot")
+if ($ArtifactsPath) {
+    $executionEnvironment += @('--environment', "INNO_TESTING_ARTIFACTS_PATH=$([IO.Path]::GetFullPath($ArtifactsPath, $repositoryRoot))")
+}
+if ($NativeDependencies) {
+    $executionEnvironment += @('--environment', "INNO_TESTING_NATIVE_DEPENDENCIES=$([IO.Path]::GetFullPath($NativeDependencies, $repositoryRoot))")
+}
+$sdkEnvironment += $executionEnvironment
+$assemblyEnvironment += $executionEnvironment
 $solutionPath = [System.IO.Path]::GetFullPath($Solution, $repositoryRoot)
 $resultsRoot = [System.IO.Path]::GetFullPath($ResultsDirectory, $repositoryRoot)
 New-Item -ItemType Directory -Force -Path $resultsRoot | Out-Null
@@ -128,32 +138,73 @@ $projects = @($selectedProjects | ForEach-Object {
         }
 })
 
-foreach ($project in $projects) {
-    Start-Check 'Discovery' $project.FullName
-    try {
-        $matches = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName })
-        $targetPath = @($matches[0].Properties.TargetPath)
-        if ($targetPath.Count -ne 1 -or -not (Test-Path -LiteralPath $targetPath[0])) {
-            Add-CheckResult 'Discovery' $project.FullName 'Blocked' -1 'The compiled test assembly is unavailable.' -Owner $project.FullName
-            continue
-        }
-        $assembly = $targetPath[0]
-        $listed = @(& $Dotnet test $assembly --list-tests --filter $isolatedFilter @assemblyEnvironment 2>&1)
-        $discoveryExit = $LASTEXITCODE
-        $listed | Set-Content -LiteralPath (Join-Path $resultsRoot ($project.BaseName + '.discovery.log')) -Encoding utf8
-        $discoveryErrors = @($listed | Where-Object { $_ -is [System.Management.Automation.ErrorRecord] })
-        if ($discoveryExit -ne 0 -or $discoveryErrors.Count -ne 0) {
-            Add-CheckResult 'Discovery' $project.FullName 'Failed' $discoveryExit ($listed -join [Environment]::NewLine) -Owner $project.FullName
-            continue
-        }
-        $names = @($listed | ForEach-Object {
-            if ($_ -match '^\s+(Inno\.[^\s]+)\s*$') { $Matches[1] }
-        } | Sort-Object -Unique)
-        Add-CheckResult 'Discovery' $project.FullName 'Passed' 0 "$($names.Count) isolated contracts selected." -Owner $project.FullName -Contracts $names
-    } catch {
+$loggerProject = Join-Path $PSScriptRoot 'process/Inno.Testing.Discovery.TestLogger/Inno.Testing.Discovery.TestLogger.csproj'
+$logger = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $loggerProject })
+$assemblies = [Collections.Generic.Dictionary[string,object]]::new($(if ($IsWindows) { [StringComparer]::OrdinalIgnoreCase } else { [StringComparer]::Ordinal }))
+$contracts = @{}
+Start-Check 'Discovery' $solutionPath
+try {
+    if ($logger.Count -ne 1 -or -not (Test-Path -LiteralPath $logger[0].Properties.TargetPath -PathType Leaf)) {
+        throw 'The selected SDK graph must provide the compiled discovery logger.'
+    }
+    foreach ($project in $projects) {
+        $snapshot = @($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName })
+        $assembly = $snapshot[0].Properties.TargetPath
+        if (-not (Test-Path -LiteralPath $assembly -PathType Leaf)) { throw "Compiled test assembly is missing: $assembly" }
+        $assemblies.Add([IO.Path]::GetFullPath($assembly), $project)
+    }
+    if ($assemblies.Count -eq 0) { throw 'No test assemblies were selected for discovery.' }
+
+    # VSTest receives the same testhost environment as the selected executions.
+    $settings = [xml]'<RunSettings><RunConfiguration><EnvironmentVariables /></RunConfiguration></RunSettings>'
+    $variables = $settings.SelectSingleNode('/RunSettings/RunConfiguration/EnvironmentVariables')
+    for ($i = 1; $i -lt $assemblyEnvironment.Count; $i += 2) {
+        $key, $value = $assemblyEnvironment[$i].Split('=', 2)
+        $variable = $settings.CreateElement($key)
+        $variable.InnerText = $value
+        $null = $variables.AppendChild($variable)
+    }
+    $settingsPath = Join-Path $resultsRoot 'discovery.runsettings'
+    $settings.Save($settingsPath)
+    $receipt = Join-Path $resultsRoot ('discovery-' + [Guid]::NewGuid().ToString('N') + '.json')
+    $loggerDirectory = Split-Path $logger[0].Properties.TargetPath -Parent
+    $sources = @($assemblies.Keys)
+    $options = @('--ListTests', "--Settings:$settingsPath", "--TestAdapterPath:$loggerDirectory", "--Logger:InnoDiscovery;Receipt=$receipt")
+    if ($Filter) { $options += "--TestCaseFilter:$Filter" }
+    $log = Join-Path $resultsRoot 'discovery.log'
+    & $Dotnet vstest @sources @options *> $log
+    if ($LASTEXITCODE -ne 0) { throw "VSTest discovery exited $LASTEXITCODE. See $log." }
+    $discovery = Get-Content -LiteralPath $receipt -Raw | ConvertFrom-Json
+    $count = 0
+    foreach ($owner in $discovery.owners) {
+        if (-not $assemblies.ContainsKey($owner.source) -or $owner.count -lt 1) { throw "Unexpected discovery source or count: $($owner.source)" }
+        $contracts.Add($assemblies[$owner.source].FullName, @($owner.contracts))
+        $count += $owner.count
+    }
+    if (-not $discovery.completed -or $count -ne $discovery.discovered) {
+        throw "VSTest did not complete the reported discovery inventory. See $log. $($discovery.errors -join [Environment]::NewLine)"
+    }
+} catch {
+    foreach ($project in $projects) {
         Add-CheckResult 'Discovery' $project.FullName 'Failed' -1 $_.Exception.Message -Owner $project.FullName
+    }
+    throw
+}
+
+foreach ($project in $projects) {
+    if (-not $contracts.ContainsKey($project.FullName) -and -not $Filter) {
+        Add-CheckResult 'Discovery' $project.FullName 'Failed' -1 'The compiled owner discovered zero test cases.' -Owner $project.FullName
         continue
     }
+    $names = [string[]]@()
+    if ($contracts.ContainsKey($project.FullName)) { $names = $contracts[$project.FullName] }
+    Add-CheckResult 'Discovery' $project.FullName 'Passed' 0 "$($names.Count) isolated contracts selected." -Owner $project.FullName -Contracts $names
+}
+
+foreach ($project in $projects) {
+    if (-not $contracts.ContainsKey($project.FullName)) { continue }
+    $names = $contracts[$project.FullName]
+    $assembly = ($snapshots | Where-Object { [IO.Path]::GetFullPath($_.Path) -eq $project.FullName }).Properties.TargetPath
     foreach ($name in $names) {
         # A failed independent contract does not prevent the remaining isolated hosts from running.
         $caseFilter = "($isolatedFilter)&(FullyQualifiedName=$name)"

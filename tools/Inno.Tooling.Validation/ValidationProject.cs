@@ -15,7 +15,8 @@ internal sealed record ValidationProject(
     bool test,
     bool native,
     bool reusable,
-    string productTarget
+    string productTarget,
+    bool requiresNativeProducer
 ) {
     internal static ValidationProject Read(
         string root,
@@ -36,6 +37,9 @@ internal sealed record ValidationProject(
             foreach (JsonElement import in variant.GetProperty("Imports").EnumerateArray())
                 inputs.Add(Relative(import.GetString()!));
             foreach (JsonProperty group in variant.GetProperty("Items").EnumerateObject())
+            {
+                if (group.Name is "PackageReference" or "Using" or "InnoNativeDependency")
+                    continue;
                 foreach (JsonElement item in group.Value.EnumerateArray())
                     if (item.TryGetProperty("FullPath", out JsonElement fullPath) && !string.IsNullOrEmpty(fullPath.GetString()))
                     {
@@ -43,15 +47,17 @@ internal sealed record ValidationProject(
                         if (group.Name == "ProjectReference")
                             references.Add(Relative(fullPath.GetString()!));
                     }
+            }
             JsonElement effective = variant.GetProperty("Properties");
             native |= !string.IsNullOrEmpty(effective.GetProperty("InnoTestNativeProduct").GetString())
                 || !string.IsNullOrEmpty(effective.GetProperty("InnoProductId").GetString())
-                || effective.GetProperty("BindGenGeneratedBindings").GetString()?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+                || variant.GetProperty("Items").GetProperty("InnoNativeDependency").GetArrayLength() != 0;
         }
         return new(path, references.Order(StringComparer.Ordinal).ToArray(),
             inputs.Order(StringComparer.Ordinal).ToArray(), Value("InnoValidationLayer"), Value("InnoValidationEnvironment"),
             Value("IsTestProject").Equals("true", StringComparison.OrdinalIgnoreCase),
             native,
-            !Value("InnoValidationReusable").Equals("false", StringComparison.OrdinalIgnoreCase), Value("InnoProductTarget"));
+            !Value("InnoValidationReusable").Equals("false", StringComparison.OrdinalIgnoreCase), Value("InnoProductTarget"),
+            Value("InnoValidationRequiresNativeProducer").Equals("true", StringComparison.OrdinalIgnoreCase));
     }
 }

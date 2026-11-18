@@ -29,6 +29,7 @@
       Condition="'$(InnoBgfxShaderTarget)' == '' or '@(_CompositionShaderApi)' == ''"
       Text="BGFX composition shader compilation requires the product's explicit shader platform and graphics API set." />
     <CompileShaderTask
+      NativeDependencyManifestPath="$(InnoNativeDependencyManifest)"
       EngineRoot="$(InnoShaderToolSourceRoot)"
       Configuration="$(Configuration)"
       AssetRoot="$(MSBuildProjectDirectory)/Shaders"
@@ -38,6 +39,7 @@
       OutputFile="$(_InnoShaderIntermediateRoot)/Shaders/Composition/%(_CompositionShaderApi.Identity)/Outputs/Composition.%(_CompositionShaderApi.Identity).bin"
       ToolTarget="$(InnoToolTarget)" />
     <CompileShaderTask
+      NativeDependencyManifestPath="$(InnoNativeDependencyManifest)"
       EngineRoot="$(InnoShaderToolSourceRoot)"
       Configuration="$(Configuration)"
       AssetRoot="$(MSBuildProjectDirectory)/Shaders"
@@ -65,6 +67,10 @@
 
   <ItemGroup>
     <_CompositionShaderApi Include="$(InnoBgfxShaderApis)" Condition="'$(InnoBgfxShaderApis)' != ''" />
+    <InnoNativeDependency Include="shader-tools" Condition="'$(InnoNativeTarget)' != '' and '$(InnoBuildPurpose)' != 'ApiReferences'">
+      <TargetId>$(InnoToolTarget)</TargetId>
+      <Configuration>Release</Configuration>
+    </InnoNativeDependency>
     <AdditionalCompileInputs Include="Shaders/**/*" />
     <InnoBuildInputProject Include="../../../../build/tasks/Inno.Build.Tasks/Inno.Build.Tasks.csproj">
       <GlobalPropertiesToRemove>RuntimeIdentifier;InnoNativeTarget;InnoProductTarget;InnoProductBuildProperties;InnoNativeBindingSelection;InnoNativeBuildFingerprint</GlobalPropertiesToRemove>

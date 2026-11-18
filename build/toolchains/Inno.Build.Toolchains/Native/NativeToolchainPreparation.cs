@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
 
@@ -27,7 +28,8 @@ public static class NativeToolchainPreparation
         static variable => variable, static _ => string.Empty, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Validates and freezes a provider's complete tool selection before product staging.
+    /// Validates and freezes a provider's complete tool selection before product staging,
+    /// including CMake data from its physical installation rather than a shared command prefix.
     /// </summary>
     /// <param name="targetId">
     /// The explicit requested target.
@@ -62,6 +64,9 @@ public static class NativeToolchainPreparation
     /// <exception cref="FileNotFoundException">
     /// A selected SDK input or executable is absent.
     /// </exception>
+    /// <exception cref="IOException">
+    /// A selected CMake executable alias cannot be resolved to its installation.
+    /// </exception>
     public static NativeToolchainSelection Freeze(
         string targetId,
         BuildHostDescriptor host,
@@ -76,7 +81,8 @@ public static class NativeToolchainPreparation
         var complete = new List<string>(inputs);
         if (tools.TryGetValue("cmake", out string? cmake))
         {
-            string modules = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(cmake)!, "..", "share"));
+            string physicalCMake = new PhysicalPathResolver().Resolve(cmake);
+            string modules = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(physicalCMake)!, "..", "share"));
             if (Directory.Exists(modules))
                 complete.Add(modules);
         }

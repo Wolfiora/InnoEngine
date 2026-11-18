@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestSupportProject>true</IsTestSupportProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel"
+      HintPath="$(MSBuildToolsPath)/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll" Private="false" />
+  </ItemGroup>
+</Project>

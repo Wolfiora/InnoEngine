@@ -27,14 +27,19 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
     /// <param name="aggregateDirectory">
     /// A complete aggregate install directory, or null for individual products.
     /// </param>
+    /// <param name="aggregateRecipe">
+    /// The aggregate producer recipe retained for dependency export.
+    /// </param>
     public ProductNativeBuildResult(
         IEnumerable<NativeBuildProduct> products,
         NativeBindingGenerationResult bindings,
-        string? aggregateDirectory = null
+        string? aggregateDirectory = null,
+        NativeBuildRecipe? aggregateRecipe = null
     ) {
         m_products = products.ToArray();
         m_bindings = bindings;
         this.aggregateDirectory = aggregateDirectory;
+        this.aggregateRecipe = aggregateRecipe;
     }
 
     /// <summary>
@@ -46,6 +51,26 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
     /// Gets the complete aggregate install directory, or null for individually published products.
     /// </summary>
     public string? aggregateDirectory { get; }
+
+    /// <summary>
+    /// Gets the borrowed immutable binding descriptors protected by this result's lifetime.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// The owning result has been disposed.
+    /// </exception>
+    public IReadOnlyDictionary<string, NativeBindingGenerationDescriptor> bindingGenerations
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(m_disposed != 0, this);
+            return m_bindings;
+        }
+    }
+
+    /// <summary>
+    /// Gets the aggregate producer's actual recipe for portable provenance, or null for imported or individual products.
+    /// </summary>
+    public NativeBuildRecipe? aggregateRecipe { get; }
 
 
     /// <summary>

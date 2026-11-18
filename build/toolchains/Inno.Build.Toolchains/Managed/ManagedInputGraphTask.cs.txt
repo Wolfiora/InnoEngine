@@ -255,15 +255,15 @@ public sealed class ManagedInputGraphTask : Task
     }
     private bool CaptureRepository(Dictionary<string, string> globals)
     {
-        string[] propertyNames = ["AssemblyName", "OutputType", "InnoProductId", "InnoProductTarget", "InnoNativeTarget",
-            "ImplicitUsings", "TargetPath", "IsTestProject", "IsRoslynComponent", "TargetFramework", "RuntimeIdentifier",
+        string[] propertyNames = ["AssemblyName", "OutputType", "InnoProductId", "InnoProductTarget", "InnoNativeTarget", "InnoBindingProductId",
+            "ImplicitUsings", "TargetPath", "IsTestProject", "IsTestSupportProject", "IsRoslynComponent", "TargetFramework", "RuntimeIdentifier",
             "InnoTestNativeProduct", "InnoTestNativeTarget", "InnoValidationLayer", "InnoValidationEnvironment",
-            "InnoValidationIsolation", "InnoValidationReusable", "NETCoreSdkVersion", "NETCoreSdkRuntimeIdentifier", "ProjectAssetsFile",
+            "InnoValidationIsolation", "InnoValidationReusable", "InnoValidationRequiresNativeProducer", "NETCoreSdkVersion", "NETCoreSdkRuntimeIdentifier", "ProjectAssetsFile",
             "InnoValidationBackendPattern", "NetCoreTargetingPackRoot",
             "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks", "BindGenGeneratedBindings",
             "InnoDevelopmentTarget", "InnoDevelopmentEditorBuildProperties", "InnoDevelopmentEditorProject"];
-        string[] itemNames = ["ProjectReference", "Compile", "Using", "EmbeddedResource", "Content", "None", "Analyzer",
-            "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationInput"];
+        string[] itemNames = ["ProjectReference", "PackageReference", "Compile", "Using", "EmbeddedResource", "Content", "None", "Analyzer",
+            "AdditionalFiles", "EditorConfigFiles", "AdditionalCompileInputs", "InnoBuildInputProject", "InnoValidationInput", "InnoNativeDependency"];
         var snapshots = new List<object>();
         using var collection = new ProjectCollection(globals);
         var elapsed = Stopwatch.StartNew();

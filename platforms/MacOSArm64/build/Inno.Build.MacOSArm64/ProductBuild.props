@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoBindingProductId>player</InnoBindingProductId>
     <InnoBgfxShaderTarget>macos-arm64</InnoBgfxShaderTarget>
     <InnoBgfxShaderApis>Metal;Vulkan;OpenGL</InnoBgfxShaderApis>
   </PropertyGroup>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestSupportProject>true</IsTestSupportProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Tools/Inno.Build.Toolchains.Bgfx.Tools.csproj" />
+    <ProjectReference Include="../../../../../src/services/rendering/Inno.Rendering/Inno.Rendering.csproj" />
+  </ItemGroup>
+</Project>

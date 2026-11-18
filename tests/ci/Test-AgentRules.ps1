@@ -99,9 +99,28 @@ function Test-Translation($unit, [string]$source, [string]$target) {
     }
     for ($index = 0; $index -lt $sourceLines.Count; $index++) {
         $line = $translation.lines[$index]
+        $targetHash = $line.targetHash
+        $amendments = @($translation.amendments | Where-Object { $null -ne $_ -and $_.ordinal -eq $index + 1 })
+        if ($amendments.Count -gt 1) { throw "Duplicate approved rule amendment: $($unit.id)" }
+        if ($amendments.Count -eq 1) {
+            $amendment = $amendments[0]
+            if ([string]::IsNullOrWhiteSpace($amendment.approval) -or $amendment.previousHash -cne $line.targetHash -or
+                $amendment.currentHash -cnotmatch '^[a-f0-9]{64}$' -or [string]::IsNullOrWhiteSpace($amendment.review)) {
+                throw "Invalid approved rule amendment: $($unit.id)"
+            }
+            $amendmentReview = [IO.Path]::GetFullPath($amendment.review, $repository)
+            if (-not $amendmentReview.StartsWith($reviewRoot, [StringComparison]::Ordinal) -or
+                -not (Test-Path -LiteralPath $amendmentReview -PathType Leaf)) { throw "Missing amendment review: $($unit.id)" }
+            $targetHash = $amendment.currentHash
+        }
         if ($line.ordinal -ne $index + 1 -or $line.sourceHash -cne (Get-Hash (Normalize-RuleLine $sourceLines[$index])) -or
-            $line.targetHash -cne (Get-Hash (Normalize-RuleLine $targetLines[$index]))) {
+            $targetHash -cne (Get-Hash (Normalize-RuleLine $targetLines[$index]))) {
             throw "Changed or unmapped translation clause: $($unit.id) line $($index + 1)"
+        }
+    }
+    foreach ($amendment in $translation.amendments) {
+        if ($null -ne $amendment -and ($amendment.ordinal -lt 1 -or $amendment.ordinal -gt $sourceLines.Count)) {
+            throw "Unmapped approved rule amendment: $($unit.id)"
         }
     }
 }

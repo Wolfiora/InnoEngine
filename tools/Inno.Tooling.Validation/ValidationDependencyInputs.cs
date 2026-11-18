@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using Inno.Core.IO;
 
@@ -24,6 +25,23 @@ internal sealed class ValidationDependencyInputs(
     {
         m_hashes.Clear();
         m_packages.Clear();
+    }
+
+    internal static string[] RestoredPackageDirectories(
+        IEnumerable<ValidationContext> contexts,
+        CancellationToken cancellation
+    ) {
+        var packages = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        foreach (string assets in contexts.SelectMany(static context => context.sdkGraph.EnumerateArray())
+            .SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
+            .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
+            .Where(static path => !string.IsNullOrWhiteSpace(path)).Distinct(StringComparer.Ordinal))
+        {
+            cancellation.ThrowIfCancellationRequested();
+            if (File.Exists(assets))
+                packages.UnionWith(ReadPackages(assets, allowMissing: true).Select(static package => package.Value));
+        }
+        return packages.Order(StringComparer.Ordinal).ToArray();
     }
 
     internal bool Matches(
@@ -48,7 +66,7 @@ internal sealed class ValidationDependencyInputs(
             if (string.IsNullOrWhiteSpace(assets))
                 throw new InvalidDataException("The SDK did not declare restored inputs for " + check.id);
             assets = Path.GetFullPath(assets);
-            inputs[assets] = Hash(assets);
+            inputs[ValidationPlanTransport.Logical(plan.root, plan.dotnet, assets)] = HashAssets(assets);
             if (!File.Exists(assets))
             {
                 if (!allowMissing)
@@ -59,12 +77,41 @@ internal sealed class ValidationDependencyInputs(
             {
                 if (!allowMissing && !Directory.Exists(package))
                     throw new InvalidDataException("A restored package is unavailable: " + package);
-                inputs[package] = Hash(package);
+                inputs[ValidationPlanTransport.Logical(plan.root, plan.dotnet, package)] = Hash(package);
             }
         }
         if (inputs.Count == 0)
             throw new InvalidDataException("Required restored dependency discovery was empty: " + check.id);
         return ValidationInputs.Identity(inputs);
+    }
+
+    private string HashAssets(string path)
+    {
+        string key = "logical-assets:" + path;
+        if (m_hashes.TryGetValue(key, out string? identity))
+            return identity;
+        cancellation.ThrowIfCancellationRequested();
+        identity = File.Exists(path)
+            ? Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(LogicalAssets(JsonNode.Parse(File.ReadAllBytes(path))))))
+            : "missing";
+        m_hashes.Add(key, identity);
+        return identity;
+    }
+
+    private JsonNode? LogicalAssets(JsonNode? node)
+    {
+        if (node is JsonObject properties)
+        {
+            var result = new JsonObject();
+            foreach (var property in properties)
+                result.Add(ValidationPlanTransport.Logical(plan.root, plan.dotnet, property.Key), LogicalAssets(property.Value));
+            return result;
+        }
+        if (node is JsonArray items)
+            return new JsonArray(items.Select(LogicalAssets).ToArray());
+        if (node is JsonValue value && value.TryGetValue(out string? text))
+            return JsonValue.Create(ValidationPlanTransport.Logical(plan.root, plan.dotnet, text));
+        return node?.DeepClone();
     }
 
     internal Dictionary<string, string> CapturePackages(ValidationCheck check)
@@ -95,6 +142,15 @@ internal sealed class ValidationDependencyInputs(
     ) {
         if (m_packages.TryGetValue(assets, out KeyValuePair<string, string>[]? packages))
             return packages;
+        packages = ReadPackages(assets, allowMissing);
+        m_packages.Add(assets, packages);
+        return packages;
+    }
+
+    private static KeyValuePair<string, string>[] ReadPackages(
+        string assets,
+        bool allowMissing
+    ) {
         using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(assets));
         string[] folders = document.RootElement.GetProperty("packageFolders").EnumerateObject()
             .Select(static folder => Path.GetFullPath(folder.Name)).ToArray();
@@ -109,8 +165,7 @@ internal sealed class ValidationDependencyInputs(
                 ?? (allowMissing && candidates.Length != 0 ? candidates[0]
                     : throw new InvalidDataException("A restored package is unavailable: " + library.Name)));
         }
-        m_packages.Add(assets, packages = selected.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray());
-        return packages;
+        return selected.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
     }
 
     private string Hash(string path)

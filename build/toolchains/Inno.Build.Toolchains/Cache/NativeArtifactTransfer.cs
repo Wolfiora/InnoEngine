@@ -26,6 +26,9 @@ public static class NativeArtifactTransfer
     /// <param name="cancellationToken">
     /// Cancels copying before the completed archive replaces its previous version.
     /// </param>
+    /// <param name="selectedArtifacts">
+    /// Optional exact artifact paths relative to the artifacts root. Every selected generation must be exported.
+    /// </param>
     /// <returns>
     /// The number of verified generations exported.
     /// </returns>
@@ -38,7 +41,8 @@ public static class NativeArtifactTransfer
     public static async Task<int> ExportAsync(
         string engineRoot,
         string archivePath,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        IReadOnlySet<string>? selectedArtifacts = null
     ) {
         string root = Path.GetFullPath(engineRoot);
         string destination = PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(archivePath));
@@ -55,12 +59,16 @@ public static class NativeArtifactTransfer
                 {
                     if (owner.directory != Path.Combine(root, "artifacts", owner.id))
                         throw new InvalidDataException("Native transfer encountered a foreign publisher registration.");
-                    using FileLease activity = await FileLease.AcquireSharedAsync(owner.coordinationPath,
-                        TimeSpan.FromSeconds(30), cancellationToken).ConfigureAwait(false);
+                    if (selectedArtifacts is not null && !selectedArtifacts.Any(path => path.StartsWith(owner.id + "/", StringComparison.Ordinal)))
+                        continue;
+                    using FileLease activity = await new BuildCachePublisher(owner.directory, BuildCacheArtifactRole.ImmutableArtifact)
+                        .AcquireUseAsync(cancellationToken).ConfigureAwait(false);
                     foreach (BuildCacheArtifactDescriptor artifact in owner.ReadArtifacts(cancellationToken)
                         .Where(static artifact => artifact.role == BuildCacheArtifactRole.ImmutableArtifact).OrderBy(static artifact => artifact.directory, StringComparer.Ordinal))
                     {
                         string relative = Path.GetRelativePath(Path.Combine(root, "artifacts"), artifact.directory).Replace('\\', '/');
+                        if (selectedArtifacts is not null && !selectedArtifacts.Contains(relative))
+                            continue;
                         string[] parts = RequireArtifactPath(relative);
                         using BuildArtifactReadLease reading = await BuildArtifactReadLease.AcquireAsync(artifact.directory, owner.directory,
                             parts[3], OutputRoots(parts[0]), cancellationToken).ConfigureAwait(false);
@@ -80,6 +88,8 @@ public static class NativeArtifactTransfer
                 }
                 stream.Flush(flushToDisk: true);
             }
+            if (selectedArtifacts is not null && count != selectedArtifacts.Count)
+                throw new InvalidDataException("Native export did not find every selected registered generation.");
             if (count == 0)
                 throw new InvalidDataException("No registered immutable native generations are available for export.");
             cancellationToken.ThrowIfCancellationRequested();

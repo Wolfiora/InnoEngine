@@ -108,14 +108,7 @@ internal static partial class ArchitectureRules
             foreach (string project in EnumerateFiles(Path.Combine(repositoryRoot, rootName), "*.csproj"))
             {
                 XDocument document = XDocument.Load(project);
-                bool test = Relative(
-                    repositoryRoot,
-                    project
-                ).Contains(
-                    "/tests/",
-                    StringComparison.Ordinal
-                )
-                    && document.Descendants("IsTestProject").Any(static value => value.Value == "true");
+                bool test = RepositorySourceInventory.IsTestPath(Relative(repositoryRoot, project));
                 if (document.Descendants("OutputType").Any(static value => value.Value == "Exe") && !test && !executables.Contains(Path.GetFileNameWithoutExtension(project)))
                     failures.Add($"{Relative(repositoryRoot, project)}: only the Editor and Build development entries may be production executable projects.");
                 if (Path.GetFileNameWithoutExtension(project).StartsWith(
@@ -170,7 +163,7 @@ internal static partial class ArchitectureRules
                 if (IsGenerated(source))
                     continue;
                 ValidateForbiddenImplementationNames(relative, source, failures);
-                if ((relative.StartsWith("tests/", StringComparison.Ordinal) || relative.Contains("/tests/", StringComparison.Ordinal)))
+                if ((RepositorySourceInventory.IsTestPath(relative)))
                     ValidateTestSource(relative, source, failures);
                 else
                     ValidateProductionSource(relative, source, failures);

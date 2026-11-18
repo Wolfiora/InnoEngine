@@ -1,11 +1,16 @@
 param(
     [Parameter(Mandatory)][string]$BaseRevision,
     [Parameter(Mandatory)][string]$ExpectedCommit,
-    [Parameter(Mandatory)][ValidateSet('Plan', 'Run', 'Retain')][string]$Stage,
+    [Parameter(Mandatory)][ValidateSet('Plan', 'Run', 'Join')][string]$Stage,
     [string]$Dotnet = 'dotnet',
-    [switch]$Full,
-    [switch]$Extended,
-    [ValidateSet('success', 'failure', 'cancelled', 'skipped')][string]$ValidationConclusion
+    [ValidateSet('fast', 'pull-request', 'master', 'full', 'performance')][string]$Profile = 'pull-request',
+    [string]$Shard,
+    [string]$Platform,
+    [string]$PlanDirectory = 'artifacts/validation/ci',
+    [string]$OutputDirectory = 'artifacts/validation/ci',
+    [string]$PrerequisitesDirectory,
+    [string]$NativeDependencies = 'build/dependencies/native-artifacts.json',
+    [long]$SourceRunId = 0
 )
 
 $ErrorActionPreference = 'Stop'
@@ -14,77 +19,114 @@ $Dotnet = (Get-Command $Dotnet -ErrorAction Stop).Source
 Set-Location -LiteralPath $repository
 $actual = (& git rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0 -or $actual -cne $ExpectedCommit) { throw 'Checkout is not the requested merge candidate.' }
-$output = Join-Path $repository 'artifacts/validation/ci'
-$drive = [IO.DriveInfo]::new([IO.Path]::GetPathRoot($repository))
-Write-Host "Validation stage ${Stage}; available disk bytes: $($drive.AvailableFreeSpace)."
-if ($Stage -eq 'Plan') {
-    if (Test-Path -LiteralPath $output) { throw 'A CI attempt must retain a distinct result directory.' }
-    New-Item -ItemType Directory -Path $output | Out-Null
-    $assembly = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $output 'bootstrap.log'))
-    @{ assembly = $assembly[0]; sha256 = (Get-FileHash -LiteralPath $assembly[0]).Hash } | ConvertTo-Json | Set-Content (Join-Path $output 'entry.json')
-    & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $output `
-        --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() 2>&1 | Tee-Object -FilePath (Join-Path $output 'planning.log')
-    if ($LASTEXITCODE -eq 2) {
-        $initial = Join-Path $output 'initial-preparation.json'
-        Copy-Item -LiteralPath (Join-Path $output 'preparation.json') -Destination $initial
-        & "$PSScriptRoot/Prepare-ValidationSources.ps1" -RequirementsPath $initial -ExpectedCommit $ExpectedCommit `
-            *> (Join-Path $output 'source-preparation.log')
-        # Availability and content identity changed. Never execute the preflight inputs or reuse its partial selection as a plan.
-        & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $output `
-            --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() `
-            2>&1 | Tee-Object -FilePath (Join-Path $output 'planning-prepared.log')
-    }
+$planRoot = [IO.Path]::GetFullPath($PlanDirectory, $repository)
+$output = [IO.Path]::GetFullPath($OutputDirectory, $repository)
+foreach ($owned in @($planRoot, $output)) {
+    $relative = [IO.Path]::GetRelativePath($repository, $owned)
+    if ([IO.Path]::IsPathRooted($relative) -or $relative -notmatch '^artifacts[\\/]validation[\\/]') { throw 'CI output must belong to the explicit validation artifact owner.' }
+}
+if ($Stage -ceq 'Plan') {
+    if (Test-Path -LiteralPath $planRoot) { throw 'A CI attempt must retain a distinct plan directory.' }
+    New-Item -ItemType Directory -Path $planRoot | Out-Null
+    $assembly = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $planRoot 'bootstrap.log'))
+    @{ assembly = [IO.Path]::GetRelativePath($repository, $assembly[0]); sha256 = (Get-FileHash -LiteralPath $assembly[0]).Hash } |
+        ConvertTo-Json | Set-Content (Join-Path $planRoot 'entry.json')
+    & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot `
+        --profile $Profile --native-dependencies $NativeDependencies 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning.log')
     if ($LASTEXITCODE -ne 0) { throw 'Validation plan generation failed; no downstream stage can certify success.' }
-    $plan = Get-Content -LiteralPath (Join-Path $output 'plan.json') -Raw | ConvertFrom-Json
-    if (@($plan.checks).Count -eq 0) { throw 'Required hosted validation discovery is empty.' }
-    "native=$(($null -ne $plan.contexts.native).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+    $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
+    if (@($plan.nativeRequests).Count -gt 0 -and (& "$PSScriptRoot/Initialize-NativeDependencyWorkloads.ps1" -Targets @($plan.nativeRequests.target) -Dotnet $Dotnet)) {
+        Copy-Item (Join-Path $planRoot 'plan.json') (Join-Path $planRoot 'plan-before-workloads.json')
+        & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot `
+            --profile $Profile --native-dependencies $NativeDependencies 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning-prepared.log')
+        if ($LASTEXITCODE -ne 0) { throw 'Validation planning failed after explicit SDK preparation.' }
+        $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
+    }
+    if (@($plan.checks).Count -eq 0 -or @($plan.shards).Count -eq 0) { throw 'Required hosted validation discovery is empty.' }
+    $requests = @($plan.nativeRequests)
+    if ($requests.Count -gt 0) {
+        # The planner emits distinct requests in canonical target, configuration and product order.
+        $bytes = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json -InputObject $requests -Compress))
+        $scope = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes)).ToLowerInvariant()
+        "nativeCacheScope=$scope" >> $env:GITHUB_OUTPUT
+    }
+    "native=$(($requests.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+    "shards=$(ConvertTo-Json -InputObject @($plan.shards.id) -Compress)" >> $env:GITHUB_OUTPUT
     return
 }
-$entry = Get-Content -LiteralPath (Join-Path $output 'entry.json') -Raw | ConvertFrom-Json
-if ((Get-FileHash -LiteralPath $entry.assembly).Hash -cne $entry.sha256) { throw 'The prepared validation entry changed before execution.' }
-$assembly = @($entry.assembly)
-$cache = Join-Path $repository 'artifacts/validation/native-cache.zip'
-if ($Stage -eq 'Retain') {
-    if (-not $ValidationConclusion) { throw 'Retention requires the original validation conclusion.' }
-    if ($ValidationConclusion -cne 'success' -or -not (Test-Path -LiteralPath $cache)) {
-        $cache = Join-Path $repository 'artifacts/validation/completed-native-cache.zip'
-        & $Dotnet $assembly[0] validate evidence --engine-root $repository --dotnet $Dotnet `
-            --plan (Join-Path $output 'plan.json') --evidence (Join-Path $output 'results.json') `
-            --cache-output $cache --output (Join-Path $output 'retention') *> (Join-Path $output 'retention.log')
-        $retentionExit = $LASTEXITCODE
-        if ($ValidationConclusion -ceq 'success' -and $retentionExit -ne 0) { throw 'Successful validation failed artifact retention or evidence reconciliation.' }
-        if ($retentionExit -ne 0) { Write-Host 'Original validation remains unsuccessful; only completely exported immutable artifacts can be retained.' }
+$entry = Get-Content -LiteralPath (Join-Path $planRoot 'entry.json') -Raw | ConvertFrom-Json
+$assembly = [IO.Path]::GetFullPath($entry.assembly, $repository)
+if ((Get-FileHash -LiteralPath $assembly).Hash -cne $entry.sha256) { throw 'The prepared validation entry changed before execution.' }
+$planPath = Join-Path $planRoot 'plan.json'
+$plan = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json
+if ($plan.commit -cne $ExpectedCommit) { throw 'The frozen plan belongs to another candidate.' }
+New-Item -ItemType Directory -Path $output -Force | Out-Null
+if ($Stage -ceq 'Join') {
+    if (-not $PrerequisitesDirectory -or -not $Platform) { throw 'Host certification requires a registered platform and all shard receipts.' }
+    & $Dotnet $assembly validate join --engine-root $repository --dotnet $Dotnet --plan $planPath --output $output `
+        --prerequisites $PrerequisitesDirectory *> (Join-Path $output 'join.log')
+    if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $output 'join.log') -Tail 20 | Out-Host; throw 'The required shard matrix did not certify the frozen plan.' }
+    Copy-Item -LiteralPath $planPath -Destination (Join-Path $output 'plan.json') -Force
+    $receipt = & "$PSScriptRoot/Test-ValidationReport.ps1" -PlanPath (Join-Path $output 'plan.json') -ResultsPath (Join-Path $output 'results.json') `
+        -ExpectedCommit $ExpectedCommit -JobConclusion success
+    $shards = foreach ($item in $plan.shards) {
+        $path = Join-Path $PrerequisitesDirectory "$($item.id)/results.json"
+        [pscustomobject]@{ id = $item.id; sha256 = (Get-FileHash -LiteralPath $path).Hash.ToLowerInvariant() }
     }
-    if (Test-Path -LiteralPath $cache) {
-        # Normalize only the newly exported immutable archive for the cache action's stable transport path.
-        $transport = Join-Path $repository 'artifacts/validation/native-cache.zip'
-        if ($cache -cne $transport) {
-            Copy-Item -LiteralPath $cache -Destination $transport -Force
-            if ((Get-FileHash -LiteralPath $transport).Hash -cne (Get-FileHash -LiteralPath $cache).Hash) {
-                throw 'The immutable cache transport copy differs from its completed export.'
-            }
-        }
-        "native=$cache" >> $env:GITHUB_OUTPUT
-    }
+    $receipt | Add-Member -NotePropertyName shards -NotePropertyValue @($shards)
+    $receipt | Add-Member -NotePropertyName platform -NotePropertyValue $Platform
+    $receipt | Add-Member -NotePropertyName executor -NotePropertyValue $entry.sha256
+    $receipt | ConvertTo-Json -Depth 12 | Set-Content (Join-Path $output 'receipt.json')
     return
 }
-& $Dotnet $assembly[0] validate run --engine-root $repository --dotnet $Dotnet --plan (Join-Path $output 'plan.json') --output $output `
-    --full $Full.ToString().ToLowerInvariant() --extended $Extended.ToString().ToLowerInvariant() `
-    --cache-input $cache --cache-output $cache `
-    2>&1 | Tee-Object -FilePath (Join-Path $output 'validation.log')
-if ($LASTEXITCODE -ne 0) { throw "Required validation failed; inspect the retained plan, results and first failure in $output." }
-& $Dotnet $assembly[0] validate evidence --engine-root $repository --dotnet $Dotnet `
-    --plan (Join-Path $output 'plan.json') --evidence (Join-Path $output 'results.json') --output (Join-Path $output 'reconciliation') `
-    *> (Join-Path $output 'evidence.log')
-if ($LASTEXITCODE -ne 0) { throw 'Completed evidence does not match the current inputs and outputs.' }
-& "$PSScriptRoot/Test-ValidationReport.ps1" -PlanPath (Join-Path $output 'plan.json') -ResultsPath (Join-Path $output 'results.json') `
-    -ExpectedCommit $ExpectedCommit -JobConclusion success | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $output 'receipt.json')
-$plan = Get-Content -LiteralPath (Join-Path $output 'plan.json') -Raw | ConvertFrom-Json
-if ($plan.full) {
-    $bundle = @($plan.checks | Where-Object { $_.id -ceq 'release-bundle' -and $null -eq $_.exclusion })
-    if ($bundle.Count -ne 1) { throw 'Full hosted validation lacks its required Release product artifact check.' }
-    "deliverables=$($plan.artifacts)/deliverables" >> $env:GITHUB_OUTPUT
+if (-not $Shard) { throw 'CI execution requires an explicit frozen shard.' }
+$selected = @($plan.shards | Where-Object id -CEQ $Shard)
+if ($selected.Count -eq 0) {
+    if ($Shard -cnotin @('managed', 'native')) { throw 'An unknown required shard cannot be skipped.' }
+    Write-Host "The frozen plan declares no $Shard shard. The final gate verifies complete coverage independently."
+    'selected=false' >> $env:GITHUB_OUTPUT
+    return
+}
+if ($selected.Count -ne 1) { throw 'The frozen shard is duplicated.' }
+'selected=true' >> $env:GITHUB_OUTPUT
+# Planning already prepared this runner's SDK workloads before freezing the environment.
+$prerequisites = @()
+if (@($selected[0].prerequisites).Count -gt 0) {
+    if (-not $PrerequisitesDirectory) { throw 'This shard requires completed prerequisite receipts.' }
+    $prerequisites = @('--prerequisites', $PrerequisitesDirectory)
+}
+if ($Shard -ceq 'native' -and @($plan.nativeRequests).Count -gt 0) {
+    $bootstrap = Join-Path $repository 'artifacts/validation/native-entry'
+    $project = Join-Path $repository 'entry/InnoEngine.Build/InnoEngine.Build.csproj'
+    & $Dotnet build $project --configuration Debug --artifacts-path $bootstrap --disable-build-servers -m:2 -nr:false `
+        *> (Join-Path $output 'native-entry.log')
+    if ($LASTEXITCODE -ne 0) { throw 'Native composition entry preparation failed.' }
+    $nativeEntry = @(& $Dotnet msbuild $project -nologo -p:Configuration=Debug "-p:ArtifactsPath=$bootstrap" -getProperty:TargetPath)
+    if ($LASTEXITCODE -ne 0 -or $nativeEntry.Count -ne 1) { throw 'Native composition entry discovery was not exact.' }
+    & "$PSScriptRoot/Invoke-NativeDependenciesCi.ps1" -Operation Download -EntryAssembly $nativeEntry[0] -Dotnet $Dotnet `
+        -PlanPath $planPath -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL
+}
+$operation = 'run'
+$continuationArguments = @()
+if ($SourceRunId -gt 0) {
+    $continuationRoot = Join-Path $output 'accepted'
+    & "$PSScriptRoot/Get-ValidationContinuation.ps1" -RunId $SourceRunId -Commit $ExpectedCommit -Platform $env:VALIDATION_PLATFORM `
+        -Shard $Shard -Repository $env:GITHUB_REPOSITORY -ApiUrl $env:GITHUB_API_URL -OutputDirectory $continuationRoot
+    $accepted = Get-Content (Join-Path $continuationRoot 'continuation.json') -Raw | ConvertFrom-Json
+    $operation = 'resume'
+    $continuationArguments = @('--accepted-plan', $accepted.plan, '--evidence', $accepted.evidence)
+    if ($accepted.outputs) { $continuationArguments += @('--retained-outputs', $accepted.outputs) }
+}
+& $Dotnet $assembly validate $operation --engine-root $repository --dotnet $Dotnet --plan $planPath --output $output `
+    --shard $Shard @prerequisites @continuationArguments 2>&1 | Tee-Object -FilePath (Join-Path $output 'validation.log')
+if ($LASTEXITCODE -ne 0) { throw "Required validation failed; retained evidence: $output." }
+if (@($plan.checks | Where-Object { $_.kind -ceq 'build' -and $null -eq $_.exclusion -and $_.id -cin $selected[0].checks }).Count -gt 0) {
+    $bound = Get-Content -LiteralPath (Join-Path $output 'execution-plan.json') -Raw | ConvertFrom-Json
+    "compiledOutputs=$($bound.artifacts)" >> $env:GITHUB_OUTPUT
+}
+if (@($plan.checks | Where-Object { $_.id -ceq 'release-bundle' -and $null -eq $_.exclusion -and $_.id -cin $selected[0].checks }).Count -eq 1) {
+    $bound = Get-Content -LiteralPath (Join-Path $output 'execution-plan.json') -Raw | ConvertFrom-Json
+    "deliverables=$($bound.artifacts)/deliverables" >> $env:GITHUB_OUTPUT
 }
 $dirty = @(& git status --porcelain --untracked-files=all)
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -ne 0) { throw "Validation changed source inputs: $($dirty -join ', ')" }
-Write-Host "Validation complete. Available disk bytes: $($drive.AvailableFreeSpace)."

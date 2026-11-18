@@ -1,0 +1,4 @@
+[
+  { "runner": "windows-2022", "target": "windows-x64", "fast": true },
+  { "runner": "macos-15", "target": "macos-arm64", "fast": false }
+]

@@ -25,7 +25,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="../../../extern/RmlUi/Samples/assets/LatoLatin-Regular.ttf" Link="TestData\LatoLatin-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../fixtures/LatoLatin/LatoLatin-Regular.ttf" Link="TestData\LatoLatin-Regular.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../fixtures/LatoLatin/LICENSE.txt" Link="TestData\LatoLatin-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -92,6 +92,8 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
             ["InnoShaderToolSourceRoot"] = context.engineRoot,
             ["DebugType"] = "None", ["DebugSymbols"] = "false"
         };
+        if (context.nativeDependencies is not null)
+            properties["InnoNativeDependencyManifest"] = context.nativeDependencies;
         await ToolchainEnvironment.RunAsync(sdk.hostPath,
             [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet",
                 .. properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value)],
@@ -116,18 +118,25 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         CancellationToken cancellationToken
     ) {
         NativeToolchainSelection tools = nativeContext.RequireToolchain();
-        using ProductNativeBuildResult artifacts = await m_nativeProduct.BuildAsync(
-            nativeContext, cancellationToken).ConfigureAwait(false);
+        using ProductNativeBuildResult artifacts = identity.nativeDependencies is string manifest
+            ? await NativeDependencyManifest.AcquireAsync(nativeContext.engineRoot, manifest, target.value,
+                nativeContext.configuration, m_nativeProduct.plan, cancellationToken).ConfigureAwait(false)
+            : await m_nativeProduct.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
         using ManagedBuildExecution execution = await identity.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
         context = new PlayerSupportPackBuildContext(execution.engineRoot, context.stagingDirectory, context.sdk);
         project = execution.project;
         string profileRoot = Path.Combine(context.engineRoot, "artifacts", "managed", "browser-references", artifacts[0].fingerprint);
         using FileLease ownership = await FileLease.AcquireAsync(
             profileRoot + ".lock", Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        string bindingSelection = Path.Combine(profileRoot, "BindingSelection.props");
+        NativeBindingGenerationDescriptor.WriteSelection(bindingSelection, artifacts.bindingGenerations,
+            m_nativeProduct.plan.steps.Where(step => artifacts.bindingGenerations.ContainsKey(step.component.nativeProject))
+                .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
         string[] properties = ["-p:Configuration=Release", "-p:InnoNativeTarget=" + target.value,
             "-p:InnoToolTarget=" + m_toolsTarget.value, "-p:InnoNativeBuildFingerprint=" + artifacts[0].fingerprint,
             "-p:InnoShaderToolSourceRoot=" + nativeContext.engineRoot,
-            "-p:InnoNativeBindingSelection=" + Path.Combine(artifacts.aggregateDirectory!, "Metadata", "BindingSelection.props"),
+            "-p:InnoNativeBindingSelection=" + bindingSelection,
+            ..(identity.nativeDependencies is string selection ? new[] { "-p:InnoNativeDependencyManifest=" + selection } : Array.Empty<string>()),
             "-p:DebugType=None", "-p:DebugSymbols=false"];
         await ToolchainEnvironment.RunAsync(context.sdk.hostPath,
             [context.sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", .. properties],

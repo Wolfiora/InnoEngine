@@ -6,19 +6,16 @@
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
     <InnoValidationLayer>performance</InnoValidationLayer>
+    <InnoValidationRequiresNativeProducer>true</InnoValidationRequiresNativeProducer>
     <InnoValidationEnvironment>windows</InnoValidationEnvironment>
-    <InnoTestNativeProduct>editor</InnoTestNativeProduct>
-    <InnoTestNativeTarget>$(InnoNativeTarget)</InnoTestNativeTarget>
   </PropertyGroup>
 
-  <Import Project="../../../src/composition/editor/EditorProduct.props" />
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
     <ProjectReference Include="../../../build/distributions/Inno.Build.Distribution.Standard/Inno.Build.Distribution.Standard.csproj" />
     <ProjectReference Include="../../../build/composition/Inno.Build.Composition/Inno.Build.Composition.csproj" />
     <ProjectReference Include="../../../build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj" />
-    <ProjectReference Include="../../../platforms/Windows/build/Inno.Build.Windows.Host/Inno.Build.Windows.Host.csproj" />
     <ProjectReference Include="../../../platforms/WindowsX64/build/Inno.Build.WindowsX64/Inno.Build.WindowsX64.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="xunit" Version="2.6.6" />

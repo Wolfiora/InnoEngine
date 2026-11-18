@@ -9,12 +9,89 @@ using System.Xml.Linq;
 using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.Bindings.Tests;
 
 public sealed class NativeBindingGenerationTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativeBindingTests", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+        "InnoNativeBindingTests", Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    [Trait("ExternalDependency", "BGCS")]
+    public async Task DependencyPackageRetainsBindingsWithoutConsumerGeneration()
+    {
+        CreateConfig("int sample(int value);");
+        File.WriteAllText(Path.Combine(m_root, ".gitignore"), "artifacts/\nobj/\nconsumer/\n");
+        await Git(m_root, "init");
+        await Git(m_root, "add", ".");
+        await Git(m_root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Binding source");
+        string consumer = Path.Combine(m_root, "consumer");
+        await Git(m_root, "clone", "--no-hardlinks", m_root, consumer);
+        var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
+        string sdk = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+        var tools = new NativeToolchainSelection("fixture-target", new BuildHostDescriptor("fixture-host", "fixture-arch"),
+            new Dictionary<string, string> { ["sdk"] = sdk }, new Dictionary<string, string>(), [], [],
+            new NativeLinkPlan(sharedLibraryExtension: ".data"), false);
+        var context = new NativeBuildContext(m_root, "release").WithToolchain(tools)
+            .WithBindingGenerator(BindingTestProfiles.Generator("fixture-target"));
+        int productions = 0;
+        NativeBuildRecipe Recipe(NativeBuildContext current) => new(component, "fixture", "fixture-target",
+            [NativeBuildInput.FromPath(current.engineRoot, Path.Combine(current.engineRoot, "Source"))], ["fixture"]);
+        var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep("fixture", component, new(NativeLibraryKind.Shared), [],
+            (
+                current,
+                _,
+                cancellation
+            ) => NativeArtifactPublisher.PublishAsync(current, Recipe(current), (
+                _,
+                output,
+                token
+            ) =>
+            {
+                productions++;
+                return File.WriteAllTextAsync(Path.Combine(output, "fixture.data"), "native payload", token);
+            }, cancellation, describeOutputs: static (
+                _,
+                output
+            ) =>
+                [new NativeArtifact("fixture", Path.Combine(output, "fixture.data"), NativeArtifactRole.SharedLibrary)]),
+            Recipe, static (
+                relative,
+                _
+            ) => relative)]);
+        using ProductNativeBuildResult produced = await new ComponentNativeProductExecutor().BuildAsync(context, plan, CancellationToken.None);
+        string selection = await NativeDependencyManifest.ExportAsync(context, plan, produced, "native-deps-fixture-1", Path.Combine(m_root, "artifacts", "export"));
+        using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(selection));
+        JsonElement asset = manifest.RootElement.GetProperty("assets")[0];
+        string downloads = Path.Combine(consumer, "artifacts", "dependencies", "downloads");
+        Directory.CreateDirectory(downloads);
+        File.Copy(Path.Combine(m_root, "artifacts", "export", asset.GetProperty("asset").GetString()!),
+            Path.Combine(downloads, asset.GetProperty("sha256").GetString() + ".zip"));
+        string selected = Path.Combine(consumer, "artifacts", "selection.json");
+        File.Copy(selection, selected);
+        string managed = File.ReadAllText(produced[0].bindingGeneration!.bindingsPath);
+        using (ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(consumer, selected, "fixture-target", "release", plan))
+        {
+            NativeBindingGenerationDescriptor binding = imported.bindingGenerations[component.nativeProject];
+            Assert.Equal(produced[0].bindingGeneration!.fingerprint, binding.fingerprint);
+            Assert.Equal(managed, File.ReadAllText(binding.bindingsPath));
+            Assert.StartsWith(consumer + Path.DirectorySeparatorChar, binding.bindingsPath);
+            Assert.Equal(binding, imported[0].bindingGeneration);
+            Assert.NotEmpty(NativeBindingCompilation.Load(binding.nativeDirectory).roots);
+            Assert.Equal(1, productions);
+        }
+        using ProductNativeBuildResult warm = await NativeDependencyManifest.AcquireAsync(consumer, selected, "fixture-target", "release", plan);
+        Assert.Equal(managed, File.ReadAllText(warm[0].bindingGeneration!.bindingsPath));
+        Assert.Equal(1, productions);
+
+        static Task<string> Git(
+            string root,
+            params string[] arguments
+        )
+            => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);
+    }
 
     [Fact]
     public void ManagedSelectionPreservesExactNativeIdentitiesInStableProjectOrder()
@@ -314,7 +391,11 @@ public sealed class NativeBindingGenerationTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
+            foreach (string file in Directory.EnumerateFiles(m_root, "*", SearchOption.AllDirectories))
+                File.SetAttributes(file, FileAttributes.Normal);
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private static NativeBindingGenerationDescriptor SelectedGeneration(

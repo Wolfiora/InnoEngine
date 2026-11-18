@@ -41,7 +41,11 @@ internal sealed record ValidationPlan(
     bool extended = false,
     Dictionary<string, double>? planningSeconds = null,
     ValidationDocumentationBinding? documentation = null,
-    Dictionary<string, string>? documentationSources = null
+    Dictionary<string, string>? documentationSources = null,
+    ValidationProfile profile = ValidationProfile.PullRequest,
+    string? nativeDependencies = null,
+    ValidationNativeRequest[]? nativeRequests = null,
+    ValidationShard[]? shards = null
 );
 
 internal sealed record ValidationContext(
@@ -109,5 +113,12 @@ internal sealed record ValidationEvidence(
     DateTimeOffset started,
     ValidationResult[] results,
     string planIdentity = "",
-    bool completed = false
+    bool completed = false,
+    string? shard = null
+);
+
+internal sealed record ValidationNativeRequest(
+    string target,
+    string configuration,
+    string product
 );

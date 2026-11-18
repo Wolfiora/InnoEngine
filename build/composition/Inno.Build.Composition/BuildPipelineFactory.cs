@@ -64,6 +64,6 @@ public static class BuildPipelineFactory
             distribution.managedDeployments,
             SourcePlayerSupportPackProvisioner.TryCreateForHost(
                 context.applicationDirectory, distribution.supportPacks, context.dotnetHost,
-                diagnostic => logger.Write(LogLevel.Warn, diagnostic)));
+                diagnostic => logger.Write(LogLevel.Warn, diagnostic), context.nativeDependencies));
     }
 }

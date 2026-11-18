@@ -26,7 +26,9 @@
   <PropertyGroup Condition="('$(UseArtifactsOutput)' == 'true' or '$(ArtifactsPath)' != '') and '$(IsRoslynComponent)' != 'true' and ('$(InnoNativeTarget)' != '' or '$(InnoToolTarget)' != '' or '$(InnoProductBuildProperties)' != '')">
     <!-- Select the restore owner before SDK defaults; keep its configuration, TFM and RID pivots intact. -->
     <_InnoManagedProductPropertiesPath Condition="'$(InnoProductBuildProperties)' != ''">$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '$(InnoProductBuildProperties)'))</_InnoManagedProductPropertiesPath>
-    <ArtifactsProjectName Condition="'$(ArtifactsProjectName)' == ''">$(MSBuildProjectName).$([MSBuild]::StableStringHash('$(InnoNativeTarget)|$(InnoToolTarget)|$(_InnoManagedProductPropertiesPath)|$(InnoNativeBuildFingerprint)', 'Sha256'))</ArtifactsProjectName>
+    <!-- Runner checkout locations are bindings, not product identities. Keep frozen output owners portable. -->
+    <_InnoManagedProductPropertiesIdentity Condition="'$(_InnoManagedProductPropertiesPath)' != ''">$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)', '$(_InnoManagedProductPropertiesPath)'))</_InnoManagedProductPropertiesIdentity>
+    <ArtifactsProjectName Condition="'$(ArtifactsProjectName)' == ''">$(MSBuildProjectName).$([MSBuild]::StableStringHash('$(InnoNativeTarget)|$(InnoToolTarget)|$(_InnoManagedProductPropertiesIdentity)|$(InnoNativeBuildFingerprint)', 'Sha256'))</ArtifactsProjectName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(InnoNativeTarget)' != '' and '$(IsRoslynComponent)' != 'true' and '$(UseArtifactsOutput)' != 'true' and '$(ArtifactsPath)' == ''">

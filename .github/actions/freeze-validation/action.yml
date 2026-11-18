@@ -1,0 +1,27 @@
+name: Freeze validation plan
+description: Resolve affected owners and environment inputs on the execution host.
+inputs:
+  profile:
+    required: true
+    description: Validation depth chosen by event routing.
+outputs:
+  native:
+    value: ${{ steps.freeze.outputs.native }}
+    description: Whether this host requires native packages.
+  native-cache-scope:
+    value: ${{ steps.freeze.outputs.nativeCacheScope }}
+    description: Digest of the frozen native request set.
+runs:
+  using: composite
+  steps:
+    - name: Freeze candidate, actual inputs, checks and shard ownership
+      id: freeze
+      shell: pwsh
+      env:
+        BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before || github.sha }}
+        EXPECTED_COMMIT: ${{ github.sha }}
+        PROFILE: ${{ inputs.profile }}
+      run: |
+        $baseline = $env:BASE_REVISION
+        if ($baseline -match '^0+$') { $baseline = 'origin/master' }
+        ./tests/ci/Invoke-ValidationCi.ps1 -Stage Plan -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -Profile $env:PROFILE -PlanDirectory artifacts/validation/ci-plan

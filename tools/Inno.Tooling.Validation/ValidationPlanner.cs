@@ -25,8 +25,19 @@ internal static class ValidationPlanner
         bool extended = false,
         string? documentationCache = null,
         string? documentationSnapshot = null,
-        string? documentationBaseline = null
+        string? documentationBaseline = null,
+        ValidationProfile profile = ValidationProfile.PullRequest,
+        string? nativeDependencies = null
     ) {
+        if (profile == ValidationProfile.NativeProducer && (nativeDependencies is not null || full || extended))
+            throw new ArgumentException("Native producer acceptance requires explicit source production and cannot certify full functional acceptance.");
+        if (nativeDependencies is not null)
+        {
+            string selected = Path.GetFullPath(nativeDependencies, root);
+            nativeDependencies = Path.GetRelativePath(root, Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, selected)).Replace('\\', '/');
+            if (extended)
+                throw new ArgumentException("Consume-only validation cannot certify a cold third-party rebuild.");
+        }
         var elapsed = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
         double previousStage = 0;
@@ -53,12 +64,13 @@ internal static class ValidationPlanner
             ["InnoProductRestore"] = "false",
             ["ArtifactsPath"] = artifacts
         };
-        Task<ValidationEnvironment.ToolSnapshot> toolCapture = Task.Run(() => ValidationEnvironment.CaptureToolsAsync(root, dotnet, cancellation), cancellation);
-        Task<string> graphCapture = ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
-            paths.Select(path => Path.Combine(root, path)).ToArray(), properties, cancellation);
-        // Both read-only owners finish before a plan is emitted, including when either fails or is canceled.
-        await Task.WhenAll(toolCapture, graphCapture).ConfigureAwait(false);
-        string captured = await graphCapture.ConfigureAwait(false);
+        if (nativeDependencies is not null)
+            properties["InnoNativeDependencyManifest"] = Path.Combine(root, nativeDependencies);
+        ValidationEnvironment.ToolSnapshot toolSnapshot = await ValidationEnvironment.CaptureToolsAsync(root, dotnet, cancellation).ConfigureAwait(false);
+        DotNetSdkDescriptor sdk = toolSnapshot.sdk;
+        RecordStage("sdk-environment");
+        string captured = await ManagedProjectGraphCapture.CaptureSelectedAsync(root, sdk,
+            paths.Select(path => Path.Combine(root, path)).ToArray(), properties, cancellation).ConfigureAwait(false);
         RecordStage("sdk-capture");
         using JsonDocument graph = JsonDocument.Parse(captured);
         string[] submoduleInputs = inputs.Where(pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)
@@ -89,7 +101,7 @@ internal static class ValidationPlanner
         bool changedTestExecutor = changes.Contains(ValidationRunner.C_TEST_EXECUTOR);
         if (changedTestExecutor)
             affected.UnionWith(projects.Where(static project => project.test).Select(static project => project.path));
-        if (extended)
+        if (extended || profile == ValidationProfile.Full)
             full = true;
         if (full)
             affected.UnionWith(paths);
@@ -101,18 +113,34 @@ internal static class ValidationPlanner
                 if (project.references.Any(affected.Contains))
                     expanded |= affected.Add(project.path);
         } while (expanded);
-        bool deepNative = extended || changes.Any(static path => !IsDocumentation(path) && (path.StartsWith("build/", StringComparison.Ordinal)
-            || path.StartsWith("extern/", StringComparison.Ordinal) || path.Contains("/native/", StringComparison.Ordinal)
-            || path.Contains("/build/", StringComparison.Ordinal) || path.Contains("reload", StringComparison.OrdinalIgnoreCase)
-            || path is "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets" or "global.json"));
+        if (profile == ValidationProfile.NativeProducer)
+        {
+            full = false;
+            affected.Clear();
+            affected.UnionWith(projects.Where(static project => project.requiresNativeProducer).Select(static project => project.path));
+            diagnostics.Add("Explicit native producer acceptance selects declared producer regressions; functional consumers remain separately required.");
+        }
+        if (profile == ValidationProfile.Performance)
+        {
+            full = false;
+            affected.Clear();
+            affected.UnionWith(projects.Where(static project => project.test && project.layer == "performance")
+                .Select(static project => project.path));
+            const string C_EDITOR = "entry/InnoEngine.Editor/InnoEngine.Editor.csproj";
+            if (byPath.ContainsKey(C_EDITOR))
+                affected.Add(C_EDITOR);
+            diagnostics.Add("Weekly sampling selects performance suites and the Editor lifecycle and warm-build owner.");
+        }
         var executionExclusions = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (ValidationProject project in projects)
         {
             if (project.environment.Length != 0 && project.environment is not ("any" or "native-host")
                 && !ValidationTestHosts.Applies(project.environment.Split(';')))
                 executionExclusions.Add(project.path, $"This owner requires OS environment '{project.environment}'; it is not validated on this host.");
-            else if (project.layer == "performance" && !deepNative && !changedTestExecutor && !ChangedTestClosure(project))
-                executionExclusions.Add(project.path, "Performance sampling requires extended acceptance or an affected build/native/reload or performance-test input.");
+            else if (project.layer == "performance" && !extended && profile is not (ValidationProfile.Performance or ValidationProfile.NativeProducer))
+                executionExclusions.Add(project.path, "Performance sampling belongs to the explicit performance profile; functional regressions remain independently required.");
+            else if (project.requiresNativeProducer && (nativeDependencies is not null || profile == ValidationProfile.Performance))
+                executionExclusions.Add(project.path, "This producer benchmark may invoke third-party compilation; consume-only validation runs separate warm consumer and lifecycle checks.");
         }
         JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
             Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
@@ -164,6 +192,15 @@ internal static class ValidationPlanner
         foreach (ValidationProject project in projects.Where(static project => project.layer == "domain"))
             if (nativeOwners.Contains(project.path))
                 throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
+        if (profile == ValidationProfile.Fast)
+        {
+            full = false;
+            foreach (ValidationProject project in projects)
+                if (nativeOwners.Contains(project.path) || project.test && project.layer is not ("domain" or "contract"))
+                    executionExclusions.TryAdd(project.path,
+                        "Branch fast checks defer this execution prerequisite to pull-request validation.");
+            diagnostics.Add("Fast profile: native products, real SDK integration and performance are deferred to the pull-request gate.");
+        }
         // All owners of an executable example share its evaluated output context, including Host
         // examples that reuse an owner selected by a script example. Unrelated pages stay managed.
         do
@@ -186,18 +223,23 @@ internal static class ValidationPlanner
                 ["ShouldUnsetParentConfigurationAndPlatform"] = "false"
             }, graph.RootElement.Clone())
         };
+        if (nativeDependencies is not null)
+            contexts["managed"].properties["InnoNativeDependencyManifest"] = Path.Combine(root, nativeDependencies);
         Dictionary<string, ValidationProject> nativeProjects = byPath;
         if (scriptExamples || nativeOwners.Any(owner => !executionExclusions.ContainsKey(owner)
             && (affected.Contains(owner) || documentationOwners.Contains(owner))))
         {
             string[] unavailable = inputs.Where(static pair => pair.Value.StartsWith("unavailable:", StringComparison.Ordinal)).Select(static pair => pair.Key).ToArray();
-            if (unavailable.Length != 0)
+            if (unavailable.Length != 0 && nativeDependencies is null)
                 return new(null, new("Blocked", "NativeSources", root, commit, mergeBase,
                     ValidationInputs.Identity(inputs), "Selected owners require unavailable pinned native sources. Prepare these inputs explicitly, then generate a new plan.",
                     nativeOwners.Where(owner => !executionExclusions.ContainsKey(owner) && (affected.Contains(owner) || documentationOwners.Contains(owner)))
                         .Concat(nativeDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
                     unavailable.ToDictionary(static path => path,
                         path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
+            if (nativeDependencies is not null && !File.Exists(Path.Combine(root, nativeDependencies)))
+                throw new InvalidDataException("Native dependency selection is missing: " + nativeDependencies
+                    + ". Run the manual Native Dependencies action and adopt its published selection before native validation.");
             if (development is null)
                 throw new InvalidDataException("Native validation requires the existing development product declaration.");
             JsonElement host = development.Value.GetProperty("Properties");
@@ -210,13 +252,12 @@ internal static class ValidationPlanner
                 ["ArtifactsPath"] = Path.Combine(artifacts, "native", target),
                 ["InnoNativeTarget"] = target,
                 ["InnoToolTarget"] = target,
-                ["InnoProductBuildProperties"] = productProperties,
-                ["InnoTestNativeTarget"] = target
+                ["InnoProductBuildProperties"] = productProperties
             };
             var evaluationProperties = new Dictionary<string, string>(properties);
             foreach (var pair in nativeProperties)
                 evaluationProperties[pair.Key] = pair.Value;
-            string nativeCapture = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+            string nativeCapture = await ManagedProjectGraphCapture.CaptureSelectedAsync(root, sdk,
                 paths.Select(path => Path.Combine(root, path)).ToArray(), evaluationProperties, cancellation).ConfigureAwait(false);
             using JsonDocument nativeGraph = JsonDocument.Parse(nativeCapture);
             RequireCompilerInputs(nativeGraph.RootElement);
@@ -243,6 +284,7 @@ internal static class ValidationPlanner
             new("architecture", "architecture", "tools/Inno.Tooling.Architecture", "Cheap repository-wide source, ownership and architecture invariants.", "any", [],
                 inputs.Keys.Where(static path => path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
                     || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+                    || path.EndsWith(".Tests.ps1", StringComparison.OrdinalIgnoreCase)
                     || path.EndsWith(".cs.txt", StringComparison.OrdinalIgnoreCase) && !path.StartsWith(".agents/records/", StringComparison.Ordinal)
                     || Path.GetExtension(path) is ".csproj" or ".props" or ".targets"
                     || path is "InnoEngine.sln" or "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets")
@@ -273,7 +315,8 @@ internal static class ValidationPlanner
             if (project.layer == "domain" && native)
                 throw new InvalidDataException($"Domain test transitively requires native preparation: {project.path}");
             string[] selectedInputs = closure.Select(static path => "@" + path).Append("@tooling")
-                .Concat(context == "native" ? ["@native-sources"] : []).Order(StringComparer.Ordinal).ToArray();
+                .Concat(context == "native" ? ["@native-sources"] : [])
+                .Concat(context == "native" && nativeDependencies is not null ? [nativeDependencies] : []).Order(StringComparer.Ordinal).ToArray();
             bool selected = affected.Contains(project.path);
             bool compile = selected || documentationOwners.Contains(project.path);
             string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
@@ -301,7 +344,7 @@ internal static class ValidationPlanner
                         throw new InvalidDataException($"Unknown evaluated dependency '{dependency}' from '{node.path}'.");
             }
         }
-        if (affected.Any(owner => !executionExclusions.ContainsKey(owner)) && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
+        if (profile != ValidationProfile.Fast && affected.Any(owner => !executionExclusions.ContainsKey(owner)) && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
             throw new InvalidDataException("Affected production inputs have no selected behavior tests. Declare their real public contract consumers.");
         ValidationCheck[] builds = checks.Where(static check => check.kind == "build" && check.exclusion is null).ToArray();
         foreach (IGrouping<string?, ValidationCheck> group in builds.GroupBy(static check => check.context))
@@ -320,14 +363,16 @@ internal static class ValidationPlanner
             checks.Add(new("editor-products", "products", editorBuild.owner, "Real renderer startup, product workflows and native panel retirement for the affected Editor product.",
                 "native-host", [editorBuild.id], editorBuild.inputs.Concat(inputs.Keys.Where(static path => path.StartsWith("tests/fixtures/editor-ui/", StringComparison.Ordinal)
                     || path is "tests/Invoke-EditorSmoke.ps1" or "tests/Invoke-EditorUiProductJourney.ps1")).Distinct().Order(StringComparer.Ordinal).ToArray(), false, null, "native", "product"));
-        if (editorBuild is not null && deepNative)
+        if (editorBuild is not null && (extended || profile == ValidationProfile.Performance))
             checks.Add(new("native-hot-builds", "hot-builds", editorBuild.owner,
                 "Ten unchanged native builds must retain content selections and start no native compiler or binding generation.",
                 "native-host", [editorBuild.id], editorBuild.inputs.Append("tests/Invoke-BuildCacheChecks.ps1").ToArray(), false, null, "native", "performance"));
+        if (profile == ValidationProfile.Performance && !checks.Any(static check => check.layer == "performance" && check.exclusion is null))
+            throw new InvalidDataException("Performance validation requires an applicable sampling check.");
         if (extended)
             checks.Insert(0, new("cold-inputs", "cold-inputs", "build", "Explicit cold acceptance requires an initially unprepared native cache.",
                 "native-host", [], ["@tooling"], false, null, "native", "performance"));
-        if (full && editorBuild?.context == "native")
+        if ((full || profile == ValidationProfile.Master) && editorBuild?.context == "native")
         {
             const string C_BUILD_ENTRY = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
             if (!byPath.ContainsKey(C_BUILD_ENTRY))
@@ -344,7 +389,7 @@ internal static class ValidationPlanner
                 var evaluationProperties = new Dictionary<string, string>(properties);
                 foreach (var pair in releaseProperties)
                     evaluationProperties[pair.Key] = pair.Value;
-                string releaseCapture = await ManagedProjectGraphCapture.CaptureAsync(root, dotnet,
+                string releaseCapture = await ManagedProjectGraphCapture.CaptureSelectedAsync(root, sdk,
                     paths.Select(path => Path.Combine(root, path)).ToArray(), evaluationProperties, cancellation).ConfigureAwait(false);
                 using JsonDocument releaseGraph = JsonDocument.Parse(releaseCapture);
                 RequireCompilerInputs(releaseGraph.RootElement);
@@ -378,7 +423,9 @@ internal static class ValidationPlanner
                 "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product"));
             JsonElement[] players = contexts[releaseContext].sdkGraph.EnumerateArray().Where(snapshot =>
                 snapshot.GetProperty("Properties").GetProperty("InnoProductId").GetString() == "player"
-                && snapshot.GetProperty("Properties").GetProperty("InnoProductTarget").GetString() == target).ToArray();
+                && snapshot.GetProperty("Properties").GetProperty("InnoProductTarget").GetString() == target
+                && !string.Equals(snapshot.GetProperty("Properties").GetProperty("IsTestProject").GetString(), "true", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(snapshot.GetProperty("Properties").GetProperty("IsTestSupportProject").GetString(), "true", StringComparison.OrdinalIgnoreCase)).ToArray();
             if (players.Length != 1)
                 throw new InvalidDataException("Full host acceptance requires exactly one actual Player product declaration.");
             string playerOwner = Path.GetRelativePath(root, players[0].GetProperty("Path").GetString()!).Replace('\\', '/');
@@ -387,8 +434,8 @@ internal static class ValidationPlanner
                 "Restore the actual host Player with NativeAOT SDK inputs in an independently owned restore layout.",
                 "native-host", releaseBuilds.ToArray(), releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "contract"));
             // Restore-only inputs still invalidate the bundle, but only built roots provide compiled output instances.
-            checks.Add(new("release-bundle", "release-bundle", editorBuild.owner, "Archive the exact verified Release outputs after every required functional result passes.",
-                "native-host", checks.Where(static check => check.exclusion is null).Select(static check => check.id).ToArray(),
+            checks.Add(new("release-bundle", "release-bundle", editorBuild.owner, "Archive the exact verified Release product outputs; the final gate additionally requires every independent functional shard.",
+                "native-host", checks.Where(static check => check.exclusion is null && check.context != "managed").Select(static check => check.id).ToArray(),
                 releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "product", releaseRoots));
 
             void VisitRelease(string owner)
@@ -402,8 +449,6 @@ internal static class ValidationPlanner
             }
         }
         RecordStage("selection-and-release-graph");
-        ValidationEnvironment.ToolSnapshot toolSnapshot = await toolCapture.ConfigureAwait(false);
-        DotNetSdkDescriptor sdk = toolSnapshot.sdk;
         string environmentIdentity = await ValidationEnvironment.CaptureAsync(root, sdk.hostPath, cancellation, contexts.Values, toolSnapshot).ConfigureAwait(false);
         RecordStage("execution-environment");
         var phases = contexts.Keys.Select(static (
@@ -431,9 +476,65 @@ internal static class ValidationPlanner
                 throw new InvalidDataException($"Required prerequisites are missing or scheduled after '{check.id}'.");
             preceding.Add(check.id);
         }
+        ValidationNativeRequest[] requests = contexts.Values.Where(context => context.properties.ContainsKey("InnoNativeTarget"))
+            .SelectMany(context => CollectNativeRequests(context, checks.Where(check => check.exclusion is null && check.kind == "build"
+                && check.context is not null && ReferenceEquals(contexts[check.context], context)).Select(static check => check.owner)))
+            .Concat(checks.Where(static check => check.exclusion is null && check.kind == "support-pack")
+                .Select(check => new ValidationNativeRequest(contexts[check.context!].properties["InnoNativeTarget"], "Release", "player")))
+            .Distinct().OrderBy(static request => request.target, StringComparer.Ordinal)
+            .ThenBy(static request => request.configuration, StringComparer.Ordinal).ThenBy(static request => request.product, StringComparer.Ordinal).ToArray();
         return new(new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding,
-            documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal)), null);
+            documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal), profile, nativeDependencies, requests, ValidationShards.Create(execution)), null);
+
+        IEnumerable<ValidationNativeRequest> CollectNativeRequests(
+            ValidationContext context,
+            IEnumerable<string> roots
+        ) {
+            var snapshots = context.sdkGraph.EnumerateArray().ToDictionary(snapshot =>
+                Path.GetRelativePath(root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/'), StringComparer.Ordinal);
+            var pending = new Stack<(string owner, bool productOwned)>(roots.Select(static owner => (owner, false)));
+            var visited = new HashSet<(string owner, bool productOwned)>();
+            while (pending.TryPop(out var request))
+            {
+                string owner = request.owner;
+                if (!visited.Add(request) || !snapshots.TryGetValue(owner, out JsonElement snapshot))
+                    continue;
+                foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
+                {
+                    JsonElement declared = variant.GetProperty("Properties");
+                    bool productOwned = request.productOwned
+                        || !string.IsNullOrWhiteSpace(declared.GetProperty("InnoTestNativeProduct").GetString())
+                        || !string.IsNullOrWhiteSpace(declared.GetProperty("InnoProductId").GetString());
+                    foreach (string property in new[] { "InnoTestNativeProduct", "InnoProductId" })
+                        if (declared.GetProperty(property).GetString() is { Length: > 0 } product)
+                        {
+                            string targetProperty = property == "InnoTestNativeProduct" ? "InnoTestNativeTarget" : "InnoProductTarget";
+                            string declaredTarget = declared.GetProperty(targetProperty).GetString() ?? string.Empty;
+                            yield return new(declaredTarget.Length == 0 ? context.properties["InnoNativeTarget"] : declaredTarget,
+                                context.properties["Configuration"], product);
+                        }
+                    // Product preparation supplies its exact binding selection to references. Only a standalone
+                    // binding consumer needs the component's explicit product declaration as an additional request.
+                    if (!productOwned && declared.GetProperty("BindGenGeneratedBindings").GetString() == "true"
+                        && declared.GetProperty("InnoBindingProductId").GetString() is { Length: > 0 } bindingProduct)
+                        yield return new(context.properties["InnoNativeTarget"], context.properties["Configuration"], bindingProduct);
+                    JsonElement items = variant.GetProperty("Items");
+                    foreach (JsonElement dependency in items.GetProperty("InnoNativeDependency").EnumerateArray())
+                    {
+                        string product = dependency.GetProperty("Identity").GetString()!;
+                        string dependencyTarget = dependency.GetProperty("TargetId").GetString()!;
+                        string dependencyConfiguration = dependency.GetProperty("Configuration").GetString()!;
+                        if (string.IsNullOrWhiteSpace(product) || string.IsNullOrWhiteSpace(dependencyTarget)
+                            || dependencyConfiguration is not ("Debug" or "Release"))
+                            throw new InvalidDataException("A native build dependency must declare product, target and configuration: " + owner);
+                        yield return new(dependencyTarget, dependencyConfiguration, product);
+                    }
+                    foreach (JsonElement reference in items.GetProperty("ProjectReference").EnumerateArray())
+                        pending.Push((Path.GetRelativePath(root, reference.GetProperty("FullPath").GetString()!).Replace('\\', '/'), productOwned));
+                }
+            }
+        }
 
         void AddDocumentationChecks()
         {
@@ -541,7 +642,12 @@ internal static class ValidationPlanner
             foreach (JsonElement unit in registry.RootElement.GetProperty("units").EnumerateArray())
             {
                 if (unit.TryGetProperty("translation", out JsonElement translation))
+                {
                     yield return ReviewPath(translation);
+                    if (translation.TryGetProperty("amendments", out JsonElement amendments))
+                        foreach (JsonElement amendment in amendments.EnumerateArray())
+                            yield return ReviewPath(amendment);
+                }
                 if (unit.TryGetProperty("approvedAddition", out JsonElement addition)
                     && addition.TryGetProperty("translation", out translation))
                     yield return ReviewPath(translation);
@@ -567,20 +673,6 @@ internal static class ValidationPlanner
             }
         }
 
-        bool ChangedTestClosure(ValidationProject project)
-        {
-            var visited = new HashSet<string>(StringComparer.Ordinal);
-            return Visit(project);
-
-            bool Visit(ValidationProject owner)
-            {
-                if (!visited.Add(owner.path))
-                    return false;
-                return changes.Any(path => path.StartsWith("tests/", StringComparison.Ordinal)
-                        && (path.StartsWith(DirectoryOf(owner.path), StringComparison.Ordinal) || owner.inputs.Contains(path, StringComparer.Ordinal)))
-                    || owner.references.Any(reference => byPath.TryGetValue(reference, out ValidationProject? dependency) && Visit(dependency));
-            }
-        }
 
         string[] CapturedInputs(IEnumerable<string> declared)
         {

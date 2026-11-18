@@ -1,21 +1,23 @@
 $ErrorActionPreference = 'Stop'
 $commit = 'a' * 40
 $script = Join-Path $PSScriptRoot 'Select-ValidationCadence.ps1'
-$daily = @{ Event = 'schedule'; Commit = $commit; Schedule = '17 19 * * *'; Now = [DateTimeOffset]::Parse('2026-11-04T19:17:00Z') }
+$daily = @{ Event = 'schedule'; Commit = $commit; Schedule = '17 19 * * *' }
 $fresh = & $script @daily
-if (-not $fresh.run -or -not $fresh.full -or $fresh.extended) { throw 'New daily input must run the complete functional matrix.' }
-$unchanged = & $script @daily -LastCertifiedCommit $commit
-if ($unchanged.run) { throw 'Unchanged certified input must not trigger another daily run.' }
-$daily.Now = [DateTimeOffset]::Parse('2026-11-07T19:17:00Z')
-if ((& $script @daily).run) { throw 'Sunday must not duplicate the weekly run.' }
-$weekly = & $script -Event schedule -Commit $commit -Schedule '17 20 * * 6' -LastCertifiedCommit $commit
-if (-not $weekly.run -or -not $weekly.full -or -not $weekly.extended) { throw 'Weekly depth must execute even without source changes.' }
-foreach ($event in @('pull_request', 'push', 'merge_group')) {
-    $selected = & $script -Event $event -Commit $commit -LastCertifiedCommit $commit
-    if (-not $selected.run -or $selected.full) { throw 'Candidate checks must remain present and use actual impact analysis.' }
+if (-not $fresh.run -or -not $fresh.full -or $fresh.extended -or $fresh.profile -cne 'full') { throw 'Nightly requires complete functional validation.' }
+if (-not (& $script @daily).run) { throw 'Repeated event routing cannot certify SDK and dependency inputs before planning.' }
+$weekly = & $script -Event schedule -Commit $commit -Schedule '17 20 * * 6'
+if (-not $weekly.run -or $weekly.full -or $weekly.extended -or $weekly.profile -cne 'performance') { throw 'Weekly sampling must execute without cold dependency production.' }
+foreach ($event in @('pull_request', 'merge_group')) {
+    $selected = & $script -Event $event -Commit $commit -HasOpenPullRequest $true
+    if (-not $selected.run -or $selected.full -or $selected.profile -cne 'pull-request') { throw 'Candidate and merge-queue checks must remain present.' }
 }
-if (-not (& $script -Event workflow_dispatch -Commit $commit).full) { throw 'Manual full validation was lost.' }
+$branch = & $script -Event push -Commit $commit -IsDefaultBranch $false
+if (-not $branch.run -or $branch.profile -cne 'fast') { throw 'Branches need the fast profile.' }
+if ((& $script -Event push -Commit $commit -IsDefaultBranch $false -HasOpenPullRequest $true).run) { throw 'PR-owned pushes must not duplicate candidate execution.' }
+$master = & $script -Event push -Commit $commit -IsDefaultBranch $true -HasOpenPullRequest $true
+if (-not $master.run -or $master.profile -cne 'master') { throw 'Default-branch integration must not be skipped by PR routing.' }
+if (-not (& $script -Event workflow_dispatch -Commit $commit).full) { throw 'Manual complete acceptance was lost.' }
 $rejected = $false
 try { $null = & $script -Event schedule -Commit $commit -Schedule invalid } catch { $rejected = $true }
 if (-not $rejected) { throw 'Unknown schedules must fail closed.' }
-Write-Output 'Cadence contracts passed: 9.'
+Write-Output 'Cadence contracts passed. Exact input and environment reuse is covered by validation acceptance contracts.'

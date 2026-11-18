@@ -124,6 +124,11 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         }
     }
 
+    /// <summary>
+    /// Gets or sets the exact native dependency selection, disabling source production when supplied.
+    /// </summary>
+    public string NativeDependencyManifestPath { get; set; } = string.Empty;
+
     private ToolRunner PrepareTools(
         CancellationToken cancellationToken,
         out string compilerFingerprint,
@@ -132,7 +137,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         NativeBuildContext context = new(EngineRoot, "release");
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
         context = context.WithBindingGenerator(StandardBuildDistribution.Create(execution).build.ResolveBindingGenerator(ToolTarget));
-        string cacheKey = "Inno.Build.ShaderTools|" + context.engineRoot + "|" + context.configuration + "|" + ToolTarget;
+        string cacheKey = "Inno.Build.ShaderTools|" + context.engineRoot + "|" + context.configuration + "|" + ToolTarget + "|" + NativeDependencyManifestPath;
         IBuildEngine4 engine = BuildEngine as IBuildEngine4
             ?? throw new InvalidOperationException("Offline tool preparation requires MSBuild's build-lifetime task ownership.");
         string leasePath = Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks",
@@ -141,6 +146,13 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             .GetAwaiter().GetResult();
         using FileLease publicationUse = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact)
             .AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
+        if (NativeDependencyManifestPath.Length != 0)
+        {
+            var selected = NativeDependencyManifest.SelectAsync(EngineRoot, NativeDependencyManifestPath, ToolTarget,
+                context.configuration, StandardBuildDistribution.Create(execution).build.ResolveNativeProduct(ToolTarget, "shader-tools").plan,
+                cancellationToken).GetAwaiter().GetResult();
+            cacheKey += "|" + string.Join("|", selected.Select(static asset => asset.sha256).Order(StringComparer.Ordinal));
+        }
         // Only neutral file names cross task load contexts. MSBuild releases the record when this build ends.
         string[]? record = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[];
         if (record is not null && (record.Length < 3 || !BuildArtifactManifest.IsComplete(record[0], record[1], ["Outputs", "Metadata"])))
@@ -148,12 +160,16 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         if (record is null)
         {
             var distribution = StandardBuildDistribution.Create(execution).build;
-            context = context.WithToolchain(distribution.ResolveNativeToolchain(ToolTarget)
-                .ResolveAsync(context, execution.host, ToolTarget, cancellationToken).AsTask().GetAwaiter().GetResult());
+            if (NativeDependencyManifestPath.Length == 0)
+                context = context.WithToolchain(distribution.ResolveNativeToolchain(ToolTarget)
+                    .ResolveAsync(context, execution.host, ToolTarget, cancellationToken).AsTask().GetAwaiter().GetResult());
             NativeProductContribution contribution = distribution.ResolveNativeProduct(ToolTarget, "shader-tools");
             ProductNativeBuildPlan plan = contribution.plan;
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
-            using ProductNativeBuildResult products = contribution.BuildAsync(context, cancellationToken).GetAwaiter().GetResult();
+            using ProductNativeBuildResult products = NativeDependencyManifestPath.Length == 0
+                ? contribution.BuildAsync(context, cancellationToken).GetAwaiter().GetResult()
+                : NativeDependencyManifest.AcquireAsync(EngineRoot, NativeDependencyManifestPath, ToolTarget,
+                    context.configuration, plan, cancellationToken).GetAwaiter().GetResult();
             NativeBuildProduct product = products.Single();
             record = [product.directory, product.fingerprint, .. product.files];
             engine.RegisterTaskObject(cacheKey, record, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);

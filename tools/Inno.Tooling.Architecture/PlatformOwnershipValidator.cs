@@ -14,13 +14,22 @@ internal static class PlatformOwnershipValidator
         string root,
         ICollection<string> failures
     ) {
-        string[] roots = ["entry", "src", "backends", "platforms", "build", "tools", "tests"];
-        var projects = roots.SelectMany(owner => RepositorySourceInventory.Files(Path.Combine(root, owner), "*.csproj"))
+        var projects = RepositorySourceInventory.Projects(root)
             .ToDictionary(path => Path.GetFullPath(path), StringComparer.OrdinalIgnoreCase);
+        foreach (string script in RepositorySourceInventory.Files(root, "*.Tests.ps1"))
+        {
+            string relative = Path.GetRelativePath(root, script).Replace('\\', '/');
+            if (!RepositorySourceInventory.IsTestPath(relative))
+                failures.Add($"{relative}: engine-owned test scripts must belong to the root tests directory.");
+        }
         foreach (string path in projects.Keys)
         {
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
             XDocument project = XDocument.Load(path);
+            if (!RepositorySourceInventory.IsTestPath(relative)
+                && (RepositorySourceInventory.DeclaresTestSupport(project)
+                    || Path.GetFileNameWithoutExtension(path).StartsWith("Inno.Testing.", StringComparison.Ordinal)))
+                failures.Add($"{relative}: engine-owned tests and test support must belong to the root tests directory.");
             ValidateEntryProject(relative, project, failures);
             bool product = project.Descendants("OutputType").Any(static item => item.Value == "Exe");
             if (product && relative.StartsWith("platforms/", StringComparison.Ordinal)
@@ -66,11 +75,12 @@ internal static class PlatformOwnershipValidator
         string dependency,
         ICollection<string> failures
     ) {
+        if (!RepositorySourceInventory.IsTestPath(relative) && RepositorySourceInventory.IsTestPath(dependency))
+            failures.Add($"{relative}: production code cannot reference test support {dependency}.");
         bool shared = relative.StartsWith("src/", StringComparison.Ordinal)
             && !relative.StartsWith("src/composition/adapters/", StringComparison.Ordinal);
         if (!relative.StartsWith("entry/", StringComparison.Ordinal)
             && !relative.StartsWith("tests/", StringComparison.Ordinal)
-            && !relative.Contains("/tests/", StringComparison.Ordinal)
             && dependency.StartsWith("entry/", StringComparison.Ordinal))
             failures.Add($"{relative}: production mechanisms cannot depend on the development entry {dependency}.");
         string[] segments = relative.Split('/');
@@ -106,7 +116,7 @@ internal static class PlatformOwnershipValidator
             failures.Add($"{relative}: build integrations must not expose or load native BGFX bindings {dependency}.");
         if (shared && dependency.StartsWith("platforms/", StringComparison.Ordinal))
             failures.Add($"{relative}: shared mechanisms cannot reference a concrete platform {dependency}.");
-        if (relative.StartsWith("backends/", StringComparison.Ordinal) && !relative.Contains("/tests/", StringComparison.Ordinal)
+        if (relative.StartsWith("backends/", StringComparison.Ordinal)
             && dependency.StartsWith("platforms/", StringComparison.Ordinal))
             failures.Add($"{relative}: reusable backends cannot depend on platform packages {dependency}.");
         if (relative.StartsWith("platforms/", StringComparison.Ordinal) && dependency.StartsWith("platforms/", StringComparison.Ordinal)

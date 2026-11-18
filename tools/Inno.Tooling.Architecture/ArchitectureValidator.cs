@@ -249,7 +249,7 @@ public static partial class ArchitectureValidator
             if (!semanticOnly)
                 CSharpStyleValidator.Validate(relative, syntax, failures);
             if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
-                || relative.Contains("/tests/", StringComparison.Ordinal))
+                || RepositorySourceInventory.IsTestPath(relative))
                 continue;
             PublicApiDocumentationValidator.Validate(relative, syntax, failures,
                 !sourceOnly && source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,

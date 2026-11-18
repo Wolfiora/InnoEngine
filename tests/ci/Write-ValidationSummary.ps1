@@ -4,6 +4,7 @@ param(
     [Parameter(Mandatory)][string]$DefaultBranch,
     [Parameter(Mandatory)][int]$Attempt,
     [Parameter(Mandatory)][long]$RunId,
+    [string[]]$Hosts,
     [string]$ApiUrl = 'https://api.github.com',
     [string]$SummaryPath = $env:GITHUB_STEP_SUMMARY
 )
@@ -16,12 +17,21 @@ $lines.Add('')
 $available = if (Test-Path -LiteralPath $ReceivedDirectory) {
     @(Get-ChildItem -LiteralPath $ReceivedDirectory -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
 } else { @() }
-foreach ($platform in @('windows-2022', 'macos-15')) {
+if (-not $Hosts) { $Hosts = @((Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/validation-hosts.json') -Raw | ConvertFrom-Json).runner) }
+foreach ($platform in $Hosts) {
     try {
-        $artifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-$platform" -MaximumAttempt $Attempt
-        $results = Get-Content -LiteralPath (Join-Path $artifact.directory 'results.json') -Raw | ConvertFrom-Json
-        $failed = @($results.results | Where-Object { $_.status -cin @('Failed', 'Blocked') })
-        $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; retained evidence: $($artifact.name).")
+        $artifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-plan-$platform" -MaximumAttempt $Attempt
+        $plan = Get-Content -LiteralPath (Join-Path $artifact.directory 'plan.json') -Raw | ConvertFrom-Json
+        $results = @(foreach ($shard in @($plan.shards)) {
+            $receipt = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-result-$platform-$($shard.id)" -MaximumAttempt $Attempt
+            (Get-Content -LiteralPath (Join-Path $receipt.directory 'results.json') -Raw | ConvertFrom-Json).results
+        })
+        $failed = @($results | Where-Object { $_.status -cin @('Failed', 'Blocked') })
+        $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; frozen plan: $($artifact.name).")
+        foreach ($group in @($plan.checks | Group-Object kind)) {
+            $seconds = ($results | Where-Object { $_.id -cin $group.Group.id } | Measure-Object seconds -Sum).Sum
+            $lines.Add("  - $($group.Name): $([Math]::Round($seconds, 1)) check-seconds (parallel work is not wall-clock duration).")
+        }
         foreach ($result in @($failed | Select-Object -First 10)) {
             $detail = ([string]$result.detail).Replace("`n", ' ').Replace("`r", ' ')
             if ($detail.Length -gt 4000) {
@@ -41,7 +51,7 @@ if ($env:GH_TOKEN -and (Test-Path -LiteralPath $certification)) {
         $current = @(Get-Content -LiteralPath $certification -Raw | ConvertFrom-Json)
         $headers = @{ Authorization = "Bearer $env:GH_TOKEN"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }
         $branch = [Uri]::EscapeDataString($DefaultBranch)
-        $runs = Invoke-RestMethod -Uri "$ApiUrl/repos/$Repository/actions/workflows/rendering-ci.yml/runs?branch=$branch&status=success&per_page=20" -Headers $headers
+        $runs = Invoke-RestMethod -Uri "$ApiUrl/repos/$Repository/actions/workflows/engine-ci.yml/runs?branch=$branch&status=success&per_page=20" -Headers $headers
         foreach ($run in $runs.workflow_runs) {
             if ($run.id -eq $RunId -or $run.head_repository.full_name -cne $Repository -or $run.head_branch -cne $DefaultBranch -or
                 $run.event -cnotin @('push', 'schedule', 'workflow_dispatch')) { continue }

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using Inno.Rendering;
 
 namespace Inno.Editor.Hosting;
@@ -32,6 +33,11 @@ public sealed class EditorCommandLineOptions
     public GraphicsApi? graphicsApi { get; private init; }
 
     /// <summary>
+    /// Gets the absolute consume-only native dependency selection, or null for local source preparation.
+    /// </summary>
+    public string? nativeDependencies { get; private init; }
+
+    /// <summary>
     /// Parses the common Editor command line without selecting a platform.
     /// </summary>
     /// <param name="arguments">
@@ -45,21 +51,29 @@ public sealed class EditorCommandLineOptions
     /// </exception>
     public static EditorCommandLineOptions Parse(string[] arguments)
     {
-        if (!TryGetRunOptions(arguments, out string? project, out int? smoke, out GraphicsApi? graphics, out bool visible))
-            throw new ArgumentException("Usage: Editor <project-directory> [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>].", nameof(arguments));
-        return new EditorCommandLineOptions(project) { smokeFrameLimit = smoke, graphicsApi = graphics, windowVisible = visible };
+        if (!TryGetRunOptions(arguments, out string? project, out int? smoke, out GraphicsApi? graphics, out bool visible, out string? dependencies))
+            throw new ArgumentException("Usage: Editor <project-directory> [--graphics-api <renderer-id>] [--window-visible <true|false>] [--smoke-frames <positive-count>] [--native-dependencies <absolute-selection>].", nameof(arguments));
+        return new EditorCommandLineOptions(project)
+        {
+            smokeFrameLimit = smoke,
+            graphicsApi = graphics,
+            windowVisible = visible,
+            nativeDependencies = dependencies
+        };
     }
     private static bool TryGetRunOptions(
         string[] args,
         [NotNullWhen(true)] out string? projectDirectory,
         out int? smokeFrameLimit,
         out GraphicsApi? graphicsApi,
-        out bool windowVisible
+        out bool windowVisible,
+        out string? nativeDependencies
     ) {
         ArgumentNullException.ThrowIfNull(args);
         smokeFrameLimit = null;
         graphicsApi = null;
         windowVisible = true;
+        nativeDependencies = null;
         bool hasVisibility = false;
         projectDirectory = args.Length > 0 ? args[0] : null;
         if (projectDirectory is null)
@@ -91,6 +105,13 @@ public sealed class EditorCommandLineOptions
                 if (hasVisibility || !bool.TryParse(args[index + 1], out windowVisible))
                     return false;
                 hasVisibility = true;
+                continue;
+            }
+            if (string.Equals(args[index], "--native-dependencies", StringComparison.Ordinal))
+            {
+                if (nativeDependencies is not null || !Path.IsPathFullyQualified(args[index + 1]))
+                    return false;
+                nativeDependencies = Path.GetFullPath(args[index + 1]);
                 continue;
             }
             return false;

@@ -7,7 +7,6 @@ using System.Text;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
-using NativeBgfx = Inno.Native.Bgfx.bgfx;
 using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
@@ -17,6 +16,16 @@ namespace Inno.Build.Toolchains.Bgfx.Tools;
 /// </summary>
 public sealed partial class BgfxShadercToolchain
 {
+    // The shader binary's uniform tags belong to its wire format. Offline compilation
+    // does not load or require the renderer's native binding assembly.
+    private enum ShaderUniformType : byte
+    {
+        Sampler = 0,
+        Vec4 = 2,
+        Mat3 = 3,
+        Mat4 = 4
+    }
+
     private static byte[] NormalizeGlslUniformTable(
         byte[] binary,
         ShaderIrStage stage,
@@ -65,18 +74,18 @@ public sealed partial class BgfxShadercToolchain
         byte[] name = Encoding.UTF8.GetBytes(nativeName);
         int count = input.type.elementType is null ? 1 : input.type.elementCount;
         string typeId = input.type.elementType?.id ?? input.type.id;
-        NativeBgfx.UniformType type = input.kind == ShaderIrInputKind.SampledTexture
-            ? NativeBgfx.UniformType.Sampler
+        ShaderUniformType type = input.kind == ShaderIrInputKind.SampledTexture
+            ? ShaderUniformType.Sampler
             : typeId switch
             {
-                "float" or "float2" or "float3" or "float4" => NativeBgfx.UniformType.Vec4,
-                "float3x3" => NativeBgfx.UniformType.Mat3,
-                "float4x4" => NativeBgfx.UniformType.Mat4,
+                "float" or "float2" or "float3" or "float4" => ShaderUniformType.Vec4,
+                "float3x3" => ShaderUniformType.Mat3,
+                "float4x4" => ShaderUniformType.Mat4,
                 _ => throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' has unsupported storage '{typeId}'.")
             };
         if (name.Length == 0 || name.Length > byte.MaxValue || count <= 0 || count > byte.MaxValue)
             throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' exceeds the BGFX binary limits.");
-        int registerCount = count * (type == NativeBgfx.UniformType.Mat3 ? 3 : type == NativeBgfx.UniformType.Mat4 ? 4 : 1);
+        int registerCount = count * (type == ShaderUniformType.Mat3 ? 3 : type == ShaderUniformType.Mat4 ? 4 : 1);
         byte[] record = new byte[1 + name.Length + C_SHADER_UNIFORM_METADATA_SIZE];
         record[0] = (byte)name.Length;
         name.CopyTo(record, 1);

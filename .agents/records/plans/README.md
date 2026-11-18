@@ -1,5 +1,7 @@
 # Implementation plans
 
+- [CI/CD, platform and test ownership refactor](cicd-optimization.md): implementation scope and verified delivery.
+
 [Records](../README.md) · [Current acceptance](../acceptance/current.md)
 
 The active English continuation is [English documentation, AI workflow and CI/CD modernization](ENGLISH_DOCUMENTATION_MODERNIZATION.md). It carries forward incomplete #75 acceptance and adds the approved two-repository documentation migration. Its implementation ledger is authoritative for this work; it does not claim previous plans completed.

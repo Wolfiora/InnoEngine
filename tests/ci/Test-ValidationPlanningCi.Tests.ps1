@@ -3,24 +3,28 @@ $directory = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/ci-pl
 $cases = @(
     @{ name = 'ordinary-managed'; native = $false; empty = $false; exit = 0; throws = $false },
     @{ name = 'prepared-native'; native = $true; empty = $false; exit = 0; throws = $false },
+    @{ name = 'second-product'; native = $true; product = 'another'; empty = $false; exit = 0; throws = $false },
     @{ name = 'empty-discovery'; native = $true; empty = $true; exit = 0; throws = $true },
     @{ name = 'selector-failure'; native = $true; empty = $false; exit = 1; throws = $true },
-    @{ name = 'native-preparation'; prepare = 'once'; native = $true; throws = $false },
+    @{ name = 'native-preparation'; prepare = 'once'; native = $true; throws = $true },
     @{ name = 'native-still-blocked'; prepare = 'again'; reason = 'Validation plan generation failed; no downstream stage can certify success.'; throws = $true },
-    @{ name = 'native-wrong-pin'; prepare = 'wrong-pin'; reason = 'Requested source is not the current pinned gitlink: extern/Native'; throws = $true }
+    @{ name = 'native-wrong-pin'; prepare = 'wrong-pin'; reason = 'Validation plan generation failed; no downstream stage can certify success.'; throws = $true }
 )
 $originalOutput = $env:GITHUB_OUTPUT
 $originalDirectory = (Get-Location).Path
 $originalProtocols = $env:GIT_ALLOW_PROTOCOL
 $env:GIT_ALLOW_PROTOCOL = 'file'
 try {
+    $nativeScopes = @{}
     foreach ($case in $cases) {
         $root = Join-Path $directory $case.name
         $scripts = Join-Path $root 'tests/ci'
         New-Item -ItemType Directory -Path $scripts -Force | Out-Null
-        foreach ($script in @('Invoke-ValidationCi.ps1', 'Initialize-ValidationEntry.ps1', 'Prepare-ValidationSources.ps1')) {
+        foreach ($script in @('Invoke-ValidationCi.ps1', 'Initialize-ValidationEntry.ps1', 'Prepare-ValidationSources.ps1', 'Initialize-NativeDependencyWorkloads.ps1')) {
             Copy-Item -LiteralPath (Join-Path $PSScriptRoot $script) -Destination $scripts
         }
+        New-Item -ItemType Directory -Path (Join-Path $root '.github') | Out-Null
+        '[{"target":"fixture","runner":"fixture","workloads":[]}]' | Set-Content (Join-Path $root '.github/native-targets.json')
         'fixture' | Set-Content (Join-Path $root 'source.txt')
         & git -C $root init -q
         if ($LASTEXITCODE -ne 0) { throw 'Cannot initialize the planning fixture.' }
@@ -39,6 +43,7 @@ if ($Arguments[0] -ceq 'build') { 'prepared fixture entry' | Set-Content $assemb
 if ($Arguments[0] -ceq 'msbuild') { Write-Output $assembly; return }
 if ($Arguments[1] -ceq 'docs') { throw 'Engine CI must not prepare a paired Docs candidate.' }
 if ($Arguments[1] -cne 'validate' -or $Arguments[2] -cne 'plan') { throw 'Unexpected hosted planning operation.' }
+if ($Arguments -notcontains '--profile' -or $Arguments -notcontains '--native-dependencies' -or $Arguments -contains '--cache-input') { throw 'Hosted planning lost its explicit consume-only policy.' }
 $output = $Arguments[[Array]::IndexOf($Arguments, '--output') + 1]
 if ($case.prepare) {
     $attempts = Join-Path $PSScriptRoot 'artifacts/planning-attempts.txt'
@@ -61,7 +66,8 @@ if (-not $case.empty) {
 }
 $contexts = @{}
 if ($case.native) { $contexts.native = @{} }
-@{ checks = $checks; contexts = $contexts } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $output 'plan.json')
+$requests = if ($case.native) { @(@{ product = ($case.product ?? 'fixture'); target = 'fixture'; configuration = 'Debug' }) } else { @() }
+@{ checks = $checks; contexts = $contexts; nativeRequests = @($requests); shards = @(@{ id = 'architecture'; checks = @('instructions'); prerequisites = @() }) } | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $output 'plan.json')
 $global:LASTEXITCODE = [int]$case.exit
 '@ | Set-Content $stub
         if ($case.prepare) {
@@ -96,18 +102,24 @@ $global:LASTEXITCODE = [int]$case.exit
         $published = [IO.File]::ReadAllText($env:GITHUB_OUTPUT)
         if ($case.throws) {
             if ($published.Trim()) { throw "Blocked planning published downstream execution outputs: $($case.name)" }
-        } elseif ($published.Trim() -cne "native=$($case.native.ToString().ToLowerInvariant())") {
+        } elseif ($published -notmatch "(?m)^native=$($case.native.ToString().ToLowerInvariant())\r?$" -or $published -notmatch '(?m)^shards=\["architecture"\]\r?$') {
             throw "The prepared plan did not publish its actual environment requirement: $($case.name)"
+        }
+        if (-not $case.throws) {
+            $key = [regex]::Match($published, '(?m)^nativeCacheScope=([a-f0-9]{64})\r?$')
+            if ($key.Success -ne $case.native) { throw 'Only native plans must publish a precise download cache scope.' }
+            if ($key.Success) { $nativeScopes.Add($case.name, $key.Groups[1].Value) }
         }
         if ($case.prepare) {
             $attempts = @(Get-Content (Join-Path $root 'artifacts/planning-attempts.txt')).Count
-            $expectedAttempts = if ($case.prepare -ceq 'wrong-pin') { 1 } else { 2 }
-            if ($attempts -ne $expectedAttempts) { throw 'Source preparation must regenerate once and must never retry repeatedly until green.' }
-            if (-not (Test-Path (Join-Path $root 'artifacts/validation/ci/initial-preparation.json'))) {
-                throw 'The first blocked preparation request was not retained.'
+            $expectedAttempts = 1
+            if ($attempts -ne $expectedAttempts) { throw 'Consume-only planning must fail once without fetching native sources or retrying.' }
+            if (-not (Test-Path (Join-Path $root 'artifacts/validation/ci/preparation.json'))) {
+                throw 'The blocked preparation request was not retained.'
             }
         }
     }
+    if ($nativeScopes['prepared-native'] -ceq $nativeScopes['second-product']) { throw 'Different product requests share a sealed archive cache.' }
 } finally {
     $env:GITHUB_OUTPUT = $originalOutput
     $env:GIT_ALLOW_PROTOCOL = $originalProtocols

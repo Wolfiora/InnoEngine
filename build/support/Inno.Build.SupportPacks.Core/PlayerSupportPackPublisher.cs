@@ -78,12 +78,16 @@ public sealed class PlayerSupportPackPublisher
     /// <exception cref="OperationCanceledException">
     /// Preparation was canceled; the installed pack is unchanged.
     /// </exception>
+    /// <param name="nativeDependencies">
+    /// An explicit native selection disabling third-party production, or null for local source preparation.
+    /// </param>
     public async ValueTask<PlayerSupportPackPublication> PublishAsync(
         string engineRoot,
         string outputRoot,
         BuildTargetId target,
         string dotnetHost,
-        CancellationToken cancellationToken = default
+        CancellationToken cancellationToken = default,
+        string? nativeDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(outputRoot);
@@ -95,7 +99,7 @@ public sealed class PlayerSupportPackPublisher
             throw new DirectoryNotFoundException($"Engine root '{root}' has no InnoEngine.sln.");
         cancellationToken.ThrowIfCancellationRequested();
         PlayerSupportPackPlan plan = await source.CreatePlanAsync(
-            new PlayerSupportPackPlanningContext(root, dotnetHost), cancellationToken).ConfigureAwait(false);
+            new PlayerSupportPackPlanningContext(root, dotnetHost, nativeDependencies), cancellationToken).ConfigureAwait(false);
         if (plan is null || plan.target != target)
             throw new InvalidDataException("The Support Pack plan does not match its registered target.");
         cancellationToken.ThrowIfCancellationRequested();

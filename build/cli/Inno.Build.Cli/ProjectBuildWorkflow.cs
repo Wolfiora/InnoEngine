@@ -50,8 +50,9 @@ internal static class ProjectBuildWorkflow
             return 0;
         }
         string application = Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!;
-        BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost);
-        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, engineRoot, cancellationToken).ConfigureAwait(false);
+        BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost,
+            string.IsNullOrWhiteSpace(command.nativeDependencies) ? null : Path.GetFullPath(command.nativeDependencies, engineRoot));
+        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, engineRoot, cancellationToken, command.nativeDependencies).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
         string extension = context.host.services.executableExtension;
         var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,

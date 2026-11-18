@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <InnoBindingProductId>player</InnoBindingProductId>
     <InnoBgfxShaderTarget>browser-wasm</InnoBgfxShaderTarget>
     <InnoBgfxShaderApis>OpenGLES</InnoBgfxShaderApis>
   </PropertyGroup>

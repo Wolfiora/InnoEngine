@@ -93,6 +93,30 @@ public sealed class NativeArtifactImportTests : IDisposable
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ExportAllowsRegisteredPublishersThatHaveNotProducedAnyGeneration(bool exactSelection)
+    {
+        string producer = Prepare("producer");
+        string consumer = Prepare("consumer");
+        string bindings = Path.Combine(producer, "artifacts", "bindings");
+        BuildCacheOwnerCatalog.Register(producer, bindings, "bindings", BuildCacheArtifactRole.ImmutableArtifact);
+        Assert.False(File.Exists(Path.Combine(bindings, "owner.lock")));
+        using NativeBuildProduct source = await PublishAsync(producer, ProduceAsync);
+        string archive = Path.Combine(producer, "artifacts", "transfer.zip");
+        string relative = Path.GetRelativePath(Path.Combine(producer, "artifacts"), source.directory).Replace('\\', '/');
+        Assert.Equal(1, await NativeArtifactTransfer.ExportAsync(producer, archive,
+            selectedArtifacts: exactSelection ? new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal) { relative } : null));
+        using (ZipArchive zip = ZipFile.OpenRead(archive))
+            Assert.All(zip.Entries, entry => Assert.StartsWith(relative + "/", entry.FullName));
+        Assert.Equal(1, await NativeArtifactTransfer.ImportAsync(consumer, archive));
+        using NativeBuildProduct imported = await PublishAsync(consumer,
+            static (_, _, _) => throw new InvalidOperationException("The transferred generation must not compile again."));
+        Assert.Equal(source.fingerprint, imported.fingerprint);
+        Assert.Equal("result", File.ReadAllText(imported.files.Single()));
+    }
+
+    [Theory]
     [InlineData("escape")]
     [InlineData("tamper")]
     [InlineData("missing")]

@@ -115,6 +115,8 @@
   </Target>
 
   <PropertyGroup Condition="'$(BindGenGeneratedBindings)' == 'true'">
+    <!-- Component compilation consumes the declared product's bindings without becoming a deployable product. -->
+    <InnoBindingProductId Condition="'$(InnoBindingProductId)' == ''">$(InnoProductId)</InnoBindingProductId>
     <!-- Generated ABI carriers already own marshalling; the runtime must not reinterpret them. -->
     <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
     <BindGenOutputDirectory Condition="'$(BindGenOutputDirectory)' == ''">$(MSBuildProjectDirectory)/Generated</BindGenOutputDirectory>
@@ -158,7 +160,7 @@
   <Target Name="BuildBindingGenerator" DependsOnTargets="ValidateBindingGenerator;PrepareInnoBuildTaskHost" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'" />
 
   <Target Name="GenerateBindings" DependsOnTargets="BuildBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
-    <Inno.Build.Tasks.GenerateBindingsTask
+    <Inno.Build.Tasks.GenerateBindingsTask NativeDependencyManifestPath="$(InnoNativeDependencyManifest)" Configuration="$(Configuration)" ProductId="$(InnoBindingProductId)"
       EngineRoot="$(InnoBindingEngineRoot)"
       ComponentProject="$(MSBuildProjectFullPath)"
       ComponentId="$(InnoNativeComponentId)"
@@ -172,6 +174,7 @@
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenGenerationFingerprint" />
       <Output TaskParameter="GenerationFingerprint" PropertyName="BindGenExpectedFingerprint" />
       <Output TaskParameter="UsesRuntimeImports" PropertyName="_BindGenUsesRuntimeImports" />
+      <Output TaskParameter="LibraryKind" PropertyName="InnoNativeLibraryKind" />
       <Output TaskParameter="ArtifactDirectory" PropertyName="BindGenArtifactDirectory" />
       <Output TaskParameter="ArtifactOwnerDirectory" PropertyName="BindGenArtifactOwnerDirectory" />
       <Output TaskParameter="NativeDirectory" PropertyName="BindGenNativeDirectory" />
@@ -190,7 +193,7 @@
   </Target>
 
   <Target Name="CheckBindings" DependsOnTargets="BuildBindingGenerator" Condition="'$(BindGenGeneratedBindings)' == 'true' and '$(DesignTimeBuild)' != 'true'">
-    <Inno.Build.Tasks.GenerateBindingsTask
+    <Inno.Build.Tasks.GenerateBindingsTask NativeDependencyManifestPath="$(InnoNativeDependencyManifest)" Configuration="$(Configuration)" ProductId="$(InnoBindingProductId)"
       EngineRoot="$(InnoBindingEngineRoot)"
       ComponentProject="$(MSBuildProjectFullPath)"
       ComponentId="$(InnoNativeComponentId)"
@@ -232,6 +235,7 @@
       Text="The selected native component must declare its generated import initialization." />
     <PropertyGroup>
       <DefineConstants Condition="'$(InnoNativeRuntimeImports)' == 'true'">$(DefineConstants);INNO_RUNTIME_IMPORTS</DefineConstants>
+      <DefineConstants Condition="'$(InnoNativeLibraryKind)' == 'Static'">$(DefineConstants);INNO_STATIC_NATIVE</DefineConstants>
     </PropertyGroup>
     <Error
       Condition="'$(InnoNativeBindingSelection)' != '' and '$(InnoNativeLibraryKind)' != 'Static' and '$(InnoNativeLibraryKind)' != 'Shared'"
@@ -268,15 +272,17 @@
       Text="The product requires its explicit matching native target." />
   </Target>
 
+  <!-- Clean also resolves project references. Native preparation belongs to the
+       build lifecycle, before references consume the selected product bindings. -->
   <Target
     Name="PrepareProductNativeDeployment"
-    BeforeTargets="AssignProjectConfiguration"
+    BeforeTargets="PrepareForBuild"
     DependsOnTargets="PrepareInnoBuildTaskHost"
     Condition="'$(InnoProductId)' != '' and '$(InnoPrepareProductNative)' != 'false' and '$(DesignTimeBuild)' != 'true' and '$(InnoNativeBindingSelection)' == ''">
     <PropertyGroup>
       <_InnoOwnedProductBindingSelection>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)NativeBindingSelection.props', '$(MSBuildProjectDirectory)'))</_InnoOwnedProductBindingSelection>
     </PropertyGroup>
-    <Inno.Build.Tasks.PrepareProductNativeTask
+    <Inno.Build.Tasks.PrepareProductNativeTask NativeDependencyManifestPath="$(InnoNativeDependencyManifest)"
       EngineRoot="$(MSBuildThisFileDirectory)"
       ProductId="$(InnoProductId)"
       TargetId="$(InnoProductTarget)"
@@ -345,7 +351,7 @@
     AfterTargets="Publish"
     DependsOnTargets="ValidateProductNativePublication;PrepareInnoBuildTaskHost"
     Condition="'$(InnoProductId)' != '' and '$(InnoPrepareProductNative)' != 'false' and '$(DesignTimeBuild)' != 'true'">
-    <Inno.Build.Tasks.PrepareProductNativeTask
+    <Inno.Build.Tasks.PrepareProductNativeTask NativeDependencyManifestPath="$(InnoNativeDependencyManifest)"
       EngineRoot="$(MSBuildThisFileDirectory)"
       ProductId="$(InnoProductId)"
       TargetId="$(InnoProductTarget)"

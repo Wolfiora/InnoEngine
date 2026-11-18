@@ -43,6 +43,11 @@ public sealed class PlayerSupportPackPreparationIdentity
     public string fingerprint { get; private set; } = string.Empty;
 
     /// <summary>
+    /// Gets the frozen optional native dependency selection used by this preparation.
+    /// </summary>
+    public string? nativeDependencies => m_properties.GetValueOrDefault("InnoNativeDependencyManifest");
+
+    /// <summary>
     /// Captures Native declarations, selected binding inputs, the managed graph and explicit packaging inputs.
     /// </summary>
     /// <param name="context">
@@ -140,19 +145,30 @@ public sealed class PlayerSupportPackPreparationIdentity
         CancellationToken cancellation
     ) {
         cancellation.ThrowIfCancellationRequested();
-        IReadOnlyList<NativeBuildRecipe> recipes = m_nativePlan.CreateRecipes(context);
-        var declarations = new List<string> { "support-pack-preparation", m_nativePlan.productId, context.RequireToolchain().targetId };
-        foreach (NativeBuildRecipe recipe in recipes)
-            declarations.Add(recipe.component + "=" + NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellation));
-        NativeComponentDescriptor[] generated = m_nativePlan.steps.Select(static step => step.component)
-            .Where(static component => component.bindingDefinition is not null).DistinctBy(static component => component.nativeProject).ToArray();
-        if (generated.Length > 0)
-            declarations.Add("bindings=" + await context.RequireBindingGenerator().ComputeInputFingerprintAsync(context,
-                new NativeBindingGenerationRequest(generated, context.RequireToolchain().targetId, NativeBindingOutputMode.TargetArtifacts,
-                    componentOptions: m_nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
-                        .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                        .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)),
-                cancellation).ConfigureAwait(false));
+        var declarations = new List<string> { "support-pack-preparation", m_nativePlan.productId };
+        if (m_properties.TryGetValue("InnoNativeDependencyManifest", out string? manifest))
+        {
+            IReadOnlyList<NativeDependencyAsset> assets = await NativeDependencyManifest.SelectAsync(context.engineRoot,
+                manifest, m_properties["InnoNativeTarget"], context.configuration, m_nativePlan, cancellation).ConfigureAwait(false);
+            declarations.AddRange(assets.OrderBy(static asset => asset.asset, StringComparer.Ordinal)
+                .Select(static asset => asset.asset + "=" + asset.sha256));
+        }
+        else
+        {
+            IReadOnlyList<NativeBuildRecipe> recipes = m_nativePlan.CreateRecipes(context);
+            declarations.Add(context.RequireToolchain().targetId);
+            foreach (NativeBuildRecipe recipe in recipes)
+                declarations.Add(recipe.component + "=" + NativeBuildFingerprint.Create(context, recipe.declarations, recipe.inputs, cancellation));
+            NativeComponentDescriptor[] generated = m_nativePlan.steps.Select(static step => step.component)
+                .Where(static component => component.bindingDefinition is not null).DistinctBy(static component => component.nativeProject).ToArray();
+            if (generated.Length > 0)
+                declarations.Add("bindings=" + await context.RequireBindingGenerator().ComputeInputFingerprintAsync(context,
+                    new NativeBindingGenerationRequest(generated, context.RequireToolchain().targetId, NativeBindingOutputMode.TargetArtifacts,
+                        componentOptions: m_nativePlan.steps.Where(static step => step.component.bindingDefinition is not null)
+                            .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
+                            .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)),
+                    cancellation).ConfigureAwait(false));
+            }
         ManagedBuildInputSnapshot managed = await ManagedBuildInputSnapshot.CaptureAsync(context, m_sdk, m_project,
             m_properties, cancellation).ConfigureAwait(false);
         m_managed ??= managed;

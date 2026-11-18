@@ -198,7 +198,7 @@ GPU 不重传不等于 managed 不复制。同一张不变纹理被多个 draw �
 
 ### F09：隔离构建的包身份验收读取了另一作用域
 
-[`NuGetBindingDependencyTests.cs:40`](../../../tests/build/Inno.Build.Tests/NuGetBindingDependencyTests.cs#L40) 把 `tests/build/Inno.Build.Tests/obj/project.assets.json` 当作本次产物位置；该路径没有通过实际 MSBuild 求值取得。当前真实结果是：
+[`NuGetBindingDependencyTests.cs:40`](https://github.com/Wolfiora/InnoEngine/blob/a9b6c08ba080afcda697ba1bb18238f4f80d87d8/tests/build/Inno.Build.Tests/NuGetBindingDependencyTests.cs#L40) 把 `tests/build/Inno.Build.Tests/obj/project.assets.json` 当作本次产物位置；该路径没有通过实际 MSBuild 求值取得。当前真实结果是：
 
 | 输入 | BGCS.Runtime |
 | --- | --- |

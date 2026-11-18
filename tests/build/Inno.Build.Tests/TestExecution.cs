@@ -1,4 +1,4 @@
 using Xunit;
 
-// SDK fixtures share checkout outputs; concurrency is exercised explicitly within each ownership contract.
+// Preserve the original fixture lifetime isolation while ownership is split across assemblies.
 [assembly: CollectionBehavior(DisableTestParallelization = true)]

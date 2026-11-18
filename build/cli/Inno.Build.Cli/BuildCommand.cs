@@ -44,6 +44,8 @@ internal sealed class BuildCommand
 
     internal BuildTargetId toolsTarget => new(Require(m_values, "tools-target"));
 
+    internal string? nativeDependencies => m_values.GetValueOrDefault("native-dependencies");
+
     internal string? dotnetHost => m_values.GetValueOrDefault("dotnet");
 
     internal BuildTargetId gameTarget => new(Require(m_values, "target"));
@@ -93,7 +95,7 @@ internal sealed class BuildCommand
             _ => []
         };
         string[] preparation = kind is BuildCommandKind.Game or BuildCommandKind.Plugin
-            ? ["tools-target", "support-packs"] : [];
+            ? ["tools-target", "support-packs", "native-dependencies"] : [];
         var allowed = new HashSet<string>(["engine-root", "dotnet", "project", "output", ..preparation, ..specific], StringComparer.Ordinal);
         foreach (string key in values.Keys)
             if (!allowed.Contains(key))

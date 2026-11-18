@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestSupportProject>true</IsTestSupportProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../../../tools/Inno.Tooling.Architecture/Inno.Tooling.Architecture.csproj" />
+    <ProjectReference Include="../../../../tools/Inno.Tooling.Documentation/Inno.Tooling.Documentation.csproj" />
+    <ProjectReference Include="../../../../tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj" />
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" />
+  </ItemGroup>
+</Project>

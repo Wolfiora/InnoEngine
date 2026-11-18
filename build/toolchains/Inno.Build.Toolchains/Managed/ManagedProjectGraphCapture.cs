@@ -58,6 +58,64 @@ public static class ManagedProjectGraphCapture
         CancellationToken cancellationToken = default,
         bool resolveReferences = false
     ) {
+        ValidateProjects(projects, properties);
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnetHost, engineRoot, cancellationToken).ConfigureAwait(false);
+        return await EvaluateAsync(engineRoot, sdk, projects, properties, cancellationToken, resolveReferences).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Evaluates a set of projects with the SDK already selected for this checkout. Multiple graph contexts can share one SDK selection.
+    /// </summary>
+    /// <param name="engineRoot">
+    /// The checkout owning the evaluator and its temporary request.
+    /// </param>
+    /// <param name="sdk">
+    /// The descriptor returned by DotNetSdkResolver for the evaluation owner and its current SDK inputs.
+    /// </param>
+    /// <param name="projects">
+    /// Existing absolute project paths evaluated together with identical global properties.
+    /// </param>
+    /// <param name="properties">
+    /// The complete evaluation properties, including configuration and any explicit output owner.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels preparation or evaluation and drains child processes before releasing owners.
+    /// </param>
+    /// <param name="resolveReferences">
+    /// Resolves compile references and implicit symbols after restore without building project references or native products.
+    /// </param>
+    /// <returns>
+    /// A JSON array of SDK snapshots. An empty request or failed evaluation throws instead of returning partial evidence.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// No projects are supplied or a project path is not absolute.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// A project or selected SDK input is absent.
+    /// </exception>
+    /// <exception cref="OperationCanceledException">
+    /// The caller cancels owned work.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Evaluator preparation or project evaluation fails.
+    /// </exception>
+    public static async Task<string> CaptureSelectedAsync(
+        string engineRoot,
+        DotNetSdkDescriptor sdk,
+        IReadOnlyList<string> projects,
+        IReadOnlyDictionary<string, string> properties,
+        CancellationToken cancellationToken = default,
+        bool resolveReferences = false
+    ) {
+        ArgumentNullException.ThrowIfNull(sdk);
+        ValidateProjects(projects, properties);
+        return await EvaluateAsync(engineRoot, sdk, projects, properties, cancellationToken, resolveReferences).ConfigureAwait(false);
+    }
+
+    private static void ValidateProjects(
+        IReadOnlyList<string> projects,
+        IReadOnlyDictionary<string, string> properties
+    ) {
         ArgumentNullException.ThrowIfNull(projects);
         ArgumentNullException.ThrowIfNull(properties);
         if (projects.Count == 0 || projects.Any(static project => !Path.IsPathFullyQualified(project)))
@@ -65,8 +123,17 @@ public static class ManagedProjectGraphCapture
         foreach (string project in projects)
             if (!File.Exists(project))
                 throw new FileNotFoundException("The SDK project input is missing.", project);
+    }
+
+    private static async Task<string> EvaluateAsync(
+        string engineRoot,
+        DotNetSdkDescriptor sdk,
+        IReadOnlyList<string> projects,
+        IReadOnlyDictionary<string, string> properties,
+        CancellationToken cancellationToken,
+        bool resolveReferences
+    ) {
         var context = new NativeBuildContext(engineRoot, "debug");
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnetHost, engineRoot, cancellationToken).ConfigureAwait(false);
         using ManagedInputEvaluatorPreparation.Result evaluator = await ManagedInputEvaluatorPreparation.PrepareAsync(context, sdk, cancellationToken).ConfigureAwait(false);
         string requests = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "requests");
         BuildCacheOwnerCatalog.Register(context.engineRoot, requests, "managed-input-requests", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);

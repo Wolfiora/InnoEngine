@@ -84,7 +84,7 @@
 | --- | --- | --- |
 | P2 | 并行录制分配 | 当前 .NET 10 实测仍存在；优化后需相同公开边界回放与分配对照，保留并行和异常语义。 |
 | P2 | 验收调度 | [隔离测试入口](../../../tests/Invoke-IsolatedTests.ps1) 在共享套件或单个隔离用例失败后直接抛出，后续独立用例不会继续；应最终汇总失败，同时完成能独立执行的用例。 |
-| P2 | 超时诊断 | [NativeWindowTestHost](../../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/NativeWindowTestHost.cs) 的超时分支终止进程后没有保留已读 stdout/stderr；属于诊断缺口。本轮未重现 macOS 退休超时，不能宣布该问题根治。 |
+| P2 | 超时诊断 | [NativeWindowTestHost](https://github.com/Wolfiora/InnoEngine/blob/a9b6c08ba080afcda697ba1bb18238f4f80d87d8/backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/NativeWindowTestHost.cs) 的超时分支终止进程后没有保留已读 stdout/stderr；属于诊断缺口。本轮未重现 macOS 退休超时，不能宣布该问题根治。 |
 | P3 | XML 说明质量 | 仍有模板化的参数/ownership 文案；符号、标签和签名门禁通过不代表行为说明充分。 |
 | 环境 | 默认 SDK | 系统默认 `dotnet --version` 无法满足仓库的 SDK 声明；本轮明确使用 `C:\Users\23842\.dotnet\dotnet.exe`。普通终端 / IDE 的 SDK 选择尚未由本轮验证为开箱可用。 |
 | 暂缓 | 产品 / Wiki | 完整 Windows Editor/Player 及 Wiki 产品引用链需要正常 Native/绑定闭包；保留既有 73 个 Editor.Scripting 部署失败用例及本轮 76 个产品依赖失败，不计为通过。两组来自不同程序集，详见原始记录。 |

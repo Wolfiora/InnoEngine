@@ -12,7 +12,8 @@ function Hash([string] $Path) { (Get-FileHash -LiteralPath $Path -Algorithm SHA2
 [IO.Directory]::CreateDirectory($root) | Out-Null
 if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
 if (!$Transport) {
-    $Transport = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log')
+    $Transport = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
+        -WorkspaceDirectory (Join-Path $root 'artifacts/bootstrap')
 }
 if (!(Test-Path -LiteralPath $Transport -PathType Leaf)) { throw 'The actual managed API transport is required.' }
 & git -C $root init -q -b master

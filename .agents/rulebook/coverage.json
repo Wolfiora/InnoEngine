@@ -2809,6 +2809,22 @@
             "sourceHash": "163b6b3e30a395ad2deb4ac88fa58052e5b17073729b41c31e1b56f91a2606a3",
             "targetHash": "f1e2390738b878c94984a774ba27f7ce1dfe9304624b4f14238b10ee17ad9d29"
           }
+        ],
+        "amendments": [
+          {
+            "ordinal": 7,
+            "previousHash": "7174f703b0a255c6b67e6e0eb62f06f435f8d62ba8140d6ad8e1eccfb66450bc",
+            "currentHash": "fc58ad6c6d4b1439f732c3ffa8f9c16635d7ea95771f5f98a5139d87dbe2c23c",
+            "approval": "User-approved InnoEngine CI/CD, platform ownership and testing refactor plan, sections 4.1 and 4.8",
+            "review": ".agents/records/decisions/ROOT_TEST_OWNERSHIP.md"
+          },
+          {
+            "ordinal": 11,
+            "previousHash": "61dd28ec15b54946f7a6e16a616a700c68254f65b288b2c71f56b59251a7256b",
+            "currentHash": "5df2b1554553a9db29feabf4ab466bc948597f06ba9a5f7f0c4c6e0d305faf0f",
+            "approval": "User-approved InnoEngine CI/CD, platform ownership and testing refactor plan, sections 4.1 and 4.8",
+            "review": ".agents/records/decisions/ROOT_TEST_OWNERSHIP.md"
+          }
         ]
       }
     },

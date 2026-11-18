@@ -1,0 +1,5 @@
+[
+  { "target": "windows-x64", "runner": "windows-2022", "workloads": [], "configurations": ["Debug", "Release"] },
+  { "target": "macos-arm64", "runner": "macos-15", "workloads": [], "configurations": ["Debug", "Release"] },
+  { "target": "browser-wasm", "runner": "windows-2022", "workloads": ["wasm-tools"], "configurations": ["Release"] }
+]
