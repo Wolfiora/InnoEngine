@@ -18,12 +18,10 @@ internal static class DocumentationApiSynchronization
         string[] arguments,
         CancellationToken cancellation
     ) {
-        if (arguments.Length != (operation == "api-review" ? 4 : 2) || arguments[0] != "--docs-root"
-            || operation == "api-review" && arguments[2] != "--page")
-            throw new ArgumentException("Usage: docs <api-plan|api-check|api-sync|api-review> --docs-root CHECKOUT [--page REGISTERED_API_MARKDOWN]");
+        if (arguments.Length != 2 || arguments[0] != "--docs-root")
+            throw new ArgumentException("Usage: docs <api-plan|api-check|api-sync> --docs-root CHECKOUT");
         string root = Path.GetFullPath(arguments[1]);
-        return await WithOwnershipAsync(root, () => Task.FromResult(ExecuteOwned(operation, root, cancellation,
-            operation == "api-review" ? arguments[3] : null)), cancellation).ConfigureAwait(false);
+        return await WithOwnershipAsync(root, () => Task.FromResult(ExecuteOwned(operation, root, cancellation)), cancellation).ConfigureAwait(false);
     }
 
     internal static async Task<int> WithOwnershipAsync(
@@ -43,16 +41,13 @@ internal static class DocumentationApiSynchronization
     internal static int ExecuteOwned(
         string operation,
         string root,
-        CancellationToken cancellation,
-        string? reviewPage = null
+        CancellationToken cancellation
     ) {
         string bindingPath = DocumentationApiFacts.Resolve(root, "reference/engine.lock.json");
         byte[] bindingBytes = File.ReadAllBytes(bindingPath);
         DocumentationBinding binding = JsonSerializer.Deserialize<DocumentationBinding>(bindingBytes)
             ?? throw new InvalidDataException("Missing engine API binding.");
-        DocumentationApiPlan plan = operation == "api-review"
-            ? DocumentationApiContent.Review(root, binding, reviewPage!)
-            : DocumentationApiContent.Plan(root, binding);
+        DocumentationApiPlan plan = DocumentationApiContent.Plan(root, binding);
         if (operation == "api-plan")
         {
             Console.WriteLine(JsonSerializer.Serialize(plan));
@@ -94,7 +89,7 @@ internal static class DocumentationApiSynchronization
                 else AtomicFile.WriteAllBytes(original.Key, original.Value);
             throw;
         }
-        Console.WriteLine(JsonSerializer.Serialize(new { status = operation == "api-review" ? "Reviewed" : "Synchronized", plan.symbols, changedFiles = plan.edits.Count,
+        Console.WriteLine(JsonSerializer.Serialize(new { status = "Synchronized", plan.symbols, changedFiles = plan.edits.Count,
             warnings = plan.warnings.Count, editorialConclusion = plan.warnings.Count == 0 ? "success" : "neutral" }));
         return 0;
     }

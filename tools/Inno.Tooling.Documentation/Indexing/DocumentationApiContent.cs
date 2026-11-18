@@ -101,15 +101,18 @@ internal static class DocumentationApiContent
             if (existing is not null && existing.source != "xml")
             {
                 // Synchronization owns metadata; the authored body remains byte-for-byte intact.
-                Edit(path, Fragment(entry, fact, existing.body, existing));
+                string fingerprint = Contract(pair.Value, normalizeXml: true);
+                string? staleProse = existing.StaleProse(fingerprint, contract);
+                bool stale = existing.IsOutdated(staleProse);
+                Edit(path, Fragment(entry, fact, existing.body, existing, fingerprint, staleProse));
                 if (string.IsNullOrWhiteSpace(existing.body) || Normalize(existing.body) == Normalize(DocumentationXml.Read(fact.documentation).body))
                     warnings.Add(new(fact.key, path, "EmptyManual", "Manual ownership has no independent explanatory content."));
-                if (IsOutdated(existing, contract))
-                    warnings.Add(new(fact.key, path, "ReviewRequired", "The current source contract has not been acknowledged by this manual fragment."));
+                if (stale)
+                    warnings.Add(new(fact.key, path, "ReviewRequired", "The authored explanation is marked outdated for the current source."));
             }
             else
             {
-                Edit(path, Fragment(entry, fact, DocumentationXml.Read(fact.documentation).body, existing));
+                Edit(path, Fragment(entry, fact, DocumentationXml.Read(fact.documentation).body, existing, Contract(pair.Value, normalizeXml: true)));
                 warnings.Add(new(fact.key, path, "XmlOnly", "This API still uses XML-synchronized prose."));
             }
         }
@@ -155,6 +158,9 @@ internal static class DocumentationApiContent
         }
         Edit(C_REGISTRY, JsonSerializer.Serialize(new DocumentationApiContentRegistry("inno-api-content/1", entries.OrderBy(entry => entry.symbol, StringComparer.Ordinal).ToArray(), navigation.Keys.Order(StringComparer.Ordinal).ToArray()),
             new JsonSerializerOptions { WriteIndented = true, NewLine = "\n" }) + "\n");
+        DocumentationApiPlan guides = DocumentationProjectGuides.Plan(root, binding, facts);
+        foreach (var edit in guides.edits) edits[edit.path] = edit;
+        warnings.AddRange(guides.warnings);
         return new(edits.Values.OrderBy(edit => edit.path, StringComparer.Ordinal).ToArray(), warnings, facts.Count);
 
         void Edit(
@@ -170,44 +176,13 @@ internal static class DocumentationApiContent
         }
     }
 
-    internal static bool IsOutdated(
-        DocumentationApiFragment fragment,
-        string contract
-    ) => fragment.source != "xml" && (fragment.outdated || fragment.reviewed != contract);
-
-    internal static DocumentationApiPlan Review(
-        string root,
-        DocumentationBinding binding,
-        string page
-    ) {
-        string path = RequireApiPath(root, page);
-        DocumentationApiContentRegistry registry = JsonSerializer.Deserialize<DocumentationApiContentRegistry>(
-            File.ReadAllBytes(DocumentationApiFacts.Resolve(root, C_REGISTRY)))
-            ?? throw new InvalidDataException("Missing API content registry.");
-        if (registry.schema != "inno-api-content/1") throw new InvalidDataException("Unsupported API content registry.");
-        DocumentationApiContentEntry entry = registry.entries.SingleOrDefault(candidate => candidate.path == page)
-            ?? throw new InvalidDataException("Review requires one registered API page: " + page);
-        IReadOnlyDictionary<string, DocumentationApiFact[]> facts = DocumentationApiFacts.Read(root, binding);
-        if (!facts.TryGetValue(entry.symbol, out DocumentationApiFact[]? contexts))
-            throw new InvalidDataException("Removed API content cannot be marked verified: " + page);
-        DocumentationApiFragment fragment = DocumentationApiFragment.Read(page, File.ReadAllText(path))
-            ?? throw new InvalidDataException("Registered API page has no symbol: " + page);
-        if (fragment.symbol != entry.symbol || fragment.source == "xml")
-            throw new InvalidDataException("Review requires matching named-author content: " + page);
-        if (string.IsNullOrWhiteSpace(fragment.body)
-            || Normalize(fragment.body) == Normalize(DocumentationXml.Read(contexts[0].documentation).body))
-            throw new InvalidDataException("Write an independent explanation before acknowledging review: " + page);
-        var current = entry with { contract = Contract(contexts), title = DocumentationApiPresentation.Name(contexts[0], facts) };
-        string text = Fragment(current, contexts[0], fragment.body, fragment, acknowledgeReview: true);
-        return new(text == fragment.text ? [] : [new(page, DocumentationMarkdown.Hash(fragment.text), text)], [], 1);
-    }
-
-    internal static string Fragment(
+    private static string Fragment(
         DocumentationApiContentEntry entry,
         DocumentationApiFact fact,
         string body,
         DocumentationApiFragment? previous = null,
-        bool acknowledgeReview = false
+        string? fingerprint = null,
+        string? staleProse = null
     ) {
         bool manual = previous is not null && previous.source != "xml";
         var generated = new YamlMappingNode
@@ -218,25 +193,26 @@ internal static class DocumentationApiContent
             { "kind", "api" },
             { "owners", new YamlSequenceNode(new YamlScalarNode(fact.project)) },
             { "apiSurface", fact.surface },
-            { "reviewed", manual && !acknowledgeReview ? previous!.reviewed ?? "" : entry.contract }
+            { "sourceFingerprint", fingerprint ?? entry.contract }
         };
+        if (staleProse is not null) generated.Add("outdatedFor", staleProse);
         if (fact.scope is not null) generated.Add("apiScope", fact.scope);
         generated.Add("contracts", previous is not null && previous.metadata.Children.TryGetValue(new YamlScalarNode("contracts"), out YamlNode? contracts) ? contracts : new YamlSequenceNode());
         var authored = new YamlMappingNode
         {
             { "source", manual ? previous!.source : "xml" },
             { "description", previous is not null && previous.metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description) ? description : new YamlScalarNode("null") { Style = YamlDotNet.Core.ScalarStyle.Plain } },
-            { "outdated", manual && !acknowledgeReview && IsOutdated(previous!, entry.contract) ? "true" : "false" }
+            { "outdated", manual && previous!.ExplicitlyOutdated ? "true" : "false" }
         };
         if (previous is not null)
             foreach (var field in previous.metadata.Children)
             {
                 string key = ((YamlScalarNode)field.Key).Value!;
                 if (generated.Children.ContainsKey(field.Key) || authored.Children.ContainsKey(field.Key)
-                    || key is "apiScope" or "apiSurfaces") continue;
+                    || key is "apiScope" or "apiSurfaces" or "reviewed" or "outdatedFor") continue;
                 authored.Add(field.Key, field.Value);
             }
-        return "---\n# Generated metadata. Maintained by API synchronization and review tooling.\n"
+        return "---\n# Generated metadata. Maintained by API synchronization tooling.\n"
             + Serialize(generated) + "\n\n# Authoring metadata. Edit these fields and the explanation below.\n"
             + Serialize(authored) + "\n---" + (manual ? body : body.Length == 0 ? "\n" : "\n\n" + body.Trim() + "\n");
     }
@@ -249,8 +225,11 @@ internal static class DocumentationApiContent
         return text.EndsWith("\n...", StringComparison.Ordinal) ? text[..^4] : text;
     }
 
-    internal static string Contract(IEnumerable<DocumentationApiFact> contexts)
-        => DocumentationMarkdown.Hash(string.Join('\n', contexts.Select(fact => fact.signatureHash + "\0" + fact.documentation
+    internal static string Contract(
+        IEnumerable<DocumentationApiFact> contexts,
+        bool normalizeXml = false
+    ) => DocumentationMarkdown.Hash(string.Join('\n', contexts.Select(fact => fact.signatureHash + "\0"
+            + (normalizeXml ? fact.documentation.ReplaceLineEndings("\n") : fact.documentation)
             + "\0" + fact.scope + "\0" + fact.configuration + "\0" + fact.target + "\0" + fact.surface).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)));
 
     internal static string Title(DocumentationApiFact fact)
