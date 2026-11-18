@@ -49,3 +49,16 @@ The implementation commit `80f4cccd898bbf3b64103cc49182bdc432fe0c01` passed its 
 ## Local storage
 
 Registered retirement recovered 4,004,084,787 logical bytes. SDK clean removed obsolete task-owned compiled outputs. Automatic approval review blocked recursive deletion of older diagnostic directories and the temporary publication directory. Registered retirement, SDK clean and reversible compression recovered disk space. Exact removal of the five completed transfer ZIPs also reclaimed 86,055,281 bytes. At delivery the C drive had 34.1 GiB free.
+
+## CI-only backend package measurements
+
+The Core probe changed the same mathematics test as the previous measurements. The branch run used the normal push event. The PR-profile runs used the existing dispatch adapter with the immediately preceding commit as base, Windows 2022 and macOS 15, and the same .NET SDK. Times start at GitHub run creation for wall time. The active critical path sums the participating jobs on the longer dependency chain and omits scheduling gaps.
+
+| Probe | GitHub run | Active critical path | Wall time |
+| --- | --- | --- | --- |
+| Branch | [44392798899](https://github.com/Wolfiora/InnoEngine/actions/runs/44392798899) | 225 s | 238 s |
+| PR profile | [44393311972](https://github.com/Wolfiora/InnoEngine/actions/runs/44393311972) | 280 s | 598 s |
+| PR profile | [44395527109](https://github.com/Wolfiora/InnoEngine/actions/runs/44395527109) | 259 s | 276 s |
+| PR profile | [44395534813](https://github.com/Wolfiora/InnoEngine/actions/runs/44395534813) | 265 s | 282 s |
+
+The branch passed four required checks, including all 19 mathematics tests. Backend downloads, compilations, deployments and backend tests were zero. The branch met its five-minute target. Its previous wall time was 236 seconds. The PR-profile median met the ten-minute target at 282 seconds wall time. Its previous median was 564 seconds. Active time rose from 234 to 265 seconds, so the reduction in wall time cannot be attributed to faster computation. On the median active run, routing took 12 seconds, the slower host took 206 seconds, backend matrix reconciliation took 17 seconds and the final gate took 30 seconds. These samples measure managed changes only.
