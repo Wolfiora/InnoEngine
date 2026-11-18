@@ -31,9 +31,9 @@ if ($Operation -ceq 'consume') {
 }
 $dotnetPath = (Get-Command $Dotnet -CommandType Application | Select-Object -First 1).Source
 $work = [IO.Directory]::CreateDirectory((Join-Path $root 'artifacts/bn')).FullName
-$entry = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $dotnetPath -LogPath "$work/bootstrap.log")
 $previous = $null
 if ($PreviousZip) {
+    $entry = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $dotnetPath -LogPath "$work/bootstrap.log")
     $previous = Join-Path $work 'prior'
     & $dotnetPath $entry[0] validate import-backends --archive $PreviousZip --sha256 $PreviousDigest --target $Target --output $previous
     if ($LASTEXITCODE) { throw 'The native producer seed could not be verified.' }
@@ -75,6 +75,11 @@ if ($previous -and $HostTarget -ceq $Target) {
 & $dotnetPath build $project --configuration Debug --artifacts-path $sdk --disable-build-servers -m:2 -nr:false @properties
 if ($LASTEXITCODE) { throw 'The producer Build entry failed.' }
 $buildEntry = @(& $dotnetPath msbuild $project -nologo -p:Configuration=Debug "-p:ArtifactsPath=$sdk" -getProperty:TargetPath)
-if ($LASTEXITCODE -or $buildEntry.Count -ne 1) { throw 'The producer Build entry was not unique.' }
+if ($LASTEXITCODE -or $buildEntry.Count -ne 1 -or ![IO.Path]::IsPathFullyQualified($buildEntry[0]) -or
+    !(Test-Path -LiteralPath $buildEntry[0] -PathType Leaf)) { throw 'The SDK did not produce the requested Build entry.' }
+$relativeEntry = [IO.Path]::GetRelativePath($sdk,$buildEntry[0])
+if ([IO.Path]::IsPathRooted($relativeEntry) -or $relativeEntry.Split([IO.Path]::DirectorySeparatorChar)[0] -ceq '..') {
+    throw 'The producer Build entry is outside its SDK output directory.'
+}
 & "$PSScriptRoot/Prepare-BackendNativeInputs.ps1" -Target $Target -HostTarget $HostTarget -BuildEntry $buildEntry[0] -Dotnet $dotnetPath `
     -Directory $NativeDirectory -PreviousDirectory $previous
