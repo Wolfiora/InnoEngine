@@ -11,7 +11,7 @@ $project = Join-Path $repository 'backends/Sdl3/native/Inno.Native.Sdl3/Inno.Nat
 $success = $false
 try {
     [IO.Directory]::CreateDirectory($fixture) | Out-Null
-    & $Dotnet build $project --configuration Debug --artifacts-path $source "-p:InnoBackendExportRoot=$staging" -m:2 --nologo
+    & $Dotnet build $project --configuration Debug --artifacts-path $source "-p:InnoBackendExportRoot=$staging" "-p:InnoBackendExportArtifactsPath=$source" -m:2 --nologo
     if ($LASTEXITCODE) { throw 'The SDL source producer failed.' }
     $receipts = @(Get-ChildItem -LiteralPath (Join-Path $staging 'receipts') -File -Recurse -Filter files.txt)
     if ($receipts.Count -ne 2) { throw 'Expected SDL and its backend library loader in the compiled SDK closure.' }

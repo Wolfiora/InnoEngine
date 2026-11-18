@@ -128,7 +128,12 @@ public static class BackendPrebuiltArchive
         }
         if (expected.Count != 0)
             throw new InvalidDataException("Missing backend ZIP entries.");
-        AtomicFile.WriteAllBytes(Path.Combine(payload, C_MANIFEST), JsonSerializer.SerializeToUtf8Bytes(inventory));
+        byte[] manifestBytes = JsonSerializer.SerializeToUtf8Bytes(inventory);
+        AtomicFile.WriteAllBytes(Path.Combine(payload, C_MANIFEST), manifestBytes);
+        AtomicFile.WriteAllBytes(Path.Combine(payload, "receipt.json"), JsonSerializer.SerializeToUtf8Bytes(new
+        {
+            target, sha256, manifestSha256 = Convert.ToHexStringLower(SHA256.HashData(manifestBytes))
+        }));
         AtomicDirectory.Publish(payload, output, cancellationToken);
     }
 
@@ -142,6 +147,7 @@ public static class BackendPrebuiltArchive
         {
             if (file is null || string.IsNullOrWhiteSpace(file.owner) || string.IsNullOrWhiteSpace(file.configuration) || !IsDigest(file.input)
                 || !IsDigest(file.sha256) || string.IsNullOrEmpty(file.path) || !paths.Add(file.path) || file.path.Equals(C_MANIFEST, StringComparison.OrdinalIgnoreCase)
+                || file.path.Equals("receipt.json", StringComparison.OrdinalIgnoreCase)
                 || file.path.Split('/').Any(static part => part is "" or "." or ".." || part.EndsWith('.') || part.EndsWith(' ')
                     || part.Any(static c => !char.IsAsciiLetterOrDigit(c) && c is not ('.' or '_' or '-'))
                     || IsReservedName(part)))

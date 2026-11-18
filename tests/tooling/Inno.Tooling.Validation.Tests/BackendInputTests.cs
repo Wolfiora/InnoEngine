@@ -1,5 +1,7 @@
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Inno.Testing.Validation;
@@ -9,6 +11,64 @@ namespace Inno.Tooling.Validation.Tests;
 
 public sealed class BackendInputTests
 {
+    [Fact]
+    public async Task BindingRejectsMissingOwnersAndChangedInventoryBeforeWritingTheNativeSelection()
+    {
+        using var repository = new ValidationRepository();
+        const string C_STORE = "artifacts/backend-packages";
+        const string C_PROJECT = "backends/Probe/Probe.csproj";
+        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
+            "<PropertyGroup><InnoDevelopmentTarget>fixture</InnoDevelopmentTarget></PropertyGroup>"));
+        repository.Write(C_PROJECT, ValidationRepository.Project());
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Register host and backend");
+        repository.Write("backends/Probe/Changed.cs", "class BackendChange {}");
+        using JsonDocument plan = await repository.PlanAsync(profile: "fast", backendStore: C_STORE);
+        repository.Write("artifacts/packages.json", "[]");
+        await Assert.ThrowsAsync<InvalidDataException>(Bind);
+        Assert.False(File.Exists(repository.PathOf(C_STORE + "/selection.json")));
+        string inputPath = repository.PathOf("artifacts/current.json");
+        Assert.Equal(0, await ValidationCommand.ExecuteAsync(["backend-inputs", "--target", "fixture",
+            "--plan", repository.PathOf("artifacts/plan/plan.json"), "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--output", inputPath]));
+        using JsonDocument inputs = JsonDocument.Parse(File.ReadAllBytes(inputPath));
+        string input = inputs.RootElement.GetProperty("projects").GetProperty(C_PROJECT).GetString()!;
+        string native = """{"assets":[],"aggregates":[]}""";
+        string inventory = JsonSerializer.Serialize(new { target = "fixture", files = new[] {
+            new { owner = "fixture", configuration = "all", input = Digest(native), path = "native/selection.json", sha256 = Digest(native) },
+            new { owner = C_PROJECT, configuration = "Debug", input, path = "managed/probe.dll", sha256 = Digest("probe") }
+        } });
+        string receipt = JsonSerializer.Serialize(new { target = "fixture", sha256 = Digest("archive"), manifestSha256 = Digest(inventory) });
+        repository.Write("artifacts/packages.json", "[" + receipt + "]");
+        repository.Write(C_STORE + "/fixture/receipt.json", receipt);
+        repository.Write(C_STORE + "/fixture/native/selection.json", native);
+        repository.Write(C_STORE + "/fixture/manifest.json", inventory + " ");
+        await Assert.ThrowsAsync<InvalidDataException>(Bind);
+        repository.Write(C_STORE + "/fixture/manifest.json", inventory);
+        Assert.Equal(0, await Bind());
+        using JsonDocument bound = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/bound.json")));
+        Assert.Equal(Digest("archive"), bound.RootElement.GetProperty("backendPackages")[0].GetProperty("sha256").GetString());
+
+        Task<int> Bind() => ValidationCommand.ExecuteAsync(["bind-backends", "--packages", repository.PathOf("artifacts/packages.json"),
+            "--plan", repository.PathOf("artifacts/plan/plan.json"), "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--output", repository.PathOf("artifacts/bound.json")]);
+        static string Digest(string value) => System.Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+    }
+
+    [Fact]
+    public async Task PureManagedChecksBindAnEmptyAcquisition()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("src/Example/Changed.cs", "class ManagedChange {}");
+        using JsonDocument plan = await repository.PlanAsync(profile: "fast", backendStore: "artifacts/backend-packages");
+        repository.Write("artifacts/packages.json", "[]");
+        Assert.Equal(0, await ValidationCommand.ExecuteAsync(["bind-backends", "--packages", repository.PathOf("artifacts/packages.json"),
+            "--plan", repository.PathOf("artifacts/plan/plan.json"), "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--output", repository.PathOf("artifacts/bound.json")]));
+        using JsonDocument bound = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/bound.json")));
+        Assert.Empty(bound.RootElement.GetProperty("backendPackages").EnumerateArray());
+    }
+
     [Fact]
     public async Task TestEditsRetainCompilerInputsAndSharedProductionChangesReachTheirConsumers()
     {

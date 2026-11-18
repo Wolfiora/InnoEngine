@@ -36,7 +36,8 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
         string output = Path.Combine(m_root, "consumer");
         await BackendPrebuiltArchive.ExtractAsync(Archive, digest, "fixture-target", output);
         Assert.Equal("99", File.ReadAllText(Path.Combine(output, "library-99.dll")));
-        Assert.Equal(2, Directory.GetFiles(output).Length);
+        Assert.Equal(3, Directory.GetFiles(output).Length);
+        Assert.Contains(digest, File.ReadAllText(Path.Combine(output, "receipt.json")));
         await Assert.ThrowsAnyAsync<IOException>(() => BackendPrebuiltArchive.ExtractAsync(Archive, digest, "fixture-target", output));
         Assert.Equal("99", File.ReadAllText(Path.Combine(output, "library-99.dll")));
     }

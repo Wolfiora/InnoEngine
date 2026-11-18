@@ -45,6 +45,7 @@ public static partial class NativeDependencyManifest
 
     private static async Task<ProductNativeBuildResult> AcquireAggregateAsync(
         string root,
+        string archive,
         AggregateAsset asset,
         ProductNativeBuildPlan plan,
         CancellationToken cancellation
@@ -59,7 +60,6 @@ public static partial class NativeDependencyManifest
         string[] bindingDirectories = asset.bindings.Values.Select(binding => ResolveBinding(binding)).ToArray();
         if (!Directory.Exists(directory) || bindingDirectories.Any(path => !Directory.Exists(path)))
         {
-            string archive = Path.Combine(root, "artifacts", "dependencies", "downloads", asset.sha256 + ".zip");
             using (FileStream payload = File.OpenRead(archive))
                 if (Convert.ToHexStringLower(await SHA256.HashDataAsync(payload, cancellation).ConfigureAwait(false)) != asset.sha256)
                     throw new InvalidDataException("Native aggregate archive differs from its pinned digest.");

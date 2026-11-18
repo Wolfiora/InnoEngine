@@ -27,8 +27,18 @@ internal static partial class ValidationPlanner
         string? documentationSnapshot = null,
         string? documentationBaseline = null,
         ValidationProfile profile = ValidationProfile.PullRequest,
-        string? nativeDependencies = null
+        string? nativeDependencies = null,
+        string? backendStore = null
     ) {
+        if (backendStore is not null)
+        {
+            if (nativeDependencies is not null)
+                throw new ArgumentException("The backend store owns the native selection for this plan.");
+            string store = Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(backendStore, root));
+            Inno.Core.IO.PathBoundary.RequireContained(Path.Combine(root, "artifacts"), store);
+            backendStore = Path.GetRelativePath(root, store).Replace('\\', '/');
+            nativeDependencies = backendStore + "/selection.json";
+        }
         if (profile == ValidationProfile.NativeProducer && (nativeDependencies is not null || full || extended))
             throw new ArgumentException("Native producer acceptance requires explicit source production and cannot certify full functional acceptance.");
         if (nativeDependencies is not null)
@@ -237,7 +247,7 @@ internal static partial class ValidationPlanner
                         .Concat(nativeDocumentOwners).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
                     unavailable.ToDictionary(static path => path,
                         path => inputs[path]["unavailable:".Length..], StringComparer.Ordinal)));
-            if (nativeDependencies is not null && !File.Exists(Path.Combine(root, nativeDependencies)))
+            if (backendStore is null && nativeDependencies is not null && !File.Exists(Path.Combine(root, nativeDependencies)))
                 throw new InvalidDataException("Native dependency selection is missing: " + nativeDependencies
                     + ". Run the manual Native Dependencies action and adopt its published selection before native validation.");
             if (development is null)
@@ -483,9 +493,17 @@ internal static partial class ValidationPlanner
                 .Select(check => new ValidationNativeRequest(contexts[check.context!].properties["InnoNativeTarget"], "Release", "player")))
             .Distinct().OrderBy(static request => request.target, StringComparer.Ordinal)
             .ThenBy(static request => request.configuration, StringComparer.Ordinal).ThenBy(static request => request.product, StringComparer.Ordinal).ToArray();
+        if (backendStore is not null)
+        {
+            foreach (ValidationContext context in contexts.Values)
+            {
+                context.properties["InnoBackendPackageDirectory"] = Path.Combine(root, backendStore);
+                context.properties["InnoBackendHostTarget"] = target;
+            }
+        }
         return new(new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding,
-            documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal), profile, nativeDependencies, requests, ValidationShards.Create(execution)), null);
+            documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal), profile, nativeDependencies, requests, ValidationShards.Create(execution), backendStore, backendStore is null ? null : target), null);
 
         IEnumerable<ValidationNativeRequest> CollectNativeRequests(
             ValidationContext context,

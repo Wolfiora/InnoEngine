@@ -10,6 +10,7 @@ param(
     [string]$OutputDirectory = 'artifacts/validation/ci',
     [string]$PrerequisitesDirectory,
     [string]$NativeDependencies = 'build/dependencies/native-artifacts.json',
+    [string]$BackendStore,
     [long]$SourceRunId = 0
 )
 
@@ -29,16 +30,17 @@ if ($Stage -ceq 'Plan') {
     if (Test-Path -LiteralPath $planRoot) { throw 'A CI attempt must retain a distinct plan directory.' }
     New-Item -ItemType Directory -Path $planRoot | Out-Null
     $assembly = @(& "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $planRoot 'bootstrap.log'))
+    $dependencyOptions = if ($BackendStore) { @('--backend-store', $BackendStore) } else { @('--native-dependencies', $NativeDependencies) }
     @{ assembly = [IO.Path]::GetRelativePath($repository, $assembly[0]); sha256 = (Get-FileHash -LiteralPath $assembly[0]).Hash } |
         ConvertTo-Json | Set-Content (Join-Path $planRoot 'entry.json')
     & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot `
-        --profile $Profile --native-dependencies $NativeDependencies 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning.log')
+        --profile $Profile @dependencyOptions 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning.log')
     if ($LASTEXITCODE -ne 0) { throw 'Validation plan generation failed; no downstream stage can certify success.' }
     $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
     if (@($plan.nativeRequests).Count -gt 0 -and (& "$PSScriptRoot/Initialize-NativeDependencyWorkloads.ps1" -Targets @($plan.nativeRequests.target) -Dotnet $Dotnet)) {
         Copy-Item (Join-Path $planRoot 'plan.json') (Join-Path $planRoot 'plan-before-workloads.json')
         & $Dotnet $assembly[0] validate plan --engine-root $repository --dotnet $Dotnet --base $BaseRevision --output $planRoot `
-            --profile $Profile --native-dependencies $NativeDependencies 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning-prepared.log')
+            --profile $Profile @dependencyOptions 2>&1 | Tee-Object -FilePath (Join-Path $planRoot 'planning-prepared.log')
         if ($LASTEXITCODE -ne 0) { throw 'Validation planning failed after explicit SDK preparation.' }
         $plan = Get-Content -LiteralPath (Join-Path $planRoot 'plan.json') -Raw | ConvertFrom-Json
     }
@@ -95,7 +97,7 @@ if (@($selected[0].prerequisites).Count -gt 0) {
     if (-not $PrerequisitesDirectory) { throw 'This shard requires completed prerequisite receipts.' }
     $prerequisites = @('--prerequisites', $PrerequisitesDirectory)
 }
-if ($Shard -ceq 'native' -and @($plan.nativeRequests).Count -gt 0) {
+if (!$plan.backendStore -and $Shard -ceq 'native' -and @($plan.nativeRequests).Count -gt 0) {
     $bootstrap = Join-Path $repository 'artifacts/validation/native-entry'
     $project = Join-Path $repository 'entry/InnoEngine.Build/InnoEngine.Build.csproj'
     & $Dotnet build $project --configuration Debug --artifacts-path $bootstrap --disable-build-servers -m:2 -nr:false `

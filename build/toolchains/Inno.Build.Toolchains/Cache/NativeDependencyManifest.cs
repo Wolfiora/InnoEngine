@@ -233,7 +233,7 @@ public static partial class NativeDependencyManifest
         if (aggregates.Length > 1)
             throw new InvalidDataException("Native dependency selection contains ambiguous aggregate products.");
         if (aggregates.Length == 1)
-            return await AcquireAggregateAsync(root, aggregates[0], plan, cancellationToken).ConfigureAwait(false);
+            return await AcquireAggregateAsync(root, Archive(aggregates[0].sha256), aggregates[0], plan, cancellationToken).ConfigureAwait(false);
         if (selection.assets is null)
             throw new InvalidDataException("Native dependency selection has no asset inventory.");
         var expectedSources = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -245,6 +245,17 @@ public static partial class NativeDependencyManifest
                     throw new InvalidDataException("Dependency assets disagree about a shared source input: " + pair.Key);
                 else
                     expectedSources[pair.Key] = pair.Value;
+        }
+
+        string Archive(string digest)
+        {
+            RequireDigest(digest);
+            if (selection.layout is null)
+                return Path.Combine(root, "artifacts", "dependencies", "downloads", digest + ".zip");
+            if (!target.All(static value => char.IsAsciiLetterOrDigit(value) || value == '-'))
+                throw new InvalidDataException("The native payload requires a registered platform name.");
+            string store = Path.GetDirectoryName(Path.GetFullPath(selectionPath))!;
+            return PathBoundary.RequireUnlinkedPath(store, PathBoundary.Resolve(store, $"{target}/native/{digest}.zip"));
         }
 
         await VerifySourcesAsync().ConfigureAwait(false);
@@ -265,7 +276,7 @@ public static partial class NativeDependencyManifest
                 RequireDigest(asset.sha256);
                 RequireDigest(asset.fingerprint);
                 string directory = ResolveArtifact(asset.directory, "native", asset.component, target, asset.fingerprint);
-                string archive = Path.Combine(root, "artifacts", "dependencies", "downloads", asset.sha256 + ".zip");
+                string archive = Archive(asset.sha256);
                 if (!Directory.Exists(directory) || asset.binding is { } requiredBinding && !Directory.Exists(PathBoundary.Resolve(Path.Combine(root, "artifacts"), requiredBinding.directory)))
                 {
                     using (FileStream payload = File.OpenRead(archive))
@@ -369,6 +380,8 @@ public static partial class NativeDependencyManifest
             throw new InvalidDataException("Native dependency selection is malformed.", failure);
         }
 
+        if (selection.layout is not (null or "platform-packages"))
+            throw new InvalidDataException("Unknown native payload layout.");
         if (selection.assets is null || selection.aggregates is null)
             throw new InvalidDataException("Native dependency selection requires component and aggregate inventories.");
         foreach (DependencyAsset asset in selection.assets)
@@ -414,7 +427,8 @@ public static partial class NativeDependencyManifest
 
     private sealed record Selection(
         DependencyAsset[] assets,
-        AggregateAsset[] aggregates
+        AggregateAsset[] aggregates,
+        string? layout = null
     );
     private sealed record BindingAsset(
         string fingerprint,

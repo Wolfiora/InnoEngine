@@ -149,6 +149,9 @@ internal static class ValidationInputs
         IReadOnlyDictionary<string, string> inputs
     ) => Identity(check.inputs.SelectMany(path => path.StartsWith('@') ? plan.inputSets[path[1..]] : [path])
         .Distinct(StringComparer.Ordinal).Select(path => new KeyValuePair<string, string>(path, inputs.GetValueOrDefault(path, "missing")))
+        .Concat(plan.backendPackages is not null && (check.context == "native" || check.inputs.Any(static key => key.StartsWith("@backends/", StringComparison.Ordinal)))
+            ? plan.backendPackages.Select(static package => new KeyValuePair<string, string>("backend:" + package.target, package.sha256))
+            : [])
         .Append(new("environment", plan.environment)).Append(new("configuration", plan.configuration))
         .Append(new("context", check.context is null ? string.Empty : System.Text.Json.JsonSerializer.Serialize(plan.contexts.GetValueOrDefault(check.context)?.properties
             .ToDictionary(static pair => pair.Key, pair => ValidationPlanTransport.Logical(plan.root, plan.dotnet, pair.Value), StringComparer.Ordinal))))

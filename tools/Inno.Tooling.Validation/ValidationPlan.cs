@@ -45,7 +45,16 @@ internal sealed record ValidationPlan(
     ValidationProfile profile = ValidationProfile.PullRequest,
     string? nativeDependencies = null,
     ValidationNativeRequest[]? nativeRequests = null,
-    ValidationShard[]? shards = null
+    ValidationShard[]? shards = null,
+    string? backendStore = null,
+    string? backendHost = null,
+    BackendPackageReceipt[]? backendPackages = null
+);
+
+internal sealed record BackendPackageReceipt(
+    string target,
+    string sha256,
+    string manifestSha256
 );
 
 internal sealed record ValidationContext(

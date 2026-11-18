@@ -5,6 +5,9 @@
        content deployment and the final product graph on the consuming machine. -->
   <PropertyGroup>
     <_InnoBackendOwner>$([MSBuild]::MakeRelative('$(MSBuildThisFileDirectory)..', '$(MSBuildProjectFullPath)').Replace('\', '/'))</_InnoBackendOwner>
+    <_InnoBackendPackageTarget>$(InnoNativeTarget)</_InnoBackendPackageTarget>
+    <_InnoBackendPackageTarget Condition="'$(_InnoBackendPackageTarget)' == ''">$(InnoBackendHostTarget)</_InnoBackendPackageTarget>
+    <InnoBackendPrebuiltRoot Condition="'$(InnoBackendPackageDirectory)' != ''">$(InnoBackendPackageDirectory)/$(_InnoBackendPackageTarget)</InnoBackendPrebuiltRoot>
     <_InnoConsumeBackend Condition="'$(InnoBackendPrebuiltRoot)' != ''">true</_InnoConsumeBackend>
     <_InnoConsumeBackend Condition="'$(InnoBackendExportRoot)' != '' and $([System.String]::Copy('$(InnoBackendCompileOwners)').Contains('|$(_InnoBackendOwner)|'))">false</_InnoConsumeBackend>
     <_InnoBackendVariant>$(ArtifactsProjectName)/$(ArtifactsPivots)/$(TargetFramework)</_InnoBackendVariant>
@@ -37,7 +40,9 @@
   </Target>
 
   <Target Name="ExportInnoBackendCompilerOutputs" AfterTargets="Build"
-          Condition="'$(InnoBackendExportRoot)' != ''" DependsOnTargets="GetInnoBackendCompilerOutputs">
+          Condition="'$(InnoBackendExportRoot)' != '' and '$(InnoBackendExportArtifactsPath)' != '' and
+                     '$([MSBuild]::NormalizePath($(ArtifactsPath)))' == '$([MSBuild]::NormalizePath($(InnoBackendExportArtifactsPath)))'"
+          DependsOnTargets="GetInnoBackendCompilerOutputs">
     <GetFileHash Files="@(_InnoBackendCompilerFile)" Algorithm="SHA256">
       <Output TaskParameter="Items" ItemName="_InnoBackendExportFile" />
     </GetFileHash>

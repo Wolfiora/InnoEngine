@@ -55,6 +55,38 @@ while ($pending.Count -gt 0) {
                 $checkout = Join-Path $workers $id
                 & git -C $repository worktree add --detach $checkout $ExpectedCommit | Out-Host
                 if ($LASTEXITCODE -ne 0) { throw "Could not isolate concurrent shard: $id." }
+                if ($plan.backendStore) {
+                    # A fresh linked worktree shares immutable package bytes only. Native leases, MSBuild
+                    # intermediate outputs and the selected product's installed generations stay worker-owned.
+                    $store = [IO.Path]::GetFullPath($plan.backendStore, $repository)
+                    $sourceBoundary = [IO.Path]::GetFullPath('artifacts', $repository) + [IO.Path]::DirectorySeparatorChar
+                    if (!$store.StartsWith($sourceBoundary, [StringComparison]::Ordinal)) { throw 'Backend store escaped the repository artifact owner.' }
+                    $destination = [IO.Path]::GetFullPath($plan.backendStore, $checkout)
+                    $relativePaths = @('selection.json') + @(foreach ($package in $plan.backendPackages) {
+                        $target = $package.target
+                        if ($target -cnotmatch '^[a-z0-9-]+$') { throw 'Invalid acquired platform.' }
+                        $inventory = Join-Path $store "$target/manifest.json"
+                        if ((Get-FileHash -LiteralPath $inventory).Hash.ToLowerInvariant() -cne $package.manifestSha256) {
+                            throw "The acquired inventory changed for $target."
+                        }
+                        "$target/receipt.json"
+                        "$target/manifest.json"
+                        foreach ($item in (Get-Content -LiteralPath $inventory -Raw | ConvertFrom-Json).files) { "$target/$($item.path)" }
+                    })
+                    foreach ($relative in $relativePaths) {
+                        $source = [IO.Path]::GetFullPath($relative, $store)
+                        if (!$source.StartsWith(($store + [IO.Path]::DirectorySeparatorChar), [StringComparison]::Ordinal)) {
+                            throw 'Backend inventory escaped its owner.'
+                        }
+                        $path = Join-Path $destination $relative
+                        [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($path)) | Out-Null
+                        if ([IO.Path]::GetPathRoot($source) -ceq [IO.Path]::GetPathRoot($path)) {
+                            New-Item -Path $path -ItemType HardLink -Target $source | Out-Null
+                        } else {
+                            [IO.File]::Copy($source, $path, $false)
+                        }
+                    }
+                }
                 $inputs = Join-Path $workers "$id-inputs"
                 $planOwner = Join-Path $inputs "validation-plan-$Platform-attempt-$Attempt"
                 $entryOwner = Join-Path $inputs "validation-entry-$Platform-attempt-$Attempt"

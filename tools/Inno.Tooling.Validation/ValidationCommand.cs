@@ -54,11 +54,12 @@ public static class ValidationCommand
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(arguments);
-        if (arguments.Length == 0 || arguments[0] is not ("plan" or "run" or "full" or "evidence" or "join" or "acceptance" or "resume" or "pack-backends" or "import-backends" or "backend-inputs"))
-            throw new ArgumentException("Usage: validate <plan|run|full|evidence|join|acceptance|resume|pack-backends|import-backends|backend-inputs> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]");
+        if (arguments.Length == 0 || arguments[0] is not ("plan" or "run" or "full" or "evidence" or "join" or "acceptance" or "resume" or "pack-backends" or "import-backends" or "backend-inputs" or "bind-backends"))
+            throw new ArgumentException("Usage: validate <plan|run|full|evidence|join|acceptance|resume|pack-backends|import-backends|backend-inputs|bind-backends> --engine-root ROOT --dotnet HOST [--base REV] [--output DIR] [--plan FILE] [--accepted-plan FILE] [--evidence FILE] [--profile NAME] [--native-dependencies FILE] [--shard ID] [--prerequisites DIR]");
         var options = new Dictionary<string, string>(StringComparer.Ordinal);
         string[]? transportOptions = arguments[0] switch
         {
+            "bind-backends" => ["--plan", "--engine-root", "--dotnet", "--packages", "--output"],
             "backend-inputs" => ["--plan", "--engine-root", "--dotnet", "--target", "--output"],
             "pack-backends" => ["--artifacts-path", "--inventory", "--output"],
             "import-backends" => ["--archive", "--sha256", "--target", "--output"],
@@ -67,7 +68,9 @@ public static class ValidationCommand
         for (int index = 1; index < arguments.Length; index += 2)
         {
             string key = arguments[index];
-            bool allowed = transportOptions?.Contains(key, StringComparer.Ordinal) ?? key is ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--accepted-plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot" or "--profile" or "--native-dependencies" or "--shard" or "--prerequisites" or "--retained-outputs");
+            bool allowed = transportOptions?.Contains(key, StringComparer.Ordinal) ?? key is ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--accepted-plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot" or "--profile" or "--native-dependencies" or "--shard" or "--prerequisites" or "--retained-outputs" or "--backend-store");
+            if (arguments[0] == "backend-inputs" && key is ("--selection" or "--configuration"))
+                allowed = true;
             if (!allowed || index + 1 >= arguments.Length || !options.TryAdd(key, arguments[index + 1]))
                 throw new ArgumentException($"Unknown, duplicate or incomplete validation option: {key}");
         }
@@ -75,11 +78,21 @@ public static class ValidationCommand
         {
             if (transportOptions.Any(key => !options.ContainsKey(key)))
                 throw new ArgumentException("Required backend transport options: " + string.Join(", ", transportOptions));
-            if (arguments[0] == "backend-inputs")
+            if (arguments[0] == "bind-backends")
             {
                 string engine = Path.GetFullPath(options["--engine-root"]);
                 ValidationPlan frozen = ValidationPlanTransport.Read(options["--plan"], engine, options["--dotnet"]);
-                var selection = await ValidationPlanner.BackendInputsAsync(frozen, options["--target"], cancellationToken).ConfigureAwait(false);
+                ValidationPlan bound = await ValidationPlanner.BindBackendsAsync(frozen, options["--packages"], cancellationToken).ConfigureAwait(false);
+                Inno.Core.IO.AtomicFile.WriteAllBytes(options["--output"], ValidationPlanTransport.Write(bound));
+            }
+            else if (arguments[0] == "backend-inputs")
+            {
+                string engine = Path.GetFullPath(options["--engine-root"]);
+                ValidationPlan frozen = ValidationPlanTransport.Read(options["--plan"], engine, options["--dotnet"]);
+                byte[]? native = options.TryGetValue("--selection", out string? selected)
+                    ? await File.ReadAllBytesAsync(selected, cancellationToken).ConfigureAwait(false) : null;
+                var selection = await ValidationPlanner.BackendInputsAsync(frozen, options["--target"], cancellationToken, native,
+                    options.GetValueOrDefault("--configuration")).ConfigureAwait(false);
                 Inno.Core.IO.AtomicFile.WriteAllBytes(options["--output"], JsonSerializer.SerializeToUtf8Bytes(selection));
             }
             else if (arguments[0] == "pack-backends")
@@ -101,7 +114,7 @@ public static class ValidationCommand
         if (options.ContainsKey("--retained-outputs") && arguments[0] != "resume")
             throw new ArgumentException("Retained outputs may only be installed by resume.");
         Directory.CreateDirectory(output);
-        if (options.ContainsKey("--plan") && options.ContainsKey("--native-dependencies"))
+        if (options.ContainsKey("--plan") && (options.ContainsKey("--native-dependencies") || options.ContainsKey("--backend-store")))
             throw new ArgumentException("The supplied plan already freezes its native dependency selection.");
         if (options.ContainsKey("--plan") && (options.ContainsKey("--docs-cache-root") || options.ContainsKey("--docs-snapshot")
             || options.ContainsKey("--docs-base-snapshot")))
@@ -114,7 +127,7 @@ public static class ValidationCommand
             ValidationPlanningResult selected = await ValidationPlanner.CreateAsync(root, options.GetValueOrDefault("--base", "HEAD"), dotnet,
                 options.GetValueOrDefault("--configuration", "Debug"), artifacts, full, cancellationToken, extended,
                 options.GetValueOrDefault("--docs-cache-root"), options.GetValueOrDefault("--docs-snapshot"),
-                options.GetValueOrDefault("--docs-base-snapshot"), profile, options.GetValueOrDefault("--native-dependencies")).ConfigureAwait(false);
+                options.GetValueOrDefault("--docs-base-snapshot"), profile, options.GetValueOrDefault("--native-dependencies"), options.GetValueOrDefault("--backend-store")).ConfigureAwait(false);
             if (selected.preparation is not null)
             {
                 await File.WriteAllTextAsync(Path.Combine(output, "preparation.json"), JsonSerializer.Serialize(selected.preparation,
@@ -128,6 +141,8 @@ public static class ValidationCommand
             throw new InvalidDataException("The supplied plan uses a different execution profile.");
         if (plan.nativeDependencies is not null && (options.ContainsKey("--cache-input") || options.ContainsKey("--cache-output")))
             throw new ArgumentException("Consume-only dependency validation does not use producer cache transport.");
+        if (plan.backendStore is not null && plan.backendPackages is null && arguments[0] != "plan")
+            throw new InvalidDataException("Backend acquisition must bind the exact packages before executing or certifying this plan.");
         if (arguments[0] == "acceptance")
         {
             if (planPath is null || !options.TryGetValue("--accepted-plan", out string? acceptedPath)
