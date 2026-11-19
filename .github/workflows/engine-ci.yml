@@ -493,7 +493,7 @@ jobs:
           persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
-          pattern: '{backend-candidate-*,validation-plan-*,validation-joined-*}'
+          pattern: '{backend-candidate-*,engine-acceptance-evidence-attempt-*}'
           path: artifacts/promotion
       - name: Publish certified changes and retain the other platforms byte for byte
         shell: pwsh
@@ -504,13 +504,15 @@ jobs:
         run: |
           $head = Invoke-RestMethod -Headers @{Authorization="Bearer $env:GH_TOKEN"} -Uri "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY/git/ref/heads/$env:DEFAULT_BRANCH"
           if ($head.object.sha -cne $env:GITHUB_SHA) { Write-Host 'A newer default-branch candidate owns promotion.'; return }
+          $artifacts = @(Get-ChildItem -LiteralPath artifacts/promotion -Directory)
+          $evidence = ./tests/ci/Select-ValidationArtifact.ps1 -Artifacts $artifacts -Name engine-acceptance-evidence -MaximumAttempt ([int]$env:GITHUB_RUN_ATTEMPT)
           $producers = @((ConvertFrom-Json $env:MATRIX).include)
           foreach ($item in $producers) {
             $owner = [IO.Directory]::CreateDirectory([IO.Path]::GetFullPath("artifacts/promotion/$($item.target)")).FullName
             $candidate = "artifacts/promotion/backend-candidate-$($item.target)"
             Copy-Item -LiteralPath "$candidate/$($item.asset)","$candidate/consumption.json" -Destination $owner
-            Copy-Item -LiteralPath "artifacts/promotion/validation-plan-$($item.runner)-attempt-$env:GITHUB_RUN_ATTEMPT/plan.json" -Destination $owner
-            Copy-Item -LiteralPath "artifacts/promotion/validation-joined-$($item.runner)-attempt-$env:GITHUB_RUN_ATTEMPT/results.json" -Destination $owner
+            $hostEvidence = Join-Path $evidence.FullName $item.runner
+            Copy-Item -LiteralPath "$hostEvidence/plan.json","$hostEvidence/results.json" -Destination $owner
           }
           ./tests/ci/Publish-BackendPrebuilts.ps1 -Directory artifacts/promotion -Repository $env:GITHUB_REPOSITORY `
             -Revision $env:GITHUB_SHA -ApiUrl $env:GITHUB_API_URL -ChangedTargets $producers.target
