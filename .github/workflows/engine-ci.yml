@@ -120,9 +120,6 @@ jobs:
           profile: ${{ needs.route.outputs.profile }}
       - uses: ./.github/actions/resolve-backends
         id: acquisition
-      - name: Preserve the pending plan for a scheduled execution
-        shell: pwsh
-        run: Copy-Item artifacts/validation/ci-plan/plan.json artifacts/validation/ci-plan/pending.json
       - name: Bind available packages before comparing complete acceptance
         if: steps.acquisition.outputs.production != 'true'
         shell: pwsh
@@ -132,17 +129,6 @@ jobs:
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
           ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
             -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        with:
-          overwrite: true
-          name: backend-nightly-plan-${{ matrix.runner }}
-          path: |
-            artifacts/validation/ci-plan/pending.json
-            artifacts/validation/ci-plan/entry.json
-            artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/
-            artifacts/backend-request/acquisition.json
-          if-no-files-found: error
-          retention-days: 1
       - name: Compare retained complete acceptance after current environment capture
         shell: pwsh
         env:
@@ -204,51 +190,31 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
-        if: needs.preflight.result == 'skipped'
         with:
           profile: ${{ needs.route.outputs.profile }}
       - uses: ./.github/actions/resolve-backends
-        if: needs.preflight.result == 'skipped'
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
-        if: needs.preflight.result == 'success'
-        with:
-          name: backend-nightly-plan-${{ matrix.runner }}
-          path: artifacts
       - id: decision
         shell: pwsh
         env:
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
-          HOSTS: ${{ needs.route.outputs.hosts }}
         run: |
-          if (Test-Path artifacts/validation/ci-plan/pending.json) {
-            Move-Item -LiteralPath artifacts/validation/ci-plan/pending.json -Destination artifacts/validation/ci-plan/plan.json
-          }
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
-          $single = @(($env:HOSTS | ConvertFrom-Json).include).Count -eq 1
-          $direct = !$env:REBUILD_TARGETS -and $single -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
+          $direct = !$env:REBUILD_TARGETS -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
           if ($direct) {
             $digest = $decision.packages[0].sha256
             if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Direct backend consumption requires an exact archive digest.' }
             "digest=$digest" >> $env:GITHUB_OUTPUT
           }
-          "deferred=$(($decision.packages.Count -gt 0 -and !$direct).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          $deferred = $decision.packages.Count -gt 0 -and !$direct
+          $decision | Add-Member -NotePropertyName deferred -NotePropertyValue $deferred
+          [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/backend-request/acquisition.json'), (ConvertTo-Json $decision -Depth 30 -Compress))
+          "deferred=$($deferred.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
         with:
           overwrite: true
           name: backend-request-${{ matrix.runner }}
           path: artifacts/backend-request/acquisition.json
-          if-no-files-found: error
-          retention-days: 7
-      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: steps.decision.outputs.deferred == 'true'
-        with:
-          overwrite: true
-          name: backend-freeze-${{ matrix.runner }}
-          path: |
-            artifacts/validation/ci-plan/plan.json
-            artifacts/validation/ci-plan/entry.json
-            artifacts/validation/bootstrap/outputs/bin/ValidationEntry/debug/
           if-no-files-found: error
           retention-days: 7
       - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -317,7 +283,7 @@ jobs:
       producers: ${{ needs.backend-matrix.outputs.producers }}
 
   execution:
-    needs: [backend-matrix, backends]
+    needs: [route, backend-matrix, backends]
     if: ${{ !cancelled() && needs.backends.result == 'success' }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 360
@@ -330,10 +296,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: ./.github/actions/setup-dotnet
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+      - uses: ./.github/actions/freeze-validation
         with:
-          name: backend-freeze-${{ matrix.runner }}
-          path: artifacts/validation
+          profile: ${{ needs.route.outputs.profile }}
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: backend-request-${{ matrix.runner }}
@@ -347,9 +312,6 @@ jobs:
         env:
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
-          $plan = Get-Content artifacts/validation/ci-plan/plan.json -Raw | ConvertFrom-Json
-          if ($plan.commit -cne $env:GITHUB_SHA) { throw 'The transferred plan belongs to a different candidate.' }
-          if ($plan.nativeRequests.Count) { $null = ./tests/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($plan.nativeRequests.target) }
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
           ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
             -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -RebuildTargets $env:REBUILD_TARGETS

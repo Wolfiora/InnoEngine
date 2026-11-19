@@ -14,7 +14,7 @@ foreach ($hostName in $Hosts) {
     $hostRegistration = @($hostsRegistry | Where-Object runner -CEQ $hostName)
     if ($hostRegistration.Count -ne 1) { throw "Unknown validation runner $hostName." }
     $decision = Get-Content -LiteralPath (Join-Path $Received "backend-request-$hostName/acquisition.json") -Raw | ConvertFrom-Json
-    if ($decision.commit -cne $Revision -or $decision.packages -isnot [array]) { throw "Missing backend decision for $hostName/$Revision." }
+    if ($decision.commit -cne $Revision -or $decision.packages -isnot [array] -or $decision.deferred -isnot [bool]) { throw "Missing backend decision for $hostName/$Revision." }
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($package in $decision.packages) {
         $target = $package.target
@@ -24,6 +24,12 @@ foreach ($hostName in $Hosts) {
         }
         if ($package.operation -ceq 'consume' -and ($package.sha256 -cnotmatch '^[0-9a-f]{64}$' -or [string]$package.assetId -cnotmatch '^[1-9][0-9]*$')) {
             throw "Missing exact archived platform for $target."
+        }
+        if (!$decision.deferred) {
+            if ($RebuildTargets -or $decision.packages.Count -ne 1 -or $package.operation -cne 'consume') {
+                throw "The local plan did not own this acquisition: $hostName/$target."
+            }
+            continue
         }
         if (!$targets.Contains($target)) {
             $hostTarget = @($hostsRegistry | Where-Object runner -CEQ $registration[0].runner)
@@ -35,7 +41,8 @@ foreach ($hostName in $Hosts) {
             if ($package.operation -ceq 'produce' -or $prior.sha256 -cne $package.sha256) { $prior.operation = 'produce' }
         }
     }
-    if ($seen.Count) {
+    if ($decision.deferred) {
+        if (!$seen.Count) { throw "An empty acquisition cannot defer execution: $hostName." }
         $names = @($seen | Sort-Object -CaseSensitive)
         $pattern = if ($names.Count -eq 1) { "backend-candidate-$($names[0])" } else { "backend-candidate-{$($names -join ',')}" }
         # download-artifact extracts a single match directly into its destination.

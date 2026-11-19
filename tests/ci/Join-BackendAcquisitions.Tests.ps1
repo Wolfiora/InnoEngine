@@ -8,8 +8,8 @@ $runner = $hostsRegistered[0].runner
 $target = $hostsRegistered[0].target
 $owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runner")).FullName
 $file = Join-Path $owner 'acquisition.json'
-function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets) {
-    [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages} -Depth 8))
+function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets, [bool]$Deferred=($Packages.Count -gt 0)) {
+    [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages;deferred=$Deferred} -Depth 8))
     & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
 }
 try {
@@ -21,6 +21,11 @@ try {
     if ($warm.deferred[0].pattern -cne "backend-candidate-$target" -or $warm.deferred[0].destination -cne "artifacts/candidates/backend-candidate-$target") {
         throw 'The single platform archive would lose its named directory during download.'
     }
+    $local = Join-Requests @($prior) -Deferred $false
+    if ($local.platforms.Count -or $local.deferred.Count) { throw 'A host that consumes its own archive was scheduled a second time.' }
+    $rejected = $false
+    try { $null = Join-Requests @($prior) -RebuildTargets $target -Deferred $false } catch { $rejected = $_.Exception.Message.Contains('did not own') }
+    if (!$rejected) { throw 'An inline decision hid a manual producer.' }
     $cold = Join-Requests @($prior) $revision $target
     if ($cold.producers.Count -ne 1 -or $cold.producers[0].sha256 -or $cold.producers[0].assetId) { throw 'A manual cold rebuild restored an old producer seed.' }
     $blocked = $false
