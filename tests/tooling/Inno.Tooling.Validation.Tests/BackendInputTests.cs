@@ -126,33 +126,58 @@ public sealed class BackendInputTests
             """));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Add the backend fixture");
-        using JsonDocument baseline = await Inputs();
+        using JsonDocument baseline = await Inputs(repository);
         string original = Identity(baseline, C_BACKEND);
         string independent = Identity(baseline, C_INDEPENDENT);
         repository.Write("tests/backends/Probe.Tests/Changed.cs", "class TestChange {}");
-        using JsonDocument testOnly = await Inputs();
+        using JsonDocument testOnly = await Inputs(repository);
         Assert.Equal(original, Identity(testOnly, C_BACKEND));
         Assert.Equal(independent, Identity(testOnly, C_INDEPENDENT));
         Assert.Equal(new[] { C_TEST }, testOnly.RootElement.GetProperty("tests").EnumerateArray().Select(static item => item.GetString()));
         Assert.Equal(new[] { C_BACKEND }, testOnly.RootElement.GetProperty("required").EnumerateArray().Select(static item => item.GetString()));
         repository.Write("src/Example/Changed.cs", "public class NewContract {}");
-        using JsonDocument changed = await Inputs();
+        using JsonDocument changed = await Inputs(repository);
         Assert.NotEqual(original, Identity(changed, C_BACKEND));
         Assert.Equal(independent, Identity(changed, C_INDEPENDENT));
-
-        async Task<JsonDocument> Inputs()
-        {
-            using JsonDocument plan = await repository.PlanAsync(profile: "fast");
-            string output = repository.PathOf("artifacts/backend-inputs.json");
-            int code = await ValidationCommand.ExecuteAsync(["backend-inputs", "--plan", repository.PathOf("artifacts/plan/plan.json"),
-                "--target", "fixture", "--engine-root", repository.PathOf("."), "--dotnet", repository.dotnet, "--output", output]);
-            Assert.Equal(0, code);
-            return JsonDocument.Parse(File.ReadAllBytes(output));
-        }
-
-        static string Identity(
-            JsonDocument plan,
-            string owner
-        ) => plan.RootElement.GetProperty("projects").GetProperty(owner).GetString()!;
     }
+
+    [Fact]
+    public async Task PlatformBuildDefinitionsAffectTheirImportsAndCopies()
+    {
+        using var repository = new ValidationRepository();
+        const string C_TOOL = "backends/Tool/Tool.csproj";
+        const string C_IMPORT = "backends/Consumer/Consumer.csproj";
+        const string C_COPY = "backends/Shipping/Shipping.csproj";
+        const string C_PROPS = "backends/Tool/Platform.props";
+        repository.Write(C_TOOL, ValidationRepository.Project());
+        repository.Write(C_IMPORT, ValidationRepository.Project("""<Import Project="../Tool/Platform.props" />"""));
+        repository.Write(C_COPY, ValidationRepository.Project("""
+            <ItemGroup><None Include="../Tool/Platform.props" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
+            """));
+        repository.Write(C_PROPS, "<Project />");
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Add the platform build definition");
+        using JsonDocument before = await Inputs(repository);
+
+        repository.Write(C_PROPS, "<Project><PropertyGroup><DefineConstants>FEATURE</DefineConstants></PropertyGroup></Project>");
+        using JsonDocument after = await Inputs(repository);
+        Assert.Equal(Identity(before, C_TOOL), Identity(after, C_TOOL));
+        Assert.NotEqual(Identity(before, C_IMPORT), Identity(after, C_IMPORT));
+        Assert.NotEqual(Identity(before, C_COPY), Identity(after, C_COPY));
+    }
+
+    private static async Task<JsonDocument> Inputs(ValidationRepository repository)
+    {
+        using JsonDocument plan = await repository.PlanAsync(profile: "fast");
+        string output = repository.PathOf("artifacts/backend-inputs.json");
+        int code = await ValidationCommand.ExecuteAsync(["backend-inputs", "--plan", repository.PathOf("artifacts/plan/plan.json"),
+            "--target", "fixture", "--engine-root", repository.PathOf("."), "--dotnet", repository.dotnet, "--output", output]);
+        Assert.Equal(0, code);
+        return JsonDocument.Parse(File.ReadAllBytes(output));
+    }
+
+    private static string Identity(
+        JsonDocument plan,
+        string owner
+    ) => plan.RootElement.GetProperty("projects").GetProperty(owner).GetString()!;
 }

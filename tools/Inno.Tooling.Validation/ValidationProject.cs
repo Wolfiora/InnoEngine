@@ -47,9 +47,16 @@ internal sealed record ValidationProject(
                 foreach (JsonElement item in group.Value.EnumerateArray())
                     if (item.TryGetProperty("FullPath", out JsonElement fullPath) && !string.IsNullOrEmpty(fullPath.GetString()))
                     {
-                        inputs.Add(Relative(fullPath.GetString()!));
+                        string file = Relative(fullPath.GetString()!);
+                        // The SDK lists adjacent build definitions as None even when this variant never imports them.
+                        // Copied or otherwise declared items and actual imports retain their own input edges.
+                        if (backendTarget is not null && group.Name == "None"
+                            && (file.EndsWith(".props", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".targets", StringComparison.OrdinalIgnoreCase))
+                            && item.EnumerateObject().All(static property => property.Name is "Identity" or "FullPath"))
+                            continue;
+                        inputs.Add(file);
                         if (group.Name == "ProjectReference")
-                            references.Add(Relative(fullPath.GetString()!));
+                            references.Add(file);
                     }
             }
             JsonElement effective = variant.GetProperty("Properties");
