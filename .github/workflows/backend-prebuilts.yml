@@ -63,6 +63,7 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: matrix.operation == 'consume' || matrix.sha256
         with:
+          overwrite: true
           name: backend-${{ matrix.operation == 'consume' && 'candidate' || 'seed' }}-${{ matrix.target }}
           path: artifacts/backend-input
           if-no-files-found: error
@@ -70,6 +71,7 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: matrix.nativeInputs
         with:
+          overwrite: true
           name: backend-native-${{ matrix.target }}
           path: |
             artifacts/backend-native/*.zip
@@ -142,6 +144,7 @@ jobs:
             Set-Content artifacts/backend-candidate/candidate.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
+          overwrite: true
           name: backend-candidate-${{ matrix.target }}
           path: artifacts/backend-candidate
           if-no-files-found: error

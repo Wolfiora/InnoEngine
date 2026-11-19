@@ -2,7 +2,6 @@ param(
     [Parameter(Mandatory)][string]$Received,
     [Parameter(Mandatory)][string[]]$Hosts,
     [Parameter(Mandatory)][string]$Revision,
-    [int]$Attempt = 1,
     [string]$RebuildTargets
 )
 $ErrorActionPreference = 'Stop'
@@ -14,7 +13,7 @@ $deferred = @()
 foreach ($hostName in $Hosts) {
     $hostRegistration = @($hostsRegistry | Where-Object runner -CEQ $hostName)
     if ($hostRegistration.Count -ne 1) { throw "Unknown validation runner $hostName." }
-    $decision = Get-Content -LiteralPath (Join-Path $Received "backend-request-$hostName-attempt-$Attempt/acquisition.json") -Raw | ConvertFrom-Json
+    $decision = Get-Content -LiteralPath (Join-Path $Received "backend-request-$hostName/acquisition.json") -Raw | ConvertFrom-Json
     if ($decision.commit -cne $Revision -or $decision.packages -isnot [array]) { throw "Missing backend decision for $hostName/$Revision." }
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($package in $decision.packages) {

@@ -6,7 +6,7 @@ $platforms = @(Get-Content (Join-Path $PSScriptRoot '../../.github/native-target
 $revision = 'a' * 40
 $runner = $hostsRegistered[0].runner
 $target = $hostsRegistered[0].target
-$owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runner-attempt-1")).FullName
+$owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runner")).FullName
 $file = Join-Path $owner 'acquisition.json'
 function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets) {
     [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages} -Depth 8))
