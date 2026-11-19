@@ -196,9 +196,14 @@ jobs:
       - id: decision
         shell: pwsh
         env:
+          PROFILE: ${{ needs.route.outputs.profile }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
+          if ($env:PROFILE -ceq 'performance') {
+            $missing = @($decision.packages | Where-Object operation -CEQ 'produce' | ForEach-Object target)
+            if ($missing.Count) { throw "Performance sampling needs certified backend packages for $($missing -join ', '). Run full acceptance on the default branch first." }
+          }
           $direct = !$env:REBUILD_TARGETS -and $decision.packages.Count -eq 1 -and $decision.packages[0].operation -ceq 'consume'
           if ($direct) {
             $digest = $decision.packages[0].sha256
