@@ -216,6 +216,8 @@ public sealed class NativeBindingCompilationTests
             WorkingDirectory = TestRepository.GetRoot(typeof(NativeBindingCompilationTests).Assembly), UseShellExecute = false, CreateNoWindow = true,
             RedirectStandardOutput = true, RedirectStandardError = true
         };
+        // This temporary project owns its fixture component and exercises both generation and explicit selections.
+        start.Environment.Remove("InnoNativeDependencyManifest");
         foreach (string argument in new[] { "build", project, "-c", "Release", "--disable-build-servers", "-m:1", "-nodeReuse:false", "-v:normal" }
             .Concat(arguments))
             start.ArgumentList.Add(argument);

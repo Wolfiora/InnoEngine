@@ -92,8 +92,9 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
     }
     $changed = @($current.Keys | Where-Object { !$matching.Contains($_) } | Sort-Object -CaseSensitive)
     $sdk = Join-Path $work 'sdk'
-    $options = @('--configuration',$configuration,'--artifacts-path',$sdk,'--disable-build-servers','-m:2','-nr:false',
-        "-p:InnoNativeDependencyManifest=$consumption","-p:InnoBackendExportRoot=$staging","-p:InnoBackendExportArtifactsPath=$sdk")
+    $sdkOptions = @('--artifacts-path',$sdk,"-p:InnoBackendExportArtifactsPath=$sdk")
+    $options = @('--configuration',$configuration,'--disable-build-servers','-m:2','-nr:false',
+        "-p:InnoNativeDependencyManifest=$consumption","-p:InnoBackendExportRoot=$staging")
     if ($previous) {
         $options += @("-p:InnoBackendPrebuiltRoot=$previous",("-p:InnoBackendCompileOwners=|" + ($changed -join '|') + '|'))
     }
@@ -103,7 +104,14 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         "  <Project Path=`"$path`" />"
     }
     [IO.File]::WriteAllLines($solution, [string[]](@('<Solution>') + $owners + @('</Solution>')))
-    Invoke-Sdk (@('build',$solution,'-p:Platform=Any CPU') + $options)
+    Invoke-Sdk (@('build',$solution,'-p:Platform=Any CPU') + $options + $sdkOptions)
+    # Validation builds standalone SDK roots under the development product properties as well
+    # as the product entry point, whose references receive additional binding selections.
+    if ($identity.developmentProperties) {
+        $development = [IO.Path]::GetFullPath($identity.developmentProperties,$root)
+        Invoke-Sdk (@('build',$solution,'-p:Platform=Any CPU',"-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
+            "-p:InnoProductBuildProperties=$development") + $options + $sdkOptions)
+    }
     $frozen = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $products = @($frozen.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId })
     if (!$products.Count) { throw "The SDK graph declares no products for $Target." }
@@ -116,7 +124,7 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         $id = $product.Properties.InnoProductId
         $aggregate = @($nativeInventory.aggregates | Where-Object { $_.product -ceq $id -and $_.target -ceq $Target -and $_.configuration -ieq $configuration })
         if (!$aggregate.Count) {
-            Invoke-Sdk (@('build',$path) + $options + @("-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
+            Invoke-Sdk (@('build',$path) + $options + $sdkOptions + @("-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
                 "-p:InnoProductBuildProperties=$($properties[0])"))
         }
         if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'produce' $previous $changed $consumption }
@@ -156,6 +164,14 @@ $coldSelection = Join-Path $coldStore 'selection.json'
 $checks = @(foreach ($configuration in $platform[0].configurations) {
     $plan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/plan.json") -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $sdk = Join-Path $work 'consume'
+    $compilerPlan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/inputs.json") -Raw | ConvertFrom-Json
+    if ($compilerPlan.developmentProperties) {
+        $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
+        Invoke-Sdk @('build',(Join-Path $work "plan-$configuration/Backends.slnx"),'-p:Platform=Any CPU',
+            '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-m:2','-nr:false',
+            "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
+            "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
+    }
     foreach ($product in $plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId }) {
         $project = $product.Path.Replace('${workspace}', $root)
         $properties = @(& $dotnetPath msbuild $project -nologo "-p:Configuration=$configuration" -getProperty:InnoProductBuildProperties)

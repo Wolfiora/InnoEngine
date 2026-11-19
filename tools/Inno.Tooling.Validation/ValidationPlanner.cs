@@ -14,6 +14,12 @@ namespace Inno.Tooling.Validation;
 
 internal static partial class ValidationPlanner
 {
+    private static JsonElement? DevelopmentProject(
+        JsonElement graph,
+        string root
+    ) => graph.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
+            Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
+
     internal static async Task<ValidationPlanningResult> CreateAsync(
         string root,
         string baseline,
@@ -152,8 +158,7 @@ internal static partial class ValidationPlanner
             else if (project.requiresNativeProducer && (nativeDependencies is not null || profile == ValidationProfile.Performance))
                 executionExclusions.Add(project.path, "This producer benchmark may invoke third-party compilation; consume-only validation runs separate warm consumer and lifecycle checks.");
         }
-        JsonElement? development = graph.RootElement.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot =>
-            Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!).Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj");
+        JsonElement? development = DevelopmentProject(graph.RootElement, root);
         string target = development?.GetProperty("Properties").GetProperty("InnoDevelopmentTarget").GetString() ?? string.Empty;
         DocumentationPageInfo[] examplePages = documentation is null ? [] : ValidationDocumentation.SelectExamples(documentation, affected, full);
         var exampleExclusions = new Dictionary<DocumentationPageInfo, string>();

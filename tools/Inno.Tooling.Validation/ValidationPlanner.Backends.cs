@@ -19,7 +19,8 @@ internal sealed record BackendInputPlan(
     Dictionary<string, string> projects,
     string[] required,
     string[] tests,
-    string[] missingNativeProducts
+    string[] missingNativeProducts,
+    string? developmentProperties
 );
 
 internal static partial class ValidationPlanner
@@ -182,7 +183,7 @@ internal static partial class ValidationPlanner
             && (plan.nativeRequests ?? []).Any(request => request.target == target && request.configuration == configuration)
             && !plan.checks.Any(check => check.exclusion is null && check.context is not null
                 && plan.contexts[check.context].properties.GetValueOrDefault("Configuration") == configuration))
-            return new(plan.commit, target, configuration, new(StringComparer.Ordinal), [], [], missing);
+            return new(plan.commit, target, configuration, new(StringComparer.Ordinal), [], [], missing, null);
         ValidationContext graph = configuration == plan.configuration ? plan.contexts["managed"]
             : plan.contexts.GetValueOrDefault("backend-" + configuration.ToLowerInvariant())
                 ?? throw new InvalidDataException("The SDK graph has no captured configuration " + configuration);
@@ -251,6 +252,14 @@ internal static partial class ValidationPlanner
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(plan.dotnet, plan.root, cancellation).ConfigureAwait(false);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
         var common = new Dictionary<string, string>(StringComparer.Ordinal) { ["target"] = target, ["sdk"] = sdk.sdkIdentity, ["configuration"] = configuration };
+        string? developmentProperties = null;
+        if (DevelopmentProject(graph.sdkGraph, plan.root)?.GetProperty("Properties") is JsonElement development
+            && development.GetProperty("InnoDevelopmentTarget").GetString() == target
+            && development.GetProperty("InnoDevelopmentEditorBuildProperties").GetString() is { Length: > 0 } path)
+        {
+            developmentProperties = Path.GetRelativePath(plan.root, path).Replace('\\', '/');
+            common["development-context:" + developmentProperties] = plan.inputs[developmentProperties];
+        }
         foreach (string compiler in new[] { "Microsoft.Build.dll", "Roslyn/bincore/csc.dll", "Roslyn/bincore/Microsoft.CodeAnalysis.dll", "Roslyn/bincore/Microsoft.CodeAnalysis.CSharp.dll" })
         {
             using FileStream file = File.OpenRead(Path.Combine(sdkRoot, compiler));
@@ -301,7 +310,7 @@ internal static partial class ValidationPlanner
             required.UnionWith(Closure(C_BUILD).Where(IsBackend));
         return new(plan.commit, target, configuration, identities, required.Order(StringComparer.Ordinal).ToArray(),
             checks.Where(static check => check.kind == "test" && check.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
-                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing);
+                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing, developmentProperties);
 
         IEnumerable<string> Closure(string project)
         {
