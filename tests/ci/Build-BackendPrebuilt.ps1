@@ -27,6 +27,11 @@ $registry = @(Get-Content -LiteralPath (Join-Path $root '.github/native-targets.
 $platform = @($registry | Where-Object target -CEQ $Target)
 if ($platform.Count -ne 1 -or $HostTarget -cnotin $registry.target) { throw 'Unknown backend producer target or host.' }
 function Invoke-Sdk([string[]]$Arguments) {
+    if ($Arguments[0] -ceq 'build') {
+        # Each SDK invocation owns one task bootstrap shared by its project roots.
+        $Arguments += "-p:InnoTaskBootstrapOwner=$([Guid]::NewGuid().ToString('N'))"
+        Write-Host "Building $($Arguments[1]) for $Target."
+    }
     & $dotnetPath @Arguments | Out-Host
     if ($LASTEXITCODE) { throw "Backend production failed at $($Arguments[0]) $($Arguments[1])." }
 }
@@ -93,7 +98,7 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
     $changed = @($current.Keys | Where-Object { !$matching.Contains($_) } | Sort-Object -CaseSensitive)
     $sdk = Join-Path $work 'sdk'
     $sdkOptions = @('--artifacts-path',$sdk,"-p:InnoBackendExportArtifactsPath=$sdk")
-    $options = @('--configuration',$configuration,'--disable-build-servers','-m:2','-nr:false',
+    $options = @('--configuration',$configuration,'--disable-build-servers','-nr:false',
         "-p:InnoNativeDependencyManifest=$consumption","-p:InnoBackendExportRoot=$staging")
     if ($previous) {
         $options += @("-p:InnoBackendPrebuiltRoot=$previous",("-p:InnoBackendCompileOwners=|" + ($changed -join '|') + '|'))
@@ -104,12 +109,13 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         "  <Project Path=`"$path`" />"
     }
     [IO.File]::WriteAllLines($solution, [string[]](@('<Solution>') + $owners + @('</Solution>')))
-    Invoke-Sdk (@('build',$solution,'-p:Platform=Any CPU') + $options + $sdkOptions)
+    Invoke-Sdk (@('build',$solution,'-m:1','-p:Platform=Any CPU') + $options + $sdkOptions)
     # Validation builds standalone SDK roots under the development product properties as well
     # as the product entry point, whose references receive additional binding selections.
     if ($identity.developmentProperties) {
         $development = [IO.Path]::GetFullPath($identity.developmentProperties,$root)
-        Invoke-Sdk (@('build',$solution,'-p:Platform=Any CPU',"-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
+        # Match the validation runner's single-node scheduling for binding-enabled roots.
+        Invoke-Sdk (@('build',$solution,'-m:1','-p:Platform=Any CPU',"-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
             "-p:InnoProductBuildProperties=$development") + $options + $sdkOptions)
     }
     $frozen = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
@@ -124,7 +130,7 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
         $id = $product.Properties.InnoProductId
         $aggregate = @($nativeInventory.aggregates | Where-Object { $_.product -ceq $id -and $_.target -ceq $Target -and $_.configuration -ieq $configuration })
         if (!$aggregate.Count) {
-            Invoke-Sdk (@('build',$path) + $options + $sdkOptions + @("-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
+            Invoke-Sdk (@('build',$path,'-m:2') + $options + $sdkOptions + @("-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
                 "-p:InnoProductBuildProperties=$($properties[0])"))
         }
         if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'produce' $previous $changed $consumption }
@@ -168,7 +174,7 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
     if ($compilerPlan.developmentProperties) {
         $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
         Invoke-Sdk @('build',(Join-Path $work "plan-$configuration/Backends.slnx"),'-p:Platform=Any CPU',
-            '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-m:2','-nr:false',
+            '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-m:1','-nr:false',
             "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
             "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
     }
