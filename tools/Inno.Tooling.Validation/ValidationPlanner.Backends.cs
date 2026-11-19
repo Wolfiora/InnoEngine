@@ -252,6 +252,7 @@ internal static partial class ValidationPlanner
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(plan.dotnet, plan.root, cancellation).ConfigureAwait(false);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
         var common = new Dictionary<string, string>(StringComparer.Ordinal) { ["target"] = target, ["sdk"] = sdk.sdkIdentity, ["configuration"] = configuration };
+        common["ShouldUnsetParentConfigurationAndPlatform"] = graph.properties["ShouldUnsetParentConfigurationAndPlatform"];
         string? developmentProperties = null;
         if (DevelopmentProject(graph.sdkGraph, plan.root)?.GetProperty("Properties") is JsonElement development
             && development.GetProperty("InnoDevelopmentTarget").GetString() == target

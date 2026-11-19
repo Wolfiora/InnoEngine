@@ -35,6 +35,11 @@ function Invoke-Sdk([string[]]$Arguments) {
     & $dotnetPath @Arguments | Out-Host
     if ($LASTEXITCODE) { throw "Backend production failed at $($Arguments[0]) $($Arguments[1])." }
 }
+function Invoke-BackendSolution([string]$Solution, [Collections.IDictionary]$Context, [string[]]$Options) {
+    # Keep dependencies outside the partial solution in the same configuration as the planned SDK graph.
+    $policy = $Context.properties.ShouldUnsetParentConfigurationAndPlatform
+    Invoke-Sdk (@('build',$Solution,'-m:1','-p:Platform=Any CPU',"-p:ShouldUnsetParentConfigurationAndPlatform=$policy") + $Options)
+}
 $previous = $null
 $manifest = $null
 if ($PreviousPackage -or $PreviousSha256) {
@@ -103,22 +108,21 @@ $inputPlans = @(foreach ($configuration in $platform[0].configurations) {
     if ($previous) {
         $options += @("-p:InnoBackendPrebuiltRoot=$previous",("-p:InnoBackendCompileOwners=|" + ($changed -join '|') + '|'))
     }
+    $frozen = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $solution = Join-Path $planDirectory 'Backends.slnx'
     $owners = foreach ($owner in $current.Keys | Sort-Object -CaseSensitive) {
         $path = [Security.SecurityElement]::Escape([IO.Path]::GetFullPath($owner,$root))
         "  <Project Path=`"$path`" />"
     }
     [IO.File]::WriteAllLines($solution, [string[]](@('<Solution>') + $owners + @('</Solution>')))
-    Invoke-Sdk (@('build',$solution,'-m:1','-p:Platform=Any CPU') + $options + $sdkOptions)
+    Invoke-BackendSolution $solution $frozen.contexts.managed ($options + $sdkOptions)
     # Validation builds standalone SDK roots under the development product properties as well
     # as the product entry point, whose references receive additional binding selections.
     if ($identity.developmentProperties) {
         $development = [IO.Path]::GetFullPath($identity.developmentProperties,$root)
-        # Match the validation runner's single-node scheduling for binding-enabled roots.
-        Invoke-Sdk (@('build',$solution,'-m:1','-p:Platform=Any CPU',"-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget",
-            "-p:InnoProductBuildProperties=$development") + $options + $sdkOptions)
+        Invoke-BackendSolution $solution $frozen.contexts.managed ($options + $sdkOptions + @(
+            "-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development"))
     }
-    $frozen = Get-Content -LiteralPath $planPath -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $products = @($frozen.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $Target -and $_.Properties.InnoProductId })
     if (!$products.Count) { throw "The SDK graph declares no products for $Target." }
     foreach ($product in $products) {
@@ -173,8 +177,8 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
     $compilerPlan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/inputs.json") -Raw | ConvertFrom-Json
     if ($compilerPlan.developmentProperties) {
         $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
-        Invoke-Sdk @('build',(Join-Path $work "plan-$configuration/Backends.slnx"),'-p:Platform=Any CPU',
-            '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-m:1','-nr:false',
+        Invoke-BackendSolution (Join-Path $work "plan-$configuration/Backends.slnx") $plan.contexts.managed @(
+            '--configuration',$configuration,'--artifacts-path',(Join-Path $work 'consume-development'),'--disable-build-servers','-nr:false',
             "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
             "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$development")
     }
