@@ -25,16 +25,17 @@ internal static class DocumentationApiNavigation
         foreach (DocumentationApiContentEntry type in types)
         {
             DocumentationApiFact fact = facts[type.symbol][0];
-            if (fact.family == "scripting") categories["scripting/" + fact.scope!.ToLowerInvariant()] = fact.scope;
-            else
+            string current = fact.family == "scripting" ? "scripting/" + fact.scope!.ToLowerInvariant() : "engine";
+            if (fact.family == "scripting")
             {
-                string[] names = (fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project).Split('.');
-                string current = "engine";
-                foreach (string name in names)
-                {
-                    current += "/" + DocumentationApiContent.Slug(name);
-                    categories[current] = name;
-                }
+                categories[current] = fact.scope!;
+                current += "/_projects";
+            }
+            string[] names = (fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project).Split('.');
+            foreach (string name in names)
+            {
+                current += "/" + DocumentationApiContent.Slug(name);
+                categories[current] = name;
             }
         }
         foreach (var category in categories)
@@ -45,7 +46,7 @@ internal static class DocumentationApiNavigation
                 .Append(category.Value).Append("\n\n");
             if (category.Key == "engine") text.Append("Browse public C# contracts from src/ and build/ by their owning project. All other source roots, tests and fixtures are outside Engine API.\n\n");
             else if (category.Key == "scripting") text.Append("Browse the actual projected script API by its declared scope. Runtime contracts are also available to Editor scripts; Authoring annotations are compilation-time contracts.\n\n");
-            else text.Append("Find types in this ").Append(category.Key.StartsWith("scripting/", StringComparison.Ordinal) ? "declared script scope" : "project category").Append(". Each type links to its exact declarations and member contracts.\n\n");
+            else text.Append("Find types in this ").Append(category.Key.StartsWith("scripting/", StringComparison.Ordinal) && category.Key.Count(character => character == '/') == 1 ? "declared script scope" : "project category").Append(". Each type links to its exact declarations and member contracts.\n\n");
             var children = categories.Where(child => Parent(child.Key) == category.Key).ToArray();
             if (children.Length != 0)
             {
@@ -53,7 +54,7 @@ internal static class DocumentationApiNavigation
                 foreach (var child in children)
                 {
                     string prefix = "content/en/api/" + child.Key + "/";
-                    string[] projects = types.Where(type => type.path.StartsWith(prefix, StringComparison.Ordinal))
+                    string[] projects = types.Where(type => (Category(facts[type.symbol][0]) + "/").StartsWith(child.Key + "/", StringComparison.Ordinal))
                         .Select(type => facts[type.symbol][0].project).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
                     string description = projects.Length == 1 && descriptions.TryGetValue(projects[0], out string? value)
                         ? value : "Browse " + child.Value + " contracts" + (projects.Length == 0 ? "." : " from " + string.Join(", ", projects.Take(4)) + (projects.Length > 4 ? " and related projects." : "."));
@@ -62,24 +63,15 @@ internal static class DocumentationApiNavigation
                 }
                 text.Append('\n');
             }
-            DocumentationApiContentEntry[] direct = types.Where(type => Parent(Parent(type.path)) == "content/en/api/" + category.Key)
+            DocumentationApiContentEntry[] direct = types.Where(type => Category(facts[type.symbol][0]) == category.Key)
                 .OrderBy(type => type.title, StringComparer.OrdinalIgnoreCase).ThenBy(type => type.symbol, StringComparer.Ordinal).ToArray();
-            if (category.Key.StartsWith("scripting/", StringComparison.Ordinal))
-            {
-                foreach (var letter in direct.GroupBy(type => char.IsAsciiLetter(type.title[0]) ? char.ToUpperInvariant(type.title[0]).ToString() : "Other"))
-                {
-                    text.Append("## ").Append(letter.Key).Append("\n\n");
-                    text.Append("| Type | Purpose |\n| --- | --- |\n");
-                    foreach (DocumentationApiContentEntry type in letter) AppendType(text, path, type, direct, facts, fragments);
-                    text.Append('\n');
-                }
-            }
-            else if (direct.Length != 0)
+            if (direct.Length != 0)
             {
                 text.Append("## Types\n\n| Type | Purpose |\n| --- | --- |\n");
                 foreach (DocumentationApiContentEntry type in direct) AppendType(text, path, type, direct, facts, fragments);
                 text.Append('\n');
             }
+            if (types.Any(type => type.path == path)) throw new InvalidDataException("API category conflicts with a registered type: " + path);
             pages.Add(path, text.ToString());
         }
         return pages;
@@ -103,7 +95,18 @@ internal static class DocumentationApiNavigation
             .Append(" |\n");
     }
 
-    private static string Parent(string path) => path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";
+    private static string Category(DocumentationApiFact fact)
+    {
+        string root = fact.family == "scripting" ? "scripting/" + fact.scope!.ToLowerInvariant() + "/_projects" : "engine";
+        string project = fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project;
+        return root + "/" + string.Join('/', project.Split('.').Select(DocumentationApiContent.Slug));
+    }
+
+    private static string Parent(string path)
+    {
+        string parent = path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";
+        return parent.EndsWith("/_projects", StringComparison.Ordinal) ? parent[..^10] : parent;
+    }
     private static string Relative(
         string from,
         string to

@@ -34,7 +34,7 @@ public static partial class BuildApplication
         ArgumentNullException.ThrowIfNull(arguments);
         if (arguments.Length == 0 || arguments[0] is "help" or "--help" or "-h")
         {
-            Console.WriteLine("InnoEngine.Build <docs|validate|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
+            Console.WriteLine("InnoEngine.Build <docs|validate|native-dependencies|support|editor|clean|bindings|support-pack|game|plugin|scripts|import-sample|verify|verify-native|shader> [options]");
             Console.WriteLine("Default entry command: support --product editor (current SDK host and entry configuration).");
             Console.WriteLine("support --product editor|player --target TARGET: prepare reusable target support without building the Editor's managed source.");
             Console.WriteLine("editor [--clean]: build the complete Editor entry and its dependencies.");
@@ -72,6 +72,7 @@ public static partial class BuildApplication
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken);
                 case "verify-native":
                     return await NativeBindingsVerification.RunAsync(options, cancellationToken);
+                case "native-dependencies":
                 case "support":
                 case "editor":
                 case "clean":
@@ -81,6 +82,7 @@ public static partial class BuildApplication
                     BuildCommandLine parsed = BuildCommandLine.Parse(options);
                     string[] specific = command switch
                     {
+                        "native-dependencies" => ["product", "release", "input", "output", "operation"],
                         "support" => ["product"],
                         "editor" => ["clean"],
                         "clean" => ["scope", "dry-run"],
@@ -90,10 +92,11 @@ public static partial class BuildApplication
                         _ => []
                     };
                     parsed.Validate(["engine-root", "dotnet", "target", "tools-target", "configuration",
-                        "cache-budget-gib", "cache-min-free-gib", "cache-time-seconds", ..specific]);
+                        "cache-budget-gib", "cache-min-free-gib", "cache-time-seconds", "native-dependencies", ..specific]);
                     var context = new BuildCommandContext(parsed);
                     switch (command)
                     {
+                        case "native-dependencies": await NativeDependenciesCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "support": await SupportBuildCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "editor": await EditorBuildCommand.RunAsync(context, parsed, cancellationToken); break;
                         case "clean": await CleanCommand.RunAsync(context, parsed, cancellationToken); break;

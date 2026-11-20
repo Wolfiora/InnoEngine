@@ -19,14 +19,19 @@ public sealed class PlayerSupportPackPlanningContext
     /// <exception cref="ArgumentException">
     /// A required input is blank.
     /// </exception>
+    /// <param name="nativeDependencies">
+    /// An exact dependency selection; null permits local source preparation.
+    /// </param>
     public PlayerSupportPackPlanningContext(
         string engineRoot,
-        string dotnetHost
+        string dotnetHost,
+        string? nativeDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(engineRoot);
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         this.engineRoot = engineRoot;
         this.dotnetHost = dotnetHost;
+        this.nativeDependencies = nativeDependencies;
     }
 
     /// <summary>
@@ -38,4 +43,9 @@ public sealed class PlayerSupportPackPlanningContext
     /// Gets the explicit host from which the source freezes its SDK selection.
     /// </summary>
     public string dotnetHost { get; }
+
+    /// <summary>
+    /// Gets the explicit dependency selection, or null for source production.
+    /// </summary>
+    public string? nativeDependencies { get; }
 }

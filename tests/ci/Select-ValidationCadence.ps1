@@ -2,37 +2,41 @@ param(
     [Parameter(Mandatory)][ValidateSet('pull_request', 'push', 'merge_group', 'workflow_dispatch', 'schedule')][string]$Event,
     [Parameter(Mandatory)][string]$Commit,
     [string]$Schedule = '',
-    [string]$LastCertifiedCommit = '',
-    [bool]$ManualFull = $true,
-    [DateTimeOffset]$Now = [DateTimeOffset]::UtcNow
+    [bool]$IsDefaultBranch = $true,
+    [bool]$HasOpenPullRequest = $false,
+    [bool]$ManualFull = $true
 )
 
 $ErrorActionPreference = 'Stop'
 if ($Commit -cnotmatch '^[0-9a-f]{40}$') { throw 'Cadence selection requires an exact candidate commit.' }
-if ($LastCertifiedCommit -and $LastCertifiedCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'The previous certification is not an exact commit.' }
 $run = $true
 $full = $false
-$extended = $false
+$profile = 'pull-request'
 $reason = 'Evaluate affected owners on the actual candidate.'
-if ($Event -eq 'workflow_dispatch') {
+if ($Event -ceq 'workflow_dispatch') {
     $full = $ManualFull
+    $profile = if ($full) { 'full' } else { 'pull-request' }
     $reason = 'Explicit manual validation request.'
-} elseif ($Event -eq 'schedule') {
+} elseif ($Event -ceq 'schedule') {
     if ($Schedule -ceq '17 20 * * 6') {
-        $full = $true
-        $extended = $true
-        $reason = 'Sunday 04:17 Taipei: complete functional, cold, ten warm and long-running evidence.'
+        $profile = 'performance'
+        $reason = 'Weekly warm sampling and lifecycle acceptance; third-party dependencies remain consume-only.'
     } elseif ($Schedule -ceq '17 19 * * *') {
         $full = $true
-        if ($Now.ToUniversalTime().AddHours(8).DayOfWeek -eq [DayOfWeek]::Sunday) {
-            $run = $false
-            $reason = 'Sunday is owned by the 04:17 weekly validation; no duplicate daily run.'
-        } elseif ($LastCertifiedCommit -ceq $Commit) {
-            $run = $false
-            $reason = 'No new default-branch commit since the last successful full certification.'
-        } else {
-            $reason = '03:17 Taipei: new default-branch input requires full functional certification.'
-        }
+        $profile = 'full'
+        $reason = 'Capture current complete inputs and environment before the validation engine evaluates trusted acceptance reuse.'
     } else { throw 'Unknown scheduled cadence; required validation cannot be silently skipped.' }
+} elseif ($Event -ceq 'push') {
+    if ($IsDefaultBranch) {
+        $profile = 'master'
+        $reason = 'Expand affected product and publication checks on the default branch.'
+    } elseif ($HasOpenPullRequest) {
+        $run = $false
+        $profile = 'fast'
+        $reason = 'The open pull request owns candidate validation; this push only routes the event.'
+    } else {
+        $profile = 'fast'
+        $reason = 'An ordinary branch push runs affected managed compilation and fast contracts.'
+    }
 }
-[pscustomobject]@{ run = $run; full = $full; extended = $extended; reason = $reason; commit = $Commit }
+[pscustomobject]@{ run = $run; full = $full; extended = $false; profile = $profile; reason = $reason; commit = $Commit }

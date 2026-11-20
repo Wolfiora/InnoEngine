@@ -18,7 +18,7 @@
 
 ### O01 · P2：macOS inline Metal surface 超时，阻断合并
 
-当前 PR run38699587876/job116304252956 与 push run38699580441/job116304230468，均在 `BgfxSurfaceRetirementTests.InlineSurfaceUsesTheSameConservativeAcknowledgment` 的子进程超过90秒。位置：[用例](../../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxSurfaceRetirementTests.cs#L23)、[宿主预算](../../../backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/NativeWindowTestHost.cs#L34)。
+当前 PR run38699587876/job116304252956 与 push run38699580441/job116304230468，均在 `BgfxSurfaceRetirementTests.InlineSurfaceUsesTheSameConservativeAcknowledgment` 的子进程超过90秒。位置：[用例](https://github.com/Wolfiora/InnoEngine/blob/a9b6c08ba080afcda697ba1bb18238f4f80d87d8/backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/BgfxSurfaceRetirementTests.cs#L23)、[宿主预算](https://github.com/Wolfiora/InnoEngine/blob/a9b6c08ba080afcda697ba1bb18238f4f80d87d8/backends/Bgfx/tests/Inno.Adapter.Rendering.Bgfx.Tests/NativeWindowTestHost.cs#L34)。
 
 能确认该配置/用例不能完成；尚不清楚阻塞发生于初始化、drawable、frame、退休还是最终释放。不能认定根因在BGCS，也不能推断所有Metal产品均不可用。桌面默认不强制单线程，但这一配置事实不能替代没有完成的产品smoke。
 

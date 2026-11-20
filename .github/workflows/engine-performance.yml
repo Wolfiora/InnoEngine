@@ -1,0 +1,16 @@
+name: Engine performance
+on:
+  schedule:
+    - cron: '17 20 * * 6'
+  workflow_dispatch:
+permissions: {}
+jobs:
+  performance:
+    # GitHub checks the callee's job permissions before it evaluates publication conditions.
+    permissions:
+      contents: write
+      actions: read
+      pull-requests: read
+    uses: ./.github/workflows/engine-ci.yml
+    with:
+      profile: performance

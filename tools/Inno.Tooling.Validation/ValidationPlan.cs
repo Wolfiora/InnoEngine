@@ -41,7 +41,30 @@ internal sealed record ValidationPlan(
     bool extended = false,
     Dictionary<string, double>? planningSeconds = null,
     ValidationDocumentationBinding? documentation = null,
-    Dictionary<string, string>? documentationSources = null
+    Dictionary<string, string>? documentationSources = null,
+    ValidationProfile profile = ValidationProfile.PullRequest,
+    string? nativeDependencies = null,
+    ValidationNativeRequest[]? nativeRequests = null,
+    ValidationShard[]? shards = null,
+    string? backendStore = null,
+    string? backendHost = null,
+    BackendPackageReceipt[]? backendPackages = null,
+    ValidationResult[]? backendTests = null,
+    string[]? hostExcludedSources = null,
+    Dictionary<string, string>? backendOwnerPayloads = null
+) {
+    /// <summary>
+    /// Indicates whether executing a selected check requires backend assemblies or native products.
+    /// </summary>
+    public bool backendRequired => nativeRequests is { Length: > 0 } || Array.Exists(checks, static check =>
+        check.exclusion is null && check.context is not null && (check.owner.StartsWith("backends/", StringComparison.Ordinal)
+            || Array.Exists(check.inputs, static input => input.StartsWith("@backends/", StringComparison.Ordinal))));
+}
+
+internal sealed record BackendPackageReceipt(
+    string target,
+    string sha256,
+    string manifestSha256
 );
 
 internal sealed record ValidationContext(
@@ -109,5 +132,12 @@ internal sealed record ValidationEvidence(
     DateTimeOffset started,
     ValidationResult[] results,
     string planIdentity = "",
-    bool completed = false
+    bool completed = false,
+    string? shard = null
+);
+
+internal sealed record ValidationNativeRequest(
+    string target,
+    string configuration,
+    string product
 );

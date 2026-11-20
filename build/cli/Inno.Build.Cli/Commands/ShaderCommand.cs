@@ -36,12 +36,16 @@ internal static class ShaderCommand
             throw new ArgumentException("The shader platform or rendering API is invalid.");
         NativeBuildContext native = new NativeBuildContext(root, configuration.ToLowerInvariant())
             .WithBindingGenerator(distribution.ResolveBindingGenerator(toolsTarget.value));
-        native = native.WithToolchain(await distribution.ResolveNativeToolchain(toolsTarget.value)
+        if (request.nativeDependencies.Length == 0)
+            native = native.WithToolchain(await distribution.ResolveNativeToolchain(toolsTarget.value)
             .ResolveAsync(native, context.host, toolsTarget.value, cancellationToken).ConfigureAwait(false));
-        using ProductNativeBuildResult products = await distribution.ResolveNativeProduct(toolsTarget.value, "shader-tools")
-            .BuildAsync(native, cancellationToken).ConfigureAwait(false);
+        NativeProductContribution contribution = distribution.ResolveNativeProduct(toolsTarget.value, "shader-tools");
+        using ProductNativeBuildResult products = request.nativeDependencies.Length == 0
+            ? await contribution.BuildAsync(native, cancellationToken).ConfigureAwait(false)
+            : await NativeDependencyManifest.AcquireAsync(root, request.nativeDependencies, toolsTarget.value,
+                configuration.ToLowerInvariant(), contribution.plan, cancellationToken).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
-        string extension = native.RequireToolchain().host.services.executableExtension;
+        string extension = context.host.services.executableExtension;
         var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
             tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant()
                 + extension));

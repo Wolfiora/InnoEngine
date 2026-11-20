@@ -9,6 +9,29 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationTestHosts
 {
+    internal static string[] ExcludedSources(ValidationProject[] projects)
+    {
+        var referenced = projects.SelectMany(static project => project.references).ToHashSet(StringComparer.Ordinal);
+        var candidates = projects.Where(project => project.test && !referenced.Contains(project.path)
+            && project.environment.Length != 0 && project.environment is not ("any" or "native-host")
+            && !Applies(project.environment.Split(';'))).ToArray();
+        if (candidates.Length == 0)
+            return [];
+        var excluded = new HashSet<string>(StringComparer.Ordinal);
+        foreach (ValidationProject candidate in candidates)
+        {
+            string directory = candidate.path[..(candidate.path.LastIndexOf('/') + 1)];
+            foreach (string input in candidate.inputs.Where(path => path.StartsWith(directory, StringComparison.Ordinal)
+                && path.StartsWith("tests/", StringComparison.Ordinal) && path.EndsWith(".cs", StringComparison.Ordinal)))
+            {
+                if (!projects.Any(other => other != candidate && (Array.IndexOf(other.inputs, input) >= 0
+                    || input.StartsWith(other.path[..(other.path.LastIndexOf('/') + 1)], StringComparison.Ordinal))))
+                    excluded.Add(input);
+            }
+        }
+        return excluded.Order(StringComparer.Ordinal).ToArray();
+    }
+
     internal static Dictionary<string, string[]> Read(string assembly)
     {
         using FileStream stream = File.OpenRead(assembly);

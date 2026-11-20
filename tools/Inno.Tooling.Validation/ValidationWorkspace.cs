@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -11,6 +12,31 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationWorkspace
 {
+    // Called only while the destination workspace writer lease is held. The event adapter
+    // authenticates the downloaded artifact; individual output identities are still checked by the runner.
+    internal static void RestoreOutputs(
+        ValidationPlan plan,
+        string source,
+        CancellationToken cancellation
+    ) {
+        source = Path.GetFullPath(source);
+        if (!Directory.Exists(source))
+            throw new InvalidDataException("Retained compilation outputs are unavailable.");
+        if (Directory.EnumerateFileSystemEntries(plan.artifacts).Any())
+            throw new InvalidDataException("Retained outputs require a fresh owned workspace; existing outputs cannot be overwritten.");
+        string[] files = PathBoundary.EnumerateFiles(source).ToArray();
+        if (files.Length == 0)
+            throw new InvalidDataException("Retained compilation output discovery is empty.");
+        foreach (string file in files)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            string relative = Path.GetRelativePath(source, file);
+            string destination = PathBoundary.Resolve(plan.artifacts, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.Copy(file, destination, overwrite: false);
+        }
+    }
+
     internal static void RecordCompleted(
         ValidationPlan plan,
         CancellationToken cancellation

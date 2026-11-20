@@ -1,0 +1,151 @@
+name: Backend prebuilts
+on:
+  workflow_call:
+    inputs:
+      platforms:
+        type: string
+        required: true
+      producers:
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  acquire:
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.platforms) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: ${{ matrix.operation == 'produce' && '0' || '1' }}
+          submodules: ${{ matrix.operation == 'produce' && 'recursive' || 'false' }}
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+        if: matrix.nativeInputs
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        id: cache
+        if: matrix.sha256
+        with:
+          key: backend-platform-${{ matrix.sha256 }}
+          path: artifacts/backend-downloads/${{ matrix.sha256 }}.zip
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: matrix.hostSeed.sha256
+        with:
+          key: backend-platform-${{ matrix.hostSeed.sha256 }}
+          path: artifacts/backend-downloads/${{ matrix.hostSeed.sha256 }}.zip
+      - name: Acquire the exact prior platform and prepare requested native inputs
+        shell: pwsh
+        env:
+          SPEC: ${{ toJSON(matrix) }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $item = $env:SPEC | ConvertFrom-Json
+          $zip = if ($item.sha256) {
+            ./tests/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.sha256 -AssetId $item.assetId -Directory artifacts/backend-downloads
+          }
+          $hostInputs = @{}
+          if ($item.hostSeed) {
+            $hostInputs.HostSeedDigest = $item.hostSeed.sha256
+            $hostInputs.HostSeedZip = ./tests/ci/Get-BackendPlatformArchive.ps1 -Sha256 $item.hostSeed.sha256 -AssetId $item.hostSeed.assetId -Directory artifacts/backend-downloads
+          }
+          ./tests/ci/Initialize-BackendProduction.ps1 -Target $item.target -HostTarget $item.hostTarget -Operation $item.operation `
+            -OutputDirectory artifacts/backend-input -NativeDirectory artifacts/backend-native `
+            -PreviousZip $zip -PreviousDigest $item.sha256 @hostInputs -PrepareNative:$item.nativeInputs
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        if: matrix.sha256 && steps.cache.outputs.cache-hit != 'true'
+        with:
+          key: backend-platform-${{ matrix.sha256 }}
+          path: artifacts/backend-downloads/${{ matrix.sha256 }}.zip
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: matrix.operation == 'consume' || matrix.sha256
+        with:
+          overwrite: true
+          name: backend-${{ matrix.operation == 'consume' && 'candidate' || 'seed' }}-${{ matrix.target }}
+          path: artifacts/backend-input
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: matrix.nativeInputs
+        with:
+          overwrite: true
+          name: backend-native-${{ matrix.target }}
+          path: |
+            artifacts/backend-native/*.zip
+            artifacts/backend-native/selection.json
+          if-no-files-found: error
+          retention-days: 1
+  build:
+    needs: acquire
+    if: fromJSON(inputs.producers).include[0] != null
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.producers) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          submodules: recursive
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: backend-native-${{ matrix.target }}
+          path: artifacts/components/${{ matrix.target }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        if: matrix.target != matrix.hostTarget
+        with:
+          name: backend-native-${{ matrix.hostTarget }}
+          path: artifacts/components/${{ matrix.hostTarget }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        if: matrix.sha256
+        with:
+          name: backend-seed-${{ matrix.target }}
+          path: artifacts/backend-seed
+      - name: Compile changed backend owners and assemble the platform ZIP
+        shell: pwsh
+        env:
+          SPEC: ${{ toJSON(matrix) }}
+        run: |
+          $item = $env:SPEC | ConvertFrom-Json
+          $null = ./tests/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($item.target)
+          $entry = @(./tests/ci/Initialize-ValidationEntry.ps1 -Dotnet (Get-Command dotnet).Source -LogPath artifacts/components/bootstrap.log)
+          $native = [ordered]@{layout='platform-packages';assets=@();aggregates=@()}
+          foreach ($component in Get-ChildItem artifacts/components -Directory) {
+            $source = Get-Content -LiteralPath (Join-Path $component.FullName 'selection.json') -Raw | ConvertFrom-Json -AsHashtable -Depth 80
+            $store = [IO.Directory]::CreateDirectory((Join-Path $component.FullName 'native')).FullName
+            foreach ($family in @('assets','aggregates')) {
+              foreach ($asset in $source[$family]) {
+                if ($asset.target -cne $component.Name -or $asset.sha256 -cnotmatch '^[a-f0-9]{64}$' -or $asset.asset -cnotmatch '^[A-Za-z0-9._-]+\.zip$') {
+                  throw 'Invalid native input receipt.'
+                }
+                $dest = Join-Path $store "$($asset.sha256).zip"
+                if (!(Test-Path -LiteralPath $dest)) {
+                  $src = Join-Path $component.FullName $asset.asset
+                  if ((Get-FileHash -LiteralPath $src).Hash.ToLowerInvariant() -cne $asset.sha256) { throw 'Native input changed during transfer.' }
+                  New-Item -ItemType HardLink -Path $dest -Target $src | Out-Null
+                }
+              }
+              $native[$family] += @($source[$family])
+            }
+          }
+          [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/components/selection.json'), (ConvertTo-Json $native -Compress -Depth 80))
+          $seed = if ($item.sha256) { Join-Path 'artifacts/backend-seed' $item.asset }
+          ./tests/ci/Build-BackendPrebuilt.ps1 -Target $item.target -HostTarget $item.hostTarget -EntryAssembly $entry[0] `
+            -NativeSelection "artifacts/components/$($item.target)/selection.json" -ConsumptionSelection artifacts/components/selection.json `
+            -PreviousPackage $seed -PreviousSha256 $item.sha256 -WorkspaceDirectory artifacts/bp -OutputDirectory artifacts/backend-candidate
+          $digest = (Get-FileHash -LiteralPath (Join-Path 'artifacts/backend-candidate' $item.asset)).Hash.ToLowerInvariant()
+          @{commit=$env:GITHUB_SHA;target=$item.target;asset=$item.asset;sha256=$digest;reused=$false} | ConvertTo-Json |
+            Set-Content artifacts/backend-candidate/candidate.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          overwrite: true
+          name: backend-candidate-${{ matrix.target }}
+          path: artifacts/backend-candidate
+          if-no-files-found: error
+          retention-days: 7

@@ -1,7 +1,7 @@
 using System;
 using Inno.Build.MacOSArm64;
 using Inno.Build.Toolchains;
-using Inno.Build.Windows.Host;
+using Inno.Build.WindowsX64;
 
 namespace Inno.Build.Distribution.Standard;
 

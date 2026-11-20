@@ -1,3 +1,4 @@
+using Inno.Testing.Validation;
 using System;
 using System.IO;
 using System.Linq;

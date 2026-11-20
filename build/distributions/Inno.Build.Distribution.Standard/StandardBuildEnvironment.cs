@@ -24,6 +24,9 @@ public static class StandardBuildEnvironment
     /// An explicit SDK executable, or null to use DOTNET_HOST_PATH, the loaded shared runtime's
     /// muxer, then normal executable discovery when this process has no shared runtime installation.
     /// </param>
+    /// <param name="nativeDependencies">
+    /// An absolute consume-only dependency selection, or null for local source preparation.
+    /// </param>
     /// <returns>
     /// A frozen execution context; publication targets must be selected independently.
     /// </returns>
@@ -36,11 +39,12 @@ public static class StandardBuildEnvironment
     public static BuildCompositionContext Capture(
         string applicationDirectory,
         BuildTargetId toolsTarget,
-        string? dotnetHost = null
+        string? dotnetHost = null,
+        string? nativeDependencies = null
     ) {
         BuildHostDescriptor buildHost = StandardBuildHosts.Capture();
         string host = ResolveManagedHost(dotnetHost);
-        return new BuildCompositionContext(host, applicationDirectory, buildHost, toolsTarget);
+        return new BuildCompositionContext(host, applicationDirectory, buildHost, toolsTarget, nativeDependencies);
     }
 
     /// <summary>

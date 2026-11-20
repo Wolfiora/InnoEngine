@@ -18,7 +18,7 @@ public static class NativeDllLoader
     /// The exact logical library identity declared by the selected product.
     /// </param>
     /// <returns>
-    /// The validated absolute library path; ownership is acquired by the consumer's module provider.
+    /// The validated absolute native-loading path; ownership is acquired by the consumer's module provider.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// The identity is empty or contains a path or wildcard.

@@ -121,7 +121,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
                 ) => Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories)
                     .Select(file => new NativeArtifact(Path.GetRelativePath(output, file), file,
                         Path.GetExtension(file) == ".a" ? NativeArtifactRole.StaticArchive : NativeArtifactRole.SupportFile)).ToArray()).ConfigureAwait(false);
-            return new ProductNativeBuildResult([product], generations, Path.Combine(product.directory, "Outputs"));
+            return new ProductNativeBuildResult([product], generations, Path.Combine(product.directory, "Outputs"), recipe);
         }
         catch
         {

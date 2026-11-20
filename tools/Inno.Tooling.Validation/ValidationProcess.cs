@@ -84,8 +84,17 @@ internal static class ValidationProcess
         if (log is not null)
             Console.WriteLine($"Process exited: {Path.GetFileName(log)}; pid={process.Id}; exit={process.ExitCode}; elapsed={elapsed.Elapsed.TotalSeconds:F1}s.");
         if (process.ExitCode != 0)
-            throw new InvalidOperationException($"{executable} exited with {process.ExitCode}: {errors.Result}\n{output.Result}");
+        {
+            string failure = log is null ? errors.Result + "\n" + output.Result
+                : $"Full process output: {log}\n{FailureExcerpt(errors.Result)}\n{FailureExcerpt(output.Result)}";
+            throw new InvalidOperationException($"{executable} exited with {process.ExitCode}: {failure}");
+        }
         return output.Result;
+
+        // A failed union is referenced by every affected owner. Preserve its full output once in the log,
+        // while keeping receipts bounded and retaining both the first diagnostic and the final summary.
+        static string FailureExcerpt(string content) => content.Length <= 2048 ? content
+            : content[..1024] + "\n[Full output retained in the process log]\n" + content[^1024..];
 
         async Task<string> DrainAsync(StreamReader reader)
         {

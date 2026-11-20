@@ -96,8 +96,8 @@ internal static class DocumentationApiComposition
             text.Append("> [!").Append(status.ToUpperInvariant()).Append("]\n> ").Append(status switch
             {
                 "Synced" => "This explanation is synchronized from the source XML documentation.",
-                "Outdated" => "The source declaration or XML documentation changed, or review was requested. This manual explanation needs review.",
-                _ => "This explanation is manually maintained with no outstanding source review. This status does not certify semantic correctness."
+                "Outdated" => "This authored explanation may be out of date.",
+                _ => "This explanation is maintained by its named author."
             }).Append("\n\n");
             text.Append("# ").Append(WebUtility.HtmlEncode(entry.title)).Append("\n\n");
             // Preserve XML element boundaries: multiple paragraphs in one summary are still one item.
@@ -155,6 +155,7 @@ internal static class DocumentationApiComposition
         // Category tables and queries use the same effective summaries as type pages.
         foreach (var category in DocumentationApiNavigation.Create(registry.entries, facts, DocumentationApiPresentation.ProjectDescriptions(root), fragments))
             pages[category.Key] = category.Value;
+        DocumentationProjectGuides.Compose(root, binding, facts, fragments, entries, pages, inputs);
         return new(pages, inputs, origins);
 
         void AppendSymbol(
@@ -187,7 +188,8 @@ internal static class DocumentationApiComposition
         DocumentationApiFragment fragment,
         DocumentationApiFact[] contexts
     ) => fragment.source == "xml" ? "Synced"
-        : DocumentationApiContent.IsOutdated(fragment, DocumentationApiContent.Contract(contexts)) ? "Outdated" : "Verified";
+        : fragment.IsOutdated(fragment.StaleProse(DocumentationApiContent.Contract(contexts, normalizeXml: true),
+            DocumentationApiContent.Contract(contexts))) ? "Outdated" : "Authored";
 
     private static string Header(
         DocumentationApiFragment fragment,

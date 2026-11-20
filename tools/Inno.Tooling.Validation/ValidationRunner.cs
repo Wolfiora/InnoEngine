@@ -21,28 +21,57 @@ internal static class ValidationRunner
         ValidationPlan plan,
         string directory,
         ValidationEvidence? previous,
-        CancellationToken cancellation
+        CancellationToken cancellation,
+        ValidationShard? shard = null,
+        IReadOnlyList<ValidationEvidence>? prerequisites = null,
+        bool continuation = false,
+        string? retainedOutputs = null
     ) {
+        HashSet<string>? selectedChecks = shard?.checks.ToHashSet(StringComparer.Ordinal);
+        ValidationCheck[] checks = plan.checks.Where(check => selectedChecks is null || selectedChecks.Contains(check.id)).ToArray();
+        ValidationResult[] imported = shard is null ? [] : ValidationShards.Prerequisites(plan, shard, prerequisites ?? []);
         using DocumentationSnapshot? documentationSnapshot = plan.documentation is null ? null
             : await DocumentationStore.OpenAsync(plan.documentation.cacheRoot, plan.documentation.snapshot,
                 cancellationToken: cancellation).ConfigureAwait(false);
         DocumentationCatalogReport? documentationCatalog = documentationSnapshot is null ? null
             : await ValidationDocumentation.ReadCatalogAsync(plan, documentationSnapshot, cancellation).ConfigureAwait(false);
-        var results = new List<ValidationResult>();
+        var results = new List<ValidationResult>(imported);
         DateTimeOffset started = DateTimeOffset.UtcNow;
         string planIdentity = ValidationInputs.PlanIdentity(plan);
         Directory.CreateDirectory(directory);
+        await File.WriteAllTextAsync(Path.Combine(directory, "execution-plan.json"), JsonSerializer.Serialize(plan,
+            new JsonSerializerOptions { WriteIndented = true }), cancellation).ConfigureAwait(false);
         Console.WriteLine("Validation phase: acquire the selected workspace ownership and freeze current inputs.");
-        using var workspace = plan.checks.Any(static check => check.kind == "build" && check.exclusion is null)
+        using var workspace = checks.Any(static check => check.kind == "build" && check.exclusion is null)
             ? await ValidationWorkspace.AcquireAsync(plan, cancellation).ConfigureAwait(false) : null;
+        if (retainedOutputs is not null)
+        {
+            if (!continuation || workspace is null)
+                throw new InvalidDataException("Restoring compilation outputs requires a continuation with workspace ownership.");
+            ValidationWorkspace.RestoreOutputs(plan, retainedOutputs, cancellation);
+        }
         foreach (var context in plan.contexts)
             await File.WriteAllTextAsync(Path.Combine(directory, context.Key + "-sdk-graph.json"), context.Value.sdkGraph.GetRawText(), cancellation).ConfigureAwait(false);
         Dictionary<string, string> current = await ValidationInputs.CaptureAsync(plan.root, cancellation).ConfigureAwait(false);
         if (ValidationInputs.Identity(current) != plan.tree)
-            throw new InvalidDataException("Validation plan inputs changed before execution. Generate a new plan.");
-        var buildSolutions = plan.checks.Where(static check => check.kind == "build" && check.exclusion is null)
+        {
+            string[] changed = current.Keys.Union(plan.inputs.Keys).Where(path => !path.StartsWith('@')
+                && current.GetValueOrDefault(path) != plan.inputs.GetValueOrDefault(path)).Order(StringComparer.Ordinal).Take(8).ToArray();
+            throw new InvalidDataException("Validation plan inputs changed before execution. Generate a new plan. Changed inputs: " + string.Join(", ", changed));
+        }
+        var buildSolutions = checks.Where(static check => check.kind == "build" && check.exclusion is null)
             .GroupBy(static check => check.context!, StringComparer.Ordinal).ToDictionary(static group => group.Key,
                 group => WriteUnion(group.Key, "Build", group.Select(static check => check.owner).ToArray()), StringComparer.Ordinal);
+        if (retainedOutputs is not null)
+        {
+            // Restore rebinds SDK-generated absolute paths to this runner and obtains the exact
+            // packages before comparing dependency identities. It does not compile the union.
+            foreach (var solution in buildSolutions)
+                await ValidationProcess.RunAsync(plan.dotnet, ["restore", solution.Value,
+                    ..plan.contexts[solution.Key].properties.Select(static pair => "-p:" + pair.Key + "=" + pair.Value),
+                    "--disable-parallel", "-nr:false"], plan.root,
+                    Path.Combine(directory, solution.Key + "-restore-retained.log"), cancellation).ConfigureAwait(false);
+        }
         var built = new HashSet<string>(StringComparer.Ordinal);
         var tested = new HashSet<string>(StringComparer.Ordinal);
         var executedTests = new HashSet<string>(StringComparer.Ordinal);
@@ -53,7 +82,9 @@ internal static class ValidationRunner
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         var compilationGraphs = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (ValidationCheck check in plan.checks)
+        var reused = new Dictionary<string, ValidationResult>(StringComparer.Ordinal);
+        var reusableCompilations = new Dictionary<string, bool>(StringComparer.Ordinal);
+        foreach (ValidationCheck check in checks)
         {
             Console.WriteLine($"Validation check: {check.id}; kind={check.kind}; context={check.context ?? "none"}; owner={check.owner}.");
             string identity = ValidationInputs.CheckIdentity(plan, check, current);
@@ -65,7 +96,6 @@ internal static class ValidationRunner
             string dependencyIdentity = string.Empty;
             ValidationDocumentationInput[]? documentationInputs = null;
             var elapsed = Stopwatch.StartNew();
-            ValidationResult? old = previous?.results.SingleOrDefault(result => result.id == check.id);
             if (check.exclusion is not null)
             {
                 status = "NotApplicable";
@@ -84,16 +114,18 @@ internal static class ValidationRunner
                     .Where(static prerequisite => prerequisite.status is not ("Passed" or "Reused"))
                     .Select(static prerequisite => prerequisite.id + " (" + prerequisite.status + ")")) + ". Dependent work was not executed.";
             }
-            else if (check.reusable && previous is { completed: true } && previous.environment == plan.environment && old is { status: "Passed" or "Reused" }
-                && old.inputIdentity == identity && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
-                && dependencyInputs.Matches(check, old.dependencyIdentity)
-                && ValidationOutputs.Matches(plan, check, old, cancellation, outputDigests))
+            else if (CanReuse(check))
             {
+                ValidationResult old = reused[check.id];
                 status = "Reused";
-                detail = check.kind == "test" ? old.detail : "Exact local deterministic input identity matches retained successful evidence.";
+                detail = check.kind == "test" ? old.detail : continuation
+                    ? "Exact retained functional evidence and output bytes match; source plan: " + previous!.planIdentity
+                    : "Exact local deterministic input identity matches retained successful evidence.";
                 outputs = old.outputs;
                 dependencyIdentity = old.dependencyIdentity;
                 documentationInputs = old.documentationInputs;
+                if (check.kind == "build")
+                    built.Add(contextId);
             }
             else
             {
@@ -114,7 +146,7 @@ internal static class ValidationRunner
                             break;
                         case "hot-builds":
                             await ShellAsync("tests/Invoke-BuildCacheChecks.ps1", ["-Dotnet", plan.dotnet,
-                                "-PlanPath", Path.Combine(directory, "plan.json"), "-Context", contextId,
+                                "-PlanPath", Path.Combine(directory, "execution-plan.json"), "-Context", contextId,
                                 "-ResultsDirectory", Path.Combine(directory, "hot-builds"), "-Iterations", "10"], "hot-builds.log").ConfigureAwait(false);
                             break;
                         case "instructions":
@@ -219,7 +251,7 @@ internal static class ValidationRunner
                             if (documentationCatalog.pages.Any(page => check.documentation.pages.Contains(page.id, StringComparer.Ordinal)
                                 && page.examples?.mode is "runtime-script" or "editor-script"))
                             {
-                                string entryContext = plan.checks.Single(candidate => candidate.kind == "build"
+                                string entryContext = checks.Single(candidate => candidate.kind == "build"
                                     && candidate.owner == "entry/InnoEngine.Build/InnoEngine.Build.csproj"
                                     && check.prerequisites.Contains(candidate.id, StringComparer.Ordinal)).context!;
                                 JsonElement snapshot = plan.contexts[entryContext].sdkGraph;
@@ -275,7 +307,8 @@ internal static class ValidationRunner
                                     await ShellAsync("tests/Invoke-EditorUiProductJourney.ps1", ["-EditorAssembly", assembly, "-ProjectDirectory", project,
                                         "-ResultsDirectory", Path.Combine(productDirectory, scenario), "-Dotnet", plan.dotnet,
                                         "-GraphicsApi", renderers[0], "-Scenario", scenario,
-                                        ..(plan.extended && scenario == "Lifecycle" ? new[] { "-Cycles", "1000", "-Frames", "180000", "-TimeoutSeconds", "5400" } : [])],
+                                        ..(plan.nativeDependencies is null ? Array.Empty<string>() : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]),
+                                        ..((plan.extended || plan.profile == ValidationProfile.Performance) && scenario == "Lifecycle" ? new[] { "-Cycles", "1000", "-Frames", "180000", "-TimeoutSeconds", "5400" } : [])],
                                         check.id + "-" + scenario + ".log").ConfigureAwait(false);
                             }
                             break;
@@ -288,7 +321,8 @@ internal static class ValidationRunner
                                 Directory.CreateDirectory(deliverables);
                                 await ValidationProcess.RunAsync(plan.dotnet, [entry, "support-pack", "--engine-root", plan.root,
                                     "--tools-target", plan.contexts[contextId].properties["InnoToolTarget"], "--dotnet", plan.dotnet,
-                                    "--configuration", "Release", "--archive", Path.Combine(deliverables, "PlayerSupportPack.zip")],
+                                    "--configuration", "Release", "--archive", Path.Combine(deliverables, "PlayerSupportPack.zip"),
+                                    ..plan.nativeDependencies is null ? Array.Empty<string>() : ["--native-dependencies", Path.Combine(plan.root, plan.nativeDependencies)]],
                                     plan.root, Path.Combine(directory, "support-pack.log"), cancellation).ConfigureAwait(false);
                                 await ShellAsync("tests/ci/Test-SupportPackClosure.ps1", ["-Archive", Path.Combine(deliverables, "PlayerSupportPack.zip")],
                                     "support-pack-closure.log").ConfigureAwait(false);
@@ -341,7 +375,7 @@ internal static class ValidationRunner
                                 throw new InvalidOperationException(testFailure);
                             if (!tested.Contains(contextId))
                             {
-                                string[] tests = plan.checks.Where(candidate => candidate.kind == "test" && candidate.exclusion is null && candidate.context == contextId
+                                string[] tests = checks.Where(candidate => candidate.kind == "test" && candidate.exclusion is null && candidate.context == contextId
                                     && !CanReuse(candidate))
                                     .Select(static candidate => candidate.owner).ToArray();
                                 string solution = WriteUnion(contextId, "Tests", tests);
@@ -355,7 +389,8 @@ internal static class ValidationRunner
                                     {
                                         await ShellAsync(C_TEST_EXECUTOR,
                                             ["-Solution", solution, "-Configuration", properties["Configuration"], "-ArtifactsPath", properties["ArtifactsPath"],
-                                                "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments], contextId + "-tests.log").ConfigureAwait(false);
+                                                "-Dotnet", plan.dotnet, "-SdkSnapshot", graphPath, "-ResultsDirectory", resultsDirectory, ..productArguments,
+                                                ..plan.nativeDependencies is null ? Array.Empty<string>() : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]], contextId + "-tests.log").ConfigureAwait(false);
                                     }
                                     catch (Exception failure) when (failure is not OperationCanceledException)
                                     {
@@ -415,7 +450,7 @@ internal static class ValidationRunner
         {
             results.Add(new("execution-canceled", "Blocked", plan.tree, 0, "The run was canceled and cannot certify completion."));
             await SaveAsync().ConfigureAwait(false);
-            return new(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity);
+            return new(plan.commit, plan.tree, plan.environment, started, OwnedResults(), planIdentity, shard: shard?.id);
         }
         // Both closing snapshots read independent owners after all checks; neither may reuse planning-time bytes.
         Task<Dictionary<string, string>> sourceCapture = ValidationInputs.CaptureAsync(plan.root, cancellation);
@@ -426,7 +461,7 @@ internal static class ValidationRunner
         outputDigests.Clear();
         dependencyInputs.Reset();
         var unstableCompilations = new HashSet<string>(StringComparer.Ordinal);
-        foreach (ValidationCheck check in plan.checks.Where(static check => check.exclusion is null))
+        foreach (ValidationCheck check in checks.Where(static check => check.exclusion is null))
         {
             ValidationResult result = results.Single(record => record.id == check.id);
             if (result.status is "Passed" or "Reused" && (!ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests)
@@ -456,7 +491,7 @@ internal static class ValidationRunner
         if (workspace is not null)
             ValidationWorkspace.RecordCompleted(plan, cancellation);
         await SaveAsync(completed: true).ConfigureAwait(false);
-        return new(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity, completed: true);
+        return new(plan.commit, plan.tree, plan.environment, started, OwnedResults(), planIdentity, completed: true, shard: shard?.id);
 
         Task ShellAsync(
             string script,
@@ -469,12 +504,12 @@ internal static class ValidationRunner
         {
             if (compilationGraphs.TryGetValue(context, out string? existing))
                 return existing;
-            string[] projects = plan.checks.Where(candidate => candidate.context == context && candidate.exclusion is null
+            string[] projects = checks.Where(candidate => candidate.context == context && candidate.exclusion is null
                 && candidate.kind is "api" or "documentation-api" or "documentation-examples"
                 && candidate.prerequisites.All(prerequisite => results.Any(result => result.id == prerequisite && result.status is "Passed" or "Reused")))
                 .SelectMany(static candidate => candidate.projects ?? [])
                 // Consumer roots carry effective reference-edge properties, even when only their dependency exposes an API.
-                .Concat(plan.checks.Where(candidate => candidate.kind == "build" && candidate.context == context && candidate.exclusion is null
+                .Concat(checks.Where(candidate => candidate.kind == "build" && candidate.context == context && candidate.exclusion is null
                     && results.Any(result => result.id == candidate.id && result.status is "Passed" or "Reused")).Select(static candidate => candidate.owner))
                 .Distinct(StringComparer.Ordinal)
                 .Order(StringComparer.Ordinal).Select(project => Path.Combine(plan.root, project)).ToArray();
@@ -504,18 +539,45 @@ internal static class ValidationRunner
             return destination;
         }
 
+        ValidationResult[] OwnedResults() => results.Where(result => !imported.Contains(result)).ToArray();
+
         Task SaveAsync(bool completed = false) => File.WriteAllTextAsync(Path.Combine(directory, "results.json"),
-            JsonSerializer.Serialize(new ValidationEvidence(plan.commit, plan.tree, plan.environment, started, results.ToArray(), planIdentity, completed),
+            JsonSerializer.Serialize(new ValidationEvidence(plan.commit, plan.tree, plan.environment, started, OwnedResults(), planIdentity, completed, shard?.id),
                 new JsonSerializerOptions { WriteIndented = true }), CancellationToken.None);
 
         bool CanReuse(ValidationCheck candidate)
         {
-            ValidationResult? retained = previous?.results.SingleOrDefault(result => result.id == candidate.id);
-            return candidate.reusable && string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"))
-                && previous is { completed: true } && previous.environment == plan.environment && retained is { status: "Passed" or "Reused" }
-                && retained.inputIdentity == ValidationInputs.CheckIdentity(plan, candidate, current)
-                && dependencyInputs.Matches(candidate, retained.dependencyIdentity)
-                && ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests);
+            // A context is a single compilation union. Adopt it only when every root and its
+            // restored dependencies match, so a partial adoption cannot bypass a required build.
+            if (continuation && candidate.kind == "build")
+            {
+                string context = candidate.context!;
+                if (!reusableCompilations.TryGetValue(context, out bool reusable))
+                {
+                    reusable = checks.Where(check => check.kind == "build" && check.context == context && check.exclusion is null)
+                        .All(MatchesRetained);
+                    reusableCompilations.Add(context, reusable);
+                }
+                return reusable;
+            }
+            return candidate.reusable && MatchesRetained(candidate);
+        }
+
+        bool MatchesRetained(ValidationCheck candidate)
+        {
+            if (candidate.layer == "performance")
+                return false;
+            ValidationResult? retained = (continuation || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
+                && previous is { completed: true } && previous.environment == plan.environment
+                ? previous.results.SingleOrDefault(result => result.id == candidate.id) : null;
+            if (retained is null && candidate.kind == "test" && candidate.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
+                retained = plan.backendTests?.SingleOrDefault(result => result.id == candidate.id);
+            if (retained is not { status: "Passed" or "Reused" } || retained.inputIdentity != ValidationInputs.CheckIdentity(plan, candidate, current)
+                || !dependencyInputs.Matches(candidate, retained.dependencyIdentity)
+                || !ValidationOutputs.Matches(plan, candidate, retained, cancellation, outputDigests))
+                return false;
+            reused[candidate.id] = retained;
+            return true;
         }
     }
 

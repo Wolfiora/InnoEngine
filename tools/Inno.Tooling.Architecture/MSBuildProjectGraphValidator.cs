@@ -29,8 +29,7 @@ internal static class MSBuildProjectGraphValidator
     ) {
         if (!Path.IsPathFullyQualified(dotnetHost) || !File.Exists(dotnetHost))
             throw new ArgumentException("Architecture SDK evaluation requires an existing absolute dotnet executable.", nameof(dotnetHost));
-        string[] projects = new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" }
-            .SelectMany(owner => RepositorySourceInventory.Files(Path.Combine(root, owner), "*.csproj"))
+        string[] projects = RepositorySourceInventory.Projects(root)
             .Where(project => selectedOwners is null || selectedOwners.Contains(Relative(root, project)))
             .Order(StringComparer.Ordinal).ToArray();
         var evaluated = new List<EvaluatedProject>();
@@ -100,8 +99,10 @@ internal static class MSBuildProjectGraphValidator
             Value(properties, "InnoNativeTarget"), Value(properties, "ImplicitUsings"),
             items.GetProperty("Using").GetArrayLength(), references, sources, Value(properties, "TargetPath"),
             Value(properties, "InnoValidationLayer"), Value(properties, "IsTestProject").Equals("true", StringComparison.OrdinalIgnoreCase),
-            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0
-                || Value(properties, "BindGenGeneratedBindings").Equals("true", StringComparison.OrdinalIgnoreCase));
+            Value(properties, "IsTestSupportProject").Equals("true", StringComparison.OrdinalIgnoreCase)
+                || items.TryGetProperty("PackageReference", out JsonElement packages)
+                    && packages.EnumerateArray().Any(static item => RepositorySourceInventory.IsTestPackage(Value(item, "Identity"))),
+            Value(properties, "InnoTestNativeProduct").Length != 0 || Value(properties, "InnoProductId").Length != 0);
     }
 
     private static void ValidateProject(
@@ -109,8 +110,9 @@ internal static class MSBuildProjectGraphValidator
         EvaluatedProject project,
         ICollection<string> failures
     ) {
-        bool test = project.path.StartsWith("tests/", StringComparison.Ordinal)
-            || project.path.Contains("/tests/", StringComparison.Ordinal);
+        bool test = RepositorySourceInventory.IsTestPath(project.path);
+        if ((project.isTest || project.testSupport) && !test)
+            failures.Add($"{project.path}: effective test projects must belong to the root tests directory.");
         if (project.isTest && project.layer is not ("domain" or "contract" or "integration" or "native" or "product" or "performance"))
             failures.Add($"{project.path}: test execution layer must declare its actual execution requirements.");
         if (project.implicitUsings.Equals("enable", StringComparison.OrdinalIgnoreCase)
@@ -153,8 +155,7 @@ internal static class MSBuildProjectGraphValidator
         var graph = projects.ToDictionary(static project => project.path, StringComparer.OrdinalIgnoreCase);
         // Reload fixtures intentionally compile distinct generations with the same assembly identity.
         foreach (IGrouping<string, EvaluatedProject> identity in projects
-            .Where(static project => !project.path.StartsWith("tests/", StringComparison.Ordinal)
-                && !project.path.Contains("/tests/", StringComparison.Ordinal))
+            .Where(static project => !RepositorySourceInventory.IsTestPath(project.path))
             .GroupBy(static project => project.assemblyName, StringComparer.Ordinal))
             if (identity.Count() != 1)
                 failures.Add($"Effective assembly identity '{identity.Key}' has multiple project owners.");
@@ -237,6 +238,7 @@ internal static class MSBuildProjectGraphValidator
         string targetPath,
         string layer,
         bool isTest,
+        bool testSupport,
         bool native
     );
 

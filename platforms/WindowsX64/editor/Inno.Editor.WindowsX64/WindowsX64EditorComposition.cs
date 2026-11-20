@@ -78,7 +78,8 @@ public static class WindowsX64EditorComposition
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
             }, [new BgfxAuthoringProvider(WindowsX64BgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: false, horizontalWheelDirection: 1))]);
-            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!, Inno.Build.WindowsX64.WindowsX64BuildModule.target.id);
+            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(WindowsX64EditorComposition).Assembly.Location)!,
+                Inno.Build.WindowsX64.WindowsX64BuildModule.target.id, nativeDependencies: command.nativeDependencies);
             var launch = new EditorLaunchOptions
             {
                 defaultBuildTarget = Inno.Build.WindowsX64.WindowsX64BuildModule.target.id,

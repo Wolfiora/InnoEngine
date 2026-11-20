@@ -147,11 +147,11 @@ public sealed class FilePlayerSupportPackPreparation
             throw new FileNotFoundException("The Player publication template is absent.", template);
         var native = new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION)
             .WithBindingGenerator(m_bindingGenerator);
-        NativeToolchainSelection selection = await m_toolchainProvider.ResolveAsync(
-            native, m_host, m_nativePlatform, cancellationToken).ConfigureAwait(false);
+        if (context.nativeDependencies is null)
+            native = native.WithToolchain(await m_toolchainProvider.ResolveAsync(
+                native, m_host, m_nativePlatform, cancellationToken).ConfigureAwait(false));
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
             context.dotnetHost, project, cancellationToken).ConfigureAwait(false);
-        native = native.WithToolchain(selection);
         var properties = new Dictionary<string, string>
         {
             ["Configuration"] = "Release", ["RuntimeIdentifier"] = m_runtimeIdentifier,
@@ -159,6 +159,8 @@ public sealed class FilePlayerSupportPackPreparation
             ["InnoShaderToolSourceRoot"] = context.engineRoot,
             ["InnoNativeTarget"] = m_target.value, ["InnoPrepareProductNative"] = "false"
         };
+        if (context.nativeDependencies is not null)
+            properties["InnoNativeDependencyManifest"] = context.nativeDependencies;
         PlayerSupportPackPreparationIdentity identity = await PlayerSupportPackPreparationIdentity.CaptureAsync(
             native, m_nativePlan, sdk, project, properties,
             m_preparationInputs.Append(template).ToArray(), cancellationToken).ConfigureAwait(false);
@@ -172,7 +174,10 @@ public sealed class FilePlayerSupportPackPreparation
         PlayerSupportPackPreparationIdentity identity,
         CancellationToken cancellationToken
     ) {
-        using ProductNativeBuildResult products = await m_nativeExecutor.BuildAsync(native, m_nativePlan, cancellationToken).ConfigureAwait(false);
+        using ProductNativeBuildResult products = identity.nativeDependencies is string manifest
+            ? await NativeDependencyManifest.AcquireAsync(native.engineRoot, manifest, m_target.value,
+                native.configuration, m_nativePlan, cancellationToken).ConfigureAwait(false)
+            : await m_nativeExecutor.BuildAsync(native, m_nativePlan, cancellationToken).ConfigureAwait(false);
         using ManagedBuildExecution execution = await identity.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
         context = new PlayerSupportPackBuildContext(execution.engineRoot, context.stagingDirectory, context.sdk);
         project = execution.project;
@@ -195,7 +200,8 @@ public sealed class FilePlayerSupportPackPreparation
                 "--runtime", m_runtimeIdentifier, "--nologo", "-p:DebugType=None", "-p:DebugSymbols=false",
                 "-p:InnoNativeTarget=" + m_target.value, "-p:InnoPrepareProductNative=false",
                 "-p:InnoShaderToolSourceRoot=" + native.engineRoot,
-                "-p:InnoNativeBindingSelection=" + bindingSelection],
+                "-p:InnoNativeBindingSelection=" + bindingSelection,
+                ..(identity.nativeDependencies is string selection ? new[] { "-p:InnoNativeDependencyManifest=" + selection } : Array.Empty<string>())],
             context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(context.sdk.hostPath)).ConfigureAwait(false);
         string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(context.sdk.hostPath,
             [context.sdk.cliPath, "msbuild", project, "-getProperty:TargetDir", "-p:Configuration=Release", "-p:RuntimeIdentifier=" + m_runtimeIdentifier,

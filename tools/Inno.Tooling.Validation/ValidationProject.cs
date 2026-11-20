@@ -15,11 +15,13 @@ internal sealed record ValidationProject(
     bool test,
     bool native,
     bool reusable,
-    string productTarget
+    string productTarget,
+    bool requiresNativeProducer
 ) {
     internal static ValidationProject Read(
         string root,
-        JsonElement snapshot
+        JsonElement snapshot,
+        string? backendTarget = null
     ) {
         JsonElement properties = snapshot.GetProperty("Properties");
         string Value(string name) => properties.GetProperty(name).GetString() ?? string.Empty;
@@ -33,25 +35,40 @@ internal sealed record ValidationProject(
         bool native = false;
         foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
         {
+            string? variantTarget = variant.GetProperty("Properties").GetProperty("InnoNativeTarget").GetString();
+            if (backendTarget is not null && !string.IsNullOrEmpty(variantTarget) && variantTarget != backendTarget)
+                continue;
             foreach (JsonElement import in variant.GetProperty("Imports").EnumerateArray())
                 inputs.Add(Relative(import.GetString()!));
             foreach (JsonProperty group in variant.GetProperty("Items").EnumerateObject())
+            {
+                if (group.Name is "PackageReference" or "Using" or "InnoNativeDependency")
+                    continue;
                 foreach (JsonElement item in group.Value.EnumerateArray())
                     if (item.TryGetProperty("FullPath", out JsonElement fullPath) && !string.IsNullOrEmpty(fullPath.GetString()))
                     {
-                        inputs.Add(Relative(fullPath.GetString()!));
+                        string file = Relative(fullPath.GetString()!);
+                        // The SDK lists adjacent build definitions as None even when this variant never imports them.
+                        // Copied or otherwise declared items and actual imports retain their own input edges.
+                        if (backendTarget is not null && group.Name == "None"
+                            && (file.EndsWith(".props", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".targets", StringComparison.OrdinalIgnoreCase))
+                            && item.EnumerateObject().All(static property => property.Name is "Identity" or "FullPath"))
+                            continue;
+                        inputs.Add(file);
                         if (group.Name == "ProjectReference")
-                            references.Add(Relative(fullPath.GetString()!));
+                            references.Add(file);
                     }
+            }
             JsonElement effective = variant.GetProperty("Properties");
             native |= !string.IsNullOrEmpty(effective.GetProperty("InnoTestNativeProduct").GetString())
                 || !string.IsNullOrEmpty(effective.GetProperty("InnoProductId").GetString())
-                || effective.GetProperty("BindGenGeneratedBindings").GetString()?.Equals("true", StringComparison.OrdinalIgnoreCase) == true;
+                || variant.GetProperty("Items").GetProperty("InnoNativeDependency").GetArrayLength() != 0;
         }
         return new(path, references.Order(StringComparer.Ordinal).ToArray(),
             inputs.Order(StringComparer.Ordinal).ToArray(), Value("InnoValidationLayer"), Value("InnoValidationEnvironment"),
             Value("IsTestProject").Equals("true", StringComparison.OrdinalIgnoreCase),
             native,
-            !Value("InnoValidationReusable").Equals("false", StringComparison.OrdinalIgnoreCase), Value("InnoProductTarget"));
+            !Value("InnoValidationReusable").Equals("false", StringComparison.OrdinalIgnoreCase), Value("InnoProductTarget"),
+            Value("InnoValidationRequiresNativeProducer").Equals("true", StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -15,6 +15,7 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     private readonly string m_dotnetHost;
     private readonly PlayerSupportPackPublisher m_publisher;
     private readonly Action<string> m_reportDiagnostic;
+    private readonly string? m_nativeDependencies;
 
     /// <summary>
     /// Creates a provisioner for a complete engine checkout.
@@ -34,15 +35,22 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="reportDiagnostic">
     /// The borrowed host reporter for successful-publication indexing and cleanup diagnostics.
     /// </param>
+    /// <param name="nativeDependencies">
+    /// An absolute dependency selection disabling third-party production, or null for local source preparation.
+    /// </param>
     public SourcePlayerSupportPackProvisioner(
         string engineRoot,
         PlayerSupportPackPublisher publisher,
         string dotnetHost,
-        Action<string> reportDiagnostic
+        Action<string> reportDiagnostic,
+        string? nativeDependencies = null
     ) {
         ArgumentNullException.ThrowIfNull(publisher);
         ArgumentNullException.ThrowIfNull(reportDiagnostic);
         m_reportDiagnostic = reportDiagnostic;
+        if (nativeDependencies is not null && !Path.IsPathFullyQualified(nativeDependencies))
+            throw new ArgumentException("A native dependency selection must be absolute.", nameof(nativeDependencies));
+        m_nativeDependencies = nativeDependencies;
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         m_publisher = publisher;
         m_dotnetHost = dotnetHost;
@@ -73,11 +81,15 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="reportDiagnostic">
     /// The borrowed host reporter, retained only by the returned provisioner.
     /// </param>
+    /// <param name="nativeDependencies">
+    /// The explicit consume-only selection retained by the returned provisioner, or null for local source preparation.
+    /// </param>
     public static SourcePlayerSupportPackProvisioner? TryCreateForHost(
         string startDirectory,
         PlayerSupportPackPublisher publisher,
         string dotnetHost,
-        Action<string> reportDiagnostic
+        Action<string> reportDiagnostic,
+        string? nativeDependencies = null
     ) {
         ArgumentNullException.ThrowIfNull(publisher);
         ArgumentNullException.ThrowIfNull(reportDiagnostic);
@@ -85,13 +97,13 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         string? configured = Environment.GetEnvironmentVariable("INNO_ENGINE_ROOT");
         if (!string.IsNullOrWhiteSpace(configured))
-            return new SourcePlayerSupportPackProvisioner(configured, publisher, dotnetHost, reportDiagnostic);
+            return new SourcePlayerSupportPackProvisioner(configured, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
         for (DirectoryInfo? directory = new(Path.GetFullPath(startDirectory));
              directory is not null;
              directory = directory.Parent)
         {
             if (IsEngineRoot(directory.FullName))
-                return new SourcePlayerSupportPackProvisioner(directory.FullName, publisher, dotnetHost, reportDiagnostic);
+                return new SourcePlayerSupportPackProvisioner(directory.FullName, publisher, dotnetHost, reportDiagnostic, nativeDependencies);
         }
         return null;
     }
@@ -121,7 +133,8 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
             supportPackRoot,
             target,
             m_dotnetHost,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken,
+            m_nativeDependencies).ConfigureAwait(false);
         foreach (string diagnostic in installed.diagnostics)
             m_reportDiagnostic(diagnostic);
     }

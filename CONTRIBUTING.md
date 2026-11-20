@@ -13,3 +13,13 @@ Maintain tutorials and Manual changes separately in Docs, starting from `draft`.
 Keep implementation and acceptance records in [.agents/records](.agents/records/README.md). Write active guidance and contributions in English; preserve historical evidence in its original form. Delivery must distinguish checks actually executed from work still outstanding.
 
 API export first compares complete conservative committed inputs, then evaluates actual owner dependencies only where needed. Immutable extraction reuse retains its original producer revision; it is not a claim of execution at the new commit. A no-change package must not push Docs solely to merge main ancestry. Preserve the existing functional and product validation scope.
+
+## Backend builds in CI
+
+A local SDK build follows project references and compiles from source. In CI, the validation plan selects the required backend projects, product configurations and host tools. An independent managed change can finish on its planning runner. A matching platform ZIP supplies compiler references, runtime assemblies, native libraries and generated resources. Changed inputs schedule a producer for the affected platform. Product consumers still run their selected integration tests.
+
+In GitHub Actions, run **Engine CI** with **full** enabled to check all registered platforms. To force fresh backend production, enter the target IDs from `.github/native-targets.json` in **rebuild_backends**, separated by commas. For example, `windows-x64` rebuilds that target. A feature branch retains temporary candidates. A successful default-branch run can promote verified candidates to **Backend Prebuilts YYYY.MM.DD.N**.
+
+Each CI prerelease contains one ZIP per registered target. The file inventory inside the ZIP records the component identities and digests. The annotated Git tag records the release catalog. Identical platform bytes share a download-cache key across versions. Rotation keeps the current prerelease and two rollback versions. An interrupted upload resumes from its draft. Product version tags keep the engine's own publication workflow.
+
+If acquisition fails, inspect the named target, required owner and input digest in the plan and producer log. Correct the source or rerun the responsible producer. The **Engine validation** check reconciles the frozen plan against the actual per-host results.

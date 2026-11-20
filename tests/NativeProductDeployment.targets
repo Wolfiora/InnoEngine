@@ -1,14 +1,13 @@
 <Project>
-  <Target
-    Name="PrepareNativeTestDeployment"
-    AfterTargets="Build"
-    DependsOnTargets="PrepareInnoBuildTaskHost"
+  <!-- Tests use the product's existing pre-compilation preparation and binding-selection propagation.
+       A second deployment after Build would be too late for consume-only native references. -->
+  <PropertyGroup Condition="'$(InnoTestNativeProduct)' != '' and '$(InnoNativeTarget)' != '' and '$(VSTestListTests)' != 'true'">
+    <InnoProductId>$(InnoTestNativeProduct)</InnoProductId>
+    <InnoProductTarget>$(InnoTestNativeTarget)</InnoProductTarget>
+  </PropertyGroup>
+  <Target Name="ValidateNativeTestProduct" BeforeTargets="PrepareForBuild;PrepareProductNativeDeployment"
     Condition="'$(InnoTestNativeProduct)' != '' and '$(InnoNativeTarget)' != '' and '$(DesignTimeBuild)' != 'true' and '$(VSTestListTests)' != 'true'">
-    <Inno.Build.Tasks.PrepareProductNativeTask
-      EngineRoot="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../'))"
-      ProductId="$(InnoTestNativeProduct)"
-      TargetId="$(InnoTestNativeTarget)"
-      Configuration="$(Configuration)"
-      OutputDirectory="$(TargetDir)" />
+    <Error Condition="'$(InnoProductId)' != '$(InnoTestNativeProduct)' or '$(InnoProductTarget)' != '$(InnoTestNativeTarget)'"
+      Text="The native test requires its explicitly declared product and target." />
   </Target>
 </Project>

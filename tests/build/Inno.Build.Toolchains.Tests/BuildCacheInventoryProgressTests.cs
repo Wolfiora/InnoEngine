@@ -97,20 +97,35 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         string directory = Path.Combine(m_root, "artifacts", "cache-owners", "inventory");
         Directory.CreateDirectory(directory);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        using var watcher = new FileSystemWatcher(directory, "*.inventory") { NotifyFilter = NotifyFilters.FileName };
-        watcher.Created += (
-            _,
-            _
-        ) => cancellation.Cancel();
-        watcher.Renamed += (
-            _,
-            _
-        ) => cancellation.Cancel();
-        watcher.EnableRaisingEvents = true;
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Task.Run(() =>
-            BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
-                true, false, null, cancellation.Token)));
-        watcher.EnableRaisingEvents = false;
+        using var stopObserving = new CancellationTokenSource();
+        using var observing = new ManualResetEventSlim();
+        // Inventory is synchronous work. Observe its public checkpoint on a dedicated thread
+        // so a busy test worker pool cannot postpone cancellation until after retirement.
+        Task observer = Task.Factory.StartNew(() =>
+        {
+            observing.Set();
+            while (!stopObserving.IsCancellationRequested)
+            {
+                if (Directory.EnumerateFiles(directory, "*.inventory").Any())
+                {
+                    cancellation.Cancel();
+                    return;
+                }
+                Thread.Sleep(1);
+            }
+        }, CancellationToken.None, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        try
+        {
+            Assert.True(observing.Wait(TimeSpan.FromSeconds(30)), "The checkpoint observer did not start.");
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Task.Run(() =>
+                BuildMaintenanceApplication.CleanAsync(m_root, new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
+                    true, false, null, cancellation.Token)));
+        }
+        finally
+        {
+            stopObserving.Cancel();
+            await observer;
+        }
         string[] completed = Directory.GetFiles(directory, "*.inventory");
         Assert.NotEmpty(completed);
         Assert.True(completed.Length < C_COUNT, "The first checkpoint must interrupt discovery before the complete protection graph exists.");

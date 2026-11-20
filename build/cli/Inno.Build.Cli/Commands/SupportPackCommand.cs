@@ -17,7 +17,7 @@ internal static class SupportPackCommand
     ) {
         string output = options.Read("output", Path.Combine(context.root, "artifacts", "support-packs"));
         using PlayerSupportPackPublication pack = await context.distribution.supportPacks.PublishAsync(context.root, output, context.target,
-            context.composition.dotnetHost, cancellationToken).ConfigureAwait(false);
+            context.composition.dotnetHost, cancellationToken, context.nativeDependencies.Length == 0 ? null : context.nativeDependencies).ConfigureAwait(false);
         string archive = options.Read("archive", string.Empty);
         if (archive.Length != 0)
         {

@@ -1,0 +1,5 @@
+[
+  { "target": "windows-x64", "asset": "windowsx64-prebuilt-backends.zip", "runner": "windows-2022", "workloads": [], "configurations": ["Debug", "Release"] },
+  { "target": "macos-arm64", "asset": "macosarm64-prebuilt-backends.zip", "runner": "macos-15", "workloads": [], "configurations": ["Debug", "Release"] },
+  { "target": "browser-wasm", "asset": "browserwasm32-prebuilt-backends.zip", "runner": "windows-2022", "workloads": ["wasm-tools"], "configurations": ["Release"] }
+]

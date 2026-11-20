@@ -9,7 +9,8 @@ $root = Join-Path $engineRoot ('artifacts/validation/api-publication/' + [Guid]:
 New-Item -ItemType Directory -Path $root | Out-Null
 if (!$Dotnet) { $Dotnet = (Get-Command dotnet -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source }
 if (!$BuildCli) {
-    $BuildCli = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log')
+    $BuildCli = & "$PSScriptRoot/Initialize-ValidationEntry.ps1" -Dotnet $Dotnet -LogPath (Join-Path $root 'bootstrap.log') `
+        -WorkspaceDirectory (Join-Path $root 'artifacts/bootstrap')
 }
 if (!(Test-Path -LiteralPath $BuildCli -PathType Leaf)) { throw 'The actual managed API transport is required.' }
 $oldConfig = $env:GIT_CONFIG_GLOBAL
@@ -133,8 +134,15 @@ function git {
     if (!$concurrentLog.Contains('Recompute ownership')) { throw 'The competing push did not exercise ownership recomputation.' }
     $after = Join-Path $root 'after-race'
     [void](Invoke-FixtureGit $root @('clone', '--branch', 'draft', $docsRemote, $after))
-    $expectedManual = $manual.Replace('outdated: false', 'outdated: true')
-    if ([IO.File]::ReadAllText((Join-Path $after $fragment)) -cne $expectedManual) { throw 'Concurrent manual prose was overwritten or changed XML did not require review.' }
+    $published = [IO.File]::ReadAllText((Join-Path $after $fragment))
+    $authoring = '# Authoring metadata.'
+    if (!$manual.Contains($authoring) -or !$published.Contains($authoring) -or
+        $published.Substring($published.IndexOf($authoring)) -cne $manual.Substring($manual.IndexOf($authoring))) {
+        throw 'Concurrent publication changed author-owned metadata or prose.'
+    }
+    if ($published -cnotmatch '(?m)^outdatedFor: [0-9a-f]{64}\r?$' -or $manual -cmatch '(?m)^outdatedFor:') {
+        throw 'The competing XML change did not mark the previously current prose outdated.'
+    }
     if (![IO.File]::ReadAllText((Join-Path $after 'reference/api/probe.json')).Contains('An updated XML explanation.')) { throw 'Source facts were not synchronized after the competing edit.' }
     $first = (Invoke-FixtureGit $docsRemote @('rev-parse', 'draft')) -join ''
     Write-Text (Join-Path $engine 'input.txt') 'A newer engine input.'

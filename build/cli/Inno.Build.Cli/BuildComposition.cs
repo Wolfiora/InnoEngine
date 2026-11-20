@@ -25,14 +25,18 @@ internal static class BuildComposition
     internal static async Task<ProductNativeBuildResult> PrepareNativeAsync(
         BuildCompositionContext context,
         string engineRoot,
-        CancellationToken cancellationToken
+        CancellationToken cancellationToken,
+        string? nativeDependencies = null
     ) {
+        var distribution = StandardBuildDistribution.Create(context).build;
+        NativeProductContribution contribution = distribution.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
+        if (nativeDependencies is not null)
+            return await NativeDependencyManifest.AcquireAsync(engineRoot, nativeDependencies, context.toolsTarget.value,
+                C_HOST_CONFIGURATION, contribution.plan, cancellationToken).ConfigureAwait(false);
         var nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(StandardBuildDistribution.Create(context).build.ResolveBindingGenerator(context.toolsTarget.value));
         var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
         nativeContext = nativeContext.WithToolchain(await provider.ResolveAsync(
             nativeContext, context.host, context.toolsTarget.value, cancellationToken).ConfigureAwait(false));
-        NativeProductContribution contribution = StandardBuildDistribution.Create(context).build.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
-            ProductNativeBuildPlan plan = contribution.plan;
         return await contribution.BuildAsync(nativeContext, cancellationToken).ConfigureAwait(false);
     }
 

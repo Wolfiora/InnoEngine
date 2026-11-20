@@ -141,8 +141,7 @@ internal static class ValidationInputs
             inputs.OrderBy(static pair => pair.Key, StringComparer.Ordinal).Select(static pair => pair.Key + "\0" + pair.Value)))));
 
     internal static string PlanIdentity(ValidationPlan plan)
-        => Convert.ToHexStringLower(SHA256.HashData(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(plan,
-            new System.Text.Json.JsonSerializerOptions { WriteIndented = true })));
+        => Convert.ToHexStringLower(SHA256.HashData(ValidationPlanTransport.Write(plan)));
 
     internal static string CheckIdentity(
         ValidationPlan plan,
@@ -150,9 +149,33 @@ internal static class ValidationInputs
         IReadOnlyDictionary<string, string> inputs
     ) => Identity(check.inputs.SelectMany(path => path.StartsWith('@') ? plan.inputSets[path[1..]] : [path])
         .Distinct(StringComparer.Ordinal).Select(path => new KeyValuePair<string, string>(path, inputs.GetValueOrDefault(path, "missing")))
+        .Concat(BackendPayloads(plan, check))
         .Append(new("environment", plan.environment)).Append(new("configuration", plan.configuration))
-        .Append(new("context", check.context is null ? string.Empty : System.Text.Json.JsonSerializer.Serialize(plan.contexts.GetValueOrDefault(check.context)?.properties)))
+        .Append(new("context", check.context is null ? string.Empty : System.Text.Json.JsonSerializer.Serialize(plan.contexts.GetValueOrDefault(check.context)?.properties
+            .ToDictionary(static pair => pair.Key, pair => ValidationPlanTransport.Logical(plan.root, plan.dotnet, pair.Value), StringComparer.Ordinal))))
         .Append(new("definition", System.Text.Json.JsonSerializer.Serialize(check))));
+
+    private static IEnumerable<KeyValuePair<string, string>> BackendPayloads(
+        ValidationPlan plan,
+        ValidationCheck check
+    ) {
+        if (plan.backendPackages is null || check.exclusion is not null || check.context is null)
+            yield break;
+        ValidationContext context = plan.contexts[check.context];
+        string configuration = context.properties.GetValueOrDefault("Configuration", plan.configuration);
+        string[] owners = check.inputs.Where(static key => key.StartsWith("@backends/", StringComparison.Ordinal))
+            .Select(input => plan.backendHost + "/" + configuration + "/" + input[1..]).ToArray();
+        if (context.properties.ContainsKey("InnoNativeTarget")
+            || owners.Any(owner => plan.backendOwnerPayloads?.ContainsKey(owner) != true))
+        {
+            // A product can load its entire deployed closure, including tools from another host.
+            foreach (BackendPackageReceipt package in plan.backendPackages)
+                yield return new("backend:" + package.target, package.sha256);
+            yield break;
+        }
+        foreach (string owner in owners)
+            yield return new("backend:" + owner, plan.backendOwnerPayloads![owner]);
+    }
 
     internal static string Resolve(
         string root,

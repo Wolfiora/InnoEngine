@@ -535,13 +535,21 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         int activeRecorders = 0;
         int maximumRecorders = 0;
-        void Record(int drawCount, RenderPassContext context)
-        {
+        using var parallelEntered = new CountdownEvent(2);
+        void Record(
+            int drawCount,
+            RenderPassContext context
+        ) {
             int active = Interlocked.Increment(ref activeRecorders);
             int observed;
             while (active > (observed = Volatile.Read(ref maximumRecorders)))
                 _ = Interlocked.CompareExchange(ref maximumRecorders, active, observed);
-            Thread.Sleep(40);
+            if (drawCount <= 2 && Environment.ProcessorCount > 1)
+            {
+                parallelEntered.Signal();
+                Assert.True(parallelEntered.Wait(TimeSpan.FromSeconds(30)),
+                    "Both eligible callbacks must enter before either completes recording.");
+            }
             context.commands.Draw(drawCount);
             _ = Interlocked.Decrement(ref activeRecorders);
         }

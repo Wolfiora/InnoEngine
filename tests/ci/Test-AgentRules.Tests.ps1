@@ -71,6 +71,11 @@ try {
         [void][IO.Directory]::CreateDirectory((Split-Path $reviewTarget))
         Copy-Item -LiteralPath (Join-Path $repository $review) -Destination $reviewTarget
     }
+    foreach ($review in @($manifest.units | ForEach-Object { $_.translation.amendments } | Where-Object { $null -ne $_ } | ForEach-Object review | Sort-Object -Unique)) {
+        $reviewTarget = Join-Path $fixture $review
+        [void][IO.Directory]::CreateDirectory((Split-Path $reviewTarget))
+        Copy-Item -LiteralPath (Join-Path $repository $review) -Destination $reviewTarget
+    }
     $fixtureEntry = Join-Path $fixture 'tests/ci/Test-AgentRules.ps1'
     $registry = Join-Path $fixture '.agents/rulebook/coverage.json'
     $originalRegistry = [IO.File]::ReadAllText($registry)
@@ -90,6 +95,21 @@ try {
         $failure = ''
         try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
         if (-not $failure.Contains($expected)) { throw "Wrong source rejection for ${scenario}: $failure" }
+    }
+    [IO.File]::WriteAllText($registry, $originalRegistry)
+    foreach ($scenario in @('missing-amendment-approval', 'changed-amendment-hash', 'unmapped-amendment', 'duplicate-amendment')) {
+        $copy = $originalRegistry | ConvertFrom-Json
+        $translation = ($copy.units | Where-Object id -CEQ 'directories').translation
+        switch ($scenario) {
+            'missing-amendment-approval' { $translation.amendments[0].approval = ''; $expected = 'Invalid approved rule amendment' }
+            'changed-amendment-hash' { $translation.amendments[0].currentHash = '0' * 64; $expected = 'Changed or unmapped translation clause' }
+            'unmapped-amendment' { $translation.amendments += [pscustomobject]@{ ordinal = 999 }; $expected = 'Unmapped approved rule amendment' }
+            'duplicate-amendment' { $translation.amendments += $translation.amendments[0]; $expected = 'Duplicate approved rule amendment' }
+        }
+        [IO.File]::WriteAllText($registry, ($copy | ConvertTo-Json -Depth 50))
+        $failure = ''
+        try { & $fixtureEntry | Out-Null } catch { $failure = $_.Exception.Message }
+        if (-not $failure.Contains($expected)) { throw "Wrong amendment rejection for $scenario : $failure" }
     }
     [IO.File]::WriteAllText($registry, $originalRegistry)
     # Use one real preserved engine unit as an isolated external-authority fixture. No network,

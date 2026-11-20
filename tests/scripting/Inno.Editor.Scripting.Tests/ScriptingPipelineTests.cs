@@ -950,7 +950,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime();
         runtime.Start();
         IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
-        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.progress.status);
+        WaitForInitialScriptCompilation(fixture, runtime, scripting);
         Assert.True(fixture.assets.TryGetFileSystemEntry(new AssetPath(new AssetSourceId("tests.samples"), "~Starter"), out AssetFileEntry sample));
         Assert.True(runtime.interactions.For("panel/asset.file-browser", sample).Execute("file-browser/import-sample"));
         EditorModalExtension modal = runtime.modals.Single(value => value.id == "asset-sample-import.progress");
@@ -976,7 +976,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         using EditorInteractionRuntime runtime = fixture.CreateEditorRuntime();
         runtime.Start();
         IEditorScriptCompilation scripting = Assert.IsAssignableFrom<IEditorScriptCompilation>(ScriptingCompilationProbe.compilation);
-        PumpEditorUntil(fixture, runtime, () => scripting.state == EditorScriptCompilationState.Ready, () => scripting.progress.status);
+        WaitForInitialScriptCompilation(fixture, runtime, scripting);
         using var control = new ControlledSampleSourceRewriter.Control();
         ControlledSampleSourceRewriter.current = control;
         try
@@ -1859,6 +1859,28 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         EditorModalExtension modal = runtime.modals.Single(value => value.id == "scripting.compilation");
         Assert.True(modal.TryGetPresentation(out EditorModalExtension.Presentation presentation));
         Assert.False(presentation.isVisible);
+    }
+
+    private static void WaitForInitialScriptCompilation(
+        ScriptingFixture fixture,
+        EditorInteractionRuntime runtime,
+        IEditorScriptCompilation scripting
+    ) {
+        // Startup compiles the sample and activates its generation before the import can begin.
+        PumpEditorUntil(
+            fixture,
+            runtime,
+            () => scripting.state is EditorScriptCompilationState.Ready or EditorScriptCompilationState.Failed,
+            DescribeCompilation,
+            timeoutMilliseconds: 60000
+        );
+        Assert.True(scripting.state == EditorScriptCompilationState.Ready, DescribeCompilation());
+
+        string DescribeCompilation()
+        {
+            string diagnostics = scripting.lastCompilation is { } result ? FormatDiagnostics(result) : string.Empty;
+            return $"{scripting.state}: {scripting.progress.status}{Environment.NewLine}{diagnostics}";
+        }
     }
 
     private static void PumpEditorUntil(

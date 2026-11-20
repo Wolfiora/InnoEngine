@@ -14,7 +14,8 @@ internal sealed record DocumentationApiFragment(
     string uid,
     string symbol,
     string source,
-    string? reviewed,
+    string? sourceFingerprint,
+    string? outdatedFor,
     bool outdated,
     YamlMappingNode metadata
 )
@@ -43,12 +44,35 @@ internal sealed record DocumentationApiFragment(
         string? stale = Field("outdated");
         if (stale is not null && stale is not ("true" or "false"))
             throw new InvalidDataException("API outdated must be true or false: " + path);
-        return new(path, text, body, uid, symbol, source, Field("reviewed"), stale == "true", map);
+        return new(path, text, body, uid, symbol, source, Field("sourceFingerprint") ?? Field("reviewed"), Field("outdatedFor"), stale == "true", map);
 
         string? Field(string name) => map.Children.TryGetValue(new YamlScalarNode(name), out YamlNode? node)
             ? node is YamlScalarNode scalar ? scalar.Value : throw new InvalidDataException("API frontmatter requires a scalar " + name + ": " + path)
             : null;
     }
+
+    // Compare the prose that was present at the source change with the text being displayed.
+    // Ordinary Markdown edits take effect immediately without writing generated metadata.
+    internal string? StaleProse(
+        string contract,
+        string? legacyContract = null
+    ) {
+        if (source == "xml") return null;
+        bool changed = !string.IsNullOrEmpty(sourceFingerprint) && sourceFingerprint != contract && sourceFingerprint != legacyContract;
+        bool legacyStale = metadata.Children.ContainsKey(new YamlScalarNode("reviewed")) && outdated;
+        return changed || legacyStale ? ProseFingerprint() : outdatedFor;
+    }
+
+    internal bool IsOutdated(string? staleProse) => source != "xml"
+        && (outdated || (staleProse is not null && staleProse == ProseFingerprint()));
+
+    internal bool ExplicitlyOutdated => outdated && !metadata.Children.ContainsKey(new YamlScalarNode("reviewed"));
+
+    private string ProseFingerprint() => DocumentationMarkdown.Hash(System.Text.Json.JsonSerializer.Serialize(new
+    {
+        body = body.ReplaceLineEndings("\n").Trim(),
+        description = Summaries("").Select(value => value.ReplaceLineEndings("\n").Trim())
+    }));
 
     private static bool IsNull(YamlNode node)
         => node is YamlScalarNode { Style: YamlDotNet.Core.ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };

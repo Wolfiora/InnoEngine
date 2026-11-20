@@ -24,6 +24,9 @@ public sealed class BuildCompositionContext
     /// <param name="toolsTarget">
     /// The explicit native target of tools executed by this composition, independent of game publication.
     /// </param>
+    /// <param name="nativeDependencies">
+    /// An absolute dependency selection forbidding third-party production, or null for local source builds.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// The SDK command is blank or the application directory is not absolute.
     /// </exception>
@@ -31,7 +34,8 @@ public sealed class BuildCompositionContext
         string dotnetHost,
         string applicationDirectory,
         BuildHostDescriptor host,
-        BuildTargetId toolsTarget
+        BuildTargetId toolsTarget,
+        string? nativeDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(dotnetHost);
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationDirectory);
@@ -40,10 +44,13 @@ public sealed class BuildCompositionContext
             throw new ArgumentException("A build composition must declare its executable native tools target.", nameof(toolsTarget));
         if (!Path.IsPathFullyQualified(applicationDirectory))
             throw new ArgumentException("The build host requires an absolute application directory.", nameof(applicationDirectory));
+        if (nativeDependencies is not null && !Path.IsPathFullyQualified(nativeDependencies))
+            throw new ArgumentException("A native dependency selection must be absolute.", nameof(nativeDependencies));
         this.dotnetHost = dotnetHost;
         this.applicationDirectory = Path.GetFullPath(applicationDirectory);
         this.host = host;
         this.toolsTarget = toolsTarget;
+        this.nativeDependencies = nativeDependencies;
     }
 
     /// <summary>
@@ -65,5 +72,10 @@ public sealed class BuildCompositionContext
     /// Gets the independently declared native target of build tools executed by this host.
     /// </summary>
     public BuildTargetId toolsTarget { get; }
+
+    /// <summary>
+    /// Gets the explicit consume-only selection propagated to product and Support Pack preparation.
+    /// </summary>
+    public string? nativeDependencies { get; }
 
 }

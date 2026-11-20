@@ -78,7 +78,8 @@ public static class MacOSArm64EditorComposition
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
             }, [new BgfxAuthoringProvider(MacOSArm64BgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]);
-            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!, Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id);
+            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!,
+                Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id, nativeDependencies: command.nativeDependencies);
             var launch = new EditorLaunchOptions
             {
                 defaultBuildTarget = Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id,

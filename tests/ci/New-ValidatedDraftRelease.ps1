@@ -5,7 +5,8 @@ param(
     [Parameter(Mandatory)][string]$Repository,
     [string]$ApiUrl = 'https://api.github.com',
     [string]$Output = 'artifacts/release-rehearsal',
-    [switch]$VerifyOnly
+    [switch]$VerifyOnly,
+    [switch]$CompleteMissing
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,9 +20,21 @@ try {
     $base = "$ApiUrl/repos/$Repository"
     $repositoryData = Invoke-RestMethod -Uri $base -Headers $headers
     $run = Invoke-RestMethod -Uri "$base/actions/runs/$RunId" -Headers $headers
-    $workflow = Invoke-RestMethod -Uri "$base/actions/workflows/rendering-ci.yml" -Headers $headers
+    if ($run.path -cnotin @('.github/workflows/engine-ci.yml', '.github/workflows/engine-regression.yml')) { throw 'The source workflow is not a trusted functional producer.' }
+    $workflowName = [IO.Path]::GetFileName($run.path)
+    $workflow = Invoke-RestMethod -Uri "$base/actions/workflows/$workflowName" -Headers $headers
     $artifacts = Invoke-RestMethod -Uri "$base/actions/runs/$RunId/artifacts?per_page=100" -Headers $headers
     if ($artifacts.total_count -gt 100) { throw 'Unexpected artifact inventory size; refuse a partial provenance inventory.' }
+    if ($CompleteMissing -and @($artifacts.artifacts | Where-Object name -CEQ "engine-full-certification-attempt-$($run.run_attempt)").Count -eq 0) {
+        $null = & "$PSScriptRoot/Test-ReleaseSource.ps1" -Repository $repositoryData -Run $run -Artifacts $artifacts.artifacts `
+            -Commit $Commit -WorkflowId $workflow.id -RunId $RunId -AllowPartial
+        $RunId = & "$PSScriptRoot/Complete-ValidationRelease.ps1" -SourceRunId $RunId -Commit $Commit -Repository $Repository `
+            -DefaultBranch $repositoryData.default_branch -ApiUrl $ApiUrl
+        $run = Invoke-RestMethod -Uri "$base/actions/runs/$RunId" -Headers $headers
+        $workflow = Invoke-RestMethod -Uri "$base/actions/workflows/engine-ci.yml" -Headers $headers
+        $artifacts = Invoke-RestMethod -Uri "$base/actions/runs/$RunId/artifacts?per_page=100" -Headers $headers
+        if ($artifacts.total_count -gt 100) { throw 'Completed release evidence inventory is incomplete.' }
+    }
     $selected = @(& "$PSScriptRoot/Test-ReleaseSource.ps1" -Repository $repositoryData -Run $run -Artifacts $artifacts.artifacts `
         -Commit $Commit -WorkflowId $workflow.id -RunId $RunId)
     foreach ($artifact in $selected) {
@@ -31,8 +44,9 @@ try {
     }
     $certificate = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $selected -Name 'engine-full-certification' -MaximumAttempt $run.run_attempt -RequireCurrentAttempt
     $certification = @(Get-Content -LiteralPath (Join-Path $root ($certificate.name + '/certification.json')) -Raw | ConvertFrom-Json)
-    if ($certification.Count -ne 2) { throw 'Both hosted platform certifications are required.' }
-    $uploads = foreach ($platform in @('windows-2022', 'macos-15')) {
+    $hosts = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/validation-hosts.json') -Raw | ConvertFrom-Json)
+    if ($certification.Count -ne $hosts.Count) { throw 'The complete registered hosted platform matrix is required.' }
+    $uploads = foreach ($platform in $hosts.runner) {
         $receipt = @($certification | Where-Object platform -CEQ $platform)
         if ($receipt.Count -ne 1) { throw "Missing or duplicate platform certification: $platform" }
         $bundle = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $selected -Name "deliverable-$platform" -MaximumAttempt $run.run_attempt
@@ -41,7 +55,7 @@ try {
     $report = [pscustomobject]@{ repository = $Repository; runId = $RunId; commit = $Commit; tag = $Tag; artifacts = $uploads; verifiedAt = [DateTimeOffset]::UtcNow }
     $report | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $root 'verified-release.json')
     if ($VerifyOnly) { Write-Host 'Release rehearsal verified all source and artifact identities; no release was created.'; return }
-    # Complete all provenance and byte checks before the first remote write. Existing releases are never modified.
+    # Complete all provenance and byte checks before writing a release. Existing releases are never modified.
     try {
         $null = Invoke-RestMethod -Uri "$base/releases/tags/$Tag" -Headers $headers
         throw 'A release already exists for the requested tag.'

@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../../../../src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj" PrivateAssets="compile" />
     <ProjectReference Include="../../../../build/pipeline/Inno.Build/Inno.Build.csproj" />
     <ProjectReference Include="../../../../build/managed/Inno.Build.Managed/Inno.Build.Managed.csproj" />
   </ItemGroup>

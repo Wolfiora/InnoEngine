@@ -2,6 +2,7 @@
   <Import Project="ProductBuild.props" />
 
   <PropertyGroup>
+    <InnoBindingProductId>editor</InnoBindingProductId>
     <InnoValidationBackendPattern>Rendering initialized with Direct3D(11|12)</InnoValidationBackendPattern>
     <InnoImGuiShaderTarget>$(InnoBgfxShaderTarget)</InnoImGuiShaderTarget>
     <InnoImGuiShaderApis>$(InnoBgfxShaderApis)</InnoImGuiShaderApis>

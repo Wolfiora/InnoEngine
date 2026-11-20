@@ -122,7 +122,7 @@ public sealed class NativeDeploymentIndex
     /// The exact logical import name.
     /// </param>
     /// <returns>
-    /// The existing contained library path.
+    /// The existing contained library path, using extended Windows syntax for native loading on Windows.
     /// </returns>
     /// <exception cref="FileNotFoundException">
     /// The name is absent or the deployed payload is missing.
@@ -130,7 +130,15 @@ public sealed class NativeDeploymentIndex
     public string ResolveLibrary(
         string nativeDirectory,
         string name
-    ) => Resolve(nativeDirectory, name, libraries);
+    ) {
+        string file = Resolve(nativeDirectory, name, libraries);
+        if (!OperatingSystem.IsWindows() || file.StartsWith(@"\\?\", StringComparison.Ordinal)
+            || file.StartsWith(@"\\.\", StringComparison.Ordinal))
+            return file;
+        // Windows native loading can reject ordinary paths even below MAX_PATH.
+        // Apply loading syntax only after validating the actual deployment boundary.
+        return file.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + file[2..] : @"\\?\" + file;
+    }
 
     /// <summary>
     /// Resolves a tool or resource alias from the explicit deployment mappings.

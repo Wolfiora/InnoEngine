@@ -5,13 +5,14 @@
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <IsPackable>false</IsPackable>
-    <InnoValidationLayer>integration</InnoValidationLayer>
+    <InnoValidationLayer>contract</InnoValidationLayer>
   </PropertyGroup>
 
   <Import Project="../../RepositoryInput.targets" />
 
   <ItemGroup>
-    <InnoValidationInput Include="../../input/Inno.Input.Tests/*.csproj;../../ui/Inno.UI.Tests/*.csproj;../../Invoke-IsolatedTests.ps1" />
+    <ProjectReference Include="../fixtures/Inno.Testing.Validation/Inno.Testing.Validation.csproj" />
+
   </ItemGroup>
 
   <ItemGroup>

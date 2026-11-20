@@ -8,17 +8,28 @@ namespace Inno.Tooling.Architecture;
 
 internal static class RepositorySourceInventory
 {
+    internal static bool IsTestPath(string relative)
+        => relative.Replace('\\', '/').StartsWith("tests/", StringComparison.Ordinal);
+
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
-        "bin", "obj", "Generated", "extern", "dependencies", "artifacts", ".git"
+        "bin", "obj", "Generated", "extern", "artifacts", ".git"
     };
 
     internal static IEnumerable<string> Projects(string root)
-    {
-        foreach (string owner in new[] { "entry", "src", "backends", "platforms", "build", "tools", "tests" })
-            foreach (string project in Files(Path.Combine(root, owner), "*.csproj"))
-                yield return project;
-    }
+        => Files(root, "*.csproj");
+
+    internal static bool DeclaresTestSupport(XDocument project)
+        => project.Descendants().Any(static item =>
+            item.Name.LocalName is "IsTestProject" or "IsTestSupportProject" && item.Value.Equals("true", StringComparison.OrdinalIgnoreCase)
+            || item.Name.LocalName == "PackageReference" && IsTestPackage(item.Attribute("Include")?.Value ?? item.Attribute("Update")?.Value ?? string.Empty));
+
+    internal static bool IsTestPackage(string package)
+        => package.Equals("Microsoft.NET.Test.Sdk", StringComparison.OrdinalIgnoreCase)
+            || package.Equals("xunit", StringComparison.OrdinalIgnoreCase)
+            || package.StartsWith("xunit.v3", StringComparison.OrdinalIgnoreCase)
+            || package.Equals("NUnit", StringComparison.OrdinalIgnoreCase)
+            || package.Equals("MSTest.TestFramework", StringComparison.OrdinalIgnoreCase);
 
     internal static bool IsDeclaredTestProject(string project)
     {

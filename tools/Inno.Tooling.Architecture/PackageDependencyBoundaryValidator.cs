@@ -12,7 +12,7 @@ internal static class PackageDependencyBoundaryValidator
         XDocument document,
         ICollection<string> failures
     ) {
-        bool test = project.StartsWith("tests/", StringComparison.Ordinal) || project.Contains("/tests/", StringComparison.Ordinal);
+        bool test = RepositorySourceInventory.IsTestPath(project);
         bool generator = project == "build/bindings/Inno.Build.Bindings/Inno.Build.Bindings.csproj";
         bool bindingProfile = project.StartsWith("platforms/", StringComparison.Ordinal)
             && project.Contains("/integrations/Inno.Integration.", StringComparison.Ordinal)

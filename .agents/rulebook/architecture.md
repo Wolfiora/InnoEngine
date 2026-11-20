@@ -26,11 +26,11 @@ Load complete rule units. The [registry](coverage.json) owns routing and provena
 - `src/services`: backend-neutral domain contracts and runtime services.
 - `src/runtime`: Runtime, deployment, generators, Plugins and authoring-time scripting workflows.
 - `src/adapters`: neutral SPIs, open Provider/Catalog contracts and Core Events input implementations.
-- `backends/<component>`: shared backend runtime, native code, build recipes and component tests; each component has one source owner.
+- `backends/<component>`: shared backend runtime, native code and build recipes; each component has one source owner. Component tests belong to `tests/backends/<component>`.
 - `platforms/<platform>`: system and SDK integration, explicit targets, thin Editor/Player entries, layouts and Support Packs. A platform must not reference another platform.
 - `src/composition`: default engine, Shell, Player and Editor composition entries.
 - `entry`: the two lightweight development entries and current-host routing. Other production layers must not reference it. `Inno.Packages.props` pins NuGet versions for the BGCS package family; no source-dependency entry is provided.
-- `build`, `tools`, `tests`: neutral unified builds, concrete distribution registration, validation libraries and cross-component contract tests.
+- `build`, `tools`, `tests`: neutral unified builds, concrete distribution registration, validation libraries and tests. All engine-owned tests, fixtures and test support belong to the root `tests` tree; upstream tests inside `extern` retain their upstream owner. Production projects must not reference test projects or test support.
 - Place new files in directories matching the existing layers and responsibilities wherever possible.
 <!-- /rule-unit: directories -->
 

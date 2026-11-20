@@ -1,11 +1,15 @@
 param(
     [Parameter(Mandatory)][string]$Dotnet,
-    [Parameter(Mandatory)][string]$LogPath
+    [Parameter(Mandatory)][string]$LogPath,
+    [string]$WorkspaceDirectory = 'artifacts/validation/bootstrap'
 )
 
 $ErrorActionPreference = 'Stop'
 $repository = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-$workspace = Join-Path $repository 'artifacts/validation/bootstrap'
+$workspace = [IO.Path]::GetFullPath($WorkspaceDirectory, $repository)
+$artifactBoundary = [IO.Path]::GetFullPath('artifacts', $repository) + [IO.Path]::DirectorySeparatorChar
+$pathComparison = if ($IsWindows) { [StringComparison]::OrdinalIgnoreCase } else { [StringComparison]::Ordinal }
+if (-not $workspace.StartsWith($artifactBoundary, $pathComparison)) { throw 'Validation bootstrap requires an explicit repository artifact owner.' }
 New-Item -ItemType Directory -Path $workspace -Force | Out-Null
 # This generated transport owns no validation policy and is not another daily executable project.
 # Bootstrap only the managed libraries; compiling the product Build CLI would first require native binding inputs.

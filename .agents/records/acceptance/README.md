@@ -1,5 +1,7 @@
 # Acceptance records
 
+- [CI/CD test ownership](cicd-test-migration.md) and [CI/CD performance](cicd-performance.md): test ownership, hosted certification and matched latency measurements.
+
 - [Source certificate normalization](SOURCE_CERTIFICATE_NORMALIZATION_2026_11_13.md): real aggregate memory failure, shared input tables, exact input preservation and bounded imports.
 - [Full matrix and actual draft release](FULL_MATRIX_AND_DRAFT_RELEASE_2026_11_13.md): both extended platform jobs, ten warm samples, 1,000-cycle product journeys, exact-artifact draft upload and protected cleanup.
 

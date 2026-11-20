@@ -12,7 +12,6 @@ using Xunit.Abstractions;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
-using Inno.Build.Windows.Host;
 using Inno.Build.WindowsX64;
 using Inno.Testing.Source;
 

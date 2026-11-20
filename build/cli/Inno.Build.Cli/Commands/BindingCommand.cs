@@ -33,6 +33,12 @@ internal static class BindingCommand
 
         string productId = options.Read("product", "editor");
         ProductNativeBuildPlan product = distribution.ResolveNativeProduct(target.value, productId).plan;
+        if (request.nativeDependencies.Length != 0)
+        {
+            using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(root,
+                request.nativeDependencies, target.value, configuration.ToLowerInvariant(), product, cancellationToken).ConfigureAwait(false);
+            return;
+        }
         NativeBuildContext bindings = new(root, configuration.ToLowerInvariant());
         bindings = bindings.WithBindingGenerator(distribution.ResolveBindingGenerator(target.value));
         bindings = bindings.WithToolchain(await distribution.ResolveNativeToolchain(target.value)

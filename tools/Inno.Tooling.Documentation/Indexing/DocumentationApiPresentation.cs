@@ -69,7 +69,9 @@ internal static class DocumentationApiPresentation
             if (!metadata.Children.TryGetValue(new YamlScalarNode("owners"), out YamlNode? owners)
                 || owners is not YamlSequenceNode sequence) continue;
             string summary = metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
-                && description is YamlScalarNode { Value: string value } ? value : Summary(text);
+                && description is YamlScalarNode { Value: string value } ? value
+                : description is YamlSequenceNode items ? string.Join(" ", items.Children.Cast<YamlScalarNode>().Select(item => item.Value))
+                : Summary(text);
             foreach (YamlScalarNode owner in sequence.Children)
                 if (!result.TryAdd(owner.Value!, summary)) throw new InvalidDataException("Duplicate project guide: " + owner.Value);
         }

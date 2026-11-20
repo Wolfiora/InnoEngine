@@ -33,7 +33,7 @@ internal static class ValidationEnvironment
             ["sdk"] = sdk.sdkIdentity,
             ["host"] = sdk.hostPath
         };
-        foreach (string name in new[] { "MSBuildSDKsPath", "DOTNET_ROLL_FORWARD", "DOTNET_ROOT", "NUGET_PACKAGES", "CC", "CXX", "CMAKE_GENERATOR", "SDKROOT", "MACOSX_DEPLOYMENT_TARGET" })
+        foreach (string name in new[] { "MSBuildSDKsPath", "DOTNET_ROLL_FORWARD", "DOTNET_ROOT", "NUGET_PACKAGES", "CC", "CXX", "CMAKE_GENERATOR", "SDKROOT", "MACOSX_DEPLOYMENT_TARGET", "ImageOS", "ImageVersion" })
             inputs.Add(name, Environment.GetEnvironmentVariable(name) ?? string.Empty);
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
         string hostRoot = Path.GetDirectoryName(sdk.hostPath)!;
@@ -68,7 +68,7 @@ internal static class ValidationEnvironment
         string automation = Path.Combine(Path.GetDirectoryName(shell)!, "System.Management.Automation.dll");
         if (File.Exists(automation))
             files.Add(automation);
-        return new(sdk, inputs, CaptureContents(root, files, cancellation));
+        return new(sdk, inputs, CaptureContents(root, sdk.hostPath, files, cancellation));
     }
 
     internal static async Task<string> CaptureAsync(
@@ -84,7 +84,9 @@ internal static class ValidationEnvironment
             inputs.Add("tool-content:" + content.Key, content.Value);
         var files = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var examined = new HashSet<string>(files.Comparer);
-        foreach (ValidationContext context in contexts ?? [])
+        ValidationContext[] selectedContexts = contexts?.ToArray() ?? [];
+        string[] packageOwners = ValidationDependencyInputs.RestoredPackageDirectories(selectedContexts, cancellation);
+        foreach (ValidationContext context in selectedContexts)
         foreach (JsonElement snapshot in context.sdkGraph.EnumerateArray())
         foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
         {
@@ -97,9 +99,10 @@ internal static class ValidationEnvironment
                 if (item.TryGetProperty("FullPath", out JsonElement fullPath) && !string.IsNullOrWhiteSpace(fullPath.GetString()))
                     IncludeExternal(fullPath.GetString()!);
         }
-        foreach (var content in CaptureContents(root, files, cancellation))
+        foreach (var content in CaptureContents(root, dotnet, files, cancellation))
             inputs.Add("external-content:" + content.Key, content.Value);
-        return ValidationInputs.Identity(inputs);
+        return ValidationInputs.Identity(inputs.Select(pair => new KeyValuePair<string, string>(
+            ValidationPlanTransport.Logical(root, dotnet, pair.Key), ValidationPlanTransport.Logical(root, dotnet, pair.Value))));
 
         void IncludeExternal(string declared)
         {
@@ -111,6 +114,12 @@ internal static class ValidationEnvironment
                 return;
             if (tools.contents.Keys.Any(parent => Covers(parent, path)))
                 return;
+            // Restore exposes package imports and content items after the cold graph was captured.
+            // Their complete bytes belong to each consuming check's restored dependency identity.
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            if (packageOwners.Any(package => path.Equals(package, comparison)
+                || path.StartsWith(package.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, comparison)))
+                return;
             if (File.Exists(path) || Directory.Exists(path))
                 files.Add(path);
             else
@@ -120,6 +129,7 @@ internal static class ValidationEnvironment
 
     private static Dictionary<string, string> CaptureContents(
         string root,
+        string dotnet,
         IEnumerable<string> files,
         CancellationToken cancellation
     ) {
@@ -130,7 +140,7 @@ internal static class ValidationEnvironment
         var identities = new string[roots.Count];
         // Each worker owns its input snapshot. All bytes and inventories are read again at the closing freshness check.
         Parallel.For(0, roots.Count, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4), CancellationToken = cancellation },
-            index => identities[index] = NativeBuildFingerprint.Create([], [NativeBuildInput.FromPath(root, roots[index])], cancellation));
+            index => identities[index] = NativeBuildFingerprint.Create([], [new NativeBuildInput("validation/" + ValidationPlanTransport.Logical(root, dotnet, roots[index]).Replace('\\', '/').TrimStart('/'), roots[index])], cancellation));
         var contents = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int index = 0; index < roots.Count; index++)
             contents.Add(roots[index], identities[index]);

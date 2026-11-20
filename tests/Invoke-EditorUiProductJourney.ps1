@@ -3,6 +3,7 @@ param(
     [Parameter(Mandatory)][string]$ProjectDirectory,
     [Parameter(Mandatory)][string]$ResultsDirectory,
     [string]$Dotnet = 'dotnet',
+    [string]$NativeDependencies,
     [Parameter(Mandatory)][string]$GraphicsApi,
     [ValidateSet('Workflows', 'Lifecycle')][string]$Scenario = 'Workflows',
     [int]$Frames = 30000,
@@ -165,6 +166,10 @@ $start.WorkingDirectory = $project
 $start.Environment['INNO_ACCEPTANCE_PANEL_CYCLES'] = [string]$Cycles
 foreach ($argument in @($editor, $project, '--window-visible', 'false', '--smoke-frames', [string]$Frames,
                         '--graphics-api', $GraphicsApi)) { $start.ArgumentList.Add($argument) }
+if ($NativeDependencies) {
+    $start.ArgumentList.Add('--native-dependencies')
+    $start.ArgumentList.Add([IO.Path]::GetFullPath($NativeDependencies))
+}
 $process = [Diagnostics.Process]::new()
 $process.StartInfo = $start
 $code = $null
