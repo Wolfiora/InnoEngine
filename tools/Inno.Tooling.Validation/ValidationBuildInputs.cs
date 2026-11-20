@@ -94,7 +94,7 @@ internal sealed class ValidationBuildInputs
         {
             // Every selected root is explicitly cleaned. Preserve dependencies only when all remaining inputs and outputs match.
             // Shared inputs, imports, resources, generated files and tooling remain protected by their actual input sets.
-            sourceCheck = check with { inputs = check.inputs.SelectMany(input => input.StartsWith('@') ? m_plan.inputSets[input[1..]] : [input])
+            sourceCheck = check with { sourceSets = null, inputs = ValidationInputs.SourcePaths(m_plan, check)
                 .Where(path => !m_selectedSources.Contains(path)).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray() };
         }
         return ValidationInputs.Identity(new Dictionary<string, string>

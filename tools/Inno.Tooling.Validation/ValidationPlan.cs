@@ -85,7 +85,8 @@ internal sealed record ValidationCheck(
     string? context = null,
     string layer = "static",
     string[]? projects = null,
-    ValidationDocumentationCheck? documentation = null
+    ValidationDocumentationCheck? documentation = null,
+    string[]? sourceSets = null
 );
 
 internal sealed record ValidationDocumentationBinding(

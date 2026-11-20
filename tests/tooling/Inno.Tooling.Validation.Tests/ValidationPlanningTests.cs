@@ -18,6 +18,29 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task BuildDefinitionAffectsOnlyTheEntryThatImportsIt()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("src/Example/Optional.props", "<Project />");
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project("""
+            <Import Project="Optional.props" Condition="'$(UseOptionalDefinition)' == 'true'" />
+            """));
+        repository.Write("tests/Enabled/Enabled.csproj", ValidationRepository.Project("""
+            <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
+            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" AdditionalProperties="UseOptionalDefinition=true" /></ItemGroup>
+            """));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Register distinct SDK entries");
+        repository.Write("src/Example/Optional.props", "<Project><PropertyGroup><ExampleValue>2</ExampleValue></PropertyGroup></Project>");
+        using JsonDocument plan = await repository.PlanAsync();
+        var tests = plan.RootElement.GetProperty("checks").EnumerateArray()
+            .Where(check => check.GetProperty("kind").GetString() == "test")
+            .ToDictionary(check => check.GetProperty("owner").GetString()!);
+        Assert.Equal(JsonValueKind.Null, tests["tests/Enabled/Enabled.csproj"].GetProperty("exclusion").ValueKind);
+        Assert.Equal(JsonValueKind.String, tests["tests/Example.Tests/Example.Tests.csproj"].GetProperty("exclusion").ValueKind);
+    }
+
+    [Fact]
     public async Task ManualProducerProfileSelectsOnlyDeclaredProducerRegressions()
     {
         using var repository = new ValidationRepository();

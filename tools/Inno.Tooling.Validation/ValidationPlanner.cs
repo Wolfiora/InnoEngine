@@ -291,6 +291,11 @@ internal static partial class ValidationPlanner
                 or "Directory.Solution.targets" or "InnoEngine.sln"))).Order(StringComparer.Ordinal).ToArray();
         var inputSets = projects.ToDictionary(static project => project.path,
             project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)), StringComparer.Ordinal);
+        var entryInputs = contexts.ToDictionary(static pair => pair.Key,
+            pair => new ValidationEntryInputs(root, pair.Value.sdkGraph, pair.Key, inputSets, CapturedInputs), StringComparer.Ordinal);
+        bool effectiveBuildChange = changes.Count > 0 && changes.All(path => inputs.TryGetValue(path, out string? value)
+            && value != "missing" && Path.GetExtension(path) is ".props" or ".targets"
+            && projects.Any(project => project.inputs.Contains(path, StringComparer.Ordinal)));
         inputSets.Add("tooling", toolingInputs);
         inputSets.Add("native-sources", submoduleInputs);
         var checks = new List<ValidationCheck>
@@ -332,7 +337,18 @@ internal static partial class ValidationPlanner
             string[] selectedInputs = closure.Select(static path => "@" + path).Append("@tooling")
                 .Concat(context == "native" ? ["@native-sources"] : [])
                 .Concat(context == "native" && nativeDependencies is not null ? [nativeDependencies] : []).Order(StringComparer.Ordinal).ToArray();
+            string[]? sourceSets = entryInputs.TryGetValue(context, out ValidationEntryInputs? graphInputs)
+                ? graphInputs.Sources(project.path) : null;
             bool selected = affected.Contains(project.path);
+            if (selected && !full && effectiveBuildChange && sourceSets is not null
+                && profile is ValidationProfile.PullRequest or ValidationProfile.Fast
+                && !sourceSets.SelectMany(key => inputSets[key]).Any(changes.Contains)
+                && !toolingInputs.Any(changes.Contains))
+            {
+                selected = false;
+                affected.Remove(project.path);
+                diagnostics.Add($"No changed build definition in {context} SDK entry closure for {project.path}.");
+            }
             bool compile = selected || documentationOwners.Contains(project.path);
             string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
             string? exclusion = executionExclusions.GetValueOrDefault(project.path)
@@ -340,13 +356,13 @@ internal static partial class ValidationPlanner
                     ? $"Product '{project.productTarget}' requires its own supported target environment; current SDK host selects '{target}'." : null);
             if (compile)
                 checks.Add(new("build:" + project.path, "build", project.path, "Changed owner or transitive consumer; compile the shared union once.",
-                    environment, [], selectedInputs, false, exclusion, context, "compilation"));
+                    environment, [], selectedInputs, false, exclusion, context, "compilation", sourceSets: sourceSets));
             if (project.test)
                 checks.Add(new("test:" + project.path, "test", project.path, selected
                     ? "Affected behavior or contract consumer; compiled SupportedOSPlatform requirements distinguish host exclusions from missing execution."
                     : "No affected input in its evaluated closure.",
                     environment, ["build:" + project.path], [..selectedInputs, ValidationRunner.C_TEST_EXECUTOR], project.reusable && project.layer is not ("performance" or "product"),
-                    selected ? exclusion : "Outside the affected evaluated dependency closure.", context, project.layer));
+                    selected ? exclusion : "Outside the affected evaluated dependency closure.", context, project.layer, sourceSets: sourceSets));
 
             void Visit(ValidationProject node)
             {
