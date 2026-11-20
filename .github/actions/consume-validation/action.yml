@@ -1,0 +1,38 @@
+name: Consume validation inputs
+description: Bind the certified archive and execute on the current runner.
+inputs:
+  digest:
+    description: Optional certified archive digest.
+    default: ''
+  platform:
+    description: Registered runner.
+    required: true
+  source-run:
+    description: Trusted continuation run.
+    default: '0'
+runs:
+  using: composite
+  steps:
+    - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+      if: inputs.digest
+      id: direct-cache
+      with:
+        key: backend-platform-${{ inputs.digest }}
+        path: artifacts/backend-downloads/${{ inputs.digest }}.zip
+    - name: Bind the frozen plan on its original runner
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+        ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+          -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
+    - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+      if: inputs.digest && steps.direct-cache.outputs.cache-hit != 'true'
+      with:
+        key: backend-platform-${{ inputs.digest }}
+        path: artifacts/backend-downloads/${{ inputs.digest }}.zip
+    - uses: ./.github/actions/execute-validation
+      with:
+        platform: ${{ inputs.platform }}
+        source-run: ${{ inputs.source-run }}

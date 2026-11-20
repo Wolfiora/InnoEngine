@@ -2,6 +2,18 @@ name: Backend prebuilts
 on:
   workflow_call:
     inputs:
+      consumers:
+        type: string
+        required: true
+      profile:
+        type: string
+        required: true
+      source_run:
+        type: string
+        default: '0'
+      rebuild_backends:
+        type: string
+        default: ''
       platforms:
         type: string
         required: true
@@ -149,3 +161,41 @@ jobs:
           path: artifacts/backend-candidate
           if-no-files-found: error
           retention-days: 7
+
+  execution:
+    needs: [acquire, build]
+    if: ${{ !cancelled() && needs.acquire.result == 'success' && (needs.build.result == 'success' || (needs.build.result == 'skipped' && fromJSON(inputs.producers).include[0] == null)) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(inputs.consumers) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup-dotnet
+      - uses: ./.github/actions/freeze-validation
+        with:
+          profile: ${{ inputs.profile }}
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          name: backend-request-${{ matrix.runner }}
+          path: artifacts/backend-request
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+        with:
+          pattern: ${{ matrix.pattern }}
+          path: ${{ matrix.destination }}
+      - name: Bind verified platform archives and the runner SDK
+        shell: pwsh
+        env:
+          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
+        run: |
+          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
+            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -RebuildTargets $env:REBUILD_TARGETS
+      - uses: ./.github/actions/execute-validation
+        with:
+          platform: ${{ matrix.runner }}
+          source-run: ${{ inputs.source_run || '0' }}

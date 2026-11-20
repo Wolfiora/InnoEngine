@@ -10,6 +10,8 @@ $platforms = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/
 $hostsRegistry = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/validation-hosts.json') -Raw | ConvertFrom-Json)
 $targets = [ordered]@{}
 $deferred = @()
+$requirements = [ordered]@{}
+$independent = @()
 foreach ($hostName in $Hosts) {
     $hostRegistration = @($hostsRegistry | Where-Object runner -CEQ $hostName)
     if ($hostRegistration.Count -ne 1) { throw "Unknown validation runner $hostName." }
@@ -41,9 +43,14 @@ foreach ($hostName in $Hosts) {
             if ($package.operation -ceq 'produce' -or $prior.sha256 -cne $package.sha256) { $prior.operation = 'produce' }
         }
     }
+    if (!$decision.deferred) {
+        $digest = if ($decision.packages.Count) { $decision.packages[0].sha256 } else { '' }
+        $independent += @{runner=$hostName;digest=$digest}
+    }
     if ($decision.deferred) {
         if (!$seen.Count) { throw "An empty acquisition cannot defer execution: $hostName." }
         $names = @($seen | Sort-Object -CaseSensitive)
+        $requirements[$hostName] = $names
         $pattern = if ($names.Count -eq 1) { "backend-candidate-$($names[0])" } else { "backend-candidate-{$($names -join ',')}" }
         # download-artifact extracts a single match directly into its destination.
         $destination = if ($names.Count -eq 1) { "artifacts/candidates/$pattern" } else { 'artifacts/candidates' }
@@ -75,4 +82,33 @@ foreach ($target in $targets.Values) {
     }
     $target.nativeInputs = @($targets.Values | Where-Object { $_.operation -ceq 'produce' -and ($_.target -ceq $target.target -or $_.hostTarget -ceq $target.target) }).Count -gt 0
 }
-[pscustomobject]@{ platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce'); deferred=$deferred }
+# Each target is produced once. Consumers that share a target or its build host
+# travel in the same workflow call, independently of unrelated producer groups.
+$chains = @()
+$pending = [Collections.Generic.List[string]]::new()
+foreach ($runner in $requirements.Keys) { $pending.Add($runner) }
+while ($pending.Count) {
+    $members = @($pending[0])
+    $closure = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    for ($i = 0; $i -lt $members.Count; $i++) {
+        $null = $pending.Remove($members[$i])
+        foreach ($name in $requirements[$members[$i]]) {
+            $null = $closure.Add($name)
+            if ($targets[$name].operation -ceq 'produce') { $null = $closure.Add($targets[$name].hostTarget) }
+        }
+        foreach ($runner in $pending) {
+            if ($runner -cin $members) { continue }
+            foreach ($name in $requirements[$runner]) {
+                if ($closure.Contains($name) -or ($targets[$name].operation -ceq 'produce' -and $closure.Contains($targets[$name].hostTarget))) {
+                    $members += $runner
+                    break
+                }
+            }
+        }
+    }
+    $platformSet = @($targets.Values | Where-Object { $closure.Contains($_.target) })
+    $chains += @{platforms=@{include=$platformSet}; producers=@{include=@($platformSet | Where-Object operation -CEQ 'produce')};
+        consumers=@{include=@($deferred | Where-Object { $_.runner -cin $members })}}
+}
+[pscustomobject]@{platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce');
+    deferred=$deferred; chains=$chains; independent=$independent}

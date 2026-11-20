@@ -21,6 +21,35 @@ try {
     if ($warm.deferred[0].pattern -cne "backend-candidate-$target" -or $warm.deferred[0].destination -cne "artifacts/candidates/backend-candidate-$target") {
         throw 'The single platform archive would lose its named directory during download.'
     }
+    $peer = $hostsRegistered | Where-Object runner -CNE $runner | Select-Object -First 1
+    if ($peer) {
+        $peerOwner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$($peer.runner)")).FullName
+        $peerFile = Join-Path $peerOwner 'acquisition.json'
+        try {
+            $pair = @($runner,$peer.runner)
+            $peerPackage = @{target=$peer.target;operation='produce';sha256=$null;assetId=$null}
+            $peerDecision = @{commit=$revision;packages=@($peerPackage);deferred=$true}
+            [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
+            $split = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            if ($split.chains.Count -ne 2) { throw 'Disjoint target requests must start independent chains.' }
+            $peerDecision.packages += $prior
+            [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
+            $shared = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            if ($shared.chains.Count -ne 1 -or $shared.chains[0].consumers.include.Count -ne 2 -or $shared.chains[0].platforms.include.Count -ne 2) {
+                throw 'A shared target requires one acquisition for both consumers.'
+            }
+            $peerDecision.packages = @()
+            $peerDecision.deferred = $false
+            [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
+            $ready = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            if ($ready.independent.Count -ne 1 -or $ready.independent[0].runner -cne $peer.runner -or $ready.chains.Count -ne 1) {
+                throw 'A host with no pending producer must not wait for other hosts.'
+            }
+        } finally {
+            if ([IO.File]::Exists($peerFile)) { [IO.File]::Delete($peerFile) }
+            [IO.Directory]::Delete($peerOwner)
+        }
+    }
     $local = Join-Requests @($prior) -Deferred $false
     if ($local.platforms.Count -or $local.deferred.Count) { throw 'A host that consumes its own archive was scheduled a second time.' }
     $rejected = $false
