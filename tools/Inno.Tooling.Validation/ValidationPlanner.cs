@@ -391,7 +391,9 @@ internal static partial class ValidationPlanner
                 && !toolingInputs.Any(changes.Contains))
             {
                 selected = false;
-                affected.Remove(project.path);
+                // A conditional source still belongs to its project when compiled through another entry.
+                if (!project.inputs.Any(changes.Contains))
+                    affected.Remove(project.path);
                 diagnostics.Add($"No changed input in the evaluated {context} entry for {project.path}.");
             }
             bool compile = selected || documentationOwners.Contains(project.path);
@@ -420,7 +422,8 @@ internal static partial class ValidationPlanner
                         throw new InvalidDataException($"Unknown evaluated dependency '{dependency}' from '{node.path}'.");
             }
         }
-        if (profile != ValidationProfile.Fast && affected.Any(owner => !executionExclusions.ContainsKey(owner)) && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
+        if (profile != ValidationProfile.Fast && checks.Any(check => check.kind == "build" && check.exclusion is null && affected.Contains(check.owner))
+            && !checks.Any(static check => check.kind == "test" && check.exclusion is null))
             throw new InvalidDataException("Affected production inputs have no selected behavior tests. Declare their real public contract consumers.");
         ValidationCheck[] builds = checks.Where(static check => check.kind == "build" && check.exclusion is null).ToArray();
         foreach (IGrouping<string?, ValidationCheck> group in builds.GroupBy(static check => check.context))

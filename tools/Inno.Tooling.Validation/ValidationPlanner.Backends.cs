@@ -24,7 +24,10 @@ internal sealed record BackendInputPlan(
     Dictionary<string, BackendConsumerInputs>? consumers = null
 );
 
-internal sealed record BackendConsumerInputs(string identity, string[] backendOwners);
+internal sealed record BackendConsumerInputs(
+    string identity,
+    string[] backendOwners
+);
 
 internal static partial class ValidationPlanner
 {
@@ -337,8 +340,9 @@ internal static partial class ValidationPlanner
             };
             foreach (string project in closure)
                 proofInputs[project] = direct[project];
-            foreach (var input in plan.inputs.Where(static pair => pair.Key.StartsWith("tests/ci/", StringComparison.Ordinal)
-                || pair.Key.StartsWith(".github/", StringComparison.Ordinal)))
+            foreach (var input in plan.inputs.Where(static pair => pair.Key is "tests/ci/Build-BackendPrebuilt.ps1" or "tests/ci/New-BackendPrebuiltPackage.ps1"
+                or "tests/ci/Initialize-BackendProduction.ps1" or "tests/ci/Prepare-BackendNativeInputs.ps1"
+                or ".github/workflows/backend-prebuilts.yml"))
                 proofInputs[input.Key] = input.Value;
             productInputs.Add(owner, new(ValidationInputs.Identity(proofInputs), closure.Where(IsBackend).ToArray()));
         }

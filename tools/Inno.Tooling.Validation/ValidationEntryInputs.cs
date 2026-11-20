@@ -11,8 +11,13 @@ internal sealed class ValidationEntryInputs
     private readonly Dictionary<string, string> m_roots = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (string key, JsonElement variant, string[] references)> m_nodes = new(StringComparer.Ordinal);
 
-    internal ValidationEntryInputs(string root, JsonElement graph, string context, Dictionary<string, string[]> sets, Func<IEnumerable<string>, string[]> capture)
-    {
+    internal ValidationEntryInputs(
+        string root,
+        JsonElement graph,
+        string context,
+        Dictionary<string, string[]> sets,
+        Func<IEnumerable<string>, string[]> capture
+    ) {
         foreach (JsonElement snapshot in graph.EnumerateArray())
         {
             string owner = Path.GetRelativePath(root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');

@@ -46,7 +46,10 @@ internal static class ValidationCompiledGraph
             SameProperties(instance.GetProperty("GlobalProperties"), properties));
     }
 
-    internal static bool SameProperties(JsonElement left, JsonElement right)
+    internal static bool SameProperties(
+        JsonElement left,
+        JsonElement right
+    )
         => left.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
             == right.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
             && right.EnumerateObject().Where(static pair => pair.Name != "IsGraphBuild")

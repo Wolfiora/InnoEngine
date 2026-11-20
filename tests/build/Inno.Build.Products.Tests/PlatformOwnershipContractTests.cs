@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -19,6 +20,26 @@ namespace Inno.Build.Products.Tests;
 
 public sealed class PlatformOwnershipContractTests
 {
+    [Fact]
+    public void HostedTargetsCoverTheDistributionAndDeclareOneProducerHost()
+    {
+        string root = TestRepository.GetRoot(typeof(PlatformOwnershipContractTests).Assembly);
+        using JsonDocument packages = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, ".github", "native-targets.json")));
+        using JsonDocument hosts = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, ".github", "validation-hosts.json")));
+        JsonElement[] targets = packages.RootElement.EnumerateArray().ToArray();
+        var runners = hosts.RootElement.EnumerateArray().ToDictionary(host => host.GetProperty("runner").GetString()!);
+        var distribution = BuildTestProducts.Distribution();
+        Assert.Equal(distribution.availableTargets.Select(id => id.value), targets.Select(target => target.GetProperty("target").GetString()).Order(StringComparer.Ordinal));
+        Assert.All(targets, target =>
+        {
+            string runner = target.GetProperty("runner").GetString()!;
+            string host = runners[runner].GetProperty("target").GetString()!;
+            Assert.Single(targets.Where(candidate => candidate.GetProperty("target").GetString() == host
+                && candidate.GetProperty("runner").GetString() == runner));
+            Assert.NotEmpty(target.GetProperty("configurations").EnumerateArray());
+        });
+    }
+
     [Theory]
     [InlineData("windows-x64")]
     [InlineData("macos-arm64")]

@@ -208,6 +208,8 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
         if (!$consumer -or $consumer.identity -cnotmatch '^[a-f0-9]{64}$') { throw "Missing SDK consumption plan for $relative." }
         $facts = [Collections.Generic.SortedDictionary[string,string]]::new([StringComparer]::Ordinal)
         $facts['entry'] = $consumer.identity
+        $facts['host'] = $HostTarget
+        $facts['registration'] = ConvertTo-Json $platform[0] -Compress
         foreach ($file in $payload.files | Where-Object { $_.configuration -ceq $configuration -and $_.owner -cin $consumer.backendOwners }) {
             $facts["file/"+$file.path] = $file.sha256
         }

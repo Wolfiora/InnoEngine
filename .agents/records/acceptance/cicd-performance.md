@@ -1,5 +1,20 @@
 # Engine CI/CD acceptance
 
+## Dependency scheduling and SDK entry validation
+
+The comparison baseline is the tree merged in PR #86 at `1fade7f94a78a9cafe21dab53e82a45418753238`. The Core, Editor SDL, SDL source and Windows properties probes replay the original one-file changes against implementation `df11979c`. The dispatch uses the candidate parent for affected validation. Each probe checks that the original file's base blob matches before using its measured change. Distinguish the active runner interval, cumulative runner usage, queue time and merge-gate wall time.
+
+| Input | Baseline | Candidate |
+| --- | --- | --- |
+| Core branch / PR profile | [Branch](https://github.com/Wolfiora/InnoEngine/actions/runs/44392798899), [PR sample](https://github.com/Wolfiora/InnoEngine/actions/runs/44397510265) | [Branch](https://github.com/Wolfiora/InnoEngine/actions/runs/44680423979), [PR profile](https://github.com/Wolfiora/InnoEngine/actions/runs/44680477624) |
+| Editor SDL consumer | [685s wall](https://github.com/Wolfiora/InnoEngine/actions/runs/44567919981) | [Replay](https://github.com/Wolfiora/InnoEngine/actions/runs/44680528477) |
+| SDL implementation | [7,387s wall](https://github.com/Wolfiora/InnoEngine/actions/runs/44567995562) | [Replay](https://github.com/Wolfiora/InnoEngine/actions/runs/44680533546) |
+| Windows product properties | [18,621s wall](https://github.com/Wolfiora/InnoEngine/actions/runs/44568062949) | [Replay](https://github.com/Wolfiora/InnoEngine/actions/runs/44680537485) |
+
+The first Core replay failed the architecture shard on declaration formatting. Its wall time is excluded from performance comparisons. The correction passed the repository source architecture command on Windows with 270 evaluated projects and 919 SDK nodes. The broader local validation suite also exposed a distinction between an affected project owner and an independently scheduled SDK entry. The conditional-source regression and three related SDK-entry cases passed after preserving that distinction.
+
+Local SDK fixtures exercised conditional imports on two actual entry instances, an input move across projects, a distinct platform product and backend compiler inputs. The publisher fixture rejected missing or untrusted SDK consumption evidence. Existing platform catalogs predate version 2 consumer receipts. The initial publication on the trusted default branch establishes the evidence required for cross-release product-level reuse. Product tags and the documentation release retain separate workflows.
+
 ## Current CI backend prerelease
 
 The three registered targets passed full functional validation at `0fed32331010ddf20b2a96ea13ed45b94b7b5533`. The package publisher checked the complete gate receipts and the platform consumption receipts before promotion. Repeating promotion at the same inputs selected the same release. On independent hosted workers, a cold download of each published archive and a required warm cache hit supplied working product consumers. [Full engine gate](https://github.com/Wolfiora/InnoEngine/actions/runs/44519061480) · [Cold and warm consumers](https://github.com/Wolfiora/InnoEngine/actions/runs/44567924287) · [CI prerelease](https://github.com/Wolfiora/InnoEngine/releases/tag/backend-prebuilts-2026.11.19.2)

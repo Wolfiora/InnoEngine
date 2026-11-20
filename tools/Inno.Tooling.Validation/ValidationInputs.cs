@@ -143,8 +143,10 @@ internal static class ValidationInputs
     internal static string PlanIdentity(ValidationPlan plan)
         => Convert.ToHexStringLower(SHA256.HashData(ValidationPlanTransport.Write(plan)));
 
-    internal static IEnumerable<string> SourcePaths(ValidationPlan plan, ValidationCheck check)
-    {
+    internal static IEnumerable<string> SourcePaths(
+        ValidationPlan plan,
+        ValidationCheck check
+    ) {
         foreach (string input in check.inputs)
         {
             if (!input.StartsWith('@'))
