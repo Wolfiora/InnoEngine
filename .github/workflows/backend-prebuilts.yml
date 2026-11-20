@@ -123,6 +123,7 @@ jobs:
         shell: pwsh
         env:
           SPEC: ${{ toJSON(matrix) }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           $item = $env:SPEC | ConvertFrom-Json
           $null = ./tests/ci/Initialize-NativeDependencyWorkloads.ps1 -Targets @($item.target)
@@ -150,7 +151,7 @@ jobs:
           $seed = if ($item.sha256) { Join-Path 'artifacts/backend-seed' $item.asset }
           ./tests/ci/Build-BackendPrebuilt.ps1 -Target $item.target -HostTarget $item.hostTarget -EntryAssembly $entry[0] `
             -NativeSelection "artifacts/components/$($item.target)/selection.json" -ConsumptionSelection artifacts/components/selection.json `
-            -PreviousPackage $seed -PreviousSha256 $item.sha256 -WorkspaceDirectory artifacts/bp -OutputDirectory artifacts/backend-candidate
+            -PreviousPackage $seed -PreviousSha256 $item.sha256 -PreviousTag $item.tag -WorkspaceDirectory artifacts/bp -OutputDirectory artifacts/backend-candidate
           $digest = (Get-FileHash -LiteralPath (Join-Path 'artifacts/backend-candidate' $item.asset)).Hash.ToLowerInvariant()
           @{commit=$env:GITHUB_SHA;target=$item.target;asset=$item.asset;sha256=$digest;reused=$false} | ConvertTo-Json |
             Set-Content artifacts/backend-candidate/candidate.json

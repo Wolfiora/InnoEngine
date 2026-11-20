@@ -540,48 +540,48 @@ internal static partial class ValidationPlanner
             ValidationContext context,
             IEnumerable<string> roots
         ) {
-            var snapshots = context.sdkGraph.EnumerateArray().ToDictionary(snapshot =>
-                Path.GetRelativePath(root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/'), StringComparer.Ordinal);
-            var pending = new Stack<(string owner, bool productOwned)>(roots.Select(static owner => (owner, false)));
-            var visited = new HashSet<(string owner, bool productOwned)>();
+            string id = contexts.Single(pair => ReferenceEquals(pair.Value, context)).Key;
+            if (!entryInputs.TryGetValue(id, out ValidationEntryInputs? entries))
+                entryInputs.Add(id, entries = new(root, context.sdkGraph, id, inputSets, CapturedInputs));
+            var pending = new Stack<(string instance, bool productOwned)>(roots.Select(owner => (entries.Entry(owner), false)));
+            var visited = new HashSet<(string instance, bool productOwned)>();
             while (pending.TryPop(out var request))
             {
-                string owner = request.owner;
-                if (!visited.Add(request) || !snapshots.TryGetValue(owner, out JsonElement snapshot))
+                if (!visited.Add(request))
                     continue;
-                foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
-                {
-                    JsonElement declared = variant.GetProperty("Properties");
-                    bool productOwned = request.productOwned
-                        || !string.IsNullOrWhiteSpace(declared.GetProperty("InnoTestNativeProduct").GetString())
-                        || !string.IsNullOrWhiteSpace(declared.GetProperty("InnoProductId").GetString());
-                    foreach (string property in new[] { "InnoTestNativeProduct", "InnoProductId" })
-                        if (declared.GetProperty(property).GetString() is { Length: > 0 } product)
-                        {
-                            string targetProperty = property == "InnoTestNativeProduct" ? "InnoTestNativeTarget" : "InnoProductTarget";
-                            string declaredTarget = declared.GetProperty(targetProperty).GetString() ?? string.Empty;
-                            yield return new(declaredTarget.Length == 0 ? context.properties["InnoNativeTarget"] : declaredTarget,
-                                context.properties["Configuration"], product);
-                        }
-                    // Product preparation supplies its exact binding selection to references. Only a standalone
-                    // binding consumer needs the component's explicit product declaration as an additional request.
-                    if (!productOwned && declared.GetProperty("BindGenGeneratedBindings").GetString() == "true"
-                        && declared.GetProperty("InnoBindingProductId").GetString() is { Length: > 0 } bindingProduct)
-                        yield return new(context.properties["InnoNativeTarget"], context.properties["Configuration"], bindingProduct);
-                    JsonElement items = variant.GetProperty("Items");
-                    foreach (JsonElement dependency in items.GetProperty("InnoNativeDependency").EnumerateArray())
+                var node = entries.Instance(request.instance);
+                JsonElement variant = node.variant;
+                string owner = variant.GetProperty("Path").GetString()!;
+                JsonElement declared = variant.GetProperty("Properties");
+                bool productOwned = request.productOwned
+                    || !string.IsNullOrWhiteSpace(declared.GetProperty("InnoTestNativeProduct").GetString())
+                    || !string.IsNullOrWhiteSpace(declared.GetProperty("InnoProductId").GetString());
+                foreach (string property in new[] { "InnoTestNativeProduct", "InnoProductId" })
+                    if (declared.GetProperty(property).GetString() is { Length: > 0 } product)
                     {
-                        string product = dependency.GetProperty("Identity").GetString()!;
-                        string dependencyTarget = dependency.GetProperty("TargetId").GetString()!;
-                        string dependencyConfiguration = dependency.GetProperty("Configuration").GetString()!;
-                        if (string.IsNullOrWhiteSpace(product) || string.IsNullOrWhiteSpace(dependencyTarget)
-                            || dependencyConfiguration is not ("Debug" or "Release"))
-                            throw new InvalidDataException("A native build dependency must declare product, target and configuration: " + owner);
-                        yield return new(dependencyTarget, dependencyConfiguration, product);
+                        string targetProperty = property == "InnoTestNativeProduct" ? "InnoTestNativeTarget" : "InnoProductTarget";
+                        string declaredTarget = declared.GetProperty(targetProperty).GetString() ?? string.Empty;
+                        yield return new(declaredTarget.Length == 0 ? context.properties["InnoNativeTarget"] : declaredTarget,
+                            context.properties["Configuration"], product);
                     }
-                    foreach (JsonElement reference in items.GetProperty("ProjectReference").EnumerateArray())
-                        pending.Push((Path.GetRelativePath(root, reference.GetProperty("FullPath").GetString()!).Replace('\\', '/'), productOwned));
+                // Product preparation supplies its exact binding selection to references. Only a standalone
+                // binding consumer needs the component's explicit product declaration as an additional request.
+                if (!productOwned && declared.GetProperty("BindGenGeneratedBindings").GetString() == "true"
+                    && declared.GetProperty("InnoBindingProductId").GetString() is { Length: > 0 } bindingProduct)
+                    yield return new(context.properties["InnoNativeTarget"], context.properties["Configuration"], bindingProduct);
+                JsonElement items = variant.GetProperty("Items");
+                foreach (JsonElement dependency in items.GetProperty("InnoNativeDependency").EnumerateArray())
+                {
+                    string product = dependency.GetProperty("Identity").GetString()!;
+                    string dependencyTarget = dependency.GetProperty("TargetId").GetString()!;
+                    string dependencyConfiguration = dependency.GetProperty("Configuration").GetString()!;
+                    if (string.IsNullOrWhiteSpace(product) || string.IsNullOrWhiteSpace(dependencyTarget)
+                        || dependencyConfiguration is not ("Debug" or "Release"))
+                        throw new InvalidDataException("A native build dependency must declare product, target and configuration: " + owner);
+                    yield return new(dependencyTarget, dependencyConfiguration, product);
                 }
+                foreach (string reference in node.references)
+                    pending.Push((reference, productOwned));
             }
         }
 

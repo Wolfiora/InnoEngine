@@ -44,6 +44,40 @@ foreach ($platform in $Hosts) {
     }
 }
 
+# Measure observed execution up to the merge gate, including unrelated jobs that overlap.
+# The union of busy intervals and cumulative runner time have different meanings.
+if ($env:GH_TOKEN) {
+    try {
+        $headers = @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json'}
+        $runBase = "$ApiUrl/repos/$Repository/actions/runs/$RunId/attempts/$Attempt"
+        $attemptInfo = Invoke-RestMethod -Headers $headers -Uri $runBase
+        $jobs = @(for ($page = 1; ; $page++) {
+            $batch = Invoke-RestMethod -Headers $headers -Uri "$runBase/jobs?per_page=100&page=$page"
+            $batch.jobs
+            if ($page * 100 -ge $batch.total_count) { break }
+        })
+        $finished = @($jobs | Where-Object { $_.started_at -and $_.completed_at -and $_.conclusion -cne 'skipped' } | Sort-Object started_at)
+        if ($finished.Count) {
+            $start = [datetimeoffset]$finished[0].started_at
+            $end = $start
+            $busy = 0.0
+            $runner = 0.0
+            foreach ($job in $finished) {
+                $left = [datetimeoffset]$job.started_at
+                $right = [datetimeoffset]$job.completed_at
+                $runner += ($right - $left).TotalSeconds
+                if ($right -gt $end) {
+                    $busy += ($right - $(if ($left -gt $end) { $left } else { $end })).TotalSeconds
+                    $end = $right
+                }
+            }
+            $clock = ($end - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds
+            $lines.Add("- Through the last completed job: $([math]::Round($clock)) seconds elapsed, $([math]::Round($busy)) seconds with active runners, $([math]::Round($runner / 60, 1)) cumulative runner-minutes.")
+            $lines.Add("- Time before the first runner started: $([math]::Round(($start - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds)) seconds.")
+        }
+    } catch { $lines.Add('- Hosted job timing unavailable: ' + $_.Exception.Message) }
+}
+
 # Timing comparisons are informational; they never transfer validation status across runs.
 $certification = [IO.Path]::GetFullPath('../certification.json', $ReceivedDirectory)
 if ($env:GH_TOKEN -and (Test-Path -LiteralPath $certification)) {

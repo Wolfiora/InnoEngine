@@ -23,4 +23,7 @@ if (Test-Path -LiteralPath $archive -PathType Leaf) {
     $downloaded = [IO.FileInfo]::new($archive).Length
 }
 Write-Host "Backend platform archive $Sha256, $([IO.FileInfo]::new($archive).Length) bytes, $downloaded bytes transferred from Releases."
+if ($env:GITHUB_STEP_SUMMARY) {
+    "- Backend archive $Sha256 transferred $downloaded bytes from Releases ($([IO.FileInfo]::new($archive).Length) bytes on disk)." >> $env:GITHUB_STEP_SUMMARY
+}
 $archive

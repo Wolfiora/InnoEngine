@@ -37,7 +37,7 @@ foreach ($hostName in $Hosts) {
             $hostTarget = @($hostsRegistry | Where-Object runner -CEQ $registration[0].runner)
             if ($hostTarget.Count -ne 1) { throw "No unique SDK host for $target." }
             $targets[$target] = [ordered]@{target=$target; asset=$registration[0].asset; runner=$registration[0].runner; hostTarget=$hostTarget[0].target
-                operation=$package.operation; sha256=$package.sha256; assetId=$package.assetId}
+                operation=$package.operation; sha256=$package.sha256; assetId=$package.assetId; tag=$(if ($package.PSObject.Properties['tag']) { $package.tag })}
         } else {
             $prior = $targets[$target]
             if ($package.operation -ceq 'produce' -or $prior.sha256 -cne $package.sha256) { $prior.operation = 'produce' }
@@ -63,6 +63,7 @@ if ($RebuildTargets) {
     foreach ($name in $requested) {
         if ($name -cnotin $platforms.target -or !$targets.Contains($name)) { throw "No frozen backend platform to rebuild: $name." }
         $targets[$name].operation = 'produce'
+        $targets[$name].tag = $null
         $targets[$name].sha256 = $null
         $targets[$name].assetId = $null
     }

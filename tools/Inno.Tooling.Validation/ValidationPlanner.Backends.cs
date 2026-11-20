@@ -20,8 +20,11 @@ internal sealed record BackendInputPlan(
     string[] required,
     string[] tests,
     string[] missingNativeProducts,
-    string? developmentProperties
+    string? developmentProperties,
+    Dictionary<string, BackendConsumerInputs>? consumers = null
 );
+
+internal sealed record BackendConsumerInputs(string identity, string[] backendOwners);
 
 internal static partial class ValidationPlanner
 {
@@ -309,9 +312,30 @@ internal static partial class ValidationPlanner
         const string C_BUILD = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
         if ((plan.backendHost is null || target == plan.backendHost) && plan.nativeRequests is { Length: > 0 } && configuration == plan.configuration && owners.ContainsKey(C_BUILD))
             required.UnionWith(Closure(C_BUILD).Where(IsBackend));
+        var productInputs = new Dictionary<string, BackendConsumerInputs>(StringComparer.Ordinal);
+        foreach (JsonElement snapshot in graph.sdkGraph.EnumerateArray())
+        {
+            JsonElement product = snapshot.GetProperty("Properties");
+            if (product.GetProperty("InnoProductTarget").GetString() != target
+                || string.IsNullOrEmpty(product.GetProperty("InnoProductId").GetString()))
+                continue;
+            string owner = Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');
+            string[] closure = Closure(owner).Order(StringComparer.Ordinal).ToArray();
+            var proofInputs = new Dictionary<string, string>(common, StringComparer.Ordinal)
+            {
+                ["environment"] = plan.environment,
+                ["entry"] = owner
+            };
+            foreach (string project in closure)
+                proofInputs[project] = direct[project];
+            foreach (var input in plan.inputs.Where(static pair => pair.Key.StartsWith("tests/ci/", StringComparison.Ordinal)
+                || pair.Key.StartsWith(".github/", StringComparison.Ordinal)))
+                proofInputs[input.Key] = input.Value;
+            productInputs.Add(owner, new(ValidationInputs.Identity(proofInputs), closure.Where(IsBackend).ToArray()));
+        }
         return new(plan.commit, target, configuration, identities, required.Order(StringComparer.Ordinal).ToArray(),
             checks.Where(static check => check.kind == "test" && check.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
-                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing, developmentProperties);
+                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing, developmentProperties, productInputs);
 
         IEnumerable<string> Closure(string project)
         {

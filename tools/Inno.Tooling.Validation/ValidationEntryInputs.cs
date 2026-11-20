@@ -9,7 +9,7 @@ namespace Inno.Tooling.Validation;
 internal sealed class ValidationEntryInputs
 {
     private readonly Dictionary<string, string> m_roots = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, (string key, string[] references)> m_nodes = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, (string key, JsonElement variant, string[] references)> m_nodes = new(StringComparer.Ordinal);
 
     internal ValidationEntryInputs(string root, JsonElement graph, string context, Dictionary<string, string[]> sets, Func<IEnumerable<string>, string[]> capture)
     {
@@ -30,12 +30,16 @@ internal sealed class ValidationEntryInputs
                     if (entry ? index != 0 : !variant.GetProperty("EquivalentGlobalProperties").EnumerateArray()
                         .Any(candidate => ValidationCompiledGraph.SameProperties(candidate, properties)))
                         continue;
-                    m_nodes.Add(instance.GetProperty("Identity").GetString()!, (key, instance.GetProperty("References")
+                    m_nodes.Add(instance.GetProperty("Identity").GetString()!, (key, variant, instance.GetProperty("References")
                         .EnumerateArray().Select(static item => item.GetString()!).ToArray()));
                 }
             }
         }
     }
+
+    internal string Entry(string owner) => m_roots[owner];
+
+    internal (string key, JsonElement variant, string[] references) Instance(string id) => m_nodes[id];
 
     internal string[] Sources(string owner)
     {
