@@ -36,6 +36,9 @@ internal static class ValidationRunner
         DocumentationCatalogReport? documentationCatalog = documentationSnapshot is null ? null
             : await ValidationDocumentation.ReadCatalogAsync(plan, documentationSnapshot, cancellation).ConfigureAwait(false);
         var results = new List<ValidationResult>(imported);
+        var failures = new List<ValidationRunFailure>();
+        double closingSeconds = 0;
+        var batchSeconds = new Dictionary<string, double>(StringComparer.Ordinal);
         DateTimeOffset started = DateTimeOffset.UtcNow;
         string planIdentity = ValidationInputs.PlanIdentity(plan);
         Directory.CreateDirectory(directory);
@@ -82,6 +85,7 @@ internal static class ValidationRunner
         var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
         var dependencyInputs = new ValidationDependencyInputs(plan, cancellation);
         var compilationGraphs = new Dictionary<string, string>(StringComparer.Ordinal);
+        HashSet<string>? invalidated = ValidationShards.InvalidatedChecks(plan, previous);
         var reused = new Dictionary<string, ValidationResult>(StringComparer.Ordinal);
         var reusableCompilations = new Dictionary<string, bool>(StringComparer.Ordinal);
         foreach (ValidationCheck check in checks)
@@ -152,8 +156,11 @@ internal static class ValidationRunner
                         case "instructions":
                             await ShellAsync(ValidationCiContracts.C_RULE_LOADER, [], "instructions.log").ConfigureAwait(false);
                             break;
+                        case "gate-contracts":
                         case "ci-contracts":
-                            string[] contracts = ValidationCiContracts.Discover(plan.root);
+                            string[] contracts = check.kind == "gate-contracts"
+                                ? ValidationCiContracts.GateContracts.Select(path => Path.Combine(plan.root, path)).ToArray()
+                                : ValidationCiContracts.Discover(plan.root);
                             if (contracts.Length == 0)
                                 throw new InvalidDataException("Required CI contract discovery is empty.");
                             foreach (string contract in contracts)
@@ -385,6 +392,7 @@ internal static class ValidationRunner
                                     "-ProductProperties", properties["InnoProductBuildProperties"]] : [];
                                 try
                                 {
+                                    long batchStart = Stopwatch.GetTimestamp();
                                     try
                                     {
                                         await ShellAsync(C_TEST_EXECUTOR,
@@ -395,15 +403,19 @@ internal static class ValidationRunner
                                     catch (Exception failure) when (failure is not OperationCanceledException)
                                     {
                                         // Preserve the process failure even when individual owners have complete successful evidence.
-                                        results.Add(new("test-execution:" + contextId, "Failed", plan.tree, elapsed.Elapsed.TotalSeconds,
-                                            "The test union did not complete successfully. See " + contextId + "-tests.log for the first failure."));
+                                        failures.Add(new("test-execution", failure.Message.Split('\n')[0], contextId, contextId + "-tests.log", Stopwatch.GetElapsedTime(batchStart).TotalSeconds));
                                         await SaveAsync().ConfigureAwait(false);
+                                    }
+                                    finally
+                                    {
+                                        batchSeconds[contextId] = Stopwatch.GetElapsedTime(batchStart).TotalSeconds;
                                     }
                                     foreach (var evidence in ValidationTestEvidence.Read(plan.root, tests.ToDictionary(static project => project, project =>
                                         plan.contexts[contextId].sdkGraph.EnumerateArray().Single(snapshot =>
                                             Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == project)
                                             .GetProperty("Properties").GetProperty("TargetPath").GetString()!, StringComparer.Ordinal), resultsDirectory))
                                         testDetails.Add(evidence.Key, evidence.Value);
+                                    elapsed.Restart();
                                     executedTests.UnionWith(tests);
                                     tested.Add(contextId);
                                     outputDigests.Clear();
@@ -443,55 +455,73 @@ internal static class ValidationRunner
                 }
             }
             results.Add(new(check.id, status, identity, elapsed.Elapsed.TotalSeconds, detail, outputs, dependencyIdentity, documentationInputs));
-            Console.WriteLine($"{status}: {check.id} ({elapsed.Elapsed.TotalSeconds:F2}s) {detail}");
+            string measurement = check.kind == "test" ? " owner reconciliation" : string.Empty;
+            Console.WriteLine($"{status}: {check.id} ({elapsed.Elapsed.TotalSeconds:F2}s{measurement}) {detail}");
             await SaveAsync().ConfigureAwait(false);
         }
         if (cancellation.IsCancellationRequested)
         {
-            results.Add(new("execution-canceled", "Blocked", plan.tree, 0, "The run was canceled and cannot certify completion."));
+            failures.Add(new("execution-canceled", "The run was canceled before closing verification."));
             await SaveAsync().ConfigureAwait(false);
-            return new(plan.commit, plan.tree, plan.environment, started, OwnedResults(), planIdentity, shard: shard?.id);
+            return new(plan.commit, plan.tree, plan.environment, started, OwnedResults(), ValidationShards.C_EVIDENCE_VERSION, failures.ToArray(), planIdentity, shard: shard?.id, batchSeconds: batchSeconds);
         }
         // Both closing snapshots read independent owners after all checks; neither may reuse planning-time bytes.
-        Task<Dictionary<string, string>> sourceCapture = ValidationInputs.CaptureAsync(plan.root, cancellation);
-        Task<string> environmentCapture = Task.Run(() => ValidationEnvironment.CaptureAsync(
-            plan.root, plan.dotnet, cancellation, plan.contexts.Values), cancellation);
-        await Task.WhenAll(sourceCapture, environmentCapture).ConfigureAwait(false);
-        Dictionary<string, string> after = await sourceCapture.ConfigureAwait(false);
-        outputDigests.Clear();
-        dependencyInputs.Reset();
-        var unstableCompilations = new HashSet<string>(StringComparer.Ordinal);
-        foreach (ValidationCheck check in checks.Where(static check => check.exclusion is null))
+        long closingStart = Stopwatch.GetTimestamp();
+        try
         {
-            ValidationResult result = results.Single(record => record.id == check.id);
-            if (result.status is "Passed" or "Reused" && (!ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests)
-                || !dependencyInputs.Matches(check, result.dependencyIdentity)))
+            await VerifyClosingStateAsync().ConfigureAwait(false);
+        }
+        catch (Exception failure)
+        {
+            closingSeconds = Stopwatch.GetElapsedTime(closingStart).TotalSeconds;
+            failures.Add(new(failure is OperationCanceledException ? "execution-canceled" : "closing-verification", failure.Message));
+            await SaveAsync().ConfigureAwait(false);
+            throw;
+        }
+        closingSeconds = Stopwatch.GetElapsedTime(closingStart).TotalSeconds;
+        await SaveAsync(completed: true).ConfigureAwait(false);
+        return new(plan.commit, plan.tree, plan.environment, started, OwnedResults(), ValidationShards.C_EVIDENCE_VERSION, failures.ToArray(), planIdentity, completed: true, shard: shard?.id, closingSeconds: closingSeconds, batchSeconds: batchSeconds);
+
+        async Task VerifyClosingStateAsync()
+        {
+            Task<Dictionary<string, string>> sourceCapture = ValidationInputs.CaptureAsync(plan.root, cancellation);
+            Task<string> environmentCapture = Task.Run(() => ValidationEnvironment.CaptureAsync(
+                plan.root, plan.dotnet, cancellation, plan.contexts.Values), cancellation);
+            await Task.WhenAll(sourceCapture, environmentCapture).ConfigureAwait(false);
+            Dictionary<string, string> after = await sourceCapture.ConfigureAwait(false);
+            outputDigests.Clear();
+            dependencyInputs.Reset();
+            var unstableCompilations = new HashSet<string>(StringComparer.Ordinal);
+            foreach (ValidationCheck check in checks.Where(static check => check.exclusion is null))
             {
-                if (check.kind == "build")
-                    unstableCompilations.Add(check.context!);
-                results.Add(new("output-stability:" + check.id, "Failed", result.inputIdentity, 0, "Required compiled outputs or restored dependencies changed after their check completed."));
+                ValidationResult result = results.Single(record => record.id == check.id);
+                if (result.status is "Passed" or "Reused" && (!ValidationOutputs.Matches(plan, check, result, cancellation, outputDigests)
+                    || !dependencyInputs.Matches(check, result.dependencyIdentity)))
+                {
+                    if (check.kind == "build")
+                        unstableCompilations.Add(check.context!);
+                    failures.Add(new("output-stability", "Compiled outputs or restored dependencies changed after verification.", check.id));
+                    await SaveAsync().ConfigureAwait(false);
+                }
+            }
+            bool sourceStable = ValidationInputs.Identity(after) == plan.tree;
+            bool environmentStable = plan.environment == await environmentCapture.ConfigureAwait(false);
+            if (!sourceStable)
+            {
+                failures.Add(new("input-stability", "Inputs changed during validation."));
                 await SaveAsync().ConfigureAwait(false);
             }
+            if (!environmentStable)
+            {
+                failures.Add(new("environment-stability", "SDK, runtime, shell or imports changed during validation."));
+                await SaveAsync().ConfigureAwait(false);
+            }
+            if (sourceStable && environmentStable)
+                foreach (var compilation in pendingCompilations.Where(pair => !unstableCompilations.Contains(pair.Key)))
+                    compilation.Value.Record(dependencyInputs);
+            if (workspace is not null)
+                ValidationWorkspace.RecordCompleted(plan, cancellation);
         }
-        bool sourceStable = ValidationInputs.Identity(after) == plan.tree;
-        bool environmentStable = plan.environment == await environmentCapture.ConfigureAwait(false);
-        if (!sourceStable)
-        {
-            results.Add(new("input-stability", "Failed", plan.tree, 0, "Inputs changed during validation; results cannot certify this workspace."));
-            await SaveAsync().ConfigureAwait(false);
-        }
-        if (!environmentStable)
-        {
-            results.Add(new("environment-stability", "Failed", plan.environment, 0, "SDK, runtime, shell or external import contents changed during validation."));
-            await SaveAsync().ConfigureAwait(false);
-        }
-        if (sourceStable && environmentStable)
-            foreach (var compilation in pendingCompilations.Where(pair => !unstableCompilations.Contains(pair.Key)))
-                compilation.Value.Record(dependencyInputs);
-        if (workspace is not null)
-            ValidationWorkspace.RecordCompleted(plan, cancellation);
-        await SaveAsync(completed: true).ConfigureAwait(false);
-        return new(plan.commit, plan.tree, plan.environment, started, OwnedResults(), planIdentity, completed: true, shard: shard?.id);
 
         Task ShellAsync(
             string script,
@@ -542,7 +572,7 @@ internal static class ValidationRunner
         ValidationResult[] OwnedResults() => results.Where(result => !imported.Contains(result)).ToArray();
 
         Task SaveAsync(bool completed = false) => File.WriteAllTextAsync(Path.Combine(directory, "results.json"),
-            JsonSerializer.Serialize(new ValidationEvidence(plan.commit, plan.tree, plan.environment, started, OwnedResults(), planIdentity, completed, shard?.id),
+            JsonSerializer.Serialize(new ValidationEvidence(plan.commit, plan.tree, plan.environment, started, OwnedResults(), ValidationShards.C_EVIDENCE_VERSION, failures.ToArray(), planIdentity, completed, shard?.id, closingSeconds, batchSeconds),
                 new JsonSerializerOptions { WriteIndented = true }), CancellationToken.None);
 
         bool CanReuse(ValidationCheck candidate)
@@ -568,7 +598,14 @@ internal static class ValidationRunner
             if (candidate.layer == "performance")
                 return false;
             ValidationResult? retained = (continuation || string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")))
-                && previous is { completed: true } && previous.environment == plan.environment
+                && previous is { completed: true, version: ValidationShards.C_EVIDENCE_VERSION, failures: not null } && previous.environment == plan.environment
+                && previous.failures.All(fault => fault.stage switch
+                {
+                    "test-execution" => candidate.kind != "test" || candidate.context != fault.owner
+                        || previous.results.Any(result => result.status == "Failed" && plan.checks.Any(check => check.id == result.id && check.kind == "test" && check.context == fault.owner)),
+                    "output-stability" => false,
+                    _ => false
+                })
                 ? previous.results.SingleOrDefault(result => result.id == candidate.id) : null;
             if (retained is null && candidate.kind == "test" && candidate.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
                 retained = plan.backendTests?.SingleOrDefault(result => result.id == candidate.id);

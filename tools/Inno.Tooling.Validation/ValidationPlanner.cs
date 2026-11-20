@@ -364,10 +364,11 @@ internal static partial class ValidationPlanner
                 "Explicitly selected canonical project entries and immutable reference payloads.", "any", [],
                 inputs.Keys.Where(static path => path.EndsWith(".csproj", StringComparison.Ordinal)).Append("@tooling").ToArray(), true, null,
                 documentation: new([], [], documentation.catalog.contentIdentity, configuration, null)));
+        bool gateOnly = !full && affected.Count == 0 && changes.Count > 0 && changes.All(path => ValidationCiContracts.GateScripts.Contains(path, StringComparer.Ordinal));
         if (full || changes.Any(static path => path.StartsWith(".github/", StringComparison.Ordinal) || IsCiContractInput(path)
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)))
-            checks.Add(new("ci-contracts", "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",
-                "any", [], inputs.Keys.Where(IsCiContractInput).Append("@tooling").ToArray(), true, null));
+            checks.Add(new("ci-contracts", gateOnly ? "gate-contracts" : "ci-contracts", "tests/ci", "Fail-closed aggregation contracts for missing, skipped, canceled, empty and tampered evidence.",
+                "any", [], inputs.Keys.Where(path => IsCiContractInput(path) || path == ".github/workflows/engine-ci.yml").Append("@tooling").ToArray(), true, null));
         foreach (ValidationProject project in projects.OrderBy(static project => project.path, StringComparer.Ordinal))
         {
             bool native = nativeOwners.Contains(project.path);
@@ -595,7 +596,10 @@ internal static partial class ValidationPlanner
         return new(new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding,
             documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal), profile, nativeDependencies, requests, ValidationShards.Create(execution), backendStore, backendStore is null ? null : target,
-            hostExcludedSources: ValidationTestHosts.ExcludedSources(projects),
+            hostExcludedSources: ValidationTestHosts.ExcludedSources(projects)
+                .Concat(ValidationCiContracts.GateScripts.Where(path => inputs.ContainsKey(path)
+                    && !projects.Concat(nativeProjects.Values).Any(project => project.inputs.Contains(path, StringComparer.Ordinal))))
+                .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray(),
             portableTestChanges: !full && profile is (ValidationProfile.Fast or ValidationProfile.PullRequest)
                 && changes.Count > 0 && removed.Length == 0 && affected.Count > 0
                 && affected.All(owner => byPath[owner] is { test: true, layer: "domain" })

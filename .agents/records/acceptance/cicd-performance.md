@@ -1,5 +1,11 @@
 # Engine CI/CD acceptance
 
+## Windows cancellation and failed batch evidence
+
+The [first PR 88 candidate](https://github.com/Wolfiora/InnoEngine/actions/runs/44760191698/job/136373208390) returned all 300 planned Windows managed checks. One owner failed, and a 301st process record hid its diagnostic during reconciliation. The archived case took 2.0144153 seconds. The managed test process took 6,409.8 seconds. Its TRX did not capture the instant cancellation was requested.
+
+The retained incident fixture covers the complete failed receipt and a genuinely missing owner. Both fail certification. Version 2 keeps process and closing failures separate from planned checks, and treats timing as diagnostic data. A real Windows sharing denial exercises cancellation before and after the retry deadline through the public directory API. Gate-only planning and explicit project consumption have paired regression cases. The hosted candidate and its timing are recorded by the PR checks.
+
 ## Superseded validation runs
 
 The [cancelled branch run](https://github.com/Wolfiora/InnoEngine/actions/runs/44678353728/job/136095922201) reported a matrix error after planning was cancelled. The gate now follows workflow cancellation and checks planning success before interpreting dispatch outputs on a live run. Local verification against base `28ba7a8f` reproduced the misleading diagnostic and exercised seven rejection cases from the workflow script. Actionlint and the eleven gate transport contracts passed. Hosted cancellation was not replayed.

@@ -232,7 +232,7 @@ public static class ValidationCommand
             Dictionary<string, string> current = await ValidationInputs.CaptureAsync(root, cancellationToken).ConfigureAwait(false);
             if (ValidationInputs.Identity(current) != plan.tree || previous.tree != plan.tree || previous.environment != plan.environment)
                 throw new InvalidDataException("Evidence does not certify the current tree and environment.");
-            ValidateResults(plan, previous);
+            _ = ValidationShards.ValidateEvidence(plan, previous);
             var outputDigests = new Dictionary<string, string>(StringComparer.Ordinal);
             var dependencies = new ValidationDependencyInputs(plan, cancellationToken);
             foreach (ValidationCheck check in plan.checks.Where(static check => check.exclusion is null))
@@ -256,10 +256,7 @@ public static class ValidationCommand
         }
         ValidationEvidence evidence = await ValidationRunner.RunAsync(plan, output, previous, cancellationToken, shard,
             options.TryGetValue("--prerequisites", out string? receipts) ? ReadReceipts(receipts) : null, continuation, retainedOutputs).ConfigureAwait(false);
-        if (shard is null)
-            ValidateResults(plan, evidence);
-        else
-            _ = ValidationShards.ValidateEvidence(plan, evidence, shard.id);
+        _ = ValidationShards.ValidateEvidence(plan, evidence, shard?.id);
         if (options.TryGetValue("--cache-output", out string? cacheOutput) && plan.contexts.ContainsKey("native"))
             Console.WriteLine($"Exported {await NativeArtifactTransfer.ExportAsync(root, cacheOutput, cancellationToken).ConfigureAwait(false)} verified immutable generations.");
         return 0;
@@ -271,23 +268,4 @@ public static class ValidationCommand
 
     private static T Read<T>(string path)
         => JsonSerializer.Deserialize<T>(File.ReadAllText(path)) ?? throw new InvalidDataException($"Empty validation document: {path}");
-
-    private static void ValidateResults(
-        ValidationPlan plan,
-        ValidationEvidence evidence
-    ) {
-        if (!evidence.completed)
-            throw new InvalidDataException("Validation did not complete its closing input, environment and output verification.");
-        if (evidence.planIdentity != ValidationInputs.PlanIdentity(plan))
-            throw new InvalidDataException("Evidence does not match the exact selected plan.");
-        foreach (ValidationCheck check in plan.checks)
-        {
-            ValidationResult[] results = evidence.results.Where(result => result.id == check.id).ToArray();
-            if (results.Length != 1 || results[0].inputIdentity != ValidationInputs.CheckIdentity(plan, check, plan.inputs)
-                || (check.exclusion is null ? results[0].status is not ("Passed" or "Reused") : results[0].status != "NotApplicable"))
-                throw new InvalidDataException($"Required validation evidence is missing, stale, duplicated or unsuccessful: {check.id}");
-        }
-        if (evidence.results.Any(static result => result.status is "Failed" or "Blocked") || evidence.results.Length != plan.checks.Length)
-            throw new InvalidDataException("Validation contains failed, blocked or unplanned results.");
-    }
 }

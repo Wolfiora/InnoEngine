@@ -23,6 +23,7 @@ public static class AtomicDirectory
     /// </param>
     /// <remarks>
     /// Windows access and sharing failures are retried for at most two seconds to tolerate temporary readers.
+    /// Cancellation observed after a blocked rename takes precedence over its timeout error.
     /// Failure preserves the candidate and any existing destination. A committed rename is not canceled afterward.
     /// </remarks>
     /// <exception cref="ArgumentException">
@@ -38,7 +39,7 @@ public static class AtomicDirectory
     /// The operating system continues denying access after the bounded retry window.
     /// </exception>
     /// <exception cref="OperationCanceledException">
-    /// Cancellation is requested before the directory is published.
+    /// Cancellation is observed before publication, including while handling a failed rename.
     /// </exception>
     public static void Publish(
         string source,
@@ -77,6 +78,7 @@ public static class AtomicDirectory
     /// <remarks>
     /// The caller must serialize readers and writers while the two directory moves run.
     /// Cancellation before commit restores the previous destination without canceling rollback.
+    /// Cancellation observed after a blocked rename takes precedence over its timeout error.
     /// A committed candidate is not canceled afterward.
     /// Backup cleanup runs after commit; its failure preserves the installed candidate and remaining backup.
     /// </remarks>
@@ -99,7 +101,7 @@ public static class AtomicDirectory
     /// Installation and restoration both fail; neither tree is deleted to force a rollback.
     /// </exception>
     /// <exception cref="OperationCanceledException">
-    /// Cancellation is requested before the candidate commits; any moved previous tree is restored.
+    /// Cancellation is observed before the candidate commits, including while handling a failed rename. Any moved previous tree is restored.
     /// </exception>
     public static void Install(
         string source,

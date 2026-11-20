@@ -20,7 +20,7 @@ try {
     $zip = [IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Create)
     try {
         $writer = [IO.StreamWriter]::new($zip.CreateEntry('backend-tests.json').Open())
-        try { $writer.Write((ConvertTo-Json @{commit=$sha;environment=$identity;hostTarget='fixture';attempt=1;tests=@(@{id='test:fixture'})} -Depth 5)) }
+        try { $writer.Write((ConvertTo-Json @{version=2;commit=$sha;environment=$identity;hostTarget='fixture';attempt=1;tests=@(@{id='test:fixture'})} -Depth 5)) }
         finally { $writer.Dispose() }
     } finally { $zip.Dispose(); $stream.Dispose() }
     $advertised = @{id=4;name=$name;expired=$false;size_in_bytes=384;digest='sha256:'+(Get-FileHash -LiteralPath $fixture).Hash.ToLowerInvariant()

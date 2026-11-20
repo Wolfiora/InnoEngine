@@ -129,15 +129,27 @@ internal sealed record ValidationDocumentationInput(
     Dictionary<string, string> sources
 );
 
+internal sealed record ValidationRunFailure(
+    string stage,
+    string detail,
+    string? owner = null,
+    string? log = null,
+    double seconds = 0
+);
+
 internal sealed record ValidationEvidence(
     string commit,
     string tree,
     string environment,
     DateTimeOffset started,
     ValidationResult[] results,
+    int version,
+    ValidationRunFailure[] failures,
     string planIdentity = "",
     bool completed = false,
-    string? shard = null
+    string? shard = null,
+    double closingSeconds = 0,
+    Dictionary<string, double>? batchSeconds = null
 );
 
 internal sealed record ValidationNativeRequest(

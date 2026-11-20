@@ -263,8 +263,7 @@ public sealed class ValidationCompletionTests
         using (JsonDocument failed = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json"))))
         {
             JsonElement[] results = failed.RootElement.GetProperty("results").EnumerateArray().ToArray();
-            Assert.Contains(results, result => result.GetProperty("id").GetString() == "input-stability"
-                && result.GetProperty("status").GetString() == "Failed");
+            Assert.Contains(failed.RootElement.GetProperty("failures").EnumerateArray(), fault => fault.GetProperty("stage").GetString() == "input-stability");
             Assert.Contains(results, result => result.GetProperty("id").GetString() == "test:tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj"
                 && result.GetProperty("status").GetString() == "Failed"
                 && result.GetProperty("detail").GetString()!.Contains("CompiledInputMatchesItsDeclaredSource", StringComparison.Ordinal));

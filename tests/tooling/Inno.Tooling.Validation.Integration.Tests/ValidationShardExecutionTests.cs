@@ -402,10 +402,14 @@ public sealed class ValidationShardExecutionTests
         Assert.Null(joined["shard"]);
         Assert.Equal(2, joined["results"]!.AsArray().Count);
 
-        foreach (string damage in new[] { "commit", "environment", "planIdentity", "shard", "failed", "missing", "duplicate" })
+        foreach (string damage in new[] { "commit", "environment", "planIdentity", "shard", "failed", "missing", "duplicate", "old-format", "run-failure" })
         {
             JsonObject changed = receipt.DeepClone().AsObject();
-            if (damage == "failed")
+            if (damage == "old-format")
+                changed.Remove("version");
+            else if (damage == "run-failure")
+                changed["failures"] = new JsonArray(new JsonObject { ["stage"] = "test-execution", ["detail"] = "Shared test process exited with 1." });
+            else if (damage == "failed")
                 changed["results"]![0]!["status"] = "Failed";
             else if (damage == "missing")
                 changed["results"] = new JsonArray();

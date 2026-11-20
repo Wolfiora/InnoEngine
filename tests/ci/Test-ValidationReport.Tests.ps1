@@ -12,7 +12,7 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
         checks = @(@{ id = 'architecture'; kind = 'architecture'; prerequisites = @(); exclusion = $null })
     }
     $evidence = @{
-        commit = $commit; tree = $hash; environment = $hash; completed = $true
+        commit = $commit; tree = $hash; environment = $hash; version = 2; failures = @(); completed = $true
         results = @(@{ id = 'architecture'; status = 'Passed'; inputIdentity = $hash; outputs = @{} })
     }
     $state = @{ plan = $plan; evidence = $evidence; conclusion = 'success'; expectedCommit = $commit; tamper = $false }
@@ -43,6 +43,9 @@ function Invoke-Case([string]$Name, [scriptblock]$Change, [bool]$Accept) {
 Invoke-Case 'complete' { param($s) } $true
 Invoke-Case 'unfinished-closing-verification' { param($s) $s.evidence.completed = $false } $false
 Invoke-Case 'missing-completion' { param($s) $s.evidence.Remove('completed') } $false
+Invoke-Case 'old-schema' { param($s) $s.evidence.Remove('version') } $false
+Invoke-Case 'missing-failure-inventory' { param($s) $s.evidence.Remove('failures') } $false
+Invoke-Case 'batch-failed-with-passing-owners' { param($s) $s.evidence.failures = @(@{stage='test-execution';detail='exit 1'}) } $false
 Invoke-Case 'malformed-completion' { param($s) $s.evidence.completed = 'true' } $false
 Invoke-Case 'missing-result' { param($s) $s.evidence.results = @() } $false
 Invoke-Case 'skipped-required' { param($s) $s.evidence.results[0].status = 'NotApplicable' } $false

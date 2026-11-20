@@ -26,7 +26,7 @@ try {
         }
         $planHash = (Get-FileHash (Join-Path $planRoot 'plan.json')).Hash.ToLowerInvariant()
         $result = Join-Path $joinRoot 'results.json'
-        @{ commit = $commit; tree = 'b' * 64; environment = 'c' * 64; completed = $case -cne 'failed-join'; planIdentity = $planHash;
+        @{ commit = $commit; tree = 'b' * 64; environment = 'c' * 64; version = 2; failures = @(); completed = $case -cne 'failed-join'; planIdentity = $planHash;
             results = @(@{ id = 'policy'; status = 'Passed'; inputIdentity = 'd' * 64; outputs = @{} }) } |
             ConvertTo-Json -Depth 8 | Set-Content $result
         $shardHash = if ($case -cin @('missing-shard','changed-shard')) { '0' * 64 } else { (Get-FileHash (Join-Path $receipt 'results.json')).Hash.ToLowerInvariant() }

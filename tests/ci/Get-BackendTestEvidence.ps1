@@ -30,7 +30,7 @@ foreach ($item in @($list.artifacts | Where-Object {
             try { $proof = $reader.ReadToEnd() | ConvertFrom-Json -AsHashtable -Depth 40 } finally { $reader.Dispose() }
         } finally { $zip.Dispose() }
     } finally { [IO.File]::Delete($file) }
-    if ($proof.commit -cne $run.head_sha -or $proof.attempt -ne $run.run_attempt -or
+    if ($proof.version -ne 2 -or $proof.commit -cne $run.head_sha -or $proof.attempt -ne $run.run_attempt -or
         $proof.environment -cne $EnvironmentIdentity -or $proof.hostTarget -cne $HostTarget) { continue }
     $proof.tests
 }

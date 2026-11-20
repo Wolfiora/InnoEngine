@@ -46,7 +46,11 @@ internal static class ValidationTestEvidence
                 string name = (string?)method.Attribute("className") + "." + (string?)method.Attribute("name");
                 if ((string?)record.Attribute("outcome") == "Failed")
                 {
-                    failures[project].Add("Test failed: " + name + ". See " + Path.GetFileName(report) + ".");
+                    string message = record.Descendants().FirstOrDefault(element => element.Name.LocalName == "ErrorInfo")
+                        ?.Elements().FirstOrDefault(element => element.Name.LocalName == "Message")?.Value ?? string.Empty;
+                    if (message.Length > 1200)
+                        message = message[..1200];
+                    failures[project].Add($"Test failed: {name} (TRX duration {(string?)record.Attribute("duration")}). {message} See {Path.GetFileName(report)}.");
                     continue;
                 }
                 if (hosts[project].TryGetValue(name, out string[]? required) && !ValidationTestHosts.Applies(required))

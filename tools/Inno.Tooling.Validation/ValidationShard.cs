@@ -11,6 +11,8 @@ internal sealed record ValidationShard(
 );
 internal static class ValidationShards
 {
+    internal const int C_EVIDENCE_VERSION = 2;
+
     internal static ValidationShard[] Create(ValidationCheck[] checks)
     {
         var owners = checks.ToDictionary(static check => check.id,
@@ -43,24 +45,87 @@ internal static class ValidationShards
         return expected.SingleOrDefault(shard => shard.id == id) ?? throw new InvalidDataException("Unknown validation shard: " + id);
     }
 
+    internal static HashSet<string>? InvalidatedChecks(
+        ValidationPlan plan,
+        ValidationEvidence? previous
+    ) {
+        if (previous is not { completed: true, version: C_EVIDENCE_VERSION, failures: not null }
+            || previous.environment != plan.environment || previous.results.DistinctBy(result => result.id).Count() != previous.results.Length)
+            return null;
+
+        var invalid = new HashSet<string>(StringComparer.Ordinal);
+        foreach (ValidationRunFailure fault in previous.failures)
+        {
+            if (fault.stage == "output-stability")
+            {
+                ValidationCheck? producer = plan.checks.SingleOrDefault(check => check.id == fault.owner);
+                if (producer is null)
+                    return null;
+                invalid.Add(producer.id);
+                foreach (ValidationCheck consumer in plan.checks.Where(check => check.context == producer.context
+                    && check.inputs.Contains("@" + producer.owner, StringComparer.Ordinal)))
+                    invalid.Add(consumer.id);
+            }
+            else if (fault.stage == "test-execution")
+            {
+                ValidationCheck[] owners = plan.checks.Where(check => check.kind == "test" && check.context == fault.owner).ToArray();
+                if (!owners.Any(owner => previous.results.Any(result => result.id == owner.id && result.status == "Failed")))
+                    invalid.UnionWith(owners.Select(owner => owner.id));
+            }
+            else
+                return null;
+        }
+        if (invalid.Count != 0)
+        {
+            int before;
+            do
+            {
+                before = invalid.Count;
+                foreach (ValidationCheck check in plan.checks.Where(check => check.prerequisites.Any(invalid.Contains)))
+                    invalid.Add(check.id);
+            } while (before != invalid.Count);
+        }
+        return invalid;
+    }
+
     internal static ValidationResult[] ValidateEvidence(
         ValidationPlan plan,
         ValidationEvidence evidence,
         string? shard = null
     ) {
-        if (!evidence.completed || evidence.commit != plan.commit || evidence.tree != plan.tree || evidence.environment != plan.environment || evidence.planIdentity != ValidationInputs.PlanIdentity(plan) || evidence.shard != shard)
+        if (evidence.version != C_EVIDENCE_VERSION || evidence.failures is null)
+            throw new InvalidDataException("Validation evidence has an unsupported format.");
+        if (evidence.commit != plan.commit || evidence.tree != plan.tree || evidence.environment != plan.environment || evidence.planIdentity != ValidationInputs.PlanIdentity(plan) || evidence.shard != shard)
             throw new InvalidDataException("Validation evidence has a different candidate, plan, environment or execution scope.");
         HashSet<string>? selected = shard is null ? null : Require(plan, shard).checks.ToHashSet(StringComparer.Ordinal);
         ValidationCheck[] checks = plan.checks.Where(check => selected is null || selected.Contains(check.id)).ToArray();
-        if (checks.Length == 0 || evidence.results.Length != checks.Length)
-            throw new InvalidDataException("Validation evidence is empty, missing, duplicated or contains unplanned results.");
+        if (checks.Length == 0)
+            throw new InvalidDataException("No planned checks were discovered.");
+        var expected = checks.Select(static check => check.id).ToHashSet(StringComparer.Ordinal);
+        var observed = evidence.results.ToLookup(static result => result.id, StringComparer.Ordinal);
+        var errors = new List<string>();
+        foreach (var group in observed)
+        {
+            if (!expected.Contains(group.Key))
+                errors.Add("Unplanned check: " + group.Key);
+            if (group.Count() != 1)
+                errors.Add("Duplicate check: " + group.Key);
+        }
         foreach (ValidationCheck check in checks)
         {
-            ValidationResult[] results = evidence.results.Where(result => result.id == check.id).ToArray();
-            if (results.Length != 1 || results[0].inputIdentity != ValidationInputs.CheckIdentity(plan, check, plan.inputs) || (check.exclusion is null ? results[0].status is not ("Passed" or "Reused") : results[0].status != "NotApplicable"))
-                throw new InvalidDataException("Required validation evidence is unsuccessful or stale: " + check.id);
+            ValidationResult? result = observed[check.id].FirstOrDefault();
+            if (result is null)
+                errors.Add("Missing check: " + check.id);
+            else if (result.inputIdentity != ValidationInputs.CheckIdentity(plan, check, plan.inputs))
+                errors.Add("Stale check: " + check.id);
+            else if (check.exclusion is null ? result.status is not ("Passed" or "Reused") : result.status != "NotApplicable")
+                errors.Add(check.id + ": " + result.detail);
         }
-
+        errors.AddRange(evidence.failures.Select(static fault => fault.stage + ": " + fault.detail));
+        if (!evidence.completed)
+            errors.Add("Validation did not complete closing verification.");
+        if (errors.Count != 0)
+            throw new InvalidDataException(string.Join(Environment.NewLine, errors));
         return evidence.results;
     }
 
@@ -96,7 +161,7 @@ internal static class ValidationShards
             results.AddRange(ValidateEvidence(plan, matches[0], shard.id));
         }
 
-        var joined = new ValidationEvidence(plan.commit, plan.tree, plan.environment, evidence.Min(static receipt => receipt.started), results.ToArray(), ValidationInputs.PlanIdentity(plan), completed: true);
+        var joined = new ValidationEvidence(plan.commit, plan.tree, plan.environment, evidence.Min(static receipt => receipt.started), results.ToArray(), C_EVIDENCE_VERSION, [], ValidationInputs.PlanIdentity(plan), completed: true);
         _ = ValidateEvidence(plan, joined);
         return joined;
     }

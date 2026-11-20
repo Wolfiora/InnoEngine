@@ -10,6 +10,10 @@ if ($JobConclusion -cne 'success') { throw "The required producer job did not su
 if ($ExpectedCommit -cnotmatch '^[0-9a-f]{40}$') { throw 'Certification requires an exact commit SHA.' }
 $plan = Get-Content -LiteralPath $PlanPath -Raw | ConvertFrom-Json
 $evidence = Get-Content -LiteralPath $ResultsPath -Raw | ConvertFrom-Json
+if ($evidence.version -ne 2 -or $evidence.failures -isnot [array]) { throw 'Unsupported validation evidence format.' }
+if ($evidence.failures.Count) {
+    throw ("Run-level validation failure: " + (($evidence.failures | ForEach-Object { "$($_.stage): $($_.detail)" }) -join [Environment]::NewLine))
+}
 if ($evidence.completed -isnot [bool] -or -not $evidence.completed) {
     throw 'The run did not complete its closing input, environment and output verification.'
 }
@@ -33,14 +37,18 @@ if ($null -ne $plan.documentation) {
     $documentation = [pscustomobject]@{ sourceTree = $plan.documentation.sourceTree; snapshot = $plan.documentation.snapshot;
         contentIdentity = $catalogChecks[0].documentation.contentIdentity }
 }
-if ($checks.Count -eq 0 -or @($checks | Where-Object { $null -eq $_.exclusion }).Count -eq 0 -or $checks.Count -ne $results.Count) {
+if ($checks.Count -eq 0 -or @($checks | Where-Object { $null -eq $_.exclusion }).Count -eq 0) {
     throw 'The required plan is empty or results are missing or unplanned.'
+}
+foreach ($result in $results) {
+    if ($result.id -cnotin $checks.id) { throw "Unplanned check: $($result.id)" }
 }
 $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 foreach ($check in $checks) {
     if ([string]::IsNullOrWhiteSpace($check.id) -or -not $seen.Add($check.id)) { throw 'The plan contains an empty or duplicated check identity.' }
     $matches = @($results | Where-Object { $_.id -ceq $check.id })
-    if ($matches.Count -ne 1) { throw "Required result is absent or duplicated: $($check.id)" }
+    if (!$matches.Count) { throw "Missing check: $($check.id)" }
+    if ($matches.Count -gt 1) { throw "Duplicate check: $($check.id)" }
     $result = $matches[0]
     if ($result.inputIdentity -cnotmatch '^[0-9a-f]{64}$') { throw "Input evidence is missing: $($check.id)" }
     if ($null -ne $check.exclusion) {
