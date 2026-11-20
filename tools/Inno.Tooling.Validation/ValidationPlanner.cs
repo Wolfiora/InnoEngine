@@ -595,7 +595,16 @@ internal static partial class ValidationPlanner
         return new(new(root, mergeBase, commit, ValidationInputs.Identity(inputs), environmentIdentity, configuration, sdk.hostPath, artifacts,
             full, changes.Order(StringComparer.Ordinal).ToArray(), affected.Order(StringComparer.Ordinal).ToArray(), execution, diagnostics.ToArray(), inputs, inputSets, contexts, extended, timings, documentation?.binding,
             documentation?.sourceIdentities.ToDictionary(static pair => pair.Key, static pair => pair.Value.identity, StringComparer.Ordinal), profile, nativeDependencies, requests, ValidationShards.Create(execution), backendStore, backendStore is null ? null : target,
-            hostExcludedSources: ValidationTestHosts.ExcludedSources(projects)), null);
+            hostExcludedSources: ValidationTestHosts.ExcludedSources(projects),
+            portableTestChanges: !full && profile is (ValidationProfile.Fast or ValidationProfile.PullRequest)
+                && changes.Count > 0 && removed.Length == 0 && affected.Count > 0
+                && affected.All(owner => byPath[owner] is { test: true, layer: "domain" })
+                && changes.All(change => change.EndsWith(".cs", StringComparison.Ordinal)
+                    && affected.Any(owner => change.StartsWith(DirectoryOf(owner), StringComparison.Ordinal)
+                        && byPath[owner].inputs.Contains(change, StringComparer.Ordinal)))
+                && execution.Any(static check => check.exclusion is null && check.kind == "test")
+                && execution.All(static check => check.exclusion is not null || check.kind is "instructions" or "architecture"
+                    || check.context == "managed" && check.kind is ("test" or "build"))), null);
 
         IEnumerable<ValidationNativeRequest> CollectNativeRequests(
             ValidationContext context,

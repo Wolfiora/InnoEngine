@@ -181,7 +181,7 @@ jobs:
     outputs:
       # A host that finished its own plan emits no job-level demand. The runner
       # omits empty outputs, so matrix completion order cannot erase another host's request.
-      deferred: ${{ steps.decision.outputs.deferred == 'true' && 'true' || '' }}
+      dispatch: ${{ steps.decision.outputs.dispatch == 'true' && 'true' || '' }}
     needs: [route, preflight, acceptance-reuse]
     if: ${{ !cancelled() && needs.route.result == 'success' && needs.route.outputs.run == 'true' && ((needs.preflight.result == 'skipped' && needs.acceptance-reuse.result == 'skipped') || (needs.acceptance-reuse.result == 'success' && needs.acceptance-reuse.outputs.reusable == 'false')) }}
     runs-on: ${{ matrix.runner }}
@@ -203,6 +203,7 @@ jobs:
       - id: decision
         shell: pwsh
         env:
+          MULTI_HOST: ${{ fromJSON(needs.route.outputs.hosts).include[1] != null }}
           PROFILE: ${{ needs.route.outputs.profile }}
           CONTINUATIONS: ${{ needs.acceptance-reuse.outputs.continuations }}
           RUNNER_LABEL: ${{ matrix.runner }}
@@ -226,11 +227,13 @@ jobs:
           $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
           "entry-directory=$((Split-Path $entry).Replace('\','/'))" >> $env:GITHUB_OUTPUT
           $deferred = $decision.packages.Count -gt 0 -and !$direct
+          $inline = !$env:REBUILD_TARGETS -and !$deferred -and ($env:MULTI_HOST -ine 'true' -or ($decision.portableTestChanges -and !$decision.packages.Count))
+          $decision | Add-Member -NotePropertyName executedLocally -NotePropertyValue $inline
           $decision | Add-Member -NotePropertyName deferred -NotePropertyValue $deferred
           [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/backend-request/acquisition.json'), (ConvertTo-Json $decision -Depth 30 -Compress))
-          "deferred=$($deferred.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "dispatch=$((!$inline).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
+        if: fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.dispatch == 'true'
         with:
           overwrite: true
           name: backend-request-${{ matrix.runner }}
@@ -238,7 +241,7 @@ jobs:
           if-no-files-found: error
           retention-days: 7
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
+        if: steps.decision.outputs.dispatch == 'true'
         with:
           name: scheduled-plan-${{ matrix.runner }}
           path: |
@@ -249,7 +252,7 @@ jobs:
           overwrite: true
           retention-days: 7
       - uses: ./.github/actions/consume-validation
-        if: steps.decision.outputs.deferred == 'false' && fromJSON(needs.route.outputs.hosts).include[1] == null
+        if: steps.decision.outputs.dispatch == 'false'
         with:
           digest: ${{ steps.decision.outputs.digest }}
           platform: ${{ matrix.runner }}
@@ -257,7 +260,7 @@ jobs:
 
   backend-matrix:
     needs: [route, plan]
-    if: ${{ !cancelled() && needs.plan.result == 'success' && (inputs.rebuild_backends || needs.plan.outputs.deferred == 'true' || fromJSON(needs.route.outputs.hosts).include[1] != null) }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.dispatch == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
@@ -354,7 +357,7 @@ jobs:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           PLAN_RESULT: ${{ needs.plan.result }}
           MATRIX_RESULT: ${{ needs.backend-matrix.result }}
-          DEFERRED: ${{ needs.plan.outputs.deferred }}
+          DISPATCH: ${{ needs.plan.outputs.dispatch }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           BACKENDS_RESULT: ${{ needs.backends.result }}
           BACKENDS_REQUIRED: ${{ needs.backend-matrix.outputs.required }}
@@ -383,7 +386,7 @@ jobs:
             if (-not $decision.reusable) { throw 'The final gate did not receive every matching acceptance proof.' }
             exit 0
           }
-          $direct = !$env:REBUILD_TARGETS -and !$env:DEFERRED -and (($env:HOSTS | ConvertFrom-Json).include.Count -eq 1)
+          $direct = !$env:DISPATCH
           $localChecks = $env:INDEPENDENT -and (($env:INDEPENDENT | ConvertFrom-Json).include.Count -gt 0)
           if ($env:INDEPENDENT_RESULT -cne $(if ($localChecks) { 'success' } else { 'skipped' })) { throw 'Independent host execution did not match the plan.' }
           if ($direct) {

@@ -673,12 +673,14 @@ public sealed class ValidationPlanningTests
         using var repository = new ValidationRepository();
         repository.Write("tests/Example.Tests/Changed.cs", "namespace Example.Tests; public sealed class Changed { }");
         using JsonDocument tests = await repository.PlanAsync();
+        Assert.True(tests.RootElement.GetProperty("portableTestChanges").GetBoolean());
         JsonElement api = Assert.Single(tests.RootElement.GetProperty("checks").EnumerateArray().Where(check => check.GetProperty("kind").GetString() == "api"));
         Assert.False(string.IsNullOrWhiteSpace(api.GetProperty("exclusion").GetString()));
         Assert.Contains(tests.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("kind").GetString() == "test"
             && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
         repository.Write("src/Example/Changed.cs", "namespace Example; public sealed class Changed { }");
         using JsonDocument production = await repository.PlanAsync();
+        Assert.False(production.RootElement.GetProperty("portableTestChanges").GetBoolean());
         api = Assert.Single(production.RootElement.GetProperty("checks").EnumerateArray().Where(check => check.GetProperty("kind").GetString() == "api"));
         Assert.Equal(JsonValueKind.Null, api.GetProperty("exclusion").ValueKind);
         Assert.Contains(api.GetProperty("projects").EnumerateArray(), project => project.GetString() == "src/Example/Example.csproj");

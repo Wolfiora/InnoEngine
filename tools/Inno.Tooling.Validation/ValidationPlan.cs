@@ -52,7 +52,8 @@ internal sealed record ValidationPlan(
     ValidationResult[]? backendTests = null,
     string[]? hostExcludedSources = null,
     Dictionary<string, string>? backendOwnerPayloads = null,
-    Dictionary<string, string>? backendProductPayloads = null
+    Dictionary<string, string>? backendProductPayloads = null,
+    bool portableTestChanges = false
 ) {
     /// <summary>
     /// Indicates whether executing a selected check requires backend assemblies or native products.

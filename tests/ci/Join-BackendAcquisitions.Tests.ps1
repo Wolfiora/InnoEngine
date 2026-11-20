@@ -9,7 +9,7 @@ $target = $hostsRegistered[0].target
 $owner = [IO.Directory]::CreateDirectory((Join-Path $work "backend-request-$runner")).FullName
 $file = Join-Path $owner 'acquisition.json'
 function Join-Requests([array]$Packages, [string]$Commit=$revision, [string]$RebuildTargets, [bool]$Deferred=($Packages.Count -gt 0)) {
-    [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages;deferred=$Deferred} -Depth 8))
+    [IO.File]::WriteAllText($file,(ConvertTo-Json @{commit=$Commit;packages=$Packages;deferred=$Deferred;executedLocally=$false} -Depth 8))
     & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts @($runner) -Revision $revision -RebuildTargets $RebuildTargets
 }
 try {
@@ -28,7 +28,7 @@ try {
         try {
             $pair = @($runner,$peer.runner)
             $peerPackage = @{target=$peer.target;operation='produce';sha256=$null;assetId=$null}
-            $peerDecision = @{commit=$revision;packages=@($peerPackage);deferred=$true}
+            $peerDecision = @{commit=$revision;packages=@($peerPackage);deferred=$true;executedLocally=$false;portableTestChanges=$false}
             [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
             $split = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
             if ($split.chains.Count -ne 2) { throw 'Disjoint target requests must start independent chains.' }
@@ -45,6 +45,16 @@ try {
             if ($ready.independent.Count -ne 1 -or $ready.independent[0].runner -cne $peer.runner -or $ready.chains.Count -ne 1) {
                 throw 'A host with no pending producer must not wait for other hosts.'
             }
+            $peerDecision.executedLocally = $true
+            [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
+            $rejected = $false
+            try { $null = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision }
+            catch { $rejected = $_.Exception.Message.Contains('inline host') }
+            if (!$rejected) { throw 'A product host was allowed to suppress its independent worker.' }
+            $peerDecision.portableTestChanges = $true
+            [IO.File]::WriteAllText($peerFile,(ConvertTo-Json $peerDecision -Depth 8))
+            $mixed = & "$PSScriptRoot/Join-BackendAcquisitions.ps1" -Received $work -Hosts $pair -Revision $revision
+            if ($mixed.independent.Count -or $mixed.chains.Count -ne 1) { throw 'A completed domain suite was dispatched again.' }
         } finally {
             if ([IO.File]::Exists($peerFile)) { [IO.File]::Delete($peerFile) }
             [IO.Directory]::Delete($peerOwner)

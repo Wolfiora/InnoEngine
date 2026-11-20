@@ -16,7 +16,10 @@ foreach ($hostName in $Hosts) {
     $hostRegistration = @($hostsRegistry | Where-Object runner -CEQ $hostName)
     if ($hostRegistration.Count -ne 1) { throw "Unknown validation runner $hostName." }
     $decision = Get-Content -LiteralPath (Join-Path $Received "backend-request-$hostName/acquisition.json") -Raw | ConvertFrom-Json
-    if ($decision.commit -cne $Revision -or $decision.packages -isnot [array] -or $decision.deferred -isnot [bool]) { throw "Missing backend decision for $hostName/$Revision." }
+    if ($decision.commit -cne $Revision -or $decision.packages -isnot [array] -or $decision.deferred -isnot [bool] -or $decision.executedLocally -isnot [bool]) { throw "Missing backend decision for $hostName/$Revision." }
+    if ($decision.executedLocally -and ($RebuildTargets -or $decision.deferred -or ($Hosts.Count -gt 1 -and ($decision.packages.Count -or !$decision.portableTestChanges)))) {
+        throw "An inline host cannot hide a required execution or production chain: $hostName."
+    }
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($package in $decision.packages) {
         $target = $package.target
@@ -43,7 +46,7 @@ foreach ($hostName in $Hosts) {
             if ($package.operation -ceq 'produce' -or $prior.sha256 -cne $package.sha256) { $prior.operation = 'produce' }
         }
     }
-    if (!$decision.deferred) {
+    if (!$decision.deferred -and !$decision.executedLocally) {
         $digest = if ($decision.packages.Count) { $decision.packages[0].sha256 } else { '' }
         $independent += @{runner=$hostName;digest=$digest}
     }
