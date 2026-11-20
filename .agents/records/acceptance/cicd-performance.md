@@ -1,5 +1,9 @@
 # Engine CI/CD acceptance
 
+## Superseded validation runs
+
+The [cancelled branch run](https://github.com/Wolfiora/InnoEngine/actions/runs/44678353728/job/136095922201) reported a matrix error after planning was cancelled. The gate now follows workflow cancellation and checks planning success before interpreting dispatch outputs on a live run. Local verification against base `28ba7a8f` reproduced the misleading diagnostic and exercised seven rejection cases from the workflow script. Actionlint and the eleven gate transport contracts passed. Hosted cancellation was not replayed.
+
 ## Dependency scheduling and SDK entry validation
 
 The comparison baseline is the tree merged in PR #86 at `1fade7f94a78a9cafe21dab53e82a45418753238`. The Core, Editor SDL, SDL source and Windows properties probes replay the original one-file changes against implementation `df11979c`. The dispatch uses the candidate parent for affected validation. Each probe checks that the original file's base blob matches before using its measured change. Distinguish the active runner interval, cumulative runner usage, queue time and merge-gate wall time.
