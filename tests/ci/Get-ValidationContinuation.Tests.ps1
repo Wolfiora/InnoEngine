@@ -42,11 +42,12 @@ $originalToken = $env:GH_TOKEN
 $passed = 0
 try {
     $env:GH_TOKEN = 'fixture-read-token'
-    foreach ($case in @('valid', 'pull-request', 'foreign-repository', 'wrong-commit', 'failed', 'wrong-workflow', 'wrong-artifact-run', 'corrupt-digest', 'missing-evidence')) {
+    foreach ($case in @('valid', 'expired-outputs', 'pull-request', 'foreign-repository', 'wrong-commit', 'failed', 'wrong-workflow', 'wrong-artifact-run', 'corrupt-digest', 'missing-evidence')) {
         $state = @{ run = @{ id = 42; workflow_id = 9; status = 'completed'; conclusion = 'success'; head_repository = @{ id = 7 };
             head_sha = $commit; head_branch = 'master'; event = 'push'; path = '.github/workflows/engine-ci.yml'; run_attempt = 1 };
             artifacts = @($artifacts | ConvertTo-Json -Depth 12 | ConvertFrom-Json -AsHashtable); downloads = 0 }
         switch ($case) {
+            'expired-outputs' { ($state.artifacts | Where-Object name -CLike 'validation-outputs-*').expired = $true }
             'pull-request' { $state.run.event = 'pull_request' }
             'foreign-repository' { $state.run.head_repository.id = 8 }
             'wrong-commit' { $state.run.head_sha = 'd' * 40 }
@@ -74,11 +75,12 @@ try {
             & (Join-Path $scripts 'Get-ValidationContinuation.ps1') -RunId 42 -Commit $commit -Platform windows-2022 -Shard managed `
                 -Repository fixture/engine -ApiUrl https://example.invalid -OutputDirectory (Join-Path $root $case)
             $accepted = $true
-        } catch { if ($case -eq 'valid') { throw } }
-        if ($accepted -ne ($case -eq 'valid')) { throw "Unexpected continuation result: $case" }
-        if ($case -notin @('valid', 'corrupt-digest') -and $state.downloads -ne 0) { throw 'Unauthenticated input reached artifact download.' }
+        } catch { if ($case -in @('valid', 'expired-outputs')) { throw } }
+        if ($accepted -ne ($case -in @('valid', 'expired-outputs'))) { throw "Unexpected continuation result: $case" }
+        if ($case -notin @('valid', 'expired-outputs', 'corrupt-digest') -and $state.downloads -ne 0) { throw 'Unauthenticated input reached artifact download.' }
         if ($accepted -and -not (Test-Path (Join-Path $root "$case/continuation.json"))) { throw 'Accepted continuation has no explicit identity selection.' }
-        if ($accepted -and (Get-Content (Join-Path $root "$case/compiled/fixture.dll") -Raw).Trim() -cne 'compiled fixture bytes') { throw 'Compiled bytes were not restored.' }
+        if ($case -ceq 'expired-outputs' -and ((Get-Content (Join-Path $root "$case/continuation.json") -Raw | ConvertFrom-Json).outputs -or $state.downloads -ne 2)) { throw 'Expired optional outputs must be rebuilt on the execution host.' }
+        if ($case -ceq 'valid' -and (Get-Content (Join-Path $root "$case/compiled/fixture.dll") -Raw).Trim() -cne 'compiled fixture bytes') { throw 'Compiled bytes were not restored.' }
         $passed++
     }
 } finally { $env:GH_TOKEN = $originalToken }

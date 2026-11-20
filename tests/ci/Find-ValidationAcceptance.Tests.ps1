@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 $owner = Join-Path ([IO.Path]::GetFullPath('../../artifacts/validation/acceptance-discovery-contracts', $PSScriptRoot)) ([Guid]::NewGuid().ToString('N'))
 $originalToken = $env:GH_TOKEN
-$cases = @('match', 'no-prior-run', 'pull-request', 'foreign-repository', 'expired', 'corrupt-download', 'wrong-workflow', 'failed-result', 'changed-environment', 'changed-certificate')
+$cases = @('match', 'partial-master', 'no-prior-run', 'pull-request', 'foreign-repository', 'expired', 'corrupt-download', 'wrong-workflow', 'failed-result', 'changed-environment', 'changed-certificate')
 $hosts = @(Get-Content (Join-Path $PSScriptRoot '../../.github/validation-hosts.json') -Raw | ConvertFrom-Json)
 try {
     $env:GH_TOKEN = 'fixture-token'
@@ -44,6 +44,11 @@ $current = $args[[Array]::IndexOf($args, '--plan') + 1]
             event = $(if ($case -ceq 'pull-request') { 'pull_request' } else { 'schedule' }); run_attempt = 1; html_url = 'https://github.com/fixture/repo/actions/runs/17' }
         $artifacts = @()
         $names = @('engine-full-certification', 'engine-acceptance-evidence') + @($hosts | ForEach-Object { "deliverable-$($_.runner)" })
+        if ($case -ceq 'partial-master') {
+            $run.path = '.github/workflows/engine-ci.yml'
+            $run.event = 'push'
+            $names = @('engine-certification', 'engine-acceptance-evidence', "validation-joined-$($hosts[0].runner)")
+        }
         foreach ($index in 0..($names.Count - 1)) {
             $archive = if ($index -eq 1) { 'evidence.zip' } else { 'certificate.zip' }
             $artifacts += @{ id = $index + 1; name = $names[$index] + '-attempt-1'; expired = $case -ceq 'expired'; expires_at = [DateTimeOffset]::UtcNow.AddDays(2).ToString('O');
@@ -72,6 +77,7 @@ $current = $args[[Array]::IndexOf($args, '--plan') + 1]
         if ($failed -ne ($case -cin @('corrupt-download', 'wrong-workflow', 'failed-result', 'changed-certificate'))) { throw "Unexpected acceptance discovery result: $case. See $root." }
         if (-not $failed) {
             $decision = Get-Content (Join-Path $planRoot 'acceptance-reuse.json') -Raw | ConvertFrom-Json
+            if ($case -ceq 'partial-master' -and ($decision.continuationRun -ne 17 -or $calls.downloads)) { throw 'Partial acceptance must select the exact trusted source without downloading a full matrix.' }
             if ($decision.reusable -ne ($case -ceq 'match')) { throw 'Untrusted or stale evidence suppressed execution.' }
             if ($case -cin @('pull-request', 'foreign-repository', 'expired', 'no-prior-run') -and $calls.downloads -ne 0) { throw 'Ineligible producer artifacts were downloaded.' }
         }

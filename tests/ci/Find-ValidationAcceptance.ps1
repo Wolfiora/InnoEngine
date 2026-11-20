@@ -33,8 +33,19 @@ foreach ($run in @($runs.workflow_runs)) {
     $inventory = Invoke-RestMethod -Uri "$base/actions/runs/$($run.id)/artifacts?per_page=100" -Headers $headers
     if ($inventory.total_count -gt 100) { throw 'Acceptance discovery refuses a partial artifact inventory.' }
     $available = @($inventory.artifacts | Where-Object { -not $_.expired -and [DateTimeOffset]::Parse($_.expires_at) -gt [DateTimeOffset]::UtcNow })
-    if (@($requiredNames | Where-Object { $name = $_; @($available | Where-Object name -CLike "$name-attempt-*").Count -eq 0 }).Count -ne 0) { continue }
     $workflow = Invoke-RestMethod -Uri "$base/actions/workflows/$([IO.Path]::GetFileName($run.path))" -Headers $headers
+    # The default-branch push executes the master profile. The execution host authenticates its actual
+    # plan, results and retained outputs before adopting any individual check.
+    $attempt = $run.run_attempt
+    $partialNames = @("engine-certification-attempt-$attempt", "engine-acceptance-evidence-attempt-$attempt")
+    if (!$decision.continuationRun -and $run.event -ceq 'push' -and $run.path -ceq '.github/workflows/engine-ci.yml' -and
+        @($partialNames | Where-Object { $_ -cnotin $available.name }).Count -eq 0 -and
+        @($available | Where-Object name -CLike "validation-joined-$Platform-attempt-*").Count) {
+        $null = & "$PSScriptRoot/Test-ReleaseSource.ps1" -Repository $repositoryData -Run $run -Artifacts $available `
+            -Commit $plan.commit -WorkflowId $workflow.id -RunId $run.id -AllowPartial
+        $decision.continuationRun = $run.id
+    }
+    if (@($requiredNames | Where-Object { $name = $_; @($available | Where-Object name -CLike "$name-attempt-*").Count -eq 0 }).Count -ne 0) { continue }
     $releaseArtifacts = @(& "$PSScriptRoot/Test-ReleaseSource.ps1" -Repository $repositoryData -Run $run -Artifacts $available `
         -Commit $plan.commit -WorkflowId $workflow.id -RunId $run.id)
     $evidence = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name 'engine-acceptance-evidence' `
@@ -72,9 +83,10 @@ foreach ($run in @($runs.workflow_runs)) {
     $comparison = Get-Content -LiteralPath (Join-Path $owner 'acceptance.json') -Raw | ConvertFrom-Json
     if ($comparison.reusable -isnot [bool]) { throw 'Acceptance comparison did not produce an explicit decision.' }
     if ($comparison.reusable) {
+        if ("engine-certification-attempt-$attempt" -cin $available.name) { $decision.continuationRun = $run.id }
         $decision = @{ reusable = $true; platform = $Platform; commit = $plan.commit; reason = $comparison.reason;
             planIdentity = $comparison.planIdentity; acceptedPlanIdentity = $comparison.acceptedPlanIdentity;
-            sourceRun = $run.id; sourceUrl = $run.html_url; evidenceDigest = $evidence.digest; receipt = $receipt }
+            continuationRun = $decision.continuationRun; sourceRun = $run.id; sourceUrl = $run.html_url; evidenceDigest = $evidence.digest; receipt = $receipt }
         break
     }
 }

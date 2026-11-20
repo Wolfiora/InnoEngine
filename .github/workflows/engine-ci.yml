@@ -159,6 +159,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       reusable: ${{ steps.join.outputs.reusable }}
+      continuations: ${{ steps.join.outputs.continuations }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -203,9 +204,15 @@ jobs:
         shell: pwsh
         env:
           PROFILE: ${{ needs.route.outputs.profile }}
+          CONTINUATIONS: ${{ needs.acceptance-reuse.outputs.continuations }}
+          RUNNER_LABEL: ${{ matrix.runner }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
+          if ($env:CONTINUATIONS) {
+            $sources = $env:CONTINUATIONS | ConvertFrom-Json -AsHashtable
+            if ($sources.Contains($env:RUNNER_LABEL)) { $decision | Add-Member -NotePropertyName continuationRun -NotePropertyValue $sources[$env:RUNNER_LABEL] }
+          }
           if ($env:PROFILE -ceq 'performance') {
             $missing = @($decision.packages | Where-Object operation -CEQ 'produce' | ForEach-Object target)
             if ($missing.Count) { throw "Performance sampling needs certified backend packages for $($missing -join ', '). Run full acceptance on the default branch first." }

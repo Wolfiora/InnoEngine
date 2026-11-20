@@ -18,7 +18,7 @@ try {
             if ($platform -ceq 'host-b') {
                 switch ($case) {
                     'missing-decision' { continue }
-                    'different-environment' { $decision.reusable = $false }
+                    'different-environment' { $decision.reusable = $false; $decision.continuationRun = 19 }
                     'wrong-commit' { $decision.commit = 'f' * 40 }
                     'wrong-host' { $decision.platform = 'host-a' }
                     'changed-plan' { $decision.planIdentity = 'f' * 64 }
@@ -41,6 +41,7 @@ try {
         if ($failed -ne ($case -cnotin @('complete', 'missing-decision', 'different-environment'))) { throw "Unexpected acceptance matrix result: $case. See $root." }
         if (-not $failed) {
             $actual = Get-Content (Join-Path $root 'decision.json') -Raw | ConvertFrom-Json
+            if ($case -ceq 'different-environment' -and !(Select-String -LiteralPath $env:GITHUB_OUTPUT -Pattern '^continuations=\{"host-b":19\}$' -Quiet)) { throw 'Missing per-host continuation routing.' }
             if ($actual.reusable -ne ($case -ceq 'complete')) { throw 'Incomplete or stale acceptance suppressed required execution.' }
         }
     }
