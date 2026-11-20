@@ -179,6 +179,7 @@ jobs:
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ inputs.profile }}
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:

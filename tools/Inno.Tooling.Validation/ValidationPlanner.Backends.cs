@@ -46,6 +46,7 @@ internal static partial class ValidationPlanner
         var assets = new JsonArray();
         var aggregates = new JsonArray();
         var coverage = new JsonArray();
+        var productPayloads = new Dictionary<string, string>(StringComparer.Ordinal);
         var managed = new Dictionary<(string target, string configuration, string owner), string>();
         var payloads = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         foreach (BackendPackageReceipt receipt in receipts)
@@ -69,6 +70,13 @@ internal static partial class ValidationPlanner
             {
                 if (item?["target"]?.GetValue<string>() != receipt.target)
                     throw new InvalidDataException("A native selection names another platform.");
+                if (family.Item1 == "requests")
+                {
+                    string key = receipt.target + "/" + item["configuration"]!.GetValue<string>().ToLowerInvariant() + "/" + item["product"]!.GetValue<string>();
+                    var digests = item["digests"]!.AsArray().Select(static node => node!.GetValue<string>()).Order(StringComparer.Ordinal);
+                    if (!productPayloads.TryAdd(key, ValidationInputs.Identity(digests.Select(static digest => KeyValuePair.Create(digest, digest)))))
+                        throw new InvalidDataException("Duplicate deployed product request: " + key);
+                }
                 family.Item2.Add(item.DeepClone());
             }
             if (document.RootElement.GetProperty("target").GetString() != receipt.target)
@@ -108,6 +116,7 @@ internal static partial class ValidationPlanner
         var bound = plan with
         {
             backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray(),
+            backendProductPayloads = productPayloads,
             backendOwnerPayloads = payloads.ToDictionary(static pair => pair.Key, static pair => ValidationInputs.Identity(pair.Value), StringComparer.Ordinal)
         };
         if (evidence is not null)

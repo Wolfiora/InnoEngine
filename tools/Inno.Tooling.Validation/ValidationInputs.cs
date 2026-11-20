@@ -180,6 +180,19 @@ internal static class ValidationInputs
         string configuration = context.properties.GetValueOrDefault("Configuration", plan.configuration);
         string[] owners = check.inputs.Where(static key => key.StartsWith("@backends/", StringComparison.Ordinal))
             .Select(input => plan.backendHost + "/" + configuration + "/" + input[1..]).ToArray();
+        if (check.consumedProducts is { Length: > 0 } products && products.All(product => product.target == plan.backendHost)
+            && owners.All(owner => plan.backendOwnerPayloads?.ContainsKey(owner) == true))
+        {
+            string[] keys = products.Select(product => product.target + "/" + product.configuration.ToLowerInvariant() + "/" + product.product).ToArray();
+            if (keys.All(key => plan.backendProductPayloads?.ContainsKey(key) == true))
+            {
+                foreach (string key in keys)
+                    yield return new("deployed:" + key, plan.backendProductPayloads![key]);
+                foreach (string owner in owners)
+                    yield return new("backend:" + owner, plan.backendOwnerPayloads![owner]);
+                yield break;
+            }
+        }
         if (context.properties.ContainsKey("InnoNativeTarget")
             || owners.Any(owner => plan.backendOwnerPayloads?.ContainsKey(owner) != true))
         {

@@ -88,6 +88,10 @@ jobs:
           }
           $hosts = @(Get-Content .github/validation-hosts.json -Raw | ConvertFrom-Json | Where-Object { $selected.profile -cne 'fast' -or $_.fast })
           if ($hosts.Count -eq 0 -or @($hosts.runner | Sort-Object -Unique).Count -ne $hosts.Count) { throw 'Hosted execution registration is empty or duplicated.' }
+          if ($env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and $selected.profile -ceq 'pull-request') {
+            $env:BASELINE = (& git rev-parse HEAD^).Trim()
+            if ($LASTEXITCODE) { throw 'Manual affected validation requires the candidate parent.' }
+          }
           if ($selected.run -and $selected.profile -ceq 'pull-request' -and $env:BASELINE) {
             $hosts = @(./tests/ci/Select-ValidationHosts.ps1 -Hosts $hosts -Baseline $env:BASELINE -Candidate $env:CANDIDATE -DefaultBranch $env:DEFAULT_BRANCH)
           }
@@ -117,6 +121,7 @@ jobs:
       - uses: ./.github/actions/freeze-validation
         id: freeze
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ needs.route.outputs.profile }}
       - uses: ./.github/actions/resolve-backends
         id: acquisition
@@ -191,6 +196,7 @@ jobs:
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ needs.route.outputs.profile }}
       - uses: ./.github/actions/resolve-backends
       - id: decision
@@ -276,6 +282,7 @@ jobs:
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ needs.route.outputs.profile }}
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:

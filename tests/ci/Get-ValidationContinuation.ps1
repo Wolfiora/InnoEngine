@@ -5,6 +5,7 @@ param(
     [Parameter(Mandatory)][ValidateSet('architecture', 'managed', 'native')][string]$Shard,
     [Parameter(Mandatory)][string]$Repository,
     [Parameter(Mandatory)][string]$OutputDirectory,
+    [switch]$PlanOnly,
     [string]$ApiUrl = 'https://api.github.com'
 )
 
@@ -30,7 +31,7 @@ $inventory = Invoke-RestMethod -Uri "$base/actions/runs/$RunId/artifacts?per_pag
 if ($inventory.total_count -gt 100) { throw 'Continuation refuses an incomplete artifact inventory.' }
 $names = @('engine-certification', 'engine-acceptance-evidence')
 $outputName = "validation-outputs-$Platform-$Shard"
-if (@($inventory.artifacts | Where-Object name -CLike "$outputName-attempt-*").Count -gt 0) { $names += $outputName }
+if (!$PlanOnly -and @($inventory.artifacts | Where-Object name -CLike "$outputName-attempt-*").Count -gt 0) { $names += $outputName }
 $selected = foreach ($name in $names) {
     $artifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $inventory.artifacts -Name $name -MaximumAttempt $run.run_attempt `
         -RequireCurrentAttempt:($name -cin @('engine-certification', 'engine-acceptance-evidence'))

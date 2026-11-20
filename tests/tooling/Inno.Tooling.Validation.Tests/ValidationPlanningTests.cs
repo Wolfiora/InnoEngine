@@ -519,8 +519,12 @@ public sealed class ValidationPlanningTests
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(added));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Add source");
+        using JsonDocument baseline = await repository.PlanAsync();
+        string baselinePlan = repository.PathOf("artifacts/prior.json");
+        File.WriteAllText(baselinePlan, baseline.RootElement.GetRawText());
         File.Move(repository.PathOf("src/Example/New.cs"), repository.PathOf("src/Other/Moved.cs"));
-        using JsonDocument moved = await repository.PlanAsync();
+        using JsonDocument moved = await repository.PlanAsync(baselinePlan: baselinePlan);
+        Assert.False(moved.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("src/Example/New.cs", Changes(moved));
         Assert.Contains("src/Other/Moved.cs", Changes(moved));
         Assert.Contains("src/Example/Example.csproj", Owners(moved));
