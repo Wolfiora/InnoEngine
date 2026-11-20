@@ -44,14 +44,20 @@ public sealed class ValidationPlanningTests
         using var repository = new ValidationRepository();
         repository.Write("src/Example/Optional.props", "<Project />");
         repository.Write("src/Example/Example.csproj", ValidationRepository.Project("""
-            <Import Project="Optional.props" Condition="'$(UseOptionalDefinition)' == 'true'" />
+            <Import Project="Optional.props" Condition="'$(UseOptionalDefinition)' == 'true' and Exists('Optional.props')" />
             """));
         repository.Write("tests/Enabled/Enabled.csproj", ValidationRepository.Project("""
             <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
             <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" AdditionalProperties="UseOptionalDefinition=true" /></ItemGroup>
             """));
+        repository.Write("tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj", ValidationRepository.Project("""
+            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /></ItemGroup>
+            """));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Register distinct SDK entries");
+        using JsonDocument baseline = await repository.PlanAsync();
+        string previous = repository.PathOf("artifacts/previous.json");
+        File.WriteAllText(previous, baseline.RootElement.GetRawText());
         repository.Write("src/Example/Optional.props", "<Project><PropertyGroup><ExampleValue>2</ExampleValue></PropertyGroup></Project>");
         using JsonDocument plan = await repository.PlanAsync();
         var tests = plan.RootElement.GetProperty("checks").EnumerateArray()
@@ -59,6 +65,15 @@ public sealed class ValidationPlanningTests
             .ToDictionary(check => check.GetProperty("owner").GetString()!);
         Assert.Equal(JsonValueKind.Null, tests["tests/Enabled/Enabled.csproj"].GetProperty("exclusion").ValueKind);
         Assert.Equal(JsonValueKind.String, tests["tests/Example.Tests/Example.Tests.csproj"].GetProperty("exclusion").ValueKind);
+        Assert.Contains(plan.RootElement.GetProperty("diagnostics").EnumerateArray(), reason =>
+            reason.GetString()!.Contains("src/Example/Optional.props is consumed by", StringComparison.Ordinal));
+        File.Delete(repository.PathOf("src/Example/Optional.props"));
+        using JsonDocument removed = await repository.PlanAsync(baselinePlan: previous);
+        var afterDelete = removed.RootElement.GetProperty("checks").EnumerateArray()
+            .Where(check => check.GetProperty("kind").GetString() == "test")
+            .ToDictionary(check => check.GetProperty("owner").GetString()!);
+        Assert.Equal(JsonValueKind.Null, afterDelete["tests/Enabled/Enabled.csproj"].GetProperty("exclusion").ValueKind);
+        Assert.Equal(JsonValueKind.String, afterDelete["tests/Example.Tests/Example.Tests.csproj"].GetProperty("exclusion").ValueKind);
     }
 
     [Fact]

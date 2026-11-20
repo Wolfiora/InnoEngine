@@ -240,7 +240,7 @@ jobs:
             ${{ steps.decision.outputs.entry-directory }}/
           if-no-files-found: error
           overwrite: true
-          retention-days: 1
+          retention-days: 7
       - uses: ./.github/actions/consume-validation
         if: steps.decision.outputs.deferred == 'false' && fromJSON(needs.route.outputs.hosts).include[1] == null
         with:

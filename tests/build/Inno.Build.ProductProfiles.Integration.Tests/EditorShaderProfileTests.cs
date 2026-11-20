@@ -10,7 +10,7 @@ using Inno.Build.Toolchains;
 using Inno.Core.IO;
 using Xunit;
 
-namespace Inno.Build.Integration.Tests;
+namespace Inno.Build.ProductProfiles.Integration.Tests;
 
 public sealed class EditorShaderProfileTests
 {

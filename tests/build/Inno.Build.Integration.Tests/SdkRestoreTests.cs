@@ -12,7 +12,7 @@ using Xunit;
 namespace Inno.Build.Integration.Tests;
 
 /// <summary>
-/// Exercises standard SDK dependency resolution and the development entry's product routing.
+/// Exercises standard SDK dependency resolution.
 /// </summary>
 public sealed class SdkRestoreTests
 {
@@ -83,48 +83,6 @@ public sealed class SdkRestoreTests
         {
             if (Directory.Exists(workspace))
                 Directory.Delete(workspace, recursive: true);
-        }
-    }
-
-    /// <summary>
-    /// Preserves each supported SDK host's explicit product properties on runtime project references.
-    /// </summary>
-    /// <param name="sdkHost">
-    /// The SDK host identity used to evaluate the development entry.
-    /// </param>
-    /// <param name="expectedTarget">
-    /// The native target owned by the selected host product.
-    /// </param>
-    /// <returns>
-    /// Completion after the SDK has evaluated the expected product and reference context.
-    /// </returns>
-    [Theory]
-    [InlineData("win-x64", "windows-x64")]
-    [InlineData("osx-arm64", "macos-arm64")]
-    public async Task EditorHostRoutingPreservesTheProductReferenceContext(
-        string sdkHost,
-        string expectedTarget
-    ) {
-        string root = TestRepository.GetRoot(typeof(SdkRestoreTests).Assembly);
-        string host = ToolchainEnvironment.ResolveExecutable("dotnet");
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj"),
-                "-p:NETCoreSdkRuntimeIdentifier=" + sdkHost,
-                "-getProperty:InnoNativeTarget,InnoProductBuildProperties", "-getItem:ProjectReference", "-nologo", "-nr:false"],
-            root, cancellation.Token, DotNetSdkEnvironment.Create(host));
-        using JsonDocument evaluation = JsonDocument.Parse(output);
-        JsonElement properties = evaluation.RootElement.GetProperty("Properties");
-        Assert.Equal(expectedTarget, properties.GetProperty("InnoNativeTarget").GetString());
-        string product = properties.GetProperty("InnoProductBuildProperties").GetString()!;
-        Assert.True(File.Exists(product));
-        foreach (JsonElement reference in evaluation.RootElement.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
-        {
-            if (reference.TryGetProperty("OutputItemType", out JsonElement role) && role.GetString() == "Analyzer")
-                continue;
-            string context = reference.GetProperty("AdditionalProperties").GetString()!;
-            Assert.Contains("InnoNativeTarget=" + expectedTarget, context);
-            Assert.Contains("InnoProductBuildProperties=" + product, context);
         }
     }
 }

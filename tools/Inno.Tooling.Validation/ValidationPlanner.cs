@@ -115,6 +115,7 @@ internal static partial class ValidationPlanner
                 full = true;
             }
         }
+        var removedEntries = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
         string[] removed = changes.Where(path => !IsDocumentation(path)
             && (!inputs.TryGetValue(path, out string? value) || value == "missing")).ToArray();
         if (removed.Length != 0)
@@ -123,34 +124,30 @@ internal static partial class ValidationPlanner
             if (previous is not null && previous.commit == mergeBase && previous.configuration == configuration
                 && previous.contexts.ContainsKey("managed"))
             {
-                var priorOwners = new HashSet<string>(StringComparer.Ordinal);
                 var mapped = new HashSet<string>(StringComparer.Ordinal);
-                var edges = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
-                foreach (ValidationContext context in previous.contexts.Values)
-                foreach (JsonElement snapshot in context.sdkGraph.EnumerateArray())
+                var deleted = removed.ToHashSet(StringComparer.Ordinal);
+                foreach (var pair in previous.contexts)
                 {
-                    ValidationProject owner = ValidationProject.Read(root, snapshot);
-                    if (!edges.TryGetValue(owner.path, out var references))
-                        edges[owner.path] = references = new(StringComparer.Ordinal);
-                    references.UnionWith(owner.references);
-                    foreach (string path in removed.Where(path => owner.inputs.Contains(path, StringComparer.Ordinal) || path.StartsWith(DirectoryOf(owner.path), StringComparison.Ordinal)))
+                    var sets = new Dictionary<string, string[]>(StringComparer.Ordinal);
+                    var graphInputs = new ValidationEntryInputs(root, pair.Value.sdkGraph, pair.Key, sets,
+                        paths => paths.Where(deleted.Contains).ToArray());
+                    var matches = sets.Where(static set => set.Value.Length > 0).Select(static set => set.Key).ToHashSet(StringComparer.Ordinal);
+                    mapped.UnionWith(sets.Values.SelectMany(static values => values));
+                    var entries = new HashSet<string>(StringComparer.Ordinal);
+                    foreach (JsonElement snapshot in pair.Value.sdkGraph.EnumerateArray())
                     {
-                        mapped.Add(path);
-                        priorOwners.Add(owner.path);
+                        string owner = Path.GetRelativePath(root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');
+                        if (graphInputs.Sources(owner).Any(matches.Contains))
+                            entries.Add(owner);
                     }
+                    removedEntries.Add(pair.Key, entries);
+                    affected.UnionWith(entries.Where(byPath.ContainsKey));
                 }
-                if (removed.Any(path => !mapped.Contains(path)))
+                if (!deleted.SetEquals(mapped))
                 {
                     full = true;
                     diagnostics.Add("Removed inputs with no baseline SDK owner require full current coverage.");
                 }
-                int count;
-                do
-                {
-                    count = priorOwners.Count;
-                    priorOwners.UnionWith(edges.Where(pair => pair.Value.Overlaps(priorOwners)).Select(static pair => pair.Key));
-                } while (count != priorOwners.Count);
-                affected.UnionWith(priorOwners.Where(byPath.ContainsKey));
                 diagnostics.Add($"Selected surviving consumers of removed inputs using the SDK graph at {mergeBase}.");
             }
             else
@@ -329,18 +326,21 @@ internal static partial class ValidationPlanner
 
         string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith(".agents/rulebook/", StringComparison.Ordinal)
             || path == ValidationCiContracts.C_RULE_LOADER).Concat(RuleReviewInputs()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
-        var toolingOwners = new HashSet<string>(StringComparer.Ordinal);
-        AddToolOwner("tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj");
-        string[] toolingInputs = CapturedInputs(toolingOwners.SelectMany(owner => byPath[owner].inputs)
-            .Concat(inputs.Keys.Where(static path => path is "global.json" or "Directory.Build.props" or "Directory.Build.targets"
-                or "Directory.Solution.targets" or "InnoEngine.sln"))).Order(StringComparer.Ordinal).ToArray();
         var inputSets = projects.ToDictionary(static project => project.path,
             project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)), StringComparer.Ordinal);
         var entryInputs = contexts.ToDictionary(static pair => pair.Key,
             pair => new ValidationEntryInputs(root, pair.Value.sdkGraph, pair.Key, inputSets, CapturedInputs), StringComparer.Ordinal);
-        bool effectiveBuildChange = changes.Count > 0 && changes.All(path => inputs.TryGetValue(path, out string? value)
-            && value != "missing" && path != ValidationRunner.C_TEST_EXECUTOR && !IsCiContractInput(path)
-            && projects.Any(project => project.inputs.Contains(path, StringComparer.Ordinal)));
+        const string C_VALIDATOR = "tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj";
+        IEnumerable<string> validatorInputs = byPath.ContainsKey(C_VALIDATOR)
+            ? entryInputs["managed"].Sources(C_VALIDATOR).SelectMany(key => inputSets[key]) : [];
+        string[] toolingInputs = CapturedInputs(validatorInputs.Concat(inputs.Keys.Where(static path => path is "global.json"
+            or "Directory.Build.props" or "Directory.Build.targets" or "Directory.Solution.targets" or "InnoEngine.sln"))).Order(StringComparer.Ordinal).ToArray();
+        var changedSets = inputSets.Where(pair => pair.Value.Any(changes.Contains)).ToDictionary(static pair => pair.Key,
+            pair => pair.Value.First(changes.Contains), StringComparer.Ordinal);
+        bool toolingChanged = toolingInputs.Any(changes.Contains) || removedEntries.TryGetValue("managed", out var priorTooling) && priorTooling.Contains(C_VALIDATOR);
+        bool effectiveBuildChange = changes.Count > 0 && changes.All(path => path != ValidationRunner.C_TEST_EXECUTOR && !IsCiContractInput(path)
+            && (removedEntries.Count > 0 && removed.Contains(path, StringComparer.Ordinal)
+                || inputs.TryGetValue(path, out string? value) && value != "missing" && projects.Any(project => project.inputs.Contains(path, StringComparer.Ordinal))));
         inputSets.Add("tooling", toolingInputs);
         inputSets.Add("native-sources", submoduleInputs);
         var checks = new List<ValidationCheck>
@@ -385,10 +385,11 @@ internal static partial class ValidationPlanner
             string[]? sourceSets = entryInputs.TryGetValue(context, out ValidationEntryInputs? graphInputs)
                 ? graphInputs.Sources(project.path) : null;
             bool selected = affected.Contains(project.path);
+            string? matchedSet = sourceSets?.FirstOrDefault(changedSets.ContainsKey);
+            bool baselineMatch = removed.Length > 0 && (!removedEntries.TryGetValue(context, out var priorEntries) || priorEntries.Contains(project.path));
             if (selected && !full && effectiveBuildChange && sourceSets is not null
                 && profile is ValidationProfile.PullRequest or ValidationProfile.Fast
-                && !sourceSets.SelectMany(key => inputSets[key]).Any(changes.Contains)
-                && !toolingInputs.Any(changes.Contains))
+                && matchedSet is null && !baselineMatch && !toolingChanged)
             {
                 selected = false;
                 // A conditional source still belongs to its project when compiled through another entry.
@@ -396,6 +397,10 @@ internal static partial class ValidationPlanner
                     affected.Remove(project.path);
                 diagnostics.Add($"No changed input in the evaluated {context} entry for {project.path}.");
             }
+            if (selected && !full && matchedSet is not null)
+                diagnostics.Add($"Selected {context} entry {project.path}: {changedSets[matchedSet]} is consumed by {matchedSet}.");
+            if (selected && !full && baselineMatch)
+                diagnostics.Add($"Selected {context} entry {project.path} for removed inputs at {mergeBase}.");
             bool compile = selected || documentationOwners.Contains(project.path);
             string environment = project.environment.Length != 0 ? project.environment : native ? "native-host" : "any";
             string? exclusion = executionExclusions.GetValueOrDefault(project.path)
@@ -487,6 +492,8 @@ internal static partial class ValidationPlanner
                 foreach (ValidationProject project in releaseProjects.Values)
                     inputSets[project.path] = inputSets[project.path].Concat(CapturedInputs(project.inputs)).Distinct(StringComparer.Ordinal).ToArray();
             }
+            if (!entryInputs.TryGetValue(releaseContext, out ValidationEntryInputs? releaseEntries))
+                entryInputs.Add(releaseContext, releaseEntries = new(root, contexts[releaseContext].sdkGraph, releaseContext, inputSets, CapturedInputs));
             var releaseInputs = new HashSet<string>(StringComparer.Ordinal) { "@tooling", "@native-sources" };
             var releaseBuilds = new List<string>();
             string[] releaseRoots = [editorBuild.owner, C_BUILD_ENTRY];
@@ -497,7 +504,8 @@ internal static partial class ValidationPlanner
                 releaseBuilds.Add(id);
                 if (releaseContext != "native")
                     checks.Add(new(id, "build", owner, "Release product acceptance prepares its configuration once before execution and packaging.",
-                        "native-host", [], releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "compilation"));
+                        "native-host", [], releaseInputs.Order(StringComparer.Ordinal).ToArray(), false, null, releaseContext, "compilation",
+                        sourceSets: releaseEntries.Sources(owner)));
             }
             if (releaseContext != "native")
             {
@@ -724,16 +732,6 @@ internal static partial class ValidationPlanner
         }
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
-
-        void AddToolOwner(string path)
-        {
-            // A consumer/fixture may execute a prebuilt tool without containing its source project.
-            // Its actual binary closure is still captured by ValidationEnvironment.
-            if (!byPath.TryGetValue(path, out ValidationProject? project) || !toolingOwners.Add(path))
-                return;
-            foreach (string reference in project.references)
-                AddToolOwner(reference);
-        }
 
         IEnumerable<string> RuleReviewInputs()
         {

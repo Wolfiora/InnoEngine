@@ -28,6 +28,16 @@ foreach ($platform in $Hosts) {
         })
         $failed = @($results | Where-Object { $_.status -cin @('Failed', 'Blocked') })
         $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; frozen plan: $($artifact.name).")
+        $required = @($plan.checks | Where-Object { !$_.exclusion }).Count
+        $reused = @($results | Where-Object status -CEQ 'Reused').Count
+        $excluded = @($plan.checks | Where-Object exclusion).Count
+        $lines.Add("  - Required checks: $required. Reused results: $reused. Inapplicable checks: $excluded.")
+        foreach ($reason in @($plan.diagnostics | Where-Object { $_ -match 'conservative|require full current coverage|selecting all current owners' })) {
+            $lines.Add("  - $reason")
+        }
+        foreach ($reason in @($plan.diagnostics | Where-Object { $_ -clike 'Selected * entry *' } | Select-Object -First 3)) {
+            $lines.Add("  - $reason")
+        }
         foreach ($group in @($plan.checks | Group-Object kind)) {
             $seconds = ($results | Where-Object { $_.id -cin $group.Group.id } | Measure-Object seconds -Sum).Sum
             $lines.Add("  - $($group.Name): $([Math]::Round($seconds, 1)) check-seconds (parallel work is not wall-clock duration).")
