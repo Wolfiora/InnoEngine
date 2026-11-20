@@ -18,6 +18,65 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task ScheduledPlanRebindsOnlyOnItsCapturedEnvironment()
+    {
+        using var repository = new ValidationRepository();
+        using JsonDocument planned = await repository.PlanAsync(profile: "fast");
+        string source = repository.PathOf("artifacts/scheduled.json");
+        string output = repository.PathOf("artifacts/bound");
+        var plan = System.Text.Json.Nodes.JsonNode.Parse(planned.RootElement.GetRawText())!;
+        File.WriteAllText(source, plan.ToJsonString());
+        Task<int> Bind() => ValidationCommand.ExecuteAsync(["plan", "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--plan", source, "--profile", "fast", "--output", output]);
+        Assert.Equal(0, await Bind());
+        using JsonDocument bound = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
+        Assert.Equal(planned.RootElement.GetProperty("environment").GetString(), bound.RootElement.GetProperty("environment").GetString());
+        File.Delete(Path.Combine(output, "plan.json"));
+        plan["environment"] = new string('0', 64);
+        File.WriteAllText(source, plan.ToJsonString());
+        Assert.Equal(3, await Bind());
+        Assert.False(File.Exists(Path.Combine(output, "plan.json")));
+    }
+
+    [Fact]
+    public async Task BuildDefinitionAffectsOnlyTheEntryThatImportsIt()
+    {
+        using var repository = new ValidationRepository();
+        repository.Write("src/Example/Optional.props", "<Project />");
+        repository.Write("src/Example/Example.csproj", ValidationRepository.Project("""
+            <Import Project="Optional.props" Condition="'$(UseOptionalDefinition)' == 'true' and Exists('Optional.props')" />
+            """));
+        repository.Write("tests/Enabled/Enabled.csproj", ValidationRepository.Project("""
+            <PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>domain</InnoValidationLayer></PropertyGroup>
+            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" AdditionalProperties="UseOptionalDefinition=true" /></ItemGroup>
+            """));
+        repository.Write("tools/Inno.Tooling.Validation/Inno.Tooling.Validation.csproj", ValidationRepository.Project("""
+            <ItemGroup><ProjectReference Include="../../src/Example/Example.csproj" /></ItemGroup>
+            """));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Register distinct SDK entries");
+        using JsonDocument baseline = await repository.PlanAsync();
+        string previous = repository.PathOf("artifacts/previous.json");
+        File.WriteAllText(previous, baseline.RootElement.GetRawText());
+        repository.Write("src/Example/Optional.props", "<Project><PropertyGroup><ExampleValue>2</ExampleValue></PropertyGroup></Project>");
+        using JsonDocument plan = await repository.PlanAsync();
+        var tests = plan.RootElement.GetProperty("checks").EnumerateArray()
+            .Where(check => check.GetProperty("kind").GetString() == "test")
+            .ToDictionary(check => check.GetProperty("owner").GetString()!);
+        Assert.Equal(JsonValueKind.Null, tests["tests/Enabled/Enabled.csproj"].GetProperty("exclusion").ValueKind);
+        Assert.Equal(JsonValueKind.String, tests["tests/Example.Tests/Example.Tests.csproj"].GetProperty("exclusion").ValueKind);
+        Assert.Contains(plan.RootElement.GetProperty("diagnostics").EnumerateArray(), reason =>
+            reason.GetString()!.Contains("src/Example/Optional.props is consumed by", StringComparison.Ordinal));
+        File.Delete(repository.PathOf("src/Example/Optional.props"));
+        using JsonDocument removed = await repository.PlanAsync(baselinePlan: previous);
+        var afterDelete = removed.RootElement.GetProperty("checks").EnumerateArray()
+            .Where(check => check.GetProperty("kind").GetString() == "test")
+            .ToDictionary(check => check.GetProperty("owner").GetString()!);
+        Assert.Equal(JsonValueKind.Null, afterDelete["tests/Enabled/Enabled.csproj"].GetProperty("exclusion").ValueKind);
+        Assert.Equal(JsonValueKind.String, afterDelete["tests/Example.Tests/Example.Tests.csproj"].GetProperty("exclusion").ValueKind);
+    }
+
+    [Fact]
     public async Task ManualProducerProfileSelectsOnlyDeclaredProducerRegressions()
     {
         using var repository = new ValidationRepository();
@@ -496,8 +555,12 @@ public sealed class ValidationPlanningTests
         Assert.Contains("tests/Example.Tests/Example.Tests.csproj", Owners(added));
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Add source");
+        using JsonDocument baseline = await repository.PlanAsync();
+        string baselinePlan = repository.PathOf("artifacts/prior.json");
+        File.WriteAllText(baselinePlan, baseline.RootElement.GetRawText());
         File.Move(repository.PathOf("src/Example/New.cs"), repository.PathOf("src/Other/Moved.cs"));
-        using JsonDocument moved = await repository.PlanAsync();
+        using JsonDocument moved = await repository.PlanAsync(baselinePlan: baselinePlan);
+        Assert.False(moved.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains("src/Example/New.cs", Changes(moved));
         Assert.Contains("src/Other/Moved.cs", Changes(moved));
         Assert.Contains("src/Example/Example.csproj", Owners(moved));
@@ -610,12 +673,14 @@ public sealed class ValidationPlanningTests
         using var repository = new ValidationRepository();
         repository.Write("tests/Example.Tests/Changed.cs", "namespace Example.Tests; public sealed class Changed { }");
         using JsonDocument tests = await repository.PlanAsync();
+        Assert.True(tests.RootElement.GetProperty("portableTestChanges").GetBoolean());
         JsonElement api = Assert.Single(tests.RootElement.GetProperty("checks").EnumerateArray().Where(check => check.GetProperty("kind").GetString() == "api"));
         Assert.False(string.IsNullOrWhiteSpace(api.GetProperty("exclusion").GetString()));
         Assert.Contains(tests.RootElement.GetProperty("checks").EnumerateArray(), check => check.GetProperty("kind").GetString() == "test"
             && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
         repository.Write("src/Example/Changed.cs", "namespace Example; public sealed class Changed { }");
         using JsonDocument production = await repository.PlanAsync();
+        Assert.False(production.RootElement.GetProperty("portableTestChanges").GetBoolean());
         api = Assert.Single(production.RootElement.GetProperty("checks").EnumerateArray().Where(check => check.GetProperty("kind").GetString() == "api"));
         Assert.Equal(JsonValueKind.Null, api.GetProperty("exclusion").ValueKind);
         Assert.Contains(api.GetProperty("projects").EnumerateArray(), project => project.GetString() == "src/Example/Example.csproj");

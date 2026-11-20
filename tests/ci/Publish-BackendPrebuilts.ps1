@@ -42,6 +42,7 @@ $releases = @(Get-Releases)
 $digests = @{}
 $archives = @{}
 $testReceipts = @{}
+$consumerReceipts = @{}
 if (!$PSBoundParameters.ContainsKey('ChangedTargets')) { $ChangedTargets = @($targets.target) }
 if (!$ChangedTargets.Count -or @($ChangedTargets | Sort-Object -Unique).Count -ne $ChangedTargets.Count -or
     @($ChangedTargets | Where-Object { $_ -cnotin $targets.target }).Count) { throw 'Invalid changed backend target matrix.' }
@@ -60,6 +61,7 @@ foreach ($platform in $targets) {
         $archive = & "$PSScriptRoot/Get-BackendPlatformArchive.ps1" -Sha256 $prior.sha256 -AssetId $asset.id `
             -Directory (Join-Path $Directory 'unchanged') -Repository $Repository -ApiUrl $ApiUrl
         $digest = $prior.sha256
+        $consumerReceipts[$platform.target] = if ($prior.Contains('consumers')) { @($prior.consumers) }
         $testReceipts[$platform.target] = if ($prior.Contains('tests')) { @($prior.tests) } else { @() }
     } else {
         $owner = Join-Path $Directory $platform.target
@@ -73,8 +75,20 @@ foreach ($platform in $targets) {
         if (!$receipt -or $bound.Count -ne 1 -or $bound[0].sha256 -cne $digest) { throw "No matching certified ZIP for $($platform.target)." }
         $sdk = Get-Content -LiteralPath (Join-Path $owner 'consumption.json') -Raw | ConvertFrom-Json
         $products = @($plan.contexts.managed.sdkGraph | Where-Object { $_.Properties.InnoProductTarget -ceq $platform.target -and $_.Properties.InnoProductId })
-        if ($sdk.commit -cne $Revision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
+        if ($sdk.version -ne 2 -or $sdk.commit -cne $Revision -or $sdk.sha256 -cne $digest -or $sdk.target -cne $platform.target -or !$products.Count -or
             $sdk.checks.Count -ne ($products.Count * $platform.configurations.Count)) { throw 'Missing verified SDK product matrix.' }
+        if (!@($sdk.checks | Where-Object source -CEQ 'executed').Count) { throw 'Missing real cold product consumption.' }
+        foreach ($check in $sdk.checks) {
+            if ($check.identity -cnotmatch '^[a-f0-9]{64}$') { throw 'Invalid SDK product proof identity.' }
+            if ($check.source -ceq 'executed') { continue }
+            $origin = @($releases | Where-Object tag_name -CEQ $check.source)
+            if ($origin.Count -ne 1) { throw 'Untrusted SDK proof source.' }
+            $priorPlatform = (Get-BackendCatalog $base $headers $origin[0]).platforms[$platform.target]
+            if (!$priorPlatform.Contains('consumers') -or @($priorPlatform.consumers | Where-Object {
+                $_.configuration -ceq $check.configuration -and $_.product -ceq $check.product -and $_.project -ceq $check.project -and $_.identity -ceq $check.identity
+            }).Count -ne 1) { throw 'Missing trusted SDK product proof.' }
+        }
+        $consumerReceipts[$platform.target] = @($sdk.checks | Select-Object configuration,product,project,identity)
         foreach ($configuration in $platform.configurations) {
             foreach ($product in $products) {
                 $relative = $product.Path.Replace('${workspace}', '').TrimStart('/','\').Replace('\','/')
@@ -147,6 +161,7 @@ if (!$ready.draft -or !$ready.prerelease -or $ready.tag_name -cne $publication.t
 $platforms = [ordered]@{}
 foreach ($target in $targets) {
     $platforms[$target.target] = Get-BackendCatalogPlatform $archives[$target.asset] $target.asset $target.target $digests[$target.asset]
+    $platforms[$target.target].consumers = @($consumerReceipts[$target.target] | Where-Object { $_ })
     $platforms[$target.target].tests = @($testReceipts[$target.target] | Where-Object { $_ })
 }
 $message = ConvertTo-BackendTagMessage ([ordered]@{version=1; revision=$Revision; platforms=$platforms})

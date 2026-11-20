@@ -51,7 +51,9 @@ internal sealed record ValidationPlan(
     BackendPackageReceipt[]? backendPackages = null,
     ValidationResult[]? backendTests = null,
     string[]? hostExcludedSources = null,
-    Dictionary<string, string>? backendOwnerPayloads = null
+    Dictionary<string, string>? backendOwnerPayloads = null,
+    Dictionary<string, string>? backendProductPayloads = null,
+    bool portableTestChanges = false
 ) {
     /// <summary>
     /// Indicates whether executing a selected check requires backend assemblies or native products.
@@ -85,7 +87,9 @@ internal sealed record ValidationCheck(
     string? context = null,
     string layer = "static",
     string[]? projects = null,
-    ValidationDocumentationCheck? documentation = null
+    ValidationDocumentationCheck? documentation = null,
+    string[]? sourceSets = null,
+    ValidationNativeRequest[]? consumedProducts = null
 );
 
 internal sealed record ValidationDocumentationBinding(

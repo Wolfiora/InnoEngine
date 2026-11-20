@@ -23,14 +23,7 @@ internal static class ValidationCompiledGraph
         {
             JsonElement snapshot = snapshots.Single(snapshot =>
                 Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == root);
-            JsonElement properties = snapshot.GetProperty("GlobalProperties");
-            JsonElement entry = snapshot.GetProperty("Instances").EnumerateArray().Single(instance =>
-            {
-                JsonElement effective = instance.GetProperty("GlobalProperties");
-                return effective.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild") == properties.EnumerateObject().Count()
-                    && properties.EnumerateObject().All(pair => effective.TryGetProperty(pair.Name, out JsonElement value)
-                        && value.GetString() == pair.Value.GetString());
-            });
+            JsonElement entry = Entry(snapshot);
             pending.Enqueue(entry.GetProperty("Identity").GetString()!);
         }
         var visited = new HashSet<string>(StringComparer.Ordinal);
@@ -45,4 +38,20 @@ internal static class ValidationCompiledGraph
                 pending.Enqueue(reference.GetString()!);
         }
     }
+
+    internal static JsonElement Entry(JsonElement snapshot)
+    {
+        JsonElement properties = snapshot.GetProperty("GlobalProperties");
+        return snapshot.GetProperty("Instances").EnumerateArray().Single(instance =>
+            SameProperties(instance.GetProperty("GlobalProperties"), properties));
+    }
+
+    internal static bool SameProperties(
+        JsonElement left,
+        JsonElement right
+    )
+        => left.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
+            == right.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
+            && right.EnumerateObject().Where(static pair => pair.Name != "IsGraphBuild")
+                .All(pair => left.TryGetProperty(pair.Name, out JsonElement value) && value.GetString() == pair.Value.GetString());
 }

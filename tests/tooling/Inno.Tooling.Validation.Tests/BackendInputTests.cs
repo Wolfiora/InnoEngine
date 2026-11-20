@@ -166,6 +166,33 @@ public sealed class BackendInputTests
         Assert.NotEqual(Identity(before, C_COPY), Identity(after, C_COPY));
     }
 
+    [Fact]
+    public async Task NewPlatformProductDerivesItsConsumersFromItsRegisteredSdkEntry()
+    {
+        using var repository = new ValidationRepository();
+        const string backend = "backends/NewAdapter/Adapter.csproj";
+        const string player = "platforms/Fixture/player/Player.csproj";
+        repository.Write(backend, ValidationRepository.Project());
+        repository.Write("backends/Unrelated/Unrelated.csproj", ValidationRepository.Project());
+        repository.Write(player, ValidationRepository.Project("""
+            <PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>fixture</InnoProductTarget></PropertyGroup>
+            <ItemGroup><ProjectReference Include="../../../backends/NewAdapter/Adapter.csproj" /></ItemGroup>
+            """));
+        repository.Git("add", ".");
+        repository.Git("commit", "-m", "Register the fixture product");
+        using JsonDocument first = await Inputs(repository);
+        JsonElement before = first.RootElement.GetProperty("consumers").GetProperty(player);
+        Assert.Equal(backend, Assert.Single(before.GetProperty("backendOwners").EnumerateArray()).GetString());
+        repository.Write("backends/Unrelated/Change.cs", "class Unrelated {}");
+        using JsonDocument unrelated = await Inputs(repository);
+        Assert.Equal(before.GetProperty("identity").GetString(),
+            unrelated.RootElement.GetProperty("consumers").GetProperty(player).GetProperty("identity").GetString());
+        repository.Write("backends/NewAdapter/Change.cs", "class Changed {}");
+        using JsonDocument affected = await Inputs(repository);
+        Assert.NotEqual(before.GetProperty("identity").GetString(),
+            affected.RootElement.GetProperty("consumers").GetProperty(player).GetProperty("identity").GetString());
+    }
+
     private static async Task<JsonDocument> Inputs(ValidationRepository repository)
     {
         using JsonDocument plan = await repository.PlanAsync(profile: "fast");

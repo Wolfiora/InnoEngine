@@ -88,6 +88,10 @@ jobs:
           }
           $hosts = @(Get-Content .github/validation-hosts.json -Raw | ConvertFrom-Json | Where-Object { $selected.profile -cne 'fast' -or $_.fast })
           if ($hosts.Count -eq 0 -or @($hosts.runner | Sort-Object -Unique).Count -ne $hosts.Count) { throw 'Hosted execution registration is empty or duplicated.' }
+          if ($env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and $selected.profile -ceq 'pull-request') {
+            $env:BASELINE = (& git rev-parse HEAD^).Trim()
+            if ($LASTEXITCODE) { throw 'Manual affected validation requires the candidate parent.' }
+          }
           if ($selected.run -and $selected.profile -ceq 'pull-request' -and $env:BASELINE) {
             $hosts = @(./tests/ci/Select-ValidationHosts.ps1 -Hosts $hosts -Baseline $env:BASELINE -Candidate $env:CANDIDATE -DefaultBranch $env:DEFAULT_BRANCH)
           }
@@ -117,6 +121,7 @@ jobs:
       - uses: ./.github/actions/freeze-validation
         id: freeze
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ needs.route.outputs.profile }}
       - uses: ./.github/actions/resolve-backends
         id: acquisition
@@ -154,6 +159,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       reusable: ${{ steps.join.outputs.reusable }}
+      continuations: ${{ steps.join.outputs.continuations }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -175,7 +181,7 @@ jobs:
     outputs:
       # A host that finished its own plan emits no job-level demand. The runner
       # omits empty outputs, so matrix completion order cannot erase another host's request.
-      deferred: ${{ steps.decision.outputs.deferred == 'true' && 'true' || '' }}
+      dispatch: ${{ steps.decision.outputs.dispatch == 'true' && 'true' || '' }}
     needs: [route, preflight, acceptance-reuse]
     if: ${{ !cancelled() && needs.route.result == 'success' && needs.route.outputs.run == 'true' && ((needs.preflight.result == 'skipped' && needs.acceptance-reuse.result == 'skipped') || (needs.acceptance-reuse.result == 'success' && needs.acceptance-reuse.outputs.reusable == 'false')) }}
     runs-on: ${{ matrix.runner }}
@@ -191,15 +197,23 @@ jobs:
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ needs.route.outputs.profile }}
       - uses: ./.github/actions/resolve-backends
       - id: decision
         shell: pwsh
         env:
+          MULTI_HOST: ${{ fromJSON(needs.route.outputs.hosts).include[1] != null }}
           PROFILE: ${{ needs.route.outputs.profile }}
+          CONTINUATIONS: ${{ needs.acceptance-reuse.outputs.continuations }}
+          RUNNER_LABEL: ${{ matrix.runner }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
         run: |
           $decision = Get-Content artifacts/backend-request/acquisition.json -Raw | ConvertFrom-Json
+          if ($env:CONTINUATIONS) {
+            $sources = $env:CONTINUATIONS | ConvertFrom-Json -AsHashtable
+            if ($sources.Contains($env:RUNNER_LABEL)) { $decision | Add-Member -NotePropertyName continuationRun -NotePropertyValue $sources[$env:RUNNER_LABEL] }
+          }
           if ($env:PROFILE -ceq 'performance') {
             $missing = @($decision.packages | Where-Object operation -CEQ 'produce' | ForEach-Object target)
             if ($missing.Count) { throw "Performance sampling needs certified backend packages for $($missing -join ', '). Run full acceptance on the default branch first." }
@@ -210,53 +224,49 @@ jobs:
             if ($digest -cnotmatch '^[a-f0-9]{64}$') { throw 'Direct backend consumption requires an exact archive digest.' }
             "digest=$digest" >> $env:GITHUB_OUTPUT
           }
+          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
+          "entry-directory=$((Split-Path $entry).Replace('\','/'))" >> $env:GITHUB_OUTPUT
           $deferred = $decision.packages.Count -gt 0 -and !$direct
+          $inline = !$env:REBUILD_TARGETS -and !$deferred -and ($env:MULTI_HOST -ine 'true' -or ($decision.portableTestChanges -and !$decision.packages.Count))
+          $decision | Add-Member -NotePropertyName executedLocally -NotePropertyValue $inline
           $decision | Add-Member -NotePropertyName deferred -NotePropertyValue $deferred
           [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/backend-request/acquisition.json'), (ConvertTo-Json $decision -Depth 30 -Compress))
-          "deferred=$($deferred.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+          "dispatch=$((!$inline).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: inputs.rebuild_backends || fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.deferred == 'true'
+        if: fromJSON(needs.route.outputs.hosts).include[1] != null || steps.decision.outputs.dispatch == 'true'
         with:
           overwrite: true
           name: backend-request-${{ matrix.runner }}
           path: artifacts/backend-request/acquisition.json
           if-no-files-found: error
           retention-days: 7
-      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        if: steps.decision.outputs.digest
-        id: direct-cache
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: steps.decision.outputs.dispatch == 'true'
         with:
-          key: backend-platform-${{ steps.decision.outputs.digest }}
-          path: artifacts/backend-downloads/${{ steps.decision.outputs.digest }}.zip
-      - name: Bind the frozen plan on its original runner
-        if: steps.decision.outputs.deferred == 'false'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
-            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads
-      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
-        if: steps.decision.outputs.digest && steps.direct-cache.outputs.cache-hit != 'true'
+          name: scheduled-plan-${{ matrix.runner }}
+          path: |
+            artifacts/validation/ci-plan/plan.json
+            artifacts/validation/ci-plan/entry.json
+            ${{ steps.decision.outputs.entry-directory }}/
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 7
+      - uses: ./.github/actions/consume-validation
+        if: steps.decision.outputs.dispatch == 'false'
         with:
-          key: backend-platform-${{ steps.decision.outputs.digest }}
-          path: artifacts/backend-downloads/${{ steps.decision.outputs.digest }}.zip
-      - uses: ./.github/actions/execute-validation
-        if: steps.decision.outputs.deferred == 'false'
-        with:
+          digest: ${{ steps.decision.outputs.digest }}
           platform: ${{ matrix.runner }}
           source-run: ${{ inputs.source_run || '0' }}
 
   backend-matrix:
     needs: [route, plan]
-    if: ${{ !cancelled() && needs.plan.result == 'success' && (inputs.rebuild_backends || needs.plan.outputs.deferred == 'true') }}
+    if: ${{ !cancelled() && needs.plan.result == 'success' && needs.plan.outputs.dispatch == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     outputs:
-      platforms: ${{ steps.join.outputs.platforms }}
       producers: ${{ steps.join.outputs.producers }}
-      deferred: ${{ steps.join.outputs.deferred }}
+      chains: ${{ steps.join.outputs.chains }}
+      independent: ${{ steps.join.outputs.independent }}
       required: ${{ steps.join.outputs.required }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -274,27 +284,19 @@ jobs:
         run: |
           $jobs = ./tests/ci/Join-BackendAcquisitions.ps1 -RebuildTargets $env:REBUILD_TARGETS -Received artifacts/requests -Hosts (($env:HOSTS | ConvertFrom-Json).include.runner) `
             -Revision $env:GITHUB_SHA
-          foreach ($name in 'platforms','producers','deferred') {
+          foreach ($name in 'chains','producers','independent') {
             "$name=$(@{include=@($jobs.$name)} | ConvertTo-Json -Compress -Depth 8)" >> $env:GITHUB_OUTPUT
           }
           "required=$(($jobs.platforms.Count -gt 0).ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
 
-  backends:
-    needs: backend-matrix
-    if: ${{ !cancelled() && needs.backend-matrix.result == 'success' && needs.backend-matrix.outputs.required == 'true' }}
-    uses: ./.github/workflows/backend-prebuilts.yml
-    with:
-      platforms: ${{ needs.backend-matrix.outputs.platforms }}
-      producers: ${{ needs.backend-matrix.outputs.producers }}
-
-  execution:
-    needs: [route, backend-matrix, backends]
-    if: ${{ !cancelled() && needs.backends.result == 'success' }}
+  independent:
+    needs: [route, backend-matrix]
+    if: ${{ !cancelled() && needs.backend-matrix.result == 'success' && fromJSON(needs.backend-matrix.outputs.independent).include[0] != null }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 360
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.backend-matrix.outputs.deferred) }}
+      matrix: ${{ fromJSON(needs.backend-matrix.outputs.independent) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -303,33 +305,39 @@ jobs:
       - uses: ./.github/actions/setup-dotnet
       - uses: ./.github/actions/freeze-validation
         with:
+          runner-label: ${{ matrix.runner }}
           profile: ${{ needs.route.outputs.profile }}
+          scheduled: true
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: backend-request-${{ matrix.runner }}
           path: artifacts/backend-request
-      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+      - uses: ./.github/actions/consume-validation
         with:
-          pattern: ${{ matrix.pattern }}
-          path: ${{ matrix.destination }}
-      - name: Bind verified platform archives and the runner SDK
-        shell: pwsh
-        env:
-          REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
-        run: |
-          $entry = (Get-Content artifacts/validation/ci-plan/entry.json -Raw | ConvertFrom-Json).assembly
-          ./tests/ci/Install-BackendAcquisition.ps1 -PlanPath artifacts/validation/ci-plan/plan.json -EntryAssembly $entry `
-            -Acquisition artifacts/backend-request/acquisition.json -Downloads artifacts/backend-downloads -Candidates artifacts/candidates -RebuildTargets $env:REBUILD_TARGETS
-      - uses: ./.github/actions/execute-validation
-        with:
+          digest: ${{ matrix.digest }}
           platform: ${{ matrix.runner }}
           source-run: ${{ inputs.source_run || '0' }}
+
+  backends:
+    needs: [backend-matrix, route]
+    if: ${{ !cancelled() && needs.backend-matrix.result == 'success' && needs.backend-matrix.outputs.required == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.backend-matrix.outputs.chains) }}
+    uses: ./.github/workflows/backend-prebuilts.yml
+    with:
+      platforms: ${{ toJSON(matrix.platforms) }}
+      producers: ${{ toJSON(matrix.producers) }}
+      consumers: ${{ toJSON(matrix.consumers) }}
+      profile: ${{ needs.route.outputs.profile }}
+      source_run: ${{ inputs.source_run || '0' }}
+      rebuild_backends: ${{ inputs.rebuild_backends || '' }}
 
   engine-validation:
     # Branch routing must never publish success under the pull-request merge gate's name.
     name: ${{ github.event_name == 'push' && github.ref_name != github.event.repository.default_branch && 'Branch validation' || 'Engine validation' }}
     if: always()
-    needs: [route, preflight, acceptance-reuse, plan, backend-matrix, backends, execution]
+    needs: [route, preflight, acceptance-reuse, plan, backend-matrix, backends, independent]
     runs-on: windows-2022
     timeout-minutes: 15
     steps:
@@ -349,11 +357,12 @@ jobs:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
           PLAN_RESULT: ${{ needs.plan.result }}
           MATRIX_RESULT: ${{ needs.backend-matrix.result }}
-          DEFERRED: ${{ needs.plan.outputs.deferred }}
+          DISPATCH: ${{ needs.plan.outputs.dispatch }}
           REBUILD_TARGETS: ${{ inputs.rebuild_backends }}
           BACKENDS_RESULT: ${{ needs.backends.result }}
           BACKENDS_REQUIRED: ${{ needs.backend-matrix.outputs.required }}
-          EXECUTION_RESULT: ${{ needs.execution.result }}
+          INDEPENDENT_RESULT: ${{ needs.independent.result }}
+          INDEPENDENT: ${{ needs.backend-matrix.outputs.independent }}
           REUSE_RESULT: ${{ needs.acceptance-reuse.result }}
           REUSED: ${{ needs.acceptance-reuse.outputs.reusable }}
           SHOULD_RUN: ${{ needs.route.outputs.run }}
@@ -377,14 +386,16 @@ jobs:
             if (-not $decision.reusable) { throw 'The final gate did not receive every matching acceptance proof.' }
             exit 0
           }
-          $direct = !$env:REBUILD_TARGETS -and !$env:DEFERRED
+          $direct = !$env:DISPATCH
+          $localChecks = $env:INDEPENDENT -and (($env:INDEPENDENT | ConvertFrom-Json).include.Count -gt 0)
+          if ($env:INDEPENDENT_RESULT -cne $(if ($localChecks) { 'success' } else { 'skipped' })) { throw 'Independent host execution did not match the plan.' }
           if ($direct) {
             if ($env:MATRIX_RESULT -cne 'skipped') { throw 'Unexpected production matrix after all hosts completed independently.' }
             $env:BACKENDS_REQUIRED = 'false'
           }
           if ($env:SHOULD_RUN -cne 'true' -or $env:PLAN_RESULT -cne 'success' -or (!$direct -and $env:MATRIX_RESULT -cne 'success') -or
-              ($env:BACKENDS_REQUIRED -ceq 'true' -and ($env:BACKENDS_RESULT -cne 'success' -or $env:EXECUTION_RESULT -cne 'success')) -or
-              ($env:BACKENDS_REQUIRED -ceq 'false' -and ($env:BACKENDS_RESULT -cne 'skipped' -or $env:EXECUTION_RESULT -cne 'skipped')) -or
+              ($env:BACKENDS_REQUIRED -ceq 'true' -and $env:BACKENDS_RESULT -cne 'success') -or
+              ($env:BACKENDS_REQUIRED -ceq 'false' -and $env:BACKENDS_RESULT -cne 'skipped') -or
               $env:BACKENDS_REQUIRED -cnotin @('true','false') -or
               ($env:GITHUB_EVENT_NAME -ceq 'schedule' -and $env:PREFLIGHT_RESULT -cne 'skipped' -and $env:REUSE_RESULT -cne 'success')) {
             throw 'One or more required execution jobs did not complete successfully.'

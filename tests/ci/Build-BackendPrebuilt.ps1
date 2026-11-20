@@ -8,6 +8,7 @@ param(
     [Parameter(Mandatory)][string]$OutputDirectory,
     [string]$PreviousPackage,
     [string]$PreviousSha256,
+    [string]$PreviousTag,
     [string]$Dotnet = 'dotnet'
 )
 $ErrorActionPreference = 'Stop'
@@ -47,6 +48,17 @@ if ($PreviousPackage -or $PreviousSha256) {
     $previous = Join-Path $work 'previous'
     Invoke-Sdk @($entry,'validate','import-backends','--archive',$PreviousPackage,'--sha256',$PreviousSha256,'--target',$Target,'--output',$previous)
     $manifest = Get-Content -LiteralPath (Join-Path $previous 'manifest.json') -Raw | ConvertFrom-Json
+}
+$trustedChecks = @()
+if ($PreviousTag) {
+    if (!$previous -or $PreviousTag -cnotmatch '^backend-prebuilts-\d{4}\.\d{2}\.\d{2}\.[1-9]\d*$') { throw 'Invalid producer seed catalog.' }
+    . "$PSScriptRoot/BackendReleaseCatalog.ps1"
+    $base = "$env:GITHUB_API_URL/repos/$env:GITHUB_REPOSITORY"
+    $headers = @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json'}
+    $release = Invoke-RestMethod -Headers $headers -Uri "$base/releases/tags/$PreviousTag"
+    $prior = (Get-BackendCatalog $base $headers $release).platforms[$Target]
+    if ($prior.sha256 -cne $PreviousSha256) { throw 'The seed proof belongs to another ZIP.' }
+    if ($prior.Contains('consumers')) { $trustedChecks = @($prior.consumers) }
 }
 $staging = Join-Path $work 'staging'
 $nativeInventory = Get-Content -LiteralPath $native -Raw | ConvertFrom-Json
@@ -171,10 +183,12 @@ if ($HostTarget -cne $Target) {
 }
 $coldSelection = Join-Path $coldStore 'selection.json'
 [IO.File]::WriteAllText($coldSelection,(ConvertTo-Json $coldInputs -Depth 80 -Compress))
+$coldExecutions = 0
+$payload = Get-Content -LiteralPath (Join-Path $installed 'manifest.json') -Raw | ConvertFrom-Json -AsHashtable
 $checks = @(foreach ($configuration in $platform[0].configurations) {
     $plan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/plan.json") -Raw | ConvertFrom-Json -AsHashtable -Depth 100
     $sdk = Join-Path $work 'consume'
-    $compilerPlan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/inputs.json") -Raw | ConvertFrom-Json
+    $compilerPlan = Get-Content -LiteralPath (Join-Path $work "plan-$configuration/inputs.json") -Raw | ConvertFrom-Json -AsHashtable
     if ($compilerPlan.developmentProperties) {
         $development = [IO.Path]::GetFullPath($compilerPlan.developmentProperties,$root)
         Invoke-BackendSolution (Join-Path $work "plan-$configuration/Backends.slnx") $plan.contexts.managed @(
@@ -189,15 +203,53 @@ $checks = @(foreach ($configuration in $platform[0].configurations) {
         $clock = [Diagnostics.Stopwatch]::StartNew()
         $id = $product.Properties.InnoProductId
         $aggregate = @($nativeInventory.aggregates | Where-Object { $_.product -ceq $id -and $_.target -ceq $Target -and $_.configuration -ieq $configuration })
+        $relative = [IO.Path]::GetRelativePath($root,$project).Replace('\','/')
+        $consumer = $compilerPlan.consumers[$relative]
+        if (!$consumer -or $consumer.identity -cnotmatch '^[a-f0-9]{64}$') { throw "Missing SDK consumption plan for $relative." }
+        $facts = [Collections.Generic.SortedDictionary[string,string]]::new([StringComparer]::Ordinal)
+        $facts['entry'] = $consumer.identity
+        $facts['host'] = $HostTarget
+        $facts['registration'] = ConvertTo-Json $platform[0] -Compress
+        foreach ($file in $payload.files | Where-Object { $_.configuration -ceq $configuration -and $_.owner -cin $consumer.backendOwners }) {
+            $facts["file/"+$file.path] = $file.sha256
+        }
+        $request = @($packInputs.requests | Where-Object { $_.product -ceq $id -and $_.target -ceq $Target -and $_.configuration -ieq $configuration })
+        if ($request.Count -gt 1) { throw 'Duplicate cold-consumption product declaration.' }
+        foreach ($family in @('assets','aggregates')) {
+            foreach ($item in $coldInputs[$family]) {
+                if ($request.Count -eq 1 -and $item.target -ceq $Target -and $item.sha256 -cnotin $request[0].digests) { continue }
+                $facts["native/$family/"+$item.sha256] = $item.sha256
+            }
+        }
+        $pack = $id -ceq 'player' -and $configuration -ceq 'Release'
         if (!$aggregate.Count) {
+            $sourceArgs = @('-nologo',"-p:Configuration=$configuration","-p:ArtifactsPath=$(Join-Path $work 'sdk')",
+                "-p:InnoNativeTarget=$Target","-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$($properties[0])")
+            $out = @(& $dotnetPath msbuild $project @sourceArgs -getProperty:TargetDir)
+            if ($LASTEXITCODE -or $out.Count -ne 1 -or !(Test-Path -LiteralPath $out[0] -PathType Container)) { throw 'Missing built SDK product outputs.' }
+            $outputs = @(Get-ChildItem -LiteralPath $out[0] -File -Recurse)
+            if (!$outputs.Count) { throw 'The SDK produced no product files.' }
+            foreach ($file in $outputs) {
+                $facts['output/'+[IO.Path]::GetRelativePath($out[0],$file.FullName).Replace('\','/')] = (Get-FileHash -LiteralPath $file.FullName).Hash
+            }
+        }
+        $identityBytes = [Text.Encoding]::UTF8.GetBytes((ConvertTo-Json $facts -Compress))
+        $contract = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($identityBytes)).ToLowerInvariant()
+        $priorChecks = @($trustedChecks | Where-Object { $_.configuration -ceq $configuration -and $_.project -ceq $relative -and $_.identity -ceq $contract })
+        if ($priorChecks.Count -gt 1) { throw 'Duplicate trusted product evidence.' }
+        $reuse = $coldExecutions -gt 0 -and $priorChecks.Count -eq 1 -and !$pack -and !$aggregate.Count
+        if (!$reuse -and !$aggregate.Count) {
             Invoke-Sdk @('build',$project,'--configuration',$configuration,'--artifacts-path',$sdk,'--disable-build-servers','-m:2','-nr:false',
                 "-p:InnoNativeDependencyManifest=$coldSelection","-p:InnoBackendPrebuiltRoot=$installed","-p:InnoNativeTarget=$Target",
                 "-p:InnoToolTarget=$HostTarget","-p:InnoProductBuildProperties=$($properties[0])")
         }
         if ($id -ceq 'player' -and $configuration -ceq 'Release') { Invoke-PlayerSupportPack 'consume' $installed @() $coldSelection }
-        [ordered]@{configuration=$configuration; product=$product.Properties.InnoProductId; project=[IO.Path]::GetRelativePath($root,$project).Replace('\','/'); seconds=$clock.Elapsed.TotalSeconds}
+        if (!$reuse) { $coldExecutions++ }
+        [ordered]@{configuration=$configuration;product=$id;project=$relative;seconds=$clock.Elapsed.TotalSeconds;identity=$contract;
+            source=$(if ($reuse) { $PreviousTag } else { 'executed' })}
     }
 })
-$receipt = [ordered]@{commit=$identity.commit;target=$Target;sha256=$digest;bytes=[IO.FileInfo]::new($archive).Length;production=$production;checks=$checks}
+if (!$coldExecutions) { throw 'A new archive requires a real cold product check.' }
+$receipt = [ordered]@{version=2;commit=$identity.commit;target=$Target;sha256=$digest;bytes=[IO.FileInfo]::new($archive).Length;production=$production;checks=$checks}
 [IO.File]::WriteAllText((Join-Path $OutputDirectory 'consumption.json'),(ConvertTo-Json $receipt -Depth 8))
 $archive

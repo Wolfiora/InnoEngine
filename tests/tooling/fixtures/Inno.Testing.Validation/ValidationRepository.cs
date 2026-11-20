@@ -116,12 +116,14 @@ public sealed class ValidationRepository : IDisposable
         string? documentationBaseline = null,
         string? profile = null,
         string? nativeDependencies = null,
-        string? backendStore = null
+        string? backendStore = null,
+        string? baselinePlan = null
     ) {
         string output = PathOf("artifacts/plan");
         await ValidationCommand.ExecuteAsync(["plan", "--engine-root", m_root, "--dotnet", m_dotnet, "--base", baseline, "--output", output,
             "--extended", extended.ToString(), "--configuration", configuration,
             ..profile is null ? Array.Empty<string>() : new[] { "--profile", profile },
+            ..baselinePlan is null ? Array.Empty<string>() : new[] { "--baseline-plan", baselinePlan },
             ..backendStore is null ? Array.Empty<string>() : new[] { "--backend-store", backendStore },
             ..nativeDependencies is null ? Array.Empty<string>() : new[] { "--native-dependencies", nativeDependencies },
             ..documentationCache is null ? Array.Empty<string>() : new[] { "--docs-cache-root", documentationCache },

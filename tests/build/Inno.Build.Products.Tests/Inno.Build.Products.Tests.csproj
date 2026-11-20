@@ -9,6 +9,9 @@
   </PropertyGroup>
   <Import Project="../../RepositoryInput.targets" />
   <ItemGroup>
+    <InnoValidationInput Include="../../../.github/native-targets.json;../../../.github/validation-hosts.json" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../fixtures/Inno.Testing.Build/Inno.Testing.Build.csproj" />
     <ProjectReference Include="../../../backends/Bgfx/build/Inno.Build.Toolchains.Bgfx.Shaders/Inno.Build.Toolchains.Bgfx.Shaders.csproj" />
     <ProjectReference Include="../../../backends/DotNet/build/Inno.Build.Managed.DotNet/Inno.Build.Managed.DotNet.csproj" />

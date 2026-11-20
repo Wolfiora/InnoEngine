@@ -143,11 +143,28 @@ internal static class ValidationInputs
     internal static string PlanIdentity(ValidationPlan plan)
         => Convert.ToHexStringLower(SHA256.HashData(ValidationPlanTransport.Write(plan)));
 
+    internal static IEnumerable<string> SourcePaths(
+        ValidationPlan plan,
+        ValidationCheck check
+    ) {
+        foreach (string input in check.inputs)
+        {
+            if (!input.StartsWith('@'))
+                yield return input;
+            else if (check.sourceSets is null || input is "@tooling" or "@native-sources")
+                foreach (string path in plan.inputSets[input[1..]])
+                    yield return path;
+        }
+        foreach (string key in check.sourceSets ?? [])
+            foreach (string path in plan.inputSets[key])
+                yield return path;
+    }
+
     internal static string CheckIdentity(
         ValidationPlan plan,
         ValidationCheck check,
         IReadOnlyDictionary<string, string> inputs
-    ) => Identity(check.inputs.SelectMany(path => path.StartsWith('@') ? plan.inputSets[path[1..]] : [path])
+    ) => Identity(SourcePaths(plan, check)
         .Distinct(StringComparer.Ordinal).Select(path => new KeyValuePair<string, string>(path, inputs.GetValueOrDefault(path, "missing")))
         .Concat(BackendPayloads(plan, check))
         .Append(new("environment", plan.environment)).Append(new("configuration", plan.configuration))
@@ -165,6 +182,19 @@ internal static class ValidationInputs
         string configuration = context.properties.GetValueOrDefault("Configuration", plan.configuration);
         string[] owners = check.inputs.Where(static key => key.StartsWith("@backends/", StringComparison.Ordinal))
             .Select(input => plan.backendHost + "/" + configuration + "/" + input[1..]).ToArray();
+        if (check.consumedProducts is { Length: > 0 } products && products.All(product => product.target == plan.backendHost)
+            && owners.All(owner => plan.backendOwnerPayloads?.ContainsKey(owner) == true))
+        {
+            string[] keys = products.Select(product => product.target + "/" + product.configuration.ToLowerInvariant() + "/" + product.product).ToArray();
+            if (keys.All(key => plan.backendProductPayloads?.ContainsKey(key) == true))
+            {
+                foreach (string key in keys)
+                    yield return new("deployed:" + key, plan.backendProductPayloads![key]);
+                foreach (string owner in owners)
+                    yield return new("backend:" + owner, plan.backendOwnerPayloads![owner]);
+                yield break;
+            }
+        }
         if (context.properties.ContainsKey("InnoNativeTarget")
             || owners.Any(owner => plan.backendOwnerPayloads?.ContainsKey(owner) != true))
         {

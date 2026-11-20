@@ -24,6 +24,9 @@ try {
         } elseif ($text -notmatch '12.5 check-seconds') {
             throw 'The summary lost check timing or confused parallel work with wall-clock time.'
         }
+        if ($case -cne 'missing' -and $text -notmatch 'Required checks: 1. Reused results: 0. Inapplicable checks: 0.') {
+            throw 'The summary lost the selection and reuse counts.'
+        }
         if ($case -ceq 'failed' -and ($text -notmatch '1 failed or blocked' -or $text -notmatch 'Retained first failure')) {
             throw 'The summary lost the first failure.'
         }

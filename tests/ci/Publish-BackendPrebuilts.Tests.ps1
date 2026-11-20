@@ -85,8 +85,8 @@ try {
             }
         } finally { $zip.Dispose() }
         $graph = @(@{Path='${workspace}/src/Player.csproj';Properties=@{InnoProductTarget=$platform.target;InnoProductId='player'}})
-        $checks = @($platform.configurations | ForEach-Object { @{configuration=$_;project='src/Player.csproj';product='player';seconds=2} })
-        @{commit=$revision;target=$platform.target;sha256=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant();checks=$checks} |
+        $checks = @($platform.configurations | ForEach-Object { @{configuration=$_;project='src/Player.csproj';product='player';seconds=2;identity='c'*64;source='executed'} })
+        @{version=2;commit=$revision;target=$platform.target;sha256=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant();checks=$checks} |
             ConvertTo-Json -Depth 6 | Set-Content (Join-Path $directory 'consumption.json')
         $plan = @{contexts=@{managed=@{sdkGraph=$graph}};commit=$revision;tree='a'*64;environment='b'*64;full=$true;documentation=$null;nativeRequests=@(@{target=$platform.target})
             backendPackages=@(@{target=$platform.target;sha256=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()})
@@ -101,6 +101,11 @@ try {
     $proofPath = Join-Path (Join-Path $root $platforms[0].target) 'consumption.json'
     $completeProof = [IO.File]::ReadAllBytes($proofPath)
     $incomplete = Get-Content $proofPath -Raw | ConvertFrom-Json
+    $incomplete.checks[0].source = 'backend-prebuilts-2020.01.01.1'
+    $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
+    try { Publish; throw 'An untrusted product proof passed.' } catch {
+        if ($_.Exception.Message -cnotin @('Missing real cold product consumption.', 'Untrusted SDK proof source.')) { throw }
+    }
     $incomplete.checks = @()
     $incomplete | ConvertTo-Json -Depth 6 | Set-Content $proofPath
     try { Publish; throw 'An incomplete SDK matrix passed.' } catch { if ($_.Exception.Message -cne 'Missing verified SDK product matrix.') { throw } }

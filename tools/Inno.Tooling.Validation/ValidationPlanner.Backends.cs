@@ -20,7 +20,13 @@ internal sealed record BackendInputPlan(
     string[] required,
     string[] tests,
     string[] missingNativeProducts,
-    string? developmentProperties
+    string? developmentProperties,
+    Dictionary<string, BackendConsumerInputs>? consumers = null
+);
+
+internal sealed record BackendConsumerInputs(
+    string identity,
+    string[] backendOwners
 );
 
 internal static partial class ValidationPlanner
@@ -43,6 +49,7 @@ internal static partial class ValidationPlanner
         var assets = new JsonArray();
         var aggregates = new JsonArray();
         var coverage = new JsonArray();
+        var productPayloads = new Dictionary<string, string>(StringComparer.Ordinal);
         var managed = new Dictionary<(string target, string configuration, string owner), string>();
         var payloads = new Dictionary<string, Dictionary<string, string>>(StringComparer.Ordinal);
         foreach (BackendPackageReceipt receipt in receipts)
@@ -66,6 +73,13 @@ internal static partial class ValidationPlanner
             {
                 if (item?["target"]?.GetValue<string>() != receipt.target)
                     throw new InvalidDataException("A native selection names another platform.");
+                if (family.Item1 == "requests")
+                {
+                    string key = receipt.target + "/" + item["configuration"]!.GetValue<string>().ToLowerInvariant() + "/" + item["product"]!.GetValue<string>();
+                    var digests = item["digests"]!.AsArray().Select(static node => node!.GetValue<string>()).Order(StringComparer.Ordinal);
+                    if (!productPayloads.TryAdd(key, ValidationInputs.Identity(digests.Select(static digest => KeyValuePair.Create(digest, digest)))))
+                        throw new InvalidDataException("Duplicate deployed product request: " + key);
+                }
                 family.Item2.Add(item.DeepClone());
             }
             if (document.RootElement.GetProperty("target").GetString() != receipt.target)
@@ -105,6 +119,7 @@ internal static partial class ValidationPlanner
         var bound = plan with
         {
             backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray(),
+            backendProductPayloads = productPayloads,
             backendOwnerPayloads = payloads.ToDictionary(static pair => pair.Key, static pair => ValidationInputs.Identity(pair.Value), StringComparer.Ordinal)
         };
         if (evidence is not null)
@@ -309,9 +324,31 @@ internal static partial class ValidationPlanner
         const string C_BUILD = "entry/InnoEngine.Build/InnoEngine.Build.csproj";
         if ((plan.backendHost is null || target == plan.backendHost) && plan.nativeRequests is { Length: > 0 } && configuration == plan.configuration && owners.ContainsKey(C_BUILD))
             required.UnionWith(Closure(C_BUILD).Where(IsBackend));
+        var productInputs = new Dictionary<string, BackendConsumerInputs>(StringComparer.Ordinal);
+        foreach (JsonElement snapshot in graph.sdkGraph.EnumerateArray())
+        {
+            JsonElement product = snapshot.GetProperty("Properties");
+            if (product.GetProperty("InnoProductTarget").GetString() != target
+                || string.IsNullOrEmpty(product.GetProperty("InnoProductId").GetString()))
+                continue;
+            string owner = Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/');
+            string[] closure = Closure(owner).Order(StringComparer.Ordinal).ToArray();
+            var proofInputs = new Dictionary<string, string>(common, StringComparer.Ordinal)
+            {
+                ["environment"] = plan.environment,
+                ["entry"] = owner
+            };
+            foreach (string project in closure)
+                proofInputs[project] = direct[project];
+            foreach (var input in plan.inputs.Where(static pair => pair.Key is "tests/ci/Build-BackendPrebuilt.ps1" or "tests/ci/New-BackendPrebuiltPackage.ps1"
+                or "tests/ci/Initialize-BackendProduction.ps1" or "tests/ci/Prepare-BackendNativeInputs.ps1"
+                or ".github/workflows/backend-prebuilts.yml"))
+                proofInputs[input.Key] = input.Value;
+            productInputs.Add(owner, new(ValidationInputs.Identity(proofInputs), closure.Where(IsBackend).ToArray()));
+        }
         return new(plan.commit, target, configuration, identities, required.Order(StringComparer.Ordinal).ToArray(),
             checks.Where(static check => check.kind == "test" && check.owner.StartsWith("tests/backends/", StringComparison.Ordinal))
-                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing, developmentProperties);
+                .Select(static check => check.owner).Order(StringComparer.Ordinal).ToArray(), missing, developmentProperties, productInputs);
 
         IEnumerable<string> Closure(string project)
         {

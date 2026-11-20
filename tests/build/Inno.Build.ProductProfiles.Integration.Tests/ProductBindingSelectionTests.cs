@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Inno.Testing.Source;
 using Xunit;
 
-namespace Inno.Build.Integration.Tests;
+namespace Inno.Build.ProductProfiles.Integration.Tests;
 
 public sealed class ProductBindingSelectionTests
 {

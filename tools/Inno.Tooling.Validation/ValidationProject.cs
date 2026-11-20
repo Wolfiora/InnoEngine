@@ -21,7 +21,8 @@ internal sealed record ValidationProject(
     internal static ValidationProject Read(
         string root,
         JsonElement snapshot,
-        string? backendTarget = null
+        string? backendTarget = null,
+        JsonElement? selectedVariant = null
     ) {
         JsonElement properties = snapshot.GetProperty("Properties");
         string Value(string name) => properties.GetProperty(name).GetString() ?? string.Empty;
@@ -33,7 +34,8 @@ internal sealed record ValidationProject(
         var inputs = new HashSet<string>(StringComparer.Ordinal) { path };
         var references = new HashSet<string>(StringComparer.Ordinal);
         bool native = false;
-        foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
+        IEnumerable<JsonElement> variants = selectedVariant is JsonElement selected ? [selected] : snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot);
+        foreach (JsonElement variant in variants)
         {
             string? variantTarget = variant.GetProperty("Properties").GetProperty("InnoNativeTarget").GetString();
             if (backendTarget is not null && !string.IsNullOrEmpty(variantTarget) && variantTarget != backendTarget)
@@ -50,7 +52,7 @@ internal sealed record ValidationProject(
                         string file = Relative(fullPath.GetString()!);
                         // The SDK lists adjacent build definitions as None even when this variant never imports them.
                         // Copied or otherwise declared items and actual imports retain their own input edges.
-                        if (backendTarget is not null && group.Name == "None"
+                        if ((backendTarget is not null || selectedVariant.HasValue) && group.Name == "None"
                             && (file.EndsWith(".props", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".targets", StringComparison.OrdinalIgnoreCase))
                             && item.EnumerateObject().All(static property => property.Name is "Identity" or "FullPath"))
                             continue;

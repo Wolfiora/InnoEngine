@@ -23,6 +23,7 @@ public static class ValidationCommand
     /// The operation followed by explicit engine-root, base, dotnet, configuration, artifacts-path, output, plan,
     /// evidence, full, extended, cache-input or cache-output options. Cache archives contain immutable native payloads only.
     /// Explicit docs-cache-root and docs-snapshot options select protected external documentation facts.
+    /// A baseline-plan supplies the accepted SDK graph for ownership of removed inputs at the exact merge base.
     /// Optional docs-base-snapshot identifies changed pages and facts without rescanning an authoring checkout.
     /// Profile selects execution depth; native-dependencies selects immutable consume-only dependencies.
     /// Shard and prerequisites select a frozen partition and its completed receipts. Join validates every partition
@@ -38,7 +39,8 @@ public static class ValidationCommand
     /// <returns>
     /// Zero when the requested operation succeeds, one for unsuccessful execution, or two when planning requires
     /// explicitly prepared inputs. A blocked preparation report is written to preparation.json instead of producing
-    /// a new executable plan. The command never fetches native source inputs automatically.
+    /// a new executable plan. Rebinding a frozen plan returns three when the runner environment requires fresh planning.
+    /// The command never fetches native source inputs automatically.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// An operation or option is unknown, duplicated or missing its value.
@@ -70,6 +72,8 @@ public static class ValidationCommand
             string key = arguments[index];
             bool allowed = transportOptions?.Contains(key, StringComparer.Ordinal) ?? key is ("--engine-root" or "--dotnet" or "--base" or "--configuration" or "--artifacts-path" or "--output" or "--plan" or "--accepted-plan" or "--evidence" or "--extended" or "--full" or "--cache-input" or "--cache-output" or "--docs-cache-root" or "--docs-snapshot" or "--docs-base-snapshot" or "--profile" or "--native-dependencies" or "--shard" or "--prerequisites" or "--retained-outputs" or "--backend-store");
             if (arguments[0] == "backend-inputs" && key is ("--selection" or "--configuration"))
+                allowed = true;
+            if (arguments[0] == "plan" && key == "--baseline-plan")
                 allowed = true;
             if (arguments[0] == "bind-backends" && key == "--test-evidence")
                 allowed = true;
@@ -129,7 +133,8 @@ public static class ValidationCommand
             ValidationPlanningResult selected = await ValidationPlanner.CreateAsync(root, options.GetValueOrDefault("--base", "HEAD"), dotnet,
                 options.GetValueOrDefault("--configuration", "Debug"), artifacts, full, cancellationToken, extended,
                 options.GetValueOrDefault("--docs-cache-root"), options.GetValueOrDefault("--docs-snapshot"),
-                options.GetValueOrDefault("--docs-base-snapshot"), profile, options.GetValueOrDefault("--native-dependencies"), options.GetValueOrDefault("--backend-store")).ConfigureAwait(false);
+                options.GetValueOrDefault("--docs-base-snapshot"), profile, options.GetValueOrDefault("--native-dependencies"), options.GetValueOrDefault("--backend-store"),
+                options.GetValueOrDefault("--baseline-plan")).ConfigureAwait(false);
             if (selected.preparation is not null)
             {
                 await File.WriteAllTextAsync(Path.Combine(output, "preparation.json"), JsonSerializer.Serialize(selected.preparation,
@@ -185,7 +190,14 @@ public static class ValidationCommand
         if (arguments[0] == "evidence" && options.TryGetValue("--cache-output", out string? retentionArchive) && plan.contexts.ContainsKey("native"))
             Console.WriteLine($"Retained {await NativeArtifactTransfer.ExportAsync(root, retentionArchive, cancellationToken).ConfigureAwait(false)} complete immutable generations; reconciliation must still succeed independently.");
         if (planPath is not null && plan.environment != await ValidationEnvironment.CaptureAsync(root, plan.dotnet, cancellationToken, plan.contexts.Values).ConfigureAwait(false))
+        {
+            if (arguments[0] == "plan")
+            {
+                Console.WriteLine("The execution environment changed. Regenerate the plan on this runner.");
+                return 3;
+            }
             throw new InvalidDataException("The supplied plan belongs to another SDK or execution environment.");
+        }
         await File.WriteAllBytesAsync(Path.Combine(output, "plan.json"), ValidationPlanTransport.Write(plan), cancellationToken).ConfigureAwait(false);
         if (arguments[0] == "plan")
         {

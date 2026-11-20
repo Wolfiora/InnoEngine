@@ -28,6 +28,16 @@ foreach ($platform in $Hosts) {
         })
         $failed = @($results | Where-Object { $_.status -cin @('Failed', 'Blocked') })
         $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; frozen plan: $($artifact.name).")
+        $required = @($plan.checks | Where-Object { !$_.exclusion }).Count
+        $reused = @($results | Where-Object status -CEQ 'Reused').Count
+        $excluded = @($plan.checks | Where-Object exclusion).Count
+        $lines.Add("  - Required checks: $required. Reused results: $reused. Inapplicable checks: $excluded.")
+        foreach ($reason in @($plan.diagnostics | Where-Object { $_ -match 'conservative|require full current coverage|selecting all current owners' })) {
+            $lines.Add("  - $reason")
+        }
+        foreach ($reason in @($plan.diagnostics | Where-Object { $_ -clike 'Selected * entry *' } | Select-Object -First 3)) {
+            $lines.Add("  - $reason")
+        }
         foreach ($group in @($plan.checks | Group-Object kind)) {
             $seconds = ($results | Where-Object { $_.id -cin $group.Group.id } | Measure-Object seconds -Sum).Sum
             $lines.Add("  - $($group.Name): $([Math]::Round($seconds, 1)) check-seconds (parallel work is not wall-clock duration).")
@@ -42,6 +52,40 @@ foreach ($platform in $Hosts) {
     } catch {
         $lines.Add("- ${platform}: complete results unavailable; inspect the retained bootstrap/planning log and required job conclusion.")
     }
+}
+
+# Measure observed execution up to the merge gate, including unrelated jobs that overlap.
+# The union of busy intervals and cumulative runner time have different meanings.
+if ($env:GH_TOKEN) {
+    try {
+        $headers = @{Authorization="Bearer $env:GH_TOKEN";Accept='application/vnd.github+json'}
+        $runBase = "$ApiUrl/repos/$Repository/actions/runs/$RunId/attempts/$Attempt"
+        $attemptInfo = Invoke-RestMethod -Headers $headers -Uri $runBase
+        $jobs = @(for ($page = 1; ; $page++) {
+            $batch = Invoke-RestMethod -Headers $headers -Uri "$runBase/jobs?per_page=100&page=$page"
+            $batch.jobs
+            if ($page * 100 -ge $batch.total_count) { break }
+        })
+        $finished = @($jobs | Where-Object { $_.started_at -and $_.completed_at -and $_.conclusion -cne 'skipped' } | Sort-Object started_at)
+        if ($finished.Count) {
+            $start = [datetimeoffset]$finished[0].started_at
+            $end = $start
+            $busy = 0.0
+            $runner = 0.0
+            foreach ($job in $finished) {
+                $left = [datetimeoffset]$job.started_at
+                $right = [datetimeoffset]$job.completed_at
+                $runner += ($right - $left).TotalSeconds
+                if ($right -gt $end) {
+                    $busy += ($right - $(if ($left -gt $end) { $left } else { $end })).TotalSeconds
+                    $end = $right
+                }
+            }
+            $clock = ($end - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds
+            $lines.Add("- Through the last completed job: $([math]::Round($clock)) seconds elapsed, $([math]::Round($busy)) seconds with active runners, $([math]::Round($runner / 60, 1)) cumulative runner-minutes.")
+            $lines.Add("- Time before the first runner started: $([math]::Round(($start - [datetimeoffset]$attemptInfo.run_started_at).TotalSeconds)) seconds.")
+        }
+    } catch { $lines.Add('- Hosted job timing unavailable: ' + $_.Exception.Message) }
 }
 
 # Timing comparisons are informational; they never transfer validation status across runs.

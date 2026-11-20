@@ -111,7 +111,7 @@ if ($required.Count -and $env:GITHUB_EVENT_PATH -and $env:GITHUB_REPOSITORY_ID -
         if (!$certificates.Contains($key)) { $certificates.Add($key,$test) }
     }
 }
-$decision = [ordered]@{commit=$plan.commit; packages=@($acquisitions.Values);testEvidence=@($certificates.Values)}
+$decision = [ordered]@{commit=$plan.commit; portableTestChanges=($plan.portableTestChanges -eq $true); packages=@($acquisitions.Values);testEvidence=@($certificates.Values)}
 [IO.File]::WriteAllText((Join-Path $directory 'acquisition.json'), (ConvertTo-Json $decision -Depth 12))
 if (!$decision.packages.Count) { Write-Host 'No backend project or native product in the frozen plan. Backend transfer and compilation are both zero.' }
 foreach ($package in $decision.packages) { Write-Host "Backend platform $($package.target) selected $($package.operation)." }

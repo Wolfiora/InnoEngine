@@ -10,6 +10,7 @@ $ErrorActionPreference = 'Stop'
 if ($Hosts.Count -eq 0 -or @($Hosts | Sort-Object -Unique).Count -ne $Hosts.Count) { throw 'Acceptance reuse requires the exact nonempty host matrix.' }
 $artifacts = @(Get-ChildItem -LiteralPath $ReceivedDirectory -Directory | ForEach-Object { [pscustomobject]@{ name = $_.Name; directory = $_.FullName } })
 $decisions = @()
+$continuations = @{}
 foreach ($platform in $Hosts) {
     $artifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $artifacts -Name "validation-preflight-$platform" -MaximumAttempt $Attempt
     $path = Join-Path $artifact.directory 'acceptance-reuse.json'
@@ -17,6 +18,10 @@ foreach ($platform in $Hosts) {
     $decision = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json
     if ($decision.reusable -isnot [bool] -or $decision.platform -cne $platform -or $decision.commit -cne $ExpectedCommit) {
         throw 'Acceptance reuse decision belongs to another host or candidate.'
+    }
+    if ($decision.continuationRun) {
+        if ([string]$decision.continuationRun -cnotmatch '^[1-9][0-9]*$') { throw 'Invalid trusted continuation run.' }
+        $continuations[$platform] = [long]$decision.continuationRun
     }
     if ($decision.reusable) {
         if ($decision.planIdentity -cne (Get-FileHash (Join-Path $artifact.directory 'plan.json')).Hash.ToLowerInvariant() -or
@@ -31,6 +36,7 @@ $result = @{ reusable = $decisions.Count -eq $Hosts.Count; hosts = $decisions }
 [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($OutputPath))) | Out-Null
 $result | ConvertTo-Json -Depth 18 | Set-Content -LiteralPath $OutputPath
 "reusable=$($result.reusable.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+"continuations=$(ConvertTo-Json $continuations -Compress)" >> $env:GITHUB_OUTPUT
 if ($result.reusable) {
     foreach ($decision in $decisions) {
         "$($decision.platform): reused complete functional acceptance from $($decision.sourceUrl); current inputs, checks and environment match. This run produces no new release artifacts." >> $env:GITHUB_STEP_SUMMARY

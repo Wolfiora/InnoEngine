@@ -10,11 +10,16 @@ $platforms = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/
 $hostsRegistry = @(Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../.github/validation-hosts.json') -Raw | ConvertFrom-Json)
 $targets = [ordered]@{}
 $deferred = @()
+$requirements = [ordered]@{}
+$independent = @()
 foreach ($hostName in $Hosts) {
     $hostRegistration = @($hostsRegistry | Where-Object runner -CEQ $hostName)
     if ($hostRegistration.Count -ne 1) { throw "Unknown validation runner $hostName." }
     $decision = Get-Content -LiteralPath (Join-Path $Received "backend-request-$hostName/acquisition.json") -Raw | ConvertFrom-Json
-    if ($decision.commit -cne $Revision -or $decision.packages -isnot [array] -or $decision.deferred -isnot [bool]) { throw "Missing backend decision for $hostName/$Revision." }
+    if ($decision.commit -cne $Revision -or $decision.packages -isnot [array] -or $decision.deferred -isnot [bool] -or $decision.executedLocally -isnot [bool]) { throw "Missing backend decision for $hostName/$Revision." }
+    if ($decision.executedLocally -and ($RebuildTargets -or $decision.deferred -or ($Hosts.Count -gt 1 -and ($decision.packages.Count -or !$decision.portableTestChanges)))) {
+        throw "An inline host cannot hide a required execution or production chain: $hostName."
+    }
     $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
     foreach ($package in $decision.packages) {
         $target = $package.target
@@ -35,15 +40,20 @@ foreach ($hostName in $Hosts) {
             $hostTarget = @($hostsRegistry | Where-Object runner -CEQ $registration[0].runner)
             if ($hostTarget.Count -ne 1) { throw "No unique SDK host for $target." }
             $targets[$target] = [ordered]@{target=$target; asset=$registration[0].asset; runner=$registration[0].runner; hostTarget=$hostTarget[0].target
-                operation=$package.operation; sha256=$package.sha256; assetId=$package.assetId}
+                operation=$package.operation; sha256=$package.sha256; assetId=$package.assetId; tag=$(if ($package.PSObject.Properties['tag']) { $package.tag })}
         } else {
             $prior = $targets[$target]
             if ($package.operation -ceq 'produce' -or $prior.sha256 -cne $package.sha256) { $prior.operation = 'produce' }
         }
     }
+    if (!$decision.deferred -and !$decision.executedLocally) {
+        $digest = if ($decision.packages.Count) { $decision.packages[0].sha256 } else { '' }
+        $independent += @{runner=$hostName;digest=$digest}
+    }
     if ($decision.deferred) {
         if (!$seen.Count) { throw "An empty acquisition cannot defer execution: $hostName." }
         $names = @($seen | Sort-Object -CaseSensitive)
+        $requirements[$hostName] = $names
         $pattern = if ($names.Count -eq 1) { "backend-candidate-$($names[0])" } else { "backend-candidate-{$($names -join ',')}" }
         # download-artifact extracts a single match directly into its destination.
         $destination = if ($names.Count -eq 1) { "artifacts/candidates/$pattern" } else { 'artifacts/candidates' }
@@ -56,6 +66,7 @@ if ($RebuildTargets) {
     foreach ($name in $requested) {
         if ($name -cnotin $platforms.target -or !$targets.Contains($name)) { throw "No frozen backend platform to rebuild: $name." }
         $targets[$name].operation = 'produce'
+        $targets[$name].tag = $null
         $targets[$name].sha256 = $null
         $targets[$name].assetId = $null
     }
@@ -75,4 +86,33 @@ foreach ($target in $targets.Values) {
     }
     $target.nativeInputs = @($targets.Values | Where-Object { $_.operation -ceq 'produce' -and ($_.target -ceq $target.target -or $_.hostTarget -ceq $target.target) }).Count -gt 0
 }
-[pscustomobject]@{ platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce'); deferred=$deferred }
+# Each target is produced once. Consumers that share a target or its build host
+# travel in the same workflow call, independently of unrelated producer groups.
+$chains = @()
+$pending = [Collections.Generic.List[string]]::new()
+foreach ($runner in $requirements.Keys) { $pending.Add($runner) }
+while ($pending.Count) {
+    $members = @($pending[0])
+    $closure = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    for ($i = 0; $i -lt $members.Count; $i++) {
+        $null = $pending.Remove($members[$i])
+        foreach ($name in $requirements[$members[$i]]) {
+            $null = $closure.Add($name)
+            if ($targets[$name].operation -ceq 'produce') { $null = $closure.Add($targets[$name].hostTarget) }
+        }
+        foreach ($runner in $pending) {
+            if ($runner -cin $members) { continue }
+            foreach ($name in $requirements[$runner]) {
+                if ($closure.Contains($name) -or ($targets[$name].operation -ceq 'produce' -and $closure.Contains($targets[$name].hostTarget))) {
+                    $members += $runner
+                    break
+                }
+            }
+        }
+    }
+    $platformSet = @($targets.Values | Where-Object { $closure.Contains($_.target) })
+    $chains += @{platforms=@{include=$platformSet}; producers=@{include=@($platformSet | Where-Object operation -CEQ 'produce')};
+        consumers=@{include=@($deferred | Where-Object { $_.runner -cin $members })}}
+}
+[pscustomobject]@{platforms=@($targets.Values); producers=@($targets.Values | Where-Object operation -CEQ 'produce');
+    deferred=$deferred; chains=$chains; independent=$independent}
