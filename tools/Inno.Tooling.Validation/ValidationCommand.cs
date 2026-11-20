@@ -39,7 +39,8 @@ public static class ValidationCommand
     /// <returns>
     /// Zero when the requested operation succeeds, one for unsuccessful execution, or two when planning requires
     /// explicitly prepared inputs. A blocked preparation report is written to preparation.json instead of producing
-    /// a new executable plan. The command never fetches native source inputs automatically.
+    /// a new executable plan. Rebinding a frozen plan returns three when the runner environment requires fresh planning.
+    /// The command never fetches native source inputs automatically.
     /// </returns>
     /// <exception cref="ArgumentException">
     /// An operation or option is unknown, duplicated or missing its value.
@@ -189,7 +190,14 @@ public static class ValidationCommand
         if (arguments[0] == "evidence" && options.TryGetValue("--cache-output", out string? retentionArchive) && plan.contexts.ContainsKey("native"))
             Console.WriteLine($"Retained {await NativeArtifactTransfer.ExportAsync(root, retentionArchive, cancellationToken).ConfigureAwait(false)} complete immutable generations; reconciliation must still succeed independently.");
         if (planPath is not null && plan.environment != await ValidationEnvironment.CaptureAsync(root, plan.dotnet, cancellationToken, plan.contexts.Values).ConfigureAwait(false))
+        {
+            if (arguments[0] == "plan")
+            {
+                Console.WriteLine("The execution environment changed. Regenerate the plan on this runner.");
+                return 3;
+            }
             throw new InvalidDataException("The supplied plan belongs to another SDK or execution environment.");
+        }
         await File.WriteAllBytesAsync(Path.Combine(output, "plan.json"), ValidationPlanTransport.Write(plan), cancellationToken).ConfigureAwait(false);
         if (arguments[0] == "plan")
         {

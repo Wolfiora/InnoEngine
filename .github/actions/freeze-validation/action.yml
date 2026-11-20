@@ -4,6 +4,9 @@ inputs:
   runner-label:
     description: Registered validation runner for baseline graph lookup.
     required: true
+  scheduled:
+    description: Bind the plan and validation entry from this run on its final runner.
+    default: 'false'
   profile:
     required: true
     description: Validation depth chosen by event routing.
@@ -14,6 +17,11 @@ outputs:
 runs:
   using: composite
   steps:
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
+      if: inputs.scheduled == 'true'
+      with:
+        name: scheduled-plan-${{ inputs.runner-label }}
+        path: artifacts/validation
     - name: Freeze candidate, actual inputs, checks and shard ownership
       id: freeze
       shell: pwsh
@@ -22,9 +30,10 @@ runs:
         INNO_VALIDATION_RUNNER: ${{ inputs.runner-label }}
         BASE_REVISION: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha || github.event.before || github.sha }}
         EXPECTED_COMMIT: ${{ github.sha }}
+        SCHEDULED: ${{ inputs.scheduled }}
         PROFILE: ${{ inputs.profile }}
       run: |
         $baseline = $env:BASE_REVISION
         if ($env:GITHUB_EVENT_NAME -ceq 'workflow_dispatch' -and $env:PROFILE -ceq 'pull-request') { $baseline = 'HEAD^' }
         if ($baseline -match '^0+$') { $baseline = 'origin/master' }
-        ./tests/ci/Invoke-ValidationCi.ps1 -Stage Plan -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan
+        ./tests/ci/Invoke-ValidationCi.ps1 -Stage Plan -Scheduled:($env:SCHEDULED -ceq 'true') -BaseRevision $baseline -ExpectedCommit $env:EXPECTED_COMMIT -Profile $env:PROFILE -BackendStore artifacts/b -PlanDirectory artifacts/validation/ci-plan

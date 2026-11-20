@@ -18,6 +18,27 @@ namespace Inno.Tooling.Validation.Tests;
 public sealed class ValidationPlanningTests
 {
     [Fact]
+    public async Task ScheduledPlanRebindsOnlyOnItsCapturedEnvironment()
+    {
+        using var repository = new ValidationRepository();
+        using JsonDocument planned = await repository.PlanAsync(profile: "fast");
+        string source = repository.PathOf("artifacts/scheduled.json");
+        string output = repository.PathOf("artifacts/bound");
+        var plan = System.Text.Json.Nodes.JsonNode.Parse(planned.RootElement.GetRawText())!;
+        File.WriteAllText(source, plan.ToJsonString());
+        Task<int> Bind() => ValidationCommand.ExecuteAsync(["plan", "--engine-root", repository.PathOf("."),
+            "--dotnet", repository.dotnet, "--plan", source, "--profile", "fast", "--output", output]);
+        Assert.Equal(0, await Bind());
+        using JsonDocument bound = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
+        Assert.Equal(planned.RootElement.GetProperty("environment").GetString(), bound.RootElement.GetProperty("environment").GetString());
+        File.Delete(Path.Combine(output, "plan.json"));
+        plan["environment"] = new string('0', 64);
+        File.WriteAllText(source, plan.ToJsonString());
+        Assert.Equal(3, await Bind());
+        Assert.False(File.Exists(Path.Combine(output, "plan.json")));
+    }
+
+    [Fact]
     public async Task BuildDefinitionAffectsOnlyTheEntryThatImportsIt()
     {
         using var repository = new ValidationRepository();
