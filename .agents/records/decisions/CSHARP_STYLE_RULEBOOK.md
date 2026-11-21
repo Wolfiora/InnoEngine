@@ -41,3 +41,25 @@ The rulebook resolves these points where the approved revisions allowed more tha
 ## Consequences
 
 Existing source does not yet conform. Formatting and renaming are separate, later changes: formatting-only changes preserve syntax tokens, and acronym or field renames that touch public members are API changes. `.editorconfig` and the style validator still express the previous static-readonly naming and must follow the rulebook before they are used as gates.
+
+## Tooling status
+
+`InnoEngine.Build style check|fix ROOT` checks handwritten C# against the rulebook by rule ID and applies the automatic fixes; the architecture validator runs the same engine. A layout fix keeps the token sequence, a reorder keeps the token multiset, and a rewrite is rejected unless the result parses.
+
+The engine currently enforces these rules. A finding is reported under the first ID of its group.
+
+| Reported ID | Also covers |
+| --- | --- |
+| F-01, F-03, F-04, F-05 | |
+| N-04 | |
+| M-03 | |
+| B-01, B-04, B-05, B-07 | B-06, B-08 |
+| B-03 | T-06 |
+| B-09 | M-01 |
+| P-01, P-02 | |
+| A-01, A-02 | A-03 |
+| W-01, W-03, W-05 | W-02 |
+| I-01, I-05 | I-03, I-04 |
+| S-03, S-04 | |
+
+Every other rule is not yet checked by the tool and is enforced in review: F-02, N-01 to N-03, N-05, N-06, all NM rules, T-01 to T-05, T-07, T-08, M-02, M-04, M-05, B-02, P-03, A-04, W-04, I-02, S-01, S-02, all E, X, D and TS rules. Naming rules (NM) need symbol-level renames; `.editorconfig` keeps the previous static-readonly naming until those renames land.

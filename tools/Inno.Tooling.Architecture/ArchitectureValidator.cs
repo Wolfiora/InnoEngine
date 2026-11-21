@@ -17,6 +17,7 @@ namespace Inno.Tooling.Architecture;
 public static partial class ArchitectureValidator
 {
     private static readonly string[] S_PRODUCTION_ROOTS = ["entry", "src", "backends", "platforms", "build", "tools"];
+
     private static readonly HashSet<string> S_IGNORED_DIRECTORIES = new(StringComparer.OrdinalIgnoreCase)
     {
         "bin",
@@ -24,6 +25,7 @@ public static partial class ArchitectureValidator
         "dependencies",
         "Generated"
     };
+
     private static readonly HashSet<string> S_FORBIDDEN_DIRECTORY_NAMES = new(StringComparer.OrdinalIgnoreCase)
     {
         "Legacy",
@@ -79,23 +81,41 @@ public static partial class ArchitectureValidator
         {
             string argument = arguments[index];
             if (argument == "--expand-xml" && !expandXml)
+            {
                 expandXml = true;
+            }
             else if (argument == "--agent-documents-only" && !agentDocumentsOnly)
+            {
                 agentDocumentsOnly = true;
+            }
             else if (argument == "--source-only" && !sourceOnly)
+            {
                 sourceOnly = true;
+            }
             else if (argument == "--metadata-only" && !metadataOnly)
+            {
                 metadataOnly = true;
+            }
             else if (argument == "--api-project" && index + 1 < arguments.Length)
+            {
                 apiProjects.Add(arguments[++index].Replace('\\', '/'));
+            }
             else if (argument == "--sdk-snapshot" && sdkSnapshot is null && index + 1 < arguments.Length)
+            {
                 sdkSnapshot = File.ReadAllText(arguments[++index]);
+            }
             else if (argument == "--dotnet" && dotnetHost is null && index + 1 < arguments.Length)
+            {
                 dotnetHost = arguments[++index];
+            }
             else if (argument == "--project-graph" && projectGraphPath is null && index + 1 < arguments.Length)
+            {
                 projectGraphPath = arguments[++index];
+            }
             else if (argument == "--artifacts-path" && artifactsPath is null && index + 1 < arguments.Length)
+            {
                 artifactsPath = Path.GetFullPath(arguments[++index]);
+            }
             else if (argument == "--configuration" && !selectedConfiguration && index + 1 < arguments.Length)
             {
                 configuration = arguments[++index] switch
@@ -108,25 +128,35 @@ public static partial class ArchitectureValidator
                 selectedConfiguration = true;
             }
             else if (!argument.StartsWith("--", StringComparison.Ordinal) && paths.Count == 0)
+            {
                 paths.Add(argument);
+            }
             else
+            {
                 throw new ArgumentException(
                     "Usage: verify [engine-root] [--configuration Debug|SourceDebug|Release] [--expand-xml] [--source-only|--metadata-only|--agent-documents-only] [--api-project project.csproj] [--dotnet SDK] [--artifacts-path directory] [--project-graph output.json] [--sdk-snapshot input.json]",
                     nameof(arguments)
                 );
+            }
         }
         if ((projectGraphPath is not null || artifactsPath is not null) && dotnetHost is null)
+        {
             throw new ArgumentException("Evaluated project graph output requires an explicitly selected --dotnet SDK.", nameof(arguments));
+        }
         string repositoryRoot = ResolveRepositoryRoot(paths);
         foreach (string project in apiProjects)
         {
             string selected = Path.GetFullPath(project, repositoryRoot);
             if (!selected.StartsWith(repositoryRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                || !selected.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) || !File.Exists(selected))
+                || !selected.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) || !File.Exists(selected)
+            ) {
                 throw new ArgumentException($"The selected API owner is not a repository project: {project}", nameof(arguments));
+            }
         }
         if (sourceOnly && (metadataOnly || apiProjects.Count != 0))
+        {
             throw new ArgumentException("Source-only validation cannot claim compiled API evidence.", nameof(arguments));
+        }
         if (expandXml)
         {
             int changedFileCount = ExpandXmlDocumentation(repositoryRoot);
@@ -137,31 +167,53 @@ public static partial class ArchitectureValidator
         if (agentDocumentsOnly)
         {
             if (sourceOnly || metadataOnly || apiProjects.Count != 0 || dotnetHost is not null)
+            {
                 throw new ArgumentException("Agent document checks do not claim product or SDK validation.");
+            }
             AgentDocumentValidator.Validate(repositoryRoot, failures);
             foreach (string failure in failures)
+            {
                 Console.Error.WriteLine(failure);
+            }
             return failures.Count == 0 ? 0 : 1;
         }
-        DocumentationProjectReferences? evaluatedReferences = dotnetHost is null ? null
-            : new DocumentationProjectReferences(repositoryRoot, configuration, dotnetHost, target: null, artifactsPath,
+        DocumentationProjectReferences? evaluatedReferences = dotnetHost is null
+            ? null
+            : new DocumentationProjectReferences(
+                repositoryRoot,
+                configuration,
+                dotnetHost,
+                target: null,
+                artifactsPath,
                 apiProjects.Count == 0 ? null : apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot))
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase), sdkSnapshot);
-        var documentationModels = new DocumentationSourceModels(repositoryRoot, configuration,
-            evaluatedReferences, cancellationToken, failures);
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase),
+                sdkSnapshot
+            );
+        var documentationModels = new DocumentationSourceModels(
+            repositoryRoot,
+            configuration,
+            evaluatedReferences,
+            cancellationToken,
+            failures
+        );
         var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
         if (!metadataOnly)
+        {
         foreach (string rootName in S_PRODUCTION_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
             if (!Directory.Exists(root))
+            {
                 continue;
+            }
             ValidateDirectories(repositoryRoot, root, failures);
             ValidateSources(repositoryRoot, root, failures, documentationModels, sourceTrees, sourceOnly);
+        }
         }
 
         if (!metadataOnly)
         {
+            ValidateTestStyle(repositoryRoot, failures);
             UsingPolicyValidator.Validate(repositoryRoot, failures, sourceTrees);
             ValidateProjectReferences(repositoryRoot, failures);
             ValidateProductionSolutionFolders(repositoryRoot, failures);
@@ -170,42 +222,79 @@ public static partial class ArchitectureValidator
         }
         IReadOnlyDictionary<string, string>? outputs = null;
         if (dotnetHost is not null)
-            outputs = MSBuildProjectGraphValidator.ValidateAsync(repositoryRoot, configuration, dotnetHost, artifactsPath,
-                projectGraphPath, failures, cancellationToken, sdkSnapshot, apiProjects.Count == 0 ? null : apiProjects).GetAwaiter().GetResult();
+        {
+            outputs = MSBuildProjectGraphValidator.ValidateAsync(
+                repositoryRoot,
+                configuration,
+                dotnetHost,
+                artifactsPath,
+                projectGraphPath,
+                failures,
+                cancellationToken,
+                sdkSnapshot,
+                apiProjects.Count == 0 ? null : apiProjects
+            ).GetAwaiter().GetResult();
+        }
         if (!sourceOnly)
-            PublicApiBoundaryValidator.Validate(repositoryRoot, configuration, failures, outputs,
-                apiProjects.Count == 0 ? null : apiProjects, evaluatedReferences, cancellationToken);
+        {
+            PublicApiBoundaryValidator.Validate(
+                repositoryRoot,
+                configuration,
+                failures,
+                outputs,
+                apiProjects.Count == 0 ? null : apiProjects,
+                evaluatedReferences,
+                cancellationToken
+            );
+        }
         if (metadataOnly)
         {
             IEnumerable<string> projects = apiProjects.Count == 0
                 ? S_PRODUCTION_ROOTS.SelectMany(root => RepositorySourceInventory.Files(Path.Combine(repositoryRoot, root), "*.csproj"))
                 : apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot));
-            foreach (string project in projects.Where(project => !Relative(repositoryRoot, project).StartsWith("tests/", StringComparison.Ordinal)))
-                ValidateSources(repositoryRoot, Path.GetDirectoryName(project)!, failures, documentationModels, sourceTrees, semanticOnly: true);
+            foreach (string project in projects.Where(
+                project => !Relative(repositoryRoot, project).StartsWith("tests/", StringComparison.Ordinal)
+            )) {
+                ValidateSources(
+                    repositoryRoot,
+                    Path.GetDirectoryName(project)!,
+                    failures,
+                    documentationModels,
+                    sourceTrees,
+                    semanticOnly: true
+                );
+            }
         }
         if (failures.Count == 0)
         {
-            Console.WriteLine(sourceOnly ? "InnoEngine source architecture validation passed; compiled API evidence is separate."
-                : metadataOnly ? "InnoEngine selected compiled API validation passed." : "InnoEngine architecture validation passed.");
+            Console.WriteLine(
+                sourceOnly
+                ? "InnoEngine source architecture validation passed; compiled API evidence is separate."
+                : metadataOnly ? "InnoEngine selected compiled API validation passed." : "InnoEngine architecture validation passed."
+            );
             return 0;
         }
 
         Console.Error.WriteLine($"InnoEngine architecture validation failed with {failures.Count} violation(s):");
         foreach (string failure in failures.Order(StringComparer.Ordinal))
+        {
             Console.Error.WriteLine("  " + failure);
+        }
         return 1;
     }
 
     private static string ResolveRepositoryRoot(IReadOnlyList<string> arguments)
     {
         string start = arguments.Count == 0
-            ? Directory.GetCurrentDirectory()
-            : Path.GetFullPath(arguments[0]);
+                       ? Directory.GetCurrentDirectory()
+                       : Path.GetFullPath(arguments[0]);
         DirectoryInfo? current = new(start);
         while (current is not null)
         {
             if (File.Exists(Path.Combine(current.FullName, "InnoEngine.sln")))
+            {
                 return current.FullName;
+            }
             current = current.Parent;
         }
         throw new DirectoryNotFoundException("Could not locate the InnoEngine repository root.");
@@ -226,6 +315,17 @@ public static partial class ArchitectureValidator
         }
     }
 
+    // Test sources follow the style rulebook; the production contracts below do not apply to them.
+    private static void ValidateTestStyle(
+        string repositoryRoot,
+        ICollection<string> failures
+    ) {
+        foreach (string path in EnumerateFiles(Path.Combine(repositoryRoot, "tests"), "*.cs"))
+        {
+            CSharpStyleValidator.ValidateStyle(Relative(repositoryRoot, path), File.ReadAllText(path), failures);
+        }
+    }
+
     private static void ValidateSources(
         string repositoryRoot,
         string root,
@@ -239,7 +339,9 @@ public static partial class ArchitectureValidator
         {
             string source = File.ReadAllText(path);
             if (IsGenerated(source))
+            {
                 continue;
+            }
             string relative = Relative(repositoryRoot, path);
             if (!sourceTrees.TryGetValue(path, out SyntaxTree? syntax))
             {
@@ -247,44 +349,84 @@ public static partial class ArchitectureValidator
                 sourceTrees.Add(path, syntax);
             }
             if (!semanticOnly)
-                CSharpStyleValidator.Validate(relative, syntax, failures);
-            if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
-                || RepositorySourceInventory.IsTestPath(relative))
-                continue;
-            PublicApiDocumentationValidator.Validate(relative, syntax, failures,
-                !sourceOnly && source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
-                documentationModels, validateInheritedContract: !sourceOnly);
-            if (!sourceOnly && RuntimeContentBoundaryValidator.ShouldAudit(relative))
-                RuntimeContentBoundaryValidator.Validate(relative, documentationModels.GetModel(path), failures);
-            if (!sourceOnly && relative.StartsWith("platforms/", StringComparison.Ordinal) && relative.Contains("/Targets/", StringComparison.Ordinal))
             {
+                CSharpStyleValidator.Validate(relative, source, syntax, failures);
+            }
+            if (relative.StartsWith("tools/Inno.Tooling.Architecture/", StringComparison.Ordinal)
+                || RepositorySourceInventory.IsTestPath(relative)
+            ) {
+                continue;
+            }
+            PublicApiDocumentationValidator.Validate(
+                relative,
+                syntax,
+                failures,
+                !sourceOnly && source.Contains("<inheritdoc", StringComparison.Ordinal) ? documentationModels.GetModel(path) : null,
+                documentationModels,
+                validateInheritedContract: !sourceOnly
+            );
+            if (!sourceOnly && RuntimeContentBoundaryValidator.ShouldAudit(relative))
+            {
+                RuntimeContentBoundaryValidator.Validate(relative, documentationModels.GetModel(path), failures);
+            }
+            if (!sourceOnly
+                && relative.StartsWith("platforms/", StringComparison.Ordinal)
+                && relative.Contains("/Targets/", StringComparison.Ordinal)
+            ) {
                 SemanticModel? model = documentationModels.GetModel(path);
                 if (model is not null)
                 {
                     foreach (VariableDeclaratorSyntax field in model.SyntaxTree.GetRoot()
-                        .DescendantNodes().OfType<VariableDeclaratorSyntax>())
-                    {
+                        .DescendantNodes()
+                        .OfType<VariableDeclaratorSyntax>()
+                    ) {
                         if (model.GetDeclaredSymbol(field) is IFieldSymbol symbol
                             && symbol.Type is INamedTypeSymbol type
                             && (type.ToDisplayString() == "Inno.Build.IGameContentCompiler"
-                                || type.AllInterfaces.Any(static contract => contract.ToDisplayString() == "Inno.Build.IGameContentCompiler")))
+                                || type.AllInterfaces.Any(
+                                    static contract => contract.ToDisplayString() == "Inno.Build.IGameContentCompiler"
+                                ))
+                        ) {
                             failures.Add($"{relative}: platform packaging cannot own a content compiler; bind it in the distribution.");
+                        }
                     }
                 }
             }
             if (semanticOnly)
+            {
                 continue;
+            }
             GenerationCleanupValidator.Validate(relative, syntax, failures);
-            AddSourceFailure(source.Contains("InternalsVisibleTo", StringComparison.Ordinal), relative,
-                "friend assemblies are forbidden", failures);
-            AddSourceFailure(source.Contains("[Obsolete", StringComparison.Ordinal), relative,
-                "obsolete compatibility APIs are forbidden", failures);
-            AddSourceFailure(source.Contains("TypeForwardedTo", StringComparison.Ordinal), relative,
-                "type forwarding is forbidden", failures);
-            AddSourceFailure(CompatibilityFieldPattern().IsMatch(source), relative,
-                "schema compatibility fields are forbidden", failures);
-            AddSourceFailure(UninformativeXmlPattern().IsMatch(source), relative,
-                "public API XML contains an uninformative generated placeholder", failures);
+            AddSourceFailure(
+                source.Contains("InternalsVisibleTo", StringComparison.Ordinal),
+                relative,
+                "friend assemblies are forbidden",
+                failures
+            );
+            AddSourceFailure(
+                source.Contains("[Obsolete", StringComparison.Ordinal),
+                relative,
+                "obsolete compatibility APIs are forbidden",
+                failures
+            );
+            AddSourceFailure(
+                source.Contains("TypeForwardedTo", StringComparison.Ordinal),
+                relative,
+                "type forwarding is forbidden",
+                failures
+            );
+            AddSourceFailure(
+                CompatibilityFieldPattern().IsMatch(source),
+                relative,
+                "schema compatibility fields are forbidden",
+                failures
+            );
+            AddSourceFailure(
+                UninformativeXmlPattern().IsMatch(source),
+                relative,
+                "public API XML contains an uninformative generated placeholder",
+                failures
+            );
 
             int lineNumber = 0;
             using var reader = new StringReader(source);
@@ -307,12 +449,16 @@ public static partial class ArchitectureValidator
         {
             string root = Path.Combine(repositoryRoot, rootName);
             if (!Directory.Exists(root))
+            {
                 continue;
+            }
             foreach (string path in EnumerateFiles(root, "*.cs"))
             {
                 string source = File.ReadAllText(path);
                 if (IsGenerated(source))
+                {
                     continue;
+                }
                 string newline = source.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
                 string expanded = ExpandableXmlPattern().Replace(source, match =>
                 {
@@ -324,10 +470,13 @@ public static partial class ArchitectureValidator
                         newline,
                         $"{indentation}/// <{element}{attributes}>",
                         $"{indentation}/// {content}",
-                        $"{indentation}/// </{element}>");
+                        $"{indentation}/// </{element}>"
+                    );
                 });
                 if (string.Equals(source, expanded, StringComparison.Ordinal))
+                {
                     continue;
+                }
                 File.WriteAllText(path, expanded);
                 changedFileCount++;
             }
@@ -342,67 +491,71 @@ public static partial class ArchitectureValidator
         foreach (string projectPath in EnumerateFiles(repositoryRoot, "*.csproj"))
         {
             if (IsIgnoredPath(projectPath))
+            {
                 continue;
+            }
             string projectRelative = Relative(repositoryRoot, projectPath);
             XDocument project = XDocument.Load(projectPath);
             foreach (XElement reference in project.Descendants("ProjectReference"))
             {
                 string? include = reference.Attribute("Include")?.Value;
                 if (string.IsNullOrWhiteSpace(include))
+                {
                     continue;
+                }
                 string target = Path.GetFullPath(include, Path.GetDirectoryName(projectPath)!);
                 string targetRelative = Relative(repositoryRoot, target);
-                if (projectRelative.StartsWith("src/foundation/", StringComparison.Ordinal) &&
-                    !targetRelative.StartsWith("src/foundation/", StringComparison.Ordinal))
-                {
+                if (projectRelative.StartsWith("src/foundation/", StringComparison.Ordinal)
+                    && !targetRelative.StartsWith("src/foundation/", StringComparison.Ordinal)
+                ) {
                     failures.Add($"{projectRelative}: Foundation cannot reference upper-layer project {targetRelative}.");
                 }
-                if (projectRelative.StartsWith("build/", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("build/cli/", StringComparison.Ordinal) &&
-                    targetRelative.StartsWith("src/composition/editor/", StringComparison.Ordinal))
-                {
+                if (projectRelative.StartsWith("build/", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("build/cli/", StringComparison.Ordinal)
+                    && targetRelative.StartsWith("src/composition/editor/", StringComparison.Ordinal)
+                ) {
                     failures.Add($"{projectRelative}: Build cannot reference Editor project {targetRelative}.");
                 }
-                if (projectRelative.StartsWith("src/runtime/", StringComparison.Ordinal) &&
-                    (targetRelative.StartsWith("src/composition/", StringComparison.Ordinal) ||
-                     targetRelative.StartsWith("build/", StringComparison.Ordinal)))
-                {
+                if (projectRelative.StartsWith("src/runtime/", StringComparison.Ordinal)
+                    && (targetRelative.StartsWith("src/composition/", StringComparison.Ordinal)
+                        || targetRelative.StartsWith("build/", StringComparison.Ordinal))
+                ) {
                     failures.Add($"{projectRelative}: Runtime cannot reference {targetRelative}.");
                 }
-                if (targetRelative.Contains("Inno.Native.Bgfx", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Adapter.Rendering.Bgfx", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Native.Bgfx", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("backends/Bgfx/build/Inno.Build.Toolchains.Bgfx", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
-                {
+                if (targetRelative.Contains("Inno.Native.Bgfx", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Adapter.Rendering.Bgfx", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Native.Bgfx", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("backends/Bgfx/build/Inno.Build.Toolchains.Bgfx", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("tests/", StringComparison.Ordinal)
+                ) {
                     failures.Add($"{projectRelative}: BGFX native code is restricted to the BGFX adapter.");
                 }
-                if (targetRelative.Contains("Inno.Native.Sdl3", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Adapter.Platform.Sdl3", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Adapter.Presentation.ImGui.Sdl3", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Native.Sdl3", StringComparison.Ordinal) &&
-                    !(projectRelative.StartsWith("platforms/", StringComparison.Ordinal)
-                        && projectRelative.Contains("/integrations/Inno.Integration.", StringComparison.Ordinal)
-                        && projectRelative.Contains(".Sdl3/", StringComparison.Ordinal)) &&
-                    !projectRelative.StartsWith("backends/Sdl3/build/Inno.Build.Toolchains.Sdl3", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
-                {
+                if (targetRelative.Contains("Inno.Native.Sdl3", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Adapter.Platform.Sdl3", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Adapter.Presentation.ImGui.Sdl3", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Native.Sdl3", StringComparison.Ordinal)
+                    && !(projectRelative.StartsWith("platforms/", StringComparison.Ordinal)
+                         && projectRelative.Contains("/integrations/Inno.Integration.", StringComparison.Ordinal)
+                         && projectRelative.Contains(".Sdl3/", StringComparison.Ordinal))
+                    && !projectRelative.StartsWith("backends/Sdl3/build/Inno.Build.Toolchains.Sdl3", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("tests/", StringComparison.Ordinal)
+                ) {
                     failures.Add($"{projectRelative}: SDL3 native code is restricted to the SDL3 platform adapter.");
                 }
-                if (targetRelative.Contains("Inno.Native.MiniAudio", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Adapter.Audio.MiniAudio", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Native.MiniAudio", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
-                {
+                if (targetRelative.Contains("Inno.Native.MiniAudio", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Adapter.Audio.MiniAudio", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Native.MiniAudio", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("backends/MiniAudio/build/Inno.Build.Toolchains.MiniAudio", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("tests/", StringComparison.Ordinal)
+                ) {
                     failures.Add($"{projectRelative}: miniaudio native code is restricted to the MiniAudio adapter.");
                 }
-                if (targetRelative.Contains("Inno.Native.UI", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Adapter.UI.RmlUi", StringComparison.Ordinal) &&
-                    !projectRelative.Contains("Inno.Native.UI", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("backends/RmlUi/build/Inno.Build.Toolchains.UI", StringComparison.Ordinal) &&
-                    !projectRelative.StartsWith("tests/", StringComparison.Ordinal))
-                {
+                if (targetRelative.Contains("Inno.Native.UI", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Adapter.UI.RmlUi", StringComparison.Ordinal)
+                    && !projectRelative.Contains("Inno.Native.UI", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("backends/RmlUi/build/Inno.Build.Toolchains.UI", StringComparison.Ordinal)
+                    && !projectRelative.StartsWith("tests/", StringComparison.Ordinal)
+                ) {
                     failures.Add($"{projectRelative}: RmlUi native code is restricted to the RmlUi adapter.");
                 }
             }
@@ -428,8 +581,13 @@ public static partial class ArchitectureValidator
                 string id = project.Groups["id"].Value;
                 names[id] = project.Groups["name"].Value;
                 paths[id] = project.Groups["path"].Value.Replace('\\', '/');
-                if (string.Equals(project.Groups["type"].Value, "{2150E333-8FDC-42A3-9474-1A3956D46DE8}", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(
+                    project.Groups["type"].Value,
+                    "{2150E333-8FDC-42A3-9474-1A3956D46DE8}",
+                    StringComparison.OrdinalIgnoreCase
+                )) {
                     solutionFolders.Add(id);
+                }
                 continue;
             }
 
@@ -444,15 +602,20 @@ public static partial class ArchitectureValidator
                 continue;
             }
             if (!readingNestedProjects)
+            {
                 continue;
+            }
 
             Match nesting = SolutionNestingPattern().Match(line);
             if (nesting.Success)
+            {
                 parents[nesting.Groups[1].Value] = nesting.Groups[2].Value;
+            }
         }
 
-        string? testsRoot = solutionFolders.FirstOrDefault(id =>
-            string.Equals(names.GetValueOrDefault(id), "tests", StringComparison.Ordinal) && !parents.ContainsKey(id));
+        string? testsRoot = solutionFolders.FirstOrDefault(id => (
+            string.Equals(names.GetValueOrDefault(id), "tests", StringComparison.Ordinal) && !parents.ContainsKey(id)
+        ));
         if (testsRoot is null)
         {
             failures.Add("InnoEngine.sln: missing root tests Solution Folder.");
@@ -460,42 +623,50 @@ public static partial class ArchitectureValidator
         }
 
         var declaredTestProjects = paths
-            .Where(static pair => pair.Value.StartsWith("tests/", StringComparison.Ordinal) &&
-                                  pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+            .Where(static pair => (
+                pair.Value.StartsWith("tests/", StringComparison.Ordinal)
+                && pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+            ))
             .ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
         string testsDirectory = Path.Combine(repositoryRoot, "tests");
         foreach (string projectPath in EnumerateFiles(testsDirectory, "*.csproj"))
         {
             string relative = Relative(repositoryRoot, projectPath);
             if (!declaredTestProjects.ContainsKey(relative))
+            {
                 failures.Add($"{relative}: test project is missing from InnoEngine.sln.");
+            }
         }
 
         foreach ((string projectPath, string projectId) in declaredTestProjects)
         {
-            if (!parents.TryGetValue(projectId, out string? parentId) ||
-                string.Equals(parentId, testsRoot, StringComparison.OrdinalIgnoreCase) ||
-                !solutionFolders.Contains(parentId) ||
-                !HasSolutionAncestor(parentId, testsRoot, parents))
-            {
+            if (!parents.TryGetValue(projectId, out string? parentId)
+                || string.Equals(parentId, testsRoot, StringComparison.OrdinalIgnoreCase)
+                || !solutionFolders.Contains(parentId)
+                || !HasSolutionAncestor(parentId, testsRoot, parents)
+            ) {
                 failures.Add($"{projectPath}: test project must be nested below a tests/<domain> Solution Folder.");
                 continue;
             }
 
             string projectName = names[projectId];
-            bool isFixture = projectName.Contains(".TestModule", StringComparison.Ordinal) ||
-                             projectName.Contains(".TestAssembly", StringComparison.Ordinal) ||
-                             projectName.Contains(".TestDependency", StringComparison.Ordinal);
+            bool isFixture = projectName.Contains(".TestModule", StringComparison.Ordinal)
+                             || projectName.Contains(".TestAssembly", StringComparison.Ordinal)
+                             || projectName.Contains(".TestDependency", StringComparison.Ordinal);
             if (isFixture && !HasNamedSolutionAncestor(parentId, "fixtures", names, parents))
+            {
                 failures.Add($"{projectPath}: test support project must be nested below a fixtures Solution Folder.");
+            }
 
             string actualPath = GetSolutionFolderPath(projectId, names, solutionFolders, parents);
             string physicalGroup = Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
-                .Replace('\\', '/').TrimEnd('/') ?? string.Empty;
+                .Replace('\\', '/')
+                .TrimEnd('/') ?? string.Empty;
             if (!string.Equals(physicalGroup, actualPath, StringComparison.Ordinal))
             {
                 failures.Add(
-                    $"{projectPath}: physical test folder '{physicalGroup}' must match Solution Folder '{actualPath}'.");
+                    $"{projectPath}: physical test folder '{physicalGroup}' must match Solution Folder '{actualPath}'."
+                );
             }
         }
     }
@@ -519,8 +690,13 @@ public static partial class ArchitectureValidator
                 string id = project.Groups["id"].Value;
                 names[id] = project.Groups["name"].Value;
                 paths[id] = project.Groups["path"].Value.Replace('\\', '/');
-                if (string.Equals(project.Groups["type"].Value, "{2150E333-8FDC-42A3-9474-1A3956D46DE8}", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(
+                    project.Groups["type"].Value,
+                    "{2150E333-8FDC-42A3-9474-1A3956D46DE8}",
+                    StringComparison.OrdinalIgnoreCase
+                )) {
                     solutionFolders.Add(id);
+                }
                 continue;
             }
 
@@ -535,30 +711,41 @@ public static partial class ArchitectureValidator
                 continue;
             }
             if (!readingNestedProjects)
+            {
                 continue;
+            }
 
             Match nesting = SolutionNestingPattern().Match(line);
             if (!nesting.Success)
+            {
                 continue;
+            }
             string childId = nesting.Groups[1].Value;
             string parentId = nesting.Groups[2].Value;
             if (!parents.TryAdd(childId, parentId))
-                failures.Add($"InnoEngine.sln: project or folder '{names.GetValueOrDefault(childId, childId)}' has more than one Solution Folder parent.");
+            {
+                failures.Add(
+                    $"InnoEngine.sln: project or folder '{names.GetValueOrDefault(childId, childId)}' has more than one Solution Folder parent."
+                );
+            }
         }
 
         var declaredSourceProjects = paths
-            .Where(static pair => S_PRODUCTION_ROOTS.Any(root =>
-                                      pair.Value.StartsWith(root + "/", StringComparison.Ordinal)) &&
-                                  pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
+            .Where(static pair => (
+                S_PRODUCTION_ROOTS.Any(root => pair.Value.StartsWith(root + "/", StringComparison.Ordinal))
+                && pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
+            ))
             .ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
         foreach (string projectPath in S_PRODUCTION_ROOTS
-                     .Select(root => Path.Combine(repositoryRoot, root))
-                     .Where(Directory.Exists)
-                     .SelectMany(root => EnumerateFiles(root, "*.csproj")))
-        {
+            .Select(root => Path.Combine(repositoryRoot, root))
+            .Where(Directory.Exists)
+            .SelectMany(root => EnumerateFiles(root, "*.csproj"))
+        ) {
             string relative = Relative(repositoryRoot, projectPath);
             if (!declaredSourceProjects.ContainsKey(relative))
+            {
                 failures.Add($"{relative}: project is missing from InnoEngine.sln.");
+            }
         }
 
         foreach ((string projectPath, string projectId) in declaredSourceProjects)
@@ -579,22 +766,31 @@ public static partial class ArchitectureValidator
             }
 
             string projectDirectory = Path.GetDirectoryName(Path.Combine(repositoryRoot, projectPath))!;
-            if (EnumerateFiles(projectDirectory, "*.csproj").Any(path => Path.GetFullPath(path) != Path.GetFullPath(Path.Combine(repositoryRoot, projectPath))))
+            if (EnumerateFiles(projectDirectory, "*.csproj").Any(
+                path => Path.GetFullPath(path) != Path.GetFullPath(Path.Combine(repositoryRoot, projectPath))
+            )) {
                 expectedPath = Path.GetDirectoryName(projectPath)!.Replace('\\', '/');
+            }
             string actualPath = GetSolutionFolderPath(projectId, names, solutionFolders, parents);
             if (!string.Equals(actualPath, expectedPath, StringComparison.Ordinal))
+            {
                 failures.Add($"{projectPath}: expected Solution Folder '{expectedPath}', found '{actualPath}'.");
+            }
 
             string physicalGroup = sourceRoot is "tools" or "entry"
-                ? sourceRoot
-                : Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
-                    .Replace('\\', '/').TrimEnd('/') ?? string.Empty;
+                                   ? sourceRoot
+                                   : Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
+                                       .Replace('\\', '/')
+                                       .TrimEnd('/') ?? string.Empty;
             if (expectedPath == Path.GetDirectoryName(projectPath)?.Replace('\\', '/'))
+            {
                 physicalGroup = expectedPath;
+            }
             if (!string.Equals(physicalGroup, expectedPath, StringComparison.Ordinal))
             {
                 failures.Add(
-                    $"{projectPath}: physical source folder '{physicalGroup}' must match conceptual folder '{expectedPath}'.");
+                    $"{projectPath}: physical source folder '{physicalGroup}' must match conceptual folder '{expectedPath}'."
+                );
             }
         }
     }
@@ -602,93 +798,175 @@ public static partial class ArchitectureValidator
     private static string? ClassifySourceSolutionPath(string projectName)
     {
         if (projectName.StartsWith("Inno.Core.", StringComparison.Ordinal))
+        {
             return "src/foundation/core";
+        }
         if (projectName.StartsWith("Inno.Extensibility.", StringComparison.Ordinal))
+        {
             return "src/foundation/extensibility";
+        }
         if (string.Equals(projectName, "Inno.Scripting.Api", StringComparison.Ordinal))
+        {
             return "src/foundation/scripting";
+        }
         if (string.Equals(projectName, "Inno.Shell", StringComparison.Ordinal))
+        {
             return "src/composition/shell";
+        }
         if (string.Equals(projectName, "Inno.Player.Runtime", StringComparison.Ordinal))
+        {
             return "src/composition/player";
+        }
         if (string.Equals(projectName, "Inno.Editor.Annotations", StringComparison.Ordinal))
+        {
             return "src/composition/editor/contracts";
+        }
 
         if (projectName.StartsWith("Inno.Editor.Panel.", StringComparison.Ordinal))
-            return "src/composition/editor/panels";
-        if (string.Equals(projectName, "Inno.Editor.Hosting", StringComparison.Ordinal))
-            return "src/composition/editor/hosting";
-        if (projectName is "Inno.Editor.ImGui" or "Inno.Editor.Workbench" or "Inno.Editor.Assets.ImGui" or "Inno.Editor.Shaders.ImGui" or "Inno.Editor.Graph.ImGui")
-            return "src/composition/editor/presentation";
-        if (string.Equals(projectName, "Inno.Editor.Core", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Editor.Diagnostics", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Editor.Graph", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Editor.Inspection", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Editor.Interactions", StringComparison.Ordinal) ||
-            string.Equals(projectName, "Inno.Editor.Settings", StringComparison.Ordinal))
         {
+            return "src/composition/editor/panels";
+        }
+        if (string.Equals(projectName, "Inno.Editor.Hosting", StringComparison.Ordinal))
+        {
+            return "src/composition/editor/hosting";
+        }
+        if (projectName is "Inno.Editor.ImGui"
+            or "Inno.Editor.Workbench"
+            or "Inno.Editor.Assets.ImGui"
+            or "Inno.Editor.Shaders.ImGui"
+            or "Inno.Editor.Graph.ImGui"
+        ) {
+            return "src/composition/editor/presentation";
+        }
+        if (string.Equals(projectName, "Inno.Editor.Core", StringComparison.Ordinal)
+            || string.Equals(projectName, "Inno.Editor.Diagnostics", StringComparison.Ordinal)
+            || string.Equals(projectName, "Inno.Editor.Graph", StringComparison.Ordinal)
+            || string.Equals(projectName, "Inno.Editor.Inspection", StringComparison.Ordinal)
+            || string.Equals(projectName, "Inno.Editor.Interactions", StringComparison.Ordinal)
+            || string.Equals(projectName, "Inno.Editor.Settings", StringComparison.Ordinal)
+        ) {
             return "src/composition/editor/framework";
         }
         if (projectName.StartsWith("Inno.Editor.", StringComparison.Ordinal))
+        {
             return "src/composition/editor/features";
+        }
         if (string.Equals(projectName, "Inno.Adapter", StringComparison.Ordinal))
+        {
             return "src/adapters/common";
+        }
         if (string.Equals(projectName, "Inno.Adapter.Default", StringComparison.Ordinal))
+        {
             return "src/composition/adapters";
+        }
         if (string.Equals(projectName, "Inno.Adapter.Authoring.Default", StringComparison.Ordinal))
+        {
             return "src/composition/adapters";
+        }
         if (projectName.StartsWith("Inno.Adapter.Presentation", StringComparison.Ordinal))
+        {
             return "src/adapters/presentation";
+        }
         if (projectName.StartsWith("Inno.Adapter.Platform", StringComparison.Ordinal))
+        {
             return "src/adapters/platform";
+        }
         if (projectName.StartsWith("Inno.Adapter.Input", StringComparison.Ordinal))
+        {
             return "src/adapters/input";
+        }
         if (projectName.StartsWith("Inno.Adapter.Storage", StringComparison.Ordinal))
+        {
             return "src/adapters/storage";
+        }
         if (projectName.StartsWith("Inno.Adapter.Rendering", StringComparison.Ordinal))
+        {
             return "src/adapters/rendering";
+        }
         if (projectName.StartsWith("Inno.Adapter.Text", StringComparison.Ordinal))
+        {
             return "src/adapters/text";
+        }
         if (projectName.StartsWith("Inno.Adapter.UI", StringComparison.Ordinal))
+        {
             return "src/adapters/ui";
+        }
         if (projectName.StartsWith("Inno.Adapter.Audio", StringComparison.Ordinal))
+        {
             return "src/adapters/audio";
+        }
         if (string.Equals(projectName, "Inno.Content", StringComparison.Ordinal))
+        {
             return "src/content/deployment";
+        }
         if (projectName.StartsWith("Inno.References", StringComparison.Ordinal))
+        {
             return "src/content/references";
+        }
         if (projectName.StartsWith("Inno.Assets", StringComparison.Ordinal))
+        {
             return "src/content/assets";
+        }
         if (projectName.StartsWith("Inno.Scene", StringComparison.Ordinal))
+        {
             return "src/content/scene";
+        }
         if (projectName.StartsWith("Inno.Animation", StringComparison.Ordinal))
+        {
             return "src/content/animation";
+        }
         if (string.Equals(projectName, "Inno.Platform", StringComparison.Ordinal))
+        {
             return "src/services/platform";
+        }
         if (projectName.StartsWith("Inno.Input", StringComparison.Ordinal))
+        {
             return "src/services/input";
+        }
         if (projectName.StartsWith("Inno.Storage", StringComparison.Ordinal))
+        {
             return "src/services/storage";
+        }
         if (projectName.StartsWith("Inno.Rendering", StringComparison.Ordinal))
+        {
             return "src/services/rendering";
+        }
         if (projectName.StartsWith("Inno.Text", StringComparison.Ordinal))
+        {
             return "src/services/text";
+        }
         if (projectName.StartsWith("Inno.UI", StringComparison.Ordinal))
+        {
             return "src/services/ui";
+        }
         if (projectName.StartsWith("Inno.Audio", StringComparison.Ordinal))
+        {
             return "src/services/audio";
+        }
         if (string.Equals(projectName, "Inno.Runtime", StringComparison.Ordinal))
+        {
             return "src/runtime/engine";
+        }
         if (string.Equals(projectName, "Inno.Runtime.Contracts", StringComparison.Ordinal))
+        {
             return "src/runtime/contracts";
+        }
         if (string.Equals(projectName, "Inno.Runtime.Generators", StringComparison.Ordinal))
+        {
             return "src/runtime/generators";
+        }
         if (string.Equals(projectName, "Inno.Engine.Default", StringComparison.Ordinal))
+        {
             return "src/composition/default";
+        }
         if (projectName.StartsWith("Inno.Scripting", StringComparison.Ordinal))
+        {
             return "src/runtime/scripting";
+        }
         if (projectName.StartsWith("Inno.Plugins", StringComparison.Ordinal))
+        {
             return "src/runtime/plugins";
+        }
         return null;
     }
 
@@ -699,17 +977,23 @@ public static partial class ArchitectureValidator
         IReadOnlyDictionary<string, string> parents
     ) {
         if (!parents.TryGetValue(projectId, out string? currentId))
+        {
             return "<solution-root>";
+        }
 
         var segments = new List<string>();
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         while (visited.Add(currentId))
         {
             if (!solutionFolders.Contains(currentId))
+            {
                 return "<invalid-parent>";
+            }
             segments.Add(names.GetValueOrDefault(currentId, currentId));
             if (!parents.TryGetValue(currentId, out currentId!))
+            {
                 break;
+            }
         }
         segments.Reverse();
         return string.Join('/', segments);
@@ -725,9 +1009,13 @@ public static partial class ArchitectureValidator
         while (visited.Add(currentId))
         {
             if (string.Equals(currentId, expectedAncestorId, StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
             if (!parents.TryGetValue(currentId, out currentId!))
+            {
                 return false;
+            }
         }
         return false;
     }
@@ -743,9 +1031,13 @@ public static partial class ArchitectureValidator
         while (visited.Add(currentId))
         {
             if (string.Equals(names.GetValueOrDefault(currentId), expectedName, StringComparison.Ordinal))
+            {
                 return true;
+            }
             if (!parents.TryGetValue(currentId, out currentId!))
+            {
                 return false;
+            }
         }
         return false;
     }
@@ -753,8 +1045,7 @@ public static partial class ArchitectureValidator
     private static bool IsAnyDomain(
         string path,
         params string[] domains
-    )
-        => domains.Any(domain => path.StartsWith($"src/{domain}/", StringComparison.Ordinal));
+    ) => domains.Any(domain => path.StartsWith($"src/{domain}/", StringComparison.Ordinal));
 
     private static void AddSourceFailure(
         bool condition,
@@ -763,11 +1054,12 @@ public static partial class ArchitectureValidator
         ICollection<string> failures
     ) {
         if (condition)
+        {
             failures.Add($"{path}: {message}.");
+        }
     }
 
-    private static IEnumerable<string> EnumerateDirectories(string root)
-        => RepositorySourceInventory.Directories(root);
+    private static IEnumerable<string> EnumerateDirectories(string root) => RepositorySourceInventory.Directories(root);
 
     private static IEnumerable<string> EnumerateFiles(
         string root,
@@ -777,8 +1069,8 @@ public static partial class ArchitectureValidator
     private static bool IsIgnoredPath(string path) => path.Split(Path.DirectorySeparatorChar).Any(S_IGNORED_DIRECTORIES.Contains);
 
     private static bool IsGenerated(string source)
-        => source.Contains("<auto-generated>", StringComparison.OrdinalIgnoreCase) ||
-           source.Contains("[GeneratedCode", StringComparison.Ordinal);
+        => source.Contains("<auto-generated>", StringComparison.OrdinalIgnoreCase)
+           || source.Contains("[GeneratedCode", StringComparison.Ordinal);
 
     private static string Relative(
         string repositoryRoot,
@@ -788,7 +1080,9 @@ public static partial class ArchitectureValidator
     [GeneratedRegex(@"\b(schemaVersion|formatVersion|formerVersion)\b", RegexOptions.IgnoreCase)]
     private static partial Regex CompatibilityFieldPattern();
 
-    [GeneratedRegex(@"Executes this contract at the caller-controlled boundary|Transforms validated inputs into a deterministic result|Gets caller-visible|input consumed by this operation|state exposed by this contract|value associated with this contract|Models the .* domain value|Performs the .* operation|Runs the .* operation|Gets the .* value owned by the current instance")]
+    [GeneratedRegex(
+        @"Executes this contract at the caller-controlled boundary|Transforms validated inputs into a deterministic result|Gets caller-visible|input consumed by this operation|state exposed by this contract|value associated with this contract|Models the .* domain value|Performs the .* operation|Runs the .* operation|Gets the .* value owned by the current instance"
+    )]
     private static partial Regex UninformativeXmlPattern();
 
     [GeneratedRegex(@"^\s*///\s*<(summary|param|typeparam|returns|exception|remarks)\b[^>]*>.+</\1>\s*$")]

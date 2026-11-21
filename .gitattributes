@@ -1,4 +1,5 @@
-# Keep authored MSBuild files consistent on every checkout host.
+# Keep authored C# and MSBuild files consistent on every checkout host.
+*.cs text eol=lf
 *.csproj text eol=lf
 *.props text eol=lf
 *.targets text eol=lf
