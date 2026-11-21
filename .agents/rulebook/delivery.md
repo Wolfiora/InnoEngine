@@ -12,5 +12,5 @@ tags: [delivery, notification]
 - Reproduce BGCS defects independently through public APIs and identify them explicitly. Do not modify BGCS source, packages or binaries, or manually edit generated output to bypass defects.
 
 ## 16. Completion sound
-- By default, play `/System/Library/Sounds/Glass.aiff` before waiting for a design decision that changes scope, after completing the final design, and after completing the requested code or file operations and their necessary validation. The user need not repeat this request for each task.
+- By default, play the local system notification sound before waiting for a design decision that changes scope, after completing the final design, and after completing the requested code or file operations and their necessary validation. The user need not repeat this request for each task.
 - If the environment cannot access audio, state in the final result that the sound could not be played. Do not play it when the user explicitly requests silence.

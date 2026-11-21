@@ -13,3 +13,5 @@ On 2026-11-21 the user retired the rule registry. It was built to prove a one-ti
 - InnoEngine.Docs owns its rule files with the same front matter. The engine script reads them only from an explicit `-DocsRoot`.
 
 Earlier decision records describe changes in registry terms. Their rule text remains in force; the registry mechanics no longer apply.
+
+The same change removed environment-specific guidance: the local output drive, a platform sound path and a personal name used as an example.
