@@ -49,7 +49,7 @@ public sealed unsafe class ViewportRetirementTests
         var viewport = new ImGuiViewport { ID = 4221, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)) };
         ImGuiPlatformIO* io = NativeImGui.Raw.GetPlatformIO();
         io->PlatformCreateWindow(&viewport);
-        uint id = renderer.target!.windowId;
+        uint id = renderer.target!.windowID;
         io->PlatformDestroyWindow(&viewport);
         renderer.Fail();
 
@@ -95,12 +95,12 @@ public sealed unsafe class ViewportRetirementTests
         };
         ImGuiPlatformIO* io = NativeImGui.Raw.GetPlatformIO();
         io->PlatformCreateWindow(&viewport);
-        uint id = renderer.target!.windowId;
+        uint id = renderer.target!.windowID;
 
         io->PlatformDestroyWindow(&viewport);
 
         Assert.Single(application.GetWindows());
-        Assert.False(context.TryGetWindowId(viewport.ID, out _));
+        Assert.False(context.TryGetWindowID(viewport.ID, out _));
         Assert.True(viewport.PlatformUserData is null);
         Assert.False((SDL.Raw.GetWindowFromId(id) is null));
         context.RenderFrame(static () => {});
@@ -146,7 +146,7 @@ public sealed unsafe class ViewportRetirementTests
             Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30))
         };
         NativeImGui.Raw.GetPlatformIO()->PlatformCreateWindow(&viewport);
-        uint id = renderer.target!.windowId;
+        uint id = renderer.target!.windowID;
 
         Assert.Throws<RetirementPendingException>(() => application.DestroyImGuiContext(window));
         Assert.False((SDL.Raw.GetWindowFromId(id) is null));
@@ -197,7 +197,7 @@ public sealed unsafe class ViewportRetirementTests
         context.SetIniFile(null);
         var viewport = new ImGuiViewport { ID = 4220, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)) };
         NativeImGui.Raw.GetPlatformIO()->PlatformCreateWindow(&viewport);
-        uint id = renderer.target!.windowId;
+        uint id = renderer.target!.windowID;
         Assert.Single(application.GetWindows());
         Assert.False((SDL.Raw.GetWindowFromId(id) is null));
 
@@ -243,7 +243,7 @@ public sealed unsafe class ViewportRetirementTests
 
         public void PresentViewport(PlatformImGuiViewportTarget target) {}
 
-        public Task RetireViewport(PlatformImGuiViewportTarget target)
+        public Task RetireViewportAsync(PlatformImGuiViewportTarget target)
         {
             retireCount++;
             return m_retirement.Task;

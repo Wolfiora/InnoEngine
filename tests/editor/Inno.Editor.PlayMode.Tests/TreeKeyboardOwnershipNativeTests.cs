@@ -38,7 +38,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         int toggles = 0;
         int overlayPresses = 0;
         bool initialize = true;
-        uint overlayId = 0;
+        uint overlayID = 0;
         string overlayState = string.Empty;
         ListNavigationResult navigation = default;
         Action draw = () =>
@@ -67,9 +67,9 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
                         {
                             overlayPresses++;
                         }
-                        overlayId = NativeImGui.Raw.GetCurrentContext()->LastItemData.ID;
+                        overlayID = NativeImGui.Raw.GetCurrentContext()->LastItemData.ID;
                         ImGuiNativeContext* state = NativeImGui.Raw.GetCurrentContext();
-                        overlayState = $"id={overlayId:X}, nav={state->NavId:X}, active={state->ActiveId:X}, activate={state->NavActivateId:X}, pressed={state->NavActivatePressedId:X}, keyOwner={NativeImGui.GetKeyOwner(ImGuiKey.Space):X}";
+                        overlayState = $"id={overlayID:X}, nav={state->NavId:X}, active={state->ActiveId:X}, activate={state->NavActivateId:X}, pressed={state->NavActivatePressedId:X}, keyOwner={NativeImGui.GetKeyOwner(ImGuiKey.Space):X}";
                     }
                 });
                 open = row.isOpen;
@@ -112,7 +112,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         host.Frame(draw);
         overlayFocus = false;
         host.Frame(draw);
-        Assert.Equal(overlayId, NativeImGui.Raw.GetCurrentContext()->NavId);
+        Assert.Equal(overlayID, NativeImGui.Raw.GetCurrentContext()->NavId);
         // Programmatic focus does not enter native keyboard navigation mode by itself.
         NativeImGui.SetNavCursorVisible(true);
         NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.Space, 1);

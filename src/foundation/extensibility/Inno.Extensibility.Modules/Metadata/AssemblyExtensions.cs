@@ -12,7 +12,7 @@ public static class AssemblyExtensions
     private const string C_ASSEMBLY_DOMAIN_KEY = "Inno.AssemblyDomain";
     private const string C_ASSEMBLY_SCOPE_KEY = "Inno.AssemblyScope";
 
-    private static readonly ConditionalWeakTable<Assembly, AssemblyClassification> S_CACHE = new();
+    private static readonly ConditionalWeakTable<Assembly, AssemblyClassification> CACHE = new();
 
     /// <summary>
     /// Resolves the reload domain declared by an assembly.
@@ -95,11 +95,11 @@ public static class AssemblyExtensions
         AssemblyScope scope
     ) {
         ArgumentNullException.ThrowIfNull(assembly);
-        S_CACHE.AddOrUpdate(assembly, new AssemblyClassification(domain, scope));
+        CACHE.AddOrUpdate(assembly, new AssemblyClassification(domain, scope));
     }
 
     private static AssemblyClassification GetClassification(Assembly assembly)
-        => S_CACHE.GetValue(assembly, static value => ResolveClassification(value));
+        => CACHE.GetValue(assembly, static value => ResolveClassification(value));
 
     private static AssemblyClassification ResolveClassification(Assembly assembly)
     {

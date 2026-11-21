@@ -344,12 +344,12 @@ internal static class DocumentationScriptApi
                 throw new InvalidDataException("A projected owner has inconsistent source paths.");
             }
             paths[origin.symbol.project] = origin.path;
-            string originalId = reverseNames.Replace(symbol.GetDocumentationCommentId()!, match => toSource[match.Value]);
-            if (ambiguousMembers.Contains(origin.path + "\0" + originalId))
+            string originalID = reverseNames.Replace(symbol.GetDocumentationCommentId()!, match => toSource[match.Value]);
+            if (ambiguousMembers.Contains(origin.path + "\0" + originalID))
             {
-                throw new InvalidDataException("Projected member has conflicting captured source contracts: " + originalId);
+                throw new InvalidDataException("Projected member has conflicting captured source contracts: " + originalID);
             }
-            if (!sourceMembers.TryGetValue(origin.path + "\0" + originalId, out DocumentationApiExtractor.DocumentationApiEntry? member))
+            if (!sourceMembers.TryGetValue(origin.path + "\0" + originalID, out DocumentationApiExtractor.DocumentationApiEntry? member))
             {
                 if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor, Parameters.Length: 0, ContainingType.IsValueType: true })
                 {

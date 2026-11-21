@@ -269,7 +269,7 @@ internal sealed partial class BgfxShaderIrGenerator
     ) {
         // BGFX UniformRef stores only 63 visible bytes. Base32 preserves all 256 hash bits
         // while producing a valid SC identifier that fits that native reflection contract.
-        const string alphabet = "abcdefghijklmnopqrstuvwxyz234567";
+        const string C_ALPHABET = "abcdefghijklmnopqrstuvwxyz234567";
         byte[] hash = SHA256.HashData(Encoding.UTF8.GetBytes(id));
         var result = new StringBuilder(prefix, 59);
         uint bits = 0;
@@ -281,12 +281,12 @@ internal sealed partial class BgfxShaderIrGenerator
             while (count >= 5)
             {
                 count -= 5;
-                result.Append(alphabet[(int)((bits >> count) & 31)]);
+                result.Append(C_ALPHABET[(int)((bits >> count) & 31)]);
             }
         }
         if (count != 0)
         {
-            result.Append(alphabet[(int)((bits << (5 - count)) & 31)]);
+            result.Append(C_ALPHABET[(int)((bits << (5 - count)) & 31)]);
         }
         return result.ToString();
     }

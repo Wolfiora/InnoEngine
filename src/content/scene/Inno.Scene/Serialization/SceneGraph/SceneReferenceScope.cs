@@ -8,7 +8,7 @@ namespace Inno.Scene;
 /// </summary>
 internal abstract class SceneReferenceScope
 {
-    private static readonly ExecutionSlot<SceneReferenceScope> C_CURRENT = new("scene graph references");
+    private static readonly ExecutionSlot<SceneReferenceScope> CURRENT = new("scene graph references");
     private readonly GameObject? m_captureRoot;
 
     /// <summary>
@@ -36,7 +36,7 @@ internal abstract class SceneReferenceScope
     /// </summary>
     protected GameScene scene { get; }
 
-    internal static SceneReferenceScope current => C_CURRENT.current;
+    internal static SceneReferenceScope current => CURRENT.current;
 
     /// <summary>
     /// Looks up the identifier assigned to an object by this reference boundary.
@@ -44,21 +44,21 @@ internal abstract class SceneReferenceScope
     /// <param name="engineObject">
     /// The non-null object being captured within the synchronous owner operation.
     /// </param>
-    /// <param name="sourceId">
+    /// <param name="sourceID">
     /// The admitted identifier, or the empty GUID when the boundary rejects the object.
     /// </param>
     /// <returns>
     /// True when the boundary maps the object; false when it lies outside the admitted scope.
     /// </returns>
-    protected abstract bool TryGetSourceId(
+    protected abstract bool TryGetSourceID(
         EngineObject engineObject,
-        out Guid sourceId
+        out Guid sourceID
     );
 
     /// <summary>
     /// Resolves one identifier within the frozen or current owner boundary.
     /// </summary>
-    /// <param name="sourceId">
+    /// <param name="sourceID">
     /// The reference identifier from the current serialized payload.
     /// </param>
     /// <param name="engineObject">
@@ -68,18 +68,18 @@ internal abstract class SceneReferenceScope
     /// True when the boundary contains the identifier; false without publishing a replacement object.
     /// </returns>
     protected abstract bool TryResolve(
-        Guid sourceId,
+        Guid sourceID,
         out EngineObject? engineObject
     );
 
-    internal IDisposable Enter() => C_CURRENT.Enter(this, threadAffine: true);
+    internal IDisposable Enter() => CURRENT.Enter(this, threadAffine: true);
 
     internal EngineReferenceToken Capture(
         EngineObject engineObject,
         string path
     ) {
         ArgumentNullException.ThrowIfNull(engineObject);
-        if (engineObject.isDestroyed || !TryGetSourceId(engineObject, out Guid sourceId))
+        if (engineObject.isDestroyed || !TryGetSourceID(engineObject, out Guid sourceID))
         {
             throw new InvalidOperationException(
                 $"Reference to '{engineObject.GetType().FullName}' with identity "
@@ -110,7 +110,7 @@ internal abstract class SceneReferenceScope
             GameSystem => EngineReferenceKind.GameSystem,
             _ => throw new InvalidOperationException($"Unsupported scene reference at '{path}'.")
         };
-        return new EngineReferenceToken(kind, sourceId);
+        return new EngineReferenceToken(kind, sourceID);
     }
 
     internal EngineObject Resolve(
@@ -118,21 +118,21 @@ internal abstract class SceneReferenceScope
         Type expectedType,
         string path
     ) {
-        if (!TryResolve(token.sourceId, out EngineObject? engineObject) || engineObject is null)
+        if (!TryResolve(token.sourceID, out EngineObject? engineObject) || engineObject is null)
         {
-            throw new InvalidOperationException($"Scene graph reference '{token.sourceId}' at '{path}' could not be resolved.");
+            throw new InvalidOperationException($"Scene graph reference '{token.sourceID}' at '{path}' could not be resolved.");
         }
         if (!expectedType.IsInstanceOfType(engineObject))
         {
             throw new InvalidOperationException(
-                $"Scene graph reference '{token.sourceId}' at '{path}' resolves to "
+                $"Scene graph reference '{token.sourceID}' at '{path}' resolves to "
                 + $"'{engineObject.GetType().FullName}', expected '{expectedType.FullName}'."
             );
         }
         return engineObject;
     }
 
-    internal static bool TryGetCurrent(out SceneReferenceScope? references) => C_CURRENT.TryGet(out references);
+    internal static bool TryGetCurrent(out SceneReferenceScope? references) => CURRENT.TryGet(out references);
 
-    internal static IDisposable Suspend() => C_CURRENT.Suspend();
+    internal static IDisposable Suspend() => CURRENT.Suspend();
 }

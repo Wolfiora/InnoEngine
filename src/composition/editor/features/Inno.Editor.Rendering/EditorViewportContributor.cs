@@ -110,7 +110,7 @@ public sealed class EditorViewportContext
         EditorContext editor,
         EditorInteractions interactions,
         EditorViewportKindId kind,
-        string viewportId,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         EditorViewportNavigationState navigation,
@@ -123,7 +123,7 @@ public sealed class EditorViewportContext
         this.editor = editor;
         this.interactions = interactions;
         this.kind = kind;
-        this.viewportId = viewportId;
+        this.viewportId = viewportID;
         this.pixelWidth = pixelWidth;
         this.pixelHeight = pixelHeight;
         this.navigation = navigation;

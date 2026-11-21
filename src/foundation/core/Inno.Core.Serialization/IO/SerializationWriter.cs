@@ -243,9 +243,9 @@ public sealed class SerializationWriter
 
         void WriteElement(TValue value)
         {
-            ObjectSerializationNode? prior = array.Next as ObjectSerializationNode;
+            ObjectSerializationNode? prior = array.next as ObjectSerializationNode;
             SerializationCaptureAttempt attempt = captureKey is null
-                ? SerializationCaptureAttempt.empty
+                ? SerializationCaptureAttempt.EMPTY
                 : SerializationCaptureAttempt.Capture(m_operation, typeof(TValue), value, prior?.captureKey, captureKey: captureKey);
             SerializationCaptureKey? key = attempt.key;
             if (key is not null && ReferenceEquals(key, prior?.captureKey))
@@ -257,7 +257,7 @@ public sealed class SerializationWriter
             var child = new SerializationWriter(
                 m_operation,
                 prior,
-                array.Next?.capturePath ?? $"{AppendPath(name)}[{index}]",
+                array.next?.capturePath ?? $"{AppendPath(name)}[{index}]",
                 typeof(TValue)
             );
             long converterWrites = m_operation.converterWrites;

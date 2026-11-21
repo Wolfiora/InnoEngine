@@ -28,8 +28,8 @@ namespace Inno.Editor.Panel.GameView;
 internal sealed class GameViewPanel : EditorPanel
 {
     private const string C_VIEWPORT_ID = "game-view";
-    private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.game");
-    private static readonly Vector2 S_UNAVAILABLE_PADDING = new(48f, 32f);
+    private static readonly EditorViewportKindId KIND = new("inno.editor.viewport.game");
+    private static readonly Vector2 UNAVAILABLE_PADDING = new(48f, 32f);
     private readonly EditorRenderingModule m_rendering;
     private readonly IEditorGameScenePresentation m_scenePresentation;
     private readonly IEditorPlayMode m_playMode;
@@ -162,7 +162,7 @@ internal sealed class GameViewPanel : EditorPanel
             )
             : RenderOutputInput.suspended
         );
-        if (!m_rendering.TrySubmit(S_KIND, C_VIEWPORT_ID, layout.pixelWidth, layout.pixelHeight, out EditorViewportOutput output))
+        if (!m_rendering.TrySubmit(KIND, C_VIEWPORT_ID, layout.pixelWidth, layout.pixelHeight, out EditorViewportOutput output))
         {
             DrawUnavailable(available, m_rendering.GetCompositionError(C_VIEWPORT_ID) ?? "No rendering model contributes to Game View.");
             return;
@@ -238,7 +238,7 @@ internal sealed class GameViewPanel : EditorPanel
         Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
-            EditorUI.current.widgets.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
+            EditorUI.current.widgets.CenteredWrappedText(message, size, UNAVAILABLE_PADDING);
         }
         finally
         {

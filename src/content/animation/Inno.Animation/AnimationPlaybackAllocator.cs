@@ -8,7 +8,7 @@ namespace Inno.Animation;
 /// </summary>
 public sealed class AnimationPlaybackAllocator
 {
-    private static int S_NEXT_GENERATION;
+    private static int s_nextGeneration;
 
     /// <summary>
     /// Creates a process-unique playback owner.
@@ -18,7 +18,7 @@ public sealed class AnimationPlaybackAllocator
     /// </exception>
     public AnimationPlaybackAllocator()
     {
-        int next = Interlocked.Increment(ref S_NEXT_GENERATION);
+        int next = Interlocked.Increment(ref s_nextGeneration);
         if (next <= 0)
         {
             throw new InvalidOperationException("Animation owner generations are exhausted.");

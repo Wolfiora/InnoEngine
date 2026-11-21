@@ -234,19 +234,19 @@ public sealed class AssetFileSystemTests
             Directory.CreateDirectory(plugin);
             File.WriteAllText(Path.Combine(project, "same.txt"), "project");
             File.WriteAllText(Path.Combine(plugin, "same.txt"), "plugin");
-            var pluginId = new AssetSourceId("tests.mount");
+            var pluginID = new AssetSourceId("tests.mount");
             using var fileSystem = new AssetFileSystem(
                 [
                     new AssetSourceMount(AssetSourceId.project, project, isReadOnly: false),
-                    new AssetSourceMount(pluginId, plugin, isReadOnly: true)
+                    new AssetSourceMount(pluginID, plugin, isReadOnly: true)
                 ],
                 autoStart: false
             );
 
             Assert.True(fileSystem.TryGetEntry(AssetPath.Project("same.txt"), out AssetFileEntry projectEntry));
-            Assert.True(fileSystem.TryGetEntry(new AssetPath(pluginId, "same.txt"), out AssetFileEntry pluginEntry));
+            Assert.True(fileSystem.TryGetEntry(new AssetPath(pluginID, "same.txt"), out AssetFileEntry pluginEntry));
             Assert.True(fileSystem.TryGetEntry(AssetPath.Project(string.Empty), out AssetFileEntry projectRoot));
-            Assert.True(fileSystem.TryGetEntry(new AssetPath(pluginId, string.Empty), out AssetFileEntry pluginRoot));
+            Assert.True(fileSystem.TryGetEntry(new AssetPath(pluginID, string.Empty), out AssetFileEntry pluginRoot));
             Assert.Equal("same.txt", projectEntry.name);
             Assert.Equal("same.txt", pluginEntry.name);
             Assert.Equal("Assets", projectRoot.name);
@@ -254,18 +254,18 @@ public sealed class AssetFileSystemTests
             Assert.False(projectEntry.isReadOnly);
             Assert.True(pluginEntry.isReadOnly);
             Assert.Equal(AssetSourceId.project, projectEntry.source);
-            Assert.Equal(pluginId, pluginEntry.source);
+            Assert.Equal(pluginID, pluginEntry.source);
             Assert.Contains(
                 fileSystem.GetChildren(AssetPath.Project(string.Empty)),
                 entry => entry.source == AssetSourceId.project
             );
             Assert.Contains(
                 fileSystem.GetChildren(AssetPath.Project(string.Empty)),
-                entry => entry.assetPath == new AssetPath(pluginId, string.Empty)
+                entry => entry.assetPath == new AssetPath(pluginID, string.Empty)
             );
             Assert.Contains(
-                fileSystem.GetChildren(new AssetPath(pluginId, string.Empty)),
-                entry => entry.assetPath == new AssetPath(pluginId, "same.txt")
+                fileSystem.GetChildren(new AssetPath(pluginID, string.Empty)),
+                entry => entry.assetPath == new AssetPath(pluginID, "same.txt")
             );
         }
         finally

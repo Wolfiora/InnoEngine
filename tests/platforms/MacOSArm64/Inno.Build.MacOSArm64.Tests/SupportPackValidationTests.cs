@@ -82,7 +82,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Theory]
     [InlineData("libinno-text-release.dylib")]
     [InlineData("libinno-ui-release.dylib")]
-    public void SupportPackRejectsMissingTextOrUiRuntime(string nativeRuntime)
+    public void SupportPackRejectsMissingTextOrUIRuntime(string nativeRuntime)
     {
         string supportPack = GetSupportPackDirectory(new BuildTargetId("macos-arm64"));
         File.Delete(Path.Combine(supportPack, "native", nativeRuntime));

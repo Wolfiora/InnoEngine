@@ -151,13 +151,13 @@ public sealed class WindowsColdPublicationTests : IDisposable
         NativeBuildContext context,
         NativeComponentDescriptor owner,
         string component,
-        string targetId,
+        string targetID,
         IReadOnlyList<string> inputPaths,
         IReadOnlyList<string> declarations
     ) => new(
         owner,
         component,
-        targetId,
+        targetID,
         inputPaths.Concat(context.toolchain?.inputPaths ?? [])
             .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
         declarations.Concat(context.toolchain?.declarations ?? [])

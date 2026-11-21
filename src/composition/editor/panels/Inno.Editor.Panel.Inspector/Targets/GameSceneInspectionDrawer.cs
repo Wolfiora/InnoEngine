@@ -138,21 +138,21 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             IReadOnlyList<SerializedProperty> properties = missing is null
                                                            ? m_serialization.GetProperties(system)
                                                            : Array.Empty<SerializedProperty>();
-            string systemId = system.identity.persistentId.ToString("N");
+            string systemID = system.identity.persistentId.ToString("N");
             GameSystem editorTarget = system;
             string title = missing?.missingTypeName ?? system.GetType().Name;
             bool dimmed = !system.enabled;
             Vector2 cardMinimum = default;
             Vector2 headerMaximum = default;
             bool open = EditorUI.current.widgets.CollapsingCard(
-                systemId,
+                systemID,
                 title,
                 missing is null
                 ? () =>
                 {
                     bool enabled = system.enabled;
                     if (EditorUI.current.widgets.CompactCheckbox(
-                        $"enabled_{systemId}",
+                        $"enabled_{systemID}",
                         ref enabled,
                         tooltip: "Enable or disable this system."
                     )) {
@@ -181,7 +181,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                     cardMinimum = Ui.GetItemMinimum();
                     headerMaximum = Ui.GetItemMaximum();
                     _ = EditorUI.current.menus.ContextMenu(
-                        $"##system_menu_{systemId}",
+                        $"##system_menu_{systemID}",
                         context.interactions.For(InspectorInteractionIds.C_SYSTEM_AREA, editorTarget)
                     );
                     m_cardControls.DrawSystemDragSource(system, title, dimmed);
@@ -191,7 +191,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
             if (open)
             {
                 Ui.Unindent();
-                EditorUI.current.widgets.CardBody(systemId, () => EditorUI.current.widgets.SectionLayout(() =>
+                EditorUI.current.widgets.CardBody(systemID, () => EditorUI.current.widgets.SectionLayout(() =>
                 {
                     if (missing is not null)
                     {
@@ -214,7 +214,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                         context.properties.Draw(
                             context.editorContext,
                             system,
-                            $"scene.{scene.identity.persistentId:N}.{systemId}",
+                            $"scene.{scene.identity.persistentId:N}.{systemID}",
                             properties[propertyIndex]
                         );
                     }

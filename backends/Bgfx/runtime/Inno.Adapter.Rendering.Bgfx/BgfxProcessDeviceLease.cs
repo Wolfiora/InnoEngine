@@ -7,7 +7,7 @@ namespace Inno.Adapter.Rendering.Bgfx;
 /// </summary>
 internal sealed class BgfxProcessDeviceLease : IDisposable
 {
-    private static readonly object S_SYNC = new();
+    private static readonly object SYNC = new();
     private static BgfxProcessDeviceLease? s_active;
     private static bool s_singleThreadedRuntimeConsumed;
 
@@ -24,7 +24,7 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
     /// </summary>
     public void Dispose()
     {
-        lock (S_SYNC)
+        lock (SYNC)
         {
             if (m_disposed)
             {
@@ -41,7 +41,7 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
 
     internal void MarkSingleThreadedEntered()
     {
-        lock (S_SYNC)
+        lock (SYNC)
         {
             if (!ReferenceEquals(s_active, this) || m_disposed)
             {
@@ -56,7 +56,7 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
 
     internal static BgfxProcessDeviceLease Acquire(bool singleThreaded)
     {
-        lock (S_SYNC)
+        lock (SYNC)
         {
             if (s_active is not null)
             {

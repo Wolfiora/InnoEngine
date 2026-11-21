@@ -5,27 +5,27 @@ namespace Inno.Core.Identity;
 /// <summary>
 /// Packs and unpacks runtime ids into a single <see cref="int"/> using slot + generation.
 /// </summary>
-internal static class RuntimeIdCodec
+internal static class RuntimeIDCodec
 {
     /// <summary>
     /// The slot bits value used as part of this type's public representation.
     /// </summary>
-    public const int SLOT_BITS = 20;
+    public const int C_SLOT_BITS = 20;
 
     /// <summary>
     /// The generation bits value used as part of this type's public representation.
     /// </summary>
-    public const int GENERATION_BITS = 12;
+    public const int C_GENERATION_BITS = 12;
 
     /// <summary>
     /// The slot mask value used as part of this type's public representation.
     /// </summary>
-    public const int SLOT_MASK = (1 << SLOT_BITS) - 1;
+    public const int C_SLOT_MASK = (1 << C_SLOT_BITS) - 1;
 
     /// <summary>
     /// The generation mask value used as part of this type's public representation.
     /// </summary>
-    public const int GENERATION_MASK = (1 << GENERATION_BITS) - 1;
+    public const int C_GENERATION_MASK = (1 << C_GENERATION_BITS) - 1;
 
     /// <summary>
     /// Packs a storage slot and generation into one opaque runtime identifier.
@@ -43,37 +43,37 @@ internal static class RuntimeIdCodec
         int slot,
         int generation
     ) {
-        if ((uint)slot > SLOT_MASK)
+        if ((uint)slot > C_SLOT_MASK)
         {
             throw new ArgumentOutOfRangeException(nameof(slot));
         }
-        if ((uint)generation > GENERATION_MASK)
+        if ((uint)generation > C_GENERATION_MASK)
         {
             throw new ArgumentOutOfRangeException(nameof(generation));
         }
 
-        return (generation << SLOT_BITS) | (slot & SLOT_MASK);
+        return (generation << C_SLOT_BITS) | (slot & C_SLOT_MASK);
     }
 
     /// <summary>
     /// Extracts the storage slot encoded in an opaque runtime identifier.
     /// </summary>
-    /// <param name="runtimeId">
+    /// <param name="runtimeID">
     /// The runtime id consumed by unpack slot; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public static int UnpackSlot(int runtimeId) => runtimeId & SLOT_MASK;
+    public static int UnpackSlot(int runtimeID) => runtimeID & C_SLOT_MASK;
 
     /// <summary>
     /// Extracts the owner generation encoded in an opaque runtime identifier.
     /// </summary>
-    /// <param name="runtimeId">
+    /// <param name="runtimeID">
     /// The runtime id consumed by unpack generation; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <returns>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
-    public static int UnpackGeneration(int runtimeId) => (runtimeId >> SLOT_BITS) & GENERATION_MASK;
+    public static int UnpackGeneration(int runtimeID) => (runtimeID >> C_SLOT_BITS) & C_GENERATION_MASK;
 }

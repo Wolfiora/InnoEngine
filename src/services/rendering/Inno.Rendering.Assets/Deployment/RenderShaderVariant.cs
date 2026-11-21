@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 [StableTypeId("c6c7b7a6-5e4f-5822-af8f-e894d7bb2d38")]
 public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
 {
-    private static readonly IReadOnlyDictionary<string, string> S_EMPTY_OPTIONS =
+    private static readonly IReadOnlyDictionary<string, string> EMPTY_OPTIONS =
         new ReadOnlyDictionary<string, string>(new Dictionary<string, string>());
 
     private readonly IReadOnlyDictionary<string, string>? m_options;
@@ -53,7 +53,7 @@ public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
     /// <summary>
     /// Gets the immutable stable keyword selections.
     /// </summary>
-    public IReadOnlyDictionary<string, string> options => m_options ?? S_EMPTY_OPTIONS;
+    public IReadOnlyDictionary<string, string> options => m_options ?? EMPTY_OPTIONS;
 
     /// <summary>
     /// Gets the canonical cache-key representation.

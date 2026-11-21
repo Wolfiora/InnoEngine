@@ -129,13 +129,13 @@ public sealed class EventDispatcherBehaviorTests
     [Fact]
     public void ListenOnce_ConcurrentEmit_StillInvokesOnlyOneTime()
     {
-        const int iterations = 10_000;
+        const int C_ITERATIONS = 10_000;
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
         int count = 0;
 
         hub.ListenOnce<ProbeEvent>(_ => Interlocked.Increment(ref count));
-        Parallel.For(0, iterations, i =>
+        Parallel.For(0, C_ITERATIONS, i =>
         {
             dispatcher.Emit(new ProbeEvent(i));
         });
@@ -275,7 +275,7 @@ public sealed class EventDispatcherBehaviorTests
     [Fact]
     public void ConcurrentEmit_AcrossThreads_IsStable()
     {
-        const int iterations = 20_000;
+        const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
@@ -285,19 +285,19 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countA));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countB));
 
-        Parallel.For(0, iterations, i =>
+        Parallel.For(0, C_ITERATIONS, i =>
         {
             dispatcher.Emit(new ProbeEvent(i));
         });
 
-        Assert.Equal(iterations, countA);
-        Assert.Equal(iterations, countB);
+        Assert.Equal(C_ITERATIONS, countA);
+        Assert.Equal(C_ITERATIONS, countB);
     }
 
     [Fact]
     public void ConcurrentEmit_WithHandleInHub_StopsOnlyCurrentHub()
     {
-        const int iterations = 20_000;
+        const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
@@ -316,20 +316,20 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubASecond));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubBCount));
 
-        Parallel.For(0, iterations, i =>
+        Parallel.For(0, C_ITERATIONS, i =>
         {
             dispatcher.Emit(new ProbeEvent(i));
         });
 
-        Assert.Equal(iterations, hubAFirst);
-        Assert.Equal(iterations / 2, hubASecond);
-        Assert.Equal(iterations, hubBCount);
+        Assert.Equal(C_ITERATIONS, hubAFirst);
+        Assert.Equal(C_ITERATIONS / 2, hubASecond);
+        Assert.Equal(C_ITERATIONS, hubBCount);
     }
 
     [Fact]
     public void ConcurrentEmit_WithHandleInGlobal_StopsFollowingHubs()
     {
-        const int iterations = 20_000;
+        const int C_ITERATIONS = 20_000;
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
@@ -348,14 +348,14 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubASecond));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubBCount));
 
-        Parallel.For(0, iterations, i =>
+        Parallel.For(0, C_ITERATIONS, i =>
         {
             dispatcher.Emit(new ProbeEvent(i));
         });
 
-        Assert.Equal(iterations, hubAFirst);
-        Assert.Equal(iterations / 2, hubASecond);
-        Assert.Equal(iterations / 2, hubBCount);
+        Assert.Equal(C_ITERATIONS, hubAFirst);
+        Assert.Equal(C_ITERATIONS / 2, hubASecond);
+        Assert.Equal(C_ITERATIONS / 2, hubBCount);
     }
 
     [Fact]

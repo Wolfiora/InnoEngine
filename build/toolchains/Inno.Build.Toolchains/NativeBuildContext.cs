@@ -15,7 +15,7 @@ public sealed class NativeBuildContext
 {
     private readonly NativeBuildInputState m_inputState;
     private readonly string? m_buildOwner;
-    private readonly string? m_targetId;
+    private readonly string? m_targetID;
     private readonly string? m_fingerprint;
     private readonly string? m_toolDirectory;
     private INativeBindingGenerator? m_bindingGenerator;
@@ -62,7 +62,7 @@ public sealed class NativeBuildContext
         this.toolchain = toolchain;
         m_bindings = origin.m_bindings;
         m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
+        m_targetID = origin.m_targetID;
         m_fingerprint = origin.m_fingerprint;
         m_toolDirectory = origin.m_toolDirectory;
     }
@@ -78,7 +78,7 @@ public sealed class NativeBuildContext
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
         m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
+        m_targetID = origin.m_targetID;
         m_fingerprint = origin.m_fingerprint;
         this.toolchain = origin.toolchain;
         m_toolDirectory = toolDirectory;
@@ -127,7 +127,7 @@ public sealed class NativeBuildContext
         m_component = component;
         m_componentOptions = options;
         m_buildOwner = origin.m_buildOwner;
-        m_targetId = origin.m_targetId;
+        m_targetID = origin.m_targetID;
         m_fingerprint = origin.m_fingerprint;
         m_toolDirectory = origin.m_toolDirectory;
         this.toolchain = origin.toolchain;
@@ -137,7 +137,7 @@ public sealed class NativeBuildContext
     private NativeBuildContext(
         NativeBuildContext origin,
         string buildOwner,
-        string targetId,
+        string targetID,
         string fingerprint
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
     {
@@ -147,7 +147,7 @@ public sealed class NativeBuildContext
         m_component = origin.m_component;
         m_componentOptions = origin.m_componentOptions;
         m_buildOwner = buildOwner;
-        m_targetId = targetId;
+        m_targetID = targetID;
         m_fingerprint = fingerprint;
         this.toolchain = origin.toolchain;
         m_bindings = origin.m_bindings;
@@ -209,7 +209,7 @@ public sealed class NativeBuildContext
         {
             throw new InvalidOperationException($"The native operation belongs to '{m_buildOwner}', not '{projectName}'.");
         }
-        return m_toolDirectory ?? Path.Combine(root, m_targetId!, m_fingerprint!);
+        return m_toolDirectory ?? Path.Combine(root, m_targetID!, m_fingerprint!);
     }
 
     /// <summary>
@@ -420,9 +420,9 @@ public sealed class NativeBuildContext
 
     internal NativeBuildContext WithIdentity(
         NativeComponentDescriptor owner,
-        string targetId,
+        string targetID,
         string fingerprint
-    ) => new(this, owner.toolchainProject, targetId, fingerprint);
+    ) => new(this, owner.toolchainProject, targetID, fingerprint);
 
     internal NativeInputSnapshot CaptureInputs(
         IEnumerable<NativeBuildInput> inputs,

@@ -80,7 +80,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
 
     private static Dictionary<string, Type> Discover<TAttribute, TContract>(
         TypeCacheSnapshot types,
-        Func<TAttribute, string> getId,
+        Func<TAttribute, string> getID,
         string kind
     ) where TAttribute : Attribute
     {
@@ -99,7 +99,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
                 throw new InvalidOperationException($"Audio {kind} '{type.FullName}' requires a parameterless constructor.");
             }
             TAttribute attribute = types.GetAttribute<TAttribute>(typeRef, inherit: false)!;
-            string id = getId(attribute);
+            string id = getID(attribute);
             if (!result.TryAdd(id, type))
             {
                 throw new InvalidOperationException(

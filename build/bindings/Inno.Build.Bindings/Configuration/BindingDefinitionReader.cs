@@ -48,7 +48,7 @@ internal static class BindingDefinitionReader
                 throw new InvalidDataException("A binding definition cannot contain executable build logic.");
             }
         }
-        if (!properties.TryGetValue("InnoNativeComponentId", out string? componentId) || componentId != component.id)
+        if (!properties.TryGetValue("InnoNativeComponentId", out string? componentID) || componentID != component.id)
         {
             throw new InvalidDataException("The binding definition must declare the requested component identity.");
         }

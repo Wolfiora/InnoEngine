@@ -69,7 +69,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         int offset = 12;
         while (offset <= bytes.Length - 8)
         {
-            ReadOnlySpan<byte> chunkId = bytes.Slice(offset, 4);
+            ReadOnlySpan<byte> chunkID = bytes.Slice(offset, 4);
             uint chunkLengthValue = BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(offset + 4, 4));
             if (chunkLengthValue > int.MaxValue)
             {
@@ -83,7 +83,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
                 throw new InvalidDataException("The WAV source contains a truncated chunk.");
             }
 
-            if (chunkId.SequenceEqual("fmt "u8))
+            if (chunkID.SequenceEqual("fmt "u8))
             {
                 if (chunkLength < 16)
                 {
@@ -98,7 +98,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
                 sampleRate = checked((int)BinaryPrimitives.ReadUInt32LittleEndian(bytes.Slice(chunkStart + 4, 4)));
                 blockAlignment = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(chunkStart + 12, 2));
             }
-            else if (chunkId.SequenceEqual("data"u8))
+            else if (chunkID.SequenceEqual("data"u8))
             {
                 dataLength = chunkLength;
             }
@@ -163,7 +163,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
 
     private static AudioClipMetadata ReadMp3(ReadOnlySpan<byte> bytes)
     {
-        int offset = SkipId3(bytes);
+        int offset = SkipID3(bytes);
         int channels = 0;
         int sampleRate = 0;
         long frameCount = 0;
@@ -197,7 +197,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         return new AudioClipMetadata(AudioCodecId.mp3, channels, sampleRate, frameCount, bytes.Length);
     }
 
-    private static int SkipId3(ReadOnlySpan<byte> bytes)
+    private static int SkipID3(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length < 10 || !bytes[..3].SequenceEqual("ID3"u8))
         {

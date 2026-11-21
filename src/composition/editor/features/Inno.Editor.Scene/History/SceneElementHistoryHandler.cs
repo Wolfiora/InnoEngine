@@ -7,7 +7,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Element)]
+[EditorHistoryHandler(SceneHistoryKinds.C_ELEMENT)]
 internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
 {
     private readonly EditorSceneWorkspace m_workspace;
@@ -40,21 +40,21 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
             {
-                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
+                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneID}' is no longer loaded.");
             }
             bool shouldExist = direction == EditorHistoryDirection.Undo
                                ? data.existsBefore
                                : data.existsAfter;
-            EngineObject? current = m_workspace.Find<EngineObject>(data.elementId);
+            EngineObject? current = m_workspace.Find<EngineObject>(data.elementID);
             if (!shouldExist)
             {
                 return current is { isDestroyed: false }
                        ? EditorHistoryAvailability.Available()
                        : EditorHistoryAvailability.Unavailable(
-                           $"Scene element '{data.elementId}' is no longer available."
+                           $"Scene element '{data.elementID}' is no longer available."
                        );
             }
             if (current is { isDestroyed: false })
@@ -75,14 +75,14 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 return typeMatches && kindMatches
                        ? EditorHistoryAvailability.Available()
                        : EditorHistoryAvailability.Unavailable(
-                           $"Scene element '{data.elementId}' no longer matches stable type '{data.type.stableId}'."
+                           $"Scene element '{data.elementID}' no longer matches stable type '{data.type.stableId}'."
                        );
             }
             if (data.elementKind == SceneElementKind.Component
-                && m_workspace.Find<GameObject>(data.ownerId) is not { isRuntimeValid: true }
+                && m_workspace.Find<GameObject>(data.ownerID) is not { isRuntimeValid: true }
             ) {
                 return EditorHistoryAvailability.Unavailable(
-                    $"Component owner '{data.ownerId}' is no longer available."
+                    $"Component owner '{data.ownerID}' is no longer available."
                 );
             }
             return EditorHistoryAvailability.Available();
@@ -116,17 +116,17 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         try
         {
             SceneElementHistoryData data = SceneElementHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
             {
-                return EditorHistoryResult.Failure($"Scene '{data.sceneId}' is no longer loaded.");
+                return EditorHistoryResult.Failure($"Scene '{data.sceneID}' is no longer loaded.");
             }
             bool shouldExist = direction == EditorHistoryDirection.Undo
                                ? data.existsBefore
                                : data.existsAfter;
             int index = direction == EditorHistoryDirection.Undo ? data.beforeIndex : data.afterIndex;
             byte[] state = direction == EditorHistoryDirection.Undo ? data.beforeState : data.afterState;
-            EngineObject? current = m_workspace.Find<EngineObject>(data.elementId);
+            EngineObject? current = m_workspace.Find<EngineObject>(data.elementID);
             if (shouldExist)
             {
                 bool restored = current is null;
@@ -138,7 +138,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                     }
                     catch (Exception exception)
                     {
-                        EngineObject? partial = m_workspace.Find<EngineObject>(data.elementId);
+                        EngineObject? partial = m_workspace.Find<EngineObject>(data.elementID);
                         if (partial is null || partial.isDestroyed)
                         {
                             return EditorHistoryResult.Failure(exception.Message);
@@ -146,7 +146,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                         SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
                             partial,
                             () => Remove(data, scene, partial),
-                            $"Partially restored scene element '{data.elementId}'",
+                            $"Partially restored scene element '{data.elementID}'",
                             m_workspace
                         );
                         return cleanup.statePreserved
@@ -156,7 +156,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 }
                 if (current.isDestroyed)
                 {
-                    return EditorHistoryResult.Failure($"Scene element '{data.elementId}' is destroyed.");
+                    return EditorHistoryResult.Failure($"Scene element '{data.elementID}' is destroyed.");
                 }
                 if (restored)
                 {
@@ -167,7 +167,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                         SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
                             current,
                             () => Remove(data, scene, current),
-                            $"Restored scene element '{data.elementId}'",
+                            $"Restored scene element '{data.elementID}'",
                             m_workspace
                         );
                         string failure = JoinFailures(referenceResult.message, cleanup.message);
@@ -241,12 +241,12 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
                 {
                     if (!Remove(data, scene, current))
                     {
-                        return EditorHistoryResult.Failure($"Scene element '{data.elementId}' could not be removed.");
+                        return EditorHistoryResult.Failure($"Scene element '{data.elementID}' could not be removed.");
                     }
                 }
                 catch (Exception exception)
                 {
-                    EngineObject? remaining = m_workspace.Find<EngineObject>(data.elementId);
+                    EngineObject? remaining = m_workspace.Find<EngineObject>(data.elementID);
                     if (remaining is { isDestroyed: false })
                     {
                         return EditorHistoryResult.Failure(exception.Message);
@@ -288,10 +288,10 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
     ) => data.elementKind switch
     {
         SceneElementKind.Component => SceneElementSerialization.RestoreComponent(
-            m_workspace.Find<GameObject>(data.ownerId)
-            ?? throw new InvalidOperationException($"Component owner '{data.ownerId}' is unavailable."),
+            m_workspace.Find<GameObject>(data.ownerID)
+            ?? throw new InvalidOperationException($"Component owner '{data.ownerID}' is unavailable."),
             data.type,
-            data.elementId,
+            data.elementID,
             index,
             state,
             m_workspace.serialization,
@@ -300,7 +300,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         SceneElementKind.System => SceneElementSerialization.RestoreSystem(
             scene,
             data.type,
-            data.elementId,
+            data.elementID,
             index,
             state,
             m_workspace.serialization,
@@ -393,7 +393,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
             component.gameObject.GetComponentIndex(component),
         SceneElementKind.System when current is GameSystem system => scene.GetSystemIndex(system),
         _ => throw new InvalidOperationException(
-            $"Scene element '{data.elementId}' does not match history kind '{data.elementKind}'."
+            $"Scene element '{data.elementID}' does not match history kind '{data.elementKind}'."
         )
     };
 

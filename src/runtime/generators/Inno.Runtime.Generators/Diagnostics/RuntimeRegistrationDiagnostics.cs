@@ -4,7 +4,7 @@ namespace Inno.Runtime.Generators;
 
 internal static class RuntimeRegistrationDiagnostics
 {
-    private static readonly DiagnosticDescriptor UnavailableConstruction = new(
+    private static readonly DiagnosticDescriptor UNAVAILABLE_CONSTRUCTION = new(
         "INNORUN002",
         "Static converter construction is unavailable",
         "Serialization converter '{0}' cannot be linked: {1}",
@@ -19,7 +19,7 @@ internal static class RuntimeRegistrationDiagnostics
         string reason
     ) => output.ReportDiagnostic(
         Diagnostic.Create(
-            UnavailableConstruction,
+            UNAVAILABLE_CONSTRUCTION,
             type.Locations.Length == 0 ? Location.None : type.Locations[0],
             type.ToDisplayString(),
             reason

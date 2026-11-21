@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Inno.Tooling.Architecture;
 
-internal static class EditorUiBoundaryValidator
+internal static class EditorUIBoundaryValidator
 {
     internal static void Validate(
         string repositoryRoot,

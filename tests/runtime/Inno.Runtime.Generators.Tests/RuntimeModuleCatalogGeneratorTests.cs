@@ -20,7 +20,7 @@ public sealed class RuntimeModuleCatalogGeneratorTests
     [Fact]
     public void AConverterWithoutAConstructionEntryFailsDuringCompilation()
     {
-        const string source = """
+        const string C_SOURCE = """
             namespace Fixture;
             public sealed class Box<T>;
             public sealed class Model : Inno.Core.Serialization.ISerializable
@@ -38,7 +38,7 @@ public sealed class RuntimeModuleCatalogGeneratorTests
         string[] paths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
         CSharpCompilation input = CSharpCompilation.Create(
             "Inno.InvalidStaticCatalogFixture",
-            [CSharpSyntaxTree.ParseText(source)],
+            [CSharpSyntaxTree.ParseText(C_SOURCE)],
             paths.Select(static path => MetadataReference.CreateFromFile(path)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
         );
@@ -52,7 +52,7 @@ public sealed class RuntimeModuleCatalogGeneratorTests
     [Fact]
     public void GeneratedCatalogCompilesAndPublishesExactMetadataAndFactories()
     {
-        const string source = """
+        const string C_SOURCE = """
             using System;
             namespace Fixture;
             [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
@@ -103,7 +103,7 @@ public sealed class RuntimeModuleCatalogGeneratorTests
                           ?? throw new InvalidOperationException("The test host provides no platform closure.")).Split(Path.PathSeparator);
         CSharpCompilation input = CSharpCompilation.Create(
             "Inno.StaticCatalogFixture",
-            [CSharpSyntaxTree.ParseText(source)],
+            [CSharpSyntaxTree.ParseText(C_SOURCE)],
             paths.Select(static path => MetadataReference.CreateFromFile(path)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
         );

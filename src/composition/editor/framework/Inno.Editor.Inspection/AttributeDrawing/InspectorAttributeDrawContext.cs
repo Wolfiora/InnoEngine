@@ -99,16 +99,16 @@ public sealed class InspectorAttributeDrawContext
     public object? GetSiblingValue(string memberName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(memberName);
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public
-                                   | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+        const BindingFlags C_FLAGS = BindingFlags.Instance | BindingFlags.Public
+                                     | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
         for (Type? type = owner.GetType(); type is not null && type != typeof(object); type = type.BaseType)
         {
-            FieldInfo? field = type.GetField(memberName, flags);
+            FieldInfo? field = type.GetField(memberName, C_FLAGS);
             if (field is not null)
             {
                 return field.GetValue(owner);
             }
-            PropertyInfo? candidate = type.GetProperty(memberName, flags);
+            PropertyInfo? candidate = type.GetProperty(memberName, C_FLAGS);
             if (candidate is null)
             {
                 continue;

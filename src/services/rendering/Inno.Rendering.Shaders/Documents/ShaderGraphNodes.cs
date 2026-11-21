@@ -446,27 +446,27 @@ public static class ShaderGraphNodes
             && !retainedDomainOutputs.Contains(node.id)
         )) is { } call
         ) {
-            Guid sourceId = ShaderGraphDocument.Read(call, "sourceId", Guid.Empty, serialization, context);
+            Guid sourceID = ShaderGraphDocument.Read(call, "sourceId", Guid.Empty, serialization, context);
             string sourcePath = ShaderGraphDocument.Read(call, "sourcePath", string.Empty, serialization, context);
-            if (sourceId == Guid.Empty)
+            if (sourceID == Guid.Empty)
             {
                 throw new InvalidOperationException("A graph-node reference has no Shader asset identity.");
             }
-            if (!stack.Add(sourceId))
+            if (!stack.Add(sourceID))
             {
                 throw new InvalidOperationException($"Graph-node references contain a cycle at '{sourcePath}'.");
             }
-            GraphDocument child = resolve(sourceId, sourcePath).Clone();
+            GraphDocument child = resolve(sourceID, sourcePath).Clone();
             ShaderGraphNodeInterface nodeInterface = ReadInterface(child, serialization, context);
             if (nodeInterface.kind == ShaderGraphNodeKind.DomainOutput)
             {
                 call.SetValue(interfaceKey, ShaderGraphDocument.Encode(nodeInterface, serialization, context));
                 retainedDomainOutputs.Add(call.id);
-                stack.Remove(sourceId);
+                stack.Remove(sourceID);
                 continue;
             }
             Expand(child, resolve, serialization, context, stack);
-            stack.Remove(sourceId);
+            stack.Remove(sourceID);
             Inline(graph, call, child, nodeInterface, serialization, context);
         }
     }
@@ -613,14 +613,14 @@ public static class ShaderGraphNodes
     private static void MergeDefinition(
         GraphDocument parent,
         GraphDocument child,
-        string stageId,
+        string stageID,
         SerializationRegistry serialization,
         SerializationContext context
     ) {
         ShaderDefinition parentDefinition = ShaderGraphDocument.ReadDefinition(parent, serialization, context);
         ShaderDefinition childDefinition = ShaderGraphDocument.ReadDefinition(child, serialization, context);
         ShaderStage callerStage = ShaderStage.None;
-        if (stageId.Length != 0 && parent.FindNode(new(stageId)) is { definitionId: ShaderGraphDocument.outputDefinitionId } stageNode)
+        if (stageID.Length != 0 && parent.FindNode(new(stageID)) is { definitionId: ShaderGraphDocument.outputDefinitionId } stageNode)
         {
             callerStage = ShaderGraphDocument.Read(
                 stageNode,

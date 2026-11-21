@@ -131,12 +131,12 @@ protected override IReadOnlyDictionary<string, Entry> Build(TypeCacheSnapshot ty
                     return (type, type.GetCustomAttribute<ShaderGraphTemplateAttribute>(inherit: false)!);
                 })
                 .ToArray();
-            string? duplicateId = registrations
+            string? duplicateID = registrations
                 .GroupBy(static registration => registration.metadata.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1)?.Key;
-            if (duplicateId is not null)
+            if (duplicateID is not null)
             {
-                throw new InvalidOperationException($"Duplicate shader template '{duplicateId}'.");
+                throw new InvalidOperationException($"Duplicate shader template '{duplicateID}'.");
             }
 
             var templates = new Dictionary<string, Entry>(StringComparer.Ordinal);

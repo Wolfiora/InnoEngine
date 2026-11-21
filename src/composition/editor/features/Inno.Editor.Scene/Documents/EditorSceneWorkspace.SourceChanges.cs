@@ -29,12 +29,12 @@ internal sealed partial class EditorSceneWorkspace
         GameScene scene,
         SceneDocument document
     ) {
-        if (document.sourceAssetId == Guid.Empty)
+        if (document.sourceAssetID == Guid.Empty)
         {
             m_diagnostics.ResolveSynchronization(scene.identity.persistentId);
             return true;
         }
-        if (!m_assets.TryGetInfo(document.sourceAssetId, out AssetInfo? asset)
+        if (!m_assets.TryGetInfo(document.sourceAssetID, out AssetInfo? asset)
             || asset is null
             || asset.status == AssetImportStatus.Missing
         ) {
@@ -130,9 +130,9 @@ internal sealed partial class EditorSceneWorkspace
         bool wasDirty = HasSerializedChanges(document.scene, document);
         document.sourcePath = newPath;
         document.scene.name = GetAssetName(newPath);
-        if (m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetId))
+        if (m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetID))
         {
-            document.sourceAssetId = sourceAssetId;
+            document.sourceAssetID = sourceAssetID;
         }
         if (!wasDirty)
         {
@@ -170,7 +170,7 @@ internal sealed partial class EditorSceneWorkspace
         string oldPath,
         string newPath
     ) {
-        if (!m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetId))
+        if (!m_assets.TryGetPersistentId(AssetPath.Parse(newPath), out Guid sourceAssetID))
         {
             return;
         }
@@ -185,7 +185,7 @@ internal sealed partial class EditorSceneWorkspace
                 GameObject gameObject = objects[objectIndex];
                 PrefabInstanceInfo? prefab = gameObject.prefabInstance;
                 if (prefab?.isRoot == true
-                    && prefab.sourceAssetId == sourceAssetId
+                    && prefab.sourceAssetId == sourceAssetID
                     && string.Equals(gameObject.name, oldName, StringComparison.Ordinal)
                 ) {
                     gameObject.name = newName;

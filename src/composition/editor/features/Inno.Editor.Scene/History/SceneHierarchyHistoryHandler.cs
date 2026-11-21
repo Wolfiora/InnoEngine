@@ -8,7 +8,7 @@ using Inno.Scene.Components;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Hierarchy)]
+[EditorHistoryHandler(SceneHistoryKinds.C_HIERARCHY)]
 internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
 {
     private readonly EditorSceneWorkspace m_workspace;
@@ -50,40 +50,40 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
                                                 ? data.before
                                                 : data.after;
             IReadOnlyDictionary<Guid, Guid> destinationScenes = placements.ToDictionary(
-                static placement => placement.objectId,
-                static placement => placement.sceneId
+                static placement => placement.objectID,
+                static placement => placement.sceneID
             );
             for (int i = 0; i < placements.Length; i++)
             {
                 SceneObjectPlacement placement = placements[i];
-                if (ResolveScene(placement.sceneId) is null)
+                if (ResolveScene(placement.sceneID) is null)
                 {
-                    return EditorHistoryAvailability.Unavailable($"Scene '{placement.sceneId}' is no longer loaded.");
+                    return EditorHistoryAvailability.Unavailable($"Scene '{placement.sceneID}' is no longer loaded.");
                 }
-                if (m_workspace.Find<GameObject>(placement.objectId) is not { isRuntimeValid: true })
+                if (m_workspace.Find<GameObject>(placement.objectID) is not { isRuntimeValid: true })
                 {
                     return EditorHistoryAvailability.Unavailable(
-                        $"GameObject '{placement.objectId}' is no longer available."
+                        $"GameObject '{placement.objectID}' is no longer available."
                     );
                 }
                 GameObject? parent = null;
-                if (placement.parentId is Guid parentId)
+                if (placement.parentID is Guid parentID)
                 {
-                    parent = m_workspace.Find<GameObject>(parentId);
+                    parent = m_workspace.Find<GameObject>(parentID);
                     if (parent is not { isRuntimeValid: true })
                     {
                         return EditorHistoryAvailability.Unavailable(
-                            $"Parent GameObject '{parentId}' is no longer available."
+                            $"Parent GameObject '{parentID}' is no longer available."
                         );
                     }
                 }
                 if (parent is not null
-                    && parent.scene.identity.persistentId != placement.sceneId
+                    && parent.scene.identity.persistentId != placement.sceneID
                     && (!destinationScenes.TryGetValue(parent.identity.persistentId, out Guid parentDestination)
-                        || parentDestination != placement.sceneId)
+                        || parentDestination != placement.sceneID)
                 ) {
                     return EditorHistoryAvailability.Unavailable(
-                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneId}'."
+                        $"Parent GameObject '{parent.identity.persistentId}' does not belong to destination scene '{placement.sceneID}'."
                     );
                 }
             }
@@ -141,7 +141,7 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
                 }
                 return EditorHistoryResult.Failure(exception.Message);
             }
-            GameObject? selected = m_workspace.Find<GameObject>(data.selectedId);
+            GameObject? selected = m_workspace.Find<GameObject>(data.selectedID);
             try
             {
                 _ = context.interactions.For(context.interactions.focusedArea, selected).Select();
@@ -161,11 +161,11 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
     private SceneObjectPlacement[] Capture(IEnumerable<SceneObjectPlacement> placements)
         => placements.Select(placement =>
         {
-            GameObject gameObject = m_workspace.Find<GameObject>(placement.objectId)
-                                    ?? throw new InvalidOperationException($"GameObject '{placement.objectId}' is no longer available.");
+            GameObject gameObject = m_workspace.Find<GameObject>(placement.objectID)
+                                    ?? throw new InvalidOperationException($"GameObject '{placement.objectID}' is no longer available.");
             return new SceneObjectPlacement(
                 gameObject.scene.identity.persistentId,
-                placement.objectId,
+                placement.objectID,
                 gameObject.transform.parent?.gameObject.identity.persistentId,
                 gameObject.transform.siblingIndex
             );
@@ -174,11 +174,11 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
     private void ApplyPlacements(IReadOnlyCollection<SceneObjectPlacement> placements)
     {
         foreach (SceneObjectPlacement placement in placements.OrderBy(placement =>
-                     GetHierarchyDepth(ResolveObject(placement.objectId).transform))
+                     GetHierarchyDepth(ResolveObject(placement.objectID).transform))
         ) {
-            GameObject gameObject = ResolveObject(placement.objectId);
-            GameScene destination = ResolveScene(placement.sceneId)
-                                    ?? throw new InvalidOperationException($"Scene '{placement.sceneId}' is no longer loaded.");
+            GameObject gameObject = ResolveObject(placement.objectID);
+            GameScene destination = ResolveScene(placement.sceneID)
+                                    ?? throw new InvalidOperationException($"Scene '{placement.sceneID}' is no longer loaded.");
             if (!ReferenceEquals(gameObject.scene, destination))
             {
                 m_workspace.world.MoveGameObjectToScene(gameObject, destination);
@@ -192,9 +192,9 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
             for (int i = pending.Count - 1; i >= 0; i--)
             {
                 SceneObjectPlacement placement = pending[i];
-                GameObject gameObject = ResolveObject(placement.objectId);
-                Transform? parent = placement.parentId is Guid parentId
-                                    ? ResolveObject(parentId).transform
+                GameObject gameObject = ResolveObject(placement.objectID);
+                Transform? parent = placement.parentID is Guid parentID
+                                    ? ResolveObject(parentID).transform
                                     : null;
                 if (parent is not null && IsDescendantOf(parent, gameObject.transform))
                 {
@@ -212,17 +212,17 @@ internal sealed class SceneHierarchyHistoryHandler : EditorHistoryHandler
 
         foreach (SceneObjectPlacement placement in placements.OrderBy(static value => value.siblingIndex))
         {
-            ResolveObject(placement.objectId).transform.SetSiblingIndex(placement.siblingIndex);
+            ResolveObject(placement.objectID).transform.SetSiblingIndex(placement.siblingIndex);
         }
     }
 
-    private GameObject ResolveObject(Guid objectId)
-        => m_workspace.Find<GameObject>(objectId) is { isRuntimeValid: true } gameObject
+    private GameObject ResolveObject(Guid objectID)
+        => m_workspace.Find<GameObject>(objectID) is { isRuntimeValid: true } gameObject
            ? gameObject
-           : throw new InvalidOperationException($"GameObject '{objectId}' is no longer available.");
+           : throw new InvalidOperationException($"GameObject '{objectID}' is no longer available.");
 
-    private GameScene? ResolveScene(Guid sceneId)
-        => m_workspace.Find<GameScene>(sceneId) is { isLoaded: true, isDestroyed: false } scene
+    private GameScene? ResolveScene(Guid sceneID)
+        => m_workspace.Find<GameScene>(sceneID) is { isLoaded: true, isDestroyed: false } scene
            ? scene
            : null;
 

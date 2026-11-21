@@ -15,12 +15,12 @@ internal static class SupportBuildCommand
         BuildCommandLine options,
         CancellationToken cancellationToken
     ) {
-        string productId = options.Read("product", "editor");
-        if (productId is not ("editor" or "player"))
+        string productID = options.Read("product", "editor");
+        if (productID is not ("editor" or "player"))
         {
             throw new ArgumentException("Support preparation requires product 'editor' or 'player'.");
         }
-        NativeProductContribution product = request.distribution.ResolveNativeProduct(request.target.value, productId);
+        NativeProductContribution product = request.distribution.ResolveNativeProduct(request.target.value, productID);
         if (request.nativeDependencies.Length != 0)
         {
             using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
@@ -31,7 +31,7 @@ internal static class SupportBuildCommand
                 product.plan,
                 cancellationToken
             ).ConfigureAwait(false);
-            Console.WriteLine($"Consumed {productId} support for {request.target}: {imported.Count} artifacts; native processes: 0.");
+            Console.WriteLine($"Consumed {productID} support for {request.target}: {imported.Count} artifacts; native processes: 0.");
             return;
         }
         var context = new NativeBuildContext(request.root, request.configuration.ToLowerInvariant());
@@ -42,7 +42,7 @@ internal static class SupportBuildCommand
         context = context.WithToolchain(toolchain);
         StandardBuildCaches.CreateOwners(context.engineRoot, product.plan.steps.Select(static step => step.component).ToArray());
         using ProductNativeBuildResult products = await product.BuildAsync(context, cancellationToken).ConfigureAwait(false);
-        Console.WriteLine($"Prepared {productId} support for {request.target}: {products.Count} artifacts.");
+        Console.WriteLine($"Prepared {productID} support for {request.target}: {products.Count} artifacts.");
         Console.WriteLine(
             $"Native processes: {context.statistics.nativeProcesses}; binding generations: {context.statistics.bindingGenerations}."
         );

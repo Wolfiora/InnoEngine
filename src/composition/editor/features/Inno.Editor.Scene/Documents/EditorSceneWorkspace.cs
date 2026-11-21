@@ -275,9 +275,9 @@ internal sealed partial class EditorSceneWorkspace :
 
     internal IDisposable EnterPresentationScope() => (m_playModeSession?.runtimeSession ?? m_runtimeSession).EnterExecutionScope();
 
-    internal TSceneObject? Find<TSceneObject>(Guid persistentId)
+    internal TSceneObject? Find<TSceneObject>(Guid persistentID)
         where TSceneObject : IdentityObject
-            => world.Find<TSceneObject>(persistentId);
+            => world.Find<TSceneObject>(persistentID);
 
     internal void DisposeUnattached()
     {
@@ -319,8 +319,8 @@ internal sealed partial class EditorSceneWorkspace :
             {
                 continue;
             }
-            Guid sceneId = document.scene.identity.persistentId;
-            synchronizedScenes.Add(sceneId);
+            Guid sceneID = document.scene.identity.persistentId;
+            synchronizedScenes.Add(sceneID);
             try
             {
                 SynchronizeSource(document.scene, document);
@@ -355,13 +355,13 @@ internal sealed partial class EditorSceneWorkspace :
             return false;
         }
         using IDisposable scope = EnterPresentationScope();
-        Guid sceneId = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentId;
         bool closed = world.UnloadScene(scene);
         if (closed && canPersist)
         {
-            m_documents.Remove(sceneId);
-            m_diagnostics.ResolveSynchronization(sceneId);
-            m_diagnostics.ResolveDirtyCheck(sceneId);
+            m_documents.Remove(sceneID);
+            m_diagnostics.ResolveSynchronization(sceneID);
+            m_diagnostics.ResolveDirtyCheck(sceneID);
         }
         return closed;
     }

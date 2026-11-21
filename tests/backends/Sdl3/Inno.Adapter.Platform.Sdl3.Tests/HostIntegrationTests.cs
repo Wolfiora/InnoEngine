@@ -36,7 +36,7 @@ public sealed unsafe class HostIntegrationTests
             visible = false
         }));
         Assert.Empty(app.GetWindows());
-        Assert.True(SDL.Raw.GetWindowFromId(host.lastId) is null);
+        Assert.True(SDL.Raw.GetWindowFromId(host.lastID) is null);
     }
 
     [Fact]
@@ -65,7 +65,7 @@ public sealed unsafe class HostIntegrationTests
     {
         private readonly ISdl3HostIntegration m_inner = NativeHostFixture.Create();
         internal bool failSurface = true;
-        internal uint lastId;
+        internal uint lastID;
         internal int calls;
         public Sdl3HostCapabilities capabilities { get; } = new(multipleWindows: false, liveResize: false);
 
@@ -75,7 +75,7 @@ public sealed unsafe class HostIntegrationTests
         {
             calls++;
             nint handle = m_inner.CreateWindow(options);
-            lastId = SDL.Raw.GetWindowId((SDLWindow*)handle);
+            lastID = SDL.Raw.GetWindowId((SDLWindow*)handle);
             return handle;
         }
 

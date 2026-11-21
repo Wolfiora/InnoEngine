@@ -13,7 +13,7 @@ public sealed class EditorConsoleOccurrence
         EditorConsoleEntryKind kind,
         LogLevel level,
         string source,
-        string sourceId,
+        string sourceID,
         string code,
         string category,
         string message,
@@ -22,13 +22,13 @@ public sealed class EditorConsoleOccurrence
         int line,
         int column,
         string stackTrace,
-        LogSessionId sessionId
+        LogSessionId sessionID
     ) {
         this.sequence = sequence;
         this.kind = kind;
         this.level = level;
         this.source = source;
-        this.sourceId = sourceId;
+        this.sourceId = sourceID;
         this.code = code;
         this.category = category;
         this.message = message;
@@ -37,7 +37,7 @@ public sealed class EditorConsoleOccurrence
         this.line = line;
         this.column = column;
         this.stackTrace = stackTrace;
-        this.sessionId = sessionId;
+        this.sessionId = sessionID;
     }
 
     /// <summary>

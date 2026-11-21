@@ -13,7 +13,7 @@ namespace Inno.Core.Settings;
 /// </remarks>
 public static class ProjectSettingsExecutionContext
 {
-    private static readonly ExecutionSlot<IProjectSettingsLookup> S_CURRENT_SCOPE = new("settings");
+    private static readonly ExecutionSlot<IProjectSettingsLookup> CURRENT_SCOPE = new("settings");
 
     /// <summary>
     /// Gets the settings lookup bound to the current asynchronous execution context.
@@ -21,7 +21,7 @@ public static class ProjectSettingsExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no settings lookup is active for the caller.
     /// </exception>
-    public static IProjectSettingsLookup current => S_CURRENT_SCOPE.current;
+    public static IProjectSettingsLookup current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds a settings lookup until the returned strict last-in-first-out scope is disposed.
@@ -38,6 +38,6 @@ public static class ProjectSettingsExecutionContext
     public static IDisposable EnterScope(IProjectSettingsLookup settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
-        return S_CURRENT_SCOPE.Enter(settings);
+        return CURRENT_SCOPE.Enter(settings);
     }
 }

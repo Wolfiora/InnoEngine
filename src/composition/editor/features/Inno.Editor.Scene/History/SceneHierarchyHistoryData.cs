@@ -4,22 +4,22 @@ using System.IO;
 namespace Inno.Editor.Scene;
 
 internal readonly record struct SceneObjectPlacement(
-    Guid sceneId,
-    Guid objectId,
-    Guid? parentId,
+    Guid sceneID,
+    Guid objectID,
+    Guid? parentID,
     int siblingIndex
 );
 
 internal sealed record SceneHierarchyHistoryData(
     SceneObjectPlacement[] before,
     SceneObjectPlacement[] after,
-    Guid selectedId
+    Guid selectedID
 ) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream);
-        writer.Write(selectedId.ToByteArray());
+        writer.Write(selectedID.ToByteArray());
         WritePlacements(writer, before);
         WritePlacements(writer, after);
         writer.Flush();
@@ -30,14 +30,14 @@ internal sealed record SceneHierarchyHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream);
-        var selectedId = new Guid(reader.ReadBytes(16));
+        var selectedID = new Guid(reader.ReadBytes(16));
         SceneObjectPlacement[] before = ReadPlacements(reader);
         SceneObjectPlacement[] after = ReadPlacements(reader);
         if (stream.Position != stream.Length)
         {
             throw new InvalidDataException("Scene hierarchy history payload contains trailing data.");
         }
-        return new SceneHierarchyHistoryData(before, after, selectedId);
+        return new SceneHierarchyHistoryData(before, after, selectedID);
     }
 
     private static void WritePlacements(
@@ -48,12 +48,12 @@ internal sealed record SceneHierarchyHistoryData(
         for (int i = 0; i < placements.Length; i++)
         {
             SceneObjectPlacement placement = placements[i];
-            writer.Write(placement.sceneId.ToByteArray());
-            writer.Write(placement.objectId.ToByteArray());
-            writer.Write(placement.parentId.HasValue);
-            if (placement.parentId.HasValue)
+            writer.Write(placement.sceneID.ToByteArray());
+            writer.Write(placement.objectID.ToByteArray());
+            writer.Write(placement.parentID.HasValue);
+            if (placement.parentID.HasValue)
             {
-                writer.Write(placement.parentId.Value.ToByteArray());
+                writer.Write(placement.parentID.Value.ToByteArray());
             }
             writer.Write(placement.siblingIndex);
         }
@@ -69,10 +69,10 @@ internal sealed record SceneHierarchyHistoryData(
         var placements = new SceneObjectPlacement[count];
         for (int i = 0; i < placements.Length; i++)
         {
-            var sceneId = new Guid(reader.ReadBytes(16));
-            var objectId = new Guid(reader.ReadBytes(16));
-            Guid? parentId = reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
-            placements[i] = new SceneObjectPlacement(sceneId, objectId, parentId, reader.ReadInt32());
+            var sceneID = new Guid(reader.ReadBytes(16));
+            var objectID = new Guid(reader.ReadBytes(16));
+            Guid? parentID = reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
+            placements[i] = new SceneObjectPlacement(sceneID, objectID, parentID, reader.ReadInt32());
         }
         return placements;
     }

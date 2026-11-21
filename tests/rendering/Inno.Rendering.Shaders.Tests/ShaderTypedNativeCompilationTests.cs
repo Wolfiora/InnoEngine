@@ -46,7 +46,7 @@ public sealed class ShaderTypedNativeCompilationTests
             ShaderIrValue first = builder.Extract(column, 0);
             ShaderIrValue last = builder.Extract(column, rows - 1);
             AssertSuccess(
-                await Compile(
+                await CompileAsync(
                     Fragment(builder, builder.Construct(ShaderSourceType.Atomic("float4"), first, last, first, builder.Constant(1f)))
                 )
             );
@@ -61,7 +61,7 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderIrValue a = Color(builder, 0.25f);
         ShaderIrValue value = builder.Binary(ShaderIrOperation.Multiply, a, a);
         ShaderIrValue selected = builder.Select(builder.Constant(true), value, a);
-        AssertSuccess(await Compile(Fragment(builder, selected)));
+        AssertSuccess(await CompileAsync(Fragment(builder, selected)));
     }
 
     [MetalShaderFact]
@@ -83,7 +83,7 @@ public sealed class ShaderTypedNativeCompilationTests
         )["return"];
         ShaderIrValue b = builder.Call(second, "metal", new Dictionary<string, ShaderIrValue> { ["value"] = a })["return"];
         AssertSuccess(
-            await Compile(Fragment(builder, builder.Construct(ShaderSourceType.Atomic("float4"), a, b, a, builder.Constant(1f))))
+            await CompileAsync(Fragment(builder, builder.Construct(ShaderSourceType.Atomic("float4"), a, b, a, builder.Constant(1f))))
         );
     }
 
@@ -120,7 +120,7 @@ public sealed class ShaderTypedNativeCompilationTests
             result,
             values["output.alpha"]
         );
-        AssertSuccess(await Compile(Fragment(builder, color)));
+        AssertSuccess(await CompileAsync(Fragment(builder, color)));
     }
 
     [MetalShaderFact]
@@ -148,7 +148,7 @@ public sealed class ShaderTypedNativeCompilationTests
                 new("uv-id", uv.type, ShaderIrInputKind.Varying, "texcoord")
             ]
         );
-        ShaderStageToolResult result = await Compile(stage);
+        ShaderStageToolResult result = await CompileAsync(stage);
         AssertSuccess(result);
         Assert.Equal(2, result.bindings.Count);
         Assert.Equal(3, result.bindings.Single(binding => binding.id == "texture-id").location);
@@ -167,7 +167,7 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderIrValue clip = vertex.Binary(ShaderIrOperation.Add, position, instance);
         ShaderIrBlock vertexBody = vertex.Build(new Dictionary<string, ShaderIrValue> { ["clip"] = clip, ["color"] = instance });
         AssertSuccess(
-            await Compile(
+            await CompileAsync(
                 new(
                     ShaderStage.Vertex,
                     vertexBody,
@@ -183,7 +183,7 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderIrValue color = fragment.Input("color", ShaderSourceType.Atomic("float4"));
         ShaderIrBlock fragmentBody = fragment.Build(new Dictionary<string, ShaderIrValue> { ["base"] = color, ["emission"] = color });
         AssertSuccess(
-            await Compile(
+            await CompileAsync(
                 new(
                     ShaderStage.Fragment,
                     fragmentBody,
@@ -210,8 +210,8 @@ public sealed class ShaderTypedNativeCompilationTests
             4,
             1
         );
-        AssertSuccess(await Compile(stage));
-        ShaderStageToolResult unsupported = await Compile(stage, GraphicsCapability.None);
+        AssertSuccess(await CompileAsync(stage));
+        ShaderStageToolResult unsupported = await CompileAsync(stage, GraphicsCapability.None);
         Assert.False(unsupported.succeeded);
         Assert.Contains(
             unsupported.diagnostics,
@@ -232,7 +232,7 @@ public sealed class ShaderTypedNativeCompilationTests
             "metal",
             new Dictionary<string, ShaderIrValue> { ["value"] = builder.Constant(1f) }
         )["return"];
-        ShaderStageToolResult result = await Compile(
+        ShaderStageToolResult result = await CompileAsync(
             Fragment(builder, builder.Construct(ShaderSourceType.Atomic("float4"), value, value, value, value))
         );
         Assert.False(result.succeeded);
@@ -260,7 +260,9 @@ public sealed class ShaderTypedNativeCompilationTests
             "metal",
             new Dictionary<string, ShaderIrValue> { ["value"] = builder.Constant(1f) }
         )["return"];
-        AssertSuccess(await Compile(Fragment(builder, builder.Construct(ShaderSourceType.Atomic("float4"), value, value, value, value))));
+        AssertSuccess(
+            await CompileAsync(Fragment(builder, builder.Construct(ShaderSourceType.Atomic("float4"), value, value, value, value)))
+        );
         Assert.Single(module.implementations[0].includes);
         Assert.Equal("plugin:library/scale.ishadersource", module.implementations[0].includes[0].resolvedPath);
     }
@@ -307,7 +309,7 @@ public sealed class ShaderTypedNativeCompilationTests
         return result;
     }
 
-    private static async Task<ShaderStageToolResult> Compile(
+    private static async Task<ShaderStageToolResult> CompileAsync(
         ShaderIrStage stage,
         GraphicsCapability capabilities = GraphicsCapability.Compute
                                           | GraphicsCapability.Instancing

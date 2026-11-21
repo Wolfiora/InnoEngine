@@ -295,24 +295,24 @@ public sealed class DocumentationSnapshot : IDisposable
         {
             throw new ArgumentException("Unknown documentation query operation: " + request.operation);
         }
-        string? pageId = request.value;
-        if (pageId is null && request.project is not null)
+        string? pageID = request.value;
+        if (pageID is null && request.project is not null)
         {
-            pageId = m_manifest.projects.Single(project => project.name == request.project).entry;
+            pageID = m_manifest.projects.Single(project => project.name == request.project).entry;
         }
-        if (pageId is null)
+        if (pageID is null)
         {
             return Result("Missing", "Specify a page identity or a project with an authoritative entry.");
         }
-        if (!m_paths.ContainsKey(pageId))
+        if (!m_paths.ContainsKey(pageID))
         {
-            if (!m_manifest.pages.TryGetValue(pageId.Replace('\\', '/'), out DocumentationPageReference? reference))
+            if (!m_manifest.pages.TryGetValue(pageID.Replace('\\', '/'), out DocumentationPageReference? reference))
             {
-                return Result("Missing", "Unknown page in this snapshot: " + pageId);
+                return Result("Missing", "Unknown page in this snapshot: " + pageID);
             }
-            pageId = reference.pageId;
+            pageID = reference.pageId;
         }
-        DocumentationPage page = await LoadAsync(pageId, cancellationToken).ConfigureAwait(false);
+        DocumentationPage page = await LoadAsync(pageID, cancellationToken).ConfigureAwait(false);
         DocumentationSection? section = request.section is null
                                         ? null
                                         : page.sections.SingleOrDefault(candidate => candidate.anchor == request.section);
@@ -351,7 +351,7 @@ public sealed class DocumentationSnapshot : IDisposable
         {
             continuations.Insert(
                 0,
-                new(pageId, section?.anchor, end, "Continue the original content before treating this selection as complete.")
+                new(pageID, section?.anchor, end, "Continue the original content before treating this selection as complete.")
             );
         }
         return new(
@@ -590,15 +590,15 @@ public sealed class DocumentationSnapshot : IDisposable
     }
 
     private async Task<DocumentationPage> LoadAsync(
-        string pageId,
+        string pageID,
         CancellationToken cancellation
     ) {
         cancellation.ThrowIfCancellationRequested();
-        if (m_pages.TryGetValue(pageId, out DocumentationPage? loaded))
+        if (m_pages.TryGetValue(pageID, out DocumentationPage? loaded))
         {
             return loaded;
         }
-        string path = m_paths[pageId];
+        string path = m_paths[pageID];
         DocumentationPageReference reference = m_manifest.pages[path];
         DocumentationStore.RequireHash(reference.key, "page payload");
         string lease = PathBoundary.RequireUnlinkedPath(m_cache, Path.Combine(m_cache, "leases", reference.key + ".lock"));
@@ -610,11 +610,11 @@ public sealed class DocumentationSnapshot : IDisposable
             throw new InvalidDataException("Corrupt documentation page payload. Explicitly refresh its index: " + path);
         }
         DocumentationPage page = DocumentationStore.Deserialize<DocumentationPage>(bytes);
-        if (page.path != path || page.metadata.uid != pageId)
+        if (page.path != path || page.metadata.uid != pageID)
         {
             throw new InvalidDataException("Documentation page identity mismatch: " + path);
         }
-        return m_pages.GetOrAdd(pageId, page);
+        return m_pages.GetOrAdd(pageID, page);
     }
 
     private List<DocumentationContinuation> Contracts(DocumentationPage page)

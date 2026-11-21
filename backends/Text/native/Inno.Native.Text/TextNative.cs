@@ -8,9 +8,9 @@ namespace Inno.Native.Text;
 public static unsafe partial class TextNative
 {
 #if DEBUG
-    internal const string LibName = "inno-text-debug";
+    internal const string C_LIB_NAME = "inno-text-debug";
 #else
-    internal const string LibName = "inno-text-release";
+    internal const string C_LIB_NAME = "inno-text-release";
 #endif
 
     static TextNative()
@@ -20,7 +20,7 @@ public static unsafe partial class TextNative
 #elif INNO_STATIC_NATIVE
         FromStatic();
 #else
-        Load(NativeDllLoader.FindNativeLibrary(LibName));
+        Load(NativeDllLoader.FindNativeLibrary(C_LIB_NAME));
 #endif
     }
 }

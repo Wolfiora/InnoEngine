@@ -52,7 +52,7 @@ public sealed partial class AssetEditingModule
             []
         );
         using var change = new EditorHistoryChange(
-            AssetHistoryKinds.SourceOperation,
+            AssetHistoryKinds.C_SOURCE_OPERATION,
             EditorHistoryPayload.FromBytes(data.Encode())
         );
         try
@@ -119,7 +119,7 @@ public sealed partial class AssetEditingModule
                 archive
             );
             var change = new EditorHistoryChange(
-                AssetHistoryKinds.SourceOperation,
+                AssetHistoryKinds.C_SOURCE_OPERATION,
                 EditorHistoryPayload.FromBytes(data.Encode())
             );
             try

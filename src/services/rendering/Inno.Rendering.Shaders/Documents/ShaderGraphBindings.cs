@@ -138,8 +138,8 @@ public static class ShaderGraphBindings
             {
                 continue;
             }
-            string stageId = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
-            GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageId) ? null : candidate.FindNode(new(stageId));
+            string stageID = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
+            GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageID) ? null : candidate.FindNode(new(stageID));
             ShaderStage stage = output is null
                 ? ShaderStage.None
                 : ShaderGraphDocument.Read(output, "settings", new ShaderGraphStageSettings(), serialization, context).stage;
@@ -266,8 +266,8 @@ public static class ShaderGraphBindings
                 {
                     continue;
                 }
-                string stageId = ShaderGraphDocument.Read(input, "stage", string.Empty, serialization, context);
-                GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageId) ? null : candidate.FindNode(new(stageId));
+                string stageID = ShaderGraphDocument.Read(input, "stage", string.Empty, serialization, context);
+                GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageID) ? null : candidate.FindNode(new(stageID));
                 if (output is not null)
                 {
                     stages |= ShaderGraphDocument.Read(output, "settings", new ShaderGraphStageSettings(), serialization, context).stage;

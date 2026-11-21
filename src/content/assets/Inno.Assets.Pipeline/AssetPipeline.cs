@@ -43,7 +43,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     private AssetLoader? m_loader;
     private AssetFileSystem? m_fileSystem;
     private IDisposable? m_catalogParticipantRegistration;
-    private int m_ownerThreadId;
+    private int m_ownerThreadID;
     private long m_revision;
     private AssetCacheOptions m_cacheOptions;
     private long m_lastArtifactCollectionTimestamp;
@@ -151,8 +151,8 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
                 requireWritableProject: options.mode == AssetPipelineMode.Authoring,
                 identities,
                 persistentIdentityResolver: path => (
-                    loader.TryGetPersistentId(path, out Guid persistentId)
-                    ? persistentId
+                    loader.TryGetPersistentId(path, out Guid persistentID)
+                    ? persistentID
                     : null
                 ),
                 activateIdentities: true
@@ -160,7 +160,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
             loader.AssetReloaded += OnAssetReloaded;
             m_loader = loader;
             m_fileSystem = fileSystem;
-            m_ownerThreadId = Environment.CurrentManagedThreadId;
+            m_ownerThreadID = Environment.CurrentManagedThreadId;
             m_revision = 0;
             m_cacheOptions = options.cacheOptions;
             m_options = options with { sourceMounts = mounts };
@@ -354,7 +354,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         {
             throw new InvalidOperationException("AssetPipeline is not initialized.");
         }
-        if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        if (Environment.CurrentManagedThreadId != m_ownerThreadID)
         {
             throw new InvalidOperationException(
                 "Asset database mutations must run on the thread that initialized AssetPipeline."

@@ -12,7 +12,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Scene.Tests;
 
-[Collection(SceneTestsCollection.NAME)]
+[Collection(SceneTestsCollection.C_NAME)]
 public sealed partial class SceneSerializationTests : IDisposable
 {
     private readonly TypeCatalog m_types;
@@ -37,13 +37,13 @@ public sealed partial class SceneSerializationTests : IDisposable
     [Fact]
     public void MissingSceneTypeDiagnosticPreservesStableIdentity()
     {
-        Guid stableTypeId = Guid.Parse("80f1fb70-95f7-4db2-b338-2567cf8bb2c1");
+        Guid stableTypeID = Guid.Parse("80f1fb70-95f7-4db2-b338-2567cf8bb2c1");
 
-        var exception = new SceneTypeResolutionException(stableTypeId, "component");
+        var exception = new SceneTypeResolutionException(stableTypeID, "component");
 
-        Assert.Equal(stableTypeId, exception.stableTypeId);
+        Assert.Equal(stableTypeID, exception.stableTypeId);
         Assert.Equal("component", exception.elementKind);
-        Assert.Contains(stableTypeId.ToString("D"), exception.Message, StringComparison.Ordinal);
+        Assert.Contains(stableTypeID.ToString("D"), exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -68,9 +68,9 @@ public sealed partial class SceneSerializationTests : IDisposable
         childReference.targetObject = root;
         childReference.targetComponent = rootReference;
 
-        Guid sceneId = source.identity.persistentId;
-        Guid rootId = root.identity.persistentId;
-        Guid childId = child.identity.persistentId;
+        Guid sceneID = source.identity.persistentId;
+        Guid rootID = root.identity.persistentId;
+        Guid childID = child.identity.persistentId;
         byte[] bytes = m_serialization.Serialize(source, m_serializationContext);
         Assert.Contains(
             m_types.GetSubTypesOf<SerializationConverter>(),
@@ -82,11 +82,11 @@ public sealed partial class SceneSerializationTests : IDisposable
         GameScene restored = m_serialization.Deserialize<GameScene>(bytes, m_serializationContext);
         SceneManager.LoadScene(restored);
 
-        Assert.Equal(sceneId, restored.identity.persistentId);
+        Assert.Equal(sceneID, restored.identity.persistentId);
         Assert.Equal("Roundtrip", restored.name);
         Assert.Equal(2, restored.GetObjects().Count);
-        GameObject restoredRoot = restored.GetObjects().Single(gameObject => gameObject.identity.persistentId == rootId);
-        GameObject restoredChild = restored.GetObjects().Single(gameObject => gameObject.identity.persistentId == childId);
+        GameObject restoredRoot = restored.GetObjects().Single(gameObject => gameObject.identity.persistentId == rootID);
+        GameObject restoredChild = restored.GetObjects().Single(gameObject => gameObject.identity.persistentId == childID);
         Assert.Equal("Player", restoredRoot.tag);
         Assert.Equal("Companion", restoredChild.tag);
         Assert.Equal(new GameLayer(3), restoredRoot.layer);
@@ -216,8 +216,8 @@ public sealed partial class SceneSerializationTests : IDisposable
     {
         var scene = new GameScene("Before");
         GameObject original = scene.CreateObject("Original");
-        Guid sceneId = scene.identity.persistentId;
-        Guid objectId = original.identity.persistentId;
+        Guid sceneID = scene.identity.persistentId;
+        Guid objectID = original.identity.persistentId;
         byte[] before = m_serialization.Serialize(scene, m_serializationContext);
         SceneManager.LoadScene(scene);
 
@@ -226,10 +226,10 @@ public sealed partial class SceneSerializationTests : IDisposable
         m_serialization.Restore(scene, before, m_serializationContext);
 
         Assert.Same(scene, SceneManager.activeScene);
-        Assert.Equal(sceneId, scene.identity.persistentId);
+        Assert.Equal(sceneID, scene.identity.persistentId);
         Assert.Equal("Before", scene.name);
         GameObject restored = Assert.Single(scene.GetObjects());
-        Assert.Equal(objectId, restored.identity.persistentId);
+        Assert.Equal(objectID, restored.identity.persistentId);
         Assert.Equal("Original", restored.name);
         Assert.True(scene.isLoaded);
     }

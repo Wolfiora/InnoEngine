@@ -30,7 +30,7 @@ public sealed class BackendInputTests
         repository.Write("backends/Probe/Changed.cs", "class BackendChange {}");
         using JsonDocument plan = await repository.PlanAsync(profile: "fast", backendStore: C_STORE);
         repository.Write("artifacts/packages.json", "[]");
-        await Assert.ThrowsAsync<InvalidDataException>(Bind);
+        await Assert.ThrowsAsync<InvalidDataException>(BindAsync);
         Assert.False(File.Exists(repository.PathOf(C_STORE + "/selection.json")));
         string inputPath = repository.PathOf("artifacts/current.json");
         Assert.Equal(
@@ -75,15 +75,15 @@ public sealed class BackendInputTests
         repository.Write(C_STORE + "/fixture/receipt.json", receipt);
         repository.Write(C_STORE + "/fixture/native/selection.json", native);
         repository.Write(C_STORE + "/fixture/manifest.json", inventory + " ");
-        await Assert.ThrowsAsync<InvalidDataException>(Bind);
+        await Assert.ThrowsAsync<InvalidDataException>(BindAsync);
         repository.Write(C_STORE + "/fixture/manifest.json", inventory);
-        Assert.Equal(0, await Bind());
+        Assert.Equal(0, await BindAsync());
         using JsonDocument bound = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/bound.json")));
         JsonElement owners = bound.RootElement.GetProperty("backendOwnerPayloads");
         Assert.Equal("fixture/Debug/" + C_PROJECT, Assert.Single(owners.EnumerateObject()).Name);
         Assert.Equal(Digest("archive"), bound.RootElement.GetProperty("backendPackages")[0].GetProperty("sha256").GetString());
 
-        Task<int> Bind()
+        Task<int> BindAsync()
             => ValidationCommand.ExecuteAsync([
                 "bind-backends",
                 "--packages",
@@ -130,7 +130,7 @@ public sealed class BackendInputTests
         var digest = new string('a', 64);
         WriteSelection(digest);
         string output = repository.PathOf("artifacts/inputs.json");
-        Assert.Equal(0, await Evaluate());
+        Assert.Equal(0, await EvaluateAsync());
         using JsonDocument inputs = JsonDocument.Parse(File.ReadAllBytes(output));
         Assert.Equal(
             !expected,
@@ -139,7 +139,7 @@ public sealed class BackendInputTests
         if (expected)
         {
             WriteSelection(new string('b', 64));
-            await Assert.ThrowsAsync<InvalidDataException>(() => Evaluate());
+            await Assert.ThrowsAsync<InvalidDataException>(() => EvaluateAsync());
         }
 
         void WriteSelection(string certifiedDigest)
@@ -165,7 +165,7 @@ public sealed class BackendInputTests
                 })
             );
 
-        Task<int> Evaluate()
+        Task<int> EvaluateAsync()
             => ValidationCommand.ExecuteAsync([
                 "backend-inputs",
                 "--plan",
@@ -233,11 +233,11 @@ public sealed class BackendInputTests
         );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Add the backend fixture");
-        using JsonDocument baseline = await Inputs(repository);
+        using JsonDocument baseline = await InputsAsync(repository);
         string original = Identity(baseline, C_BACKEND);
         string independent = Identity(baseline, C_INDEPENDENT);
         repository.Write("tests/backends/Probe.Tests/Changed.cs", "class TestChange {}");
-        using JsonDocument testOnly = await Inputs(repository);
+        using JsonDocument testOnly = await InputsAsync(repository);
         Assert.Equal(original, Identity(testOnly, C_BACKEND));
         Assert.Equal(independent, Identity(testOnly, C_INDEPENDENT));
         Assert.Equal(new[] { C_TEST }, testOnly.RootElement.GetProperty("tests").EnumerateArray().Select(static item => item.GetString()));
@@ -246,7 +246,7 @@ public sealed class BackendInputTests
             testOnly.RootElement.GetProperty("required").EnumerateArray().Select(static item => item.GetString())
         );
         repository.Write("src/Example/Changed.cs", "public class NewContract {}");
-        using JsonDocument changed = await Inputs(repository);
+        using JsonDocument changed = await InputsAsync(repository);
         Assert.NotEqual(original, Identity(changed, C_BACKEND));
         Assert.Equal(independent, Identity(changed, C_INDEPENDENT));
     }
@@ -270,10 +270,10 @@ public sealed class BackendInputTests
         repository.Write(C_PROPS, "<Project />");
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Add the platform build definition");
-        using JsonDocument before = await Inputs(repository);
+        using JsonDocument before = await InputsAsync(repository);
 
         repository.Write(C_PROPS, "<Project><PropertyGroup><DefineConstants>FEATURE</DefineConstants></PropertyGroup></Project>");
-        using JsonDocument after = await Inputs(repository);
+        using JsonDocument after = await InputsAsync(repository);
         Assert.Equal(Identity(before, C_TOOL), Identity(after, C_TOOL));
         Assert.NotEqual(Identity(before, C_IMPORT), Identity(after, C_IMPORT));
         Assert.NotEqual(Identity(before, C_COPY), Identity(after, C_COPY));
@@ -283,12 +283,12 @@ public sealed class BackendInputTests
     public async Task NewPlatformProductDerivesItsConsumersFromItsRegisteredSdkEntry()
     {
         using var repository = new ValidationRepository();
-        const string backend = "backends/NewAdapter/Adapter.csproj";
-        const string player = "platforms/Fixture/player/Player.csproj";
-        repository.Write(backend, ValidationRepository.Project());
+        const string C_BACKEND = "backends/NewAdapter/Adapter.csproj";
+        const string C_PLAYER = "platforms/Fixture/player/Player.csproj";
+        repository.Write(C_BACKEND, ValidationRepository.Project());
         repository.Write("backends/Unrelated/Unrelated.csproj", ValidationRepository.Project());
         repository.Write(
-            player,
+            C_PLAYER,
             ValidationRepository.Project("""
             <PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>fixture</InnoProductTarget></PropertyGroup>
             <ItemGroup><ProjectReference Include="../../../backends/NewAdapter/Adapter.csproj" /></ItemGroup>
@@ -296,24 +296,24 @@ public sealed class BackendInputTests
         );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Register the fixture product");
-        using JsonDocument first = await Inputs(repository);
-        JsonElement before = first.RootElement.GetProperty("consumers").GetProperty(player);
-        Assert.Equal(backend, Assert.Single(before.GetProperty("backendOwners").EnumerateArray()).GetString());
+        using JsonDocument first = await InputsAsync(repository);
+        JsonElement before = first.RootElement.GetProperty("consumers").GetProperty(C_PLAYER);
+        Assert.Equal(C_BACKEND, Assert.Single(before.GetProperty("backendOwners").EnumerateArray()).GetString());
         repository.Write("backends/Unrelated/Change.cs", "class Unrelated {}");
-        using JsonDocument unrelated = await Inputs(repository);
+        using JsonDocument unrelated = await InputsAsync(repository);
         Assert.Equal(
             before.GetProperty("identity").GetString(),
-            unrelated.RootElement.GetProperty("consumers").GetProperty(player).GetProperty("identity").GetString()
+            unrelated.RootElement.GetProperty("consumers").GetProperty(C_PLAYER).GetProperty("identity").GetString()
         );
         repository.Write("backends/NewAdapter/Change.cs", "class Changed {}");
-        using JsonDocument affected = await Inputs(repository);
+        using JsonDocument affected = await InputsAsync(repository);
         Assert.NotEqual(
             before.GetProperty("identity").GetString(),
-            affected.RootElement.GetProperty("consumers").GetProperty(player).GetProperty("identity").GetString()
+            affected.RootElement.GetProperty("consumers").GetProperty(C_PLAYER).GetProperty("identity").GetString()
         );
     }
 
-    private static async Task<JsonDocument> Inputs(ValidationRepository repository)
+    private static async Task<JsonDocument> InputsAsync(ValidationRepository repository)
     {
         using JsonDocument plan = await repository.PlanAsync(profile: "fast");
         string output = repository.PathOf("artifacts/backend-inputs.json");

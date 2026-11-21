@@ -349,8 +349,8 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
     }
 
     private readonly record struct TextureArtifactKey(
-        Guid assetId,
-        string slotId
+        Guid assetID,
+        string slotID
     );
 
     private sealed record TextureInput(RenderTextureArtifactReference reference);

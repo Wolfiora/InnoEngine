@@ -130,8 +130,8 @@ internal static class ValidationRunner
         {
             Console.WriteLine($"Validation check: {check.id}; kind={check.kind}; context={check.context ?? "none"}; owner={check.owner}.");
             string identity = ValidationInputs.CheckIdentity(plan, check, current);
-            string contextId = check.context ?? "managed";
-            string graphPath = Path.Combine(directory, contextId + "-sdk-graph.json");
+            string contextID = check.context ?? "managed";
+            string graphPath = Path.Combine(directory, contextID + "-sdk-graph.json");
             string status = "Failed";
             string detail = string.Empty;
             Dictionary<string, string>? outputs = null;
@@ -175,7 +175,7 @@ internal static class ValidationRunner
                 documentationInputs = old.documentationInputs;
                 if (check.kind == "build")
                 {
-                    built.Add(contextId);
+                    built.Add(contextID);
                 }
             }
             else
@@ -206,7 +206,7 @@ internal static class ValidationRunner
                                 "-PlanPath",
                                 Path.Combine(directory, "execution-plan.json"),
                                 "-Context",
-                                contextId,
+                                contextID,
                                 "-ResultsDirectory",
                                 Path.Combine(directory, "hot-builds"),
                                 "-Iterations",
@@ -219,7 +219,7 @@ internal static class ValidationRunner
                         case "gate-contracts":
                         case "ci-contracts":
                             string[] contracts = check.kind == "gate-contracts"
-                                ? ValidationCiContracts.GateContracts.Select(path => Path.Combine(plan.root, path)).ToArray()
+                                ? ValidationCiContracts.GATE_CONTRACTS.Select(path => Path.Combine(plan.root, path)).ToArray()
                                 : ValidationCiContracts.Discover(plan.root);
                             if (contracts.Length == 0)
                             {
@@ -236,7 +236,7 @@ internal static class ValidationRunner
                             break;
                         case "restore-aot":
                             {
-                                JsonElement player = plan.contexts[contextId].sdkGraph.EnumerateArray().Single(snapshot => (
+                                JsonElement player = plan.contexts[contextID].sdkGraph.EnumerateArray().Single(snapshot => (
                                     Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
                                         .Replace('\\', '/') == check.owner
                                 ));
@@ -280,7 +280,7 @@ internal static class ValidationRunner
                             }
                             break;
                         case "api":
-                            if (!built.Contains(contextId))
+                            if (!built.Contains(contextID))
                             {
                                 status = "Blocked";
                                 detail = "Compiled API verification requires the successful union build.";
@@ -295,13 +295,13 @@ internal static class ValidationRunner
                                 plan.root,
                                 "--metadata-only",
                                 "--configuration",
-                                plan.contexts[contextId].properties["Configuration"],
+                                plan.contexts[contextID].properties["Configuration"],
                                 "--dotnet",
                                 plan.dotnet,
                                 "--artifacts-path",
-                                plan.contexts[contextId].properties["ArtifactsPath"],
+                                plan.contexts[contextID].properties["ArtifactsPath"],
                                 "--sdk-snapshot",
-                                await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                await ResolveCompilationGraphAsync(contextID).ConfigureAwait(false),
                                 ..projects
                             ], cancellation) != 0
                             ) {
@@ -330,9 +330,9 @@ internal static class ValidationRunner
                                     "--configuration",
                                     check.documentation.configuration,
                                     "--artifacts-path",
-                                    plan.contexts[contextId].properties["ArtifactsPath"],
+                                    plan.contexts[contextID].properties["ArtifactsPath"],
                                     "--sdk-snapshot",
-                                    await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                    await ResolveCompilationGraphAsync(contextID).ConfigureAwait(false),
                                     "--output",
                                     capturePath,
                                     ..captureTarget,
@@ -384,9 +384,9 @@ internal static class ValidationRunner
                                 "--snapshot",
                                 plan.documentation.snapshot,
                                 "--artifacts-path",
-                                plan.contexts[contextId].properties["ArtifactsPath"],
+                                plan.contexts[contextID].properties["ArtifactsPath"],
                                 "--sdk-snapshot",
-                                await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                await ResolveCompilationGraphAsync(contextID).ConfigureAwait(false),
                                 "--output",
                                 Path.Combine(directory, check.id.Replace(':', '-') + ".json"),
                                 ..referenceArguments
@@ -427,7 +427,7 @@ internal static class ValidationRunner
                                     .GetProperty("Properties")
                                     .GetProperty("TargetPath")
                                     .GetString()!;
-                                string project = Path.Combine(directory, contextId + "-documentation-project");
+                                string project = Path.Combine(directory, contextID + "-documentation-project");
                                 Directory.CreateDirectory(Path.Combine(project, "Assets"));
                                 await File.WriteAllTextAsync(
                                     Path.Combine(project, "Assets", "DocumentationProbe.cs"),
@@ -450,7 +450,7 @@ internal static class ValidationRunner
                                         "--ide"
                                     ],
                                     plan.root,
-                                    Path.Combine(directory, contextId + "-documentation-projection.log"),
+                                    Path.Combine(directory, contextID + "-documentation-projection.log"),
                                     cancellation
                                 ).ConfigureAwait(false);
                                 XDocument projection = XDocument.Load(Path.Combine(project, "Inno.EditorScripts.csproj"));
@@ -484,11 +484,11 @@ internal static class ValidationRunner
                                 "--snapshot",
                                 plan.documentation.snapshot,
                                 "--artifacts-path",
-                                plan.contexts[contextId].properties["ArtifactsPath"],
+                                plan.contexts[contextID].properties["ArtifactsPath"],
                                 "--sdk-snapshot",
-                                await ResolveCompilationGraphAsync(contextId).ConfigureAwait(false),
+                                await ResolveCompilationGraphAsync(contextID).ConfigureAwait(false),
                                 "--output",
-                                Path.Combine(directory, contextId + "-documentation-examples.json"),
+                                Path.Combine(directory, contextID + "-documentation-examples.json"),
                                 ..targetArguments,
                                 ..scriptArguments,
                                 ..pages
@@ -501,7 +501,7 @@ internal static class ValidationRunner
                             break;
                         case "products":
                             {
-                                JsonElement graph = plan.contexts[contextId].sdkGraph;
+                                JsonElement graph = plan.contexts[contextID].sdkGraph;
                                 JsonElement editor = graph.EnumerateArray().Single(snapshot => (
                                     Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
                                         .Replace('\\', '/') == check.owner
@@ -583,7 +583,7 @@ internal static class ValidationRunner
                             break;
                         case "support-pack":
                             {
-                                string entry = plan.contexts[contextId].sdkGraph.EnumerateArray()
+                                string entry = plan.contexts[contextID].sdkGraph.EnumerateArray()
                                     .Single(snapshot => (
                                         Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
                                             .Replace('\\', '/') == check.owner
@@ -601,7 +601,7 @@ internal static class ValidationRunner
                                         "--engine-root",
                                         plan.root,
                                         "--tools-target",
-                                        plan.contexts[contextId].properties["InnoToolTarget"],
+                                        plan.contexts[contextID].properties["InnoToolTarget"],
                                         "--dotnet",
                                         plan.dotnet,
                                         "--configuration",
@@ -624,22 +624,22 @@ internal static class ValidationRunner
                             }
                             break;
                         case "build":
-                            if (buildFailures.TryGetValue(contextId, out string? buildFailure))
+                            if (buildFailures.TryGetValue(contextID, out string? buildFailure))
                             {
                                 throw new InvalidOperationException(buildFailure);
                             }
-                            if (!built.Contains(contextId))
+                            if (!built.Contains(contextID))
                             {
-                                string solution = buildSolutions[contextId];
+                                string solution = buildSolutions[contextID];
                                 try
                                 {
                                     var compilationInputs = new ValidationBuildInputs(
                                         plan,
-                                        contextId,
+                                        contextID,
                                         outputDigests,
                                         cancellation
                                     );
-                                    string[] properties = plan.contexts[contextId].properties
+                                    string[] properties = plan.contexts[contextID].properties
                                         .Select(static pair => "-p:" + pair.Key + "=" + pair.Value)
                                         .ToArray();
                                     bool retainDependencies = !compilationInputs.RequiresDependencyCompilation(dependencyInputs);
@@ -664,7 +664,7 @@ internal static class ValidationRunner
                                                 "-nr:false"
                                             ],
                                             plan.root,
-                                            Path.Combine(directory, contextId + "-clean.log"),
+                                            Path.Combine(directory, contextID + "-clean.log"),
                                             cancellation
                                         ).ConfigureAwait(false);
                                     }
@@ -680,50 +680,50 @@ internal static class ValidationRunner
                                               : Array.Empty<string>(),
                                             "--disable-build-servers",
                                             "-m:"
-                                            + (contextId == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
+                                            + (contextID == "managed" ? Math.Min(Environment.ProcessorCount, 4) : 1),
                                             "-nr:false",
                                             "-clp:PerformanceSummary"
                                         ],
                                         plan.root,
-                                        Path.Combine(directory, contextId + "-build.log"),
+                                        Path.Combine(directory, contextID + "-build.log"),
                                         cancellation
                                     ).ConfigureAwait(false);
-                                    built.Add(contextId);
+                                    built.Add(contextID);
                                     outputDigests.Clear();
                                     dependencyInputs.Reset();
-                                    pendingCompilations.Add(contextId, compilationInputs);
+                                    pendingCompilations.Add(contextID, compilationInputs);
                                 }
                                 catch (Exception failure) when (failure is not OperationCanceledException)
                                 {
-                                    buildFailures[contextId] = failure.Message;
+                                    buildFailures[contextID] = failure.Message;
                                     throw;
                                 }
                             }
                             break;
                         case "test":
-                            if (!built.Contains(contextId))
+                            if (!built.Contains(contextID))
                             {
                                 status = "Blocked";
                                 detail = "The required union build did not pass.";
                                 break;
                             }
-                            if (testFailures.TryGetValue(contextId, out string? testFailure))
+                            if (testFailures.TryGetValue(contextID, out string? testFailure))
                             {
                                 throw new InvalidOperationException(testFailure);
                             }
-                            if (!tested.Contains(contextId))
+                            if (!tested.Contains(contextID))
                             {
                                 string[] tests = checks
                                     .Where(candidate => (
-                                        candidate.kind == "test" && candidate.exclusion is null && candidate.context == contextId
+                                        candidate.kind == "test" && candidate.exclusion is null && candidate.context == contextID
                                         && !CanReuse(candidate)
                                     ))
                                     .Select(static candidate => candidate.owner)
                                     .ToArray();
-                                string solution = WriteUnion(contextId, "Tests", tests);
-                                string resultsDirectory = Path.Combine(directory, contextId + "-trx");
-                                Dictionary<string, string> properties = plan.contexts[contextId].properties;
-                                string[] productArguments = contextId == "native"
+                                string solution = WriteUnion(contextID, "Tests", tests);
+                                string resultsDirectory = Path.Combine(directory, contextID + "-trx");
+                                Dictionary<string, string> properties = plan.contexts[contextID].properties;
+                                string[] productArguments = contextID == "native"
                                                             ? [
                                                                 "-Target",
                                                                 properties["InnoNativeTarget"],
@@ -758,7 +758,7 @@ internal static class ValidationRunner
                                                   ? Array.Empty<string>()
                                                   : ["-NativeDependencies", Path.Combine(plan.root, plan.nativeDependencies)]
                                             ],
-                                            contextId + "-tests.log"
+                                            contextID + "-tests.log"
                                         ).ConfigureAwait(false);
                                     }
                                     catch (Exception failure) when (failure is not OperationCanceledException)
@@ -768,8 +768,8 @@ internal static class ValidationRunner
                                             new(
                                                 "test-execution",
                                                 failure.Message.Split('\n')[0],
-                                                contextId,
-                                                contextId + "-tests.log",
+                                                contextID,
+                                                contextID + "-tests.log",
                                                 Stopwatch.GetElapsedTime(batchStart).TotalSeconds
                                             )
                                         );
@@ -777,12 +777,12 @@ internal static class ValidationRunner
                                     }
                                     finally
                                     {
-                                        batchSeconds[contextId] = Stopwatch.GetElapsedTime(batchStart).TotalSeconds;
+                                        batchSeconds[contextID] = Stopwatch.GetElapsedTime(batchStart).TotalSeconds;
                                     }
                                     foreach (KeyValuePair<string, (bool passed, string detail)> evidence in ValidationTestEvidence.Read(
                                         plan.root,
                                         tests.ToDictionary(static project => project, project =>
-                                            plan.contexts[contextId].sdkGraph.EnumerateArray()
+                                            plan.contexts[contextID].sdkGraph.EnumerateArray()
                                                 .Single(snapshot => (
                                                     Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!)
                                                         .Replace('\\', '/') == project
@@ -796,13 +796,13 @@ internal static class ValidationRunner
                                     }
                                     elapsed.Restart();
                                     executedTests.UnionWith(tests);
-                                    tested.Add(contextId);
+                                    tested.Add(contextID);
                                     outputDigests.Clear();
                                     dependencyInputs.Reset();
                                 }
                                 catch (Exception failure) when (failure is not OperationCanceledException)
                                 {
-                                    testFailures[contextId] = failure.Message;
+                                    testFailures[contextID] = failure.Message;
                                     throw;
                                 }
                             }

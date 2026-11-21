@@ -11,7 +11,7 @@ namespace Inno.Storage;
 /// </summary>
 public static class StorageExecutionContext
 {
-    private static readonly ExecutionSlot<IApplicationStorage> S_CURRENT_SCOPE = new("storage");
+    private static readonly ExecutionSlot<IApplicationStorage> CURRENT_SCOPE = new("storage");
 
     /// <summary>
     /// Gets the storage service bound to the current execution context.
@@ -19,7 +19,7 @@ public static class StorageExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no storage scope is active.
     /// </exception>
-    public static IApplicationStorage current => S_CURRENT_SCOPE.current;
+    public static IApplicationStorage current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds a storage service until the returned strict last-in-first-out scope is disposed.
@@ -33,7 +33,7 @@ public static class StorageExecutionContext
     public static IDisposable EnterScope(IApplicationStorage storage)
     {
         ArgumentNullException.ThrowIfNull(storage);
-        return S_CURRENT_SCOPE.Enter(storage);
+        return CURRENT_SCOPE.Enter(storage);
     }
 }
 

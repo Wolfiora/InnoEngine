@@ -293,12 +293,12 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     }
 
     private bool Invoke(
-        Guid documentId,
+        Guid documentID,
         Func<EditorDocumentProvider, EditorDocumentContext, bool> operation,
         bool clearDirty
     ) {
         m_events.Emit(new EditorOperationPreparingEvent());
-        EditorDocumentContext document = Get(documentId);
+        EditorDocumentContext document = Get(documentID);
         if (!m_providers.TryGetValue(document.providerId, out EditorDocumentProvider? provider))
         {
             return false;
@@ -311,16 +311,16 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         return succeeded;
     }
 
-    private EditorDocumentContext Get(Guid documentId)
-        => Find(documentId) ?? throw new ArgumentException($"Editor document '{documentId}' is not open.", nameof(documentId));
+    private EditorDocumentContext Get(Guid documentID)
+        => Find(documentID) ?? throw new ArgumentException($"Editor document '{documentID}' is not open.", nameof(documentID));
 
-    private EditorDocumentContext? Find(Guid documentId) => m_documents.FirstOrDefault(document => document.documentId == documentId);
+    private EditorDocumentContext? Find(Guid documentID) => m_documents.FirstOrDefault(document => document.documentId == documentID);
 
     private EditorDocumentContext? FindPathOwner(
         string assetPath,
-        Guid excludedDocumentId = default
+        Guid excludedDocumentID = default
     ) => m_documents.FirstOrDefault(
-        document => document.documentId != excludedDocumentId && string.Equals(document.assetPath, assetPath, StringComparison.Ordinal)
+        document => document.documentId != excludedDocumentID && string.Equals(document.assetPath, assetPath, StringComparison.Ordinal)
     );
 
     private void RetireStalePathOwner(

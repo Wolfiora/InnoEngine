@@ -143,8 +143,8 @@ public sealed class GameLayerCatalog : ISerializable
         ProjectId projectId,
         GameLayer layer
     ) {
-        ProjectLocalId? localId = GetLocalId(layer);
-        return localId is ProjectLocalId value ? new GameLayerId(projectId, value) : null;
+        ProjectLocalId? localID = GetLocalId(layer);
+        return localID is ProjectLocalId value ? new GameLayerId(projectId, value) : null;
     }
 
     /// <summary>
@@ -306,9 +306,9 @@ public sealed class GameLayerCatalog : ISerializable
         GameLayer layer,
         string name
     ) {
-        ProjectLocalId localId = GetLocalId(layer)
+        ProjectLocalId localID = GetLocalId(layer)
                                  ?? new ProjectLocalId($"layer.{layer.index.ToString("00", CultureInfo.InvariantCulture)}");
-        DefineLocal(layer, localId, name);
+        DefineLocal(layer, localID, name);
     }
 
     /// <summary>
@@ -422,23 +422,23 @@ public sealed class GameLayerCatalog : ISerializable
 
     internal void DefineLocal(
         GameLayer layer,
-        ProjectLocalId localId,
+        ProjectLocalId localID,
         string name
     ) {
-        if (string.IsNullOrEmpty(localId.value))
+        if (string.IsNullOrEmpty(localID.value))
         {
-            throw new ArgumentException("A valid project-local layer ID is required.", nameof(localId));
+            throw new ArgumentException("A valid project-local layer ID is required.", nameof(localID));
         }
         string normalized = NormalizeName(name);
         ValidateState();
         for (int index = 0; index < m_names.Length; index++)
         {
             if (index != layer.index
-                && string.Equals(m_localIds[index], localId.value, StringComparison.Ordinal)
+                && string.Equals(m_localIds[index], localID.value, StringComparison.Ordinal)
             ) {
                 throw new ArgumentException(
-                    $"GameLayer local ID '{localId}' is already assigned to slot {index}.",
-                    nameof(localId)
+                    $"GameLayer local ID '{localID}' is already assigned to slot {index}.",
+                    nameof(localID)
                 );
             }
             if (index != layer.index
@@ -451,12 +451,12 @@ public sealed class GameLayerCatalog : ISerializable
             }
         }
         if (layer == GameLayer.defaultLayer
-            && (localId != new ProjectLocalId("default")
+            && (localID != new ProjectLocalId("default")
                 || !string.Equals(normalized, C_DEFAULT_LAYER_NAME, StringComparison.Ordinal))
         ) {
             throw new ArgumentException("The built-in default layer cannot be replaced.", nameof(layer));
         }
-        m_localIds[layer.index] = localId.value;
+        m_localIds[layer.index] = localID.value;
         m_names[layer.index] = normalized;
     }
 
@@ -531,20 +531,20 @@ public sealed class GameLayerCatalog : ISerializable
         var names = new HashSet<string>(StringComparer.Ordinal);
         for (int index = 0; index < m_names.Length; index++)
         {
-            string? localId = m_localIds[index];
+            string? localID = m_localIds[index];
             string? name = m_names[index];
-            if ((localId is null) != (name is null))
+            if ((localID is null) != (name is null))
             {
                 throw new InvalidOperationException($"GameLayer slot {index} must define both a local ID and a name.");
             }
-            if (localId is null || name is null)
+            if (localID is null || name is null)
             {
                 continue;
             }
-            var normalizedId = new ProjectLocalId(localId);
-            if (!ids.Add(normalizedId.value))
+            var normalizedID = new ProjectLocalId(localID);
+            if (!ids.Add(normalizedID.value))
             {
-                throw new InvalidOperationException($"GameLayer local ID '{localId}' is assigned more than once.");
+                throw new InvalidOperationException($"GameLayer local ID '{localID}' is assigned more than once.");
             }
             string normalizedName = NormalizeName(name);
             if (!string.Equals(name, normalizedName, StringComparison.Ordinal))

@@ -5,7 +5,7 @@ namespace Inno.Content.Tests;
 
 public sealed class ContentPackIndexTests
 {
-    private static readonly string Hash = new('A', 64);
+    private static readonly string HASH = new('A', 64);
 
     [Fact]
     public void IndexCopiesSortsAndRejectsCollisionsAndFileDirectoryConflicts()
@@ -23,5 +23,5 @@ public sealed class ContentPackIndexTests
     private static ContentEntry Entry(
         string key,
         long length
-    ) => new(new ContentKey(key), length, Hash);
+    ) => new(new ContentKey(key), length, HASH);
 }

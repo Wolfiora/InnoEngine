@@ -205,7 +205,7 @@ public sealed partial class AssetLoader
         string oldMeta = GetMetaPath(oldNormalized);
         string newMeta = GetMetaPath(newNormalized);
         if (TryReadSourceMeta(newMeta, out AssetSourceMeta targetMeta)
-            && targetMeta.persistentId != record.persistentId
+            && targetMeta.persistentId != record.persistentID
         ) {
             record.meta.importStatus = (int)AssetImportStatus.Conflict;
             record.meta.diagnostics =
@@ -307,7 +307,7 @@ public sealed partial class AssetLoader
             m_recordsByPath.Remove(recordPath);
             m_importGraph.RemoveNode(recordPath);
 
-            if (record.persistentId == Guid.Empty)
+            if (record.persistentID == Guid.Empty)
             {
                 continue;
             }
@@ -318,7 +318,7 @@ public sealed partial class AssetLoader
             record.meta.artifactKey = string.Empty;
             // A returning source must be recoverable without the retired managed generation.
             record.payload = [];
-            m_runtimeGraph.ReplaceDependencies(record.persistentId, []);
+            m_runtimeGraph.ReplaceDependencies(record.persistentID, []);
             if (record.asset is not null)
             {
                 m_dependencyRetention.Remove(record.asset);

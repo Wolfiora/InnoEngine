@@ -65,7 +65,7 @@ public abstract class ShaderGraphTemplate
     );
 }
 
-[ShaderGraphTemplate(ShaderBuiltInIds.rasterTemplate, "Raster")]
+[ShaderGraphTemplate(ShaderBuiltInIds.C_RASTER_TEMPLATE, "Raster")]
 internal sealed class RasterShaderGraphTemplate : ShaderGraphTemplate
 {
     /// <summary>
@@ -86,7 +86,7 @@ public override GraphDocument Create(
 ) => ShaderGraphTemplates.CreateRaster(serialization, context);
 }
 
-[ShaderGraphTemplate(ShaderBuiltInIds.nodeTemplate, "Reusable Node")]
+[ShaderGraphTemplate(ShaderBuiltInIds.C_NODE_TEMPLATE, "Reusable Node")]
 internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
 {
     /// <summary>
@@ -138,6 +138,6 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
 
 internal static class ShaderBuiltInIds
 {
-    internal const string rasterTemplate = "inno.shader.raster";
-    internal const string nodeTemplate = "inno.shader.node";
+    internal const string C_RASTER_TEMPLATE = "inno.shader.raster";
+    internal const string C_NODE_TEMPLATE = "inno.shader.node";
 }

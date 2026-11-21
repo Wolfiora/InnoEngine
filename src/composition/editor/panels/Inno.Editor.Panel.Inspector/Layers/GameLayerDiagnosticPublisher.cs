@@ -47,14 +47,14 @@ internal sealed class GameLayerDiagnosticPublisher
                 {
                     continue;
                 }
-                Guid targetId = gameObject.identity.persistentId;
-                currentTargets.Add(targetId);
-                if (m_activeTargets.Contains(targetId))
+                Guid targetID = gameObject.identity.persistentId;
+                currentTargets.Add(targetID);
+                if (m_activeTargets.Contains(targetID))
                 {
                     continue;
                 }
                 m_diagnostics.Set(
-                    CreateSource(targetId, gameObject.name),
+                    CreateSource(targetID, gameObject.name),
                     [Diagnostic.Error(
                         "GAMEOBJECT-LAYER-UNDEFINED",
                         $"GameObject '{gameObject.name}' uses undefined layer slot {gameObject.layer.index}."
@@ -63,9 +63,9 @@ internal sealed class GameLayerDiagnosticPublisher
             }
         }
 
-        foreach (Guid targetId in m_activeTargets.Where(id => !currentTargets.Contains(id)).ToArray())
+        foreach (Guid targetID in m_activeTargets.Where(id => !currentTargets.Contains(id)).ToArray())
         {
-            m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+            m_diagnostics.Clear(CreateSource(targetID, targetID.ToString("D")));
         }
         m_activeTargets.Clear();
         m_activeTargets.UnionWith(currentTargets);
@@ -76,15 +76,15 @@ internal sealed class GameLayerDiagnosticPublisher
     /// </summary>
     internal void Clear()
     {
-        foreach (Guid targetId in m_activeTargets)
+        foreach (Guid targetID in m_activeTargets)
         {
-            m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+            m_diagnostics.Clear(CreateSource(targetID, targetID.ToString("D")));
         }
         m_activeTargets.Clear();
     }
 
     private static DiagnosticSource CreateSource(
-        Guid targetId,
+        Guid targetID,
         string displayName
-    ) => new($"editor.scene.layer:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
+    ) => new($"editor.scene.layer:{targetID:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
 }

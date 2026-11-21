@@ -130,15 +130,15 @@ public sealed class GraphDocumentController
         IReadOnlyDictionary<string, GraphSerializedValue>? values = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(definitionId);
-        GraphNodeId id = NewNodeId();
+        GraphNodeId id = NewNodeID();
         Mutate("Create Node", null, () =>
         {
             var node = new GraphNodeRecord(id, definitionId) { position = position };
             if (values is not null)
             {
-                foreach ((string propertyId, GraphSerializedValue value) in values)
+                foreach ((string propertyID, GraphSerializedValue value) in values)
                 {
-                    node.SetValue(propertyId, value.Clone());
+                    node.SetValue(propertyID, value.Clone());
                 }
             }
 
@@ -231,7 +231,7 @@ public sealed class GraphDocumentController
             throw new ArgumentException("A graph endpoint cannot connect to itself.", nameof(input));
         }
 
-        GraphEdgeId edgeId = NewEdgeId();
+        GraphEdgeId edgeID = NewEdgeID();
         Mutate("Connect Nodes", null, () =>
         {
             GraphEdgeId[] replaced = document.edges
@@ -243,9 +243,9 @@ public sealed class GraphDocumentController
                 document.RemoveEdge(existing);
             }
 
-            document.AddEdge(new GraphEdgeRecord(edgeId, output, input));
+            document.AddEdge(new GraphEdgeRecord(edgeID, output, input));
         });
-        return edgeId;
+        return edgeID;
     }
 
     /// <summary>
@@ -379,7 +379,7 @@ public sealed class GraphDocumentController
         Dictionary<GraphNodeId, GraphNodeId> remap = [];
         foreach (GraphNodeRecord node in fragment.nodes)
         {
-            remap.Add(node.id, NewNodeId());
+            remap.Add(node.id, NewNodeID());
         }
 
         Mutate("Paste Nodes", null, () =>
@@ -399,7 +399,7 @@ public sealed class GraphDocumentController
             {
                 document.AddEdge(
                     new GraphEdgeRecord(
-                        NewEdgeId(),
+                        NewEdgeID(),
                         new GraphEndpoint(remap[edge.output.nodeId], edge.output.portId),
                         new GraphEndpoint(remap[edge.input.nodeId], edge.input.portId)
                     )
@@ -454,9 +454,9 @@ public sealed class GraphDocumentController
         }
     }
 
-    private GraphNodeRecord RequireNode(GraphNodeId nodeId)
-        => document.FindNode(nodeId)
-           ?? throw new ArgumentException($"Node '{nodeId}' is not present in '{documentId}'.", nameof(nodeId));
+    private GraphNodeRecord RequireNode(GraphNodeId nodeID)
+        => document.FindNode(nodeID)
+           ?? throw new ArgumentException($"Node '{nodeID}' is not present in '{documentId}'.", nameof(nodeID));
 
     private static GraphNodeRecord CloneNode(
         GraphNodeRecord source,
@@ -464,15 +464,15 @@ public sealed class GraphDocumentController
         GraphPosition position
     ) {
         var clone = new GraphNodeRecord(id, source.definitionId) { position = position };
-        foreach ((string propertyId, GraphSerializedValue value) in source.values)
+        foreach ((string propertyID, GraphSerializedValue value) in source.values)
         {
-            clone.SetValue(propertyId, value.Clone());
+            clone.SetValue(propertyID, value.Clone());
         }
 
         return clone;
     }
 
-    private static GraphNodeId NewNodeId() => new(Guid.NewGuid().ToString("N"));
+    private static GraphNodeId NewNodeID() => new(Guid.NewGuid().ToString("N"));
 
-    private static GraphEdgeId NewEdgeId() => new(Guid.NewGuid().ToString("N"));
+    private static GraphEdgeId NewEdgeID() => new(Guid.NewGuid().ToString("N"));
 }

@@ -12,10 +12,10 @@ namespace Inno.Core.Jobs;
 /// </summary>
 internal sealed class WorkStealingJobSystem : IJobSystem
 {
-    private static readonly Action<object?> s_noop = static _ => {};
-    private static readonly Action<object?> s_actionInvoker = static state => ((Action?)state)?.Invoke();
+    private static readonly Action<object?> NOOP = static _ => {};
+    private static readonly Action<object?> ACTION_INVOKER = static state => ((Action?)state)?.Invoke();
 
-    private static readonly Action<object?> s_parallelRangeInvoker = static state =>
+    private static readonly Action<object?> PARALLEL_RANGE_INVOKER = static state =>
     {
         ParallelForRangeState rangeState = (ParallelForRangeState?)state
                                            ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
@@ -29,14 +29,14 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     private readonly List<Exception> m_shutdownFailures = [];
     private readonly ManualResetEventSlim m_completionSignal = new(false);
     private readonly SemaphoreSlim m_wakeSignal = new(0);
-    private readonly ThreadLocal<int> m_currentWorkerId = new(() => -1, trackAllValues: false);
+    private readonly ThreadLocal<int> m_currentWorkerID = new(() => -1, trackAllValues: false);
     private readonly WorkerRuntime[] m_workers;
 
     private readonly List<JobRecord> m_jobs = [];
     private readonly Stack<int> m_freeIndices = [];
     private readonly List<int> m_frameJobs = [];
 
-    private readonly int m_mainThreadId;
+    private readonly int m_mainThreadID;
     private readonly int m_workerCount;
     private int m_peakFrameJobs;
     private long m_rejectedJobs;
@@ -57,7 +57,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     {
         m_mainThreadQueue = options.CreateMainThreadQueue();
         m_maxFrameJobs = options.ResolveFrameCapacity();
-        m_mainThreadId = Environment.CurrentManagedThreadId;
+        m_mainThreadID = Environment.CurrentManagedThreadId;
         m_workerCount = options.ResolveWorkerCount();
         m_workers = new WorkerRuntime[m_workerCount];
         m_running = 1;
@@ -67,8 +67,8 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         {
             for (int i = 0; i < m_workers.Length; i++)
             {
-                int workerId = i;
-                m_workers[i] = new WorkerRuntime(workerId, () => WorkerLoop(workerId));
+                int workerID = i;
+                m_workers[i] = new WorkerRuntime(workerID, () => WorkerLoop(workerID));
             }
             for (; started < m_workers.Length; started++)
             {
@@ -87,7 +87,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             {
                 m_workers[index].thread.Join();
             }
-            m_currentWorkerId.Dispose();
+            m_currentWorkerID.Dispose();
             m_wakeSignal.Dispose();
             m_completionSignal.Dispose();
             throw;
@@ -223,7 +223,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     public JobHandle Schedule(Action job)
     {
         ArgumentNullException.ThrowIfNull(job);
-        return Schedule(s_actionInvoker, job, []);
+        return Schedule(ACTION_INVOKER, job, []);
     }
 
     /// <summary>
@@ -313,7 +313,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     /// <returns>
     /// The validated job handle that represents the completed operation.
     /// </returns>
-    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies) => Schedule(s_noop, null, dependencies);
+    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies) => Schedule(NOOP, null, dependencies);
 
     /// <summary>
     /// Schedules the indexed range in batches and returns its completion handle.
@@ -348,7 +348,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
         if (length == 0)
         {
-            return Schedule(s_noop, null, []);
+            return Schedule(NOOP, null, []);
         }
 
         ThrowIfDisposed();
@@ -363,7 +363,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             {
                 int end = start + Math.Min(batchSize, length - start);
                 var rangeState = new ParallelForRangeState(body, start, end);
-                chunkHandles[chunkIndex++] = Schedule(s_parallelRangeInvoker, rangeState, []);
+                chunkHandles[chunkIndex++] = Schedule(PARALLEL_RANGE_INVOKER, rangeState, []);
                 start = end;
             }
 
@@ -509,7 +509,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             m_workers[i].thread.Join();
         }
 
-        m_currentWorkerId.Dispose();
+        m_currentWorkerID.Dispose();
         m_wakeSignal.Dispose();
         m_completionSignal.Dispose();
         m_mainThreadQueue.Close();
@@ -525,9 +525,9 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         }
     }
 
-    private void WorkerLoop(int workerId)
+    private void WorkerLoop(int workerID)
     {
-        m_currentWorkerId.Value = workerId;
+        m_currentWorkerID.Value = workerID;
         while (Volatile.Read(ref m_running) != 0)
         {
             m_wakeSignal.Wait(50);
@@ -628,10 +628,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private bool TryDequeueWorkItem(out int jobIndex)
     {
-        int workerId = m_currentWorkerId.Value;
-        if (workerId >= 0)
+        int workerID = m_currentWorkerID.Value;
+        if (workerID >= 0)
         {
-            if (m_workers[workerId].localQueue.TryPopBottom(out jobIndex))
+            if (m_workers[workerID].localQueue.TryPopBottom(out jobIndex))
             {
                 return true;
             }
@@ -642,9 +642,9 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             return true;
         }
 
-        if (workerId >= 0)
+        if (workerID >= 0)
         {
-            int startVictim = (workerId + 1) % m_workers.Length;
+            int startVictim = (workerID + 1) % m_workers.Length;
             for (int i = 0; i < m_workers.Length - 1; i++)
             {
                 int victim = (startVictim + i) % m_workers.Length;
@@ -671,13 +671,13 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private void QueueReadyJobs(List<int> readyIndices)
     {
-        int workerId = m_currentWorkerId.Value;
+        int workerID = m_currentWorkerID.Value;
         for (int i = 0; i < readyIndices.Count; i++)
         {
             int index = readyIndices[i];
-            if (workerId >= 0)
+            if (workerID >= 0)
             {
-                m_workers[workerId].localQueue.PushBottom(index);
+                m_workers[workerID].localQueue.PushBottom(index);
             }
             else
             {
@@ -778,7 +778,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private void EnsureMainThread()
     {
-        if (Environment.CurrentManagedThreadId != m_mainThreadId)
+        if (Environment.CurrentManagedThreadId != m_mainThreadID)
         {
             throw new InvalidOperationException("This operation must be executed on the main thread.");
         }

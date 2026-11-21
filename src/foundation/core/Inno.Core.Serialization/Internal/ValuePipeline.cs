@@ -342,7 +342,7 @@ internal static class ValuePipeline
         var capture = new SerializationArrayCapture(previous);
         for (int i = 0; i < value.Length; i++)
         {
-            capture.Add(Write(value.GetValue(i), elementType, operation, capture.Next?.capturePath ?? $"{path}[{i}]", false, capture.Next));
+            capture.Add(Write(value.GetValue(i), elementType, operation, capture.next?.capturePath ?? $"{path}[{i}]", false, capture.next));
         }
         return capture.Complete();
     }
@@ -385,7 +385,7 @@ internal static class ValuePipeline
         int index = 0;
         foreach (object? element in enumerable)
         {
-            capture.Add(Write(element, elementType, operation, capture.Next?.capturePath ?? $"{path}[{index}]", false, capture.Next));
+            capture.Add(Write(element, elementType, operation, capture.next?.capturePath ?? $"{path}[{index}]", false, capture.next));
             index++;
         }
         return capture.Complete();

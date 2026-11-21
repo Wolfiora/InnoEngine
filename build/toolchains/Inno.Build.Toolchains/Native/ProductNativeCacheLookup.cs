@@ -41,8 +41,8 @@ internal static class ProductNativeCacheLookup
         {
             activities.Add(await cache.AcquireUseAsync(cancellation).ConfigureAwait(false));
             foreach (string root in steps.Select(step => Path.Combine(step.component.GetToolchainRoot(context.engineRoot), "obj", "native"))
-                .Distinct(PathComparer)
-                .Order(PathComparer)
+                .Distinct(pathComparer)
+                .Order(pathComparer)
             ) {
                 activities.Add(
                     await new BuildCachePublisher(root, BuildCacheArtifactRole.ReusableWorkspace)
@@ -86,7 +86,7 @@ internal static class ProductNativeCacheLookup
                 string workspace = selected.WithIdentity(step.component, recipe.targetId, identity).GetNativeBuildRoot(step.component);
                 string directory = Path.Combine(context.engineRoot, "artifacts", "native", step.id, recipe.targetId, fingerprint);
                 var candidate = new Candidate(selected, recipe, fingerprint, directory, workspace, binding);
-                NativeBuildProduct? product = await AcquireProduct(candidate, cancellation).ConfigureAwait(false);
+                NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellation).ConfigureAwait(false);
                 if (product is null)
                 {
                     return null;
@@ -103,8 +103,8 @@ internal static class ProductNativeCacheLookup
             products.Clear();
             foreach (string workspace in candidates
                 .Select(static candidate => candidate.workspace)
-                .Distinct(PathComparer)
-                .Order(PathComparer)
+                .Distinct(pathComparer)
+                .Order(pathComparer)
             ) {
                 ownership.Add(
                     await FileLease.AcquireAsync(workspace + ".lock", Timeout.InfiniteTimeSpan, cancellation).ConfigureAwait(false)
@@ -112,7 +112,7 @@ internal static class ProductNativeCacheLookup
             }
             foreach (Candidate candidate in candidates)
             {
-                NativeBuildProduct? product = await AcquireProduct(candidate, cancellation).ConfigureAwait(false);
+                NativeBuildProduct? product = await AcquireProductAsync(candidate, cancellation).ConfigureAwait(false);
                 if (product is null)
                 {
                     return null;
@@ -168,9 +168,9 @@ internal static class ProductNativeCacheLookup
         }
     }
 
-    private static StringComparer PathComparer => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+    private static StringComparer pathComparer => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
-    private static async ValueTask<NativeBuildProduct?> AcquireProduct(
+    private static async ValueTask<NativeBuildProduct?> AcquireProductAsync(
         Candidate candidate,
         CancellationToken cancellation
     ) {

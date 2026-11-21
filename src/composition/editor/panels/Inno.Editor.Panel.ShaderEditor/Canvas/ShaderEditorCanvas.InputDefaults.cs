@@ -15,7 +15,7 @@ internal sealed partial class ShaderEditorCanvas
         ShaderNodePort port
     ) {
         var endpoint = new GraphEndpoint(node.id, new(port.id));
-        GraphEdgeRecord? edge = Controller.document.edges.FirstOrDefault(value => value.input == endpoint);
+        GraphEdgeRecord? edge = controller.document.edges.FirstOrDefault(value => value.input == endpoint);
         ImGuiApi.PushId(port.id);
         try
         {
@@ -35,7 +35,7 @@ internal sealed partial class ShaderEditorCanvas
                 && selected.Any(
                     value => (
                         !draft.ports[value.id].Any(candidate => candidate.id == port.id && candidate.type.IsEquivalentTo(port.type))
-                        || Controller.document.edges.Any(connection => connection.input == new GraphEndpoint(value.id, new(port.id)))
+                        || controller.document.edges.Any(connection => connection.input == new GraphEndpoint(value.id, new(port.id)))
                     )
                 )
             ) {
@@ -72,5 +72,5 @@ internal sealed partial class ShaderEditorCanvas
         string? component
     ) => component is null ? port.id : port.id + " " + component;
 
-    private static string DisplayType(string typeId) => EditorDisplayNames.Nicify(typeId);
+    private static string DisplayType(string typeID) => EditorDisplayNames.Nicify(typeID);
 }

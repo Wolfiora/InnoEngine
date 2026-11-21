@@ -15,7 +15,7 @@ namespace Inno.Core.Settings;
 public sealed class ProjectSettings : IDisposable
 {
     private readonly SettingsDocumentStore<ProjectSettingsDocument> m_documents;
-    private readonly ProjectId m_defaultProjectId;
+    private readonly ProjectId m_defaultProjectID;
     private readonly SerializationRegistry m_serialization;
     private readonly SerializationContext m_serializationContext;
     private readonly ProjectSettingsRegistry m_registry;
@@ -65,7 +65,7 @@ public sealed class ProjectSettings : IDisposable
         ArgumentNullException.ThrowIfNull(serializationContext);
         m_serialization = serialization;
         m_serializationContext = serializationContext;
-        m_defaultProjectId = defaultProjectId;
+        m_defaultProjectID = defaultProjectId;
         m_registry = new ProjectSettingsRegistry(types);
         m_documents = new SettingsDocumentStore<ProjectSettingsDocument>(
             documentStore,
@@ -266,7 +266,7 @@ public sealed class ProjectSettings : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_effective.TryGetValue(id, out ProjectSettingRecord value)
             || !m_registry.settings.TryGet(id, out ProjectSettingsRegistry.Definition? definition)
-            || definition.stableTypeId != value.stableTypeId
+            || definition.stableTypeID != value.stableTypeId
         ) {
             setting = null;
             return false;
@@ -367,7 +367,7 @@ public sealed class ProjectSettings : IDisposable
                 id,
                 new ProjectSettingRecord(
                     id,
-                    definition.stableTypeId,
+                    definition.stableTypeID,
                     m_serialization.CapturePropertiesData(value, m_serializationContext)
                 )
             );
@@ -615,7 +615,7 @@ public sealed class ProjectSettings : IDisposable
         ISerializable value = definition.Create();
         if (id == ProjectIdentitySettings.settingId && value is ProjectIdentitySettings identity)
         {
-            identity.projectId = m_defaultProjectId.value;
+            identity.projectId = m_defaultProjectID.value;
         }
         return value;
     }
@@ -689,7 +689,7 @@ public sealed class ProjectSettings : IDisposable
             record = default;
             return false;
         }
-        record = new ProjectSettingRecord(id, definition.stableTypeId, payload);
+        record = new ProjectSettingRecord(id, definition.stableTypeID, payload);
         return true;
     }
 
@@ -744,7 +744,7 @@ public sealed class ProjectSettings : IDisposable
         IReadOnlySet<string> directDependencies,
         IReadOnlyList<ProjectSettingsContributor> contributors
     ) {
-        Dictionary<string, ProjectSettingsContributor> byId = contributors.ToDictionary(
+        Dictionary<string, ProjectSettingsContributor> byID = contributors.ToDictionary(
             static contributor => contributor.id,
             StringComparer.Ordinal
         );
@@ -752,7 +752,7 @@ public sealed class ProjectSettings : IDisposable
         DependencyGraph<string> graph = CreateContributorGraph(contributors);
         foreach (string id in directDependencies)
         {
-            if (!byId.ContainsKey(id))
+            if (!byID.ContainsKey(id))
             {
                 throw new InvalidOperationException($"Declared Plugin dependency '{id}' is not active.");
             }
@@ -802,7 +802,7 @@ public sealed class ProjectSettings : IDisposable
         ProjectSettingsRegistry.Definition definition,
         ProjectSettingRecord record
     ) {
-        if (record.stableTypeId != definition.stableTypeId)
+        if (record.stableTypeId != definition.stableTypeID)
         {
             throw new InvalidOperationException($"Project setting '{id}' has an incompatible stable type.");
         }

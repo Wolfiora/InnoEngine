@@ -27,12 +27,12 @@ public interface ISdl3ApplicationExtension
     /// <param name="application">
     /// The platform application requesting the redraw.
     /// </param>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The platform window identifier being resized.
     /// </param>
     void PrepareLiveResizeWindow(
         Sdl3PlatformApplication application,
-        uint windowId
+        uint windowID
     );
 
     /// <summary>

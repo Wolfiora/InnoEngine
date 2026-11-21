@@ -13,7 +13,7 @@ internal sealed class AudioClipRequest : IDisposable
         AudioClipAsset clip,
         IAssetArtifactLookup artifacts
     ) {
-        this.persistentId = clip.identity.persistentId;
+        this.persistentID = clip.identity.persistentId;
         this.contentVersion = clip.contentVersion;
         this.assetPath = clip.assetPath;
         this.metadata = clip.metadata;
@@ -23,7 +23,7 @@ internal sealed class AudioClipRequest : IDisposable
             {
                 throw new InvalidOperationException("The audio clip or its imported metadata is missing.");
             }
-            m_artifact = artifacts.AcquireArtifact(persistentId, "audio-data");
+            m_artifact = artifacts.AcquireArtifact(persistentID, "audio-data");
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -44,7 +44,7 @@ internal sealed class AudioClipRequest : IDisposable
         m_artifact = null;
     }
 
-    internal Guid persistentId { get; }
+    internal Guid persistentID { get; }
     internal long contentVersion { get; }
     internal AssetPath assetPath { get; }
     internal AudioClipMetadata? metadata { get; }

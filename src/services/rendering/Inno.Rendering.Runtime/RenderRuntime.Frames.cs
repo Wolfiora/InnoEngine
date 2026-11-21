@@ -98,7 +98,7 @@ public sealed partial class RenderRuntime
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
-            m_frameContributors = RenderContributorSnapshot.empty;
+            m_frameContributors = RenderContributorSnapshot.EMPTY;
             m_scratch.Clear();
             throw;
         }
@@ -112,7 +112,7 @@ public sealed partial class RenderRuntime
             {
                 m_resourceService.EndMutation();
                 m_frameOpen = false;
-                m_frameContributors = RenderContributorSnapshot.empty;
+                m_frameContributors = RenderContributorSnapshot.EMPTY;
                 m_scratch.Clear();
             }
             throw;
@@ -311,7 +311,7 @@ public sealed partial class RenderRuntime
         finally
         {
             m_scratch.Clear();
-            m_frameContributors = RenderContributorSnapshot.empty;
+            m_frameContributors = RenderContributorSnapshot.EMPTY;
             if (!retirementPending)
             {
                 EndRenderingFrame(executedViewCount, culledPassCount, graphCompileCount);

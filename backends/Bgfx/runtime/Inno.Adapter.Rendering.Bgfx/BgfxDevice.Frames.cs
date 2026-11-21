@@ -98,7 +98,7 @@ public sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException("All render graphs and encoders must end before BGFX frame submission.");
         }
 
-        if (m_nextViewId == 0)
+        if (m_nextViewID == 0)
         {
             bgfx.touch(0);
         }
@@ -160,11 +160,11 @@ public sealed unsafe partial class BgfxDevice
 
     private void ResetPreviousViews()
     {
-        for (int viewIndex = 0; viewIndex < m_nextViewId; viewIndex++)
+        for (int viewIndex = 0; viewIndex < m_nextViewID; viewIndex++)
         {
             bgfx.reset_view(checked((ushort)viewIndex));
         }
 
-        m_nextViewId = 0;
+        m_nextViewID = 0;
     }
 }

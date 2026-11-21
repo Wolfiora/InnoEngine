@@ -46,8 +46,8 @@ public sealed partial class RenderRuntime
                 lock (m_contributorLock)
                 {
                     m_contributors.Clear();
-                    m_contributorSnapshot = RenderContributorSnapshot.empty;
-                    m_frameContributors = RenderContributorSnapshot.empty;
+                    m_contributorSnapshot = RenderContributorSnapshot.EMPTY;
+                    m_frameContributors = RenderContributorSnapshot.EMPTY;
                 }
                 m_scratch.Clear();
             });

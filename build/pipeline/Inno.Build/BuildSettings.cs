@@ -120,11 +120,11 @@ public sealed class BuildSettings : ISerializable
         {
             throw new ArgumentException("A default build target is required.", nameof(target));
         }
-        string portableId = ProjectId.FromName(projectName).value;
+        string portableID = ProjectId.FromName(projectName).value;
         return new BuildSettings
         {
             pluginDisplayName = projectName,
-            pluginOutputPath = $"Builds/{portableId}.iplugin",
+            pluginOutputPath = $"Builds/{portableID}.iplugin",
             includePluginDependencies = false,
             gameProductName = projectName,
             gameStartupScene = startupScene,

@@ -15,7 +15,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
 {
     private readonly Stack<BrowserLocation> m_backHistory = [];
     private readonly Stack<BrowserLocation> m_forwardHistory = [];
-    private BrowserLocation m_historyCurrent = BrowserLocation.AssetsRoot;
+    private BrowserLocation m_historyCurrent = BrowserLocation.assetsRoot;
     internal bool canGoBack => m_backHistory.Count > 0;
     internal bool canGoForward => m_forwardHistory.Count > 0;
 
@@ -29,11 +29,11 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
             ? assets.browser.root
             : AssetPath.Parse(directory).source == AssetSourceId.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
         var target = new BrowserLocation(root, directory);
-        if (CurrentLocation == target)
+        if (currentLocation == target)
         {
             return;
         }
-        m_backHistory.Push(CurrentLocation);
+        m_backHistory.Push(currentLocation);
         m_forwardHistory.Clear();
         ApplyLocation(context, target);
         if (selectedPathAfterNavigation is not null)
@@ -47,11 +47,11 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         AssetBrowserRoot root
     ) {
         var target = new BrowserLocation(root, string.Empty);
-        if (CurrentLocation == target)
+        if (currentLocation == target)
         {
             return;
         }
-        m_backHistory.Push(CurrentLocation);
+        m_backHistory.Push(currentLocation);
         m_forwardHistory.Clear();
         ApplyLocation(context, target);
     }
@@ -75,7 +75,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         {
             return;
         }
-        m_forwardHistory.Push(CurrentLocation);
+        m_forwardHistory.Push(currentLocation);
         ApplyLocation(context, m_backHistory.Pop());
     }
 
@@ -85,7 +85,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         {
             return;
         }
-        m_backHistory.Push(CurrentLocation);
+        m_backHistory.Push(currentLocation);
         ApplyLocation(context, m_forwardHistory.Pop());
     }
 
@@ -118,7 +118,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         m_forwardHistory.Clear();
     }
 
-    private BrowserLocation CurrentLocation => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
+    private BrowserLocation currentLocation => new(assets.browser.root, NormalizePath(assets.browser.currentDirectory));
 
     private void ApplyLocation(
         EditorContext context,
@@ -133,6 +133,6 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         AssetBrowserRoot root,
         string directory
     ) {
-        internal static BrowserLocation AssetsRoot { get; } = new(AssetBrowserRoot.Assets, string.Empty);
+        internal static BrowserLocation assetsRoot { get; } = new(AssetBrowserRoot.Assets, string.Empty);
     }
 }

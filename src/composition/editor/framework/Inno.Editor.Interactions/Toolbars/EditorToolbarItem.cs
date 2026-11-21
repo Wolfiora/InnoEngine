@@ -6,13 +6,13 @@ namespace Inno.Editor.Interactions;
 public sealed class EditorToolbarItem
 {
     internal EditorToolbarItem(
-        string actionId,
+        string actionID,
         EditorToolbarIcon icon,
         string tooltip,
         int order,
         EditorActionState status
     ) {
-        this.actionId = actionId;
+        this.actionId = actionID;
         this.icon = icon;
         this.tooltip = tooltip;
         this.order = order;

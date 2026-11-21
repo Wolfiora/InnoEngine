@@ -5,7 +5,7 @@ using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets;
 
-[EditorHistoryHandler(AssetHistoryKinds.SourceOperation)]
+[EditorHistoryHandler(AssetHistoryKinds.C_SOURCE_OPERATION)]
 internal sealed class AssetHistoryHandler(
     AssetEditingModule assets,
     LogRouter logs

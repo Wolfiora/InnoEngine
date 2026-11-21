@@ -204,9 +204,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         IEditorDocumentService documents = m_runtime.interactions.documents;
         var provider = new TestDocumentProvider();
         using IDisposable lease = documents.RegisterProvider(provider);
-        Guid assetId = Guid.NewGuid();
-        EditorDocumentContext opened = documents.Open("./Assets/Hero.ispriteatlas2d", assetId);
-        EditorDocumentContext focused = documents.Open("Assets/OtherName.ispriteatlas2d", assetId);
+        Guid assetID = Guid.NewGuid();
+        EditorDocumentContext opened = documents.Open("./Assets/Hero.ispriteatlas2d", assetID);
+        EditorDocumentContext focused = documents.Open("Assets/OtherName.ispriteatlas2d", assetID);
         documents.SetDirty(opened.documentId);
         Assert.Same(opened, focused);
         Assert.Equal("Assets/OtherName.ispriteatlas2d", opened.assetPath);
@@ -226,14 +226,14 @@ public sealed partial class EditorRuntimeTests : IDisposable
         IEditorDocumentService documents = m_runtime.interactions.documents;
         var provider = new TestDocumentProvider();
         using IDisposable lease = documents.RegisterProvider(provider);
-        const string path = "Assets/Shared.ispriteatlas2d";
-        EditorDocumentContext first = documents.Open(path, Guid.NewGuid());
-        EditorDocumentContext replacement = documents.Open(path, Guid.NewGuid());
+        const string C_PATH = "Assets/Shared.ispriteatlas2d";
+        EditorDocumentContext first = documents.Open(C_PATH, Guid.NewGuid());
+        EditorDocumentContext replacement = documents.Open(C_PATH, Guid.NewGuid());
         Assert.NotSame(first, replacement);
         Assert.Single(documents.documents);
         Assert.Equal(1, provider.closeCount);
         documents.SetDirty(replacement.documentId);
-        InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => documents.Open(path, Guid.NewGuid()));
+        InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => documents.Open(C_PATH, Guid.NewGuid()));
         Assert.Contains("unsaved changes", failure.Message, StringComparison.Ordinal);
         Assert.Same(replacement, Assert.Single(documents.documents));
     }
@@ -314,9 +314,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
     {
         EditorStatistics statistics = m_runtime.context.statistics;
         var id = new EditorStatisticId("tests.statistics.frame-time");
-        var groupId = new EditorStatisticGroupId("tests.statistics");
-        statistics.Publish(new EditorStatistic(id, groupId, "Tests", "Frame Time", "10 ms"));
-        statistics.Publish(new EditorStatistic(id, groupId, "Tests", "Frame Time", "8 ms"));
+        var groupID = new EditorStatisticGroupId("tests.statistics");
+        statistics.Publish(new EditorStatistic(id, groupID, "Tests", "Frame Time", "10 ms"));
+        statistics.Publish(new EditorStatistic(id, groupID, "Tests", "Frame Time", "8 ms"));
         Assert.Equal("8 ms", Assert.Single(statistics.GetSnapshot()).value);
         m_runtime.Update(new EditorFrame(0.016f, 0.016f, isFocused: true));
         Assert.Equal("8 ms", Assert.Single(statistics.GetSnapshot()).value);
@@ -438,7 +438,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         BitConverter.GetBytes(32).CopyTo(bytes, sizeof(int));
         m_runtime.interactions.history.RecordApplied(
             "Large Neutral Change",
-            new EditorHistoryChange(NeutralHistoryHandler.KIND, EditorHistoryPayload.FromBytes(bytes))
+            new EditorHistoryChange(NeutralHistoryHandler.C_KIND, EditorHistoryPayload.FromBytes(bytes))
         );
         Assert.Equal(0, m_runtime.interactions.history.residentBytes);
         Assert.Equal(bytes.LongLength, m_runtime.interactions.history.diskBytes);
@@ -606,12 +606,12 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.Same(secondary, persistentResult);
         var crossDomainAlias = new RuntimeIdentity(secondaryIdentity.domainId, primaryIdentity.runtimeId);
         Assert.NotSame(primary, m_runtime.interactions.TryResolveIdentity(crossDomainAlias, out IdentityObject? alias) ? alias : null);
-        Guid persistentId = secondary.identity.persistentId;
+        Guid persistentID = secondary.identity.persistentId;
         Assert.True(m_secondaryIdentities.Unregister(secondary));
         var replacement = new DragSource();
-        Assert.True(m_secondaryIdentities.Register(replacement, persistentId));
+        Assert.True(m_secondaryIdentities.Register(replacement, persistentID));
         Assert.True(
-            m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainId, persistentId, out IdentityObject? replacementResult)
+            m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainId, persistentID, out IdentityObject? replacementResult)
         );
         Assert.Same(replacement, replacementResult);
     }
@@ -832,13 +832,13 @@ public sealed partial class EditorRuntimeTests : IDisposable
     [Fact]
     public void UnifiedEditorIniPreservesLayoutAndExtensionStateSectionsTogether()
     {
-        const string layout = "[Window][Hierarchy]\nPos=10,20\nSize=300,400";
+        const string C_LAYOUT = "[Window][Hierarchy]\nPos=10,20\nSize=300,400";
         var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
-        context.SetImGuiLayout(layout);
+        context.SetImGuiLayout(C_LAYOUT);
         context.SetLayoutSection("Module.tests", new Dictionary<string, string> { ["openScenes"] = "[\"Scenes/Test.iscene\"]" });
         Assert.True(context.SaveLayoutIfChanged());
         var restored = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
-        Assert.Equal(layout, restored.imguiLayout);
+        Assert.Equal(C_LAYOUT, restored.imguiLayout);
         Assert.True(restored.TryGetLayoutSection("Module.tests", out IReadOnlyDictionary<string, string> values));
         Assert.Equal("[\"Scenes/Test.iscene\"]", values["openScenes"]);
         string document = File.ReadAllText(restored.layoutPath);
@@ -918,10 +918,10 @@ public sealed record InteractionPresentation(
     bool cancel = false
 );
 
-[EditorHistoryHandler(NeutralHistoryHandler.KIND)]
+[EditorHistoryHandler(NeutralHistoryHandler.C_KIND)]
 public sealed class NeutralHistoryHandler : EditorHistoryHandler
 {
-    public const string KIND = "tests/neutral-value";
+    public const string C_KIND = "tests/neutral-value";
     public static int value;
 
     public static EditorHistoryChange CreateChange(
@@ -931,7 +931,7 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
         var bytes = new byte[sizeof(int) * 2];
         BitConverter.GetBytes(before).CopyTo(bytes, 0);
         BitConverter.GetBytes(after).CopyTo(bytes, sizeof(int));
-        return new EditorHistoryChange(KIND, EditorHistoryPayload.FromBytes(bytes));
+        return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(bytes));
     }
 
     protected override EditorHistoryAvailability Query(
@@ -1112,7 +1112,7 @@ public sealed class TestPanel(TestModule module) : EditorPanel
 [ProjectSettingDefinition("tests.editor.multi-presentation")]
 public sealed class MultiPresentationSetting : ISerializable
 {
-    public static ProjectSettingId settingId => new("tests.editor.multi-presentation");
+    public static ProjectSettingId settingID => new("tests.editor.multi-presentation");
 
     [SerializableProperty]
     public int value { get; set; } = 7;

@@ -46,11 +46,11 @@ internal static class ImGuiPackedColor
     {
         EnsureInitialized();
 
-        const float inv255 = 1f / 255f;
-        float r = ((packedColor >> s_rShift) & 0xFF) * inv255;
-        float g = ((packedColor >> s_gShift) & 0xFF) * inv255;
-        float b = ((packedColor >> s_bShift) & 0xFF) * inv255;
-        float a = ((packedColor >> s_aShift) & 0xFF) * inv255;
+        const float C_INV255 = 1f / 255f;
+        float r = ((packedColor >> s_rShift) & 0xFF) * C_INV255;
+        float g = ((packedColor >> s_gShift) & 0xFF) * C_INV255;
+        float b = ((packedColor >> s_bShift) & 0xFF) * C_INV255;
+        float a = ((packedColor >> s_aShift) & 0xFF) * C_INV255;
         return new SDLFColor { R = r, G = g, B = b, A = a };
     }
 

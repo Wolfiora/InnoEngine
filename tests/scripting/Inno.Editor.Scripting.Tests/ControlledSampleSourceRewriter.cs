@@ -7,8 +7,8 @@ namespace Inno.Editor.Scripting.Tests;
 [AssetSampleSourceRewriter("tests.scripting.controlled-sample")]
 internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewriter
 {
-    private static readonly AsyncLocal<Control?> m_current = new();
-    private readonly Control? m_control = m_current.Value;
+    private static readonly AsyncLocal<Control?> CURRENT = new();
+    private readonly Control? m_control = CURRENT.Value;
 
     /// <summary>
     /// Captures the current test-owned control through the real source rewriter discovery contract.
@@ -34,8 +34,8 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
 
     internal static Control? current
     {
-        get => m_current.Value;
-        set => m_current.Value = value;
+        get => CURRENT.Value;
+        set => CURRENT.Value = value;
     }
 
     internal sealed class Control : IDisposable

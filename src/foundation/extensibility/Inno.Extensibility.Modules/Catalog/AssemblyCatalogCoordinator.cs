@@ -90,11 +90,11 @@ internal sealed class AssemblyCatalogCoordinator
         }
     }
 
-    internal void Unregister(Guid registrationId)
+    internal void Unregister(Guid registrationID)
     {
         lock (m_sync)
         {
-            m_participants.RemoveAll(registration => registration.id == registrationId);
+            m_participants.RemoveAll(registration => registration.id == registrationID);
         }
     }
 

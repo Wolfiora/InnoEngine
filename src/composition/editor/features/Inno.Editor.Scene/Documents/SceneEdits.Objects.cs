@@ -42,7 +42,7 @@ public sealed partial class SceneEdits
         {
             throw new ArgumentException("The parent belongs to another scene.", nameof(parent));
         }
-        Guid? selectedBefore = GetSelectionId();
+        Guid? selectedBefore = GetSelectionID();
         GameObject gameObject = scene.CreateObject();
         RecordWithRollback(
             () =>
@@ -116,7 +116,7 @@ public sealed partial class SceneEdits
             throw new ArgumentException("The parent belongs to another scene.", nameof(parent));
         }
 
-        Guid? selectedBefore = GetSelectionId();
+        Guid? selectedBefore = GetSelectionID();
         GameObject instance = prefab.Instantiate(scene, m_workspace.serialization, m_workspace.assets, parent);
         RecordWithRollback(
             () =>
@@ -175,10 +175,10 @@ public sealed partial class SceneEdits
         GameScene scene = gameObject.scene;
         byte[] subtree = SceneSubtreeSerialization.Capture(gameObject, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(gameObject, m_workspace);
-        Guid? parentId = gameObject.transform.parent?.gameObject.identity.persistentId;
+        Guid? parentID = gameObject.transform.parent?.gameObject.identity.persistentId;
         int siblingIndex = gameObject.transform.siblingIndex;
-        Guid rootId = gameObject.identity.persistentId;
-        Guid? selectedBefore = GetSelectionId();
+        Guid rootID = gameObject.identity.persistentId;
+        Guid? selectedBefore = GetSelectionID();
         try
         {
             if (!scene.DestroyObject(gameObject))
@@ -187,8 +187,8 @@ public sealed partial class SceneEdits
             }
             var data = new SceneSubtreeHistoryData(
                 scene.identity.persistentId,
-                rootId,
-                parentId,
+                rootID,
+                parentID,
                 siblingIndex,
                 existsBefore: true,
                 existsAfter: false,
@@ -197,17 +197,17 @@ public sealed partial class SceneEdits
                 selectedBefore,
                 selectedAfter: null
             );
-            Record(historyName, SceneHistoryKinds.Subtree, data.Encode());
+            Record(historyName, SceneHistoryKinds.C_SUBTREE, data.Encode());
         }
         catch (Exception exception)
         {
-            if (m_workspace.Find<GameObject>(rootId) is not null)
+            if (m_workspace.Find<GameObject>(rootID) is not null)
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
             RollbackAndRethrow(exception, () =>
             {
-                Transform? parent = parentId is Guid id
+                Transform? parent = parentID is Guid id
                                     ? m_workspace.Find<GameObject>(id)?.transform
                                     : null;
                 _ = SceneSubtreeSerialization.Restore(

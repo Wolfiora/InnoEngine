@@ -61,23 +61,23 @@ internal sealed class ConsolePanelContent
         string text,
         float maxWidth
     ) {
-        const string c_ellipsis = "...";
+        const string C_ELLIPSIS = "...";
         if (string.IsNullOrEmpty(text))
         {
             return string.Empty;
         }
         if (maxWidth <= 1f)
         {
-            return c_ellipsis;
+            return C_ELLIPSIS;
         }
         if (Ui.MeasureText(text).X <= maxWidth)
         {
             return text;
         }
-        float ellipsisWidth = Ui.MeasureText(c_ellipsis).X;
+        float ellipsisWidth = Ui.MeasureText(C_ELLIPSIS).X;
         if (ellipsisWidth >= maxWidth)
         {
-            return c_ellipsis;
+            return C_ELLIPSIS;
         }
         float maxTextWidth = maxWidth - ellipsisWidth;
         int low = 0;
@@ -95,6 +95,6 @@ internal sealed class ConsolePanelContent
             }
         }
 
-        return low <= 0 ? c_ellipsis : text[..low] + c_ellipsis;
+        return low <= 0 ? C_ELLIPSIS : text[..low] + C_ELLIPSIS;
     }
 }

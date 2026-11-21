@@ -97,13 +97,13 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
         }
 
         var definitions = new Dictionary<ProjectSettingId, Definition>();
-        foreach ((ProjectSettingId id, (Guid stableTypeId, Type runtimeType, bool allowPluginContributions)) in settingTypes)
+        foreach ((ProjectSettingId id, (Guid stableTypeID, Type runtimeType, bool allowPluginContributions)) in settingTypes)
         {
             composers.TryGetValue(id, out ProjectSettingComposer? composer);
             definitions.Add(
                 id,
                 new Definition(
-                    stableTypeId,
+                    stableTypeID,
                     runtimeType,
                     composer,
                     allowPluginContributions,
@@ -146,7 +146,7 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
     }
 
     internal sealed record Definition(
-        Guid stableTypeId,
+        Guid stableTypeID,
         Type runtimeType,
         ProjectSettingComposer? composer,
         bool allowPluginContributions,

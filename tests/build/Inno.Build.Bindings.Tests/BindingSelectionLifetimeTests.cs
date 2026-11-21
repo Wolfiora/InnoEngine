@@ -122,12 +122,12 @@ public sealed class BindingSelectionLifetimeTests
                 .Save(project);
             File.WriteAllText(Path.Combine(root, "Api.cs"), "public static class Api { public static int value => 42; }");
 
-            await Execute("build");
+            await ExecuteAsync("build");
             Assert.True(File.Exists(selection));
-            await Execute("publish");
+            await ExecuteAsync("publish");
             Assert.True(File.Exists(selection));
 
-            async Task Execute(string command)
+            async Task ExecuteAsync(string command)
             {
                 string sdk = Path.Combine(
                     Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),

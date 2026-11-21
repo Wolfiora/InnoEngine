@@ -288,8 +288,8 @@ public readonly partial struct GraphCanvasView
         {
             return (label, measuredWidth);
         }
-        const string ellipsis = "…";
-        if (CanvasDrawing.MeasureText(ellipsis).X * zoom > width)
+        const string C_ELLIPSIS = "…";
+        if (CanvasDrawing.MeasureText(C_ELLIPSIS).X * zoom > width)
         {
             return (string.Empty, 0f);
         }
@@ -298,7 +298,7 @@ public readonly partial struct GraphCanvasView
         while (low < high)
         {
             int length = (low + high + 1) / 2;
-            if (CanvasDrawing.MeasureText(label[..length] + ellipsis).X * zoom <= width)
+            if (CanvasDrawing.MeasureText(label[..length] + C_ELLIPSIS).X * zoom <= width)
             {
                 low = length;
             }
@@ -312,7 +312,7 @@ public readonly partial struct GraphCanvasView
         {
             low--;
         }
-        string text = label[..low] + ellipsis;
+        string text = label[..low] + C_ELLIPSIS;
         return (text, CanvasDrawing.MeasureText(text).X * zoom);
     }
 

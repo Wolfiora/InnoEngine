@@ -86,7 +86,7 @@ public sealed partial class AssetLoader
         string relativePath,
         byte[] sourceBytes,
         AssetImporter importer,
-        Guid persistentId,
+        Guid persistentID,
         Exception exception,
         AssetSourceFileStamp sourceStamp = default,
         AssetImportContext? attemptedContext = null
@@ -94,7 +94,7 @@ public sealed partial class AssetLoader
         AssetRecord record = FindRecordLocked(relativePath) ?? new AssetRecord
         {
             relativePath = relativePath,
-            persistentId = persistentId
+            persistentID = persistentID
         };
         string sourceHash = sourceBytes.Length == 0 ? string.Empty : ComputeSha256Hex(sourceBytes);
         string settingsHash;
@@ -133,9 +133,9 @@ public sealed partial class AssetLoader
                                && string.Equals(record.meta.diagnostics[0], diagnostic, StringComparison.Ordinal)
                                && record.meta.importDependencies.SequenceEqual(dependencies);
         record.relativePath = relativePath;
-        record.persistentId = persistentId;
+        record.persistentID = persistentID;
         record.meta.relativePath = relativePath;
-        record.meta.persistentId = persistentId;
+        record.meta.persistentId = persistentID;
         record.meta.sourceHash = sourceHash;
         record.meta.importerId = importer.importerId;
         record.meta.importerImplementationFingerprint = GetImporterImplementationFingerprint(importer);
@@ -148,7 +148,7 @@ public sealed partial class AssetLoader
             && m_types.TryGetTypeRef(importer.targetAssetType, out TypeRef importerTypeRef)
         ) {
             record.meta.stableAssetTypeId = importerTypeRef.stableId;
-            record.stableTypeId = importerTypeRef.stableId;
+            record.stableTypeID = importerTypeRef.stableId;
         }
         AssetImportExtensionUnavailableException? unavailable = exception as AssetImportExtensionUnavailableException;
         bool extensionUnavailable = unavailable is not null;
@@ -213,7 +213,7 @@ public sealed partial class AssetLoader
         // cataloged source verbatim so a scan cannot erase its persistent identity, stable type,
         // dependency graph, or immutable artifact closure. A source that has never been imported
         // still follows the Unsupported path below.
-        if (record.persistentId != Guid.Empty
+        if (record.persistentID != Guid.Empty
             && !record.meta.isTombstone
             && !string.IsNullOrWhiteSpace(record.meta.importerId)
         ) {
@@ -223,13 +223,13 @@ public sealed partial class AssetLoader
             UpdateGraphsLocked(record);
             return;
         }
-        if (record.persistentId != Guid.Empty)
+        if (record.persistentID != Guid.Empty)
         {
-            m_recordsById.Remove(record.persistentId);
+            m_recordsByID.Remove(record.persistentID);
         }
         record.relativePath = relativePath;
-        record.persistentId = Guid.Empty;
-        record.stableTypeId = Guid.Empty;
+        record.persistentID = Guid.Empty;
+        record.stableTypeID = Guid.Empty;
         record.meta.relativePath = relativePath;
         record.meta.persistentId = Guid.Empty;
         record.meta.importerId = string.Empty;

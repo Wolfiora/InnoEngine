@@ -9,12 +9,12 @@ namespace Inno.UI;
 /// </summary>
 public static class UiExecutionContext
 {
-    private static readonly ExecutionSlot<IUiService> S_CURRENT_SCOPE = new("ui");
+    private static readonly ExecutionSlot<IUiService> CURRENT_SCOPE = new("ui");
 
     /// <summary>
     /// Gets the UI service bound to the current execution context.
     /// </summary>
-    public static IUiService current => S_CURRENT_SCOPE.current;
+    public static IUiService current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds a UI service until the returned strict last-in-first-out scope is disposed.
@@ -28,7 +28,7 @@ public static class UiExecutionContext
     public static IDisposable EnterScope(IUiService ui)
     {
         ArgumentNullException.ThrowIfNull(ui);
-        return S_CURRENT_SCOPE.Enter(ui);
+        return CURRENT_SCOPE.Enter(ui);
     }
 }
 

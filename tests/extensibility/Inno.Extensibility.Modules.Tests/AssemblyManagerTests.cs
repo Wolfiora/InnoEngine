@@ -19,9 +19,9 @@ namespace Inno.Extensibility.Modules.Tests;
 
 public sealed class ModuleHostTests : IDisposable
 {
-    private static readonly AsyncLocal<object?> S_ASYNC_ROOT = new();
+    private static readonly AsyncLocal<object?> ASYNC_ROOT = new();
 
-    private static readonly Guid S_RELOADABLE_TYPE_ID =
+    private static readonly Guid RELOADABLE_TYPE_ID =
         Guid.Parse("44a4cda2-a03e-4918-8db2-f37048a9e4f1");
 
     private static object? s_retained;
@@ -101,10 +101,10 @@ public sealed class ModuleHostTests : IDisposable
     public void LoadAndReloadPublishOnlyTheActiveGeneration()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
-        var previousRef = new TypeRef(S_RELOADABLE_TYPE_ID);
+        var previousRef = new TypeRef(RELOADABLE_TYPE_ID);
         Type previous = previousRef.Resolve(m_types);
         Assert.Equal(1, ReadVersion(previous));
-        int previousRuntimeId = m_types.GetTypeRef(previous).runtimeId;
+        int previousRuntimeID = m_types.GetTypeRef(previous).runtimeId;
 
         using AssemblyReloadSession reload = m_modules.BeginReload(handle, CreateRequest("V2"));
         TypeCacheReloadContext typeReload = reload.context.GetContext<TypeCacheReloadContext>();
@@ -121,8 +121,8 @@ public sealed class ModuleHostTests : IDisposable
         Type current = previousRef.Resolve(m_types);
         Assert.Same(candidate, current);
         Assert.Equal(2, ReadVersion(current));
-        int currentRuntimeId = m_types.GetTypeRef(current).runtimeId;
-        Assert.NotEqual(previousRuntimeId, currentRuntimeId);
+        int currentRuntimeID = m_types.GetTypeRef(current).runtimeId;
+        Assert.NotEqual(previousRuntimeID, currentRuntimeID);
         _ = reload.Complete();
         Assert.Throws<InvalidOperationException>(() => _ = typeReload.previous);
     }
@@ -141,18 +141,18 @@ public sealed class ModuleHostTests : IDisposable
         reload.Rollback();
 
         Assert.Same(previous, Assert.Single(registry.types));
-        Assert.Same(previous, new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types));
+        Assert.Same(previous, new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types));
     }
 
     [Fact]
     public void InvalidCandidateLeavesTheActiveGenerationUntouched()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
-        Type previous = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
+        Type previous = new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types);
 
         Assert.Throws<InvalidOperationException>(() => m_modules.BeginReload(handle, CreateRequest("Invalid")));
 
-        Assert.Same(previous, new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types));
+        Assert.Same(previous, new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types));
         Assert.Equal(1, m_modules.modules.Single().generation);
     }
 
@@ -221,7 +221,7 @@ public sealed class ModuleHostTests : IDisposable
 
         AssemblyModuleInfo consumerInfo = m_modules.modules.Single(module => module.moduleName == consumer.moduleName);
         Assert.Equal([dependency.moduleName], consumerInfo.upstreamModuleNames);
-        Type consumerType = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
+        Type consumerType = new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types);
         Assert.Equal(1, ReadVersion(consumerType));
         Assembly dependencyAssembly = AppDomain.CurrentDomain.GetAssemblies().Single(assembly => (
             string.Equals(assembly.GetName().Name, "Reloadable.PrivateDependency", StringComparison.Ordinal)
@@ -257,7 +257,7 @@ public sealed class ModuleHostTests : IDisposable
     public void RetainingOnlyTypeRefDoesNotPreventPreviousContextUnload()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
-        var retained = new List<TypeRef> { new(S_RELOADABLE_TYPE_ID) };
+        var retained = new List<TypeRef> { new(RELOADABLE_TYPE_ID) };
 
         IAssemblyUnloadProbe monitor = CompleteReload(handle);
         ForceCollection();
@@ -290,23 +290,21 @@ public sealed class ModuleHostTests : IDisposable
         using var registry = new ReloadableTypeRegistry(m_types);
         _ = registry.types;
         registry.failActivation = true;
-        Type previous = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
-        int previousRuntimeId = m_types.GetTypeRef(previous).runtimeId;
+        Type previous = new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types);
+        int previousRuntimeID = m_types.GetTypeRef(previous).runtimeId;
 
         using (AssemblyReloadSession failed = m_modules.BeginReload(handle, CreateRequest("V2")))
         {
             Assert.Throws<InvalidOperationException>(failed.Activate);
         }
-        int rejectedRuntimeId = registry.lastBuiltRef.runtimeId;
+        int rejectedRuntimeID = registry.lastBuiltRef.runtimeId;
 
         registry.failActivation = false;
         using AssemblyReloadSession accepted = m_modules.BeginReload(handle, CreateRequest("V2"));
         TypeCacheReloadContext context = accepted.context.GetContext<TypeCacheReloadContext>();
-        TypeRef acceptedRef = context.candidate.GetTypeRef(
-            new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(context.candidate)
-        );
-        Assert.NotEqual(previousRuntimeId, rejectedRuntimeId);
-        Assert.NotEqual(rejectedRuntimeId, acceptedRef.runtimeId);
+        TypeRef acceptedRef = context.candidate.GetTypeRef(new TypeRef(RELOADABLE_TYPE_ID).Resolve(context.candidate));
+        Assert.NotEqual(previousRuntimeID, rejectedRuntimeID);
+        Assert.NotEqual(rejectedRuntimeID, acceptedRef.runtimeId);
         accepted.Activate();
         _ = accepted.Complete();
     }
@@ -403,12 +401,12 @@ public sealed class ModuleHostTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private IDisposable CreateRetention(string kind)
     {
-        Type type = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
+        Type type = new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types);
         switch (kind)
         {
             case "async-local":
-                S_ASYNC_ROOT.Value = type;
-                return new Retention(() => S_ASYNC_ROOT.Value = null);
+                ASYNC_ROOT.Value = type;
+                return new Retention(() => ASYNC_ROOT.Value = null);
             case "static":
                 s_retained = type;
                 return new Retention(() => s_retained = null);
@@ -462,7 +460,7 @@ public sealed class ModuleHostTests : IDisposable
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private StrongTypeHolder CreateStrongTypeHolder()
-        => new(new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types));
+        => new(new TypeRef(RELOADABLE_TYPE_ID).Resolve(m_types));
 
     private AssemblyModuleHandle LoadVersion(string version) => m_modules.Load(CreateRequest(version));
 

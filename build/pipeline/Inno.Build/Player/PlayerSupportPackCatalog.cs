@@ -17,12 +17,12 @@ namespace Inno.Build;
 /// </summary>
 public sealed class PlayerSupportPackCatalog
 {
-    private static readonly HashSet<string> S_FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
     {
         ".cs", ".csproj", ".dbg", ".map", ".pdb", ".rsp", ".sln", ".xml"
     };
 
-    private static readonly string[] S_FORBIDDEN_NAME_TOKENS =
+    private static readonly string[] FORBIDDEN_NAME_TOKENS =
     [
         "Microsoft.CodeAnalysis",
         "Roslyn",
@@ -402,8 +402,8 @@ public sealed class PlayerSupportPackCatalog
                 continue;
             }
             string name = Path.GetFileName(file);
-            if (S_FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(name))
-                || S_FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase))
+            if (FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(name))
+                || FORBIDDEN_NAME_TOKENS.Any(token => name.Contains(token, StringComparison.OrdinalIgnoreCase))
             ) {
                 throw new InvalidDataException(
                     $"Player Support Pack '{target}' contains forbidden build-time file '{name}'."

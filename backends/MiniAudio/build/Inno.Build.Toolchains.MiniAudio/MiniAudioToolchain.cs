@@ -12,7 +12,7 @@ namespace Inno.Build.Toolchains.MiniAudio;
 /// </summary>
 public static class MiniAudioToolchain
 {
-    private static readonly string[] S_ARGUMENTS = ["-DBUILD_SHARED_LIBS=ON", "-DMINIAUDIO_BUILD_EXAMPLES=OFF",
+    private static readonly string[] ARGUMENTS = ["-DBUILD_SHARED_LIBS=ON", "-DMINIAUDIO_BUILD_EXAMPLES=OFF",
         "-DMINIAUDIO_BUILD_TESTS=OFF", "-DMINIAUDIO_BUILD_TOOLS=OFF", "-DMINIAUDIO_NO_EXTRA_NODES=ON", "-DMINIAUDIO_INSTALL=OFF"];
 
     /// <summary>
@@ -70,7 +70,7 @@ public static class MiniAudioToolchain
                     componentDescriptor,
                     source,
                     "miniaudio",
-                    S_ARGUMENTS,
+                    ARGUMENTS,
                     token
                 ).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*miniaudio" + selection.sharedLibraryExtension);
@@ -131,7 +131,7 @@ public static class MiniAudioToolchain
             "miniaudio",
             selection.targetId,
             [Path.Combine(context.engineRoot, "extern", "miniaudio"), Path.Combine(implementation, "CMakeLists.txt")],
-            S_ARGUMENTS,
+            ARGUMENTS,
             [Path.Combine(implementation, "MiniAudioToolchain.cs")]
         );
     }

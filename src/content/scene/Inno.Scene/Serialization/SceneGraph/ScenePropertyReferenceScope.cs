@@ -30,19 +30,19 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
             return;
         }
         m_aliases = new Dictionary<Guid, Guid>(aliases.Count);
-        foreach ((Guid alias, Guid targetId) in aliases)
+        foreach ((Guid alias, Guid targetID) in aliases)
         {
-            EngineObject? target = m_identities.Get<EngineObject>(targetId);
+            EngineObject? target = m_identities.Get<EngineObject>(targetID);
             if (target is null || !BelongsToScene(target))
             {
-                throw new InvalidOperationException($"Scene reference alias '{alias}' targets missing object '{targetId}'.");
+                throw new InvalidOperationException($"Scene reference alias '{alias}' targets missing object '{targetID}'.");
             }
             EngineObject? previous = m_identities.Get<EngineObject>(alias);
             if (previous is not null && BelongsToScene(previous) && !ReferenceEquals(previous, target))
             {
                 throw new InvalidOperationException($"Duplicate scene graph local identity '{alias}'.");
             }
-            m_aliases.Add(alias, targetId);
+            m_aliases.Add(alias, targetID);
         }
     }
 
@@ -50,7 +50,7 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
     /// The current allocator must still own the Scene and the exact registered object in that Scene.
     /// </remarks>
     /// <inheritdoc/>
-    protected override bool TryGetSourceId(
+    protected override bool TryGetSourceID(
         EngineObject engineObject,
         out Guid sourceId
     ) {

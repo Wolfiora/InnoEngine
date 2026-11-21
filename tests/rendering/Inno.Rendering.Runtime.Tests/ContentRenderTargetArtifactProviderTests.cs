@@ -42,8 +42,8 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
         Directory.CreateDirectory(m_root);
         var identities = new IdentityAllocator();
         var texture = new TextureAsset(1, 1, TextureColorSpace.Srgb, "png");
-        Guid persistentId = Guid.NewGuid();
-        identities.InitializePersistentIdentity(texture, persistentId);
+        Guid persistentID = Guid.NewGuid();
+        identities.InitializePersistentIdentity(texture, persistentID);
         RenderTextureArtifactReference reference = texture.GetTextureArtifactReference();
         string artifactPath = Path.Combine(m_root, RenderTargetArtifactPath.GetTexturePath(reference));
         Directory.CreateDirectory(Path.GetDirectoryName(artifactPath)!);
@@ -80,17 +80,17 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
     public void IndependentTextureSlotsUseStableDistinctDeploymentPaths()
     {
         Directory.CreateDirectory(m_root);
-        Guid assetId = Guid.NewGuid();
+        Guid assetID = Guid.NewGuid();
         var firstSlot = new RenderTextureArtifactSlot("page-a", "texture-page-a", TextureColorSpace.Srgb);
         var secondSlot = new RenderTextureArtifactSlot("page-b", "texture-page-b", TextureColorSpace.Linear);
-        var first = new RenderTextureArtifactReference(assetId, 4, firstSlot);
-        var second = new RenderTextureArtifactReference(assetId, 4, secondSlot);
+        var first = new RenderTextureArtifactReference(assetID, 4, firstSlot);
+        var second = new RenderTextureArtifactReference(assetID, 4, secondSlot);
         string firstRelativePath = RenderTargetArtifactPath.GetTexturePath(first);
         string secondRelativePath = RenderTargetArtifactPath.GetTexturePath(second);
 
         Assert.NotEqual(firstRelativePath, secondRelativePath);
         Assert.Equal(firstRelativePath, RenderTargetArtifactPath.GetTexturePath(first));
-        Assert.StartsWith("TargetArtifacts/Textures/" + $"{assetId:D}/", firstRelativePath, StringComparison.Ordinal);
+        Assert.StartsWith("TargetArtifacts/Textures/" + $"{assetID:D}/", firstRelativePath, StringComparison.Ordinal);
 
         string firstPath = Path.Combine(m_root, firstRelativePath);
         string secondPath = Path.Combine(m_root, secondRelativePath);

@@ -98,7 +98,7 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        return m_openStatesById.GetValueOrDefault(id);
+        return m_openStatesByID.GetValueOrDefault(id);
     }
 
     /// <summary>
@@ -122,11 +122,11 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        if (m_openStatesById.GetValueOrDefault(id) == open)
+        if (m_openStatesByID.GetValueOrDefault(id) == open)
         {
             return;
         }
-        m_openStatesById[id] = open;
+        m_openStatesByID[id] = open;
         GetTreeWindowState().expansionRevision++;
     }
 
@@ -146,8 +146,8 @@ public sealed unsafe partial class ImGuiWidget
     private List<TreeWidgetNodeState> m_treeNodeStack => GetTreeWindowState().treeNodeStack;
     private List<string> m_lastNodeIdsByDepth => GetTreeWindowState().lastNodeIdsByDepth;
     private List<TreeWidgetLineSegment> m_lineSegments => GetTreeWindowState().lineSegments;
-    private Dictionary<string, bool> m_hasNextSiblingById => GetTreeWindowState().hasNextSiblingById;
-    private Dictionary<string, bool> m_openStatesById => GetTreeWindowState().openStatesById;
+    private Dictionary<string, bool> m_hasNextSiblingByID => GetTreeWindowState().hasNextSiblingByID;
+    private Dictionary<string, bool> m_openStatesByID => GetTreeWindowState().openStatesByID;
 
     private int m_lastFrame
     {
@@ -187,7 +187,7 @@ public sealed unsafe partial class ImGuiWidget
             if (active != 0 && (active != activeBefore || active == NativeImGui.Raw.GetCurrentContext()->LastItemData.ID))
             {
                 state.activeContentOwner = id;
-                state.activeContentId = active;
+                state.activeContentID = active;
             }
             return result;
         }
@@ -205,7 +205,7 @@ public sealed unsafe partial class ImGuiWidget
         ImDrawList* drawList,
         bool drawContent
     ) {
-        bool open = !isLeaf && m_openStatesById.TryGetValue(id, out bool storedOpen) && storedOpen;
+        bool open = !isLeaf && m_openStatesByID.TryGetValue(id, out bool storedOpen) && storedOpen;
         if (!isLeaf && m_hasNextTreeNodeOpen)
         {
             open = m_nextTreeNodeOpen;
@@ -440,9 +440,9 @@ public sealed unsafe partial class ImGuiWidget
         state.lastNodeIdsByDepth.Clear();
         state.lineSegments.Clear();
         state.navigationItemIds.Clear();
-        if (state.activeContentId != NativeImGui.Raw.GetCurrentContext()->ActiveId)
+        if (state.activeContentID != NativeImGui.Raw.GetCurrentContext()->ActiveId)
         {
-            state.activeContentId = 0;
+            state.activeContentID = 0;
             state.activeContentOwner = null;
         }
         m_lastFrame = frame;
@@ -460,17 +460,17 @@ public sealed unsafe partial class ImGuiWidget
         string id,
         int depth
     ) {
-        bool hasNextSibling = m_hasNextSiblingById.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
+        bool hasNextSibling = m_hasNextSiblingByID.TryGetValue(id, out bool cachedHasNextSibling) && cachedHasNextSibling;
         while (m_lastNodeIdsByDepth.Count <= depth)
         {
             m_lastNodeIdsByDepth.Add(string.Empty);
         }
-        string previousId = m_lastNodeIdsByDepth[depth];
-        if (!string.IsNullOrEmpty(previousId) && !string.Equals(previousId, id, StringComparison.Ordinal))
+        string previousID = m_lastNodeIdsByDepth[depth];
+        if (!string.IsNullOrEmpty(previousID) && !string.Equals(previousID, id, StringComparison.Ordinal))
         {
-            m_hasNextSiblingById[previousId] = true;
+            m_hasNextSiblingByID[previousID] = true;
         }
-        m_hasNextSiblingById[id] = false;
+        m_hasNextSiblingByID[id] = false;
         m_lastNodeIdsByDepth[depth] = id;
         for (int i = depth + 1; i < m_lastNodeIdsByDepth.Count; i++)
         {
@@ -700,10 +700,10 @@ internal sealed class TreeWidgetWindowState
     internal readonly List<TreeWidgetNodeState> treeNodeStack = [];
     internal readonly List<string> lastNodeIdsByDepth = [];
     internal readonly List<TreeWidgetLineSegment> lineSegments = [];
-    internal readonly Dictionary<string, bool> hasNextSiblingById = new(StringComparer.Ordinal);
-    internal readonly Dictionary<string, bool> openStatesById = new(StringComparer.Ordinal);
+    internal readonly Dictionary<string, bool> hasNextSiblingByID = new(StringComparer.Ordinal);
+    internal readonly Dictionary<string, bool> openStatesByID = new(StringComparer.Ordinal);
     internal ulong expansionRevision;
-    internal uint activeContentId;
+    internal uint activeContentID;
     internal string? activeContentOwner;
     internal int lastFrame = -1;
 }

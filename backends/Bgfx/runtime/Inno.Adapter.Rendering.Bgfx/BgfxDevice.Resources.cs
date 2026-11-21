@@ -54,7 +54,7 @@ public sealed unsafe partial class BgfxDevice
         }
 
         BgfxBufferResource resource = CreateNativeBuffer(descriptor, initialData, name);
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_persistentBuffers.Add(id, resource);
         return CreatePersistentBufferHandle(id, generation);
     }
@@ -166,7 +166,7 @@ public sealed unsafe partial class BgfxDevice
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         BgfxPipelineResource resource = CreateGraphicsPipelineResource(descriptor, name);
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_graphicsPipelines.Add(id, resource);
         return CreateGraphicsPipelineHandle(id, generation);
     }
@@ -218,7 +218,7 @@ public sealed unsafe partial class BgfxDevice
         }
 
         BgfxPipelineResource resource = CreateComputePipelineResource(descriptor, name);
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_computePipelines.Add(id, resource);
         return CreateComputePipelineHandle(id, generation);
     }

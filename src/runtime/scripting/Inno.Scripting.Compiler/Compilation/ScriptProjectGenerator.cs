@@ -16,7 +16,7 @@ internal static class ScriptProjectGenerator
 {
     private const string C_EDITOR_COMPILATION_SYMBOL = "INNO_EDITOR";
 
-    private static readonly IReadOnlyList<string> C_IDE_CONTENT_FILE_EXTENSIONS =
+    private static readonly IReadOnlyList<string> IDE_CONTENT_FILE_EXTENSIONS =
     [
         ".ishadersource"
     ];
@@ -215,7 +215,7 @@ internal static class ScriptProjectGenerator
         );
         var contentGroup = new XElement(
             "ItemGroup",
-            C_IDE_CONTENT_FILE_EXTENSIONS.Select(static extension =>
+            IDE_CONTENT_FILE_EXTENSIONS.Select(static extension =>
                 new XElement("None", new XAttribute("Include", $"Assets/**/*{extension}")))
         );
 
@@ -351,7 +351,7 @@ internal static class ScriptProjectGenerator
         builder.AppendLine("MinimumVisualStudioVersion = 10.0.40219.1");
         foreach (ScriptAssemblyInput assembly in assemblies)
         {
-            string id = FormatProjectId(assembly.name);
+            string id = FormatProjectID(assembly.name);
             builder.AppendLine(
                 $"Project(\"{{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}}\") = "
                 + $"\"{assembly.name}\", \"{assembly.name}.csproj\", \"{id}\""
@@ -365,7 +365,7 @@ internal static class ScriptProjectGenerator
         builder.AppendLine("\tGlobalSection(ProjectConfigurationPlatforms) = postSolution");
         foreach (ScriptAssemblyInput assembly in assemblies)
         {
-            string id = FormatProjectId(assembly.name);
+            string id = FormatProjectID(assembly.name);
             builder.AppendLine($"\t\t{id}.Debug|Any CPU.ActiveCfg = Debug|Any CPU");
             builder.AppendLine($"\t\t{id}.Debug|Any CPU.Build.0 = Debug|Any CPU");
         }
@@ -374,7 +374,7 @@ internal static class ScriptProjectGenerator
         return builder.ToString();
     }
 
-    private static string FormatProjectId(string assemblyName)
+    private static string FormatProjectID(string assemblyName)
     {
         byte[] bytes = SHA256.HashData(Encoding.UTF8.GetBytes("Inno.ScriptProject:" + assemblyName));
         return "{" + new Guid(bytes.AsSpan(0, 16)).ToString().ToUpperInvariant() + "}";

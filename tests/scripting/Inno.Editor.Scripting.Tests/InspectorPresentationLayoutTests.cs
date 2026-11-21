@@ -83,7 +83,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         EditorUI.current.widgets.style.SetZoom(zoom);
         EditorUI.current.widgets.SetupStyle();
         Vector2 hover = default;
-        const string text = "The profile is evaluated after this camera stack is composed. The final words must remain readable.";
+        const string C_TEXT = "The profile is evaluated after this camera stack is composed. The final words must remain readable.";
         void Frame()
         {
             NativeImGui.NewFrame();
@@ -93,7 +93,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, 0);
             NativeImGui.Button("Hover near edge");
             hover = (NativeImGui.GetItemRectMin() + NativeImGui.GetItemRectMax()) * 0.5f;
-            EditorUI.current.widgets.DrawItemTooltip(text);
+            EditorUI.current.widgets.DrawItemTooltip(C_TEXT);
             NativeImGui.End();
             NativeImGui.Render();
         }

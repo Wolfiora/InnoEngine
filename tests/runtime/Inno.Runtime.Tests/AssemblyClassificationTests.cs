@@ -23,9 +23,9 @@ public sealed class AssemblyClassificationTests
             [assembly],
             []
         );
-        const int workerCount = 8;
-        using var ready = new Barrier(workerCount);
-        Task[] workers = Enumerable.Range(0, workerCount).Select(workerIndex => Task.Factory.StartNew(
+        const int C_WORKER_COUNT = 8;
+        using var ready = new Barrier(C_WORKER_COUNT);
+        Task[] workers = Enumerable.Range(0, C_WORKER_COUNT).Select(workerIndex => Task.Factory.StartNew(
             () =>
             {
                 using var modules = new ModuleHost(new ModuleHostOptions

@@ -150,7 +150,7 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         );
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(dotnet, project);
-        await RestoreOrdinary();
+        await RestoreOrdinaryAsync();
         string assets = Path.Combine(m_root, "App", "obj", "project.assets.json");
         byte[] ordinary = File.ReadAllBytes(assets);
         ManagedBuildInputSnapshot snapshot = await ManagedBuildInputSnapshot.CaptureAsync(
@@ -164,11 +164,11 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             }
         );
         Assert.Equal(ordinary, File.ReadAllBytes(assets));
-        await Task.WhenAll(RestoreOrdinary(), snapshot.VerifyAsync().AsTask());
+        await Task.WhenAll(RestoreOrdinaryAsync(), snapshot.VerifyAsync().AsTask());
         Assert.Equal(ordinary, File.ReadAllBytes(assets));
         Assert.False(Directory.Exists(Path.Combine(m_root, "App", "bin")));
 
-        Task RestoreOrdinary()
+        Task RestoreOrdinaryAsync()
             => ToolchainEnvironment.RunAsync(
                 sdk.hostPath,
                 [sdk.cliPath, "restore", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--nologo", "-v:quiet"],
@@ -341,9 +341,9 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             )
         );
         var properties = new Dictionary<string, string> { ["Configuration"] = "Release" };
-        ManagedBuildInputSnapshot original = await Capture(sdk, project, properties);
+        ManagedBuildInputSnapshot original = await CaptureAsync(sdk, project, properties);
         await original.VerifyAsync();
-        ManagedBuildInputSnapshot repeated = await Capture(sdk, project, properties);
+        ManagedBuildInputSnapshot repeated = await CaptureAsync(sdk, project, properties);
         Assert.Equal(original.fingerprint, repeated.fingerprint);
         foreach (string path in new[] { "Shared/Shared.cs", "App/data.txt", "App/Options.props", "Tool/Tool.cs" })
         {
@@ -377,7 +377,7 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         Assert.Empty(Directory.EnumerateDirectories(requests));
         Assert.Single(Directory.EnumerateDirectories(Path.Combine(m_root, "artifacts", "build-tools", "managed-inputs", "evaluators")));
 
-        Task<ManagedBuildInputSnapshot> Capture(
+        Task<ManagedBuildInputSnapshot> CaptureAsync(
             DotNetSdkDescriptor selected,
             string entry,
             IReadOnlyDictionary<string, string> globals

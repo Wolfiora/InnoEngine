@@ -20,13 +20,13 @@ internal static class BuildCacheRetirement
         CancellationToken cancellation
     ) {
         var retired = new List<string>();
-        var skipped = new HashSet<string>(BuildCacheInventory.pathComparer);
-        var failures = new Dictionary<string, string>(BuildCacheInventory.pathComparer);
+        var skipped = new HashSet<string>(BuildCacheInventory.PATH_COMPARER);
+        var failures = new Dictionary<string, string>(BuildCacheInventory.PATH_COMPARER);
         var ownerLeases = new List<FileLease>();
-        var artifactLeases = new Dictionary<string, FileLease>(BuildCacheInventory.pathComparer);
+        var artifactLeases = new Dictionary<string, FileLease>(BuildCacheInventory.PATH_COMPARER);
         Dictionary<string, BuildCacheArtifactDescriptor> proposed = candidates.ToDictionary(
             static entry => entry.directory,
-            BuildCacheInventory.pathComparer
+            BuildCacheInventory.PATH_COMPARER
         );
         long reclaimed = 0;
         Stopwatch elapsed = Stopwatch.StartNew();
@@ -57,7 +57,7 @@ internal static class BuildCacheRetirement
             }
             BuildCacheInventory fresh = BuildCacheInventory.Read(workspace, owners, bounded.Token);
             HashSet<string> protectedPaths = fresh.Protect(fresh.roots);
-            protectedPaths.UnionWith(fresh.Protect(fresh.artifacts.Keys.Except(proposed.Keys, BuildCacheInventory.pathComparer)));
+            protectedPaths.UnionWith(fresh.Protect(fresh.artifacts.Keys.Except(proposed.Keys, BuildCacheInventory.PATH_COMPARER)));
             var active = new List<string>();
             foreach (string path in fresh.artifacts.Keys
                 .Where(path => proposed.ContainsKey(path) && !protectedPaths.Contains(path))
@@ -112,8 +112,8 @@ internal static class BuildCacheRetirement
                 if (protectedPaths.Contains(path) || !artifactLeases.ContainsKey(path)
                     || original.bytes != current.artifact.bytes || original.lastUseUtc != current.artifact.lastUseUtc
                     || original.targetId != current.artifact.targetId || original.role != current.artifact.role
-                    || !BuildCacheInventory.pathComparer.Equals(original.leasePath, current.artifact.leasePath)
-                    || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.pathComparer)
+                    || !BuildCacheInventory.PATH_COMPARER.Equals(original.leasePath, current.artifact.leasePath)
+                    || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.PATH_COMPARER)
                 ) {
                     skipped.Add(path);
                     continue;
@@ -169,12 +169,12 @@ internal static class BuildCacheRetirement
             {
                 failures[Path.Combine(workspace, "artifacts", "cache-owners", "inventory")] = failure.Message;
             }
-            skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.pathComparer));
+            skipped.UnionWith(proposed.Keys.Except(retired, BuildCacheInventory.PATH_COMPARER));
             return new(retired, skipped, failures, reclaimed, limited);
         }
         catch (OperationCanceledException) when (!cancellation.IsCancellationRequested)
         {
-            return new(retired, proposed.Keys.Except(retired, BuildCacheInventory.pathComparer), failures, reclaimed, true);
+            return new(retired, proposed.Keys.Except(retired, BuildCacheInventory.PATH_COMPARER), failures, reclaimed, true);
         }
         finally
         {

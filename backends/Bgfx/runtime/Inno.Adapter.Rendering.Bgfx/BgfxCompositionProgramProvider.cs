@@ -11,7 +11,7 @@ namespace Inno.Adapter.Rendering.Bgfx;
 /// </summary>
 public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProgramProvider
 {
-    private static readonly RenderBindingId S_TEXTURE = new("s_tex");
+    private static readonly RenderBindingId TEXTURE = new("s_tex");
 
     /// <summary>
     /// Loads the BGFX target program matching the active device renderer.
@@ -98,7 +98,7 @@ public sealed class BgfxCompositionProgramProvider : IRenderLayerCompositionProg
         return new GraphicsPipelineDescriptor(
             program.vertexShader.Span,
             program.fragmentShader.Span,
-            [new(S_TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
+            [new(TEXTURE, RenderShaderBindingKind.Texture, slot: 0, nativeName: binding.nativeName)],
             vertexLayout,
             raster
         );

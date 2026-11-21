@@ -11,10 +11,10 @@ namespace Inno.Core.Jobs;
 /// </summary>
 internal sealed class SingleThreadJobSystem : IJobSystem
 {
-    private static readonly Action<object?> s_noop = static _ => {};
-    private static readonly Action<object?> s_actionInvoker = static state => ((Action?)state)?.Invoke();
+    private static readonly Action<object?> NOOP = static _ => {};
+    private static readonly Action<object?> ACTION_INVOKER = static state => ((Action?)state)?.Invoke();
 
-    private static readonly Action<object?> s_parallelRangeInvoker = static state =>
+    private static readonly Action<object?> PARALLEL_RANGE_INVOKER = static state =>
     {
         ParallelForRangeState rangeState = (ParallelForRangeState?)state
                                            ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
@@ -30,7 +30,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     private readonly Stack<int> m_freeIndices = [];
     private readonly List<int> m_frameJobs = [];
 
-    private readonly int m_mainThreadId;
+    private readonly int m_mainThreadID;
     private int m_peakFrameJobs;
     private long m_rejectedJobs;
     private bool m_frameActive;
@@ -43,7 +43,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     {
         m_mainThreadQueue = options.CreateMainThreadQueue();
         m_maxFrameJobs = options.ResolveFrameCapacity();
-        m_mainThreadId = Environment.CurrentManagedThreadId;
+        m_mainThreadID = Environment.CurrentManagedThreadId;
     }
 
     /// <summary>
@@ -178,7 +178,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     public JobHandle Schedule(Action job)
     {
         ArgumentNullException.ThrowIfNull(job);
-        return Schedule(s_actionInvoker, job, []);
+        return Schedule(ACTION_INVOKER, job, []);
     }
 
     /// <summary>
@@ -269,7 +269,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     /// <returns>
     /// The validated job handle that represents the completed operation.
     /// </returns>
-    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies) => Schedule(s_noop, null, dependencies);
+    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies) => Schedule(NOOP, null, dependencies);
 
     /// <summary>
     /// Schedules the indexed range in batches and returns its completion handle.
@@ -304,7 +304,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
 
         if (length == 0)
         {
-            return Schedule(s_noop, null, []);
+            return Schedule(NOOP, null, []);
         }
 
         ThrowIfDisposed();
@@ -319,7 +319,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
             {
                 int end = start + Math.Min(batchSize, length - start);
                 var state = new ParallelForRangeState(body, start, end);
-                handles[chunkIndex++] = Schedule(s_parallelRangeInvoker, state, []);
+                handles[chunkIndex++] = Schedule(PARALLEL_RANGE_INVOKER, state, []);
                 start = end;
             }
 
@@ -639,7 +639,7 @@ internal sealed class SingleThreadJobSystem : IJobSystem
 
     private void EnsureMainThread()
     {
-        if (Environment.CurrentManagedThreadId != m_mainThreadId)
+        if (Environment.CurrentManagedThreadId != m_mainThreadID)
         {
             throw new InvalidOperationException("This operation must be executed on the main thread.");
         }

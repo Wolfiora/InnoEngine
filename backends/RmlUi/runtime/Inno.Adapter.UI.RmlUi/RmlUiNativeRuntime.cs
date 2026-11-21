@@ -240,14 +240,14 @@ internal static unsafe class RmlUiNativeRuntime
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong document,
-        string elementId,
+        string elementID,
         string name,
         string value,
         ref byte changed
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        using var elementIdText = new RmlUiUtf8String(elementId);
+        using var elementIDText = new RmlUiUtf8String(elementID);
         using var nameText = new RmlUiUtf8String(name);
         using var valueText = new RmlUiUtf8String(value);
         fixed (byte* changedPointer = &changed)
@@ -257,7 +257,7 @@ internal static unsafe class RmlUiNativeRuntime
                     runtime,
                     context,
                     document,
-                    (sbyte*)elementIdText.pointer,
+                    (sbyte*)elementIDText.pointer,
                     (sbyte*)nameText.pointer,
                     (sbyte*)valueText.pointer,
                     changedPointer,
@@ -274,14 +274,14 @@ internal static unsafe class RmlUiNativeRuntime
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong document,
-        string elementId,
+        string elementID,
         string className,
         byte active,
         ref byte changed
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        using var elementIdText = new RmlUiUtf8String(elementId);
+        using var elementIDText = new RmlUiUtf8String(elementID);
         using var classNameText = new RmlUiUtf8String(className);
         fixed (byte* changedPointer = &changed)
         {
@@ -290,7 +290,7 @@ internal static unsafe class RmlUiNativeRuntime
                     runtime,
                     context,
                     document,
-                    (sbyte*)elementIdText.pointer,
+                    (sbyte*)elementIDText.pointer,
                     (sbyte*)classNameText.pointer,
                     active,
                     changedPointer,
@@ -307,13 +307,13 @@ internal static unsafe class RmlUiNativeRuntime
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong document,
-        string elementId,
+        string elementID,
         string markup,
         ref byte changed
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        using var elementIdText = new RmlUiUtf8String(elementId);
+        using var elementIDText = new RmlUiUtf8String(elementID);
         using var markupText = new RmlUiUtf8String(markup);
         fixed (byte* changedPointer = &changed)
         {
@@ -322,7 +322,7 @@ internal static unsafe class RmlUiNativeRuntime
                     runtime,
                     context,
                     document,
-                    (sbyte*)elementIdText.pointer,
+                    (sbyte*)elementIDText.pointer,
                     (sbyte*)markupText.pointer,
                     changedPointer,
                     &result,

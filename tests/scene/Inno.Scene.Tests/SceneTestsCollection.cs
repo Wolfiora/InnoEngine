@@ -13,10 +13,10 @@ using Inno.Extensibility.Types;
 
 namespace Inno.Scene.Tests;
 
-[CollectionDefinition(NAME)]
+[CollectionDefinition(C_NAME)]
 public sealed class SceneTestsCollection : ICollectionFixture<SceneTestsFixture>
 {
-    public const string NAME = nameof(SceneTestsCollection);
+    public const string C_NAME = nameof(SceneTestsCollection);
 }
 
 public sealed class SceneTestsFixture : IDisposable

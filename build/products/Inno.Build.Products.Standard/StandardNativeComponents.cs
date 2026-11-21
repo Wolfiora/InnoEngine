@@ -250,15 +250,15 @@ public static class StandardNativeComponents
         ),
         new(
             "ui",
-            UiToolchain.componentDescriptor,
+            UIToolchain.componentDescriptor,
             options("ui"),
             [],
             profile is null ? null : static (
                 context,
                 dependencies,
                 token
-            ) => UiToolchain.BuildAsync(context, token),
-            profile is null ? null : UiToolchain.CreateRecipe,
+            ) => UIToolchain.BuildAsync(context, token),
+            profile is null ? null : UIToolchain.CreateRecipe,
             (
                 relative,
                 target

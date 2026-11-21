@@ -55,22 +55,22 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         Type assetType = context.propertyType;
         AssetCandidate[] candidates = GetCandidates(assetType);
         object? currentValue = context.GetValue();
-        Guid persistentId = ReadPersistentId(currentValue);
-        AssetCandidate? selected = Array.Find(candidates, candidate => candidate.persistentId == persistentId);
-        string preview = persistentId == Guid.Empty
+        Guid persistentID = ReadPersistentID(currentValue);
+        AssetCandidate? selected = Array.Find(candidates, candidate => candidate.persistentID == persistentID);
+        string preview = persistentID == Guid.Empty
                          ? "None"
                          : currentValue is AssetObject { isMissing: true } missing
-                           ? $"Missing {missing.GetType().Name} [{persistentId}]"
-                           : selected is null ? $"Missing ({persistentId})" : selected.displayName;
+                           ? $"Missing {missing.GetType().Name} [{persistentID}]"
+                           : selected is null ? $"Missing ({persistentID})" : selected.displayName;
         bool open = EditorUI.current.widgets.BeginBoundedCombo($"##{context.path}", preview);
         Vector2 dropMinimum = Ui.GetItemMinimum();
         Vector2 dropMaximum = Ui.GetItemMaximum();
         EditorDropWidgetResult drop = EditorDragDropRenderer.Target(
             context.interactions.For(
                 InspectorInteractionIds.C_ASSET_REFERENCE_AREA,
-                new AssetReferenceDropTarget(assetType, persistentIdToAssign =>
+                new AssetReferenceDropTarget(assetType, persistentIDToAssign =>
                 {
-                    AssetCandidate? dropped = Array.Find(candidates, candidate => candidate.persistentId == persistentIdToAssign);
+                    AssetCandidate? dropped = Array.Find(candidates, candidate => candidate.persistentID == persistentIDToAssign);
                     if (dropped is not null)
                     {
                         AssignAsset(context, assetType, dropped);
@@ -91,7 +91,7 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
             string search = m_searchByPath.TryGetValue(context.path, out string? existingSearch) ? existingSearch : string.Empty;
             _ = EditorUI.current.widgets.SearchInput(context.path, "Search assets...", ref search, C_SEARCH_BUFFER_SIZE);
             m_searchByPath[context.path] = search;
-            if (Ui.Selectable("None", persistentId == Guid.Empty))
+            if (Ui.Selectable("None", persistentID == Guid.Empty))
             {
                 context.SetValue(null);
             }
@@ -105,7 +105,7 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
                     continue;
                 }
 
-                if (Ui.Selectable($"{candidate.displayName}##{candidate.persistentId:N}", candidate.persistentId == persistentId))
+                if (Ui.Selectable($"{candidate.displayName}##{candidate.persistentID:N}", candidate.persistentID == persistentID))
                 {
                     AssignAsset(context, assetType, candidate);
                 }
@@ -143,11 +143,11 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
                     continue;
                 }
 
-                if (m_assets.TryGetPersistentId(entry.assetPath, out Guid persistentId))
+                if (m_assets.TryGetPersistentId(entry.assetPath, out Guid persistentID))
                 {
                     string name = Path.GetFileNameWithoutExtension(entry.assetPath.localPath);
                     string displayName = $"{entry.assetPath.source.value}:{name}";
-                    candidates.Add(new AssetCandidate(entry.assetPath, persistentId, displayName, entry.assetPath.ToString()));
+                    candidates.Add(new AssetCandidate(entry.assetPath, persistentID, displayName, entry.assetPath.ToString()));
                 }
             }
 
@@ -166,7 +166,7 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         Type assetType,
         AssetCandidate candidate
     ) {
-        if (ReadPersistentId(context.GetValue()) == candidate.persistentId)
+        if (ReadPersistentID(context.GetValue()) == candidate.persistentID)
         {
             return;
         }
@@ -182,11 +182,11 @@ internal sealed class AssetReferencePropertyDrawer : IPropertyDrawer, IDisposabl
         }
     }
 
-    private static Guid ReadPersistentId(object? reference) => reference is AssetObject asset ? asset.identity.persistentId : Guid.Empty;
+    private static Guid ReadPersistentID(object? reference) => reference is AssetObject asset ? asset.identity.persistentId : Guid.Empty;
 
     private sealed record AssetCandidate(
         AssetPath assetPath,
-        Guid persistentId,
+        Guid persistentID,
         string displayName,
         string fullPath
     );

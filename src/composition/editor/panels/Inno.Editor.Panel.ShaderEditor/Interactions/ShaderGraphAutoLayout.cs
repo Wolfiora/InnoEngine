@@ -173,14 +173,14 @@ internal static class ShaderGraphAutoLayout
                         .Select(static edge => (edge.output.nodeId, edge.output.portId));
                 double total = 0;
                 int count = 0;
-                foreach ((GraphNodeId neighborId, GraphPortId port) in endpoints)
+                foreach ((GraphNodeId neighborID, GraphPortId port) in endpoints)
                 {
-                    if (!distance.TryGetValue(neighborId, out int neighborRank)
+                    if (!distance.TryGetValue(neighborID, out int neighborRank)
                         || !ranks.TryGetValue(neighborRank, out List<GraphNodeRecord>? neighbors)
                     ) {
                             continue;
                     }
-                    int index = neighbors.FindIndex(candidate => candidate.id == neighborId);
+                    int index = neighbors.FindIndex(candidate => candidate.id == neighborID);
                     if (index < 0)
                     {
                         continue;

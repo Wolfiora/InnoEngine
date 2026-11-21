@@ -598,7 +598,7 @@ public sealed unsafe class WidgetLayoutTests
     }
 
     [Fact]
-    public void TimelinePointer_UsesCumulativeUiDragUntilRelease()
+    public void TimelinePointer_UsesCumulativeUIDragUntilRelease()
     {
         using var context = new NativeContext(1f);
         Vector2 hit = default;

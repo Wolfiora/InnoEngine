@@ -97,33 +97,33 @@ public sealed partial class AssetLoader
         byte[] sourceBytes = exported.Value.ToArray();
         AssetRecord? destinationRecord = FindRecordLocked(relativePath);
         bool destinationOwnsIdentity = destinationRecord is not null
-                                       && destinationRecord.persistentId != Guid.Empty;
-        Guid persistentId = destinationOwnsIdentity
-                            ? destinationRecord!.persistentId
+                                       && destinationRecord.persistentID != Guid.Empty;
+        Guid persistentID = destinationOwnsIdentity
+                            ? destinationRecord!.persistentID
                             : asset.identity.persistentId;
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
-            persistentId = Guid.NewGuid();
+            persistentID = Guid.NewGuid();
         }
-        if (asset.identity.runtimeId is not null && asset.identity.persistentId != persistentId)
+        if (asset.identity.runtimeId is not null && asset.identity.persistentId != persistentID)
         {
             throw new InvalidOperationException(
                 $"Registered asset '{asset.identity.persistentId:D}' cannot replace destination identity "
-                + $"'{persistentId:D}' at '{relativePath}'."
+                + $"'{persistentID:D}' at '{relativePath}'."
             );
         }
-        ImportBuild build = BuildImportLocked(relativePath, sourceBytes, importer, persistentId);
+        ImportBuild build = BuildImportLocked(relativePath, sourceBytes, importer, persistentID);
         AssetRecord? provisionalRecord = null;
         bool registeredHere = false;
         if (string.IsNullOrWhiteSpace(asset.assetPath.ToString()) && !destinationOwnsIdentity)
         {
-            m_identities.InitializePersistentIdentity(asset, persistentId);
-            registeredHere = m_identitiesActive && m_identities.Register(asset, persistentId);
+            m_identities.InitializePersistentIdentity(asset, persistentID);
+            registeredHere = m_identitiesActive && m_identities.Register(asset, persistentID);
             provisionalRecord = new AssetRecord
             {
                 relativePath = relativePath,
-                persistentId = persistentId,
-                stableTypeId = build.meta.stableAssetTypeId,
+                persistentID = persistentID,
+                stableTypeID = build.meta.stableAssetTypeId,
                 meta = build.meta,
                 payload = build.payload,
                 asset = asset
@@ -156,14 +156,14 @@ public sealed partial class AssetLoader
         AssetRecord committed = m_recordsByPath[relativePath];
         if (committed.asset is null)
         {
-            if (asset.identity.persistentId != persistentId)
+            if (asset.identity.persistentId != persistentID)
             {
-                m_identities.InitializePersistentIdentity(asset, persistentId);
+                m_identities.InitializePersistentIdentity(asset, persistentID);
             }
             committed.asset = asset;
             if (m_identitiesActive && asset.identity.runtimeId is null)
             {
-                m_identities.Register(asset, persistentId);
+                m_identities.Register(asset, persistentID);
             }
             m_runtimeOwner.Initialize(
                 asset,

@@ -71,8 +71,8 @@ public sealed class AssetDependencyCollection
     ) {
         ArgumentNullException.ThrowIfNull(asset);
         ArgumentNullException.ThrowIfNull(types);
-        Guid persistentId = asset.identity.persistentId;
-        if (persistentId == Guid.Empty)
+        Guid persistentID = asset.identity.persistentId;
+        if (persistentID == Guid.Empty)
         {
             throw new InvalidOperationException($"Asset '{asset.GetType().FullName}' has no persistent identity.");
         }
@@ -83,8 +83,8 @@ public sealed class AssetDependencyCollection
             );
         }
 
-        (m_dependencies ??= [])[persistentId] = new AssetDependency(
-            persistentId,
+        (m_dependencies ??= [])[persistentID] = new AssetDependency(
+            persistentID,
             typeRef,
             includeLastKnownPaths ? asset.assetPath.ToString() : string.Empty
         );

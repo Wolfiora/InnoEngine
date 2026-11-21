@@ -479,13 +479,13 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
 
     private static IRuntimeSubsystemFactory[] Order(IReadOnlyList<IRuntimeSubsystemFactory> factories)
     {
-        var byId = new Dictionary<RuntimeSubsystemId, IRuntimeSubsystemFactory>();
+        var byID = new Dictionary<RuntimeSubsystemId, IRuntimeSubsystemFactory>();
         foreach (IRuntimeSubsystemFactory factory in factories)
         {
             ArgumentNullException.ThrowIfNull(factory);
             RuntimeSubsystemDescriptor descriptor = factory.descriptor
                 ?? throw new InvalidOperationException("A runtime subsystem factory returned a null descriptor.");
-            if (!byId.TryAdd(descriptor.id, factory))
+            if (!byID.TryAdd(descriptor.id, factory))
             {
                 throw new InvalidOperationException($"Runtime subsystem ID '{descriptor.id}' is duplicated.");
             }
@@ -494,7 +494,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         {
             foreach (RuntimeSubsystemId dependency in factory.descriptor.dependencies)
             {
-                if (!byId.ContainsKey(dependency) && factory.descriptor.requirement == RuntimeSubsystemRequirement.Required)
+                if (!byID.ContainsKey(dependency) && factory.descriptor.requirement == RuntimeSubsystemRequirement.Required)
                 {
                     throw new InvalidOperationException(
                         $"Runtime subsystem '{factory.descriptor.id}' requires missing subsystem '{dependency}'."
@@ -505,7 +505,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
 
         Dictionary<RuntimeSubsystemId, int> incoming = factories.ToDictionary(
             static factory => factory.descriptor.id,
-            factory => factory.descriptor.dependencies.Count(byId.ContainsKey)
+            factory => factory.descriptor.dependencies.Count(byID.ContainsKey)
         );
         Dictionary<RuntimeSubsystemId, List<IRuntimeSubsystemFactory>> dependants = factories.ToDictionary(
             static factory => factory.descriptor.id,

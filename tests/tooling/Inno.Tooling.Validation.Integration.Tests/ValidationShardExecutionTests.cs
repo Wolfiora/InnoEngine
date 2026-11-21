@@ -79,7 +79,7 @@ public sealed class ValidationShardExecutionTests
             static import => import.GetString()!.EndsWith("Inno.Fixture.Dependency.props", StringComparison.Ordinal)
         );
         repository.Write("artifacts/restored.json", current.ToJsonString());
-        Assert.Equal(0, await Resume("artifacts/reused"));
+        Assert.Equal(0, await ResumeAsync("artifacts/reused"));
         Assert.False(File.Exists(repository.PathOf("artifacts/reused/managed-build.log")));
         JsonNode reused = JsonNode.Parse(File.ReadAllText(repository.PathOf("artifacts/reused/results.json")))!;
         Assert.Equal(
@@ -98,10 +98,10 @@ public sealed class ValidationShardExecutionTests
             repository.PathOf("artifacts/reused/results.json"),
             repository.PathOf("artifacts/restored.json")
         ));
-        Assert.Equal(0, await Resume("artifacts/package-changed"));
+        Assert.Equal(0, await ResumeAsync("artifacts/package-changed"));
         Assert.True(File.Exists(repository.PathOf("artifacts/package-changed/managed-build.log")));
 
-        Task<int> Resume(string output)
+        Task<int> ResumeAsync(string output)
             => ValidationCommand.ExecuteAsync([
                 "resume",
                 "--engine-root",
@@ -469,7 +469,7 @@ public sealed class ValidationShardExecutionTests
         current["checks"]!.AsArray().Add(missing);
         current["shards"]![0]!["checks"]!.AsArray().Add("missing-policy");
         repository.Write("artifacts/current.json", current.ToJsonString());
-        Assert.Equal(0, await Resume("artifacts/accepted/results.json", "artifacts/resumed"));
+        Assert.Equal(0, await ResumeAsync("artifacts/accepted/results.json", "artifacts/resumed"));
         JsonNode evidence = JsonNode.Parse(File.ReadAllText(repository.PathOf("artifacts/resumed/results.json")))!;
         Assert.Equal("Reused", evidence["results"]![0]!["status"]!.GetValue<string>());
         Assert.Equal("Passed", evidence["results"]![1]!["status"]!.GetValue<string>());
@@ -477,10 +477,10 @@ public sealed class ValidationShardExecutionTests
         JsonNode foreign = JsonNode.Parse(File.ReadAllText(repository.PathOf("artifacts/accepted/results.json")))!;
         foreign["commit"] = new string('f', 40);
         repository.Write("artifacts/foreign.json", foreign.ToJsonString());
-        await Assert.ThrowsAsync<InvalidDataException>(() => Resume("artifacts/foreign.json", "artifacts/rejected"));
+        await Assert.ThrowsAsync<InvalidDataException>(() => ResumeAsync("artifacts/foreign.json", "artifacts/rejected"));
         Assert.Equal(2, File.ReadAllLines(repository.PathOf("artifacts/policy-executions.txt")).Length);
 
-        Task<int> Resume(
+        Task<int> ResumeAsync(
             string evidencePath,
             string output
         ) => ValidationCommand.ExecuteAsync([
@@ -570,7 +570,7 @@ public sealed class ValidationShardExecutionTests
                 evidence["results"] = new JsonArray();
             }
             repository.Write("artifacts/evidence.json", evidence.ToJsonString());
-            Task<int> Compare()
+            Task<int> CompareAsync()
                 => ValidationCommand.ExecuteAsync([
                     "acceptance",
                     "--engine-root",
@@ -588,11 +588,11 @@ public sealed class ValidationShardExecutionTests
                 ]);
             if (change == "missing-result")
             {
-                await Assert.ThrowsAsync<InvalidDataException>(Compare);
+                await Assert.ThrowsAsync<InvalidDataException>(CompareAsync);
             }
             else
             {
-                Assert.Equal(0, await Compare());
+                Assert.Equal(0, await CompareAsync());
                 using JsonDocument decision = JsonDocument.Parse(
                     File.ReadAllText(repository.PathOf("artifacts/comparison/" + change + "/acceptance.json"))
                 );
@@ -736,12 +736,12 @@ public sealed class ValidationShardExecutionTests
         );
         repository.Write("artifacts/frozen.json", plan.ToJsonString());
         string frozen = repository.PathOf("artifacts/frozen.json");
-        await Execute("run", "--shard", "architecture", "--output", repository.PathOf("artifacts/receipts/architecture"));
+        await ExecuteAsync("run", "--shard", "architecture", "--output", repository.PathOf("artifacts/receipts/architecture"));
         Assert.Equal("architecture", Read("artifacts/receipts/architecture/results.json")["shard"]!.GetValue<string>());
         await Assert.ThrowsAsync<InvalidDataException>(
-            () => Execute("run", "--shard", "managed", "--output", repository.PathOf("artifacts/missing"))
+            () => ExecuteAsync("run", "--shard", "managed", "--output", repository.PathOf("artifacts/missing"))
         );
-        await Execute(
+        await ExecuteAsync(
             "run",
             "--shard",
             "managed",
@@ -753,7 +753,7 @@ public sealed class ValidationShardExecutionTests
         JsonObject receipt = Read("artifacts/receipts/managed/results.json");
         Assert.Single(receipt["results"]!.AsArray());
         Assert.Equal("Passed", receipt["results"]![0]!["status"]!.GetValue<string>());
-        await Execute(
+        await ExecuteAsync(
             "join",
             "--prerequisites",
             repository.PathOf("artifacts/receipts"),
@@ -804,7 +804,7 @@ public sealed class ValidationShardExecutionTests
                 changed[damage] = "foreign";
             }
             repository.Write("artifacts/receipts/managed/results.json", changed.ToJsonString());
-            await Assert.ThrowsAsync<InvalidDataException>(() => Execute(
+            await Assert.ThrowsAsync<InvalidDataException>(() => ExecuteAsync(
                 "join",
                 "--prerequisites",
                 repository.PathOf("artifacts/receipts"),
@@ -813,7 +813,7 @@ public sealed class ValidationShardExecutionTests
             ));
         }
 
-        Task<int> Execute(
+        Task<int> ExecuteAsync(
             string operation,
             params string[] arguments
         ) => ValidationCommand.ExecuteAsync([

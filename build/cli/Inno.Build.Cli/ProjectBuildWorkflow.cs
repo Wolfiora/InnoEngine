@@ -101,7 +101,7 @@ internal static class ProjectBuildWorkflow
         else if (command.kind == BuildCommandKind.Plugin)
         {
             result = await pipeline.BuildPluginAsync(
-                command.CreatePluginRequest(workspace.projectId),
+                command.CreatePluginRequest(workspace.projectID),
                 progress,
                 cancellationToken
             );

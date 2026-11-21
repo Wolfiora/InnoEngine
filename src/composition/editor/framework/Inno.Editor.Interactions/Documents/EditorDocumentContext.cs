@@ -12,15 +12,15 @@ public sealed class EditorDocumentContext
     private readonly Dictionary<string, string> m_viewParameters = new(StringComparer.Ordinal);
 
     internal EditorDocumentContext(
-        Guid documentId,
-        Guid assetId,
+        Guid documentID,
+        Guid assetID,
         string assetPath,
-        string providerId
+        string providerID
     ) {
-        this.documentId = documentId;
-        this.assetId = assetId;
+        this.documentId = documentID;
+        this.assetId = assetID;
         this.assetPath = assetPath;
-        this.providerId = providerId;
+        this.providerId = providerID;
         this.title = Path.GetFileName(assetPath);
     }
 

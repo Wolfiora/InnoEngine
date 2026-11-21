@@ -214,13 +214,13 @@ public sealed class RuntimeSessionTests : IDisposable
             .Build();
 
     private RuntimeSessionOptions CreateOptions(
-        string applicationId,
+        string applicationID,
         RuntimeSessionKind kind
     ) => new()
     {
         kind = kind,
-        applicationId = applicationId,
-        createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", applicationId), "Logs")),
+        applicationId = applicationID,
+        createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", applicationID), "Logs")),
         fixedDeltaTime = 0.02f,
         jobExecutionMode = RuntimeJobExecutionMode.SingleThread
     };

@@ -12,13 +12,13 @@ internal static class ReflectionObjectMetadata
     private const BindingFlags C_DECLARED_MEMBERS =
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
-    private static readonly ConditionalWeakTable<Type, MembersBox> S_MEMBERS = new();
-    private static readonly ConditionalWeakTable<Type, RestoreHooksBox> S_RESTORE_HOOKS = new();
+    private static readonly ConditionalWeakTable<Type, MembersBox> MEMBERS = new();
+    private static readonly ConditionalWeakTable<Type, RestoreHooksBox> RESTORE_HOOKS = new();
 
     internal static SerializationMemberMetadata[] GetSerializableMembers(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        return S_MEMBERS.GetValue(type, static value => new MembersBox(BuildSerializableMembers(value))).members;
+        return MEMBERS.GetValue(type, static value => new MembersBox(BuildSerializableMembers(value))).members;
     }
 
     internal static Action<object, SerializationContext>? CreateRestoreHandler(Type type)
@@ -155,7 +155,7 @@ internal static class ReflectionObjectMetadata
     }
 
     private static MethodInfo[] GetRestoreHooks(Type runtimeType)
-        => S_RESTORE_HOOKS.GetValue(runtimeType, static value => new RestoreHooksBox(BuildRestoreHooks(value))).hooks;
+        => RESTORE_HOOKS.GetValue(runtimeType, static value => new RestoreHooksBox(BuildRestoreHooks(value))).hooks;
 
     private static MethodInfo[] BuildRestoreHooks(Type runtimeType)
     {

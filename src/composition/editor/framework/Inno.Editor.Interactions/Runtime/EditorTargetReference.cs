@@ -10,18 +10,18 @@ internal sealed class EditorTargetReference
 
     private EditorTargetReference(
         RuntimeIdentity? runtimeIdentity,
-        Guid persistentId,
+        Guid persistentID,
         object? value,
         WeakReference<object>? target
     ) {
         this.runtimeIdentity = runtimeIdentity;
-        this.persistentId = persistentId;
+        this.persistentID = persistentID;
         m_value = value;
         m_target = target;
     }
 
     internal RuntimeIdentity? runtimeIdentity { get; }
-    internal Guid persistentId { get; }
+    internal Guid persistentID { get; }
 
     internal object? Resolve(EditorInteractions interactions)
     {
@@ -38,7 +38,7 @@ internal sealed class EditorTargetReference
         {
             return this;
         }
-        if (interactions.TryResolveIdentity(runtime.domainId, persistentId, out IdentityObject? replacement) && replacement is not null)
+        if (interactions.TryResolveIdentity(runtime.domainId, persistentID, out IdentityObject? replacement) && replacement is not null)
         {
             return Capture(replacement);
         }

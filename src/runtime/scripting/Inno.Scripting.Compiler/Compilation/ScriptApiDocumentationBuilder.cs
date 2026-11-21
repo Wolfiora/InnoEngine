@@ -123,16 +123,16 @@ internal static class ScriptApiDocumentationBuilder
         // Documentation consumers must still select members from the actual reference assembly.
         IOrderedEnumerable<XElement> origins = exports.Select(export =>
         {
-            string sourceId = "T:" + GetDocumentationTypeName(export.type);
-            string logicalId = sourceId;
+            string sourceID = "T:" + GetDocumentationTypeName(export.type);
+            string logicalID = sourceID;
             foreach ((string sourceName, string targetName) in replacements)
             {
-                logicalId = logicalId.Replace(sourceName, targetName, StringComparison.Ordinal);
+                logicalID = logicalID.Replace(sourceName, targetName, StringComparison.Ordinal);
             }
             return new XElement(
                 "type",
-                new XAttribute("id", logicalId),
-                new XAttribute("source", sourceId),
+                new XAttribute("id", logicalID),
+                new XAttribute("source", sourceID),
                 new XAttribute(
                     "assembly",
                     export.type.Assembly.GetName().Name

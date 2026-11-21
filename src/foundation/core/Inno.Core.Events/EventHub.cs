@@ -16,7 +16,7 @@ public sealed class EventHub : IDisposable
 {
     private readonly WeakReference<EventDispatcher> m_dispatcherRef;
     private readonly object m_gate = new();
-    private HubState m_state = HubState.Empty;
+    private HubState m_state = HubState.EMPTY;
     private long m_nextListenerOrder;
     private int m_disposed;
     private int m_attached = 1;
@@ -175,7 +175,7 @@ public sealed class EventHub : IDisposable
 
         lock (m_gate)
         {
-            Volatile.Write(ref m_state, HubState.Empty);
+            Volatile.Write(ref m_state, HubState.EMPTY);
         }
 
         if (m_dispatcherRef.TryGetTarget(out EventDispatcher? dispatcher))
@@ -503,7 +503,7 @@ public sealed class EventHub : IDisposable
         /// <summary>
         /// The empty value used as part of this type's public representation.
         /// </summary>
-        public static readonly HubState Empty = new([]);
+        public static readonly HubState EMPTY = new([]);
 
         /// <summary>
         /// Gets the immutable listener buckets captured for one dispatch operation.

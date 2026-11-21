@@ -35,13 +35,13 @@ public sealed class AssetBuildProcessorAttribute : Attribute
 /// </summary>
 public abstract class AssetBuildProcessor
 {
-    private string? m_processorId;
+    private string? m_processorID;
 
     /// <summary>
     /// Gets the stable processor identifier used by build cache keys.
     /// </summary>
     public string processorId
-        => m_processorId
+        => m_processorID
            ?? throw new InvalidOperationException(
                $"Asset build processor '{GetType().FullName}' has not been bound to discovery metadata."
            );
@@ -58,16 +58,16 @@ public abstract class AssetBuildProcessor
         CancellationToken cancellationToken
     );
 
-    internal void BindProcessorId(string id)
+    internal void BindProcessorID(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        if (m_processorId is not null && !string.Equals(m_processorId, id, StringComparison.Ordinal))
+        if (m_processorID is not null && !string.Equals(m_processorID, id, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
                 $"Asset build processor '{GetType().FullName}' cannot be bound to more than one protocol ID."
             );
         }
-        m_processorId = id;
+        m_processorID = id;
     }
 }
 

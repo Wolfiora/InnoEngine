@@ -17,7 +17,7 @@ namespace Inno.Adapter.Platform.Sdl3;
 public sealed unsafe partial class Sdl3PlatformApplication
 {
     private readonly ISdl3HostIntegration m_hostIntegration;
-    private readonly int m_ownerThreadId = Environment.CurrentManagedThreadId;
+    private readonly int m_ownerThreadID = Environment.CurrentManagedThreadId;
     private readonly List<Event> m_pendingEvents = [];
     private readonly Dictionary<uint, Sdl3PlatformWindow> m_windows = [];
     private readonly List<ISdl3ApplicationExtension> m_extensions = [];
@@ -27,7 +27,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
     private unsafe delegate* unmanaged[Cdecl]<void*, void> m_liveResizeMainThreadCallbackPointer;
     private GCHandle m_liveResizeEventWatchHandle;
     private int m_liveResizeRedrawQueued;
-    private uint m_liveResizeWindowId;
+    private uint m_liveResizeWindowID;
     private ExceptionDispatchInfo? m_redrawFailure;
     private bool m_dispatchingRedraw;
     private int m_pendingEventReadIndex;
@@ -248,7 +248,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
         }
     }
 
-    private void DispatchLiveResizeRedraw(uint windowId)
+    private void DispatchLiveResizeRedraw(uint windowID)
     {
         if (m_dispatchingRedraw || m_redrawFailure is not null)
         {
@@ -257,7 +257,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
         m_dispatchingRedraw = true;
         try
         {
-            if (m_windows.TryGetValue(windowId, out Sdl3PlatformWindow? window))
+            if (m_windows.TryGetValue(windowID, out Sdl3PlatformWindow? window))
             {
                 int width = 0;
                 int height = 0;
@@ -269,9 +269,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
             }
             foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
             {
-                extension.PrepareLiveResizeWindow(this, windowId);
+                extension.PrepareLiveResizeWindow(this, windowID);
             }
-            redrawRequested?.Invoke(windowId);
+            redrawRequested?.Invoke(windowID);
         }
         finally
         {
@@ -449,7 +449,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
             return 1;
         }
 
-        Volatile.Write(ref application.m_liveResizeWindowId, evnt->Window.WindowID);
+        Volatile.Write(ref application.m_liveResizeWindowID, evnt->Window.WindowID);
         if (Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 1) == 0)
         {
             nint userDataPtr = (nint)GCHandle.ToIntPtr(application.m_liveResizeEventWatchHandle);
@@ -475,13 +475,13 @@ public sealed unsafe partial class Sdl3PlatformApplication
             return;
         }
 
-        uint windowId = Volatile.Read(ref application.m_liveResizeWindowId);
+        uint windowID = Volatile.Read(ref application.m_liveResizeWindowID);
         Interlocked.Exchange(ref application.m_liveResizeRedrawQueued, 0);
-        if (windowId != 0)
+        if (windowID != 0)
         {
             try
             {
-                application.DispatchLiveResizeRedraw(windowId);
+                application.DispatchLiveResizeRedraw(windowID);
             }
             catch (Exception exception)
             {
@@ -700,7 +700,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
     }
 
     private readonly record struct PendingEventCoalesceKey(
-        uint windowId,
+        uint windowID,
         Type eventType
     );
 }

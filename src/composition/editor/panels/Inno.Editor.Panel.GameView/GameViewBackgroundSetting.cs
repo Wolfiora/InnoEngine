@@ -10,7 +10,7 @@ namespace Inno.Editor.Panel.GameView;
 internal sealed class GameViewBackgroundSetting : EditorSetting
 {
     internal const string C_PATH = "Editor/Appearance/Viewports/Game Background";
-    private static readonly float[] S_DEFAULT = [0.035f, 0.04f, 0.05f, EditorPalette.opacityOpaque];
+    private static readonly float[] DEFAULT = [0.035f, 0.04f, 0.05f, EditorPalette.opacityOpaque];
 
     /// <summary>
     /// Gets a new value initialized to this setting's canonical default state.
@@ -48,15 +48,15 @@ internal sealed class GameViewBackgroundSetting : EditorSetting
     private static EditorSettingObject CreateDefault()
     {
         var result = new EditorSettingObject();
-        result.SetAsSingleArray("value", S_DEFAULT);
+        result.SetAsSingleArray("value", DEFAULT);
         return result;
     }
 
     private static Vector4 ReadVector(EditorSettingObject setting)
     {
-        float[] values = setting.GetAsSingleArray("value", S_DEFAULT);
+        float[] values = setting.GetAsSingleArray("value", DEFAULT);
         return values.Length == 4
                ? new Vector4(values[0], values[1], values[2], values[3])
-               : new Vector4(S_DEFAULT[0], S_DEFAULT[1], S_DEFAULT[2], S_DEFAULT[3]);
+               : new Vector4(DEFAULT[0], DEFAULT[1], DEFAULT[2], DEFAULT[3]);
     }
 }

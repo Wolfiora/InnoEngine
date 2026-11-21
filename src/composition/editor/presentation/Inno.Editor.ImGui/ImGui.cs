@@ -1466,7 +1466,7 @@ public static unsafe partial class ImGui
                 : RawImGui.Raw.Begin((sbyte*)nativeLabel.pointer, null, (int)flags)) != 0;
     }
 
-    internal static uint HashNativeId(
+    internal static uint HashNativeID(
         string text,
         uint seed = 0
     ) {

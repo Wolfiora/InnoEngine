@@ -15,7 +15,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class NativeBindingCompilation
 {
-    private static readonly JsonSerializerOptions S_OPTIONS = new()
+    private static readonly JsonSerializerOptions OPTIONS = new()
     {
         UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
         RespectRequiredConstructorParameters = true
@@ -181,7 +181,7 @@ public sealed class NativeBindingCompilation
     {
         NativeBindingCompilation result = JsonSerializer.Deserialize<NativeBindingCompilation>(
             File.ReadAllBytes(Path.Combine(nativeDirectory, "compilation.json")),
-            S_OPTIONS
+            OPTIONS
         )
                                           ?? throw new InvalidDataException("A native compilation description is required.");
         result.Validate();

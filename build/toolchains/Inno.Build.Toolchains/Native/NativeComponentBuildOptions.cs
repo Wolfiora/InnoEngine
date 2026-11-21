@@ -25,7 +25,7 @@ public enum NativeLibraryKind
 /// </summary>
 public sealed class NativeComponentBuildOptions
 {
-    private static readonly Regex S_DEFINITION = new(
+    private static readonly Regex DEFINITION = new(
         "^-D[A-Za-z_][A-Za-z0-9_]*(?::(?:BOOL|STRING|PATH|FILEPATH|INTERNAL))?=",
         RegexOptions.CultureInvariant
     );
@@ -70,7 +70,7 @@ public sealed class NativeComponentBuildOptions
         var names = new HashSet<string>(StringComparer.Ordinal);
         foreach (string argument in arguments)
         {
-            if (argument is null || !S_DEFINITION.IsMatch(argument) || argument.Contains('\0'))
+            if (argument is null || !DEFINITION.IsMatch(argument) || argument.Contains('\0'))
             {
                 throw new ArgumentException("Component arguments must be explicit CMake definitions.", nameof(cmakeArguments));
             }

@@ -11,10 +11,10 @@ internal sealed class ScriptCompilationTicket : IScriptCompilationTicket
     private int m_state;
 
     internal ScriptCompilationTicket(
-        long requestId,
+        long requestID,
         string status
     ) {
-        this.requestId = requestId;
+        this.requestId = requestID;
         m_status = status;
         m_state = (int)ScriptCompilationTicketState.Queued;
     }

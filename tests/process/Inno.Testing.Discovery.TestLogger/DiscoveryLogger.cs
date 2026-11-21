@@ -64,10 +64,10 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
                 {
                     owners.Add(source, owner = new Owner());
                 }
-                owner.Count++;
+                owner.count++;
                 if (test.Traits.Any(trait => trait.Name == "ProcessIsolation" && trait.Value == "Required"))
                 {
-                    owner.Contracts.Add(test.FullyQualifiedName);
+                    owner.contracts.Add(test.FullyQualifiedName);
                 }
             }
         };
@@ -85,14 +85,14 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
                             && completion.SkippedDiscoveredSources?.Count is null or 0,
                 errors,
                 discovered = completion.TotalCount,
-                owners = owners.Select(pair => new { source = pair.Key, count = pair.Value.Count, contracts = pair.Value.Contracts })
+                owners = owners.Select(pair => new { source = pair.Key, count = pair.Value.count, contracts = pair.Value.contracts })
             });
         };
     }
 
     private sealed class Owner
     {
-        internal int Count { get; set; }
-        internal SortedSet<string> Contracts { get; } = new(StringComparer.Ordinal);
+        internal int count { get; set; }
+        internal SortedSet<string> contracts { get; } = new(StringComparer.Ordinal);
     }
 }

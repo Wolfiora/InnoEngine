@@ -188,9 +188,9 @@ public sealed class JobSystemBehaviorTests
         using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        const int length = 1024;
-        var values = new int[length];
-        JobHandle handle = jobs.ParallelFor(length, 32, (
+        const int C_LENGTH = 1024;
+        var values = new int[C_LENGTH];
+        JobHandle handle = jobs.ParallelFor(C_LENGTH, 32, (
             start,
             end
         ) =>
@@ -288,16 +288,16 @@ public sealed class JobSystemBehaviorTests
         using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
 
-        const int taskCount = 2000;
+        const int C_TASK_COUNT = 2000;
         int count = 0;
-        Parallel.For(0, taskCount, _ =>
+        Parallel.For(0, C_TASK_COUNT, _ =>
         {
             JobHandle handle = jobs.Schedule(() => Interlocked.Increment(ref count));
             jobs.Complete(handle);
         });
 
         jobs.EndFrame();
-        Assert.Equal(taskCount, count);
+        Assert.Equal(C_TASK_COUNT, count);
     }
 
     [Fact]
@@ -356,10 +356,10 @@ public sealed class JobSystemBehaviorTests
         using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
 
-        const int count = 300;
-        var handles = new JobHandle[count];
+        const int C_COUNT = 300;
+        var handles = new JobHandle[C_COUNT];
         int sum = 0;
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < C_COUNT; i++)
         {
             handles[i] = jobs.Schedule(() => Interlocked.Increment(ref sum));
         }
@@ -368,7 +368,7 @@ public sealed class JobSystemBehaviorTests
         jobs.Complete(barrier);
         jobs.EndFrame();
 
-        Assert.Equal(count, sum);
+        Assert.Equal(C_COUNT, sum);
     }
 
     [Fact]

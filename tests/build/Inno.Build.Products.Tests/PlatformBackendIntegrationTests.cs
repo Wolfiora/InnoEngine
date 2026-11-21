@@ -16,8 +16,8 @@ public sealed class PlatformBackendIntegrationTests
     [Fact]
     public void IntegrationsPreserveExactShaderAndNativeTargetIdentities()
     {
-        Assert.Equal("windows-x64", WindowsX64BgfxIntegration.nativeProfile.targetId);
-        Assert.Equal("macos-arm64", MacOSArm64BgfxIntegration.nativeProfile.targetId);
+        Assert.Equal("windows-x64", WindowsX64BgfxIntegration.nativeProfile.targetID);
+        Assert.Equal("macos-arm64", MacOSArm64BgfxIntegration.nativeProfile.targetID);
         var context = new BuildCompositionContext(
             "explicit-sdk",
             Path.GetTempPath(),

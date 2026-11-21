@@ -13,7 +13,7 @@ namespace Inno.Tooling.Documentation.Indexing;
 
 internal static class DocumentationApiPresentation
 {
-    private static readonly MarkdownPipeline S_MARKDOWN = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
+    private static readonly MarkdownPipeline MARKDOWN = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
 
     internal static string? Parent(DocumentationApiFact fact)
         => fact.containingType is null ? null : fact.family + ":" + fact.project + ":" + fact.containingType;
@@ -50,7 +50,7 @@ internal static class DocumentationApiPresentation
 
     internal static string Summary(string markdown)
     {
-        MarkdownDocument document = Markdown.Parse(markdown, S_MARKDOWN);
+        MarkdownDocument document = Markdown.Parse(markdown, MARKDOWN);
         ParagraphBlock? paragraph = document.OfType<ParagraphBlock>().FirstOrDefault();
         if (paragraph is null) return "No summary is available; open the declaration and full contract.";
         string text = Regex.Replace(Markdown.ToPlainText(markdown[paragraph.Span.Start..(paragraph.Span.End + 1)]), @"\s+", " ").Trim();
@@ -67,7 +67,7 @@ internal static class DocumentationApiPresentation
             string relative = Path.GetRelativePath(root, path).Replace('\\', '/');
             if (relative.StartsWith("content/en/api/", StringComparison.Ordinal)) continue;
             string text = File.ReadAllText(DocumentationApiFacts.Resolve(root, relative));
-            if (Markdown.Parse(text, S_MARKDOWN).OfType<YamlFrontMatterBlock>().FirstOrDefault() is null) continue;
+            if (Markdown.Parse(text, MARKDOWN).OfType<YamlFrontMatterBlock>().FirstOrDefault() is null) continue;
             YamlMappingNode metadata = DocumentationApiFragment.ReadMetadata(relative, text);
             if (!metadata.Children.TryGetValue(new YamlScalarNode("kind"), out YamlNode? kind)
                 || kind is not YamlScalarNode { Value: "project" }

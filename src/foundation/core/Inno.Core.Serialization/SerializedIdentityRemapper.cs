@@ -10,8 +10,8 @@ namespace Inno.Core.Serialization;
 /// </summary>
 public static class SerializedIdentityRemapper
 {
-    private static readonly byte[] s_valueMagic = Encoding.UTF8.GetBytes("INNO-BINARY-CURRENT");
-    private static readonly byte[] s_propertyMagic = Encoding.UTF8.GetBytes("INNO-PROPERTY-SNAPSHOT-CURRENT");
+    private static readonly byte[] VALUE_MAGIC = Encoding.UTF8.GetBytes("INNO-BINARY-CURRENT");
+    private static readonly byte[] PROPERTY_MAGIC = Encoding.UTF8.GetBytes("INNO-PROPERTY-SNAPSHOT-CURRENT");
 
     /// <summary>
     /// Replaces exact Guid and string values while retaining the binary serialization structure.
@@ -37,11 +37,11 @@ public static class SerializedIdentityRemapper
         IReadOnlyDictionary<string, string>? paths = null
     ) {
         ArgumentNullException.ThrowIfNull(identities);
-        if (HasMagic(source, s_valueMagic))
+        if (HasMagic(source, VALUE_MAGIC))
         {
             return BinarySerializationFormat.Encode(RewriteNode(BinarySerializationFormat.Decode(source), identities, paths));
         }
-        if (HasMagic(source, s_propertyMagic))
+        if (HasMagic(source, PROPERTY_MAGIC))
         {
             IReadOnlyList<SerializationPropertySnapshot> snapshots = PropertySnapshotBinaryFormat.Decode(source);
             return PropertySnapshotBinaryFormat.Encode(

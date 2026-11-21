@@ -26,7 +26,7 @@ public sealed class BgfxNativeProfileTests : IDisposable
     public async Task OpenTargetAcceptsItsExplicitSdkInvocationBeforeSourceValidation()
     {
         var profile = new FixtureProfile("fixture-new-target");
-        NativeBuildContext context = CreateContext(profile.targetId);
+        NativeBuildContext context = CreateContext(profile.targetID);
 
         await Assert.ThrowsAsync<DirectoryNotFoundException>(() => BgfxNativeBuild.BuildAsync(context, profile, CancellationToken.None));
 
@@ -63,7 +63,7 @@ public sealed class BgfxNativeProfileTests : IDisposable
     public void SourceDeclarationFreezesRuntimeAndToolOptionsBeforeBindingExists(bool tools)
     {
         var profile = new FixtureProfile("fixture-new-target");
-        NativeBuildContext context = CreateContext(profile.targetId);
+        NativeBuildContext context = CreateContext(profile.targetID);
         foreach (string source in new[] { "bgfx", "bx", "bimg" })
         {
             Directory.CreateDirectory(Path.Combine(m_root, "extern", source));
@@ -121,7 +121,7 @@ public sealed class BgfxNativeProfileTests : IDisposable
     private sealed class FixtureProfile(string target) : BgfxNativeBuildProfile
     {
         public int invocationCount { get; private set; }
-        public override string targetId => target;
+        public override string targetID => target;
         public override IReadOnlyList<string> generatorArguments => ["fixture-generator"];
         public override string artifactPathToken => "/fixture-cpu/bin/";
         public override IReadOnlyList<string> bindingCmakeArguments => [];

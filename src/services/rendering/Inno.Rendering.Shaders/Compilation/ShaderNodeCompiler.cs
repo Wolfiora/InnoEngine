@@ -76,14 +76,14 @@ public sealed class ShaderNodeDescriptionContext
         SerializationRegistry serialization,
         SerializationContext context,
         ShaderSourceModuleAnalysis? sourceModule,
-        string implementationId,
+        string implementationID,
         ShaderIrStageInput? stageInput
     ) {
         m_node = node;
         m_serialization = serialization;
         m_context = context;
         this.sourceModule = sourceModule;
-        this.implementationId = implementationId;
+        this.implementationId = implementationID;
         this.stageInput = stageInput;
     }
 

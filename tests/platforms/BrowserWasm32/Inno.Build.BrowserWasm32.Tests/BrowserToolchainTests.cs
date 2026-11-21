@@ -78,13 +78,13 @@ public sealed class BrowserToolchainTests : IDisposable
     [Fact]
     public async Task CapturePreservesStructuredArgumentsAndChildOnlyEnvironment()
     {
-        const string variable = "INNO_TOOLCHAIN_TEST_VALUE";
-        const string value = "spaces and `literal` $characters";
-        string? parent = Environment.GetEnvironmentVariable(variable);
+        const string C_VARIABLE = "INNO_TOOLCHAIN_TEST_VALUE";
+        const string C_VALUE = "spaces and `literal` $characters";
+        string? parent = Environment.GetEnvironmentVariable(C_VARIABLE);
         Directory.CreateDirectory(m_root);
         string project = Path.Combine(m_root, "Environment.proj");
         new XDocument(
-            new XElement("Project", new XElement("PropertyGroup", new XElement("Result", "$(" + variable + ")")))
+            new XElement("Project", new XElement("PropertyGroup", new XElement("Result", "$(" + C_VARIABLE + ")")))
         ).Save(project);
 
         string output = await ToolchainEnvironment.CaptureOutputAsync(
@@ -92,11 +92,11 @@ public sealed class BrowserToolchainTests : IDisposable
             ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:Result"],
             m_root,
             CancellationToken.None,
-            new Dictionary<string, string?> { [variable] = value }
+            new Dictionary<string, string?> { [C_VARIABLE] = C_VALUE }
         );
 
-        Assert.Equal(value, output.Trim());
-        Assert.Equal(parent, Environment.GetEnvironmentVariable(variable));
+        Assert.Equal(C_VALUE, output.Trim());
+        Assert.Equal(parent, Environment.GetEnvironmentVariable(C_VARIABLE));
     }
 
     [Fact]

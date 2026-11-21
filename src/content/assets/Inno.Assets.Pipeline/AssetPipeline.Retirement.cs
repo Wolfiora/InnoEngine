@@ -136,7 +136,7 @@ public sealed partial class AssetPipeline
         libraryRoot = string.Empty;
         artifactRoot = string.Empty;
         sourceMounts = [];
-        m_ownerThreadId = 0;
+        m_ownerThreadID = 0;
         m_revision = 0;
         m_reconcileSampleImport = false;
         m_cacheOptions = default;

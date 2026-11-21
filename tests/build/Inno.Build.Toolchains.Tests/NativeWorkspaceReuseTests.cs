@@ -33,7 +33,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         await File.WriteAllTextAsync(source, "first");
         string? workspace = null;
         int compilations = 0;
-        Task Produce(
+        Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -58,12 +58,12 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                 [new NativeBuildInput("input.cpp", source)],
                 ["shared", "compiler-flag"]
             );
-        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), Produce);
+        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), ProduceAsync);
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         await File.WriteAllTextAsync(source, "other");
         File.SetLastWriteTimeUtc(source, timestamp);
-        using NativeBuildProduct changed = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), Produce);
-        using NativeBuildProduct hit = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), Produce);
+        using NativeBuildProduct changed = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), ProduceAsync);
+        using NativeBuildProduct hit = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), ProduceAsync);
         Assert.NotEqual(first.fingerprint, changed.fingerprint);
         Assert.Equal(changed.fingerprint, hit.fingerprint);
         Assert.Equal(2, compilations);
@@ -79,7 +79,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         await File.WriteAllTextAsync(source, "source");
         string? first = null;
         int calls = 0;
-        Task Produce(
+        Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -100,7 +100,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(
                 new(m_root, "release"),
                 new(m_owner, "fixture", "fixture-x64", [new NativeBuildInput("input.cpp", source)], [argument]),
-                Produce
+                ProduceAsync
             );
         }
         Assert.Equal(2, calls);

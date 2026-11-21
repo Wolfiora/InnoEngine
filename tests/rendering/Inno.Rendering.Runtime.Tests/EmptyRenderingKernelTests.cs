@@ -242,7 +242,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         IRenderDevice device = TestDeviceProxy.Create(out _);
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
-        var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.C_EXTENSION_ID };
 
         Assert.True(runtime.TryActivateDefaultPipeline(asset));
         Assert.Equal(1, DisposablePipeline.createdCount);
@@ -262,13 +262,13 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void PendingProviderRetirementIsRetriedBeforeTheSnapshotIsReleased()
     {
         using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out _), new TestDiagnosticSink());
-        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId }));
+        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.C_EXTENSION_ID }));
         TestRequestProvider.pendingRetirements = 2;
 
         m_types.Rebuild();
 
         Assert.Equal(3, TestRequestProvider.retirementAttempts);
-        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId }));
+        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.C_EXTENSION_ID }));
     }
 
     [Theory]
@@ -295,8 +295,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         Assert.True(
             runtime.TryActivateDefaultPipeline(new RenderPipelineAsset
             {
-                pipelineTypeId = DisposablePipeline.extensionId,
-                features = [new RenderFeatureConfiguration(PendingFeature.extensionId)]
+                pipelineTypeId = DisposablePipeline.C_EXTENSION_ID,
+                features = [new RenderFeatureConfiguration(PendingFeature.C_EXTENSION_ID)]
             })
         );
         PendingFeature.pendingRetirements = 2;
@@ -316,7 +316,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void RejectedPipelineWaitsForItsCandidateToRetireBeforeKeepingLastGood()
     {
         using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out _), new TestDiagnosticSink());
-        var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.C_EXTENSION_ID };
         Assert.True(runtime.TryActivateDefaultPipeline(asset));
         DisposablePipeline.rejectConfiguration = true;
         DisposablePipeline.pendingRetirements = 2;
@@ -335,7 +335,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void ReloadRetirementDrainsPendingBeforeFinishingTheTransaction(bool commit)
     {
         using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out _), new TestDiagnosticSink());
-        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId }));
+        Assert.True(runtime.TryActivateDefaultPipeline(new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.C_EXTENSION_ID }));
         IRenderRuntimeReloadTransaction transaction = runtime.BeginExtensionReload();
         transaction.Prepare();
         transaction.Activate();
@@ -391,7 +391,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             new RenderResourceLimits { uploadPages = 1, uploadResidentBytes = 4096, uploadBytesPerFrame = 36 });
         for (int frame = 0; frame < 256; frame++)
         {
-            runtime.Submit(CreateRequest("Upload budget", new RenderPipelineAsset { pipelineTypeId = UploadPipeline.extensionId }));
+            runtime.Submit(CreateRequest("Upload budget", new RenderPipelineAsset { pipelineTypeId = UploadPipeline.C_EXTENSION_ID }));
             BeginRenderFrame(runtime, 0f);
             runtime.AfterRender(default);
             runtime.EndFrame(default);
@@ -446,7 +446,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         });
         var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         var runtime = new RenderRuntime(types, TestDeviceProxy.Create(out TestDeviceProxy device), new TestDiagnosticSink());
-        var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = DisposablePipeline.C_EXTENSION_ID };
         Assert.True(runtime.TryActivateDefaultPipeline(asset));
         DisposablePipeline.retirementExpired = true;
         try
@@ -500,7 +500,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 "Target",
                 RenderTarget.FromTexture(target),
                 new RenderViewport(0, 0, 16, 16),
-                new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId }
+                new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.C_EXTENSION_ID }
             )
         );
         BeginRenderFrame(runtime, 0f);
@@ -519,16 +519,16 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     [Fact]
     public void RemovingAndRestoringPluginRenderingCommitsTheSameUnavailableStateAsColdStart()
     {
-        const string extensionId = "tests.runtime.reloadable-plugin";
+        const string C_EXTENSION_ID = "tests.runtime.reloadable-plugin";
         DotNetModuleSource plugin = CreateRenderingPluginRequest();
         AssemblyModuleHandle activeModule = m_modules.Load(plugin);
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var diagnostics = new TestDiagnosticSink();
         using var runtime = new RenderRuntime(m_types, device, diagnostics);
-        var asset = new RenderPipelineAsset { pipelineTypeId = extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = C_EXTENSION_ID };
         var featureAsset = new RenderPipelineAsset
         {
-            pipelineTypeId = SideEffectPipeline.extensionId,
+            pipelineTypeId = SideEffectPipeline.C_EXTENSION_ID,
             features = [new RenderFeatureConfiguration("tests.runtime.reloadable-plugin-feature")]
         };
 
@@ -608,7 +608,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                                    : null;
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         using IDisposable executionScope = runtime.EnterExecutionScope();
-        var asset = new RenderPipelineAsset { pipelineTypeId = StatisticsPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = StatisticsPipeline.C_EXTENSION_ID };
         runtime.Attach();
         Assert.True(runtime.TryActivateDefaultPipeline(asset));
         runtime.Submit(
@@ -653,7 +653,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         secondProxy.frameCounters = new RenderDeviceFrameCounters(7, 1);
         using var first = new RenderRuntime(m_types, firstDevice, new TestDiagnosticSink());
         using var second = new RenderRuntime(m_types, secondDevice, new TestDiagnosticSink());
-        var asset = new RenderPipelineAsset { pipelineTypeId = StatisticsPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = StatisticsPipeline.C_EXTENSION_ID };
 
         using (first.EnterExecutionScope())
         {
@@ -689,7 +689,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void RequestProviderProducesCurrentFrameWorkThroughPublicPluginApi()
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
-        var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.C_EXTENSION_ID };
         TestRequestProvider.pipeline = asset;
         TestRequestProvider.enabled = true;
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
@@ -711,12 +711,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void RequestProviderReceivesExplicitHostContentScope()
     {
         IRenderDevice device = TestDeviceProxy.Create(out _);
-        Guid contentId = Guid.Parse("3aee0ced-b598-4366-ab45-a6ef8e0feb30");
+        Guid contentID = Guid.Parse("3aee0ced-b598-4366-ab45-a6ef8e0feb30");
         var content = new TestContent();
         var identities = new IdentityAllocator();
-        identities.Register(content, contentId);
-        var scope = new ContentReadScope([content.identity], contentId);
-        Assert.True(scope.TryGetValue(contentId, out TestContent? resolved));
+        identities.Register(content, contentID);
+        var scope = new ContentReadScope([content.identity], contentID);
+        Assert.True(scope.TryGetValue(contentID, out TestContent? resolved));
         Assert.Same(content, resolved);
         TestRequestProvider.enabled = true;
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(), contentScopeProvider: () => scope);
@@ -728,7 +728,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.EndFrame(default);
 
         Assert.Same(scope, TestRequestProvider.lastContent);
-        Assert.Throws<ObjectDisposedException>(() => scope.TryGetValue(contentId, out TestContent? _));
+        Assert.Throws<ObjectDisposedException>(() => scope.TryGetValue(contentID, out TestContent? _));
         runtime.Detach();
     }
 
@@ -833,8 +833,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.SetPrimaryRoute(
             new RenderOutputRoute(
                 [
-                    new RenderOutputLayer(SecondTestRenderModel.extensionId, []),
-                    new RenderOutputLayer(FirstTestRenderModel.extensionId, [])
+                    new RenderOutputLayer(SecondTestRenderModel.C_EXTENSION_ID, []),
+                    new RenderOutputLayer(FirstTestRenderModel.C_EXTENSION_ID, [])
                 ]
             )
         );
@@ -896,8 +896,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.SetPrimaryRoute(
             new RenderOutputRoute(
                 [
-                    new RenderOutputLayer(FirstTestRenderModel.extensionId, []),
-                    new RenderOutputLayer(SecondTestRenderModel.extensionId, [])
+                    new RenderOutputLayer(FirstTestRenderModel.C_EXTENSION_ID, []),
+                    new RenderOutputLayer(SecondTestRenderModel.C_EXTENSION_ID, [])
                 ]
             )
         );
@@ -982,7 +982,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void MultipleRequestsAndContributorsCompileAndExecuteAsOneFrameGraph()
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
-        var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.C_EXTENSION_ID };
         var contributor = new SideEffectContributor();
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(), [contributor]);
         runtime.Submit(CreateRequest("Second", asset, priority: 10));
@@ -1010,7 +1010,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void OverlappingRequestsPreserveEarlierPresentationLayersInSchedulingOrder()
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
-        var asset = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         runtime.Submit(CreateRequest("Overlay", asset, priority: 100));
         runtime.Submit(CreateRequest("Base", asset, priority: 0));
@@ -1035,7 +1035,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void DisjointViewportsCanInitializeTheSamePresentationTargetIndependently()
     {
         IRenderDevice device = TestDeviceProxy.Create(out _);
-        var asset = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         runtime.Submit(new RenderRequest("Left", RenderTarget.backbuffer, new RenderViewport(0, 0, 32, 64), asset));
         runtime.Submit(new RenderRequest("Right", RenderTarget.backbuffer, new RenderViewport(32, 0, 32, 64), asset));
@@ -1059,8 +1059,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void FailedRequestDoesNotClaimThePresentationTarget()
     {
         IRenderDevice device = TestDeviceProxy.Create(out _);
-        var failed = new RenderPipelineAsset { pipelineTypeId = ThrowingPipeline.extensionId };
-        var valid = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.extensionId };
+        var failed = new RenderPipelineAsset { pipelineTypeId = ThrowingPipeline.C_EXTENSION_ID };
+        var valid = new RenderPipelineAsset { pipelineTypeId = PresentationPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         runtime.Submit(CreateRequest("Failed", failed, priority: 0));
         runtime.Submit(CreateRequest("Recovery", valid, priority: 100));
@@ -1140,7 +1140,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
-        var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.C_EXTENSION_ID };
         var target = new RenderTexture(
             "Detach Target",
             new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment)
@@ -1166,8 +1166,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var diagnostics = new TestDiagnosticSink();
-        var failed = new RenderPipelineAsset { pipelineTypeId = ThrowingPipeline.extensionId };
-        var valid = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.extensionId };
+        var failed = new RenderPipelineAsset { pipelineTypeId = ThrowingPipeline.C_EXTENSION_ID };
+        var valid = new RenderPipelineAsset { pipelineTypeId = SideEffectPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, diagnostics);
         runtime.Submit(CreateRequest("A Failed", failed));
         runtime.Submit(CreateRequest("B Valid", valid));
@@ -1192,7 +1192,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     public void FrameUploadsReusePagesAndResetSliceOffsetsBetweenFrames()
     {
         var device = new RecordingRenderDevice();
-        var asset = new RenderPipelineAsset { pipelineTypeId = UploadPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = UploadPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
 
         runtime.Submit(CreateRequest("Upload A", asset));
@@ -1227,7 +1227,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         var compiler = new DelayedTextureArtifactSource();
         var device = new RecordingRenderDevice();
-        var asset = new RenderPipelineAsset { pipelineTypeId = TexturePrewarmPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = TexturePrewarmPipeline.C_EXTENSION_ID };
         var artifacts = new DelayedArtifactProvider(compiler);
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink(), targetArtifacts: artifacts);
         runtime.Submit(CreateRequest("Prewarm", asset));
@@ -1278,7 +1278,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             diagnostics,
             targetArtifacts: new DelayedArtifactProvider(compiler)
         );
-        var asset = new RenderPipelineAsset { pipelineTypeId = PendingShaderPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = PendingShaderPipeline.C_EXTENSION_ID };
         runtime.Submit(CreateRequest("Pending Shader", asset));
 
         BeginRenderFrame(runtime, 0f);
@@ -1298,7 +1298,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
     {
         var device = new RecordingRenderDevice(supportsReadback: true);
         ReadbackPipeline.texture = device.textureHandle;
-        var asset = new RenderPipelineAsset { pipelineTypeId = ReadbackPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = ReadbackPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         runtime.Submit(CreateRequest("Readback", asset));
 
@@ -1333,8 +1333,8 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         var device = new RecordingRenderDevice(supportsReadback: true);
         ReadbackPipeline.texture = device.textureHandle;
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
-        runtime.Submit(CreateRequest("Upload", new RenderPipelineAsset { pipelineTypeId = UploadPipeline.extensionId }));
-        runtime.Submit(CreateRequest("Readback", new RenderPipelineAsset { pipelineTypeId = ReadbackPipeline.extensionId }));
+        runtime.Submit(CreateRequest("Upload", new RenderPipelineAsset { pipelineTypeId = UploadPipeline.C_EXTENSION_ID }));
+        runtime.Submit(CreateRequest("Readback", new RenderPipelineAsset { pipelineTypeId = ReadbackPipeline.C_EXTENSION_ID }));
         BeginRenderFrame(runtime, 0f);
         runtime.AfterRender(default);
         runtime.EndFrame(default);
@@ -1359,7 +1359,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         using var cancellation = new CancellationTokenSource();
         ReadbackPipeline.texture = device.textureHandle;
         ReadbackPipeline.cancellationToken = cancellation.Token;
-        var asset = new RenderPipelineAsset { pipelineTypeId = ReadbackPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = ReadbackPipeline.C_EXTENSION_ID };
         var runtime = new RenderRuntime(m_types, device, new TestDiagnosticSink());
         runtime.Submit(CreateRequest("Canceled Readback", asset));
 
@@ -1397,7 +1397,9 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
     private static void RunResourceFrame(RenderRuntime runtime)
     {
-        runtime.Submit(CreateRequest("Resource ownership", new RenderPipelineAsset { pipelineTypeId = ResourceProbePipeline.extensionId }));
+        runtime.Submit(
+            CreateRequest("Resource ownership", new RenderPipelineAsset { pipelineTypeId = ResourceProbePipeline.C_EXTENSION_ID })
+        );
         BeginRenderFrame(runtime, 0f);
         runtime.AfterRender(default);
         runtime.EndFrame(default);
@@ -1494,10 +1496,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.BeforeRender(frame);
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class ResourceProbePipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.resource-owner";
+        internal const string C_EXTENSION_ID = "tests.runtime.resource-owner";
         internal static Action<IRenderResourceService>? action;
 
         public override void Build(RenderPipelineContext context)
@@ -1512,10 +1514,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
     private sealed class TestContent : IdentityObject;
 
-    [RenderModelExtension(extensionId)]
+    [RenderModelExtension(C_EXTENSION_ID)]
     private sealed class FirstTestRenderModel : IRenderModel
     {
-        internal const string extensionId = "tests.runtime.model.first";
+        internal const string C_EXTENSION_ID = "tests.runtime.model.first";
         internal static bool enabled;
         internal static int buildCount;
 
@@ -1526,7 +1528,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             buildCount++;
             return new RenderModelOutput(
                 "First Model",
-                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId },
+                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.C_EXTENSION_ID },
                 new RenderFrameData()
             );
         }
@@ -1540,10 +1542,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderModelExtension(extensionId)]
+    [RenderModelExtension(C_EXTENSION_ID)]
     private sealed class SecondTestRenderModel : IRenderModel
     {
-        internal const string extensionId = "tests.runtime.model.second";
+        internal const string C_EXTENSION_ID = "tests.runtime.model.second";
         internal static bool enabled;
         internal static int buildCount;
 
@@ -1554,7 +1556,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             buildCount++;
             return new RenderModelOutput(
                 "Second Model",
-                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId },
+                new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.C_EXTENSION_ID },
                 new RenderFrameData()
             );
         }
@@ -1568,10 +1570,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class DisposablePipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.disposable";
+        internal const string C_EXTENSION_ID = "tests.runtime.disposable";
 
         public DisposablePipeline()
         {
@@ -1625,10 +1627,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderFeatureExtension(extensionId)]
+    [RenderFeatureExtension(C_EXTENSION_ID)]
     private sealed class PendingFeature : RenderPipelineFeature, IDisposable
     {
-        internal const string extensionId = "tests.runtime.pending-feature";
+        internal const string C_EXTENSION_ID = "tests.runtime.pending-feature";
 
         public override void AddRenderPasses(RenderFeatureContext context) {}
 
@@ -1653,10 +1655,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class StatisticsPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.statistics";
+        internal const string C_EXTENSION_ID = "tests.runtime.statistics";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1683,10 +1685,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class CompositionLayerPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.composition-layer";
+        internal const string C_EXTENSION_ID = "tests.runtime.composition-layer";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1719,10 +1721,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal static List<RenderViewport> viewports { get; } = [];
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class SideEffectPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.side-effect";
+        internal const string C_EXTENSION_ID = "tests.runtime.side-effect";
 
         public override void Build(RenderPipelineContext context)
             => context.graph
@@ -1738,10 +1740,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 .HasSideEffect();
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class PresentationPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.presentation";
+        internal const string C_EXTENSION_ID = "tests.runtime.presentation";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1764,10 +1766,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal static void Reset() => observations.Clear();
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class ThrowingPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.throwing";
+        internal const string C_EXTENSION_ID = "tests.runtime.throwing";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1791,10 +1793,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         bool preserveTarget
     );
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class UploadPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.upload";
+        internal const string C_EXTENSION_ID = "tests.runtime.upload";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1823,10 +1825,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class TexturePrewarmPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.texture-prewarm";
+        internal const string C_EXTENSION_ID = "tests.runtime.texture-prewarm";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1849,10 +1851,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal static TextureAsset? texture { get; set; }
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class PendingShaderPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.pending-shader";
+        internal const string C_EXTENSION_ID = "tests.runtime.pending-shader";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1891,10 +1893,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderPipelineExtension(extensionId)]
+    [RenderPipelineExtension(C_EXTENSION_ID)]
     private sealed class ReadbackPipeline : RenderPipeline
     {
-        internal const string extensionId = "tests.runtime.readback";
+        internal const string C_EXTENSION_ID = "tests.runtime.readback";
 
         public override void Build(RenderPipelineContext context)
         {
@@ -1928,10 +1930,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         }
     }
 
-    [RenderRequestProviderExtension(extensionId)]
+    [RenderRequestProviderExtension(C_EXTENSION_ID)]
     private sealed class TestRequestProvider : RenderRequestProvider
     {
-        internal const string extensionId = "tests.runtime.request-provider";
+        internal const string C_EXTENSION_ID = "tests.runtime.request-provider";
 
         public override void Submit(RenderRequestProviderContext context)
         {
@@ -2029,7 +2031,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
     private sealed class TestDeviceProxy : RenderDevice, IRenderDevice
     {
-        private static readonly GraphicsCapabilities S_CAPABILITIES = new(
+        private static readonly GraphicsCapabilities CAPABILITIES = new(
             GraphicsApi.Noop,
             GraphicsCapability.None,
             new GraphicsLimits(64, 4, 4096, 8),
@@ -2046,7 +2048,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         public RenderDeviceFrameCounters frameCounters { get; internal set; }
         public RenderDeviceAllocationCounters? allocationCounters { get; internal set; }
 
-        public GraphicsCapabilities capabilities { get; internal set; } = S_CAPABILITIES;
+        public GraphicsCapabilities capabilities { get; internal set; } = CAPABILITIES;
         public uint generation => 1;
         public RenderPresentationSize? presentationSize { get; set; } = new(1, 1);
 

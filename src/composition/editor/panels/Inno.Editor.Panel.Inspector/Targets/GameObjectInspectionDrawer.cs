@@ -193,7 +193,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             IReadOnlyList<SerializedProperty> properties = missing is null
                                                            ? m_serialization.GetProperties(component)
                                                            : Array.Empty<SerializedProperty>();
-            string componentId = component.identity.persistentId.ToString("N");
+            string componentID = component.identity.persistentId.ToString("N");
             GameBehavior? behavior = component as GameBehavior;
             GameComponent editorTarget = component;
             string title = missing?.missingTypeName ?? componentType.Name;
@@ -202,14 +202,14 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             Vector2 cardMinimum = default;
             Vector2 headerMaximum = default;
             bool open = EditorUI.current.widgets.CollapsingCard(
-                componentId,
+                componentID,
                 title,
                 behavior is not null
                 ? () =>
                 {
                     bool enabled = behavior.enabled;
                     if (EditorUI.current.widgets.CompactCheckbox(
-                        $"enabled_{componentId}",
+                        $"enabled_{componentID}",
                         ref enabled,
                         tooltip: "Enable or disable this component."
                     )) {
@@ -238,7 +238,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
                     cardMinimum = Ui.GetItemMinimum();
                     headerMaximum = Ui.GetItemMaximum();
                     _ = EditorUI.current.menus.ContextMenu(
-                        $"##component_menu_{componentId}",
+                        $"##component_menu_{componentID}",
                         context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, editorTarget)
                     );
                     m_cardControls.DrawComponentDragSource(component, title, dimmed);
@@ -248,7 +248,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
             if (open)
             {
                 Ui.Unindent();
-                EditorUI.current.widgets.CardBody(componentId, () => EditorUI.current.widgets.SectionLayout(() =>
+                EditorUI.current.widgets.CardBody(componentID, () => EditorUI.current.widgets.SectionLayout(() =>
                 {
                     if (missing is not null)
                     {
@@ -275,7 +275,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
                         context.properties.Draw(
                             context.editorContext,
                             component,
-                            $"gameObject.{gameObject.identity.persistentId:N}.{componentId}",
+                            $"gameObject.{gameObject.identity.persistentId:N}.{componentID}",
                             properties[propertyIndex]
                         );
                     }

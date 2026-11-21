@@ -77,7 +77,7 @@ public sealed partial class AssetLoader
     ) {
         AssetArtifactInfo? result = Execute(() =>
         {
-            if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record))
+            if (!m_recordsByID.TryGetValue(persistentId, out AssetRecord? record))
             {
                 return null;
             }

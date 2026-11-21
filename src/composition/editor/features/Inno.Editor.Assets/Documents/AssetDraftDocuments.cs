@@ -27,7 +27,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
     private readonly AssetSourceStore m_sources;
     private readonly AssetPipeline m_assets;
     private readonly EditorInteractions m_interactions;
-    private readonly string m_providerId;
+    private readonly string m_providerID;
     private readonly string m_historyKind;
     private readonly string m_extension;
     private readonly string m_label;
@@ -85,7 +85,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         m_interactions = interactions;
         m_serialization = serialization;
         m_sources = m_assets.CreateSourceStore();
-        m_providerId = providerId;
+        m_providerID = providerId;
         m_historyKind = historyKind;
         m_extension = extension;
         m_label = label;
@@ -554,7 +554,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
     }
 
     private string RecoveryPath(Guid id)
-        => Path.Combine(m_assets.libraryRoot, "Editor", "AssetDrafts", m_providerId, id.ToString("N") + ".inno");
+        => Path.Combine(m_assets.libraryRoot, "Editor", "AssetDrafts", m_providerID, id.ToString("N") + ".inno");
 
     private void DeleteRecovery(Guid id)
     {
@@ -574,7 +574,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         /// <summary>
         /// Gets the stable identity used to reference this value across subsystem boundaries.
         /// </summary>
-        public override string id => owner.m_providerId;
+        public override string id => owner.m_providerID;
 
         /// <summary>
         /// Checks whether this document handler supports the selected asset.
@@ -641,7 +641,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
 
         internal Draft(
             Guid id,
-            Guid documentId,
+            Guid documentID,
             AssetPath path,
             byte[] bytes,
             byte[] baseline,
@@ -649,7 +649,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             bool readOnly
         ) {
             this.id = id;
-            this.documentId = documentId;
+            this.documentId = documentID;
             this.path = path;
             this.bytes = bytes;
             this.baseline = baseline;

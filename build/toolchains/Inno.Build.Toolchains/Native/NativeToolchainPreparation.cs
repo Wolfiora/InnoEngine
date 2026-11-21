@@ -11,7 +11,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public static class NativeToolchainPreparation
 {
-    private static readonly string[] AmbientCompilerVariables =
+    private static readonly string[] AMBIENT_COMPILER_VARIABLES =
     [
         "CL", "_CL_", "LINK", "_LINK_", "CFLAGS", "CXXFLAGS", "CPPFLAGS", "LDFLAGS",
         "CPATH", "C_INCLUDE_PATH", "CPLUS_INCLUDE_PATH", "LIBRARY_PATH",
@@ -25,7 +25,7 @@ public static class NativeToolchainPreparation
     /// A caller-owned dictionary to populate with explicitly selected SDK variables.
     /// </returns>
     public static Dictionary<string, string> CreateEnvironment()
-        => AmbientCompilerVariables.ToDictionary(
+        => AMBIENT_COMPILER_VARIABLES.ToDictionary(
             static variable => variable,
             static _ => string.Empty,
             StringComparer.OrdinalIgnoreCase

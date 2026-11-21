@@ -212,9 +212,9 @@ internal sealed partial class FileBrowserPanel
                 BreadcrumbPart part = parts[i];
                 if (i > 0)
                 {
-                    Ui.SameLine(0f, CurrentBrowserStyle.breadcrumbSpacing);
+                    Ui.SameLine(0f, currentBrowserStyle.breadcrumbSpacing);
                     EditorUI.current.widgets.CenteredText(">", new Vector2(Ui.MeasureText(">").X, itemHeight));
-                    Ui.SameLine(0f, CurrentBrowserStyle.breadcrumbSpacing);
+                    Ui.SameLine(0f, currentBrowserStyle.breadcrumbSpacing);
                 }
 
                 Vector2 itemSize = EditorUI.current.widgets.GetClickableTextSize(part.label, framePadding);
@@ -246,7 +246,7 @@ internal sealed partial class FileBrowserPanel
         EditorUiLayout style = Ui.GetLayout();
         float itemHeight = EditorUI.current.widgets.GetClickableTextSize("A", EditorUI.current.widgets.style.breadcrumbFramePadding).Y;
         float contentHeight = MathF.Max(
-            CurrentBrowserStyle.breadcrumbHeight,
+            currentBrowserStyle.breadcrumbHeight,
             MathF.Ceiling(itemHeight + style.itemSpacing.Y * 2f + EditorUI.current.widgets.style.borderSize)
         );
         float contentWidth = CalculateBreadcrumbContentWidth(parts, EditorUI.current.widgets.style.breadcrumbFramePadding);
@@ -267,7 +267,7 @@ internal sealed partial class FileBrowserPanel
         {
             if (i > 0)
             {
-                width += separatorWidth + CurrentBrowserStyle.breadcrumbSpacing * 2f;
+                width += separatorWidth + currentBrowserStyle.breadcrumbSpacing * 2f;
             }
             width += Ui.MeasureText(parts[i].label).X + framePadding.X * 2f;
         }

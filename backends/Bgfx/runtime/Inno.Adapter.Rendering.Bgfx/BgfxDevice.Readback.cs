@@ -65,7 +65,7 @@ public sealed unsafe partial class BgfxDevice
             NativeMemory.Free(data);
             throw;
         }
-        ulong id = m_nextReadbackId++;
+        ulong id = m_nextReadbackID++;
         m_textureReadbacks.Add(
             id,
             new PendingTextureReadback(

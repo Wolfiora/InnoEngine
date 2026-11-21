@@ -154,10 +154,10 @@ public sealed class ShaderResourceIrTests
             [],
             8
         );
-        ShaderStageToolResult result = await Compile(stage);
+        ShaderStageToolResult result = await CompileAsync(stage);
         Success(result);
         Assert.Equal(2, result.bindings.Count);
-        Assert.False((await Compile(stage, GraphicsCapability.Compute)).succeeded);
+        Assert.False((await CompileAsync(stage, GraphicsCapability.Compute)).succeeded);
     }
 
     [MetalShaderFact]
@@ -188,8 +188,8 @@ public sealed class ShaderResourceIrTests
                 [new("image", type, ShaderIrInputKind.Storage)],
                 []
             );
-            Success(await Compile(stage));
-            Assert.False((await Compile(stage, GraphicsCapability.Compute | GraphicsCapability.StorageBuffer)).succeeded);
+            Success(await CompileAsync(stage));
+            Assert.False((await CompileAsync(stage, GraphicsCapability.Compute | GraphicsCapability.StorageBuffer)).succeeded);
         }
     }
 
@@ -210,7 +210,7 @@ public sealed class ShaderResourceIrTests
             ShaderIrValue color = builder.Binary(ShaderIrOperation.Add, sampled, level);
             builder.Discard(builder.Binary(ShaderIrOperation.LessThan, builder.Extract(sampled, 3), builder.Constant(0.01f)));
             Success(
-                await Compile(
+                await CompileAsync(
                     new(
                         ShaderStage.Fragment,
                         builder.Build(new Dictionary<string, ShaderIrValue> { ["color"] = color }),
@@ -230,7 +230,7 @@ public sealed class ShaderResourceIrTests
     private static ShaderSourceType Image()
         => ShaderSourceType.Storage(ShaderStorageType.Image(RenderTextureFormat.RGBA8, RenderStorageAccess.ReadWrite));
 
-    private static async Task<ShaderStageToolResult> Compile(
+    private static async Task<ShaderStageToolResult> CompileAsync(
         ShaderIrStage stage,
         GraphicsCapability features = GraphicsCapability.Compute
                                       | GraphicsCapability.StorageBuffer

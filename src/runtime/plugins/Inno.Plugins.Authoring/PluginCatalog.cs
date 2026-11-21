@@ -13,9 +13,9 @@ namespace Inno.Plugins.Authoring;
 internal sealed class PluginCatalog
 {
     private readonly object m_sync = new();
-    private Snapshot s_current = Snapshot.empty;
-    private PluginScanResult s_discovery = new([], []);
-    private long s_revision;
+    private Snapshot m_current = Snapshot.empty;
+    private PluginScanResult m_discovery = new([], []);
+    private long m_revision;
 
     /// <summary>
     /// Gets dependency-ordered active Plugins.
@@ -26,7 +26,7 @@ internal sealed class PluginCatalog
         {
             lock (m_sync)
             {
-                return s_current.ordered;
+                return m_current.ordered;
             }
         }
     }
@@ -40,7 +40,7 @@ internal sealed class PluginCatalog
         {
             lock (m_sync)
             {
-                return s_revision;
+                return m_revision;
             }
         }
     }
@@ -54,7 +54,7 @@ internal sealed class PluginCatalog
         {
             lock (m_sync)
             {
-                return s_discovery;
+                return m_discovery;
             }
         }
     }
@@ -62,7 +62,7 @@ internal sealed class PluginCatalog
     /// <summary>
     /// Occurs after installed discovery or active Plugin state changes.
     /// </summary>
-    public event Action? Changed;
+    public event Action? changed;
 
     /// <summary>
     /// Tries to resolve the active Plugin that owns an asset source.
@@ -82,7 +82,7 @@ internal sealed class PluginCatalog
     ) {
         lock (m_sync)
         {
-            return s_current.bySource.TryGetValue(source, out plugin);
+            return m_current.bySource.TryGetValue(source, out plugin);
         }
     }
 
@@ -100,15 +100,15 @@ internal sealed class PluginCatalog
             static candidate => candidate.sourceMount.id,
             static candidate => candidate
         );
-        Action? changed;
+        Action? handlers;
         lock (m_sync)
         {
-            s_discovery = result;
-            s_current = new Snapshot(Array.AsReadOnly(ordered), bySource);
-            s_revision++;
-            changed = Changed;
+            m_discovery = result;
+            m_current = new Snapshot(Array.AsReadOnly(ordered), bySource);
+            m_revision++;
+            handlers = changed;
         }
-        InvokeObservers(changed);
+        InvokeObservers(handlers);
     }
 
     /// <summary>
@@ -120,13 +120,13 @@ internal sealed class PluginCatalog
     public void PublishDiscovery(PluginScanResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        Action? changed;
+        Action? handlers;
         lock (m_sync)
         {
-            s_discovery = result;
-            changed = Changed;
+            m_discovery = result;
+            handlers = changed;
         }
-        InvokeObservers(changed);
+        InvokeObservers(handlers);
     }
 
     /// <summary>
@@ -136,10 +136,10 @@ internal sealed class PluginCatalog
     {
         lock (m_sync)
         {
-            s_current = Snapshot.empty;
-            s_discovery = new PluginScanResult([], []);
-            s_revision++;
-            Changed = null;
+            m_current = Snapshot.empty;
+            m_discovery = new PluginScanResult([], []);
+            m_revision++;
+            changed = null;
         }
     }
 

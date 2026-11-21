@@ -13,7 +13,7 @@ namespace Inno.Core.Logging;
 /// </summary>
 public sealed class LogRouter : IDisposable
 {
-    private static readonly ExecutionSlot<LogRouter> S_CURRENT_SCOPE = new("router");
+    private static readonly ExecutionSlot<LogRouter> CURRENT_SCOPE = new("router");
 
     private readonly List<ILogSink> m_sinks = [];
     private readonly Lock m_sinksLock = new();
@@ -28,7 +28,7 @@ public sealed class LogRouter : IDisposable
     private volatile bool m_running = true;
     private volatile LogLevel m_minimumLevel = LogLevel.Debug;
     private volatile bool m_disposed;
-    private int m_deliveryThreadId;
+    private int m_deliveryThreadID;
     private ILogSink[] m_sinkSnapshot = [];
 
     /// <summary>
@@ -92,7 +92,7 @@ public sealed class LogRouter : IDisposable
     public IDisposable EnterScope()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        return S_CURRENT_SCOPE.Enter(this);
+        return CURRENT_SCOPE.Enter(this);
     }
 
     /// <summary>
@@ -293,7 +293,7 @@ public sealed class LogRouter : IDisposable
         }
     }
 
-    internal static LogRouter current => S_CURRENT_SCOPE.current;
+    internal static LogRouter current => CURRENT_SCOPE.current;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsEnabled(LogLevel level) => level >= m_minimumLevel;
@@ -349,7 +349,7 @@ public sealed class LogRouter : IDisposable
 
     private void ProcessQueue()
     {
-        Volatile.Write(ref m_deliveryThreadId, Environment.CurrentManagedThreadId);
+        Volatile.Write(ref m_deliveryThreadID, Environment.CurrentManagedThreadId);
         try
         {
             while (true)
@@ -364,7 +364,7 @@ public sealed class LogRouter : IDisposable
         }
         finally
         {
-            Volatile.Write(ref m_deliveryThreadId, 0);
+            Volatile.Write(ref m_deliveryThreadID, 0);
         }
     }
 
@@ -372,11 +372,11 @@ public sealed class LogRouter : IDisposable
     {
         lock (m_inlineDeliverySync)
         {
-            if (m_deliveryThreadId != 0)
+            if (m_deliveryThreadID != 0)
             {
                 return;
             }
-            Volatile.Write(ref m_deliveryThreadId, Environment.CurrentManagedThreadId);
+            Volatile.Write(ref m_deliveryThreadID, Environment.CurrentManagedThreadId);
             try
             {
                 while (!m_queue.IsEmpty)
@@ -386,14 +386,14 @@ public sealed class LogRouter : IDisposable
             }
             finally
             {
-                Volatile.Write(ref m_deliveryThreadId, 0);
+                Volatile.Write(ref m_deliveryThreadID, 0);
             }
         }
     }
 
     private void EnsureOutsideDelivery(string operation)
     {
-        if (Volatile.Read(ref m_deliveryThreadId) == Environment.CurrentManagedThreadId)
+        if (Volatile.Read(ref m_deliveryThreadID) == Environment.CurrentManagedThreadId)
         {
             throw new InvalidOperationException($"A log delivery callback cannot {operation} its own router.");
         }

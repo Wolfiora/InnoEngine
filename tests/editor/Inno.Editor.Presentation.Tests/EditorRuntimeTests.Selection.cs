@@ -21,10 +21,10 @@ public sealed partial class EditorRuntimeTests
         Assert.True(m_identities.Register(last));
         m_runtime.interactions.SetSelection(first);
         EditorSelectionSnapshot original = m_runtime.interactions.selection.Capture();
-        RuntimeIdentity firstId = first.identity.runtimeIdentity!.Value;
-        var missing = new RuntimeIdentity(firstId.domainId, int.MaxValue);
+        RuntimeIdentity firstID = first.identity.runtimeIdentity!.Value;
+        var missing = new RuntimeIdentity(firstID.domainId, int.MaxValue);
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SelectRange(
-            [firstId, missing, last.identity.runtimeIdentity!.Value],
+            [firstID, missing, last.identity.runtimeIdentity!.Value],
             last
         ));
         Assert.Same(original, m_runtime.interactions.selection.Capture());

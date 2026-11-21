@@ -56,7 +56,7 @@ public sealed class ValidationTestOwnershipTests
             Assert.False(plan.RootElement.GetProperty("contexts").TryGetProperty("native", out _));
         }
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
-        JsonElement originalUi;
+        JsonElement originalUI;
         using (JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json"))))
         {
             JsonElement[] checks = results.RootElement.GetProperty("results").EnumerateArray().ToArray();
@@ -67,8 +67,8 @@ public sealed class ValidationTestOwnershipTests
             Assert.Equal("Failed", input.GetProperty("status").GetString());
             Assert.Contains("SharedFailure", input.GetProperty("detail").GetString());
             Assert.Contains("IsolatedFailure", input.GetProperty("detail").GetString());
-            originalUi = checks.Single(check => check.GetProperty("id").GetString() == "test:" + C_UI).Clone();
-            Assert.Equal("Passed", originalUi.GetProperty("status").GetString());
+            originalUI = checks.Single(check => check.GetProperty("id").GetString() == "test:" + C_UI).Clone();
+            Assert.Equal("Passed", originalUI.GetProperty("status").GetString());
         }
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/run/results.json")));
 
@@ -83,7 +83,7 @@ public sealed class ValidationTestOwnershipTests
         string expected = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI")) ? "Reused" : "Passed";
         Assert.True(
             ui.GetProperty("status").GetString() == expected,
-            "Expected " + expected + "; original owner evidence: " + originalUi.GetRawText() + "; repaired: " + ui.GetRawText()
+            "Expected " + expected + "; original owner evidence: " + originalUI.GetRawText() + "; repaired: " + ui.GetRawText()
         );
 
         const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";

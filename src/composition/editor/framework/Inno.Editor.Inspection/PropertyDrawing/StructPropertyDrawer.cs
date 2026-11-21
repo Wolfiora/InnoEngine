@@ -14,7 +14,7 @@ namespace Inno.Editor.Inspection;
 [PropertyDrawer(typeof(ValueType), useForChildren: true, priority: -100)]
 internal sealed class StructPropertyDrawer : IPropertyDrawer
 {
-    private static readonly ConditionalWeakTable<Type, MembersBox> S_MEMBER_CACHE = new();
+    private static readonly ConditionalWeakTable<Type, MembersBox> MEMBER_CACHE = new();
 
     /// <summary>
     /// Renders the value presentation for the current editor frame.
@@ -64,7 +64,7 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
     }
 
     private static MemberInfo[] GetMembers(Type type)
-        => S_MEMBER_CACHE.GetValue(
+        => MEMBER_CACHE.GetValue(
             type,
             static value => new MembersBox(
                 value

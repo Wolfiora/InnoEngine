@@ -89,8 +89,8 @@ public sealed partial class SceneEdits : EditorModule
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
-        Guid? activeBefore = GetActiveSceneId();
-        Guid? selectedBefore = GetSelectionId();
+        Guid? activeBefore = GetActiveSceneID();
+        Guid? selectedBefore = GetSelectionID();
         GameScene scene = m_workspace.CreateScene();
         RecordWithRollback(
             () =>
@@ -103,7 +103,7 @@ public sealed partial class SceneEdits : EditorModule
                     existsAfter: true,
                     snapshot,
                     activeBefore,
-                    GetActiveSceneId(),
+                    GetActiveSceneID(),
                     selectedBefore,
                     scene.identity.persistentId
                 );
@@ -140,8 +140,8 @@ public sealed partial class SceneEdits : EditorModule
         ArgumentException.ThrowIfNullOrWhiteSpace(historyName);
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         EditorSceneWorkspace.SceneDocumentSnapshot snapshot = m_workspace.CaptureDocumentSnapshot(scene);
-        Guid? activeBefore = GetActiveSceneId();
-        Guid? selectedBefore = GetSelectionId();
+        Guid? activeBefore = GetActiveSceneID();
+        Guid? selectedBefore = GetSelectionID();
         if (!m_workspace.CloseScene(scene))
         {
             return false;
@@ -153,9 +153,9 @@ public sealed partial class SceneEdits : EditorModule
                 existsAfter: false,
                 snapshot,
                 activeBefore,
-                GetActiveSceneId(),
+                GetActiveSceneID(),
                 selectedBefore,
-                GetSelectionId()
+                GetSelectionID()
             ),
             () =>
             {

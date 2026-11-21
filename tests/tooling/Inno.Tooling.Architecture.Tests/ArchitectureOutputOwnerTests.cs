@@ -49,13 +49,13 @@ public sealed class ArchitectureOutputOwnerTests
                 """);
             string source = Path.Combine(editor, "Probe.cs");
             File.WriteAllText(source, "namespace Inno.Editor.Probe; public sealed class Probe { }");
-            await Build([]);
+            await BuildAsync([]);
             File.WriteAllText(
                 source,
                 "namespace Inno.Editor.Probe; public sealed class Probe { public Inno.Core.Contract.Contract value { get; } = new(); }"
             );
             string artifacts = Path.Combine(root, "owned-output");
-            await Build(["-p:ArtifactsPath=" + artifacts]);
+            await BuildAsync(["-p:ArtifactsPath=" + artifacts]);
             string graph = Path.Combine(root, "graph.json");
 
             string correct = ArchitectureCommandFixture.Run(
@@ -167,7 +167,7 @@ public sealed class ArchitectureOutputOwnerTests
             ).output;
             Assert.Contains("public/protected API exposes Inno.Core.Contract", rejected, StringComparison.Ordinal);
 
-            async Task Build(string[] properties)
+            async Task BuildAsync(string[] properties)
                 => await ToolchainEnvironment.RunAsync(
                     host,
                     ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet", .. properties],

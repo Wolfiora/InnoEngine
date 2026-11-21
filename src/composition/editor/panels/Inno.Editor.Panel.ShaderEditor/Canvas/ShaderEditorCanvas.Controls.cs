@@ -165,7 +165,7 @@ internal sealed partial class ShaderEditorCanvas
                     .Where(static entry => entry.extension == ".ishader")
                     .OrderBy(static entry => entry.assetPath.ToString(), StringComparer.Ordinal)
                 ) {
-                    Guid id = owner.AssetId(entry);
+                    Guid id = owner.AssetID(entry);
                     if (id == draft.id)
                     {
                         continue;
@@ -246,7 +246,7 @@ internal sealed partial class ShaderEditorCanvas
 
     private void GraphInterfaceMetadata()
     {
-        ShaderGraphNodeSettings settings = ShaderGraphNodes.ReadSettings(Controller.document, owner.serialization, owner.context);
+        ShaderGraphNodeSettings settings = ShaderGraphNodes.ReadSettings(controller.document, owner.serialization, owner.context);
         string displayName = settings.displayName;
         InspectorRow("node-interface.name", "Node Name", () =>
         {
@@ -348,9 +348,9 @@ internal sealed partial class ShaderEditorCanvas
         ShaderGraphNodeSettings settings,
         bool continuous = false
     ) {
-        GraphDocument candidate = Controller.document.Clone();
+        GraphDocument candidate = controller.document.Clone();
         ShaderGraphNodes.WriteSettings(candidate, settings, owner.serialization, owner.context);
-        Controller.ReplaceDocument(candidate, "Edit Graph Node Interface", continuous ? draft.valueGesture : null);
+        controller.ReplaceDocument(candidate, "Edit Graph Node Interface", continuous ? draft.valueGesture : null);
         owner.Changed(draft);
     }
 
@@ -610,10 +610,10 @@ internal sealed partial class ShaderEditorCanvas
                     .GetFileSystemEntries(includeDirectories: false)
                     .Where(static entry => entry.assetPath.localPath.EndsWith(".ishadersource", StringComparison.OrdinalIgnoreCase))
                 ) {
-                    if (EditorImGui.Selectable(entry.assetPath.ToString(), owner.AssetId(entry) == selected))
+                    if (EditorImGui.Selectable(entry.assetPath.ToString(), owner.AssetID(entry) == selected))
                     {
                         using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Assign Shader Function");
-                        Set(node, "sourceId", owner.AssetId(entry));
+                        Set(node, "sourceId", owner.AssetID(entry));
                         Set(node, "sourcePath", entry.assetPath.ToString());
                         if (owner.assets.TryLoad(entry.assetPath, out ShaderFunctionAsset? library) && library is not null)
                         {
@@ -725,8 +725,8 @@ internal sealed partial class ShaderEditorCanvas
                         }
                         if (kind == ShaderIrInputKind.Builtin)
                         {
-                            string stageId = Read(node, "stage", string.Empty);
-                            GraphNodeRecord? output = stageId.Length == 0 ? null : Controller.document.FindNode(new(stageId));
+                            string stageID = Read(node, "stage", string.Empty);
+                            GraphNodeRecord? output = stageID.Length == 0 ? null : controller.document.FindNode(new(stageID));
                             if (output is not null && Read(output, "settings", new ShaderGraphStageSettings()).stage == ShaderStage.Compute)
                             {
                                 input.semantic = "global-invocation-id";
@@ -860,11 +860,11 @@ internal sealed partial class ShaderEditorCanvas
             });
             if (expanded)
             {
-                ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
+                ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(controller.document, owner.serialization, owner.context);
                 TextureAsset? texture = definition.properties.FirstOrDefault(value => value.id.value == input.id).defaultValue.texture;
                 if (texture is not null && owner.previews.TryGetTexture(texture, out EditorPreviewHandle preview))
                 {
-                    owner.previews.Draw(preview, new(120 * Canvas.zoom, 120 * Canvas.zoom));
+                    owner.previews.Draw(preview, new(120 * canvas.zoom, 120 * canvas.zoom));
                 }
                 else
                 {
@@ -888,7 +888,7 @@ internal sealed partial class ShaderEditorCanvas
                 string.Join(
                     ", ",
                     ShaderGraphPrograms
-                        .Read(Controller.document, owner.serialization, owner.context)
+                        .Read(controller.document, owner.serialization, owner.context)
                         .Where(program => program.stages.Contains(node.id.value, StringComparer.Ordinal))
                         .Select(static program => program.pass)
                 )

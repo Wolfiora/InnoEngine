@@ -37,7 +37,7 @@ public sealed class IdeProjectIsolationTests
                 </Project>
                 """);
         }
-        DotNetSdkDescriptor sdk = await ResolveSdk(Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
+        DotNetSdkDescriptor sdk = await ResolveSdkAsync(Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
         await ToolchainEnvironment.RunAsync(
             sdk.hostPath,
             [sdk.cliPath, "build", "InnoProject.sln", "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
@@ -76,7 +76,7 @@ public sealed class IdeProjectIsolationTests
               <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
             </Project>
             """);
-        DotNetSdkDescriptor sdk = await ResolveSdk(project);
+        DotNetSdkDescriptor sdk = await ResolveSdkAsync(project);
         await ToolchainEnvironment.RunAsync(
             sdk.hostPath,
             [sdk.cliPath, "new", "sln", "--format", "sln", "--name", "Nested"],
@@ -101,7 +101,7 @@ public sealed class IdeProjectIsolationTests
         Assert.True(File.Exists(Path.Combine(owner.directory, "obj", "project.assets.json")));
     }
 
-    private static ValueTask<DotNetSdkDescriptor> ResolveSdk(string project)
+    private static ValueTask<DotNetSdkDescriptor> ResolveSdkAsync(string project)
     {
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         return DotNetSdkResolver.ResolveAsync(host, project);

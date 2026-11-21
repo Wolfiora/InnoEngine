@@ -51,8 +51,8 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-    internal IEnumerable<TEntry> Values => m_entries.Values;
-    internal int Count => m_entries.Count;
+    internal IEnumerable<TEntry> values => m_entries.Values;
+    internal int count => m_entries.Count;
     internal int pendingCount => m_retiring.Count;
     internal int peakCount => m_peak;
     internal long rejectedCount => m_rejected;

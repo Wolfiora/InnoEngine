@@ -22,8 +22,8 @@ public sealed partial class RenderGraphBuilder
     private RenderGraphValidationState? m_validation;
     private long m_revision;
     private long m_validatedRevision = -1;
-    private long m_nextNameScopeId;
-    private ulong m_nextResourceId;
+    private long m_nextNameScopeID;
+    private ulong m_nextResourceID;
     private int m_frozenPassCount;
     private bool m_compiled;
 
@@ -68,8 +68,8 @@ public sealed partial class RenderGraphBuilder
     ) {
         EnsureMutating();
         ValidateNameAndValue(name, descriptor);
-        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceId));
-        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, false, default, handle.allocationId));
+        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceID));
+        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, false, default, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -101,8 +101,8 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException("Persistent texture handle is invalid.", nameof(texture));
         }
 
-        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceId));
-        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, true, texture, handle.allocationId));
+        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceID));
+        m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, true, texture, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -125,8 +125,8 @@ public sealed partial class RenderGraphBuilder
     ) {
         EnsureMutating();
         ValidateNameAndValue(name, descriptor);
-        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceId));
-        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, false, default, handle.allocationId));
+        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceID));
+        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, false, default, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -158,8 +158,8 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException("Persistent buffer handle is invalid.", nameof(buffer));
         }
 
-        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceId));
-        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, true, buffer, handle.allocationId));
+        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceID));
+        m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, true, buffer, handle.allocationID));
         InvalidateValidation();
         return handle;
     }
@@ -224,7 +224,7 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureMutating();
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        long id = checked(++m_nextNameScopeId);
+        long id = checked(++m_nextNameScopeID);
         m_nameScopes.Add((id, name.Trim()));
         return new RenderGraphNameScope(this, id);
     }
@@ -441,7 +441,7 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureMutating();
         if (handle.generation != m_generation || handle.index < 0 || handle.index >= m_textures.Count
-            || handle.allocationId != m_textures[handle.index].allocationId
+            || handle.allocationID != m_textures[handle.index].allocationID
         ) {
             throw new ArgumentException("Texture handle does not belong to this render graph generation.", nameof(handle));
         }
@@ -451,7 +451,7 @@ public sealed partial class RenderGraphBuilder
     {
         EnsureMutating();
         if (handle.generation != m_generation || handle.index < 0 || handle.index >= m_buffers.Count
-            || handle.allocationId != m_buffers[handle.index].allocationId
+            || handle.allocationID != m_buffers[handle.index].allocationID
         ) {
             throw new ArgumentException("Buffer handle does not belong to this render graph generation.", nameof(handle));
         }

@@ -191,10 +191,10 @@ public sealed class GraphDocumentControllerTests : IDisposable
         var document = new GraphDocument();
         GraphDocumentController controller = module.OpenDocument(Guid.NewGuid(), document, history);
 
-        GraphNodeId nodeId = controller.AddNode("test.node", new GraphPosition(2f, 3f));
+        GraphNodeId nodeID = controller.AddNode("test.node", new GraphPosition(2f, 3f));
         EditorHistoryChange change = Assert.Single(history.changes);
 
-        Assert.Equal(nodeId, Assert.Single(document.nodes).id);
+        Assert.Equal(nodeID, Assert.Single(document.nodes).id);
         Assert.True(change.payload.length > 0);
         change.Dispose();
     }

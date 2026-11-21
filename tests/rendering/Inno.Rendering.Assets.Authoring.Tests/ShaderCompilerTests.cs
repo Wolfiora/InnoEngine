@@ -64,7 +64,7 @@ public sealed class ShaderCompilerTests : IDisposable
     public async Task CompileAsyncUsesGraphLoweringAndTypedStages()
     {
         var toolchain = new FakeToolchain();
-        ShaderCompilationResult result = await Compile(new(toolchain), Template());
+        ShaderCompilationResult result = await CompileAsync(new(toolchain), Template());
         Assert.True(result.succeeded, Diagnostics(result));
         Assert.Equal(2, toolchain.requests.Count);
         Assert.Equal("color", Assert.Single(result.artifact!.shaderInterface.bindings).id.value);
@@ -73,7 +73,7 @@ public sealed class ShaderCompilerTests : IDisposable
     [Fact]
     public async Task AdapterFailureRetainsOriginalSourceLocationAndNoPartialProgram()
     {
-        ShaderCompilationResult result = await Compile(new(new FakeToolchain { reportError = true }), Template());
+        ShaderCompilationResult result = await CompileAsync(new(new FakeToolchain { reportError = true }), Template());
         Assert.False(result.succeeded);
         Assert.Null(result.artifact);
         ShaderDiagnostic error = Assert.Single(result.diagnostics.Where(static value => value.severity == DiagnosticSeverity.Error));
@@ -146,7 +146,7 @@ public sealed class ShaderCompilerTests : IDisposable
             SerializationContext.empty
         );
         var toolchain = new FakeToolchain();
-        ShaderCompilationResult result = await Compile(new(toolchain), graph);
+        ShaderCompilationResult result = await CompileAsync(new(toolchain), graph);
         Assert.True(result.succeeded, Diagnostics(result));
         Assert.Equal("Main", Assert.Single(result.artifact!.passes).definition.name);
         Assert.Equal(2, toolchain.requests.Count);
@@ -159,12 +159,12 @@ public sealed class ShaderCompilerTests : IDisposable
     [Fact]
     public async Task LastGoodStorePreservesArtifactAfterFailedCandidate()
     {
-        Guid shaderId = Guid.NewGuid();
+        Guid shaderID = Guid.NewGuid();
         var store = new ShaderLastGoodStore();
-        ShaderCompilationResult success = await Compile(new(new FakeToolchain()), Template());
-        ShaderCompilationResult failure = await Compile(new(new FakeToolchain { reportError = true }), Template());
-        ShaderArtifactSelection first = store.Select(shaderId, success.artifact!.targetKey, RenderShaderVariant.empty, success);
-        ShaderArtifactSelection second = store.Select(shaderId, success.artifact.targetKey, RenderShaderVariant.empty, failure);
+        ShaderCompilationResult success = await CompileAsync(new(new FakeToolchain()), Template());
+        ShaderCompilationResult failure = await CompileAsync(new(new FakeToolchain { reportError = true }), Template());
+        ShaderArtifactSelection first = store.Select(shaderID, success.artifact!.targetKey, RenderShaderVariant.empty, success);
+        ShaderArtifactSelection second = store.Select(shaderID, success.artifact.targetKey, RenderShaderVariant.empty, failure);
         Assert.True(first.candidateSucceeded);
         Assert.False(second.candidateSucceeded);
         Assert.True(second.usingLastGood);
@@ -184,7 +184,7 @@ public sealed class ShaderCompilerTests : IDisposable
     private ShaderDefinition Definition(GraphDocument graph)
         => ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty);
 
-    private ValueTask<ShaderCompilationResult> Compile(
+    private ValueTask<ShaderCompilationResult> CompileAsync(
         ShaderCompiler compiler,
         GraphDocument graph
     ) {

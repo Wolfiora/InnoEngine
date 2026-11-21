@@ -15,7 +15,7 @@ namespace Inno.Build;
 
 internal static class ContentPackWriter
 {
-    private static readonly DateTimeOffset S_ARCHIVE_TIME = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset ARCHIVE_TIME = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     internal static async ValueTask<(string packPath, string contentHash)> WriteAsync(
         string sourceRoot,
@@ -47,7 +47,7 @@ internal static class ContentPackWriter
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     ZipArchiveEntry entry = archive.CreateEntry(keys[index].value!, CompressionLevel.Optimal);
-                    entry.LastWriteTime = S_ARCHIVE_TIME;
+                    entry.LastWriteTime = ARCHIVE_TIME;
                     await using Stream output = entry.Open();
                     await using var input = new FileStream(
                         files[index],
@@ -78,7 +78,7 @@ internal static class ContentPackWriter
                 }
                 var inventory = new ContentPackIndex(entries);
                 ZipArchiveEntry indexEntry = archive.CreateEntry(ContentPackIndex.C_INDEX_KEY, CompressionLevel.Optimal);
-                indexEntry.LastWriteTime = S_ARCHIVE_TIME;
+                indexEntry.LastWriteTime = ARCHIVE_TIME;
                 await using Stream indexOutput = indexEntry.Open();
                 await indexOutput.WriteAsync(
                     ContentPackIndexCodec.Encode(inventory, serialization),

@@ -85,13 +85,13 @@ internal sealed class EditorMenuPlacement
 {
     internal EditorMenuPlacement(
         string path,
-        string actionId,
+        string actionID,
         int order,
         bool separatorBefore,
         object? argument
     ) {
         this.path = path;
-        this.actionId = actionId;
+        this.actionID = actionID;
         this.order = order;
         this.separatorBefore = separatorBefore;
         this.argument = argument;
@@ -102,7 +102,7 @@ internal sealed class EditorMenuPlacement
     /// <summary>
     /// Gets the action identifier.
     /// </summary>
-    internal string actionId { get; }
+    internal string actionID { get; }
 
     /// <summary>
     /// Gets the stable menu order.

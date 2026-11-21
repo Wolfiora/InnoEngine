@@ -59,7 +59,7 @@ internal sealed class RenderReadbackOwner(
     internal int peakCount => m_peak;
     internal long rejectedCount => m_rejected;
 
-    internal ValueTask<RenderTextureReadbackResult> Read(
+    internal ValueTask<RenderTextureReadbackResult> ReadAsync(
         PersistentTextureHandle texture,
         int mipLevel,
         CancellationToken cancellation

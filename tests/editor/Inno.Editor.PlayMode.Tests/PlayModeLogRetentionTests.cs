@@ -74,12 +74,12 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void CompletedPlaySessionRetainsEveryRuntimeSeverity()
     {
-        LogSessionId sessionId = m_playMode.Begin();
-        Dispatch(LogLevel.Debug, sessionId, "runtime-debug");
-        Dispatch(LogLevel.Info, sessionId, "runtime-info");
-        Dispatch(LogLevel.Warn, sessionId, "runtime-warning");
-        Dispatch(LogLevel.Error, sessionId, "runtime-error");
-        Dispatch(LogLevel.Fatal, sessionId, "runtime-fatal");
+        LogSessionId sessionID = m_playMode.Begin();
+        Dispatch(LogLevel.Debug, sessionID, "runtime-debug");
+        Dispatch(LogLevel.Info, sessionID, "runtime-info");
+        Dispatch(LogLevel.Warn, sessionID, "runtime-warning");
+        Dispatch(LogLevel.Error, sessionID, "runtime-error");
+        Dispatch(LogLevel.Fatal, sessionID, "runtime-fatal");
         m_playMode.SetState(EditorPlayModeState.Playing);
         m_playMode.SetState(EditorPlayModeState.Stopping);
         m_playMode.End();
@@ -97,8 +97,8 @@ public sealed class PlayModeLogRetentionTests : IDisposable
     [Fact]
     public void FailedEntryRetainsPreparationDiagnosticsBecauseSimulationNeverStarted()
     {
-        LogSessionId sessionId = m_playMode.Begin();
-        Dispatch(LogLevel.Info, sessionId, "entry-diagnostic");
+        LogSessionId sessionID = m_playMode.Begin();
+        Dispatch(LogLevel.Info, sessionID, "entry-diagnostic");
         m_playMode.SetState(EditorPlayModeState.Failed);
         m_logRouter.Flush();
 
@@ -167,7 +167,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
     private void Dispatch(
         LogLevel level,
-        LogSessionId sessionId,
+        LogSessionId sessionID,
         string message,
         string file = nameof(PlayModeLogRetentionTests),
         int line = 0
@@ -181,7 +181,7 @@ public sealed class PlayModeLogRetentionTests : IDisposable
             file,
             line,
             $"at {file}:{line}",
-            sessionId
+            sessionID
         )
     );
 

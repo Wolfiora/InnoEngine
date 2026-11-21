@@ -55,11 +55,11 @@ internal static class SceneStateDiagnosticPublisher
 
     private static Diagnostic CreateMissingDiagnostic(
         GameScene scene,
-        Guid elementId,
+        Guid elementID,
         string missingTypeName
     ) => Diagnostic.Warning(
         "INNOHR0002",
         $"'{missingTypeName}' is unavailable in scene '{scene.name}' "
-        + $"({scene.identity.persistentId:D}), element {elementId:D}. Its identity and serialized state are preserved."
+        + $"({scene.identity.persistentId:D}), element {elementID:D}. Its identity and serialized state are preserved."
     );
 }

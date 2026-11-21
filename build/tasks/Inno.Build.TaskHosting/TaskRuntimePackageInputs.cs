@@ -11,7 +11,7 @@ namespace Inno.Build.TaskHosting;
 
 internal static class TaskRuntimePackageInputs
 {
-    private static readonly string[] S_ASSET_GROUPS =
+    private static readonly string[] ASSET_GROUPS =
     [
         "compile", "runtime", "native", "resource", "runtimeTargets",
         "build", "buildMultiTargeting", "buildTransitive", "contentFiles"
@@ -69,7 +69,7 @@ internal static class TaskRuntimePackageInputs
                 );
             }
             var selected = new HashSet<string>(StringComparer.Ordinal);
-            foreach (string group in S_ASSET_GROUPS)
+            foreach (string group in ASSET_GROUPS)
             {
                 if (dependency.Value.TryGetProperty(group, out JsonElement entries))
                 {

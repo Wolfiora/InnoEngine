@@ -11,8 +11,8 @@ internal sealed record ScriptTypeManifest(
 internal sealed record ScriptTypeManifestEntry(
     string typeName,
     string kind,
-    Guid stableTypeId,
-    Guid sourcePersistentId,
+    Guid stableTypeID,
+    Guid sourcePersistentID,
     string sourcePath,
     int line,
     int column,
@@ -22,7 +22,7 @@ internal sealed record ScriptTypeManifestEntry(
 
 internal sealed record ScriptTypeMapping(
     string typeName,
-    Guid stableTypeId
+    Guid stableTypeID
 );
 
 internal sealed record ScriptTypeAnalysisResult(

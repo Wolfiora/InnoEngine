@@ -10,13 +10,13 @@ namespace Inno.Editor.Scripting.Tests;
 
 public sealed class ProjectSettingsExecutionContextTests
 {
-    private static readonly ProjectSettingId S_SETTING_ID = new("tests.execution-context");
+    private static readonly ProjectSettingId SETTING_ID = new("tests.execution-context");
 
     [Fact]
     public void Settings_WithoutAnExecutionScope_FailsExplicitly()
     {
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(() =>
-            RuntimeSettings.Get<TestSetting>(S_SETTING_ID));
+            RuntimeSettings.Get<TestSetting>(SETTING_ID));
 
         Assert.Contains("execution scope is available", exception.Message, StringComparison.Ordinal);
     }
@@ -29,12 +29,12 @@ public sealed class ProjectSettingsExecutionContextTests
 
         using (ProjectSettingsExecutionContext.EnterScope(outer))
         {
-            Assert.Equal(11, RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value);
+            Assert.Equal(11, RuntimeSettings.Get<TestSetting>(SETTING_ID).value);
             using (ProjectSettingsExecutionContext.EnterScope(inner))
             {
-                Assert.Equal(22, RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value);
+                Assert.Equal(22, RuntimeSettings.Get<TestSetting>(SETTING_ID).value);
             }
-            Assert.Equal(11, RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value);
+            Assert.Equal(11, RuntimeSettings.Get<TestSetting>(SETTING_ID).value);
         }
     }
 
@@ -72,7 +72,7 @@ public sealed class ProjectSettingsExecutionContextTests
     {
         using IDisposable scope = ProjectSettingsExecutionContext.EnterScope(lookup);
         await Task.Yield();
-        return RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value;
+        return RuntimeSettings.Get<TestSetting>(SETTING_ID).value;
     }
 
     private sealed class FixedSettingsLookup(int value) : IProjectSettingsLookup

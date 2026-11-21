@@ -59,7 +59,7 @@ internal sealed class BuildWorkspace : IDisposable
         m_engine.Dispose();
     }
 
-    internal ProjectId projectId => m_settings.projectId;
+    internal ProjectId projectID => m_settings.projectId;
 
     internal BuildPipeline CreatePipeline(
         BuildCompositionContext context,
@@ -185,7 +185,7 @@ internal sealed class BuildWorkspace : IDisposable
         {
             string profilePath = Path.GetFullPath(path, m_projectDirectory);
             BuildProfile profile = new BuildProfileStore(profilePath, m_engine.serialization).Load();
-            profile.applicationId = projectId.value;
+            profile.applicationId = projectID.value;
             return profile;
         }
 
@@ -199,7 +199,7 @@ internal sealed class BuildWorkspace : IDisposable
             m_engine.serialization,
             defaults
         );
-        return settings.Load().CreateGameProfile(projectId);
+        return settings.Load().CreateGameProfile(projectID);
     }
 
     internal static BuildWorkspace Open(

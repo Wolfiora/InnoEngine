@@ -224,10 +224,10 @@ public sealed class GraphEditorModule : EditorModule, IEditorReloadParticipant
     }
 
     internal bool TryResolve(
-        Guid documentId,
+        Guid documentID,
         out GraphDocumentSession? session
     ) {
-        session = m_identities.Get<GraphDocumentSession>(documentId);
+        session = m_identities.Get<GraphDocumentSession>(documentID);
         return session is not null && session.available;
     }
 

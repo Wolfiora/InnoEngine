@@ -114,14 +114,14 @@ public sealed partial class AssetLoader
     private AssetDependency[] ResolveDeclaredDependenciesLocked(AssetImportContext context)
     {
         Dictionary<Guid, AssetDependency> result = context.runtimeDependencies.ToDictionary(static value => value.persistentId);
-        foreach (Guid persistentId in result.Keys.ToArray())
+        foreach (Guid persistentID in result.Keys.ToArray())
         {
-            AssetDependency dependency = result[persistentId];
+            AssetDependency dependency = result[persistentID];
             string dependencyPath = dependency.lastKnownPath;
-            if (m_recordsById.TryGetValue(dependency.persistentId, out AssetRecord? record))
+            if (m_recordsByID.TryGetValue(dependency.persistentId, out AssetRecord? record))
             {
                 dependencyPath = record.relativePath;
-                result[persistentId] = new AssetDependency(dependency.persistentId, dependency.type, dependencyPath);
+                result[persistentID] = new AssetDependency(dependency.persistentId, dependency.type, dependencyPath);
             }
             if (!string.IsNullOrWhiteSpace(dependencyPath))
             {
@@ -134,13 +134,13 @@ public sealed partial class AssetLoader
             ValidateSourceReferenceLocked(context.assetPath.ToString(), normalized);
             if (m_activeImports.Contains(normalized))
             {
-                Guid pendingId = m_pendingImportIds[normalized];
+                Guid pendingID = m_pendingImportIds[normalized];
                 AssetImporter? pendingImporter = m_importers.FindByPath(normalized);
                 TypeRef typeRef = pendingImporter is not null
                                   && m_types.TryGetTypeRef(pendingImporter.targetAssetType, out TypeRef pendingTypeRef)
                                   ? pendingTypeRef
                                   : default;
-                result[pendingId] = new AssetDependency(pendingId, typeRef, normalized);
+                result[pendingID] = new AssetDependency(pendingID, typeRef, normalized);
                 continue;
             }
             AssetRecord? dependencyRecord = FindRecordLocked(normalized);
@@ -154,9 +154,9 @@ public sealed partial class AssetLoader
             }
             dependencyRecord = FindRecordLocked(normalized)
                                ?? throw new InvalidOperationException($"Runtime dependency '{normalized}' has no metadata.");
-            result[dependencyRecord.persistentId] = new AssetDependency(
-                dependencyRecord.persistentId,
-                new TypeRef(dependencyRecord.stableTypeId),
+            result[dependencyRecord.persistentID] = new AssetDependency(
+                dependencyRecord.persistentID,
+                new TypeRef(dependencyRecord.stableTypeID),
                 dependencyRecord.relativePath
             );
         }
@@ -202,20 +202,20 @@ public sealed partial class AssetLoader
     }
 
     private IReadOnlyList<AssetDependency> GetDependenciesLocked(
-        Guid persistentId,
+        Guid persistentID,
         bool recursive
     ) {
-        if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record))
+        if (!m_recordsByID.TryGetValue(persistentID, out AssetRecord? record))
         {
             return Array.Empty<AssetDependency>();
         }
         IEnumerable<Guid> ids = recursive
-                                ? m_runtimeGraph.GetDependencies(persistentId, recursive: true)
-                                : m_runtimeGraph.GetDependencies(persistentId);
+                                ? m_runtimeGraph.GetDependencies(persistentID, recursive: true)
+                                : m_runtimeGraph.GetDependencies(persistentID);
         return ids
             .Select(id => (
-                m_recordsById.TryGetValue(id, out AssetRecord? dependency)
-                ? new AssetDependency(id, new TypeRef(dependency.stableTypeId), dependency.relativePath)
+                m_recordsByID.TryGetValue(id, out AssetRecord? dependency)
+                ? new AssetDependency(id, new TypeRef(dependency.stableTypeID), dependency.relativePath)
                 : FindDescriptor(record.meta, id)
             ))
             .Where(static descriptor => descriptor.persistentId != Guid.Empty)
@@ -226,22 +226,22 @@ public sealed partial class AssetLoader
     {
         Guid id = asset.identity.persistentId;
         var locations = new List<AssetReferenceLocation>();
-        foreach (Guid dependentId in m_runtimeGraph.GetDependents(id))
+        foreach (Guid dependentID in m_runtimeGraph.GetDependents(id))
         {
-            if (!m_recordsById.TryGetValue(dependentId, out AssetRecord? dependent))
+            if (!m_recordsByID.TryGetValue(dependentID, out AssetRecord? dependent))
             {
                 continue;
             }
             locations.Add(
                 new AssetReferenceLocation(
                     AssetReferenceKind.AssetDependency,
-                    dependentId,
+                    dependentID,
                     dependent.relativePath,
                     "runtimeDependencies"
                 )
             );
         }
-        m_recordsById.TryGetValue(id, out AssetRecord? record);
+        m_recordsByID.TryGetValue(id, out AssetRecord? record);
         return new AssetReferenceInfo(
             id,
             asset.assetPath,
@@ -255,7 +255,7 @@ public sealed partial class AssetLoader
     private void UpdateGraphsLocked(AssetRecord record)
     {
         m_runtimeGraph.ReplaceDependencies(
-            record.persistentId,
+            record.persistentID,
             record.meta.runtimeDependencies.Select(static value => value.persistentId)
         );
         m_importGraph.ReplaceDependencies(
@@ -268,7 +268,7 @@ public sealed partial class AssetLoader
 
     private AssetRecord? FindDependencyRecordLocked(AssetDependency dependency)
     {
-        if (m_recordsById.TryGetValue(dependency.persistentId, out AssetRecord? record))
+        if (m_recordsByID.TryGetValue(dependency.persistentId, out AssetRecord? record))
         {
             return record;
         }
@@ -354,7 +354,7 @@ public sealed partial class AssetLoader
             }
             case AssetImportDependencyKind.Artifact:
                 return Guid.TryParse(dependency.key, out Guid id)
-                       && m_recordsById.TryGetValue(id, out AssetRecord? record)
+                       && m_recordsByID.TryGetValue(id, out AssetRecord? record)
                        ? record.meta.artifactKey
                        : "MISSING";
             case AssetImportDependencyKind.Custom:

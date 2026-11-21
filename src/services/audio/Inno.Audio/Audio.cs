@@ -10,7 +10,7 @@ namespace Inno.Audio;
 /// </summary>
 public static class AudioExecutionContext
 {
-    private static readonly ExecutionSlot<IAudioService> S_CURRENT_SCOPE = new("audio");
+    private static readonly ExecutionSlot<IAudioService> CURRENT_SCOPE = new("audio");
 
     /// <summary>
     /// Gets the audio service bound to the current asynchronous execution context.
@@ -18,7 +18,7 @@ public static class AudioExecutionContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when no audio service is active for the caller.
     /// </exception>
-    public static IAudioService current => S_CURRENT_SCOPE.current;
+    public static IAudioService current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds an audio service until the returned strict last-in-first-out scope is disposed.
@@ -35,7 +35,7 @@ public static class AudioExecutionContext
     public static IDisposable EnterScope(IAudioService audio)
     {
         ArgumentNullException.ThrowIfNull(audio);
-        return S_CURRENT_SCOPE.Enter(audio);
+        return CURRENT_SCOPE.Enter(audio);
     }
 }
 

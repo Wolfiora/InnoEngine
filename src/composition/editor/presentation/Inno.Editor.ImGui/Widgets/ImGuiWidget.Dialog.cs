@@ -252,9 +252,9 @@ public sealed unsafe partial class ImGuiWidget
                 {
                     NativeGui.SetNextWindowContentSize(new Vector2(0f, layout.bodyContentHeight));
                     ImVec2C bodySize = ImGui.ToNative(new Vector2(layout.size.X, layout.bodyHeight));
-                    ReadOnlySpan<byte> bodyId = "##dialog-body\0"u8;
+                    ReadOnlySpan<byte> bodyID = "##dialog-body\0"u8;
                     bool visible;
-                    fixed (byte* id = bodyId)
+                    fixed (byte* id = bodyID)
                     {
                         visible = NativeGui.Raw.BeginChild((sbyte*)id, &bodySize, 0, 0) != 0;
                     }

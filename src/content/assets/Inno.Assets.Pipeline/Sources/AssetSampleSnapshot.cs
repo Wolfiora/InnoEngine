@@ -55,14 +55,14 @@ internal static class AssetSampleSnapshot
             {
                 throw new InvalidDataException($"Sample contains duplicate persistent identity '{meta.persistentId:D}'.");
             }
-            Guid oldId = meta.persistentId;
-            meta.persistentId = identities[oldId];
+            Guid oldID = meta.persistentId;
+            meta.persistentId = identities[oldID];
             File.WriteAllBytes(path, serialization.Serialize(meta));
             string relative = Path.GetRelativePath(stagedSource, path);
             string suffix = string.Equals(path, stagedSource + ".imeta", StringComparison.Ordinal)
                             ? string.Empty
                             : relative[..^".imeta".Length].Replace('\\', '/');
-            sourceIdentities.Add(suffix, (oldId, meta.persistentId));
+            sourceIdentities.Add(suffix, (oldID, meta.persistentId));
             string oldLocal = string.IsNullOrEmpty(suffix)
                               ? source.localPath
                               : source.localPath + "/" + suffix;

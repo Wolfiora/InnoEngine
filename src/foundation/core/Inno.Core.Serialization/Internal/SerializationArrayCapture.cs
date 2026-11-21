@@ -8,7 +8,7 @@ internal struct SerializationArrayCapture(ArraySerializationNode? previous)
     private List<SerializationNode>? m_values;
     private int m_count;
 
-    internal SerializationNode? Next
+    internal SerializationNode? next
         => previous is not null && m_count < previous.values.Count
            ? previous.values[m_count]
            : null;
@@ -21,7 +21,7 @@ internal struct SerializationArrayCapture(ArraySerializationNode? previous)
         {
             m_values = m_initialNode.values;
         }
-        if (m_values is null && !ReferenceEquals(Next, value))
+        if (m_values is null && !ReferenceEquals(next, value))
         {
             m_values = previous is null ? [] : new(previous.values);
         }

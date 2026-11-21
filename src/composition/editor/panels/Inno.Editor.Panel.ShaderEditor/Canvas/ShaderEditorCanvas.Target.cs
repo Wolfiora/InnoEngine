@@ -10,7 +10,7 @@ internal sealed partial class ShaderEditorCanvas
 {
     private void DrawTarget()
     {
-        string current = ShaderGraphDocument.ReadTarget(Controller.document, owner.serialization, owner.context);
+        string current = ShaderGraphDocument.ReadTarget(controller.document, owner.serialization, owner.context);
         ImGuiApi.BeginDisabled(draft.readOnly);
         try
         {
@@ -54,9 +54,9 @@ internal sealed partial class ShaderEditorCanvas
             {
                 return;
             }
-            GraphDocument candidate = Controller.document.Clone();
+            GraphDocument candidate = controller.document.Clone();
             ShaderGraphDocument.SetTarget(candidate, id, owner.serialization, owner.context);
-            Controller.ReplaceDocument(candidate, "Change Shader Target");
+            controller.ReplaceDocument(candidate, "Change Shader Target");
             owner.Changed(draft);
         }
     }

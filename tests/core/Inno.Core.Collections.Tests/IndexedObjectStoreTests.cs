@@ -222,7 +222,7 @@ public sealed class IndexedObjectStoreTests
         store.Add(b);
 
         List<Item> results = store.Query()
-            .Where(item => item.Category == 2)
+            .Where(item => item.category == 2)
             .Get()
             .ToList();
 
@@ -334,10 +334,10 @@ public sealed class IndexedObjectStoreTests
             int category
         ) {
             this.name = name;
-            this.Category = category;
+            this.category = category;
         }
 
         public string name { get; }
-        public int Category { get; }
+        public int category { get; }
     }
 }

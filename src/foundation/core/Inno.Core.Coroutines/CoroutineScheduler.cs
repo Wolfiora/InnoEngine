@@ -19,7 +19,7 @@ public sealed class CoroutineScheduler : IDisposable
     private readonly List<long> m_active = [];
     private readonly Lock m_tickGate = new();
     private readonly WeakReference<CoroutineScheduler> m_selfRef;
-    private long m_nextId;
+    private long m_nextID;
     private int m_disposed;
     private double m_now;
     private ulong m_frame;
@@ -70,7 +70,7 @@ public sealed class CoroutineScheduler : IDisposable
         {
             ObjectDisposedException.ThrowIf(Volatile.Read(ref m_disposed) != 0, this);
 
-            long id = Interlocked.Increment(ref m_nextId);
+            long id = Interlocked.Increment(ref m_nextID);
             m_liveIds[id] = 0;
             m_commands.Enqueue(Command.Start(id, owner, routine));
             return new CoroutineHandle(id, m_selfRef);

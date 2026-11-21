@@ -9,7 +9,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static class RuntimeContentBoundaryValidator
 {
-    private static readonly HashSet<string> PhysicalIoTypes = new(StringComparer.Ordinal)
+    private static readonly HashSet<string> PHYSICAL_IO_TYPES = new(StringComparer.Ordinal)
     {
         "System.IO.File", "System.IO.Directory", "System.IO.Path", "System.IO.FileStream",
         "System.IO.FileInfo", "System.IO.DirectoryInfo", "Inno.Core.IO.AtomicFile",
@@ -37,7 +37,7 @@ internal static class RuntimeContentBoundaryValidator
         ) {
             ISymbol? symbol = model.GetSymbolInfo(expression).Symbol;
             string? type = symbol?.ContainingType?.ToDisplayString();
-            if (contentOwner && type is not null && PhysicalIoTypes.Contains(type))
+            if (contentOwner && type is not null && PHYSICAL_IO_TYPES.Contains(type))
             {
                 failures.Add($"{relative}: shared content owners must receive reading contracts instead of calling {type}.");
             }

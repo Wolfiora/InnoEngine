@@ -17,17 +17,17 @@ namespace Inno.Adapter.Presentation.ImGui;
 
 internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 {
-    private static readonly ImGuiPlatformIoNative.PlatformGetWindowPosCallback s_platformGetWindowPos = PlatformGetWindowPosOutCallback;
-    private static readonly ImGuiPlatformIoNative.PlatformGetWindowSizeCallback s_platformGetWindowSize = PlatformGetWindowSizeOutCallback;
+    private static readonly ImGuiPlatformIONative.PlatformGetWindowPosCallback PLATFORM_GET_WINDOW_POS = PlatformGetWindowPosOutCallback;
+    private static readonly ImGuiPlatformIONative.PlatformGetWindowSizeCallback PLATFORM_GET_WINDOW_SIZE = PlatformGetWindowSizeOutCallback;
 
-    private static readonly object S_CONTEXT_SYNC = new();
-    private static readonly Dictionary<nuint, PlatformImGuiViewportBackend> S_BACKENDS_BY_CONTEXT = [];
+    private static readonly object CONTEXT_SYNC = new();
+    private static readonly Dictionary<nuint, PlatformImGuiViewportBackend> BACKENDS_BY_CONTEXT = [];
 
     private readonly Sdl3PlatformApplication m_application;
     private readonly SDLWindow* m_mainWindow;
     private readonly IPlatformImGuiRenderer m_renderer;
     private readonly nuint m_contextKey;
-    private readonly Dictionary<uint, ViewportWindowData> m_viewportsById = [];
+    private readonly Dictionary<uint, ViewportWindowData> m_viewportsByID = [];
     private readonly Dictionary<uint, uint> m_windowToViewport = [];
     private readonly List<ViewportWindowData> m_retiringViewports = [];
     private void* m_windowCallbacks;
@@ -47,9 +47,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             throw new InvalidOperationException("An active ImGui context is required for viewport routing.");
         }
         m_contextKey = (nuint)context;
-        lock (S_CONTEXT_SYNC)
+        lock (CONTEXT_SYNC)
         {
-            if (S_BACKENDS_BY_CONTEXT.ContainsKey(m_contextKey))
+            if (BACKENDS_BY_CONTEXT.ContainsKey(m_contextKey))
             {
                 throw new InvalidOperationException("The current ImGui context already owns a viewport backend.");
             }
@@ -59,24 +59,24 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         _ = SDL.SetHint(SDL.Constants.SDL_HINT_WINDOW_ACTIVATE_WHEN_RAISED, "1");
         m_mainWindow = mainWindow.GetSdlWindow();
 
-        ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
+        ImGuiPlatformIO* platformIO = ImGuiNative.Raw.GetPlatformIO();
         if (ImGuiNative.Raw.GetIO()->BackendPlatformUserData is not null)
         {
             throw new InvalidOperationException("The current ImGui context already has platform backend state.");
         }
-        platformIo->PlatformCreateWindow = &PlatformCreateWindowCallback;
-        platformIo->PlatformDestroyWindow = &PlatformDestroyWindowCallback;
-        platformIo->PlatformShowWindow = &PlatformShowWindowCallback;
-        platformIo->PlatformGetWindowFramebufferScale = default;
-        platformIo->PlatformSetWindowFocus = &PlatformSetWindowFocusCallback;
-        platformIo->PlatformGetWindowFocus = &PlatformGetWindowFocusCallback;
-        platformIo->PlatformGetWindowMinimized = &PlatformGetWindowMinimizedCallback;
-        platformIo->PlatformSetWindowTitle = &PlatformSetWindowTitleCallback;
-        platformIo->PlatformSetWindowAlpha = &PlatformSetWindowAlphaCallback;
-        platformIo->RendererRenderWindow = &RendererRenderWindowCallback;
-        platformIo->RendererSwapBuffers = &RendererSwapBuffersCallback;
-        ImGuiPlatformIoNative.SetPlatformGetWindowPos(platformIo, s_platformGetWindowPos);
-        ImGuiPlatformIoNative.SetPlatformGetWindowSize(platformIo, s_platformGetWindowSize);
+        platformIO->PlatformCreateWindow = &PlatformCreateWindowCallback;
+        platformIO->PlatformDestroyWindow = &PlatformDestroyWindowCallback;
+        platformIO->PlatformShowWindow = &PlatformShowWindowCallback;
+        platformIO->PlatformGetWindowFramebufferScale = default;
+        platformIO->PlatformSetWindowFocus = &PlatformSetWindowFocusCallback;
+        platformIO->PlatformGetWindowFocus = &PlatformGetWindowFocusCallback;
+        platformIO->PlatformGetWindowMinimized = &PlatformGetWindowMinimizedCallback;
+        platformIO->PlatformSetWindowTitle = &PlatformSetWindowTitleCallback;
+        platformIO->PlatformSetWindowAlpha = &PlatformSetWindowAlphaCallback;
+        platformIO->RendererRenderWindow = &RendererRenderWindowCallback;
+        platformIO->RendererSwapBuffers = &RendererSwapBuffersCallback;
+        ImGuiPlatformIONative.SetPlatformGetWindowPos(platformIO, PLATFORM_GET_WINDOW_POS);
+        ImGuiPlatformIONative.SetPlatformGetWindowSize(platformIO, PLATFORM_GET_WINDOW_SIZE);
 
         ImGuiViewport* mainViewport = ImGuiNative.Raw.GetMainViewport();
         SDLWindow* mainSdlWindow = mainWindow.GetSdlWindow();
@@ -86,22 +86,22 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         try
         {
             RefreshMonitors(mainSdlWindow);
-            m_windowCallbacks = ImGuiPlatformIoNative.CreateWindowCallbacks(
+            m_windowCallbacks = ImGuiPlatformIONative.CreateWindowCallbacks(
                 context,
                 &PlatformSetWindowPosCallback,
                 &PlatformSetWindowSizeCallback
             );
-            lock (S_CONTEXT_SYNC)
+            lock (CONTEXT_SYNC)
             {
-                S_BACKENDS_BY_CONTEXT.Add(m_contextKey, this);
+                BACKENDS_BY_CONTEXT.Add(m_contextKey, this);
             }
         }
         catch
         {
-            ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
+            ImGuiPlatformIONative.DestroyWindowCallbacks(m_windowCallbacks);
             m_windowCallbacks = null;
-            ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
-            ImGuiNative.Raw.ClearRendererHandlers(platformIo);
+            ImGuiNative.Raw.ClearPlatformHandlers(platformIO);
+            ImGuiNative.Raw.ClearRendererHandlers(platformIO);
             mainViewport->PlatformHandle = null;
             mainViewport->PlatformHandleRaw = null;
             throw;
@@ -118,12 +118,12 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             return;
         }
 
-        foreach (KeyValuePair<uint, ViewportWindowData> kv in m_viewportsById)
+        foreach (KeyValuePair<uint, ViewportWindowData> kv in m_viewportsByID)
         {
             DestroyViewportWindow(kv.Value);
         }
 
-        m_viewportsById.Clear();
+        m_viewportsByID.Clear();
         m_windowToViewport.Clear();
         if (m_retiringViewports.Count != 0)
         {
@@ -135,11 +135,11 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             throw new RetirementPendingException("Detached ImGui windows are still borrowed by their renderer.");
         }
 
-        ImGuiPlatformIO* platformIo = ImGuiNative.Raw.GetPlatformIO();
-        ImGuiPlatformIoNative.DestroyWindowCallbacks(m_windowCallbacks);
+        ImGuiPlatformIO* platformIO = ImGuiNative.Raw.GetPlatformIO();
+        ImGuiPlatformIONative.DestroyWindowCallbacks(m_windowCallbacks);
         m_windowCallbacks = null;
-        ImGuiNative.Raw.ClearPlatformHandlers(platformIo);
-        ImGuiNative.Raw.ClearRendererHandlers(platformIo);
+        ImGuiNative.Raw.ClearPlatformHandlers(platformIO);
+        ImGuiNative.Raw.ClearRendererHandlers(platformIO);
 
         ImGuiViewport* mainViewport = ImGuiNative.Raw.GetMainViewport();
         if (mainViewport is not null)
@@ -148,35 +148,35 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             mainViewport->PlatformHandleRaw = null;
         }
 
-        lock (S_CONTEXT_SYNC)
+        lock (CONTEXT_SYNC)
         {
-            if (S_BACKENDS_BY_CONTEXT.TryGetValue(m_contextKey, out PlatformImGuiViewportBackend? registered)
+            if (BACKENDS_BY_CONTEXT.TryGetValue(m_contextKey, out PlatformImGuiViewportBackend? registered)
                 && ReferenceEquals(registered, this)
             ) {
-                S_BACKENDS_BY_CONTEXT.Remove(m_contextKey);
+                BACKENDS_BY_CONTEXT.Remove(m_contextKey);
             }
         }
         m_disposed = true;
     }
 
-    internal bool OwnsWindow(uint windowId) => m_windowToViewport.ContainsKey(windowId);
+    internal bool OwnsWindow(uint windowID) => m_windowToViewport.ContainsKey(windowID);
 
-    internal bool TryGetWindowId(
-        uint viewportId,
-        out uint windowId
+    internal bool TryGetWindowID(
+        uint viewportID,
+        out uint windowID
     ) {
-        if (m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? viewport))
+        if (m_viewportsByID.TryGetValue(viewportID, out ViewportWindowData? viewport))
         {
-            windowId = viewport.windowId;
+            windowID = viewport.windowID;
             return true;
         }
-        windowId = 0;
+        windowID = 0;
         return false;
     }
 
     internal void ProcessEvent(
         ref SDLEvent sdlEvent,
-        uint windowId
+        uint windowID
     ) {
         SDLEventType eventType = (SDLEventType)sdlEvent.Type;
         if (eventType >= SDLEventType.DisplayFirst && eventType <= SDLEventType.DisplayLast
@@ -185,8 +185,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         ) {
             m_monitorsDirty = true;
         }
-        if (!m_windowToViewport.TryGetValue(windowId, out uint viewportId)
-            || !m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? data)
+        if (!m_windowToViewport.TryGetValue(windowID, out uint viewportID)
+            || !m_viewportsByID.TryGetValue(viewportID, out ViewportWindowData? data)
         ) {
             return;
         }
@@ -223,26 +223,26 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 main->DpiScale = GetWindowDpiScale(m_mainWindow);
             }
         }
-        foreach (ViewportWindowData data in m_viewportsById.Values)
+        foreach (ViewportWindowData data in m_viewportsByID.Values)
         {
-            SynchronizeWindow(data.windowId);
+            SynchronizeWindow(data.windowID);
         }
     }
 
     /// <summary>
     /// Synchronizes a secondary viewport's drawable scale and renderer output.
     /// </summary>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The SDL window identifier owned by the viewport->
     /// </param>
-    internal void SynchronizeWindow(uint windowId)
+    internal void SynchronizeWindow(uint windowID)
     {
-        if (!m_windowToViewport.TryGetValue(windowId, out uint viewportId))
+        if (!m_windowToViewport.TryGetValue(windowID, out uint viewportID))
         {
             return;
         }
 
-        if (!m_viewportsById.TryGetValue(viewportId, out ViewportWindowData? data))
+        if (!m_viewportsByID.TryGetValue(viewportID, out ViewportWindowData? data))
         {
             return;
         }
@@ -370,7 +370,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
             drawable = true,
             window = window,
             renderer = renderer,
-            windowId = SDL.Raw.GetWindowId(window)
+            windowID = SDL.Raw.GetWindowId(window)
         };
         try
         {
@@ -382,7 +382,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 data.externalRenderer = rendererBackend;
                 data.externalTarget = new PlatformImGuiViewportTarget(
                     viewport->ID,
-                    data.windowId,
+                    data.windowID,
                     registeredWindow.nativeHandles,
                     pixelWidth,
                     pixelHeight
@@ -390,8 +390,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 rendererBackend.CreateViewport(data.externalTarget);
             }
             data.gcHandle = GCHandle.Alloc(data, GCHandleType.Normal);
-            backend.m_viewportsById.Add(viewport->ID, data);
-            backend.m_windowToViewport.Add(data.windowId, viewport->ID);
+            backend.m_viewportsByID.Add(viewport->ID, data);
+            backend.m_windowToViewport.Add(data.windowID, viewport->ID);
 
             nint handlePtr = GCHandle.ToIntPtr(data.gcHandle);
             viewport->PlatformUserData = (void*)handlePtr;
@@ -401,8 +401,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         }
         catch
         {
-            backend.m_viewportsById.Remove(viewport->ID);
-            backend.m_windowToViewport.Remove(data.windowId);
+            backend.m_viewportsByID.Remove(viewport->ID);
+            backend.m_windowToViewport.Remove(data.windowID);
             DestroyViewportWindow(data);
             throw;
         }
@@ -425,8 +425,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
             if (TryGetViewportData(viewport, out ViewportWindowData data))
             {
-                data.owner.m_viewportsById.Remove(viewport->ID);
-                data.owner.m_windowToViewport.Remove(data.windowId);
+                data.owner.m_viewportsByID.Remove(viewport->ID);
+                data.owner.m_windowToViewport.Remove(data.windowID);
                 DestroyViewportWindow(data);
             }
 
@@ -669,7 +669,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 return;
             }
 
-            data.owner.SynchronizeWindow(data.windowId);
+            data.owner.SynchronizeWindow(data.windowID);
             if (!data.drawable)
             {
                 return;
@@ -704,7 +704,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 return;
             }
 
-            data.owner.SynchronizeWindow(data.windowId);
+            data.owner.SynchronizeWindow(data.windowID);
             if (!data.drawable)
             {
                 return;
@@ -791,7 +791,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                 data.fontTextureHeight = 0;
                 data.fontPixelsPtr = 0;
                 data.fontTexturePitch = 0;
-                data.fontTextureUniqueId = -1;
+                data.fontTextureUniqueID = -1;
                 data.fontUsedRect = default;
                 data.fontUpdateRect = default;
             }
@@ -829,13 +829,13 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
         int pitch = ImGuiNative.Raw.GetPitch(texData);
         nint pixelsPtr = (nint)texData->Pixels;
-        int uniqueId = texData->UniqueId;
+        int uniqueID = texData->UniqueId;
         ImTextureRect usedRect = texData->UsedRect;
         ImTextureRect updateRect = texData->UpdateRect;
         bool needsUpload = needsRecreate
                            || data.fontPixelsPtr != pixelsPtr
                            || data.fontTexturePitch != pitch
-                           || data.fontTextureUniqueId != uniqueId
+                           || data.fontTextureUniqueID != uniqueID
                            || !TextureRectEquals(data.fontUsedRect, usedRect)
                            || !TextureRectEquals(data.fontUpdateRect, updateRect)
                            || texData->Status == ImTextureStatus.WantCreate
@@ -848,7 +848,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         _ = SDL.Raw.UpdateTexture(data.fontTexture, null, texData->Pixels, pitch);
         data.fontPixelsPtr = pixelsPtr;
         data.fontTexturePitch = pitch;
-        data.fontTextureUniqueId = uniqueId;
+        data.fontTextureUniqueID = uniqueID;
         data.fontUsedRect = usedRect;
         data.fontUpdateRect = updateRect;
     }
@@ -872,7 +872,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
 
         ImVec2C clipOff = drawData->DisplayPos;
         ImVec2C clipScale = drawData->FramebufferScale;
-        ulong fontTexId = ImGuiNative.Raw.GetTexID(&ImGuiNative.Raw.GetIO()->Fonts->TexRef);
+        ulong fontTexID = ImGuiNative.Raw.GetTexID(&ImGuiNative.Raw.GetIO()->Fonts->TexRef);
 
         for (int listIndex = 0; listIndex < drawData->CmdListsCount; listIndex++)
         {
@@ -927,7 +927,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
                     data.indexScratch[i] = srcIndices[idxOffset + i] + vtxOffset;
                 }
 
-                SDLTexture* texture = ImGuiNative.Raw.GetTexID(&drawCmd) == fontTexId
+                SDLTexture* texture = ImGuiNative.Raw.GetTexID(&drawCmd) == fontTexID
                                       ? fontTexture
                                       : TextureFromImGui(ImGuiNative.Raw.GetTexID(&drawCmd));
                 if (texture is null)
@@ -961,9 +961,9 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         {
             throw new InvalidOperationException("No ImGui context is active for a viewport callback.");
         }
-        lock (S_CONTEXT_SYNC)
+        lock (CONTEXT_SYNC)
         {
-            if (S_BACKENDS_BY_CONTEXT.TryGetValue((nuint)context, out PlatformImGuiViewportBackend? backend))
+            if (BACKENDS_BY_CONTEXT.TryGetValue((nuint)context, out PlatformImGuiViewportBackend? backend))
             {
                 return backend;
             }
@@ -1081,7 +1081,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         };
     }
 
-    private static SDLTexture* TextureFromImGui(ulong textureId) => (SDLTexture*)(nuint)textureId;
+    private static SDLTexture* TextureFromImGui(ulong textureID) => (SDLTexture*)(nuint)textureID;
 
     private static bool TextureRectEquals(
         ImTextureRect a,
@@ -1108,10 +1108,10 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend : IDisposable
         internal int fontTextureHeight;
         internal nint fontPixelsPtr;
         internal int fontTexturePitch;
-        internal int fontTextureUniqueId = -1;
+        internal int fontTextureUniqueID = -1;
         internal ImTextureRect fontUsedRect;
         internal ImTextureRect fontUpdateRect;
-        internal uint windowId;
+        internal uint windowID;
         internal GCHandle gcHandle;
         internal SDLVertex[] vertexScratch = [];
         internal int[] indexScratch = [];

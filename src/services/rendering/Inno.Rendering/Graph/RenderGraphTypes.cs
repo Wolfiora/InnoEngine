@@ -344,7 +344,7 @@ internal sealed record RenderTextureRecord(
     RenderTextureDescriptor descriptor,
     bool imported,
     PersistentTextureHandle persistentHandle,
-    ulong allocationId
+    ulong allocationID
 );
 
 internal sealed record RenderBufferRecord(
@@ -352,5 +352,5 @@ internal sealed record RenderBufferRecord(
     RenderBufferDescriptor descriptor,
     bool imported,
     PersistentBufferHandle persistentHandle,
-    ulong allocationId
+    ulong allocationID
 );

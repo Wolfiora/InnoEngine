@@ -26,18 +26,18 @@ internal sealed class EditorExtensionDiagnosticPublisher : IDisposable
     }
 
     internal void ReportPanelFailure(
-        string panelId,
+        string panelID,
         Exception exception
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         ArgumentNullException.ThrowIfNull(exception);
-        m_panelFailures[panelId] = exception.Message;
+        m_panelFailures[panelID] = exception.Message;
     }
 
-    internal void ResolvePanel(string panelId)
+    internal void ResolvePanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
-        m_panelFailures.Remove(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
+        m_panelFailures.Remove(panelID);
     }
 
     internal void RetainPanels(IReadOnlySet<string> panelIds)

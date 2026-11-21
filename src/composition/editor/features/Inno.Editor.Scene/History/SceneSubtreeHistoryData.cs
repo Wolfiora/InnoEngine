@@ -5,9 +5,9 @@ using System.Text;
 namespace Inno.Editor.Scene;
 
 internal sealed record SceneSubtreeHistoryData(
-    Guid sceneId,
-    Guid rootId,
-    Guid? parentId,
+    Guid sceneID,
+    Guid rootID,
+    Guid? parentID,
     int siblingIndex,
     bool existsBefore,
     bool existsAfter,
@@ -20,9 +20,9 @@ internal sealed record SceneSubtreeHistoryData(
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-        writer.Write(sceneId.ToByteArray());
-        writer.Write(rootId.ToByteArray());
-        WriteGuid(writer, parentId);
+        writer.Write(sceneID.ToByteArray());
+        writer.Write(rootID.ToByteArray());
+        WriteGuid(writer, parentID);
         writer.Write(siblingIndex);
         writer.Write(existsBefore);
         writer.Write(existsAfter);
@@ -31,7 +31,7 @@ internal sealed record SceneSubtreeHistoryData(
         for (int i = 0; i < incomingReferences.Length; i++)
         {
             SceneIncomingReferenceState reference = incomingReferences[i];
-            writer.Write(reference.ownerId.ToByteArray());
+            writer.Write(reference.ownerID.ToByteArray());
             writer.Write(reference.propertyName);
             WriteBytes(writer, reference.data);
         }
@@ -45,9 +45,9 @@ internal sealed record SceneSubtreeHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        var sceneId = new Guid(reader.ReadBytes(16));
-        var rootId = new Guid(reader.ReadBytes(16));
-        Guid? parentId = ReadGuid(reader);
+        var sceneID = new Guid(reader.ReadBytes(16));
+        var rootID = new Guid(reader.ReadBytes(16));
+        Guid? parentID = ReadGuid(reader);
         int siblingIndex = reader.ReadInt32();
         bool existsBefore = reader.ReadBoolean();
         bool existsAfter = reader.ReadBoolean();
@@ -73,9 +73,9 @@ internal sealed record SceneSubtreeHistoryData(
             throw new InvalidDataException("Scene subtree history payload contains trailing data.");
         }
         return new SceneSubtreeHistoryData(
-            sceneId,
-            rootId,
-            parentId,
+            sceneID,
+            rootID,
+            parentID,
             siblingIndex,
             existsBefore,
             existsAfter,

@@ -12,8 +12,8 @@ public sealed class SceneReloadDiagnostic
         string code,
         DiagnosticSeverity severity,
         string message,
-        Guid scenePersistentId,
-        Guid objectPersistentId,
+        Guid scenePersistentID,
+        Guid objectPersistentID,
         string propertyName,
         string previousPropertyType,
         string currentPropertyType
@@ -21,8 +21,8 @@ public sealed class SceneReloadDiagnostic
         this.code = code;
         this.severity = severity;
         this.message = message;
-        this.scenePersistentId = scenePersistentId;
-        this.objectPersistentId = objectPersistentId;
+        this.scenePersistentId = scenePersistentID;
+        this.objectPersistentId = objectPersistentID;
         this.propertyName = propertyName;
         this.previousPropertyType = previousPropertyType;
         this.currentPropertyType = currentPropertyType;

@@ -9,7 +9,7 @@ namespace Inno.Editor.Assets;
 
 internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Snapshot>
 {
-    private static readonly AssetEditor S_DEFAULT_EDITOR = new DefaultAssetEditor();
+    private static readonly AssetEditor DEFAULT_EDITOR = new DefaultAssetEditor();
 
     internal AssetEditorRegistry(TypeCatalog types)
         : base(types) {}
@@ -67,7 +67,7 @@ internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Sna
     {
         if (assetType is null)
         {
-            return S_DEFAULT_EDITOR;
+            return DEFAULT_EDITOR;
         }
         Registration? best = null;
         int bestDistance = int.MaxValue;
@@ -88,7 +88,7 @@ internal sealed class AssetEditorRegistry : TypeRegistry<AssetEditorRegistry.Sna
             }
         }
 
-        return best?.editor ?? S_DEFAULT_EDITOR;
+        return best?.editor ?? DEFAULT_EDITOR;
     }
 
     internal sealed record Snapshot(Registration[] registrations);

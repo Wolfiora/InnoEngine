@@ -97,7 +97,7 @@ public sealed partial class LargePanelPerformanceTests
         Assert.Same(last, interactions.selection.selectedTarget);
         Assert.Equal(1, interactions.selection.count);
         string original = hierarchy ? ((GameObject)last).name : ((AssetFileEntry)last).name;
-        Guid? objectId = hierarchy ? ((GameObject)last).identity.persistentId : null;
+        Guid? objectID = hierarchy ? ((GameObject)last).identity.persistentId : null;
         Assert.True(interactions.For(area, last).Execute(hierarchy ? "hierarchy/rename" : "file-browser/rename"));
         host.native.DrawPanel(panel);
         host.native.DrawPanel(panel);
@@ -118,7 +118,7 @@ public sealed partial class LargePanelPerformanceTests
         if (hierarchy)
         {
             Assert.Equal("Renamed last", ((GameObject)last).name);
-            Assert.Equal(objectId, ((GameObject)last).identity.persistentId);
+            Assert.Equal(objectID, ((GameObject)last).identity.persistentId);
         }
         else
         {

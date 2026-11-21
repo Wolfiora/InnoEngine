@@ -41,9 +41,9 @@ public sealed class BuildCacheRetirementTests : IDisposable
     {
         OwnedCache owner = AddOwner("targeted");
         BuildCacheArtifactDescriptor shared = owner.Add("shared", 2);
-        BuildCacheArtifactDescriptor requiredByMac = owner.Add("windows-dependency", 3, targetId: "windows-x64");
+        BuildCacheArtifactDescriptor requiredByMac = owner.Add("windows-dependency", 3, targetID: "windows-x64");
         BuildCacheArtifactDescriptor mac = owner.Add("mac", 4, [requiredByMac.directory], "macos-arm64");
-        BuildCacheArtifactDescriptor obsoleteWindows = owner.Add("windows-obsolete", 5, targetId: "windows-x64");
+        BuildCacheArtifactDescriptor obsoleteWindows = owner.Add("windows-obsolete", 5, targetID: "windows-x64");
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
             m_root,
             [owner.descriptor],
@@ -63,7 +63,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
     public async Task FreshTargetChangePreventsRetiringAnOriginalCandidate()
     {
         OwnedCache owner = AddOwner("retargeted");
-        BuildCacheArtifactDescriptor original = owner.Add("candidate", 2, targetId: "windows-x64");
+        BuildCacheArtifactDescriptor original = owner.Add("candidate", 2, targetID: "windows-x64");
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(
             m_root,
             [owner.descriptor],
@@ -428,7 +428,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             string name,
             int bytes,
             IReadOnlyList<string>? dependencies = null,
-            string? targetId = null
+            string? targetID = null
         ) {
             string directory = Path.Combine(descriptor.directory, name);
             Directory.CreateDirectory(Path.Combine(directory, "Outputs"));
@@ -437,7 +437,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             var artifact = new BuildCacheArtifactDescriptor(
                 directory,
                 directory + ".read.lock",
-                targetId,
+                targetID,
                 bytes,
                 used,
                 dependencies ?? [],

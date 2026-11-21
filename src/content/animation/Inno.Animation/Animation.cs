@@ -9,12 +9,12 @@ namespace Inno.Animation;
 /// </summary>
 public static class AnimationExecutionContext
 {
-    private static readonly ExecutionSlot<IAnimationService> S_CURRENT_SCOPE = new("animation");
+    private static readonly ExecutionSlot<IAnimationService> CURRENT_SCOPE = new("animation");
 
     /// <summary>
     /// Gets the animation service bound to the current execution context.
     /// </summary>
-    public static IAnimationService current => S_CURRENT_SCOPE.current;
+    public static IAnimationService current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds one animation service until the returned strict scope is disposed.
@@ -28,7 +28,7 @@ public static class AnimationExecutionContext
     public static IDisposable EnterScope(IAnimationService animation)
     {
         ArgumentNullException.ThrowIfNull(animation);
-        return S_CURRENT_SCOPE.Enter(animation);
+        return CURRENT_SCOPE.Enter(animation);
     }
 }
 

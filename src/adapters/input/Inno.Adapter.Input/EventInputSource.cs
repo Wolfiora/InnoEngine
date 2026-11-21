@@ -13,7 +13,7 @@ public sealed class EventInputSource : IInputEventSource
     private readonly List<EventInputBackend> m_backends = [];
     private readonly EventDispatcher m_events = new();
     private readonly EventHub m_inputHub;
-    private readonly uint m_windowId;
+    private readonly uint m_windowID;
     private bool m_disposed;
 
     /// <summary>
@@ -24,7 +24,7 @@ public sealed class EventInputSource : IInputEventSource
     /// </param>
     public EventInputSource(uint windowId)
     {
-        m_windowId = windowId;
+        m_windowID = windowId;
         m_inputHub = m_events.CreateHub();
     }
 
@@ -40,7 +40,7 @@ public sealed class EventInputSource : IInputEventSource
     public IInputBackend CreateBackend()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        var backend = new EventInputBackend(m_windowId, RemoveBackend);
+        var backend = new EventInputBackend(m_windowID, RemoveBackend);
         backend.ConnectSource(m_inputHub.Listen<Event>(backend.ProcessEvent));
         m_backends.Add(backend);
         return backend;

@@ -261,7 +261,7 @@ internal sealed class AudioVoiceOwner
                     _ = m_device.Pause(voice.backendVoice);
                 }
                 UpdateVoiceState(voice);
-                m_diagnostics.Resolve("AUDIO_CLIP_PREPARATION_FAILED", voice.clip.persistentId.ToString("D"));
+                m_diagnostics.Resolve("AUDIO_CLIP_PREPARATION_FAILED", voice.clip.persistentID.ToString("D"));
             }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
@@ -273,7 +273,7 @@ internal sealed class AudioVoiceOwner
                     "AUDIO_CLIP_PREPARATION_FAILED",
                     $"Audio clip '{voice.clip.assetPath}' could not be prepared: {exception.Message}",
                     DiagnosticSeverity.Error,
-                    voice.clip.persistentId.ToString("D")
+                    voice.clip.persistentID.ToString("D")
                 );
                 FinishVoice(voice, AudioCompletionReason.DecodeFailed);
             }

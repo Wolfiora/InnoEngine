@@ -181,7 +181,7 @@ public sealed class ShaderControlFlowIrTests
         );
         builder.StoreStorage(buffer, builder.Constant(0u), result["a"]);
         builder.StoreStorage(buffer, builder.Constant(1u), result["b"]);
-        await Compile(
+        await CompileAsync(
             new(
                 ShaderStage.Compute,
                 builder.Build(Values()),
@@ -219,13 +219,15 @@ public sealed class ShaderControlFlowIrTests
         ShaderIrValue a = builder.Extract(result["pair"], 0);
         ShaderIrValue b = builder.Extract(result["pair"], 1);
         ShaderIrValue color = builder.Construct(ShaderSourceType.Atomic("float4"), a, b, a, builder.Constant(1f));
-        await Compile(new(ShaderStage.Fragment, builder.Build(Values(("color", color))), [], [new("color", ShaderIrOutputKind.Color)]));
+        await CompileAsync(
+            new(ShaderStage.Fragment, builder.Build(Values(("color", color))), [], [new("color", ShaderIrOutputKind.Color)])
+        );
     }
 
     private static Dictionary<string, ShaderIrValue> Values(params (string name, ShaderIrValue value)[] entries)
         => entries.ToDictionary(static pair => pair.name, static pair => pair.value, StringComparer.Ordinal);
 
-    private static async Task Compile(ShaderIrStage stage)
+    private static async Task CompileAsync(ShaderIrStage stage)
     {
         var toolchain = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(

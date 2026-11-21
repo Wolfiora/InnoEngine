@@ -104,7 +104,7 @@ public sealed partial class SceneEdits
         byte[] state = SceneElementSerialization.CaptureState(component, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(component, scene, m_workspace);
         int index = owner.GetComponentIndex(component);
-        Guid componentId = component.identity.persistentId;
+        Guid componentID = component.identity.persistentId;
         Type componentType = component.GetType();
         try
         {
@@ -118,7 +118,7 @@ public sealed partial class SceneEdits
                     SceneElementKind.Component,
                     scene.identity.persistentId,
                     owner.identity.persistentId,
-                    componentId,
+                    componentID,
                     typeRef,
                     beforeIndex: index,
                     afterIndex: -1,
@@ -132,7 +132,7 @@ public sealed partial class SceneEdits
         }
         catch (Exception exception)
         {
-            if (m_workspace.Find<GameComponent>(componentId) is not null)
+            if (m_workspace.Find<GameComponent>(componentID) is not null)
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
@@ -142,7 +142,7 @@ public sealed partial class SceneEdits
                 GameComponent restored = SceneElementSerialization.RestoreComponent(
                     owner,
                     typeRef,
-                    componentId,
+                    componentID,
                     index,
                     state,
                     m_workspace.serialization,
@@ -364,7 +364,7 @@ public sealed partial class SceneEdits
         byte[] state = SceneElementSerialization.CaptureState(system, m_workspace.serialization, m_workspace.assets);
         SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(system, scene, m_workspace);
         int index = scene.GetSystemIndex(system);
-        Guid systemId = system.identity.persistentId;
+        Guid systemID = system.identity.persistentId;
         TypeRef typeRef = GetElementType(system);
         Type systemType = system.GetType();
         try
@@ -379,7 +379,7 @@ public sealed partial class SceneEdits
                     SceneElementKind.System,
                     scene.identity.persistentId,
                     Guid.Empty,
-                    systemId,
+                    systemID,
                     typeRef,
                     beforeIndex: index,
                     afterIndex: -1,
@@ -393,7 +393,7 @@ public sealed partial class SceneEdits
         }
         catch (Exception exception)
         {
-            if (m_workspace.Find<GameSystem>(systemId) is not null)
+            if (m_workspace.Find<GameSystem>(systemID) is not null)
             {
                 ExceptionDispatchInfo.Capture(exception).Throw();
             }
@@ -403,7 +403,7 @@ public sealed partial class SceneEdits
                 GameSystem restored = SceneElementSerialization.RestoreSystem(
                     scene,
                     typeRef,
-                    systemId,
+                    systemID,
                     index,
                     state,
                     m_workspace.serialization,

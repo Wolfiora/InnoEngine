@@ -32,7 +32,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     private readonly AssetRuntimeOwner m_runtimeOwner;
     private readonly object m_sync = new();
     private readonly Dictionary<AssetPath, RuntimeAssetRecord> m_recordsByPath = [];
-    private readonly Dictionary<Guid, RuntimeAssetRecord> m_recordsById = [];
+    private readonly Dictionary<Guid, RuntimeAssetRecord> m_recordsByID = [];
     private readonly Dictionary<AssetObject, AssetObject[]> m_dependencyRetention = [];
     private readonly SerializationGeneration m_serialization;
     private readonly SerializationContext m_serializationContext;
@@ -106,16 +106,16 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             {
                 throw new InvalidDataException($"Runtime catalog repeats asset path '{record.path}'.");
             }
-            if (!m_recordsById.TryAdd(record.persistentId, record))
+            if (!m_recordsByID.TryAdd(record.persistentID, record))
             {
-                throw new InvalidDataException($"Runtime catalog repeats asset identity '{record.persistentId:D}'.");
+                throw new InvalidDataException($"Runtime catalog repeats asset identity '{record.persistentID:D}'.");
             }
         }
         foreach (RuntimeAssetRecord record in m_recordsByPath.Values)
         {
             for (int index = 0; index < record.dependencies.Length; index++)
             {
-                if (!m_recordsById.ContainsKey(record.dependencies[index].persistentId))
+                if (!m_recordsByID.ContainsKey(record.dependencies[index].persistentId))
                 {
                     throw new InvalidDataException(
                         $"Runtime asset '{record.path}' depends on missing asset "
@@ -238,7 +238,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_recordsById.TryGetValue(persistentId, out RuntimeAssetRecord? record))
+            if (!m_recordsByID.TryGetValue(persistentId, out RuntimeAssetRecord? record))
             {
                 throw new InvalidOperationException($"Runtime asset '{persistentId:D}' is not present in the deployed catalog.");
             }
@@ -311,7 +311,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_recordsById.TryGetValue(persistentId, out RuntimeAssetRecord? record)
+            if (!m_recordsByID.TryGetValue(persistentId, out RuntimeAssetRecord? record)
                 || !typeof(TAsset).IsAssignableFrom(ResolveType(record))
             ) {
                 asset = null;
@@ -350,7 +350,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             {
                 throw new InvalidOperationException($"Runtime asset '{path}' is not present in the deployed catalog.");
             }
-            return QueueAcquisition<TAsset>(record, cancellationToken);
+            return QueueAcquisitionAsync<TAsset>(record, cancellationToken);
         }
     }
 
@@ -378,13 +378,13 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_recordsById.TryGetValue(persistentId, out RuntimeAssetRecord? record))
+            if (!m_recordsByID.TryGetValue(persistentId, out RuntimeAssetRecord? record))
             {
                 throw new InvalidOperationException(
                     $"Runtime asset '{persistentId:D}' is not present in the deployed catalog."
                 );
             }
-            return QueueAcquisition<TAsset>(record, cancellationToken);
+            return QueueAcquisitionAsync<TAsset>(record, cancellationToken);
         }
     }
 
@@ -409,7 +409,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_recordsById.TryGetValue(asset.identity.persistentId, out RuntimeAssetRecord? record)
+            if (!m_recordsByID.TryGetValue(asset.identity.persistentId, out RuntimeAssetRecord? record)
                 || !ReferenceEquals(record.asset, asset)
             ) {
                 throw new InvalidOperationException("Only an asset owned by this database has runtime dependencies.");
@@ -447,7 +447,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         {
             EnsureActive();
             artifact = null;
-            if (!m_recordsById.TryGetValue(persistentId, out RuntimeAssetRecord? record))
+            if (!m_recordsByID.TryGetValue(persistentId, out RuntimeAssetRecord? record))
             {
                 return false;
             }
@@ -492,7 +492,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                     $"Runtime asset '{persistentId:D}' has no verified artifact output '{outputName}'."
                 );
             }
-            RuntimeAssetRecord record = m_recordsById[persistentId];
+            RuntimeAssetRecord record = m_recordsByID[persistentId];
             RuntimeArtifactOutput output = ReadArtifactManifest(record).outputs.Single(candidate => candidate.name == outputName);
             ContentReadLease content = m_content.Acquire(GetVerifiedOutputKey(record, output));
             return CreateArtifactLease(artifact, content.OpenRead, content.Dispose);
@@ -535,7 +535,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             {
                 m_retirement = new LifetimeScope();
                 m_retirement.Own(m_payloadReadSlots);
-                foreach (RuntimeAssetRecord record in m_recordsById.Values)
+                foreach (RuntimeAssetRecord record in m_recordsByID.Values)
                 {
                     if (record.asset is not null)
                     {
@@ -573,7 +573,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     {
         m_dependencyRetention.Clear();
         m_recordsByPath.Clear();
-        m_recordsById.Clear();
+        m_recordsByID.Clear();
         m_residentBytes = 0;
         m_types = null;
         m_disposed = true;
@@ -658,13 +658,13 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
                 exception
             );
         }
-        m_identities.InitializePersistentIdentity(asset, record.persistentId);
-        m_identities.Register(asset, record.persistentId);
+        m_identities.InitializePersistentIdentity(asset, record.persistentID);
+        m_identities.Register(asset, record.persistentID);
         record.asset = asset;
         created.Add(record);
         for (int index = 0; index < record.dependencies.Length; index++)
         {
-            PrepareShells(m_recordsById[record.dependencies[index].persistentId], created);
+            PrepareShells(m_recordsByID[record.dependencies[index].persistentId], created);
         }
     }
 
@@ -681,7 +681,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         byte[] payload;
         if (preparedPayloads is not null)
         {
-            payload = preparedPayloads[record.persistentId];
+            payload = preparedPayloads[record.persistentID];
         }
         else
         {
@@ -698,7 +698,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     {
         AssetObject[] dependencies = record.dependencies
             .Select(dependency => (
-                m_recordsById[dependency.persistentId].asset
+                m_recordsByID[dependency.persistentId].asset
                 ?? throw new InvalidOperationException("A runtime dependency was not prepared.")
             ))
             .ToArray();
@@ -808,8 +808,8 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     }
 
     private AssetObject ResolveReference(
-        Guid persistentId,
-        Guid stableTypeId,
+        Guid persistentID,
+        Guid stableTypeID,
         Type expectedType,
         string propertyPath,
         bool requirePrepared
@@ -817,23 +817,23 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_recordsById.TryGetValue(persistentId, out RuntimeAssetRecord? record)
+            if (!m_recordsByID.TryGetValue(persistentID, out RuntimeAssetRecord? record)
                 || (requirePrepared && record.asset is null)
             ) {
                 throw new InvalidDataException(
-                    $"Asset reference '{persistentId:D}' at '{propertyPath}' is outside the deployed runtime closure."
+                    $"Asset reference '{persistentID:D}' at '{propertyPath}' is outside the deployed runtime closure."
                 );
             }
-            if (stableTypeId != Guid.Empty && record.stableTypeId != stableTypeId)
+            if (stableTypeID != Guid.Empty && record.stableTypeID != stableTypeID)
             {
                 throw new InvalidDataException(
-                    $"Asset reference '{persistentId:D}' at '{propertyPath}' has a mismatched stable type identity."
+                    $"Asset reference '{persistentID:D}' at '{propertyPath}' has a mismatched stable type identity."
                 );
             }
             if (!expectedType.IsAssignableFrom(ResolveType(record)))
             {
                 throw new InvalidDataException(
-                    $"Asset reference '{persistentId:D}' at '{propertyPath}' is incompatible with '{expectedType.FullName}'."
+                    $"Asset reference '{persistentID:D}' at '{propertyPath}' is incompatible with '{expectedType.FullName}'."
                 );
             }
             return requirePrepared ? record.asset! : LoadRecord<AssetObject>(record, pin: true);
@@ -895,7 +895,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
 
     private Type ResolveType(RuntimeAssetRecord record)
     {
-        Type type = new TypeRef(record.stableTypeId).Resolve(m_types!);
+        Type type = new TypeRef(record.stableTypeID).Resolve(m_types!);
         if (!typeof(AssetObject).IsAssignableFrom(type) || type.IsAbstract)
         {
             throw new InvalidDataException(
@@ -1033,18 +1033,18 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     }
 
     private sealed class RuntimeAssetRecord(
-        Guid persistentId,
+        Guid persistentID,
         AssetPath path,
         string sourceHash,
-        Guid stableTypeId,
+        Guid stableTypeID,
         string artifactKey,
         byte[] assetState,
         AssetDependency[] dependencies
     ) {
-        internal Guid persistentId { get; } = persistentId;
+        internal Guid persistentID { get; } = persistentID;
         internal AssetPath path { get; } = path;
         internal string sourceHash { get; } = sourceHash;
-        internal Guid stableTypeId { get; } = stableTypeId;
+        internal Guid stableTypeID { get; } = stableTypeID;
         internal string artifactKey { get; } = artifactKey;
         internal byte[] assetState { get; } = assetState;
         internal AssetDependency[] dependencies { get; } = dependencies;

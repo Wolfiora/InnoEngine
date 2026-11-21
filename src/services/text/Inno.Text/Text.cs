@@ -8,12 +8,12 @@ namespace Inno.Text;
 /// </summary>
 public static class TextExecutionContext
 {
-    private static readonly ExecutionSlot<ITextService> S_CURRENT_SCOPE = new("text");
+    private static readonly ExecutionSlot<ITextService> CURRENT_SCOPE = new("text");
 
     /// <summary>
     /// Gets the text service bound to the current execution context.
     /// </summary>
-    public static ITextService current => S_CURRENT_SCOPE.current;
+    public static ITextService current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Binds a text service until the returned strict last-in-first-out scope is disposed.
@@ -27,7 +27,7 @@ public static class TextExecutionContext
     public static IDisposable EnterScope(ITextService text)
     {
         ArgumentNullException.ThrowIfNull(text);
-        return S_CURRENT_SCOPE.Enter(text);
+        return CURRENT_SCOPE.Enter(text);
     }
 }
 

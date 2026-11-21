@@ -18,7 +18,7 @@ public sealed class UiDocumentAsset : AssetObject
     private const uint C_PAYLOAD_MAGIC = 0x4449_5549;
     private UiDocumentSource? m_source;
     private IReadOnlyList<UiDocumentFontFace> m_fonts = [];
-    private string m_implementationId = string.Empty;
+    private string m_implementationID = string.Empty;
 
     /// <summary>
     /// Gets the frozen source, or null before runtime content is loaded.
@@ -33,7 +33,7 @@ public sealed class UiDocumentAsset : AssetObject
     /// <summary>
     /// Gets the exact backend implementation selected when the source was imported.
     /// </summary>
-    public string implementationId => m_implementationId;
+    public string implementationId => m_implementationID;
 
     /// <summary>
     /// Encodes an importer-owned runtime payload without exposing an implementation-specific format.
@@ -97,7 +97,7 @@ public sealed class UiDocumentAsset : AssetObject
         {
             m_source = null;
             m_fonts = [];
-            m_implementationId = string.Empty;
+            m_implementationID = string.Empty;
             return;
         }
         using var stream = new MemoryStream(currentPayload.ToArray(), writable: false);
@@ -132,7 +132,7 @@ public sealed class UiDocumentAsset : AssetObject
             throw new InvalidDataException("The UI document runtime payload contains trailing data.");
         }
         ArgumentException.ThrowIfNullOrWhiteSpace(implementation);
-        m_implementationId = implementation;
+        m_implementationID = implementation;
         m_source = new UiDocumentSource(new UiDocumentLanguageId(language), text, sourceUri);
         m_fonts = new ReadOnlyCollection<UiDocumentFontFace>(fonts);
     }

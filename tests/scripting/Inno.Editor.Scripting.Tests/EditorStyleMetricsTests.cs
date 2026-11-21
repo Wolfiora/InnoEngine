@@ -213,8 +213,8 @@ public sealed unsafe class EditorStyleMetricsTests
             _ = EditorUI.current.widgets.InlineRename("scene", ref value, ref requestFocus, rowHeight, width: 180f);
             Vector2 focusedFieldMin = NativeImGui.GetItemRectMin();
             Vector2 focusedFieldMax = NativeImGui.GetItemRectMax();
-            uint inputId = NativeImGui.GetItemID();
-            ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputId);
+            uint inputID = NativeImGui.GetItemID();
+            ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputID);
             Assert.False(requestFocus);
             Assert.False((inputState is null));
             Assert.Equal(0, NativeImGui.Raw.GetSelectionStart(inputState));
@@ -559,7 +559,7 @@ public sealed unsafe class EditorStyleMetricsTests
                 NativeImGui.SetNextWindowSize(new Vector2(220f, 120f), (int)(UiCond.Always));
                 using NativeStringLease nativeTestText9 = Utf8Codec.EncodeNullTerminated("Bounded Combo Test", allowsNull: false);
                 _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText9.pointer, null, 0);
-                uint parentViewportId = NativeImGui.Raw.GetWindowViewport()->ID;
+                uint parentViewportID = NativeImGui.Raw.GetWindowViewport()->ID;
                 if (frame == 0)
                 {
                     NativeImGui.OpenPopup("##menu_selector_popup_##asset");
@@ -570,7 +570,7 @@ public sealed unsafe class EditorStyleMetricsTests
                 if (open)
                 {
                     openFrames++;
-                    Assert.Equal(parentViewportId, NativeImGui.Raw.GetWindowViewport()->ID);
+                    Assert.Equal(parentViewportID, NativeImGui.Raw.GetWindowViewport()->ID);
                     string search = string.Empty;
                     _ = EditorUI.current.widgets.SearchInput("assets", "Search assets...", ref search);
                     for (int index = 0; index < 64; index++)

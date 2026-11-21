@@ -11,7 +11,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static class MSBuildProjectGraphValidator
 {
-    private static readonly HashSet<string> ExecutableProducts = new(StringComparer.Ordinal)
+    private static readonly HashSet<string> EXECUTABLE_PRODUCTS = new(StringComparer.Ordinal)
     {
         "InnoEngine.Editor", "InnoEngine.Build"
     };
@@ -168,7 +168,7 @@ internal static class MSBuildProjectGraphValidator
         ) {
             failures.Add($"{project.path}: effective compilation-wide using imports are forbidden.");
         }
-        if (!test && project.outputType == "Exe" && !ExecutableProducts.Contains(project.assemblyName))
+        if (!test && project.outputType == "Exe" && !EXECUTABLE_PRODUCTS.Contains(project.assemblyName))
         {
             failures.Add($"{project.path}: effective production executable is not an approved product.");
         }

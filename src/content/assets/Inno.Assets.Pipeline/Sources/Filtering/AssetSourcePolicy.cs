@@ -10,7 +10,7 @@ namespace Inno.Assets.Pipeline;
 /// </summary>
 public sealed class AssetSourcePolicy
 {
-    private static readonly string[] S_DEFAULT_FILE_NAMES =
+    private static readonly string[] DEFAULT_FILE_NAMES =
     [
         ".DS_Store",
         ".directory",
@@ -20,7 +20,7 @@ public sealed class AssetSourcePolicy
         "Thumbs.db"
     ];
 
-    private static readonly string[] S_DEFAULT_DIRECTORY_NAMES =
+    private static readonly string[] DEFAULT_DIRECTORY_NAMES =
     [
         ".git",
         ".hg",
@@ -33,9 +33,9 @@ public sealed class AssetSourcePolicy
         "obj"
     ];
 
-    private static readonly string[] S_DEFAULT_PREFIXES = [".#", "._", "~$"];
+    private static readonly string[] DEFAULT_PREFIXES = [".#", "._", "~$"];
 
-    private static readonly string[] S_DEFAULT_SUFFIXES =
+    private static readonly string[] DEFAULT_SUFFIXES =
         [".bak", ".deps.json", ".orig", ".pdb", ".swo", ".swp", ".temp", ".tmp", "~"];
 
     private readonly HashSet<string> m_fileNames;
@@ -70,12 +70,12 @@ public sealed class AssetSourcePolicy
         IEnumerable<string>? ignoredPrefixes,
         IEnumerable<string>? ignoredSuffixes
     ) {
-        m_fileNames = new HashSet<string>(S_DEFAULT_FILE_NAMES, StringComparer.OrdinalIgnoreCase);
-        m_directoryNames = new HashSet<string>(S_DEFAULT_DIRECTORY_NAMES, StringComparer.OrdinalIgnoreCase);
+        m_fileNames = new HashSet<string>(DEFAULT_FILE_NAMES, StringComparer.OrdinalIgnoreCase);
+        m_directoryNames = new HashSet<string>(DEFAULT_DIRECTORY_NAMES, StringComparer.OrdinalIgnoreCase);
         AddNonEmpty(m_fileNames, ignoredFileNames);
         AddNonEmpty(m_directoryNames, ignoredDirectoryNames);
-        m_prefixes = Combine(S_DEFAULT_PREFIXES, ignoredPrefixes);
-        m_suffixes = Combine(S_DEFAULT_SUFFIXES, ignoredSuffixes);
+        m_prefixes = Combine(DEFAULT_PREFIXES, ignoredPrefixes);
+        m_suffixes = Combine(DEFAULT_SUFFIXES, ignoredSuffixes);
     }
 
     /// <summary>

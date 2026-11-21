@@ -89,7 +89,7 @@ internal sealed class ProjectSettingEditorCatalog : TypeRegistry<ProjectSettingE
                 $"Project setting editor '{type.FullName}' targets '{definition.valueType.FullName}', "
                 + $"which is missing {nameof(ProjectSettingDefinitionAttribute)}."
             );
-        definition.BindSettingId(new ProjectSettingId(setting.id));
+        definition.BindSettingID(new ProjectSettingId(setting.id));
         definition.BindSerialization(m_serialization);
         definition.BindPlacement(attribute.path, attribute.order);
         return definition;

@@ -125,12 +125,12 @@ protected override IReadOnlyDictionary<string, ShaderTarget> Build(TypeCacheSnap
                     return (type, type.GetCustomAttribute<ShaderTargetAttribute>(inherit: false)!.id);
                 })
                 .ToArray();
-            string? duplicateId = registrations
+            string? duplicateID = registrations
                 .GroupBy(static registration => registration.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1)?.Key;
-            if (duplicateId is not null)
+            if (duplicateID is not null)
             {
-                throw new InvalidOperationException($"Duplicate shader target '{duplicateId}'.");
+                throw new InvalidOperationException($"Duplicate shader target '{duplicateID}'.");
             }
 
             var targets = new Dictionary<string, ShaderTarget>(StringComparer.Ordinal);

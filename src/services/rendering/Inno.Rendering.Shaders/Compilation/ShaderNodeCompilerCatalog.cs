@@ -350,9 +350,9 @@ public sealed class ShaderNodeCompilerCatalog
         void Error(
             string code,
             string message,
-            GraphNodeId? nodeId = null,
-            string? portId = null
-        ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, nodeId, portId));
+            GraphNodeId? nodeID = null,
+            string? portID = null
+        ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, nodeID, portID));
     }
 
     internal IReadOnlyList<IShaderNodeCompiler> providers { get; }

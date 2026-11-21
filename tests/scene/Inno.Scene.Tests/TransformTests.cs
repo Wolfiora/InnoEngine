@@ -6,7 +6,7 @@ using Inno.Scene.Components;
 
 namespace Inno.Scene.Tests;
 
-[Collection(SceneTestsCollection.NAME)]
+[Collection(SceneTestsCollection.C_NAME)]
 public sealed class TransformTests : IDisposable
 {
     private readonly IDisposable m_sceneScope;

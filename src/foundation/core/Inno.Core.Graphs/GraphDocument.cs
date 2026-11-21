@@ -257,9 +257,9 @@ public sealed class GraphDocument
             {
                 position = sourceNode.position
             };
-            foreach ((string propertyId, GraphSerializedValue value) in sourceNode.values)
+            foreach ((string propertyID, GraphSerializedValue value) in sourceNode.values)
             {
-                node.SetValue(propertyId, value.Clone());
+                node.SetValue(propertyID, value.Clone());
             }
 
             nodes.Add(node);

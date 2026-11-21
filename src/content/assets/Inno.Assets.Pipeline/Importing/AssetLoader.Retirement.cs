@@ -44,7 +44,7 @@ public sealed partial class AssetLoader
             }
             m_disposeRequested = true;
             bool pending = m_inFlightPathLoads.Values
-                .Concat(m_inFlightIdLoads.Values)
+                .Concat(m_inFlightIDLoads.Values)
                 .Any(static task => !task.IsCompleted);
             if (pending || m_admittedOperations > 0 || m_retirementActive)
             {
@@ -52,15 +52,15 @@ public sealed partial class AssetLoader
             }
             m_retirementActive = true;
         }
-        AssetLoader? previous = t_activeLoader;
-        t_activeLoader = this;
+        AssetLoader? previous = s_activeLoader;
+        s_activeLoader = this;
         try
         {
             DisposeLocked();
         }
         finally
         {
-            t_activeLoader = previous;
+            s_activeLoader = previous;
             if (m_disposed)
             {
                 m_operationGate.Dispose();
@@ -82,7 +82,7 @@ public sealed partial class AssetLoader
         string recordPath = record.relativePath;
         m_recordsByPath.Remove(recordPath);
         m_importGraph.RemoveNode(recordPath);
-        if (record.persistentId == Guid.Empty)
+        if (record.persistentID == Guid.Empty)
         {
             return;
         }
@@ -93,7 +93,7 @@ public sealed partial class AssetLoader
         record.meta.artifactKey = string.Empty;
         // Tombstones retain neutral intent; only live payload and object retention retire.
         record.payload = [];
-        m_runtimeGraph.ReplaceDependencies(record.persistentId, []);
+        m_runtimeGraph.ReplaceDependencies(record.persistentID, []);
         if (record.asset is null)
         {
             return;
@@ -122,9 +122,9 @@ public sealed partial class AssetLoader
                 continue;
             }
             bool isCurrent = m_types.TryGetTypeRef(asset.GetType(), out _);
-            var persistedType = new TypeRef(record.stableTypeId);
+            var persistedType = new TypeRef(record.stableTypeID);
             if (isCurrent
-                && (record.stableTypeId == Guid.Empty
+                && (record.stableTypeID == Guid.Empty
                     || !m_types.TryResolve(persistedType, out Type? resolvedType)
                     || resolvedType == asset.GetType())
             ) {
@@ -167,7 +167,7 @@ public sealed partial class AssetLoader
             m_retirement.Own(m_buildProcessors);
             m_retirement.Own(m_importers);
             m_retirement.Own(m_diagnostics);
-            foreach (AssetRecord record in m_recordsById.Values)
+            foreach (AssetRecord record in m_recordsByID.Values)
             {
                 if (record.asset is not null)
                 {
@@ -196,7 +196,7 @@ public sealed partial class AssetLoader
         m_disposed = true;
         m_sourceMetadataStage = null;
         m_recordsByPath.Clear();
-        m_recordsById.Clear();
+        m_recordsByID.Clear();
         m_runtimeGraph.Clear();
         m_importGraph.Clear();
         m_missingAssets.Clear();
@@ -204,7 +204,7 @@ public sealed partial class AssetLoader
         lock (m_asyncSync)
         {
             m_inFlightPathLoads.Clear();
-            m_inFlightIdLoads.Clear();
+            m_inFlightIDLoads.Clear();
         }
     }
 

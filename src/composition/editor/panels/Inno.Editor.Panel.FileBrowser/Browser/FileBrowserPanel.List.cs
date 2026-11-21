@@ -33,7 +33,7 @@ internal sealed partial class FileBrowserPanel
                 {
                     m_rename.MarkInteraction(FileBrowserPresentation.List);
                 }
-                float rowHeight = Ui.GetTextLineHeight() + Ui.GetLayout().cellPadding.Y * 2f + CurrentBrowserStyle.listRowSpacing;
+                float rowHeight = Ui.GetTextLineHeight() + Ui.GetLayout().cellPadding.Y * 2f + currentBrowserStyle.listRowSpacing;
                 HandleEntryKeyboardNavigation(Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / rowHeight)));
                 DrawEntriesTable(context, entries, m_assets.browser.currentDirectory);
                 HandleBackgroundSelection(context);
@@ -88,7 +88,7 @@ internal sealed partial class FileBrowserPanel
                 DrawHeaderRow();
                 uint rowBg = Ui.ToPackedColor(EditorPalette.collectionRow);
                 uint rowAltBg = Ui.ToPackedColor(EditorPalette.collectionRowAlternate);
-                float entryRowHeight = Ui.GetTextLineHeight() + style.cellPadding.Y * 2f + CurrentBrowserStyle.listRowSpacing;
+                float entryRowHeight = Ui.GetTextLineHeight() + style.cellPadding.Y * 2f + currentBrowserStyle.listRowSpacing;
                 Span<int> preserved = stackalloc int[3];
                 int preservedCount = CollectPreservedEntryRows(entries, preserved);
                 m_ui.widgets.ClippedRows(
@@ -145,7 +145,7 @@ internal sealed partial class FileBrowserPanel
     ) {
         float width = MathF.Max(1f, size.X);
         float height = MathF.Max(1f, size.Y);
-        float hitWidth = CurrentBrowserStyle.listSeparatorHitWidth;
+        float hitWidth = currentBrowserStyle.listSeparatorHitWidth;
         bool nameHovered;
         bool nameActive;
         bool typeHovered;
@@ -328,7 +328,7 @@ internal sealed partial class FileBrowserPanel
         Ui.PopStyleColor();
     }
 
-    private static void InsetListCellContent() => Ui.SetCursorPosX(Ui.GetCursorPosX() + CurrentBrowserStyle.listContentHorizontalPadding);
+    private static void InsetListCellContent() => Ui.SetCursorPosX(Ui.GetCursorPosX() + currentBrowserStyle.listContentHorizontalPadding);
 
     private readonly record struct ListColumnSeparatorState(
         bool nameHovered,

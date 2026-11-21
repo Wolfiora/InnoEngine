@@ -303,7 +303,7 @@ public sealed unsafe class FontCoverageTests
 
         public void PresentViewport(PlatformImGuiViewportTarget target) => throw new NotSupportedException();
 
-        public Task RetireViewport(PlatformImGuiViewportTarget target) => Task.CompletedTask;
+        public Task RetireViewportAsync(PlatformImGuiViewportTarget target) => Task.CompletedTask;
 
         public void DrainViewportRetirements() {}
 

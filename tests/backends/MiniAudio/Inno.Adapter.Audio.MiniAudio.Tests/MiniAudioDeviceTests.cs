@@ -181,9 +181,9 @@ public sealed class MiniAudioDeviceTests
             IAudioDevice backend = device;
             AudioBusHandle master = backend.CreateBus(AudioBusId.master);
             AudioBusHandle effects = backend.CreateBus(new AudioBusId("test.effects"), master);
-            foreach (AudioProcessorId processorId in StandardProcessors())
+            foreach (AudioProcessorId processorID in StandardProcessors())
             {
-                Assert.True(backend.AddBusProcessor(effects, CreateProcessor(processorId)));
+                Assert.True(backend.AddBusProcessor(effects, CreateProcessor(processorID)));
             }
 
             AudioClipHandle clip = backend.CreateClip(
@@ -327,10 +327,10 @@ public sealed class MiniAudioDeviceTests
     private static string CreateWaveFile(int frameCount)
     {
         string path = Path.Combine(Path.GetTempPath(), $"inno-miniaudio-{Guid.NewGuid():N}.wav");
-        const int sampleRate = 48_000;
-        const short channels = 1;
-        const short bitsPerSample = 16;
-        int dataLength = frameCount * channels * (bitsPerSample / 8);
+        const int C_SAMPLE_RATE = 48_000;
+        const short C_CHANNELS = 1;
+        const short C_BITS_PER_SAMPLE = 16;
+        int dataLength = frameCount * C_CHANNELS * (C_BITS_PER_SAMPLE / 8);
         using FileStream stream = File.Create(path);
         using var writer = new BinaryWriter(stream);
         writer.Write("RIFF"u8);
@@ -339,16 +339,16 @@ public sealed class MiniAudioDeviceTests
         writer.Write("fmt "u8);
         writer.Write(16);
         writer.Write((short)1);
-        writer.Write(channels);
-        writer.Write(sampleRate);
-        writer.Write(sampleRate * channels * (bitsPerSample / 8));
-        writer.Write((short)(channels * (bitsPerSample / 8)));
-        writer.Write(bitsPerSample);
+        writer.Write(C_CHANNELS);
+        writer.Write(C_SAMPLE_RATE);
+        writer.Write(C_SAMPLE_RATE * C_CHANNELS * (C_BITS_PER_SAMPLE / 8));
+        writer.Write((short)(C_CHANNELS * (C_BITS_PER_SAMPLE / 8)));
+        writer.Write(C_BITS_PER_SAMPLE);
         writer.Write("data"u8);
         writer.Write(dataLength);
         for (int frame = 0; frame < frameCount; frame++)
         {
-            double phase = 2d * Math.PI * 440d * frame / sampleRate;
+            double phase = 2d * Math.PI * 440d * frame / C_SAMPLE_RATE;
             writer.Write((short)(Math.Sin(phase) * short.MaxValue * 0.1d));
         }
         return path;

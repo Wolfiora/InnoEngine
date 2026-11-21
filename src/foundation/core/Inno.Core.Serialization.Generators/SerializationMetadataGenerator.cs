@@ -18,7 +18,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
     private const string C_PROPERTY = "Inno.Core.Serialization.SerializablePropertyAttribute";
     private const string C_RESTORED = "Inno.Core.Serialization.OnSerializableRestored";
 
-    private static readonly DiagnosticDescriptor InvalidMember = new(
+    private static readonly DiagnosticDescriptor INVALID_MEMBER = new(
         "INNOSER010",
         "Invalid static serialization declaration",
         "Serialization member '{0}' cannot supply its declared access: {1}",
@@ -27,7 +27,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor InvalidHook = new(
+    private static readonly DiagnosticDescriptor INVALID_HOOK = new(
         "INNOSER011",
         "Invalid static restoration callback",
         "Restoration declaration '{0}' must contain at most one nonstatic, nonvirtual void hook with zero arguments or one SerializationContext argument",
@@ -36,7 +36,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor InvalidOwner = new(
+    private static readonly DiagnosticDescriptor INVALID_OWNER = new(
         "INNOSER012",
         "Inaccessible static serialization declaration",
         "Serialization declaration '{0}' requires a nongeneric partial containing owner; '{1}' cannot host its generated accessors",
@@ -192,7 +192,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
             {
                 output.ReportDiagnostic(
                     Diagnostic.Create(
-                        InvalidMember,
+                        INVALID_MEMBER,
                         member.Locations.FirstOrDefault(),
                         member.ToDisplayString(),
                         "duplicate key"
@@ -208,7 +208,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
             {
                 output.ReportDiagnostic(
                     Diagnostic.Create(
-                        InvalidMember,
+                        INVALID_MEMBER,
                         member.Locations.FirstOrDefault(),
                         member.ToDisplayString(),
                         "required getter or writable setter is absent"
@@ -282,7 +282,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
         {
             output.ReportDiagnostic(
                 Diagnostic.Create(
-                    InvalidMember,
+                    INVALID_MEMBER,
                     type.Locations.FirstOrDefault(),
                     type.ToDisplayString(),
                     "no source owner can access all serialized member types"
@@ -299,7 +299,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
                 {
                     output.ReportDiagnostic(
                         Diagnostic.Create(
-                            InvalidOwner,
+                            INVALID_OWNER,
                             current.Locations.FirstOrDefault(),
                             type.ToDisplayString(),
                             current.ToDisplayString()
@@ -504,7 +504,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
                 method.GetAttributes().Any(static attribute => attribute.AttributeClass?.ToDisplayString() == C_RESTORED)).ToArray();
             if (hooks.Length > 1)
             {
-                output.ReportDiagnostic(Diagnostic.Create(InvalidHook, ancestor.Locations.FirstOrDefault(), ancestor.ToDisplayString()));
+                output.ReportDiagnostic(Diagnostic.Create(INVALID_HOOK, ancestor.Locations.FirstOrDefault(), ancestor.ToDisplayString()));
             }
             foreach (IMethodSymbol hook in hooks)
             {
@@ -513,7 +513,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
                     || hook.Parameters.Length == 1 && (hook.Parameters[0].RefKind != RefKind.None
                     || hook.Parameters[0].Type.ToDisplayString() != "Inno.Core.Serialization.SerializationContext")
                 ) {
-                    output.ReportDiagnostic(Diagnostic.Create(InvalidHook, hook.Locations.FirstOrDefault(), hook.ToDisplayString()));
+                    output.ReportDiagnostic(Diagnostic.Create(INVALID_HOOK, hook.Locations.FirstOrDefault(), hook.ToDisplayString()));
                     continue;
                 }
                 string name = "Restore" + index++;

@@ -31,12 +31,12 @@ internal sealed class EditorExtensionStateStore
     }
 
     internal bool TryGetPanelOpen(
-        string panelId,
+        string panelID,
         out bool isOpen
     ) {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         if (m_context.TryGetLayoutSection(C_PANELS_SECTION, out IReadOnlyDictionary<string, string> values)
-            && values.TryGetValue(panelId, out string? stored)
+            && values.TryGetValue(panelID, out string? stored)
             && bool.TryParse(stored, out isOpen)
         ) {
             return true;

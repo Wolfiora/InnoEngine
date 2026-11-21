@@ -20,7 +20,7 @@ public sealed partial class RenderRuntimeGenerationTests
             new TestDiagnosticSink(),
             primaryInputSurfaceSizeProvider: static () => throw new InvalidOperationException("There is no primary input surface.")
         );
-        var asset = new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.extensionId };
+        var asset = new RenderPipelineAsset { pipelineTypeId = CompositionLayerPipeline.C_EXTENSION_ID };
         var target = new RenderTexture(
             "Offscreen",
             new RenderTextureDescriptor(

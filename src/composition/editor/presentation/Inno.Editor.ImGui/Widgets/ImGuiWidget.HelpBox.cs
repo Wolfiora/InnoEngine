@@ -230,9 +230,9 @@ public sealed unsafe partial class ImGuiWidget
         float paddingX = style.sectionPadding.X;
         float legendInset = style.sectionHeaderPadding.X;
         int sectionIndex = layout.sectionIndex++;
-        uint stateId = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
+        uint stateID = NativeImGui.GetID($"##inspector_section_{sectionIndex}");
         ImGuiStorage* storage = NativeImGui.Raw.GetStateStorage();
-        bool open = NativeImGui.Raw.GetBool(storage, stateId, 1) != 0;
+        bool open = NativeImGui.Raw.GetBool(storage, stateID, 1) != 0;
         NativeImGui.SetCursorScreenPos(new Vector2(origin.X + legendInset, origin.Y));
         bool titlePressed = false;
         Vector2 titleSize = GetClickableTextSize(title, Vector2.Zero);
@@ -260,7 +260,7 @@ public sealed unsafe partial class ImGuiWidget
         if (titlePressed)
         {
             open = !open;
-            NativeImGui.Raw.SetBool(storage, stateId, open ? (byte)1 : (byte)0);
+            NativeImGui.Raw.SetBool(storage, stateID, open ? (byte)1 : (byte)0);
         }
 
         Vector2 legendMin = NativeImGui.GetItemRectMin();

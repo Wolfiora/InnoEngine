@@ -47,7 +47,7 @@ public sealed class BuildOutputOwnershipTests
                 .Save(project);
             string first = Path.Combine(root, "requests", "first");
             string second = Path.Combine(root, "requests", "second");
-            string[][] outputs = await Task.WhenAll(Build(project, first), Build(project, second));
+            string[][] outputs = await Task.WhenAll(BuildAsync(project, first), BuildAsync(project, second));
             for (int index = 0; index < outputs.Length; index++)
             {
                 string owner = Path.GetFullPath(index == 0 ? first : second) + Path.DirectorySeparatorChar;
@@ -68,7 +68,7 @@ public sealed class BuildOutputOwnershipTests
         }
     }
 
-    private static async Task<string[]> Build(
+    private static async Task<string[]> BuildAsync(
         string project,
         string outputOwner
     ) {

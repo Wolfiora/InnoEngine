@@ -301,7 +301,7 @@ public static class ValidationCommand
             ).ConfigureAwait(false);
             return 0;
         }
-        ValidationShard? shard = options.TryGetValue("--shard", out string? shardId) ? ValidationShards.Require(plan, shardId) : null;
+        ValidationShard? shard = options.TryGetValue("--shard", out string? shardID) ? ValidationShards.Require(plan, shardID) : null;
         if (shard is not null && arguments[0] is not ("run" or "resume"))
         {
             throw new ArgumentException("A shard is executed through validate run with a frozen plan.");

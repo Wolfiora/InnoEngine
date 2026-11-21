@@ -103,7 +103,7 @@ public sealed class ExecutionSlot<TValue>
     {
         private readonly ExecutionSlot<TValue> m_slot;
         private readonly object m_sync = new();
-        private readonly int m_threadId;
+        private readonly int m_threadID;
         private readonly bool m_assigned;
         private Binding? m_parent;
         private TValue m_value;
@@ -119,7 +119,7 @@ public sealed class ExecutionSlot<TValue>
             m_slot = slot;
             m_value = value;
             m_parent = parent;
-            m_threadId = threadAffine ? Environment.CurrentManagedThreadId : 0;
+            m_threadID = threadAffine ? Environment.CurrentManagedThreadId : 0;
             m_assigned = assigned;
         }
 
@@ -141,7 +141,7 @@ public sealed class ExecutionSlot<TValue>
                 {
                     throw new InvalidOperationException($"'{m_slot.m_name}' scopes must retire in last-in-first-out order.");
                 }
-                if (m_threadId != 0 && m_threadId != Environment.CurrentManagedThreadId)
+                if (m_threadID != 0 && m_threadID != Environment.CurrentManagedThreadId)
                 {
                     throw new InvalidOperationException($"'{m_slot.m_name}' must retire on its owner thread.");
                 }
@@ -156,7 +156,7 @@ public sealed class ExecutionSlot<TValue>
         {
             lock (m_sync)
             {
-                if (m_active && m_assigned && (m_threadId == 0 || m_threadId == Environment.CurrentManagedThreadId))
+                if (m_active && m_assigned && (m_threadID == 0 || m_threadID == Environment.CurrentManagedThreadId))
                 {
                     value = m_value;
                     return true;

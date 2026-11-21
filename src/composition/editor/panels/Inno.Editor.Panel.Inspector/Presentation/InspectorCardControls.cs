@@ -37,8 +37,8 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(edits);
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(requestRemove);
-        Guid componentId = component.identity.persistentId;
-        if (EditorUI.current.widgets.ClickableText($"reset_Component_{componentId:N}", ImGuiIcon.ArrowRotateLeft, "Reset Component"))
+        Guid componentID = component.identity.persistentId;
+        if (EditorUI.current.widgets.ClickableText($"reset_Component_{componentID:N}", ImGuiIcon.ArrowRotateLeft, "Reset Component"))
         {
             TryEdit(() => edits.ResetComponent(component), "Component reset");
         }
@@ -48,7 +48,7 @@ internal sealed class InspectorCardControls
             return;
         }
         Ui.SameLine(0f, 0f);
-        if (EditorUI.current.widgets.ClickableText($"remove_Component_{componentId:N}", ImGuiIcon.Xmark, "Remove Component"))
+        if (EditorUI.current.widgets.ClickableText($"remove_Component_{componentID:N}", ImGuiIcon.Xmark, "Remove Component"))
         {
             requestRemove();
         }
@@ -64,14 +64,14 @@ internal sealed class InspectorCardControls
         ArgumentNullException.ThrowIfNull(owner);
         ArgumentNullException.ThrowIfNull(system);
         ArgumentNullException.ThrowIfNull(requestRemove);
-        Guid systemId = system.identity.persistentId;
-        if (EditorUI.current.widgets.ClickableText($"reset_System_{systemId:N}", ImGuiIcon.ArrowRotateLeft, "Reset System"))
+        Guid systemID = system.identity.persistentId;
+        if (EditorUI.current.widgets.ClickableText($"reset_System_{systemID:N}", ImGuiIcon.ArrowRotateLeft, "Reset System"))
         {
             TryEdit(() => edits.ResetSystem(system), "System reset");
         }
 
         Ui.SameLine(0f, 0f);
-        if (EditorUI.current.widgets.ClickableText($"remove_System_{systemId:N}", ImGuiIcon.Xmark, "Remove System"))
+        if (EditorUI.current.widgets.ClickableText($"remove_System_{systemID:N}", ImGuiIcon.Xmark, "Remove System"))
         {
             requestRemove();
         }
@@ -206,12 +206,12 @@ internal sealed class InspectorCardControls
             return;
         }
 
-        uint targetId = Ui.GetControlId($"##inspector_card_drop_{id}");
+        uint targetID = Ui.GetControlId($"##inspector_card_drop_{id}");
         bool delivered = EditorUI.current.widgets.DragDropTarget(
             payloadType,
             cardMinimum,
             cardMaximum,
-            targetId,
+            targetID,
             out RuntimeIdentity identity,
             out bool isPreviewing,
             drawDefaultHighlight: false

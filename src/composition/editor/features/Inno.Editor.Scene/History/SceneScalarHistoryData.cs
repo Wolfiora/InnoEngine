@@ -6,7 +6,7 @@ using System.Text;
 namespace Inno.Editor.Scene;
 
 internal sealed record SceneScalarHistoryData(
-    Guid targetId,
+    Guid targetID,
     SceneScalarKind scalarKind,
     string before,
     string after,
@@ -16,7 +16,7 @@ internal sealed record SceneScalarHistoryData(
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-        writer.Write(targetId.ToByteArray());
+        writer.Write(targetID.ToByteArray());
         writer.Write((byte)scalarKind);
         writer.Write(before);
         writer.Write(after);
@@ -26,17 +26,17 @@ internal sealed record SceneScalarHistoryData(
     }
 
     internal static SceneScalarHistoryData Create(
-        Guid targetId,
+        Guid targetID,
         SceneScalarKind scalarKind,
         string before,
         string after
-    ) => new(targetId, scalarKind, before, after, Stopwatch.GetTimestamp());
+    ) => new(targetID, scalarKind, before, after, Stopwatch.GetTimestamp());
 
     internal static SceneScalarHistoryData Decode(ReadOnlySpan<byte> bytes)
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        var targetId = new Guid(reader.ReadBytes(16));
+        var targetID = new Guid(reader.ReadBytes(16));
         SceneScalarKind scalarKind = (SceneScalarKind)reader.ReadByte();
         if (!Enum.IsDefined(scalarKind))
         {
@@ -49,6 +49,6 @@ internal sealed record SceneScalarHistoryData(
         {
             throw new InvalidDataException("Scene scalar history payload contains trailing data.");
         }
-        return new SceneScalarHistoryData(targetId, scalarKind, before, after, timestamp);
+        return new SceneScalarHistoryData(targetID, scalarKind, before, after, timestamp);
     }
 }

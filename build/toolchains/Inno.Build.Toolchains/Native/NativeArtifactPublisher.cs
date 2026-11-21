@@ -68,13 +68,13 @@ public static class NativeArtifactPublisher
             recipe = recipe.WithBindingGeneration(context.engineRoot, bindingGeneration);
         }
         string component = recipe.component;
-        string targetId = recipe.targetId;
+        string targetID = recipe.targetId;
         NativeInputSnapshot snapshot = context.inputState.CaptureInitial(recipe.inputs, cancellationToken);
         string fingerprint = NativeBuildFingerprint.Create(recipe.declarations, snapshot);
         string workspaceIdentity = NativeWorkspaceIdentity.Create(context, recipe, snapshot);
-        NativeBuildContext scoped = context.WithIdentity(owner, targetId, workspaceIdentity);
+        NativeBuildContext scoped = context.WithIdentity(owner, targetID, workspaceIdentity);
         string intermediate = scoped.GetNativeBuildRoot(owner);
-        string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetId, fingerprint);
+        string destination = Path.Combine(context.engineRoot, "artifacts", "native", component, targetID, fingerprint);
         var cache = new BuildCachePublisher(
             Path.Combine(context.engineRoot, "artifacts", "native"),
             BuildCacheArtifactRole.ImmutableArtifact
@@ -114,13 +114,13 @@ public static class NativeArtifactPublisher
         ) {
             throw new InvalidOperationException($"Native inputs for '{component}' changed while waiting for ownership.");
         }
-        workspaces.BeginWorkingDirectory(intermediate, intermediate + ".lock", targetId, cancellationToken);
+        workspaces.BeginWorkingDirectory(intermediate, intermediate + ".lock", targetID, cancellationToken);
         AtomicFile.WriteAllBytes(
             Path.Combine(intermediate, "recipe.json"),
             JsonSerializer.SerializeToUtf8Bytes(new
             {
                 component,
-                targetId,
+                targetID,
                 context.configuration,
                 workspaceIdentity,
                 artifactFingerprint = fingerprint,
@@ -147,7 +147,7 @@ public static class NativeArtifactPublisher
             Record(cached);
             return new(
                 component,
-                targetId,
+                targetID,
                 fingerprint,
                 destination,
                 bindingGeneration,
@@ -170,8 +170,8 @@ public static class NativeArtifactPublisher
                     destination,
                     destination + ".read.lock",
                     bindingGeneration is { artifactDirectory.Length: > 0 } ? [bindingGeneration.artifactDirectory] : [],
-                    component + "/" + targetId + "/" + context.configuration,
-                    targetId,
+                    component + "/" + targetID + "/" + context.configuration,
+                    targetID,
                     cancellationToken
                 );
             }
@@ -224,8 +224,8 @@ public static class NativeArtifactPublisher
                 intermediate,
                 intermediate + ".lock",
                 [],
-                targetId + "/" + context.configuration,
-                targetId,
+                targetID + "/" + context.configuration,
+                targetID,
                 cancellationToken
             );
             NativeArtifact.Write(
@@ -264,7 +264,7 @@ public static class NativeArtifactPublisher
             Record(reading);
             return new(
                 component,
-                targetId,
+                targetID,
                 fingerprint,
                 destination,
                 bindingGeneration,

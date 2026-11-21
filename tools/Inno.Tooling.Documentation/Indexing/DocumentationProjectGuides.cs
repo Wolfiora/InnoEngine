@@ -336,7 +336,7 @@ internal static class DocumentationProjectGuides
             { "description", fragment.metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
                              ? description
                              : new YamlScalarNode("null") { Style = ScalarStyle.Plain } },
-            { "outdated", fragment.source != "xml" && fragment.ExplicitlyOutdated ? "true" : "false" }
+            { "outdated", fragment.source != "xml" && fragment.explicitlyOutdated ? "true" : "false" }
         };
         foreach (KeyValuePair<YamlNode, YamlNode> field in fragment.metadata.Children)
         {

@@ -400,14 +400,14 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
     }
 
-    internal bool TryTogglePanel(string panelId)
+    internal bool TryTogglePanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         Snapshot snapshot = extensions;
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
+            if (!string.Equals(registration.attribute.id, panelID, StringComparison.Ordinal)
                 || snapshot.quarantinedPanels.Contains(registration.panel)
             ) {
                 continue;
@@ -416,11 +416,11 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
             registration.panel.isOpen = !registration.panel.isOpen;
             if (registration.panel.isOpen)
             {
-                m_pendingPanelFocus.Add(panelId);
+                m_pendingPanelFocus.Add(panelID);
             }
             else
             {
-                m_pendingPanelFocus.Remove(panelId);
+                m_pendingPanelFocus.Remove(panelID);
             }
             return true;
         }
@@ -431,13 +431,13 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
     internal IReadOnlyList<EditorPanelAttribute> GetPanelDeclarations() => extensions.panelDeclarations;
 
     internal bool TryGetPanelState(
-        string panelId,
+        string panelID,
         out bool isOpen
     ) {
         Snapshot snapshot = extensions;
         foreach (PanelRegistration registration in snapshot.panels)
         {
-            if (registration.attribute.id != panelId || snapshot.quarantinedPanels.Contains(registration.panel))
+            if (registration.attribute.id != panelID || snapshot.quarantinedPanels.Contains(registration.panel))
             {
                 continue;
             }
@@ -449,49 +449,49 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         return false;
     }
 
-    internal bool TryOpenPanel(string panelId)
+    internal bool TryOpenPanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         Snapshot snapshot = extensions;
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
+            if (!string.Equals(registration.attribute.id, panelID, StringComparison.Ordinal)
                 || snapshot.quarantinedPanels.Contains(registration.panel)
             ) {
                 continue;
             }
 
             registration.panel.isOpen = true;
-            m_pendingPanelFocus.Add(panelId);
+            m_pendingPanelFocus.Add(panelID);
             return true;
         }
 
         return false;
     }
 
-    internal bool TryClosePanel(string panelId)
+    internal bool TryClosePanel(string panelID)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(panelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(panelID);
         Snapshot snapshot = extensions;
         for (int i = 0; i < snapshot.panels.Length; i++)
         {
             PanelRegistration registration = snapshot.panels[i];
-            if (!string.Equals(registration.attribute.id, panelId, StringComparison.Ordinal)
+            if (!string.Equals(registration.attribute.id, panelID, StringComparison.Ordinal)
                 || snapshot.quarantinedPanels.Contains(registration.panel)
             ) {
                 continue;
             }
 
             registration.panel.isOpen = false;
-            m_pendingPanelFocus.Remove(panelId);
+            m_pendingPanelFocus.Remove(panelID);
             return true;
         }
 
         return false;
     }
 
-    internal bool TakePanelFocusRequest(string panelId) => m_pendingPanelFocus.Remove(panelId);
+    internal bool TakePanelFocusRequest(string panelID) => m_pendingPanelFocus.Remove(panelID);
 
     internal void PrepareShutdown()
     {
@@ -1091,10 +1091,10 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         object owner,
         Type baseType
     ) {
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+        const BindingFlags C_FLAGS = BindingFlags.Instance | BindingFlags.NonPublic;
         MethodInfo capture = type.GetMethod(
             "Capture",
-            flags,
+            C_FLAGS,
             binder: null,
             [typeof(EditorState)],
             modifiers: null
@@ -1105,7 +1105,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         }
         MethodInfo restore = type.GetMethod(
             "Restore",
-            flags,
+            C_FLAGS,
             binder: null,
             [typeof(EditorState)],
             modifiers: null

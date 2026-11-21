@@ -14,7 +14,7 @@ internal enum PrefabObjectOverrideKind
 }
 
 internal sealed record PrefabStructureOverride(
-    Guid sourceObjectId,
+    Guid sourceObjectID,
     PrefabObjectOverrideKind kind,
     bool isOrphaned = false
 );

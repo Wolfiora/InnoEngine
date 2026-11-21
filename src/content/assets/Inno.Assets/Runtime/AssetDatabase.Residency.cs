@@ -103,7 +103,7 @@ public sealed partial class AssetDatabase
         }
     }
 
-    private ValueTask<AssetLease<TAsset>> QueueAcquisition<TAsset>(
+    private ValueTask<AssetLease<TAsset>> QueueAcquisitionAsync<TAsset>(
         RuntimeAssetRecord record,
         CancellationToken cancellationToken
     ) where TAsset : AssetObject
@@ -126,7 +126,7 @@ public sealed partial class AssetDatabase
             throw new InvalidOperationException($"Runtime asset '{record.path}' is not compatible with '{typeof(TAsset).FullName}'.");
         }
 
-        if (!m_preparations.TryGetValue(record.persistentId, out SharedPreparation? shared))
+        if (!m_preparations.TryGetValue(record.persistentID, out SharedPreparation? shared))
         {
             // Only immutable paths, hashes and IDs cross into IO; serializers and identities stay here.
             List<PayloadRead> reads = [];
@@ -156,8 +156,8 @@ public sealed partial class AssetDatabase
                     payload.owners++;
                     payloads.Add(payload);
                 }
-                shared = new SharedPreparation(StartPayloadPreparation(payloads.ToArray()), payloads.ToArray());
-                m_preparations.Add(record.persistentId, shared);
+                shared = new SharedPreparation(StartPayloadPreparationAsync(payloads.ToArray()), payloads.ToArray());
+                m_preparations.Add(record.persistentID, shared);
                 m_peakPreparingBytes = Math.Max(m_peakPreparingBytes, m_preparingBytes);
             }
             catch
@@ -187,7 +187,7 @@ public sealed partial class AssetDatabase
                 () => completion.TrySetCanceled(
                     cancellationToken.IsCancellationRequested ? cancellationToken : new CancellationToken(true)
                 ),
-                () => ReleasePreparation(record.persistentId, shared)
+                () => ReleasePreparation(record.persistentID, shared)
             )
         );
         m_peakPendingLoads = Math.Max(m_peakPendingLoads, m_pendingLoads.Count);
@@ -208,7 +208,7 @@ public sealed partial class AssetDatabase
         HashSet<Guid> visited,
         List<PayloadRead> reads
     ) {
-        if (!visited.Add(record.persistentId))
+        if (!visited.Add(record.persistentID))
         {
             return;
         }
@@ -219,7 +219,7 @@ public sealed partial class AssetDatabase
         }
         reads.Add(
             new PayloadRead(
-                record.persistentId,
+                record.persistentID,
                 GetVerifiedOutputKey(record, output),
                 output.length,
                 output.contentHash
@@ -227,7 +227,7 @@ public sealed partial class AssetDatabase
         );
         foreach (AssetDependency dependency in record.dependencies)
         {
-            CollectPayloadReads(m_recordsById[dependency.persistentId], visited, reads);
+            CollectPayloadReads(m_recordsByID[dependency.persistentId], visited, reads);
         }
     }
 
@@ -318,7 +318,7 @@ public sealed partial class AssetDatabase
         return bytes;
     }
 
-    private static Task<Dictionary<Guid, byte[]>> StartPayloadPreparation(SharedPayload[] reads)
+    private static Task<Dictionary<Guid, byte[]>> StartPayloadPreparationAsync(SharedPayload[] reads)
     {
         if (ExecutionContext.IsFlowSuppressed())
         {

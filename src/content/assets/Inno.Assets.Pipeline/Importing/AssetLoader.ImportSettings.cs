@@ -93,7 +93,7 @@ public sealed partial class AssetLoader
         AssetSourceMeta source = metadata is null
                                  ? new AssetSourceMeta
                                  {
-                                     persistentId = FindRecordLocked(normalized)?.persistentId ?? Guid.NewGuid(),
+                                     persistentId = FindRecordLocked(normalized)?.persistentID ?? Guid.NewGuid(),
                                      importerId = importer.importerId
                                  }
                                  : m_serialization.Deserialize<AssetSourceMeta>(metadata);
@@ -180,13 +180,13 @@ public sealed partial class AssetLoader
             }
             return null;
         }
-        Guid typeId = m_types.GetTypeRef(value.GetType()).stableId;
+        Guid typeID = m_types.GetTypeRef(value.GetType()).stableId;
         if (bytes.Length > 0)
         {
             SerializedImportSettings saved = m_serialization.Deserialize<SerializedImportSettings>(bytes);
-            if (saved.stableTypeId != typeId)
+            if (saved.stableTypeId != typeID)
             {
-                throw new InvalidDataException($"Import settings type '{saved.stableTypeId}' does not match '{typeId}'.");
+                throw new InvalidDataException($"Import settings type '{saved.stableTypeId}' does not match '{typeID}'.");
             }
             DeclareSettingsDependenciesLocked(saved.dependencies, ownerPath, null);
             m_serialization.Decode(saved.properties, reader =>
@@ -227,7 +227,7 @@ public sealed partial class AssetLoader
     ) {
         foreach (AssetDependency dependency in dependencies)
         {
-            AssetRecord? record = FindRecordByIdWithoutLoading(dependency.persistentId);
+            AssetRecord? record = FindRecordByIDWithoutLoading(dependency.persistentId);
             string path = record?.relativePath ?? dependency.lastKnownPath;
             if (!string.IsNullOrWhiteSpace(path))
             {

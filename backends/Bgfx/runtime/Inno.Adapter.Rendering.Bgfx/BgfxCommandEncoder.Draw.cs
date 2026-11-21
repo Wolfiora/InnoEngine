@@ -156,7 +156,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         SetDrawState(pipeline);
         BgfxNativeCalls.EncoderSubmitIndirect(
             m_encoder,
-            m_viewId,
+            m_viewID,
             pipeline.program,
             new bgfx.IndirectBufferHandle { idx = buffer.nativeIndex },
             checked((uint)firstCommand),
@@ -189,7 +189,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
 
         SetDrawState(pipeline);
-        BgfxNativeCalls.EncoderSubmit(m_encoder, m_viewId, pipeline.program, 0, checked((byte)bgfx.DiscardFlags.All));
+        BgfxNativeCalls.EncoderSubmit(m_encoder, m_viewID, pipeline.program, 0, checked((byte)bgfx.DiscardFlags.All));
         m_device.RecordDraw();
         m_instanceDataBound = false;
     }

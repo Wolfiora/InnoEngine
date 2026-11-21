@@ -30,7 +30,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(groupCountZ);
         BgfxNativeCalls.EncoderDispatch(
             m_encoder,
-            m_viewId,
+            m_viewID,
             pipeline.program,
             checked((uint)groupCountX),
             checked((uint)groupCountY),
@@ -85,7 +85,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ValidateIndirect(buffer, firstCommand, commandCount);
         BgfxNativeCalls.EncoderDispatchIndirect(
             m_encoder,
-            m_viewId,
+            m_viewID,
             pipeline.program,
             new bgfx.IndirectBufferHandle { idx = buffer.nativeIndex },
             checked((uint)firstCommand),

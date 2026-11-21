@@ -56,7 +56,7 @@ public static class OwnerThreadExecution
     private sealed class OwnerContext : SynchronizationContext, IDisposable
     {
         private readonly BlockingCollection<Action> m_callbacks = new();
-        private readonly int m_threadId = Environment.CurrentManagedThreadId;
+        private readonly int m_threadID = Environment.CurrentManagedThreadId;
 
         /// <inheritdoc/>
         public override void Post(
@@ -73,7 +73,7 @@ public static class OwnerThreadExecution
             object? state
         ) {
             ArgumentNullException.ThrowIfNull(callback);
-            if (Environment.CurrentManagedThreadId == m_threadId)
+            if (Environment.CurrentManagedThreadId == m_threadID)
             {
                 callback(state);
                 return;

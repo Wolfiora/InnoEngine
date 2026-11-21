@@ -7,7 +7,7 @@ using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
 
-internal static unsafe class ImGuiPlatformIoNative
+internal static unsafe class ImGuiPlatformIONative
 {
     internal static void* CreateWindowCallbacks(
         ImGuiNativeContext* context,
@@ -36,23 +36,23 @@ internal static unsafe class ImGuiPlatformIoNative
     }
 
     internal static void SetPlatformGetWindowPos(
-        ImGuiPlatformIO* platformIo,
+        ImGuiPlatformIO* platformIO,
         PlatformGetWindowPosCallback callback
     ) {
         nint callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
         delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void> setterArg =
             (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
-        ImGuiNative.Raw.PlatformIOSetPlatformGetWindowPos(platformIo, setterArg);
+        ImGuiNative.Raw.PlatformIOSetPlatformGetWindowPos(platformIO, setterArg);
     }
 
     internal static void SetPlatformGetWindowSize(
-        ImGuiPlatformIO* platformIo,
+        ImGuiPlatformIO* platformIO,
         PlatformGetWindowSizeCallback callback
     ) {
         nint callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
         delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void> setterArg =
             (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
-        ImGuiNative.Raw.PlatformIOSetPlatformGetWindowSize(platformIo, setterArg);
+        ImGuiNative.Raw.PlatformIOSetPlatformGetWindowSize(platformIO, setterArg);
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

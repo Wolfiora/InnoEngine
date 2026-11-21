@@ -21,7 +21,7 @@ public sealed class EventInputBackend : IInputBackend
     private readonly HashSet<MouseButton> m_mouseButtonsReleased = [];
     private readonly List<string> m_textInput = [];
     private readonly Lock m_sync = new();
-    private readonly uint m_windowId;
+    private readonly uint m_windowID;
     private Action<EventInputBackend>? m_disposeCallback;
     private IDisposable? m_subscription;
     private Vector2 m_mousePosition;
@@ -41,10 +41,10 @@ public sealed class EventInputBackend : IInputBackend
         : this(windowId, null) {}
 
     internal EventInputBackend(
-        uint windowId,
+        uint windowID,
         Action<EventInputBackend>? disposeCallback
     ) {
-        m_windowId = windowId;
+        m_windowID = windowID;
         m_disposeCallback = disposeCallback;
     }
 
@@ -212,12 +212,12 @@ public sealed class EventInputBackend : IInputBackend
     }
 
     private bool Accepts(Event evnt)
-        => m_windowId == 0 || evnt switch
+        => m_windowID == 0 || evnt switch
         {
-            KeyEvent key => key.windowId == m_windowId,
-            TextInputEvent text => text.windowId == m_windowId,
-            MouseEvent mouse => mouse.windowId == m_windowId,
-            WindowEvent window => window.windowId == m_windowId,
+            KeyEvent key => key.windowId == m_windowID,
+            TextInputEvent text => text.windowId == m_windowID,
+            MouseEvent mouse => mouse.windowId == m_windowID,
+            WindowEvent window => window.windowId == m_windowID,
             ApplicationSuspensionChangedEvent => true,
             _ => false
         };

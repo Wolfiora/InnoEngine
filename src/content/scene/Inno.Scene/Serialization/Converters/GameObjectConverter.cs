@@ -55,21 +55,21 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
         var mappedIds = new Dictionary<Guid, Guid>();
         if (existingConnection is not null)
         {
-            foreach ((Guid sourceId, Guid runtimeId) in existingConnection.objectIdentities)
+            foreach ((Guid sourceID, Guid runtimeID) in existingConnection.objectIdentities)
             {
-                mappedIds[runtimeId] = sourceId;
+                mappedIds[runtimeID] = sourceID;
             }
-            foreach ((Guid sourceId, Guid runtimeId) in existingConnection.componentIdentities)
+            foreach ((Guid sourceID, Guid runtimeID) in existingConnection.componentIdentities)
             {
-                mappedIds[runtimeId] = sourceId;
+                mappedIds[runtimeID] = sourceID;
             }
         }
         for (int i = 0; i < engineObjects.Length; i++)
         {
             sourceIds.Add(
                 engineObjects[i],
-                mappedIds.TryGetValue(engineObjects[i].identity.persistentId, out Guid mappedId)
-                ? mappedId
+                mappedIds.TryGetValue(engineObjects[i].identity.persistentId, out Guid mappedID)
+                ? mappedID
                 : Guid.NewGuid()
             );
         }
@@ -129,10 +129,10 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                 SceneGraphSerialization.ReadMissingReferenceAliases(reader),
                 reader.context
             );
-            Guid sourceRootId = reader.Read<Guid>(C_SOURCE_ROOT_ID_KEY);
-            if (!restored.objects.TryGetValue(sourceRootId, out GameObject? root))
+            Guid sourceRootID = reader.Read<Guid>(C_SOURCE_ROOT_ID_KEY);
+            if (!restored.objects.TryGetValue(sourceRootID, out GameObject? root))
             {
-                throw new InvalidDataException($"Prefab root '{sourceRootId}' is missing at '{reader.path}'.");
+                throw new InvalidDataException($"Prefab root '{sourceRootID}' is missing at '{reader.path}'.");
             }
             if (reader.context.TryGet(out AssetObject? sourceAsset) && sourceAsset is not null)
             {
@@ -143,39 +143,39 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                 {
                     PrefabOverrideProcessor.Reconcile(embeddedConnection!, root, reader.context);
                 }
-                var connection = new PrefabConnectionRecord(sourceAsset, sourceRootId, sourceRepresentsVariant);
-                foreach ((Guid sourceObjectId, GameObject gameObject) in restored.objects)
+                var connection = new PrefabConnectionRecord(sourceAsset, sourceRootID, sourceRepresentsVariant);
+                foreach ((Guid sourceObjectID, GameObject gameObject) in restored.objects)
                 {
-                    connection.MapObject(sourceObjectId, gameObject);
+                    connection.MapObject(sourceObjectID, gameObject);
                 }
-                foreach ((Guid sourceComponentId, GameComponent component) in restored.components)
+                foreach ((Guid sourceComponentID, GameComponent component) in restored.components)
                 {
-                    connection.MapComponent(sourceComponentId, component);
+                    connection.MapComponent(sourceComponentID, component);
                 }
                 if (sourceRepresentsVariant)
                 {
-                    foreach ((Guid sourceObjectId, Guid runtimeId) in embeddedConnection!.objectIdentities)
+                    foreach ((Guid sourceObjectID, Guid runtimeID) in embeddedConnection!.objectIdentities)
                     {
-                        GameObject? mappedObject = scene.FindObject(runtimeId);
+                        GameObject? mappedObject = scene.FindObject(runtimeID);
                         if (mappedObject is not null)
                         {
-                            connection.MapObject(sourceObjectId, mappedObject);
+                            connection.MapObject(sourceObjectID, mappedObject);
                         }
                     }
-                    foreach ((Guid sourceComponentId, Guid runtimeId) in embeddedConnection.componentIdentities)
+                    foreach ((Guid sourceComponentID, Guid runtimeID) in embeddedConnection.componentIdentities)
                     {
-                        GameComponent? mappedComponent = scene.FindComponent(runtimeId);
+                        GameComponent? mappedComponent = scene.FindComponent(runtimeID);
                         if (mappedComponent is not null)
                         {
-                            connection.MapComponent(sourceComponentId, mappedComponent);
+                            connection.MapComponent(sourceComponentID, mappedComponent);
                         }
                     }
                 }
                 root.SetPrefabConnectionDirect(connection);
 
-                foreach ((Guid sourceObjectId, Guid runtimeId) in connection.objectIdentities)
+                foreach ((Guid sourceObjectID, Guid runtimeID) in connection.objectIdentities)
                 {
-                    GameObject? gameObject = scene.FindObject(runtimeId);
+                    GameObject? gameObject = scene.FindObject(runtimeID);
                     if (gameObject is null)
                     {
                         continue;
@@ -189,7 +189,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
                     gameObject.SetPrefabInstanceDirect(
                         new PrefabInstanceInfo(
                             sourceAsset.identity.persistentId,
-                            sourceObjectId,
+                            sourceObjectID,
                             root,
                             ReferenceEquals(gameObject, root),
                             sourceRepresentsVariant,
@@ -231,7 +231,7 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
     ) {
         EngineReferenceToken token = references.Capture(gameObject, writer.path);
         writer.Write("kind", (int)token.kind);
-        writer.Write("sourceId", token.sourceId);
+        writer.Write("sourceId", token.sourceID);
     }
 
     private static EngineObject ReadReference(
@@ -252,8 +252,8 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
     private static void ValidatePrefab(SerializationReader reader)
     {
         SceneGraphSerialization.ValidateMissingReferenceAliases(reader);
-        Guid rootId = reader.Read<Guid>(C_SOURCE_ROOT_ID_KEY);
-        if (rootId == Guid.Empty)
+        Guid rootID = reader.Read<Guid>(C_SOURCE_ROOT_ID_KEY);
+        if (rootID == Guid.Empty)
         {
             throw new InvalidDataException($"Prefab source root identity at '{reader.path}' cannot be empty.");
         }
@@ -261,10 +261,10 @@ internal sealed class GameObjectConverter : SerializationConverter<GameObject>
             reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
         SceneGraphSerialization.ValidateObjects(objectReaders);
         if (!objectReaders.Any(objectReader => (
-            objectReader.Read<Guid>(SceneGraphSerialization.C_OBJECT_ID_KEY) == rootId
+            objectReader.Read<Guid>(SceneGraphSerialization.C_OBJECT_ID_KEY) == rootID
         ))
         ) {
-            throw new InvalidDataException($"Prefab root '{rootId}' is missing at '{reader.path}'.");
+            throw new InvalidDataException($"Prefab root '{rootID}' is missing at '{reader.path}'.");
         }
     }
 

@@ -211,13 +211,13 @@ public sealed class NativeDependencyManifestTests : IDisposable
     public async Task IndexFlagsCannotHideChangedConsumerSourceBytes()
     {
         (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
-        const string relative = "component/Source/source.h";
-        await Git(fixture.consumer, "update-index", "--assume-unchanged", relative);
-        string source = Path.Combine(fixture.consumer, relative);
+        const string C_RELATIVE = "component/Source/source.h";
+        await GitAsync(fixture.consumer, "update-index", "--assume-unchanged", C_RELATIVE);
+        string source = Path.Combine(fixture.consumer, C_RELATIVE);
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         File.WriteAllText(source, "native other");
         File.SetLastWriteTimeUtc(source, timestamp);
-        Assert.Equal(string.Empty, (await Git(fixture.consumer, "status", "--porcelain")).Trim());
+        Assert.Equal(string.Empty, (await GitAsync(fixture.consumer, "status", "--porcelain")).Trim());
         await Assert.ThrowsAsync<InvalidDataException>(() => NativeDependencyManifest.SelectAsync(
             fixture.consumer,
             fixture.selection,
@@ -243,9 +243,9 @@ public sealed class NativeDependencyManifestTests : IDisposable
             Assert.Equal("payload", File.ReadAllText(imported[0].files.Single()));
         }
         Assert.False(File.Exists(Path.Combine(fixture.consumer, "component", "Source", "source.h")));
-        await Git(fixture.consumer, "-c", "protocol.file.allow=always", "submodule", "update", "--init");
+        await GitAsync(fixture.consumer, "-c", "protocol.file.allow=always", "submodule", "update", "--init");
         string sourceRoot = Path.Combine(fixture.consumer, "component", "Source");
-        await Git(sourceRoot, "update-index", "--assume-unchanged", "source.h");
+        await GitAsync(sourceRoot, "update-index", "--assume-unchanged", "source.h");
         File.WriteAllText(Path.Combine(sourceRoot, "source.h"), "hidden changed input");
         await Assert.ThrowsAsync<InvalidDataException>(() => NativeDependencyManifest.AcquireAsync(
             fixture.consumer,
@@ -282,18 +282,27 @@ public sealed class NativeDependencyManifestTests : IDisposable
         File.WriteAllText(Path.Combine(producer, ".gitignore"), "artifacts/\n**/obj/\n");
         File.WriteAllText(Path.Combine(producer, "component", "Native.csproj"), "<Project />");
         File.WriteAllText(Path.Combine(producer, "component", "Toolchain.csproj"), "<Project />");
-        await Git(producer, "init");
+        await GitAsync(producer, "init");
         if (submodule)
         {
             string source = Path.Combine(producer, "component", "Source");
-            await Git(source, "init");
-            await Git(source, "add", ".");
-            await Git(source, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Native submodule");
-            await Git(producer, "-c", "protocol.file.allow=always", "submodule", "add", source.Replace('\\', '/'), "component/Source");
+            await GitAsync(source, "init");
+            await GitAsync(source, "add", ".");
+            await GitAsync(
+                source,
+                "-c",
+                "user.name=Fixture",
+                "-c",
+                "user.email=fixture@example.invalid",
+                "commit",
+                "-m",
+                "Native submodule"
+            );
+            await GitAsync(producer, "-c", "protocol.file.allow=always", "submodule", "add", source.Replace('\\', '/'), "component/Source");
         }
-        await Git(producer, "add", ".");
-        await Git(producer, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Native source");
-        await Git(m_root, "clone", "--no-hardlinks", producer, consumer);
+        await GitAsync(producer, "add", ".");
+        await GitAsync(producer, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Native source");
+        await GitAsync(m_root, "clone", "--no-hardlinks", producer, consumer);
         string sdk = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         var tools = new NativeToolchainSelection(
             "fixture-target",
@@ -311,7 +320,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
             m_component,
             new(NativeLibraryKind.Static),
             [],
-            Produce,
+            ProduceAsync,
             Recipe,
             static (
                 relative,
@@ -319,7 +328,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
             ) => relative
         )]);
         NativeBuildProduct? aggregateProduct = aggregate
-            ? await Produce(context, new Dictionary<string, NativeBuildProduct>(), CancellationToken.None)
+            ? await ProduceAsync(context, new Dictionary<string, NativeBuildProduct>(), CancellationToken.None)
             : null;
         using ProductNativeBuildResult products = aggregateProduct is not null
             ? new ProductNativeBuildResult(
@@ -356,7 +365,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
             ["fixture"]
         );
 
-    private Task<NativeBuildProduct> Produce(
+    private Task<NativeBuildProduct> ProduceAsync(
         NativeBuildContext context,
         IReadOnlyDictionary<string, NativeBuildProduct> dependencies,
         CancellationToken cancellation
@@ -379,7 +388,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
         ) => [new NativeArtifact("fixture", Path.Combine(output, "output.data"), NativeArtifactRole.StaticArchive)]
     );
 
-    private static Task<string> Git(
+    private static Task<string> GitAsync(
         string root,
         params string[] arguments
     ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);

@@ -210,7 +210,7 @@ public sealed class GameObject : EngineObject, ISerializable
     /// The attached component.
     /// </returns>
     public GameComponent AddComponent(Type componentType)
-        => EnsureAlive().AddComponent(this, componentType, persistentId: null, invokeReset: true);
+        => EnsureAlive().AddComponent(this, componentType, persistentID: null, invokeReset: true);
 
     /// <summary>
     /// Gets the first attached component assignable to the requested type.

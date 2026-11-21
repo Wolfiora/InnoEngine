@@ -139,15 +139,15 @@ public sealed class AssetHistoryTests : IDisposable
     {
         m_assets.CreateDirectory(AssetPath.Project("Folder"));
         m_assets.CreateDirectory(AssetPath.Project("Folder/Empty"));
-        Assert.True(m_assets.TryGetPersistentId(AssetPath.Project("Folder"), out Guid folderId));
+        Assert.True(m_assets.TryGetPersistentId(AssetPath.Project("Folder"), out Guid folderID));
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder"), out AssetFileEntry folder));
         Assert.True(m_runtime.interactions.For("panel/asset.file-browser", folder).Execute("file-browser/delete"));
         Assert.False(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder"), out _));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder/Empty"), out AssetFileEntry restoredEmpty));
         Assert.True(restoredEmpty.isDirectory);
-        Assert.True(m_assets.TryGetPersistentId(AssetPath.Project("Folder"), out Guid restoredId));
-        Assert.Equal(folderId, restoredId);
+        Assert.True(m_assets.TryGetPersistentId(AssetPath.Project("Folder"), out Guid restoredID));
+        Assert.Equal(folderID, restoredID);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.False(m_assets.TryGetFileSystemEntry(AssetPath.Project("Folder"), out _));
     }

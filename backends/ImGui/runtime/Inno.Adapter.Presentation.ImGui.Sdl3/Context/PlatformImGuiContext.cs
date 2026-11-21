@@ -18,15 +18,15 @@ namespace Inno.Adapter.Presentation.ImGui;
 /// </summary>
 public sealed unsafe partial class PlatformImGuiContext
 {
-    private const float DEFAULT_KEY_REPEAT_DELAY_SECONDS = 0.275f;
-    private const float DEFAULT_KEY_REPEAT_RATE_SECONDS = 0.05f;
-    private const float DEFAULT_FONT_SIZE_PIXELS = 16f;
-    private const float DEFAULT_ICON_SIZE_PIXELS = 14f;
-    private const float DEFAULT_MOUSE_SCROLLING_UNITS = 0.3f;
-    private const string DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH = "BuiltIn/Fonts";
-    private const string DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH = "BuiltIn/Icons";
-    private const string DEFAULT_FONT_FILE_NAME = "JetBrainsMono-Regular.ttf";
-    private const double LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS = 0.25;
+    private const float C_DEFAULT_KEY_REPEAT_DELAY_SECONDS = 0.275f;
+    private const float C_DEFAULT_KEY_REPEAT_RATE_SECONDS = 0.05f;
+    private const float C_DEFAULT_FONT_SIZE_PIXELS = 16f;
+    private const float C_DEFAULT_ICON_SIZE_PIXELS = 14f;
+    private const float C_DEFAULT_MOUSE_SCROLLING_UNITS = 0.3f;
+    private const string C_DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH = "BuiltIn/Fonts";
+    private const string C_DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH = "BuiltIn/Icons";
+    private const string C_DEFAULT_FONT_FILE_NAME = "JetBrainsMono-Regular.ttf";
+    private const double C_LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS = 0.25;
 
     private readonly ImGuiInteractionOptions m_interaction;
     private readonly Sdl3PlatformWindow m_window;
@@ -43,9 +43,9 @@ public sealed unsafe partial class PlatformImGuiContext
     private TimeSpan m_lastLiveResizeLockTime;
     private Action<PlatformImGuiContext>? m_releaseRegistration;
     private nint m_iniFilename;
-    private uint m_liveResizeLockedWindowId;
-    private uint m_mousePendingLeaveWindowId;
-    private uint m_mouseWindowId;
+    private uint m_liveResizeLockedWindowID;
+    private uint m_mousePendingLeaveWindowID;
+    private uint m_mouseWindowID;
     private int m_mouseButtonsDown;
     private int m_mousePendingLeaveFrame;
     private bool m_hasStartedFrame;
@@ -128,10 +128,10 @@ public sealed unsafe partial class PlatformImGuiContext
     /// <summary>
     /// Resolves the SDL window currently owned by an ImGui viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The ImGui viewport identity.
     /// </param>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The SDL window identity when available.
     /// </param>
     /// <returns>
@@ -140,22 +140,22 @@ public sealed unsafe partial class PlatformImGuiContext
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the presentation context has been disposed.
     /// </exception>
-    public partial bool TryGetWindowId(
-        uint viewportId,
-        out uint windowId
+    public partial bool TryGetWindowID(
+        uint viewportID,
+        out uint windowID
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ImGuiNative.Raw.SetCurrentContext(m_context);
-        if (viewportId == ImGuiNative.Raw.GetMainViewport()->ID)
+        if (viewportID == ImGuiNative.Raw.GetMainViewport()->ID)
         {
-            windowId = m_window.windowId;
+            windowID = m_window.windowId;
             return true;
         }
-        if (m_viewports is not null && m_viewports.TryGetWindowId(viewportId, out windowId))
+        if (m_viewports is not null && m_viewports.TryGetWindowID(viewportID, out windowID))
         {
             return true;
         }
-        windowId = 0;
+        windowID = 0;
         return false;
     }
 
@@ -428,7 +428,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
         _ = SDL.CaptureMouse(false);
         m_mouseButtonsDown = 0;
-        m_mouseWindowId = 0;
+        m_mouseWindowID = 0;
         m_mousePendingLeaveFrame = 0;
         m_pendingLiveResizeWindowIds.Clear();
 
@@ -474,23 +474,23 @@ public sealed unsafe partial class PlatformImGuiContext
         ImGuiIO* io = ImGuiNative.Raw.GetIO();
         SDLEventType eventType = (SDLEventType)sdlEvent.Type;
 
-        if (!TryGetWindowId(ref sdlEvent, out uint eventWindowId))
+        if (!TryGetWindowID(ref sdlEvent, out uint eventWindowID))
         {
             m_viewports?.ProcessEvent(ref sdlEvent, 0);
             return;
         }
 
-        if (eventWindowId != m_window.windowId && (m_viewports is null || !m_viewports.OwnsWindow(eventWindowId)))
+        if (eventWindowID != m_window.windowId && (m_viewports is null || !m_viewports.OwnsWindow(eventWindowID)))
         {
             return;
         }
 
         if (m_enableSmoothResize)
         {
-            RefreshLiveResizeHoverLock(eventType, eventWindowId, ref sdlEvent);
+            RefreshLiveResizeHoverLock(eventType, eventWindowID, ref sdlEvent);
         }
 
-        m_viewports?.ProcessEvent(ref sdlEvent, eventWindowId);
+        m_viewports?.ProcessEvent(ref sdlEvent, eventWindowID);
 
         switch (eventType)
         {
@@ -532,10 +532,10 @@ public sealed unsafe partial class PlatformImGuiContext
 
             case SDLEventType.MouseMotion:
             {
-                m_mouseWindowId = eventWindowId;
+                m_mouseWindowID = eventWindowID;
                 m_mousePendingLeaveFrame = 0;
-                m_mousePendingLeaveWindowId = 0;
-                Vector2 mousePosition = GetEventMousePosition(io, eventWindowId, sdlEvent.Motion.X, sdlEvent.Motion.Y);
+                m_mousePendingLeaveWindowID = 0;
+                Vector2 mousePosition = GetEventMousePosition(io, eventWindowID, sdlEvent.Motion.X, sdlEvent.Motion.Y);
                 ImGuiNative.Raw.AddMousePosEvent(io, mousePosition.X, mousePosition.Y);
                 break;
             }
@@ -572,8 +572,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
                 ImGuiNative.Raw.AddMouseWheelEvent(
                     io,
-                    wheelX * DEFAULT_MOUSE_SCROLLING_UNITS,
-                    wheelY * DEFAULT_MOUSE_SCROLLING_UNITS
+                    wheelX * C_DEFAULT_MOUSE_SCROLLING_UNITS,
+                    wheelY * C_DEFAULT_MOUSE_SCROLLING_UNITS
                 );
                 break;
             }
@@ -587,18 +587,18 @@ public sealed unsafe partial class PlatformImGuiContext
                 break;
 
             case SDLEventType.WindowMouseEnter:
-                m_mouseWindowId = eventWindowId;
+                m_mouseWindowID = eventWindowID;
                 m_mousePendingLeaveFrame = 0;
-                m_mousePendingLeaveWindowId = 0;
+                m_mousePendingLeaveWindowID = 0;
                 break;
 
             case SDLEventType.WindowMouseLeave:
                 // SDL may deliver Leave before Enter while crossing viewport windows. Defer the
                 // reset so a matching Enter or Motion event can cancel it without breaking drag.
-                if (m_mouseWindowId == eventWindowId)
+                if (m_mouseWindowID == eventWindowID)
                 {
                     m_mousePendingLeaveFrame = ImGuiNative.GetFrameCount() + 1;
-                    m_mousePendingLeaveWindowId = eventWindowId;
+                    m_mousePendingLeaveWindowID = eventWindowID;
                 }
                 break;
 
@@ -606,7 +606,7 @@ public sealed unsafe partial class PlatformImGuiContext
             case SDLEventType.WindowDisplayScaleChanged:
             case SDLEventType.WindowResized:
             case SDLEventType.WindowPixelSizeChanged:
-                m_viewports?.SynchronizeWindow(eventWindowId);
+                m_viewports?.SynchronizeWindow(eventWindowID);
                 UpdateDisplayMetrics(io);
                 break;
 
@@ -616,23 +616,23 @@ public sealed unsafe partial class PlatformImGuiContext
         }
     }
 
-    internal void PrepareLiveResizeWindow(uint windowId)
+    internal void PrepareLiveResizeWindow(uint windowID)
     {
         if (m_disposed || !m_enableSmoothResize)
         {
             return;
         }
 
-        bool ownsMainWindow = windowId == m_window.windowId;
-        bool ownsViewportWindow = m_viewports?.OwnsWindow(windowId) == true;
+        bool ownsMainWindow = windowID == m_window.windowId;
+        bool ownsViewportWindow = m_viewports?.OwnsWindow(windowID) == true;
         if (!ownsMainWindow && !ownsViewportWindow)
         {
             return;
         }
 
-        m_pendingLiveResizeWindowIds.Add(windowId);
+        m_pendingLiveResizeWindowIds.Add(windowID);
         TimeSpan now = m_frameTimer.Elapsed;
-        m_liveResizeLockedWindowId = windowId;
+        m_liveResizeLockedWindowID = windowID;
         m_lastLiveResizeLockTime = now;
     }
 
@@ -687,7 +687,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
         // During live resize, prevent the main viewport from hosting other windows.
         ImGuiViewport* mainViewport = ImGuiNative.Raw.GetMainViewport();
-        if (m_liveResizeLockedWindowId != 0
+        if (m_liveResizeLockedWindowID != 0
             && (io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0
             && mainViewport is not null
         ) {
@@ -731,10 +731,10 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private void RefreshLiveResizeHoverLock(
         SDLEventType eventType,
-        uint eventWindowId,
+        uint eventWindowID,
         ref SDLEvent sdlEvent
     ) {
-        if (m_liveResizeLockedWindowId == 0)
+        if (m_liveResizeLockedWindowID == 0)
         {
             return;
         }
@@ -744,33 +744,33 @@ public sealed unsafe partial class PlatformImGuiContext
         SDLMouseButtonFlags mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         if ((mouseButtons & SDLMouseButtonFlags.Left) == 0)
         {
-            m_liveResizeLockedWindowId = 0;
+            m_liveResizeLockedWindowID = 0;
             return;
         }
 
         TimeSpan now = m_frameTimer.Elapsed;
-        if (eventType == SDLEventType.WindowExposed && eventWindowId == m_liveResizeLockedWindowId)
+        if (eventType == SDLEventType.WindowExposed && eventWindowID == m_liveResizeLockedWindowID)
         {
             m_lastLiveResizeLockTime = now;
         }
 
-        if ((now - m_lastLiveResizeLockTime).TotalSeconds > LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS)
+        if ((now - m_lastLiveResizeLockTime).TotalSeconds > C_LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS)
         {
-            m_liveResizeLockedWindowId = 0;
+            m_liveResizeLockedWindowID = 0;
             return;
         }
 
         if (eventType == SDLEventType.WindowExposed
-            && eventWindowId == m_liveResizeLockedWindowId
+            && eventWindowID == m_liveResizeLockedWindowID
             && sdlEvent.Window.Data1 == 0
         ) {
-            m_liveResizeLockedWindowId = 0;
+            m_liveResizeLockedWindowID = 0;
             return;
         }
 
         if (eventType == SDLEventType.MouseButtonUp && sdlEvent.Button.Button == SDL.Constants.SDL_BUTTON_LEFT)
         {
-            m_liveResizeLockedWindowId = 0;
+            m_liveResizeLockedWindowID = 0;
         }
     }
 
@@ -835,8 +835,8 @@ public sealed unsafe partial class PlatformImGuiContext
             return m_window.GetSdlWindow();
         }
 
-        uint focusedWindowId = SDL.Raw.GetWindowId(keyboardFocus);
-        if (focusedWindowId == m_window.windowId || (m_viewports is not null && m_viewports.OwnsWindow(focusedWindowId)))
+        uint focusedWindowID = SDL.Raw.GetWindowId(keyboardFocus);
+        if (focusedWindowID == m_window.windowId || (m_viewports is not null && m_viewports.OwnsWindow(focusedWindowID)))
         {
             return keyboardFocus;
         }
@@ -853,9 +853,9 @@ public sealed unsafe partial class PlatformImGuiContext
 
         uint[] windowIds = [.. m_pendingLiveResizeWindowIds];
         m_pendingLiveResizeWindowIds.Clear();
-        foreach (uint windowId in windowIds)
+        foreach (uint windowID in windowIds)
         {
-            if (windowId == m_window.windowId)
+            if (windowID == m_window.windowId)
             {
                 int pixelWidth = 0;
                 int pixelHeight = 0;
@@ -864,7 +864,7 @@ public sealed unsafe partial class PlatformImGuiContext
             }
             else
             {
-                m_viewports?.SynchronizeWindow(windowId);
+                m_viewports?.SynchronizeWindow(windowID);
             }
         }
     }
@@ -919,23 +919,23 @@ public sealed unsafe partial class PlatformImGuiContext
             m_mousePendingLeaveFrame,
             ImGuiNative.GetFrameCount(),
             m_mouseButtonsDown,
-            m_mousePendingLeaveWindowId,
-            m_liveResizeLockedWindowId
+            m_mousePendingLeaveWindowID,
+            m_liveResizeLockedWindowID
         )) {
             return;
         }
 
-        m_mouseWindowId = 0;
+        m_mouseWindowID = 0;
         m_mousePendingLeaveFrame = 0;
-        m_mousePendingLeaveWindowId = 0;
+        m_mousePendingLeaveWindowID = 0;
         ImGuiNative.Raw.AddMousePosEvent(io, -float.MaxValue, -float.MaxValue);
     }
 
     private void ReleaseCompletedLiveResizeHoverLock()
     {
-        if (m_liveResizeLockedWindowId == 0
+        if (m_liveResizeLockedWindowID == 0
             || (m_frameTimer.Elapsed - m_lastLiveResizeLockTime).TotalSeconds
-               <= LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS
+               <= C_LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS
         ) {
             return;
         }
@@ -945,7 +945,7 @@ public sealed unsafe partial class PlatformImGuiContext
         SDLMouseButtonFlags mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         if ((mouseButtons & SDLMouseButtonFlags.Left) == 0)
         {
-            m_liveResizeLockedWindowId = 0;
+            m_liveResizeLockedWindowID = 0;
         }
     }
 
@@ -1004,8 +1004,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static void ConfigureKeyRepeat(ImGuiIO* io)
     {
-        io->KeyRepeatDelay = DEFAULT_KEY_REPEAT_DELAY_SECONDS;
-        io->KeyRepeatRate = DEFAULT_KEY_REPEAT_RATE_SECONDS;
+        io->KeyRepeatDelay = C_DEFAULT_KEY_REPEAT_DELAY_SECONDS;
+        io->KeyRepeatRate = C_DEFAULT_KEY_REPEAT_RATE_SECONDS;
     }
 
     private static void ConfigureFonts(
@@ -1021,7 +1021,7 @@ public sealed unsafe partial class PlatformImGuiContext
         int preferredIndex = FindPreferredFontIndex(fontPaths);
         for (int i = 0; i < fontPaths.Count; i++)
         {
-            ImFont* loadedFont = LoadFont(fonts, fontPaths[i], DEFAULT_FONT_SIZE_PIXELS);
+            ImFont* loadedFont = LoadFont(fonts, fontPaths[i], C_DEFAULT_FONT_SIZE_PIXELS);
             if (loadedFont is null)
             {
                 continue;
@@ -1067,7 +1067,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static int FindPreferredFontIndex(List<string> fontPaths)
     {
-        if (fontPaths.Count == 0 || string.IsNullOrWhiteSpace(DEFAULT_FONT_FILE_NAME))
+        if (fontPaths.Count == 0 || string.IsNullOrWhiteSpace(C_DEFAULT_FONT_FILE_NAME))
         {
             return -1;
         }
@@ -1075,7 +1075,7 @@ public sealed unsafe partial class PlatformImGuiContext
         for (int i = 0; i < fontPaths.Count; i++)
         {
             string fileName = Path.GetFileName(fontPaths[i]);
-            if (fileName.Equals(DEFAULT_FONT_FILE_NAME, StringComparison.OrdinalIgnoreCase))
+            if (fileName.Equals(C_DEFAULT_FONT_FILE_NAME, StringComparison.OrdinalIgnoreCase))
             {
                 return i;
             }
@@ -1092,12 +1092,12 @@ public sealed unsafe partial class PlatformImGuiContext
         iconFonts = [];
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (string fontDirectory in ResolveAssetDirectories(DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH))
+        foreach (string fontDirectory in ResolveAssetDirectories(C_DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH))
         {
             CollectFontFiles(fontDirectory, baseFonts, seen, includeSubdirectories: false);
         }
 
-        foreach (string iconDirectory in ResolveAssetDirectories(DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH))
+        foreach (string iconDirectory in ResolveAssetDirectories(C_DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH))
         {
             CollectFontFiles(iconDirectory, iconFonts, seen, includeSubdirectories: false);
         }
@@ -1174,7 +1174,7 @@ public sealed unsafe partial class PlatformImGuiContext
             mergeConfig->PixelSnapH = 1;
             try
             {
-                _ = LoadFont(fonts, iconFontPaths[index], DEFAULT_ICON_SIZE_PIXELS, mergeConfig);
+                _ = LoadFont(fonts, iconFontPaths[index], C_DEFAULT_ICON_SIZE_PIXELS, mergeConfig);
             }
             finally
             {
@@ -1222,7 +1222,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static Vector2 GetEventMousePosition(
         ImGuiIO* io,
-        uint windowId,
+        uint windowID,
         float localX,
         float localY
     ) {
@@ -1232,7 +1232,7 @@ public sealed unsafe partial class PlatformImGuiContext
             return position;
         }
 
-        SDLWindow* window = SDL.Raw.GetWindowFromId(windowId);
+        SDLWindow* window = SDL.Raw.GetWindowFromId(windowID);
         if (window is null)
         {
             return position;
@@ -1248,15 +1248,15 @@ public sealed unsafe partial class PlatformImGuiContext
         int pendingFrame,
         int currentFrame,
         int mouseButtonsDown,
-        uint pendingWindowId,
-        uint liveResizeLockedWindowId
+        uint pendingWindowID,
+        uint liveResizeLockedWindowID
     ) {
         if (pendingFrame == 0 || mouseButtonsDown != 0 || currentFrame < pendingFrame)
         {
             return false;
         }
 
-        return liveResizeLockedWindowId == 0 || pendingWindowId != liveResizeLockedWindowId;
+        return liveResizeLockedWindowID == 0 || pendingWindowID != liveResizeLockedWindowID;
     }
 
     private static bool TryTranslateMouseButton(
@@ -1407,33 +1407,33 @@ public sealed unsafe partial class PlatformImGuiContext
         _ => ImGuiKey.None
     };
 
-    private static bool TryGetWindowId(
+    private static bool TryGetWindowID(
         ref SDLEvent sdlEvent,
-        out uint windowId
+        out uint windowID
     ) {
         SDLEventType eventType = (SDLEventType)sdlEvent.Type;
         switch (eventType)
         {
             case SDLEventType.KeyDown:
             case SDLEventType.KeyUp:
-                windowId = sdlEvent.Key.WindowID;
+                windowID = sdlEvent.Key.WindowID;
                 return true;
 
             case SDLEventType.TextInput:
-                windowId = sdlEvent.Text.WindowID;
+                windowID = sdlEvent.Text.WindowID;
                 return true;
 
             case SDLEventType.MouseMotion:
-                windowId = sdlEvent.Motion.WindowID;
+                windowID = sdlEvent.Motion.WindowID;
                 return true;
 
             case SDLEventType.MouseButtonDown:
             case SDLEventType.MouseButtonUp:
-                windowId = sdlEvent.Button.WindowID;
+                windowID = sdlEvent.Button.WindowID;
                 return true;
 
             case SDLEventType.MouseWheel:
-                windowId = sdlEvent.Wheel.WindowID;
+                windowID = sdlEvent.Wheel.WindowID;
                 return true;
 
             case SDLEventType.WindowFocusGained:
@@ -1447,11 +1447,11 @@ public sealed unsafe partial class PlatformImGuiContext
             case SDLEventType.WindowResized:
             case SDLEventType.WindowPixelSizeChanged:
             case SDLEventType.WindowCloseRequested:
-                windowId = sdlEvent.Window.WindowID;
+                windowID = sdlEvent.Window.WindowID;
                 return true;
 
             default:
-                windowId = 0;
+                windowID = 0;
                 return false;
         }
     }

@@ -20,12 +20,12 @@ namespace Inno.Plugins.Authoring;
 /// </summary>
 public sealed class PluginSourceService
 {
-    private static readonly HashSet<string> S_FORBIDDEN_BINARY_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> FORBIDDEN_BINARY_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
     {
         ".dll", ".exe", ".dylib", ".so", ".a", ".lib"
     };
 
-    private static readonly HashSet<string> S_IGNORED_SYSTEM_FILE_NAMES = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> IGNORED_SYSTEM_FILE_NAMES = new(StringComparer.OrdinalIgnoreCase)
     {
         ".DS_Store", "Thumbs.db", "desktop.ini"
     };
@@ -146,7 +146,7 @@ public sealed class PluginSourceService
             .Where(path =>
             {
                 string name = Path.GetFileName(path);
-                if (name.StartsWith(".", StringComparison.Ordinal) || S_IGNORED_SYSTEM_FILE_NAMES.Contains(name))
+                if (name.StartsWith(".", StringComparison.Ordinal) || IGNORED_SYSTEM_FILE_NAMES.Contains(name))
                 {
                     return false;
                 }
@@ -363,7 +363,7 @@ public sealed class PluginSourceService
     private static void ValidateSourceExtension(string path)
     {
         if (!path.EndsWith("/", StringComparison.Ordinal)
-            && S_FORBIDDEN_BINARY_EXTENSIONS.Contains(Path.GetExtension(path))
+            && FORBIDDEN_BINARY_EXTENSIONS.Contains(Path.GetExtension(path))
         ) {
             throw new InvalidDataException($"Plugin source '{path}' is a forbidden prebuilt binary.");
         }
@@ -428,7 +428,7 @@ public sealed class PluginSourceService
         IReadOnlyList<PluginCandidate> candidates,
         List<PluginDiagnostic> diagnostics
     ) {
-        var byId = new Dictionary<string, PluginCandidate>(StringComparer.Ordinal);
+        var byID = new Dictionary<string, PluginCandidate>(StringComparer.Ordinal);
         var rejected = new HashSet<string>(StringComparer.Ordinal);
         foreach (IGrouping<string, PluginCandidate> group in candidates.GroupBy(
             static candidate => candidate.manifest.pluginId,
@@ -437,7 +437,7 @@ public sealed class PluginSourceService
             PluginCandidate[] installed = group.ToArray();
             if (installed.Length == 1)
             {
-                byId.Add(group.Key, installed[0]);
+                byID.Add(group.Key, installed[0]);
                 continue;
             }
             rejected.Add(group.Key);
@@ -451,7 +451,7 @@ public sealed class PluginSourceService
         foreach (PluginCandidate candidate in candidates.Where(candidate =>
                      !rejected.Contains(candidate.manifest.pluginId))
         ) {
-            string? missing = candidate.manifest.dependencies.FirstOrDefault(id => !byId.ContainsKey(id));
+            string? missing = candidate.manifest.dependencies.FirstOrDefault(id => !byID.ContainsKey(id));
             if (missing is not null)
             {
                 rejected.Add(candidate.manifest.pluginId);
@@ -465,7 +465,7 @@ public sealed class PluginSourceService
         do
         {
             rejectionChanged = false;
-            foreach (PluginCandidate candidate in byId.Values)
+            foreach (PluginCandidate candidate in byID.Values)
             {
                 if (rejected.Contains(candidate.manifest.pluginId))
                 {
@@ -486,7 +486,7 @@ public sealed class PluginSourceService
         while (rejectionChanged);
 
         var graph = new DependencyGraph<string>(StringComparer.Ordinal, StringComparer.Ordinal);
-        foreach (PluginCandidate candidate in byId.Values.Where(candidate =>
+        foreach (PluginCandidate candidate in byID.Values.Where(candidate =>
                      !rejected.Contains(candidate.manifest.pluginId))
         ) {
             graph.AddNode(candidate.manifest.pluginId);
@@ -505,18 +505,18 @@ public sealed class PluginSourceService
         {
             cycleBlocked.UnionWith(graph.GetDependents(node, recursive: true));
         }
-        foreach (string pluginId in cycleBlocked.OrderBy(static value => value, StringComparer.Ordinal))
+        foreach (string pluginID in cycleBlocked.OrderBy(static value => value, StringComparer.Ordinal))
         {
-            PluginCandidate candidate = byId[pluginId];
+            PluginCandidate candidate = byID[pluginID];
             diagnostics.Add(
                 new PluginDiagnostic(
                     candidate.sourcePath,
-                    $"Plugin dependency cycle prevents '{pluginId}' from loading."
+                    $"Plugin dependency cycle prevents '{pluginID}' from loading."
                 )
             );
-            graph.RemoveNode(pluginId);
+            graph.RemoveNode(pluginID);
         }
-        return graph.TopologicalSort().Select(pluginId => byId[pluginId]).ToArray();
+        return graph.TopologicalSort().Select(pluginID => byID[pluginID]).ToArray();
     }
 
     private static bool IsManifestDataFailure(Exception exception)
@@ -540,7 +540,7 @@ public sealed class PluginSourceService
         }
         int separator = path.LastIndexOf('/');
         string fileName = separator < 0 ? path : path[(separator + 1)..];
-        return S_IGNORED_SYSTEM_FILE_NAMES.Contains(fileName);
+        return IGNORED_SYSTEM_FILE_NAMES.Contains(fileName);
     }
 
     private static string ValidatePortablePath(string value)

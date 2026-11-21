@@ -97,9 +97,9 @@ public static class Time
 
 internal sealed class RuntimeClock
 {
-    private static readonly ExecutionSlot<RuntimeClock> S_CURRENT_SCOPE = new("clock");
+    private static readonly ExecutionSlot<RuntimeClock> CURRENT_SCOPE = new("clock");
 
-    internal static RuntimeClock current => S_CURRENT_SCOPE.current;
+    internal static RuntimeClock current => CURRENT_SCOPE.current;
 
     internal float time { get; private set; }
 
@@ -121,7 +121,7 @@ internal sealed class RuntimeClock
 
     internal long fixedStepCount { get; private set; }
 
-    internal IDisposable EnterScope() => S_CURRENT_SCOPE.Enter(this);
+    internal IDisposable EnterScope() => CURRENT_SCOPE.Enter(this);
 
     internal RuntimeFrame Update(float unscaledDeltaTime)
     {

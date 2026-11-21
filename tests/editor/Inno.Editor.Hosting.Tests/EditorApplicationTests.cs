@@ -42,7 +42,7 @@ public sealed class EditorApplicationTests
     }
 
     [Fact]
-    public async Task MissingBackendSelectionFailsBeforeProjectIoOrNativeInitialization()
+    public async Task MissingBackendSelectionFailsBeforeProjectIOOrNativeInitialization()
     {
         EditorLaunchOptions options = CreateOptions(selection: new AdapterSelection());
 

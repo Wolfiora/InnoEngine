@@ -89,7 +89,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         bgfx.set_view_rect(
-            m_viewId,
+            m_viewID,
             checked((ushort)x),
             checked((ushort)y),
             checked((ushort)width),

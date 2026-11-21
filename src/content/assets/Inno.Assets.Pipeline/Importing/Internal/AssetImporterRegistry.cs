@@ -55,23 +55,23 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
             }
             return (type, type.GetCustomAttribute<AssetImporterAttribute>(inherit: false)!.id);
         }).ToArray();
-        string? duplicateId = registrations
+        string? duplicateID = registrations
             .GroupBy(static registration => registration.id, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
-        if (duplicateId is not null)
+        if (duplicateID is not null)
         {
-            throw new InvalidOperationException($"Asset importer id '{duplicateId}' is registered by multiple importers.");
+            throw new InvalidOperationException($"Asset importer id '{duplicateID}' is registered by multiple importers.");
         }
 
         var byExtension = new Dictionary<string, AssetImporter>(StringComparer.OrdinalIgnoreCase);
-        var byId = new Dictionary<string, AssetImporter>(StringComparer.Ordinal);
-        var typesById = new Dictionary<string, Type>(StringComparer.Ordinal);
-        foreach ((Type type, string importerId) in registrations)
+        var byID = new Dictionary<string, AssetImporter>(StringComparer.Ordinal);
+        var typesByID = new Dictionary<string, Type>(StringComparer.Ordinal);
+        foreach ((Type type, string importerID) in registrations)
         {
             AssetImporter importer = CreateExtension<AssetImporter>(type);
-            importer.BindImporterId(importerId);
-            byId.Add(importerId, importer);
-            typesById.Add(importerId, type);
+            importer.BindImporterID(importerID);
+            byID.Add(importerID, importer);
+            typesByID.Add(importerID, type);
 
             foreach (string declaredExtension in importer.supportedExtensions)
             {
@@ -88,8 +88,8 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
 
         return new Snapshot(
             byExtension.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-            byId.ToFrozenDictionary(StringComparer.Ordinal),
-            typesById.ToFrozenDictionary(StringComparer.Ordinal)
+            byID.ToFrozenDictionary(StringComparer.Ordinal),
+            typesByID.ToFrozenDictionary(StringComparer.Ordinal)
         );
     }
 
@@ -109,13 +109,13 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
         lock (m_generationSync)
         {
             m_generationRollback = new Dictionary<string, long>(m_generations, StringComparer.Ordinal);
-            foreach ((string importerId, Type importerType) in candidate.typesById)
+            foreach ((string importerID, Type importerType) in candidate.typesByID)
             {
                 if (previous is null
-                    || !previous.typesById.TryGetValue(importerId, out Type? previousType)
+                    || !previous.typesByID.TryGetValue(importerID, out Type? previousType)
                     || previousType != importerType
                 ) {
-                    m_generations[importerId] = m_generations.GetValueOrDefault(importerId) + 1;
+                    m_generations[importerID] = m_generations.GetValueOrDefault(importerID) + 1;
                 }
             }
         }
@@ -141,9 +141,9 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
                 return;
             }
             m_generations.Clear();
-            foreach ((string importerId, long generation) in m_generationRollback)
+            foreach ((string importerID, long generation) in m_generationRollback)
             {
-                m_generations.Add(importerId, generation);
+                m_generations.Add(importerID, generation);
             }
             m_generationRollback = null;
         }
@@ -174,7 +174,7 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
     /// <param name="snapshot">
     /// The immutable state snapshot consumed by this operation.
     /// </param>
-    protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.byId.Values);
+    protected override void DisposeSnapshot(Snapshot snapshot) => DisposeExtensions(snapshot.byID.Values);
 
     internal AssetImporter? FindByPath(string relativePath)
     {
@@ -182,14 +182,14 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
         return current.byExtension.GetValueOrDefault(extension);
     }
 
-    internal AssetImporter? FindById(string importerId) => current.byId.GetValueOrDefault(importerId);
+    internal AssetImporter? FindByID(string importerID) => current.byID.GetValueOrDefault(importerID);
 
-    internal long GetGeneration(string importerId)
+    internal long GetGeneration(string importerID)
     {
         _ = current;
         lock (m_generationSync)
         {
-            return m_generations.GetValueOrDefault(importerId);
+            return m_generations.GetValueOrDefault(importerID);
         }
     }
 
@@ -205,7 +205,7 @@ internal sealed class AssetImporterRegistry : TypeRegistry<AssetImporterRegistry
 
     internal sealed record Snapshot(
         FrozenDictionary<string, AssetImporter> byExtension,
-        FrozenDictionary<string, AssetImporter> byId,
-        FrozenDictionary<string, Type> typesById
+        FrozenDictionary<string, AssetImporter> byID,
+        FrozenDictionary<string, Type> typesByID
     );
 }

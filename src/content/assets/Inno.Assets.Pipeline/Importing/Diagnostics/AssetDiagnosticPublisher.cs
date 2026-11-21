@@ -88,18 +88,18 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     }
 
     internal void PublishBuild(
-        Guid targetId,
+        Guid targetID,
         string displayName,
         IReadOnlyList<string> messages
     ) {
         ArgumentNullException.ThrowIfNull(messages);
-        if (targetId == Guid.Empty)
+        if (targetID == Guid.Empty)
         {
             return;
         }
         if (messages.Count == 0)
         {
-            ResolveBuild(targetId);
+            ResolveBuild(targetID);
             return;
         }
 
@@ -109,38 +109,38 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
             .ToArray();
         if (diagnostics.Length == 0)
         {
-            ResolveBuild(targetId);
+            ResolveBuild(targetID);
             return;
         }
 
         string state = string.Join('\n', diagnostics.Select(static diagnostic => diagnostic.message));
-        if (m_buildStates.TryGetValue(targetId, out string? previous)
+        if (m_buildStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
         ) {
             return;
         }
-        Set(CreateSource(C_BUILD_GROUP, targetId, displayName), diagnostics);
-        m_buildStates[targetId] = state;
+        Set(CreateSource(C_BUILD_GROUP, targetID, displayName), diagnostics);
+        m_buildStates[targetID] = state;
     }
 
     internal void PublishBuildFailure(
-        Guid targetId,
+        Guid targetID,
         string displayName,
         Exception exception
     ) {
         ArgumentNullException.ThrowIfNull(exception);
-        if (targetId == Guid.Empty)
+        if (targetID == Guid.Empty)
         {
             return;
         }
         string state = exception.ToString();
-        if (m_buildStates.TryGetValue(targetId, out string? previous)
+        if (m_buildStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
         ) {
             return;
         }
-        Set(CreateSource(C_BUILD_GROUP, targetId, displayName), [Diagnostic.Error("ASSET-BUILD", exception.Message)]);
-        m_buildStates[targetId] = state;
+        Set(CreateSource(C_BUILD_GROUP, targetID, displayName), [Diagnostic.Error("ASSET-BUILD", exception.Message)]);
+        m_buildStates[targetID] = state;
     }
 
     internal bool PublishCatalogFailure(Exception exception)
@@ -157,32 +157,32 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
     }
 
     internal void PublishMissingReference(
-        Guid targetId,
+        Guid targetID,
         string displayName,
         Type expectedType
     ) {
-        if (targetId == Guid.Empty)
+        if (targetID == Guid.Empty)
         {
             return;
         }
         ArgumentNullException.ThrowIfNull(expectedType);
         string resolvedDisplayName = string.IsNullOrWhiteSpace(displayName)
-                                     ? targetId.ToString()
+                                     ? targetID.ToString()
                                      : displayName;
         string state = $"{resolvedDisplayName}:{expectedType.FullName}";
-        if (m_referenceStates.TryGetValue(targetId, out string? previous)
+        if (m_referenceStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
         ) {
             return;
         }
         Set(
-            CreateSource(C_REFERENCE_GROUP, targetId, resolvedDisplayName),
+            CreateSource(C_REFERENCE_GROUP, targetID, resolvedDisplayName),
             [Diagnostic.Warning(
                 "ASSET-REFERENCE",
                 $"Asset '{resolvedDisplayName}' required as '{expectedType.FullName}' is missing."
             )]
         );
-        m_referenceStates[targetId] = state;
+        m_referenceStates[targetID] = state;
     }
 
     internal void ResolveCatalog()
@@ -263,31 +263,31 @@ internal sealed class AssetDiagnosticPublisher : IDisposable
         );
     }
 
-    private void ResolveBuild(Guid targetId)
+    private void ResolveBuild(Guid targetID)
     {
-        if (!m_buildStates.Remove(targetId))
+        if (!m_buildStates.Remove(targetID))
         {
             return;
         }
-        Clear(CreateSource(C_BUILD_GROUP, targetId));
+        Clear(CreateSource(C_BUILD_GROUP, targetID));
     }
 
-    private void ResolveReference(Guid targetId)
+    private void ResolveReference(Guid targetID)
     {
-        if (!m_referenceStates.Remove(targetId))
+        if (!m_referenceStates.Remove(targetID))
         {
             return;
         }
-        Clear(CreateSource(C_REFERENCE_GROUP, targetId));
+        Clear(CreateSource(C_REFERENCE_GROUP, targetID));
     }
 
     private static DiagnosticSource CreateSource(
         string group,
-        Guid? targetId = null,
+        Guid? targetID = null,
         string? displayName = null
     ) {
-        string id = targetId.HasValue
-                    ? $"inno.assets.pipeline/{group}/{targetId.Value:N}"
+        string id = targetID.HasValue
+                    ? $"inno.assets.pipeline/{group}/{targetID.Value:N}"
                     : $"inno.assets.pipeline/{group}";
         return new DiagnosticSource(id, string.IsNullOrWhiteSpace(displayName) ? group : displayName);
     }

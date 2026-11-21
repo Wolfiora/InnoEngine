@@ -15,7 +15,7 @@ public sealed class EditorMenuItem
     /// <param name="label">
     /// The visible contextual label of the node.
     /// </param>
-    /// <param name="actionId">
+    /// <param name="actionID">
     /// The leaf action identifier, or an empty string for a structural submenu.
     /// </param>
     /// <param name="order">
@@ -35,7 +35,7 @@ public sealed class EditorMenuItem
     /// </param>
     internal EditorMenuItem(
         string label,
-        string actionId,
+        string actionID,
         int order,
         bool separatorBefore,
         EditorActionState status,
@@ -43,7 +43,7 @@ public sealed class EditorMenuItem
         object? argument = null
     ) {
         this.label = label ?? string.Empty;
-        this.actionId = actionId ?? string.Empty;
+        this.actionId = actionID ?? string.Empty;
         this.order = order;
         this.separatorBefore = separatorBefore;
         this.status = status;

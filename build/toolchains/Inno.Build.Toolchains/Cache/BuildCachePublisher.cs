@@ -224,9 +224,9 @@ public sealed class BuildCachePublisher
         Entry previous = ReadEntry(record);
         long bytes = BuildCacheFileInventory.Measure(directory, m_role, cancellationToken);
         if (previous.directory != relative
-            || !BuildCacheInventory.pathComparer.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
-            || !previous.dependencies.SequenceEqual(dependencies.Select(Path.GetFullPath), BuildCacheInventory.pathComparer)
-            || previous.targetId != targetId || previous.bytes != bytes
+            || !BuildCacheInventory.PATH_COMPARER.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
+            || !previous.dependencies.SequenceEqual(dependencies.Select(Path.GetFullPath), BuildCacheInventory.PATH_COMPARER)
+            || previous.targetID != targetId || previous.bytes != bytes
         ) {
             throw new InvalidDataException("Immutable ownership differs from its completed publication registration.");
         }
@@ -340,14 +340,14 @@ public sealed class BuildCachePublisher
         {
             Entry previous = ReadEntry(record);
             if (previous.directory != relative
-                || !BuildCacheInventory.pathComparer.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
+                || !BuildCacheInventory.PATH_COMPARER.Equals(PathBoundary.Resolve(m_root, previous.leasePath), Path.GetFullPath(leasePath))
             ) {
                 throw new InvalidDataException("Process ownership has an inconsistent directory or lease identity.");
             }
             retained = previous.dependencies;
         }
         string[] closure = retained.Concat(dependencies.Select(Path.GetFullPath))
-            .Distinct(BuildCacheInventory.pathComparer)
+            .Distinct(BuildCacheInventory.PATH_COMPARER)
             .ToArray();
         string owners = Path.Combine(directory, "owners");
         Directory.CreateDirectory(owners);
@@ -391,7 +391,7 @@ public sealed class BuildCachePublisher
         {
             return;
         }
-        HashSet<string> currents = ReadRoots(cancellation).ToHashSet(BuildCacheInventory.pathComparer);
+        HashSet<string> currents = ReadRoots(cancellation).ToHashSet(BuildCacheInventory.PATH_COMPARER);
         foreach (string pointer in m_role == BuildCacheArtifactRole.ImmutableArtifact
                                    ? Directory.EnumerateFiles(m_root, "*.current")
                                    : []
@@ -478,11 +478,11 @@ public sealed class BuildCachePublisher
                          ? entry.bytes
                          : m_inventoryProgress?.Measure(directory, path, lease, m_role, cancellation)
                            ?? BuildCacheFileInventory.Measure(directory, m_role, cancellation);
-            result.Add(new(directory, lease, entry.targetId, bytes, entry.lastUseUtc, entry.dependencies, m_role));
+            result.Add(new(directory, lease, entry.targetID, bytes, entry.lastUseUtc, entry.dependencies, m_role));
         }
         foreach (ProcessOwnedDirectoryDescriptor working in ProcessOwnedDirectory.ReadClaims(m_root, cancellation))
         {
-            if (result.Any(entry => BuildCacheInventory.pathComparer.Equals(entry.directory, working.directory)))
+            if (result.Any(entry => BuildCacheInventory.PATH_COMPARER.Equals(entry.directory, working.directory)))
             {
                 continue;
             }
@@ -588,7 +588,7 @@ public sealed class BuildCachePublisher
             writer.WriteString("leasePath", entry.leasePath);
             writer.WriteString("lastUseUtc", entry.lastUseUtc);
             writer.WriteNumber("bytes", entry.bytes);
-            writer.WriteString("targetId", entry.targetId);
+            writer.WriteString("targetId", entry.targetID);
             writer.WriteStartArray("dependencies");
             foreach (string dependency in entry.dependencies)
             {
@@ -640,6 +640,6 @@ public sealed class BuildCachePublisher
         DateTime lastUseUtc,
         string[] dependencies,
         long bytes,
-        string? targetId
+        string? targetID
     );
 }

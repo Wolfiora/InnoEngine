@@ -147,7 +147,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
 
     private readonly record struct IssueKey(
         string code,
-        string? semanticId,
-        Guid? objectId
+        string? semanticID,
+        Guid? objectID
     );
 }

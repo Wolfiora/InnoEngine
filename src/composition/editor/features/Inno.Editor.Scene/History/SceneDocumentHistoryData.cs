@@ -58,11 +58,11 @@ internal sealed record SceneDocumentHistoryData(
         BinaryWriter writer,
         EditorSceneWorkspace.SceneDocumentSnapshot snapshot
     ) {
-        writer.Write(snapshot.sceneId.ToByteArray());
+        writer.Write(snapshot.sceneID.ToByteArray());
         writer.Write(snapshot.payload.Length);
         writer.Write(snapshot.payload);
         writer.Write(snapshot.sourcePath);
-        writer.Write(snapshot.sourceAssetId.ToByteArray());
+        writer.Write(snapshot.sourceAssetID.ToByteArray());
         writer.Write(snapshot.savedHash.Length);
         writer.Write(snapshot.savedHash);
         writer.Write(snapshot.isDirty);
@@ -71,18 +71,18 @@ internal sealed record SceneDocumentHistoryData(
 
     private static EditorSceneWorkspace.SceneDocumentSnapshot ReadSnapshot(BinaryReader reader)
     {
-        var sceneId = new Guid(reader.ReadBytes(16));
+        var sceneID = new Guid(reader.ReadBytes(16));
         byte[] payload = ReadBytes(reader, "scene");
         string sourcePath = reader.ReadString();
-        var sourceAssetId = new Guid(reader.ReadBytes(16));
+        var sourceAssetID = new Guid(reader.ReadBytes(16));
         byte[] savedHash = ReadBytes(reader, "saved hash");
         bool isDirty = reader.ReadBoolean();
         int sceneIndex = reader.ReadInt32();
         return new EditorSceneWorkspace.SceneDocumentSnapshot(
-            sceneId,
+            sceneID,
             payload,
             sourcePath,
-            sourceAssetId,
+            sourceAssetID,
             savedHash,
             isDirty,
             sceneIndex

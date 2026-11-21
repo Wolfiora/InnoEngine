@@ -147,7 +147,7 @@ public sealed class ShaderLastGoodStore
             int removed = 0;
             foreach (ArtifactKey key in new List<ArtifactKey>(m_artifacts.Keys))
             {
-                if (key.shaderId == shaderId && m_artifacts.Remove(key))
+                if (key.shaderID == shaderId && m_artifacts.Remove(key))
                 {
                     removed++;
                 }
@@ -158,7 +158,7 @@ public sealed class ShaderLastGoodStore
     }
 
     private readonly record struct ArtifactKey(
-        Guid shaderId,
+        Guid shaderID,
         string targetKey,
         string variantKey
     );

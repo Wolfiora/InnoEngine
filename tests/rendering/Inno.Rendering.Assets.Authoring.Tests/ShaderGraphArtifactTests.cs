@@ -40,10 +40,10 @@ public sealed class ShaderGraphArtifactTests : IDisposable
     [InlineData("3c78ad4e-deb3-547b-984e-18de97667641", "FunctionData")]
     [InlineData("4f51d0e8-599b-5fd7-b4cc-4694fe18e922", "ImplementationData")]
     public void FrozenArtifactRecordsKeepTheirPersistentIdentitiesAfterOwnershipMoves(
-        string stableId,
+        string stableID,
         string typeName
     ) {
-        TypeRef record = Assert.Single(m_types.current.types, reference => reference.stableId == Guid.Parse(stableId));
+        TypeRef record = Assert.Single(m_types.current.types, reference => reference.stableId == Guid.Parse(stableID));
         Assert.Equal(typeName, record.Resolve(m_types).Name);
     }
 

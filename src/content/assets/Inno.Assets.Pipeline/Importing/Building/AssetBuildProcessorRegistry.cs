@@ -51,19 +51,19 @@ internal sealed class AssetBuildProcessorRegistry : TypeRegistry<AssetBuildProce
             }
             return (type, type.GetCustomAttribute<AssetBuildProcessorAttribute>(inherit: false)!.id);
         }).ToArray();
-        string? duplicateId = registrations
+        string? duplicateID = registrations
             .GroupBy(static registration => registration.id, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
-        if (duplicateId is not null)
+        if (duplicateID is not null)
         {
-            throw new InvalidOperationException($"Asset build processor ID '{duplicateId}' is registered more than once.");
+            throw new InvalidOperationException($"Asset build processor ID '{duplicateID}' is registered more than once.");
         }
 
         var processors = new Dictionary<Type, AssetBuildProcessor>();
-        foreach ((Type type, string processorId) in registrations)
+        foreach ((Type type, string processorID) in registrations)
         {
             AssetBuildProcessor processor = CreateExtension<AssetBuildProcessor>(type);
-            processor.BindProcessorId(processorId);
+            processor.BindProcessorID(processorID);
             if (!processors.TryAdd(processor.definitionType, processor))
             {
                 throw new InvalidOperationException(

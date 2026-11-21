@@ -247,12 +247,12 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
         {
             foreach (ObjectState state in sceneState.states)
             {
-                Guid elementId = state.target.identity.persistentId;
+                Guid elementID = state.target.identity.persistentId;
                 yield return new SerializedMissingState(
-                    new ReferenceKey(elementId, "element"),
+                    new ReferenceKey(elementID, "element"),
                     new ReferenceDescriptor(
                         SceneElementReferenceResolver.id,
-                        elementId,
+                        elementID,
                         state.logicalType.stableId,
                         state.typeName
                     ),
@@ -261,7 +261,7 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
                 foreach (AssetDependency dependency in state.dependencies.Distinct())
                 {
                     yield return new SerializedMissingState(
-                        new ReferenceKey(elementId, $"assets/{dependency.persistentId:D}"),
+                        new ReferenceKey(elementID, $"assets/{dependency.persistentId:D}"),
                         new ReferenceDescriptor(
                             AssetReferenceProtocol.id,
                             dependency.persistentId,
@@ -358,11 +358,11 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             ))
             .ToArray();
         var references = new SceneGraphReferenceMap(sceneState.scene);
-        var currentByPersistentId = new Dictionary<Guid, EngineObject>();
+        var currentByPersistentID = new Dictionary<Guid, EngineObject>();
         for (int i = 0; i < currentObjects.Length; i++)
         {
             references.Register(sceneState.engineObjects[i].identity.persistentId, currentObjects[i]);
-            currentByPersistentId[currentObjects[i].identity.persistentId] = currentObjects[i];
+            currentByPersistentID[currentObjects[i].identity.persistentId] = currentObjects[i];
         }
         foreach (ObjectState state in sceneState.states)
         {
@@ -376,12 +376,12 @@ internal sealed class SceneReloadStateTransfer : IReferenceRecoveryParticipant
             {
                 continue;
             }
-            foreach ((Guid alias, Guid targetPersistentId) in aliases)
+            foreach ((Guid alias, Guid targetPersistentID) in aliases)
             {
-                if (!currentByPersistentId.TryGetValue(targetPersistentId, out EngineObject? target))
+                if (!currentByPersistentID.TryGetValue(targetPersistentID, out EngineObject? target))
                 {
                     throw new InvalidOperationException(
-                        $"Missing scene state reference alias '{alias}' targets unavailable identity '{targetPersistentId}'."
+                        $"Missing scene state reference alias '{alias}' targets unavailable identity '{targetPersistentID}'."
                     );
                 }
                 references.Register(alias, target);

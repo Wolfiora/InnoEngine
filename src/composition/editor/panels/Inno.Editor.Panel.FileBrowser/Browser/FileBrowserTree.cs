@@ -99,8 +99,8 @@ internal sealed partial class FileBrowserTree
         string icon = entry is { isDirectory: false } ? m_assets.GetIcon(entry) : m_assets.folderIcon;
         bool editing = !row.isRoot && m_rename.IsEditing(context, row.path, FileBrowserPresentation.Tree);
         TreeNodeResult result = EditorUI.current.widgets.TreeNode(
-            row.nodeId,
-            drawContext => DrawRowContent(context, row.nodeId, row.path, row.label, icon, currentDirectory, editing, drawContext.rowHeight),
+            row.nodeID,
+            drawContext => DrawRowContent(context, row.nodeID, row.path, row.label, icon, currentDirectory, editing, drawContext.rowHeight),
             new TreeNodeOptions
             {
                 depth = row.depth,

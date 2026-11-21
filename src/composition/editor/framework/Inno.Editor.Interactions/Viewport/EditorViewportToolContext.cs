@@ -11,7 +11,7 @@ public sealed class EditorViewportToolContext
     private readonly IEditorHistory m_history;
     private readonly IEditorViewportCoordinateConverter m_coordinates;
     private EditorEditGesture? m_transaction;
-    private int? m_capturedPointerId;
+    private int? m_capturedPointerID;
 
     internal EditorViewportToolContext(
         IEditorHistory history,
@@ -24,12 +24,12 @@ public sealed class EditorViewportToolContext
     /// <summary>
     /// Gets whether this tool owns a pointer.
     /// </summary>
-    public bool hasPointerCapture => m_capturedPointerId.HasValue;
+    public bool hasPointerCapture => m_capturedPointerID.HasValue;
 
     /// <summary>
     /// Gets the captured pointer identity, or <see langword="null"/>.
     /// </summary>
-    public int? capturedPointerId => m_capturedPointerId;
+    public int? capturedPointerId => m_capturedPointerID;
 
     /// <summary>
     /// Gets whether a history transaction is active for the current gesture.
@@ -44,11 +44,11 @@ public sealed class EditorViewportToolContext
     /// </param>
     public void CapturePointer(int pointerId)
     {
-        if (m_capturedPointerId.HasValue && m_capturedPointerId.Value != pointerId)
+        if (m_capturedPointerID.HasValue && m_capturedPointerID.Value != pointerId)
         {
             throw new InvalidOperationException("A viewport tool cannot capture two pointers concurrently.");
         }
-        m_capturedPointerId = pointerId;
+        m_capturedPointerID = pointerId;
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public sealed class EditorViewportToolContext
         {
             throw new InvalidOperationException("Complete the viewport history gesture before releasing its pointer.");
         }
-        m_capturedPointerId = null;
+        m_capturedPointerID = null;
     }
 
     /// <summary>
@@ -135,11 +135,11 @@ public sealed class EditorViewportToolContext
     /// </returns>
     public Vector2 WorldToScreen(Vector2 worldPosition) => m_coordinates.WorldToScreen(worldPosition);
 
-    internal bool Accepts(int pointerId) => !m_capturedPointerId.HasValue || m_capturedPointerId.Value == pointerId;
+    internal bool Accepts(int pointerID) => !m_capturedPointerID.HasValue || m_capturedPointerID.Value == pointerID;
 
     internal void Cancel()
     {
         CompleteHistoryGesture(commit: false);
-        m_capturedPointerId = null;
+        m_capturedPointerID = null;
     }
 }

@@ -11,7 +11,7 @@ public abstract class BgfxNativeBuildProfile
     /// <summary>
     /// Gets the exact native target accepted by this configuration.
     /// </summary>
-    public abstract string targetId { get; }
+    public abstract string targetID { get; }
 
     /// <summary>
     /// Gets ordered vendor project-generation arguments, excluding shared component options.

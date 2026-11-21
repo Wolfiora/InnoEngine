@@ -11,7 +11,7 @@ namespace Inno.Audio.Runtime;
 /// </remarks>
 public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
 {
-    private static uint S_NEXT_GENERATION;
+    private static uint s_nextGeneration;
     private readonly AudioDeviceLimits m_limits;
 
     private readonly Dictionary<ulong, AudioClipDescriptor> m_clips = [];
@@ -38,10 +38,10 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         m_limits = limits ?? new AudioDeviceLimits();
-        this.generation = unchecked(++S_NEXT_GENERATION);
+        this.generation = unchecked(++s_nextGeneration);
         if (generation == 0)
         {
-            this.generation = unchecked(++S_NEXT_GENERATION);
+            this.generation = unchecked(++s_nextGeneration);
         }
         this.capabilities = new AudioCapabilities(true, true, true, 4, sampleRate);
     }

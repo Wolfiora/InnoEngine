@@ -77,11 +77,11 @@ public sealed class NativeRecipeClosureTests : IDisposable
     [InlineData(true)]
     public void BridgeBackendDeclarationExcludesHostGeneratedOutput(bool ui)
     {
-        NativeComponentDescriptor owner = ui ? UiToolchain.componentDescriptor : TextToolchain.componentDescriptor;
+        NativeComponentDescriptor owner = ui ? UIToolchain.componentDescriptor : TextToolchain.componentDescriptor;
         Write(owner.toolchainProject, "<Project />");
         Write(Path.GetDirectoryName(owner.nativeProject)! + "/Native/Generated/unused.cpp", "unselected host output");
         NativeBuildContext context = Context().WithComponentOptions(owner, new(NativeLibraryKind.Shared));
-        NativeBuildRecipe recipe = ui ? UiToolchain.CreateRecipe(context) : TextToolchain.CreateRecipe(context);
+        NativeBuildRecipe recipe = ui ? UIToolchain.CreateRecipe(context) : TextToolchain.CreateRecipe(context);
         Assert.Equal(owner.id, recipe.component);
         Assert.DoesNotContain(recipe.declarations, value => value.Contains("BRIDGE_ROOT", StringComparison.Ordinal));
         Assert.DoesNotContain(recipe.inputs, input => (
@@ -207,7 +207,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         using NativeBindingGenerationResult firstGeneration = Generation("generation-a", generated, Path.GetDirectoryName(bridge)!);
         NativeBuildContext firstContext = Context().WithBindings(firstGeneration);
         int productions = 0;
-        Task Produce(
+        Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -215,7 +215,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             productions++;
             return File.WriteAllTextAsync(Path.Combine(output, "fixture.native"), File.ReadAllText(generated), cancellation);
         }
-        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(firstContext, Recipe(firstContext), Produce);
+        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(firstContext, Recipe(firstContext), ProduceAsync);
         DateTime timestamp = File.GetLastWriteTimeUtc(generated);
         if (changeBytes)
         {
@@ -228,7 +228,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             Path.GetDirectoryName(bridge)!
         );
         NativeBuildContext nextContext = Context().WithBindings(nextGeneration);
-        using NativeBuildProduct next = await NativeArtifactPublisher.PublishAsync(nextContext, Recipe(nextContext), Produce);
+        using NativeBuildProduct next = await NativeArtifactPublisher.PublishAsync(nextContext, Recipe(nextContext), ProduceAsync);
         Assert.NotEqual(first.fingerprint, next.fingerprint);
         Assert.Equal(2, productions);
         Assert.Equal("first", File.ReadAllText(first.files[0]));
@@ -239,7 +239,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             Path.GetDirectoryName(bridge)!
         );
         NativeBuildContext hotContext = Context().WithBindings(hotGeneration);
-        using NativeBuildProduct hot = await NativeArtifactPublisher.PublishAsync(hotContext, Recipe(hotContext), Produce);
+        using NativeBuildProduct hot = await NativeArtifactPublisher.PublishAsync(hotContext, Recipe(hotContext), ProduceAsync);
         Assert.Equal(next.fingerprint, hot.fingerprint);
         Assert.Equal(2, productions);
     }

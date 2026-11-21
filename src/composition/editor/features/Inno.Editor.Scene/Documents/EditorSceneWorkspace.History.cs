@@ -48,7 +48,7 @@ internal sealed partial class EditorSceneWorkspace
             scene.identity.persistentId,
             m_serialization.Serialize(scene, serializationContext),
             document?.sourcePath ?? playBaseline?.sourcePath ?? string.Empty,
-            document?.sourceAssetId ?? playBaseline?.sourceAssetId ?? Guid.Empty,
+            document?.sourceAssetID ?? playBaseline?.sourceAssetID ?? Guid.Empty,
             document?.savedHash.ToArray() ?? playBaseline?.savedHash.ToArray() ?? [],
             document?.isDirty ?? false,
             world.GetSceneIndex(scene),
@@ -69,7 +69,7 @@ internal sealed partial class EditorSceneWorkspace
             m_documents[scene.identity.persistentId] = new SceneDocument(
                 scene,
                 snapshot.sourcePath,
-                snapshot.sourceAssetId,
+                snapshot.sourceAssetID,
                 snapshot.savedHash.ToArray()
             )
             {
@@ -84,21 +84,21 @@ internal sealed partial class EditorSceneWorkspace
     {
         ArgumentNullException.ThrowIfNull(scene);
         using IDisposable scope = EnterPresentationScope();
-        Guid sceneId = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentId;
         bool closed = world.UnloadScene(scene);
         if (closed && canPersist)
         {
-            m_documents.Remove(sceneId);
-            m_diagnostics.ResolveSynchronization(sceneId);
-            m_diagnostics.ResolveDirtyCheck(sceneId);
+            m_documents.Remove(sceneID);
+            m_diagnostics.ResolveSynchronization(sceneID);
+            m_diagnostics.ResolveDirtyCheck(sceneID);
         }
         return closed;
     }
 
-    internal void RestoreActiveScene(Guid? activeSceneId)
+    internal void RestoreActiveScene(Guid? activeSceneID)
     {
         using IDisposable scope = EnterPresentationScope();
-        if (activeSceneId is Guid sceneId && FindEngineObject(sceneId) is GameScene { isLoaded: true } active)
+        if (activeSceneID is Guid sceneID && FindEngineObject(sceneID) is GameScene { isLoaded: true } active)
         {
             world.SetActiveScene(active);
         }
@@ -109,14 +109,14 @@ internal sealed partial class EditorSceneWorkspace
     }
 
     internal void RestoreSelection(
-        Guid? selectedId,
+        Guid? selectedID,
         bool selectActiveSceneWhenMissing = true
     ) {
         if (m_selection is null)
         {
             return;
         }
-        object? target = selectedId is Guid id ? FindEngineObject(id) : null;
+        object? target = selectedID is Guid id ? FindEngineObject(id) : null;
         if (target is null && selectActiveSceneWhenMissing)
         {
             target = world.activeScene;
@@ -126,16 +126,16 @@ internal sealed partial class EditorSceneWorkspace
 
     private EngineObject? FindEngineObject(Guid id) => world.Find<EngineObject>(id);
 
-    private Guid? GetSelectedSceneObjectId()
+    private Guid? GetSelectedSceneObjectID()
         => m_selection?.selectedTarget is EngineObject { isDestroyed: false } selected
            ? selected.identity.persistentId
            : null;
 
     internal sealed record SceneDocumentSnapshot(
-        Guid sceneId,
+        Guid sceneID,
         byte[] payload,
         string sourcePath,
-        Guid sourceAssetId,
+        Guid sourceAssetID,
         byte[] savedHash,
         bool isDirty,
         int sceneIndex,

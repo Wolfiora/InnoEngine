@@ -204,7 +204,7 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     }
 
     private readonly record struct FontKey(
-        Guid persistentId,
+        Guid persistentID,
         long version,
         int faceIndex
     );

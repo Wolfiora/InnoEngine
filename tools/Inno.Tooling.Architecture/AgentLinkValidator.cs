@@ -13,7 +13,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static class AgentLinkValidator
 {
-    private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder()
+    private static readonly MarkdownPipeline PIPELINE = new MarkdownPipelineBuilder()
         .UsePipeTables()
         .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
         .Build();
@@ -27,7 +27,7 @@ internal static class AgentLinkValidator
         string location = Path.Combine(root, contentRoot);
         foreach (string page in File.Exists(location) ? [location] : RepositorySourceInventory.Files(location, "*.md"))
         {
-            MarkdownDocument parsed = Markdown.Parse(File.ReadAllText(page), S_PIPELINE);
+            MarkdownDocument parsed = Markdown.Parse(File.ReadAllText(page), PIPELINE);
             foreach (string target in parsed.Descendants<LinkInline>()
                 .Where(static link => link.Url is not null)
                 .Select(static link => link.Url!)
@@ -74,7 +74,7 @@ internal static class AgentLinkValidator
 
     private static HashSet<string> Anchors(string text)
     {
-        MarkdownDocument document = Markdown.Parse(text, S_PIPELINE);
+        MarkdownDocument document = Markdown.Parse(text, PIPELINE);
         HashSet<string> result = document.Descendants<HeadingBlock>()
             .Select(static heading => heading.GetAttributes().Id!)
             .ToHashSet(StringComparer.Ordinal);

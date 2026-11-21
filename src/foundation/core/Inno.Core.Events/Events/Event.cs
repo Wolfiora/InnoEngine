@@ -9,7 +9,7 @@ namespace Inno.Core.Events;
 public abstract class Event
 {
     [ThreadStatic]
-    private static HubFrameStack? t_hubFrames;
+    private static HubFrameStack? s_hubFrames;
 
     private readonly Event m_consumptionOwner;
     private int m_globalHandled;
@@ -62,7 +62,7 @@ public abstract class Event
     /// </remarks>
     public void HandleInHub()
     {
-        HubFrameStack? frames = t_hubFrames;
+        HubFrameStack? frames = s_hubFrames;
         if (frames is null || !frames.IsCurrent(this))
         {
             throw new InvalidOperationException("HandleInHub can only be used while this event is being dispatched in a hub.");
@@ -73,11 +73,11 @@ public abstract class Event
 
     internal HubDispatchScope BeginHubDispatchScope()
     {
-        HubFrameStack? frames = t_hubFrames;
+        HubFrameStack? frames = s_hubFrames;
         if (frames is null)
         {
             frames = new HubFrameStack(4);
-            t_hubFrames = frames;
+            s_hubFrames = frames;
         }
 
         frames.Push(this);
@@ -86,7 +86,7 @@ public abstract class Event
 
     internal bool IsHandledInCurrentHub()
     {
-        HubFrameStack? frames = t_hubFrames;
+        HubFrameStack? frames = s_hubFrames;
         return frames is not null && frames.IsCurrentHandled(this);
     }
 

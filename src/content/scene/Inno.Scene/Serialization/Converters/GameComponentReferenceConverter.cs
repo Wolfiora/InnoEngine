@@ -25,7 +25,7 @@ internal sealed class GameComponentReferenceConverter : SerializationConverter<G
         ArgumentNullException.ThrowIfNull(value);
         EngineReferenceToken token = SceneReferenceScope.current.Capture(value, writer.path);
         writer.Write("kind", (int)token.kind);
-        writer.Write("sourceId", token.sourceId);
+        writer.Write("sourceId", token.sourceID);
     }
 
     /// <summary>

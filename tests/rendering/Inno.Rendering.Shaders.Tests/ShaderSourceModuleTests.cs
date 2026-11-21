@@ -54,7 +54,7 @@ public sealed class ShaderSourceModuleTests
     [Fact]
     public void ConditionalVariantsMustExposeIdenticalPorts()
     {
-        const string source = """
+        const string C_SOURCE = """
             #if COMPACT
             float Shade(float value) { return value; }
             #else
@@ -63,8 +63,8 @@ public sealed class ShaderSourceModuleTests
             """;
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]);
         ShaderSourceModuleAnalysis result = catalog.AnalyzeModule([
-            Request("compact", source, defines: new Dictionary<string, string> { ["COMPACT"] = "1" }),
-            Request("full", source, defines: new Dictionary<string, string> { ["COMPACT"] = "0" })
+            Request("compact", C_SOURCE, defines: new Dictionary<string, string> { ["COMPACT"] = "1" }),
+            Request("full", C_SOURCE, defines: new Dictionary<string, string> { ["COMPACT"] = "0" })
         ]);
         Assert.False(result.succeeded);
         Assert.Contains(result.diagnostics, value => value.code == "SHADER_SOURCE_IMPLEMENTATION_INTERFACE");
@@ -76,9 +76,9 @@ public sealed class ShaderSourceModuleTests
         var includes = new Includes();
         includes.values["data.inc"] = "#pragma once\nconst float Scale = 1.0;";
         var defines = new Dictionary<string, string> { ["FIRST"] = "1", ["SECOND"] = "2" };
-        const string source = "#include \"data.inc\"\nfloat Shade(float value) { return value * Scale; }";
+        const string C_SOURCE = "#include \"data.inc\"\nfloat Shade(float value) { return value * Scale; }";
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]);
-        ShaderSourceImplementationRequest request = Request("first", source, includes, defines);
+        ShaderSourceImplementationRequest request = Request("first", C_SOURCE, includes, defines);
         defines["FIRST"] = "42";
         ShaderSourceImplementationAnalysis first = Assert.Single(catalog.AnalyzeModule([request]).implementations);
         Assert.True(first.analysis.succeeded);
@@ -89,7 +89,7 @@ public sealed class ShaderSourceModuleTests
         ShaderSourceImplementationAnalysis reordered = Assert.Single(
             catalog.AnalyzeModule([Request(
                 "different-owner-key",
-                source,
+                C_SOURCE,
                 includes,
                 new Dictionary<string, string> { ["SECOND"] = "2", ["FIRST"] = "1" }
             )]).implementations

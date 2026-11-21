@@ -124,7 +124,7 @@ internal sealed class InspectorTargetHeader
         {
             Ui.SetNextItemWidth(nameWidth);
             if (Ui.InputText(
-                $"##inspector_target_name_{GetTargetId(context.target)}",
+                $"##inspector_target_name_{GetTargetID(context.target)}",
                 ref name,
                 C_NAME_BUFFER_SIZE,
                 ImGuiInputTextFlags.None
@@ -182,7 +182,7 @@ internal sealed class InspectorTargetHeader
     ) {
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
         bool visible = Ui.BeginChild(
-            $"##inspector_target_custom_{GetTargetId(context.target)}",
+            $"##inspector_target_custom_{GetTargetID(context.target)}",
             new Vector2(0f, rowHeight),
             ImGuiChildFlags.None,
             flags
@@ -200,6 +200,6 @@ internal sealed class InspectorTargetHeader
         }
     }
 
-    private static string GetTargetId(object target)
+    private static string GetTargetID(object target)
         => $"{target.GetType().FullName}_{RuntimeHelpers.GetHashCode(target)}";
 }

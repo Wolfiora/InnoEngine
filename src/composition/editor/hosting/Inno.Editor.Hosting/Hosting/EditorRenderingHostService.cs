@@ -28,11 +28,11 @@ internal sealed class EditorRenderingHostService :
     private readonly IDisposable m_reloadRegistration;
     private readonly Dictionary<string, ViewportState> m_viewports = new(StringComparer.Ordinal);
     private readonly Dictionary<RenderTextureArtifactReference, PreviewState> m_previews = [];
-    private readonly Dictionary<ulong, PreviewState> m_previewsById = [];
+    private readonly Dictionary<ulong, PreviewState> m_previewsByID = [];
     private readonly Dictionary<string, PreviewState> m_renderedPreviews = new(StringComparer.Ordinal);
     private readonly object m_shaderValidationLock = new();
     private readonly Dictionary<Guid, ShaderValidationState> m_shaderValidations = [];
-    private ulong m_nextPreviewId;
+    private ulong m_nextPreviewID;
     private bool m_disposed;
 
     internal EditorRenderingHostService(
@@ -137,14 +137,14 @@ internal sealed class EditorRenderingHostService :
     public bool Release(EditorPreviewHandle handle)
     {
         if (!handle.isValid || handle.deviceGeneration != deviceGeneration
-            || !m_previewsById.Remove(handle.value, out PreviewState? preview)
+            || !m_previewsByID.Remove(handle.value, out PreviewState? preview)
             || preview.handle != handle
         ) {
             return false;
         }
-        if (preview.viewportId is not null)
+        if (preview.viewportID is not null)
         {
-            ReleaseRendered(preview.viewportId);
+            ReleaseRendered(preview.viewportID);
         }
         else
         {
@@ -166,7 +166,7 @@ internal sealed class EditorRenderingHostService :
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         if (m_renderedPreviews.Remove(viewportId, out PreviewState? preview))
         {
-            m_previewsById.Remove(preview.handle.value);
+            m_previewsByID.Remove(preview.handle.value);
         }
         m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
         if (!m_viewports.Remove(viewportId, out ViewportState? state))
@@ -214,7 +214,7 @@ internal sealed class EditorRenderingHostService :
             }
             lock (m_shaderValidationLock)
             {
-                if (m_shaderValidations.TryGetValue(state.documentId, out ShaderValidationState? current)
+                if (m_shaderValidations.TryGetValue(state.documentID, out ShaderValidationState? current)
                     && ReferenceEquals(current, state)
                 ) {
                     state.snapshot = snapshot;
@@ -262,7 +262,7 @@ internal sealed class EditorRenderingHostService :
         {
             if (m_renderedPreviews.Remove(composition.viewportId, out PreviewState? stale))
             {
-                m_previewsById.Remove(stale.handle.value);
+                m_previewsByID.Remove(stale.handle.value);
             }
             handle = default;
             return false;
@@ -275,17 +275,17 @@ internal sealed class EditorRenderingHostService :
         }
         if (current is not null)
         {
-            m_previewsById.Remove(current.handle.value);
+            m_previewsByID.Remove(current.handle.value);
         }
-        ulong value = ++m_nextPreviewId;
+        ulong value = ++m_nextPreviewID;
         if (value == 0)
         {
-            value = ++m_nextPreviewId;
+            value = ++m_nextPreviewID;
         }
         handle = new(value, deviceGeneration, output.pixelWidth, output.pixelHeight);
         var preview = new PreviewState(default, handle, default, output.texture, composition.viewportId);
         m_renderedPreviews[composition.viewportId] = preview;
-        m_previewsById.Add(value, preview);
+        m_previewsByID.Add(value, preview);
         return true;
     }
 
@@ -360,10 +360,10 @@ internal sealed class EditorRenderingHostService :
             }
             Release(existing.handle);
         }
-        ulong value = ++m_nextPreviewId;
+        ulong value = ++m_nextPreviewID;
         if (value == 0)
         {
-            value = ++m_nextPreviewId;
+            value = ++m_nextPreviewID;
         }
         var preview = new PreviewState(
             texture,
@@ -372,7 +372,7 @@ internal sealed class EditorRenderingHostService :
             m_presentation.RegisterTexture(resident)
         );
         m_previews.Add(texture, preview);
-        m_previewsById.Add(value, preview);
+        m_previewsByID.Add(value, preview);
         handle = preview.handle;
         return true;
     }
@@ -392,7 +392,7 @@ internal sealed class EditorRenderingHostService :
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!handle.isValid || handle.deviceGeneration != deviceGeneration
-            || !m_previewsById.TryGetValue(handle.value, out PreviewState? preview)
+            || !m_previewsByID.TryGetValue(handle.value, out PreviewState? preview)
             || preview.handle != handle
         ) {
             throw new InvalidOperationException("The editor preview handle is stale or does not belong to this host.");
@@ -508,13 +508,13 @@ internal sealed class EditorRenderingHostService :
             Unregister(state);
             m_runtime.targets.Release(state.target);
         }
-        foreach (string viewportId in m_viewports.Keys)
+        foreach (string viewportID in m_viewports.Keys)
         {
-            m_runtime.resources.Release(new RenderPersistentResourceId(viewportId));
+            m_runtime.resources.Release(new RenderPersistentResourceId(viewportID));
         }
         foreach (PreviewState preview in m_renderedPreviews.Values)
         {
-            m_previewsById.Remove(preview.handle.value);
+            m_previewsByID.Remove(preview.handle.value);
         }
         m_renderedPreviews.Clear();
         m_viewports.Clear();
@@ -555,16 +555,16 @@ internal sealed class EditorRenderingHostService :
 
     private void ReleaseAllPreviews()
     {
-        foreach (string viewportId in new List<string>(m_renderedPreviews.Keys))
+        foreach (string viewportID in new List<string>(m_renderedPreviews.Keys))
         {
-            ReleaseRendered(viewportId);
+            ReleaseRendered(viewportID);
         }
         foreach (PreviewState preview in m_previews.Values)
         {
             _ = m_presentation.UnregisterTexture(preview.presentationTexture);
         }
         m_previews.Clear();
-        m_previewsById.Clear();
+        m_previewsByID.Clear();
     }
 
     private void Unregister(ViewportState state)
@@ -640,24 +640,24 @@ internal sealed class EditorRenderingHostService :
         EditorPreviewHandle handle,
         PersistentTextureHandle residentTexture,
         PresentationTextureHandle presentationTexture,
-        string? viewportId = null
+        string? viewportID = null
     );
 
     private sealed class ShaderValidationState
     {
         internal ShaderValidationState(
-            Guid documentId,
+            Guid documentID,
             ulong revision,
             RenderShaderArtifact artifact
         ) {
-            this.documentId = documentId;
+            this.documentID = documentID;
             this.revision = revision;
             this.contentHash = artifact.contentHash;
             this.artifact = artifact;
             this.snapshot = new(EditorShaderCompilationState.Compiling, []);
         }
 
-        internal Guid documentId { get; set; }
+        internal Guid documentID { get; set; }
         internal ulong revision { get; }
         internal string contentHash { get; }
         internal RenderShaderArtifact? artifact { get; set; }

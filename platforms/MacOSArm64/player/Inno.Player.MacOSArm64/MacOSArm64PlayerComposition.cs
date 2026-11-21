@@ -53,8 +53,8 @@ internal static class MacOSArm64PlayerComposition
                 ),
                 createLogSink = (
                     manifest,
-                    sessionId
-                ) => new FileLogSink(Path.Combine(ResolveDataRoot(dataRoot, manifest), "Logs", sessionId.ToString())),
+                    sessionID
+                ) => new FileLogSink(Path.Combine(ResolveDataRoot(dataRoot, manifest), "Logs", sessionID.ToString())),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),
                 frameDriver = new PollingShellFrameDriver(),
                 consoleColors = true,

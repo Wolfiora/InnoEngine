@@ -340,8 +340,8 @@ public sealed class EditorPlayModeTests : IDisposable
         IEditorSceneWorkspace workspace = workspaceHost.workspace;
         var editScene = new GameScene("Edit Scene");
         GameObject editObject = editScene.CreateObject("Edit Object");
-        Guid sceneId = editScene.identity.persistentId;
-        Guid objectId = editObject.identity.persistentId;
+        Guid sceneID = editScene.identity.persistentId;
+        Guid objectID = editObject.identity.persistentId;
         SceneManager.LoadScene(editScene);
         selection.SetSelection(editObject);
         using RuntimeSession runtimeSession = m_engineHost.CreateSession(CreateSessionOptions(RuntimeSessionKind.Play));
@@ -356,8 +356,8 @@ public sealed class EditorPlayModeTests : IDisposable
 
         Assert.NotSame(editScene, runtimeScene);
         Assert.NotSame(editObject, runtimeObject);
-        Assert.Equal(sceneId, runtimeScene.identity.persistentId);
-        Assert.Equal(objectId, runtimeObject.identity.persistentId);
+        Assert.Equal(sceneID, runtimeScene.identity.persistentId);
+        Assert.Equal(objectID, runtimeObject.identity.persistentId);
         Assert.Same(runtimeScene, Assert.Single(workspace.scenes));
         Assert.Same(runtimeScene, workspace.activeScene);
         Assert.Same(runtimeObject, selection.selectedTarget);
@@ -536,12 +536,12 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private RuntimeSessionOptions CreateSessionOptions(RuntimeSessionKind kind)
     {
-        string applicationId = kind == RuntimeSessionKind.Edit ? "inno.tests.edit" : "inno.tests.play";
+        string applicationID = kind == RuntimeSessionKind.Edit ? "inno.tests.edit" : "inno.tests.play";
         return new RuntimeSessionOptions
         {
             kind = kind,
-            applicationId = applicationId,
-            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "PersistentData", applicationId), "Logs")),
+            applicationId = applicationID,
+            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_projectRoot, "PersistentData", applicationID), "Logs")),
             jobExecutionMode = RuntimeJobExecutionMode.SingleThread
         };
     }

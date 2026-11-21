@@ -9,8 +9,8 @@ namespace Inno.Scene;
 public sealed class PrefabInstanceInfo
 {
     internal PrefabInstanceInfo(
-        Guid sourceAssetId,
-        Guid sourceObjectId,
+        Guid sourceAssetID,
+        Guid sourceObjectID,
         GameObject instanceRoot,
         bool isRoot,
         bool isVariant,
@@ -19,8 +19,8 @@ public sealed class PrefabInstanceInfo
         int orphanedOverrideCount,
         AssetObject sourceAsset
     ) {
-        this.sourceAssetId = sourceAssetId;
-        this.sourceObjectId = sourceObjectId;
+        this.sourceAssetId = sourceAssetID;
+        this.sourceObjectId = sourceObjectID;
         this.instanceRoot = instanceRoot;
         this.isRoot = isRoot;
         this.isVariant = isVariant;

@@ -89,20 +89,20 @@ public sealed partial class SceneHistoryTests
         GameObject child = scene.CreateObject("Child");
         GameObject other = scene.CreateObject("Other");
         child.transform.SetParent(root.transform);
-        Guid rootId = root.identity.persistentId;
-        Guid childId = child.identity.persistentId;
-        Guid otherId = other.identity.persistentId;
+        Guid rootID = root.identity.persistentId;
+        Guid childID = child.identity.persistentId;
+        Guid otherID = other.identity.persistentId;
         m_edits.DeleteGameObjects([child, root, other]);
-        Assert.Null(IdentityAllocator.current.Get<GameObject>(rootId));
-        Assert.Null(IdentityAllocator.current.Get<GameObject>(childId));
-        Assert.Null(IdentityAllocator.current.Get<GameObject>(otherId));
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(rootID));
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(childID));
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(otherID));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
-        GameObject restoredRoot = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(rootId));
-        GameObject restoredChild = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(childId));
+        GameObject restoredRoot = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(rootID));
+        GameObject restoredChild = Assert.IsType<GameObject>(IdentityAllocator.current.Get<GameObject>(childID));
         Assert.Same(restoredRoot.transform, restoredChild.transform.parent);
-        Assert.NotNull(IdentityAllocator.current.Get<GameObject>(otherId));
+        Assert.NotNull(IdentityAllocator.current.Get<GameObject>(otherID));
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
-        Assert.Null(IdentityAllocator.current.Get<GameObject>(rootId));
+        Assert.Null(IdentityAllocator.current.Get<GameObject>(rootID));
     }
 
     [Fact]

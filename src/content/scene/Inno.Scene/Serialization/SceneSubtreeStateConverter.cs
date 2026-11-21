@@ -70,7 +70,7 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
     {
         ArgumentNullException.ThrowIfNull(reader);
         GameScene scene = reader.context.GetRequired<GameScene>();
-        Guid rootId = reader.Read<Guid>(C_ROOT_ID_KEY);
+        Guid rootID = reader.Read<Guid>(C_ROOT_ID_KEY);
         IReadOnlyList<SerializationReader> objectReaders =
             reader.ReadObjectArray(SceneGraphSerialization.C_OBJECTS_KEY);
         SceneGraphSerialization.ValidateMissingReferenceAliases(reader);
@@ -92,9 +92,9 @@ internal sealed class SceneSubtreeStateConverter : SerializationConverter<SceneS
                 SceneGraphSerialization.ReadMissingReferenceAliases(reader),
                 reader.context
             );
-            if (!restored.objects.TryGetValue(rootId, out GameObject? root))
+            if (!restored.objects.TryGetValue(rootID, out GameObject? root))
             {
-                throw new InvalidDataException($"Scene subtree root '{rootId}' is missing.");
+                throw new InvalidDataException($"Scene subtree root '{rootID}' is missing.");
             }
             SceneGraphSerialization.ReconcilePrefabConnections(scene, reader.context, root, includeRestoredRoot: true);
             return new SceneSubtreeState(root);

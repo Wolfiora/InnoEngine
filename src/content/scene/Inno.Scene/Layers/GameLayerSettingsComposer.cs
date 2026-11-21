@@ -35,21 +35,21 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
         {
             var layer = new GameLayer(index);
-            ProjectLocalId? baselineId = baseline.GetLocalId(layer);
-            ProjectLocalId? valueId = value.GetLocalId(layer);
+            ProjectLocalId? baselineID = baseline.GetLocalId(layer);
+            ProjectLocalId? valueID = value.GetLocalId(layer);
             string? baselineName = baseline.GetName(layer);
             string? valueName = value.GetName(layer);
-            if (baselineId is ProjectLocalId oldId && oldId != valueId)
+            if (baselineID is ProjectLocalId oldID && oldID != valueID)
             {
                 removedSlots.Add(index);
-                removedLocalIds.Add(oldId.value);
+                removedLocalIds.Add(oldID.value);
             }
-            if (valueId is ProjectLocalId newId
-                && (baselineId != valueId
+            if (valueID is ProjectLocalId newID
+                && (baselineID != valueID
                     || !string.Equals(baselineName, valueName, StringComparison.Ordinal))
             ) {
                 upsertSlots.Add(index);
-                upsertLocalIds.Add(newId.value);
+                upsertLocalIds.Add(newID.value);
                 upsertNames.Add(valueName!);
             }
         }
@@ -119,15 +119,15 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         IReadOnlyList<ProjectSettingContribution<GameLayerSettingContribution>> contributions
     ) {
         var slotOwners = new string?[GameLayer.C_MAX_COUNT];
-        var localIdOwners = new Dictionary<ProjectLocalId, string>();
+        var localIDOwners = new Dictionary<ProjectLocalId, string>();
         var interactionOwners = new string[GameLayer.C_MAX_COUNT, GameLayer.C_MAX_COUNT];
         for (int index = 0; index < GameLayer.C_MAX_COUNT; index++)
         {
             var layer = new GameLayer(index);
-            if (target.GetLocalId(layer) is ProjectLocalId localId)
+            if (target.GetLocalId(layer) is ProjectLocalId localID)
             {
                 slotOwners[index] = "host";
-                localIdOwners.Add(localId, "host");
+                localIDOwners.Add(localID, "host");
             }
             for (int second = 0; second < GameLayer.C_MAX_COUNT; second++)
             {
@@ -138,8 +138,8 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         foreach (ProjectSettingContribution<GameLayerSettingContribution> contribution in contributions)
         {
             contribution.value.Validate();
-            ApplyRemovals(target, contribution, slotOwners, localIdOwners);
-            ApplyUpserts(target, contribution, slotOwners, localIdOwners);
+            ApplyRemovals(target, contribution, slotOwners, localIDOwners);
+            ApplyUpserts(target, contribution, slotOwners, localIDOwners);
             ApplyInteractions(target, contribution, interactionOwners);
         }
     }
@@ -148,7 +148,7 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
         string?[] slotOwners,
-        Dictionary<ProjectLocalId, string> localIdOwners
+        Dictionary<ProjectLocalId, string> localIDOwners
     ) {
         for (int index = 0; index < contribution.value.removedSlots.Length; index++)
         {
@@ -173,7 +173,7 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
             }
             _ = target.Remove(layer);
             slotOwners[layer.index] = null;
-            localIdOwners.Remove(expected);
+            localIDOwners.Remove(expected);
         }
     }
 
@@ -181,50 +181,50 @@ internal sealed class GameLayerSettingsComposer : ProjectSettingComposer<GameLay
         GameLayerCatalog target,
         ProjectSettingContribution<GameLayerSettingContribution> contribution,
         string?[] slotOwners,
-        Dictionary<ProjectLocalId, string> localIdOwners
+        Dictionary<ProjectLocalId, string> localIDOwners
     ) {
         for (int index = 0; index < contribution.value.upsertSlots.Length; index++)
         {
             var layer = new GameLayer(contribution.value.upsertSlots[index]);
-            var localId = new ProjectLocalId(contribution.value.upsertLocalIds[index]);
+            var localID = new ProjectLocalId(contribution.value.upsertLocalIds[index]);
             string name = contribution.value.upsertNames[index];
-            ProjectLocalId? currentId = target.GetLocalId(layer);
+            ProjectLocalId? currentID = target.GetLocalId(layer);
             string? currentName = target.GetName(layer);
-            if (currentId == localId && string.Equals(currentName, name, StringComparison.Ordinal))
+            if (currentID == localID && string.Equals(currentName, name, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            if (target.TryGetLayer(localId, out GameLayer existingLayer) && existingLayer != layer)
+            if (target.TryGetLayer(localID, out GameLayer existingLayer) && existingLayer != layer)
             {
-                string existingOwner = slotOwners[existingLayer.index] ?? localIdOwners[localId];
+                string existingOwner = slotOwners[existingLayer.index] ?? localIDOwners[localID];
                 if (!contribution.context.CanOverride(existingOwner))
                 {
                     throw Conflict(
                         contribution.context,
-                        $"cannot move layer '{localId}' from slot {existingLayer.index}; it is owned by '{existingOwner}'."
+                        $"cannot move layer '{localID}' from slot {existingLayer.index}; it is owned by '{existingOwner}'."
                     );
                 }
                 _ = target.Remove(existingLayer);
                 slotOwners[existingLayer.index] = null;
-                localIdOwners.Remove(localId);
+                localIDOwners.Remove(localID);
             }
 
-            if (currentId is ProjectLocalId replacedId)
+            if (currentID is ProjectLocalId replacedID)
             {
-                string owner = slotOwners[layer.index] ?? localIdOwners[replacedId];
+                string owner = slotOwners[layer.index] ?? localIDOwners[replacedID];
                 if (!contribution.context.CanOverride(owner))
                 {
                     throw Conflict(
                         contribution.context,
-                        $"cannot replace slot {layer.index} layer '{replacedId}' owned by '{owner}'."
+                        $"cannot replace slot {layer.index} layer '{replacedID}' owned by '{owner}'."
                     );
                 }
-                localIdOwners.Remove(replacedId);
+                localIDOwners.Remove(replacedID);
             }
-            target.DefineLocal(layer, localId, name);
+            target.DefineLocal(layer, localID, name);
             slotOwners[layer.index] = contribution.context.contributorId;
-            localIdOwners[localId] = contribution.context.contributorId;
+            localIDOwners[localID] = contribution.context.contributorId;
         }
     }
 

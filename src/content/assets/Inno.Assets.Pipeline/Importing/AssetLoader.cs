@@ -33,7 +33,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private const string C_REJECTED_SOURCE_REFERENCE = "REJECTED_SOURCE_REFERENCE:";
 
     [ThreadStatic]
-    private static AssetLoader? t_activeLoader;
+    private static AssetLoader? s_activeLoader;
 
     private readonly AssetRuntimeOwner m_runtimeOwner;
     private readonly ArtifactRetention m_artifactRetention = new();
@@ -43,11 +43,11 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     private readonly Dictionary<string, Task<AssetObject?>> m_inFlightPathLoads =
         new(StringComparer.OrdinalIgnoreCase);
 
-    private readonly Dictionary<Guid, Task<AssetObject?>> m_inFlightIdLoads = [];
+    private readonly Dictionary<Guid, Task<AssetObject?>> m_inFlightIDLoads = [];
     private readonly AssetImporterRegistry m_importers;
     private readonly AssetBuildProcessorRegistry m_buildProcessors;
     private readonly Dictionary<string, AssetRecord> m_recordsByPath = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<Guid, AssetRecord> m_recordsById = [];
+    private readonly Dictionary<Guid, AssetRecord> m_recordsByID = [];
     private readonly Dictionary<Guid, WeakReference<AssetObject>> m_missingAssets = [];
     private readonly Dictionary<Guid, SerializedMissingState> m_preservedMissingStates = [];
     private readonly DependencyGraph<Guid> m_runtimeGraph = new();
@@ -217,12 +217,12 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         {
             throw new ArgumentException("Catalog Library root is required.", nameof(catalogLibraryRoot));
         }
-        Dictionary<AssetSourceId, AssetSourceMount> byId = mounts.ToDictionary(static mount => mount.id);
-        if (byId.Count != mounts.Count)
+        Dictionary<AssetSourceId, AssetSourceMount> byID = mounts.ToDictionary(static mount => mount.id);
+        if (byID.Count != mounts.Count)
         {
             throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
         }
-        if (!byId.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
+        if (!byID.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
             || project.isReadOnly && !runtimeArtifactsOnly
         ) {
             throw new ArgumentException(
@@ -243,7 +243,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         m_log = logs.CreateLogger<AssetLoader>();
         m_importers = new AssetImporterRegistry(types);
         m_buildProcessors = new AssetBuildProcessorRegistry(types);
-        m_mounts = byId;
+        m_mounts = byID;
         m_runtimeArtifactsOnly = runtimeArtifactsOnly;
         this.assetRoot = project.rootPath;
         this.libraryRoot = Path.GetFullPath(libraryRoot);
@@ -391,9 +391,9 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
 
     private static AssetDependency FindDescriptor(
         AssetMeta meta,
-        Guid persistentId
+        Guid persistentID
     ) {
-        AssetDependencyData data = meta.runtimeDependencies.FirstOrDefault(value => value.persistentId == persistentId);
+        AssetDependencyData data = meta.runtimeDependencies.FirstOrDefault(value => value.persistentId == persistentID);
         return data.persistentId == Guid.Empty
                ? default
                : new AssetDependency(data.persistentId, new TypeRef(data.stableTypeId), data.lastKnownPath);

@@ -23,7 +23,7 @@ public sealed class SerializationCaptureKeyBuilder
     private const byte C_GUARD = 4;
     internal const byte C_GUID = 5;
 
-    private readonly int m_threadId = Environment.CurrentManagedThreadId;
+    private readonly int m_threadID = Environment.CurrentManagedThreadId;
     private SerializationCaptureIdentity[] m_identities = [];
     private int m_identityCount;
     private SerializationOperation? m_operation;
@@ -213,7 +213,7 @@ public sealed class SerializationCaptureKeyBuilder
         RequireOperation();
         if (m_unavailable || m_identityCount == 0)
         {
-            return SerializationCaptureAttempt.empty;
+            return SerializationCaptureAttempt.EMPTY;
         }
         SerializationCaptureKey key = m_parts is null && m_previous is not null && m_previous.parts.Length == m_count
                                       ? m_previous
@@ -245,7 +245,7 @@ public sealed class SerializationCaptureKeyBuilder
     {
         SerializationOperation operation = m_operation
                                            ?? throw new InvalidOperationException("The serialization key callback has retired.");
-        if (Environment.CurrentManagedThreadId != m_threadId)
+        if (Environment.CurrentManagedThreadId != m_threadID)
         {
             throw new InvalidOperationException("The serialization key callback belongs to another thread.");
         }
@@ -332,7 +332,7 @@ internal readonly record struct SerializationCaptureAttempt(
     SerializationCaptureKey? key,
     SerializationCaptureIdentity[] identities
 ) {
-    internal static readonly SerializationCaptureAttempt empty = new(null, []);
+    internal static readonly SerializationCaptureAttempt EMPTY = new(null, []);
 
     internal SerializationCaptureKey? Verify(SerializationCaptureAttempt after)
     {
@@ -366,7 +366,7 @@ internal readonly record struct SerializationCaptureAttempt(
     ) {
         if (!operation.isSnapshotCapture)
         {
-            return empty;
+            return EMPTY;
         }
         SerializationCaptureKeyBuilder builder;
         if (captureKey is not null)
@@ -379,12 +379,12 @@ internal readonly record struct SerializationCaptureAttempt(
         }
         else
         {
-            return empty;
+            return EMPTY;
         }
         try
         {
             bool complete = captureKey is not null ? captureKey(value, builder) : converter!.CaptureKey(value, builder);
-            return complete ? builder.Complete() : empty;
+            return complete ? builder.Complete() : EMPTY;
         }
         finally
         {

@@ -144,7 +144,7 @@ internal sealed class GroupShaderNodes(ShaderEditorDocuments documents) : Shader
         ];
         graph.SetMetadata(C_GROUPS, ShaderGraphDocument.Encode(groups, documents.serialization, documents.context));
         documents.Controller(draft).ReplaceDocument(graph, "Group Shader Nodes");
-        draft.selectedGroupId = groups[^1].id;
+        draft.selectedGroupID = groups[^1].id;
         documents.Changed(draft);
     }
 
@@ -174,15 +174,15 @@ internal sealed class UngroupShaderNodes(ShaderEditorDocuments documents) : Shad
             .Read(documents, graph)
             .Where(
                 group => (
-                    draft.selectedGroupId.Length != 0
-                    ? group.id != draft.selectedGroupId
+                    draft.selectedGroupID.Length != 0
+                    ? group.id != draft.selectedGroupID
                     : !group.nodes.All(id => draft.canvas.selectedNodes.Contains(new(id)))
                 )
             )
             .ToArray();
         graph.SetMetadata(GroupShaderNodes.C_GROUPS, ShaderGraphDocument.Encode(groups, documents.serialization, documents.context));
         documents.Controller(draft).ReplaceDocument(graph, "Ungroup Shader Nodes");
-        draft.selectedGroupId = string.Empty;
+        draft.selectedGroupID = string.Empty;
         documents.Changed(draft);
     }
 }
@@ -414,7 +414,7 @@ internal sealed class CollapseShaderSubgraph(
         AssetPath path = UniquePath(draft.path, displayName, documents);
         using EditorHistoryTransaction transaction = documents.interactions.history.BeginTransaction("Collapse Shader Subgraph");
         AssetFileEntry created = browser.edits.CreateSource(path, GraphDocumentCodec.Encode(child, documents.serialization));
-        Guid sourceId = documents.AssetId(created);
+        Guid sourceID = documents.AssetID(created);
         ShaderGraphNodeInterface nodeInterface = ShaderGraphNodes.ReadInterface(child, documents.serialization, documents.context);
         GraphDocument candidate = parent.Clone();
         foreach (GraphNodeId id in selected)
@@ -426,7 +426,7 @@ internal sealed class CollapseShaderSubgraph(
             position = new(nodes.Average(static node => node.position.x), nodes.Average(static node => node.position.y))
         };
         call.SetValue(ShaderGraphDocument.stageKey, ShaderGraphDocument.Encode(stage, documents.serialization, documents.context));
-        call.SetValue("sourceId", ShaderGraphDocument.Encode(sourceId, documents.serialization, documents.context));
+        call.SetValue("sourceId", ShaderGraphDocument.Encode(sourceID, documents.serialization, documents.context));
         call.SetValue("sourcePath", ShaderGraphDocument.Encode(path.ToString(), documents.serialization, documents.context));
         call.SetValue(ShaderGraphNodes.interfaceKey, ShaderGraphDocument.Encode(nodeInterface, documents.serialization, documents.context));
         candidate.AddNode(call);
@@ -450,7 +450,7 @@ internal sealed class CollapseShaderSubgraph(
         controller.ReplaceDocument(candidate, "Collapse Shader Subgraph");
         transaction.Commit();
         draft.canvas.SelectNodes([call.id]);
-        draft.selectedGroupId = string.Empty;
+        draft.selectedGroupID = string.Empty;
         documents.Changed(draft);
     }
 
@@ -565,9 +565,9 @@ internal sealed class RevealShaderFunction(
     internal static void Reveal(
         ShaderEditorDocuments documents,
         AssetBrowserModule browser,
-        Guid sourceId
+        Guid sourceID
     ) {
-        if (!documents.assets.TryGetInfo(sourceId, out AssetInfo? info) || info is null)
+        if (!documents.assets.TryGetInfo(sourceID, out AssetInfo? info) || info is null)
         {
             throw new IOException("Referenced Shader authoring asset is missing. Select a replacement in the node.");
         }

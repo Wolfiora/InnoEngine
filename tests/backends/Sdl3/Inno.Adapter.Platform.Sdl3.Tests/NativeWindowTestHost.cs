@@ -6,7 +6,7 @@ namespace Inno.Adapter.Platform.Sdl3.Tests;
 
 internal static class NativeWindowTestHost
 {
-    private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
+    private static readonly IReadOnlyDictionary<string, Action> CONTRACTS = new Dictionary<string, Action>
     {
         ["NativeSurfaceLifetimeTests.DisposedWindowRejectsBorrowingItsNativeSurface"] = () => new NativeSurfaceLifetimeTests()
             .DisposedWindowRejectsBorrowingItsNativeSurface(),
@@ -32,11 +32,11 @@ internal static class NativeWindowTestHost
         )
     };
 
-    private static bool m_executingContract;
+    private static bool s_executingContract;
 
     internal static bool RunIfRequired(string contract)
     {
-        if (m_executingContract || !OperatingSystem.IsMacOS()
+        if (s_executingContract || !OperatingSystem.IsMacOS()
                                    && Environment.GetEnvironmentVariable("INNO_TEST_MAIN_THREAD_HOST") != "1"
         ) {
             return false;
@@ -49,12 +49,12 @@ internal static class NativeWindowTestHost
     {
         try
         {
-            if (arguments.Length != 1 || !S_CONTRACTS.TryGetValue(arguments[0], out Action? contract))
+            if (arguments.Length != 1 || !CONTRACTS.TryGetValue(arguments[0], out Action? contract))
             {
                 throw new ArgumentException("The native test host requires one declared contract.");
             }
             // Cocoa requires the process main thread, rather than an xUnit worker or a new managed thread.
-            m_executingContract = true;
+            s_executingContract = true;
             Console.Error.WriteLine($"Native contract started: {arguments[0]}; thread={Environment.CurrentManagedThreadId}.");
             contract();
             Console.Error.WriteLine($"Native contract completed: {arguments[0]}.");

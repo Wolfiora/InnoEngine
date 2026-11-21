@@ -163,9 +163,9 @@ internal sealed partial class EditorSceneWorkspace
         m_documents.Clear();
         for (int i = 0; i < candidates.Count; i++)
         {
-            (GameScene scene, string path, Guid assetId, byte[] hash) = candidates[i];
+            (GameScene scene, string path, Guid assetID, byte[] hash) = candidates[i];
             m_runtimeSession.scenes.LoadSceneAdditive(scene, makeActive: false);
-            m_documents.Add(scene.identity.persistentId, new SceneDocument(scene, path, assetId, hash));
+            m_documents.Add(scene.identity.persistentId, new SceneDocument(scene, path, assetID, hash));
         }
         SceneDocument? activeDocument = m_documents.Values.FirstOrDefault(document =>
             string.Equals(document.sourcePath, m_pendingActivePath, StringComparison.OrdinalIgnoreCase));

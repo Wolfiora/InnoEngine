@@ -390,9 +390,9 @@ public sealed class ProcessOwnedDirectory : IDisposable
         if (root.ValueKind != JsonValueKind.Object
             || !root.TryGetProperty("directory", out JsonElement directory)
             || directory.ValueKind != JsonValueKind.String
-            || !root.TryGetProperty("processId", out JsonElement processId)
-            || processId.ValueKind != JsonValueKind.Number
-            || !processId.TryGetInt32(out int id)
+            || !root.TryGetProperty("processId", out JsonElement processID)
+            || processID.ValueKind != JsonValueKind.Number
+            || !processID.TryGetInt32(out int id)
             || !root.TryGetProperty("startedUtcTicks", out JsonElement startedUtcTicks)
             || startedUtcTicks.ValueKind != JsonValueKind.Number
             || !startedUtcTicks.TryGetInt64(out long ticks)
@@ -404,7 +404,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
         {
             throw new InvalidDataException("Temporary ownership requires its current explicit directory identity.");
         }
-        _ = new ProcessOwnerStamp(claim.processId, claim.startedUtcTicks);
+        _ = new ProcessOwnerStamp(claim.processID, claim.startedUtcTicks);
         return claim;
     }
 
@@ -417,7 +417,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
         {
             writer.WriteStartObject();
             writer.WriteString("directory", claim.directory);
-            writer.WriteNumber("processId", claim.processId);
+            writer.WriteNumber("processId", claim.processID);
             writer.WriteNumber("startedUtcTicks", claim.startedUtcTicks);
             writer.WriteEndObject();
         }
@@ -435,7 +435,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
             try
             {
                 Claim claim = ReadClaim(marker);
-                var stamp = new ProcessOwnerStamp(claim.processId, claim.startedUtcTicks);
+                var stamp = new ProcessOwnerStamp(claim.processID, claim.startedUtcTicks);
                 if (stamp == excluded)
                 {
                     continue;
@@ -464,7 +464,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
 
     private sealed record Claim(
         string directory,
-        int processId,
+        int processID,
         long startedUtcTicks
     );
 }

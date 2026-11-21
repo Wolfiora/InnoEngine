@@ -44,7 +44,7 @@ public sealed partial class EditorRuntimeTests
         string name,
         Action operation
     ) {
-        const int iterations = 2_000;
+        const int C_ITERATIONS = 2_000;
         using Process process = Process.GetCurrentProcess();
         for (int warmup = 0; warmup < 200; warmup++)
         {
@@ -58,7 +58,7 @@ public sealed partial class EditorRuntimeTests
             int gen2 = GC.CollectionCount(2);
             long before = GC.GetAllocatedBytesForCurrentThread();
             long start = Stopwatch.GetTimestamp();
-            for (int iteration = 0; iteration < iterations; iteration++)
+            for (int iteration = 0; iteration < C_ITERATIONS; iteration++)
             {
                 operation();
             }
@@ -69,7 +69,7 @@ public sealed partial class EditorRuntimeTests
                 {
                     workload = name,
                     sample,
-                    iterations,
+                    C_ITERATIONS,
                     milliseconds,
                     bytes,
                     cpuMilliseconds = (process.TotalProcessorTime - cpu).TotalMilliseconds,

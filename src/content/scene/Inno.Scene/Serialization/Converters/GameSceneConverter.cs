@@ -63,12 +63,12 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
     {
         ArgumentNullException.ThrowIfNull(reader);
         SceneGraphSerialization.ValidateScene(reader);
-        Guid sceneId = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
+        Guid sceneID = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
         bool instantiateFromAsset = reader.context.TryGet(out AssetObject? sourceAsset) && sourceAsset is not null;
         var scene = new GameScene(
             SceneWorld.current.typeCatalog,
             reader.Read<string>(SceneGraphSerialization.C_NAME_KEY),
-            instantiateFromAsset ? null : sceneId
+            instantiateFromAsset ? null : sceneID
         );
         if (sourceAsset is not null)
         {
@@ -106,8 +106,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         ArgumentNullException.ThrowIfNull(reader);
         ArgumentNullException.ThrowIfNull(target);
         SceneGraphSerialization.ValidateScene(reader);
-        Guid sceneId = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
-        target.PrepareRestoreTarget(sceneId);
+        Guid sceneID = reader.Read<Guid>(SceneGraphSerialization.C_SCENE_ID_KEY);
+        target.PrepareRestoreTarget(sceneID);
         target.name = reader.Read<string>(SceneGraphSerialization.C_NAME_KEY);
         try
         {

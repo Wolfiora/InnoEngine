@@ -260,7 +260,7 @@ public sealed class EditorHistoryTests
         NeutralValueHistoryHandler.SetValue(slot: 1, value: 32);
         fixture.history.RecordApplied(
             "Large Neutral Change",
-            new EditorHistoryChange(NeutralValueHistoryHandler.KIND, EditorHistoryPayload.FromBytes(payload))
+            new EditorHistoryChange(NeutralValueHistoryHandler.C_KIND, EditorHistoryPayload.FromBytes(payload))
         );
         Assert.Equal(0, fixture.history.residentBytes);
         Assert.Equal(payload.LongLength, fixture.history.diskBytes);
@@ -323,12 +323,12 @@ public sealed class EditorHistoryTests
     }
 }
 
-[EditorHistoryHandler(NeutralValueHistoryHandler.KIND)]
+[EditorHistoryHandler(NeutralValueHistoryHandler.C_KIND)]
 public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
 {
-    public const string KIND = "tests/neutral-values";
-    private static readonly HashSet<(int Slot, EditorHistoryDirection Direction)> S_BLOCKED = [];
-    private static readonly Dictionary<int, int> S_VALUES = [];
+    public const string C_KIND = "tests/neutral-values";
+    private static readonly HashSet<(int Slot, EditorHistoryDirection Direction)> BLOCKED = [];
+    private static readonly Dictionary<int, int> VALUES = [];
 
     public static EditorHistoryChange CreateChange(
         int slot,
@@ -340,30 +340,30 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
         BitConverter.GetBytes(slot).CopyTo(bytes, 0);
         BitConverter.GetBytes(before).CopyTo(bytes, sizeof(int));
         BitConverter.GetBytes(after).CopyTo(bytes, sizeof(int) * 2);
-        return new EditorHistoryChange(KIND, EditorHistoryPayload.FromBytes(bytes), mergeKey);
+        return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(bytes), mergeKey);
     }
 
-    public static int GetValue(int slot) => S_VALUES.TryGetValue(slot, out int value) ? value : 0;
+    public static int GetValue(int slot) => VALUES.TryGetValue(slot, out int value) ? value : 0;
 
     public static void SetValue(
         int slot,
         int value
-    ) => S_VALUES[slot] = value;
+    ) => VALUES[slot] = value;
 
     public static void Block(
         int slot,
         EditorHistoryDirection direction
-    ) => S_BLOCKED.Add((slot, direction));
+    ) => BLOCKED.Add((slot, direction));
 
     public static void Unblock(
         int slot,
         EditorHistoryDirection direction
-    ) => S_BLOCKED.Remove((slot, direction));
+    ) => BLOCKED.Remove((slot, direction));
 
     public static void Reset()
     {
-        S_BLOCKED.Clear();
-        S_VALUES.Clear();
+        BLOCKED.Clear();
+        VALUES.Clear();
     }
 
     protected override EditorHistoryAvailability Query(
@@ -381,12 +381,12 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
     ) {
         byte[] bytes = change.payload.ReadBytes();
         int slot = BitConverter.ToInt32(bytes, 0);
-        if (S_BLOCKED.Contains((slot, direction)))
+        if (BLOCKED.Contains((slot, direction)))
         {
             return EditorHistoryResult.Failure($"Slot {slot} is blocked for {direction}.");
         }
         int offset = direction == EditorHistoryDirection.Undo ? sizeof(int) : sizeof(int) * 2;
-        S_VALUES[slot] = BitConverter.ToInt32(bytes, offset);
+        VALUES[slot] = BitConverter.ToInt32(bytes, offset);
         return EditorHistoryResult.Success();
     }
 

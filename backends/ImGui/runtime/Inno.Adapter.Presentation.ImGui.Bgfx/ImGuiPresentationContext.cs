@@ -52,7 +52,7 @@ internal sealed class ImGuiPresentationContext : IPresentationContext
     bool IPresentationContext.TryGetWindowId(
         uint viewportId,
         out uint windowId
-    ) => m_context.TryGetWindowId(viewportId, out windowId);
+    ) => m_context.TryGetWindowID(viewportId, out windowId);
 
     void IPresentationContext.LoadLayout(string? settings) => m_context.LoadIniSettings(settings);
 

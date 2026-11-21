@@ -37,11 +37,11 @@ public sealed class NativeBindingSelectionBuildTests
             string first = Path.Combine(root, "first-selection.props");
             string second = Path.Combine(root, "second-selection.props");
             File.WriteAllText(first, "<Project />");
-            await Build(root, first);
+            await BuildAsync(root, first);
             string assembly = Path.Combine(root, "bin", "Debug", "net10.0", "Probe.dll");
             DateTime written = File.GetLastWriteTimeUtc(assembly);
             File.WriteAllText(second, "<Project />");
-            await Build(root, second);
+            await BuildAsync(root, second);
             Assert.Equal(written, File.GetLastWriteTimeUtc(assembly));
         }
         finally
@@ -50,7 +50,7 @@ public sealed class NativeBindingSelectionBuildTests
         }
     }
 
-    private static async Task Build(
+    private static async Task BuildAsync(
         string root,
         string selection
     ) {

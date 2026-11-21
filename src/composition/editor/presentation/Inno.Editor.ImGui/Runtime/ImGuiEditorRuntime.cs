@@ -30,7 +30,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
     private readonly HashSet<string> m_openOwners = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_currentOwners = new(StringComparer.Ordinal);
     private readonly List<string> m_retiredOwners = [];
-    private uint m_dockspaceId;
+    private uint m_dockspaceID;
     private Vector2 m_dockspaceSize;
     private bool m_disposed;
 
@@ -261,11 +261,11 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
         ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();
         Vector2 size = ImGui.FromNative(viewport->WorkSize);
         ImGuiStyle* style = NativeImGui.Raw.GetStyle();
-        if (m_dockspaceId == 0)
+        if (m_dockspaceID == 0)
         {
-            uint hostId = ImGui.HashNativeId($"WindowOverViewport_{viewport->ID:X8}");
-            m_dockspaceId = ImGui.HashNativeId("DockSpace", hostId);
-            ImGuiDockNode* loaded = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
+            uint hostID = ImGui.HashNativeID($"WindowOverViewport_{viewport->ID:X8}");
+            m_dockspaceID = ImGui.HashNativeID("DockSpace", hostID);
+            ImGuiDockNode* loaded = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceID);
             if (loaded is not null)
             {
                 ResizeDockSplits(loaded, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
@@ -274,7 +274,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
         else if (m_dockspaceSize != Vector2.Zero
                  && (MathF.Abs(size.X - m_dockspaceSize.X) >= 0.5f || MathF.Abs(size.Y - m_dockspaceSize.Y) >= 0.5f)
         ) {
-            ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
+            ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceID);
             if (root is not null)
             {
                 ResizeDockSplits(root, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
@@ -285,8 +285,8 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
         NativeImGui.PushStyleColor((int)(ImGuiCol.ResizeGripActive), EditorPalette.accentActive);
         try
         {
-            uint submittedId = NativeImGui.Raw.DockSpaceOverViewport(0, null, 0, null);
-            if (submittedId != m_dockspaceId)
+            uint submittedID = NativeImGui.Raw.DockSpaceOverViewport(0, null, 0, null);
+            if (submittedID != m_dockspaceID)
             {
                 throw new InvalidOperationException("The ImGui viewport dockspace identity changed before layout could be resized.");
             }
@@ -298,7 +298,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
 
         if (m_dockspaceSize == Vector2.Zero)
         {
-            ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
+            ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceID);
             if (root is not null)
             {
                 ResizeDockSplits(root, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));

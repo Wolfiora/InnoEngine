@@ -8,14 +8,14 @@ namespace Inno.Build.Toolchains;
 
 internal sealed class BuildCacheInventory
 {
-    internal static readonly StringComparer pathComparer = OperatingSystem.IsWindows()
-                                                           ? StringComparer.OrdinalIgnoreCase
-                                                           : StringComparer.Ordinal;
+    internal static readonly StringComparer PATH_COMPARER = OperatingSystem.IsWindows()
+                                                            ? StringComparer.OrdinalIgnoreCase
+                                                            : StringComparer.Ordinal;
 
     private BuildCacheInventory() {}
 
     internal Dictionary<string, (BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact)> artifacts { get; } = new(
-        pathComparer
+        PATH_COMPARER
     );
 
     internal List<string> roots { get; } = [];
@@ -23,7 +23,7 @@ internal sealed class BuildCacheInventory
 
     internal HashSet<string> Protect(IEnumerable<string> roots)
     {
-        var protectedPaths = new HashSet<string>(pathComparer);
+        var protectedPaths = new HashSet<string>(PATH_COMPARER);
         var pending = new Stack<string>(roots);
         while (pending.TryPop(out string? path))
         {
@@ -95,11 +95,11 @@ internal sealed class BuildCacheInventory
                 throw new InvalidDataException("Cache artifacts must have disjoint ownership boundaries.");
             }
         }
-        var leasePaths = new HashSet<string>(pathComparer);
+        var leasePaths = new HashSet<string>(PATH_COMPARER);
         foreach ((BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry in result.artifacts.Values)
         {
             if (!leasePaths.Add(entry.artifact.leasePath)
-                || owners.Any(owner => pathComparer.Equals(owner.coordinationPath, entry.artifact.leasePath))
+                || owners.Any(owner => PATH_COMPARER.Equals(owner.coordinationPath, entry.artifact.leasePath))
                 || HasArtifactAncestor(entry.artifact.leasePath)
             ) {
                 throw new InvalidDataException("Artifact leases must be distinct persistent files outside all retired directories.");
@@ -112,10 +112,10 @@ internal sealed class BuildCacheInventory
                 throw new InvalidDataException($"Protected cache root '{root}' has no registered artifact owner.");
             }
         }
-        Dictionary<string, int> incoming = result.artifacts.Keys.ToDictionary(static path => path, static _ => 0, pathComparer);
+        Dictionary<string, int> incoming = result.artifacts.Keys.ToDictionary(static path => path, static _ => 0, PATH_COMPARER);
         foreach ((BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry in result.artifacts.Values)
         {
-            foreach (string dependency in entry.artifact.dependencies.Distinct(pathComparer))
+            foreach (string dependency in entry.artifact.dependencies.Distinct(PATH_COMPARER))
             {
                 if (!result.artifacts.ContainsKey(dependency))
                 {
@@ -134,7 +134,7 @@ internal sealed class BuildCacheInventory
         {
             cancellation.ThrowIfCancellationRequested();
             result.retirementOrder.Add(path);
-            foreach (string dependency in result.artifacts[path].artifact.dependencies.Distinct(pathComparer))
+            foreach (string dependency in result.artifacts[path].artifact.dependencies.Distinct(PATH_COMPARER))
             {
                 if (--incoming[dependency] == 0)
                 {

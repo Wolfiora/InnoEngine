@@ -16,42 +16,42 @@ namespace Inno.Adapter.UI.RmlUi.Authoring;
 /// </summary>
 public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
 {
-    private static readonly Regex S_FONT_FACE = new(
+    private static readonly Regex FONT_FACE = new(
         @"@font-face\s*\{(?<body>[^{}]*)\}",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_PROPERTY = new(
+    private static readonly Regex PROPERTY = new(
         @"(?<name>[a-z-]+)\s*:\s*(?<value>[^;]+);?",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_FAMILY = new(
+    private static readonly Regex FAMILY = new(
         @"(?im)(font-family\s*:\s*)(?<value>[^;}]+)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_URL = new(
+    private static readonly Regex URL = new(
         @"^url\(\s*['""]?(?<path>[^)'""]+)['""]?\s*\)$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_LINK = new(
+    private static readonly Regex LINK = new(
         @"<link\b[^>]*>",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_HREF = new(
+    private static readonly Regex HREF = new(
         @"\bhref\s*=\s*['""](?<path>[^'""]+)['""]",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_IMPORT = new(
+    private static readonly Regex IMPORT = new(
         @"@import\s+(?:url\(\s*)?['""](?<path>[^'""]+)['""]\s*\)?\s*;",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
 
-    private static readonly Regex S_FONT_SOURCE = new(
+    private static readonly Regex FONT_SOURCE = new(
         @"(?<prefix>\bsrc\s*:\s*url\(\s*['""]?)(?<path>[^)'""]+)(?<suffix>['""]?\s*\))",
         RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
     );
@@ -94,15 +94,15 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         {
             return new(null, [new("RML_STYLESHEET_UNAVAILABLE", exception.Message, 1, 1)]);
         }
-        string withoutFaces = S_FONT_FACE.Replace(expanded, match =>
+        string withoutFaces = FONT_FACE.Replace(expanded, match =>
         {
             var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            foreach (Match property in S_PROPERTY.Matches(match.Groups["body"].Value))
+            foreach (Match property in PROPERTY.Matches(match.Groups["body"].Value))
             {
                 properties[property.Groups["name"].Value] = property.Groups["value"].Value.Trim();
             }
             properties.TryGetValue("src", out string? sourceValue);
-            Match url = S_URL.Match(sourceValue ?? string.Empty);
+            Match url = URL.Match(sourceValue ?? string.Empty);
             if (!properties.TryGetValue("font-family", out string? logical)
                 || !url.Success
             ) {
@@ -153,7 +153,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
             }
             return string.Empty;
         });
-        string canonical = S_FAMILY.Replace(withoutFaces, match =>
+        string canonical = FAMILY.Replace(withoutFaces, match =>
         {
             string[] requested = match.Groups["value"].Value.Split(',', StringSplitOptions.TrimEntries);
             for (int index = 0; index < requested.Length; index++)
@@ -180,9 +180,9 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         UiDocumentSourceFile source,
         AssetPath documentPath,
         HashSet<AssetPath> active
-    ) => S_LINK.Replace(source.text, match =>
+    ) => LINK.Replace(source.text, match =>
     {
-        Match href = S_HREF.Match(match.Value);
+        Match href = HREF.Match(match.Value);
         if (!href.Success || !href.Groups["path"].Value.EndsWith(".rcss", StringComparison.OrdinalIgnoreCase))
         {
             return match.Value;
@@ -207,9 +207,9 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         try
         {
             string text = readSource(path);
-            text = S_IMPORT.Replace(text, match =>
+            text = IMPORT.Replace(text, match =>
                 ExpandSheet(readSource, ResolvePath(path, match.Groups["path"].Value), active));
-            return S_FONT_FACE.Replace(text, match => S_FONT_SOURCE.Replace(match.Value, font => (
+            return FONT_FACE.Replace(text, match => FONT_SOURCE.Replace(match.Value, font => (
                 font.Groups["prefix"].Value
                 + FormatExplicitPath(ResolvePath(path, font.Groups["path"].Value.Trim()))
                 + font.Groups["suffix"].Value

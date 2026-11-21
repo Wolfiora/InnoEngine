@@ -32,12 +32,12 @@ internal sealed class EditorViewportContributorRegistry : TypeRegistry<EditorVie
             .OrderBy(static registration => registration.attribute.order)
             .ThenBy(static registration => registration.attribute.id, StringComparer.Ordinal)
             .ToArray();
-        string? duplicateId = registrations
+        string? duplicateID = registrations
             .GroupBy(static registration => registration.attribute.id, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
-        if (duplicateId is not null)
+        if (duplicateID is not null)
         {
-            throw new InvalidOperationException($"Editor viewport contributor ID '{duplicateId}' is duplicated.");
+            throw new InvalidOperationException($"Editor viewport contributor ID '{duplicateID}' is duplicated.");
         }
         IReadOnlyDictionary<EditorViewportKindId, Registration[]> byKind = registrations
             .GroupBy(static registration => registration.attribute.kind)

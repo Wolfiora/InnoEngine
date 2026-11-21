@@ -353,10 +353,10 @@ internal sealed record ScriptSourceSet(
                 samples.references.Add(names.runtime);
                 samples.references.Add(names.editor);
             }
-            foreach (string dependencyId in plugin.manifest.dependencies)
+            foreach (string dependencyID in plugin.manifest.dependencies)
             {
                 foreach (ScriptAssemblyDefinition dependency in explicitDefinitions.Where(definition => (
-                    definition.ownerPluginId == dependencyId
+                    definition.ownerPluginID == dependencyID
                 ))
                 ) {
                     if (dependency.scope == ScriptAssemblyScope.Runtime)
@@ -366,7 +366,7 @@ internal sealed record ScriptSourceSet(
                     pluginEditor.references.Add(dependency.name);
                     samples?.references.Add(dependency.name);
                 }
-                if (defaultNames.TryGetValue(dependencyId, out PluginDefaultNames dependencyDefaults))
+                if (defaultNames.TryGetValue(dependencyID, out PluginDefaultNames dependencyDefaults))
                 {
                     runtime.references.Add(dependencyDefaults.runtime);
                     pluginEditor.references.Add(dependencyDefaults.runtime);
@@ -379,7 +379,7 @@ internal sealed record ScriptSourceSet(
             editor.references.Add(names.runtime);
             editor.references.Add(names.editor);
             foreach (ScriptAssemblyDefinition definition in explicitDefinitions.Where(candidate => (
-                candidate.ownerPluginId == plugin.manifest.pluginId
+                candidate.ownerPluginID == plugin.manifest.pluginId
             ))
             ) {
                 if (definition.scope == ScriptAssemblyScope.Runtime)
@@ -462,7 +462,7 @@ internal sealed record ScriptSourceSet(
                 builder.definition.name,
                 builder.definition.scope,
                 builder.definition.domain,
-                builder.definition.ownerPluginId,
+                builder.definition.ownerPluginID,
                 builder.sources.OrderBy(static value => value.assetPath.ToString(), StringComparer.Ordinal).ToArray(),
                 referencesByAssembly[name],
                 builder.definition.defines,
@@ -488,16 +488,16 @@ internal sealed record ScriptSourceSet(
                 $"Plugin assembly '{assembly.name}' cannot reference project assembly '{dependency.name}'."
             );
         }
-        if (string.Equals(assembly.ownerPluginId, dependency.ownerPluginId, StringComparison.Ordinal))
+        if (string.Equals(assembly.ownerPluginID, dependency.ownerPluginID, StringComparison.Ordinal))
         {
             return;
         }
-        if (!plugins.TryGetCompilationPlugin(new AssetSourceId(assembly.ownerPluginId), out PluginCandidate? owner)
+        if (!plugins.TryGetCompilationPlugin(new AssetSourceId(assembly.ownerPluginID), out PluginCandidate? owner)
             || owner is null
-            || !owner.manifest.dependencies.Contains(dependency.ownerPluginId, StringComparer.Ordinal)
+            || !owner.manifest.dependencies.Contains(dependency.ownerPluginID, StringComparer.Ordinal)
         ) {
             throw new InvalidDataException(
-                $"Plugin '{assembly.ownerPluginId}' must declare dependency '{dependency.ownerPluginId}' "
+                $"Plugin '{assembly.ownerPluginID}' must declare dependency '{dependency.ownerPluginID}' "
                 + $"before assembly '{assembly.name}' can reference '{dependency.name}'."
             );
         }
@@ -508,7 +508,7 @@ internal sealed record ScriptSourceSet(
         AssetSourceId source,
         ScriptAssemblyScope scope,
         AssemblyDomain domain,
-        string ownerPluginId,
+        string ownerPluginID,
         string configurationHash
     ) => new(
         name,
@@ -516,7 +516,7 @@ internal sealed record ScriptSourceSet(
         string.Empty,
         scope,
         domain,
-        ownerPluginId,
+        ownerPluginID,
         [],
         ["DEBUG", "TRACE"],
         nullable: true,
@@ -534,10 +534,10 @@ internal sealed record ScriptSourceSet(
         }
     }
 
-    private static string CreatePluginAssemblyName(string pluginId)
+    private static string CreatePluginAssemblyName(string pluginID)
     {
         var builder = new StringBuilder("Inno.Plugin.");
-        foreach (string segment in pluginId.Split(['.', '-', '_'], StringSplitOptions.RemoveEmptyEntries))
+        foreach (string segment in pluginID.Split(['.', '-', '_'], StringSplitOptions.RemoveEmptyEntries))
         {
             builder.Append(char.ToUpperInvariant(segment[0]));
             for (int i = 1; i < segment.Length; i++)
@@ -581,7 +581,7 @@ internal sealed record ScriptAssemblyDefinition(
     string directory,
     ScriptAssemblyScope scope,
     AssemblyDomain domain,
-    string ownerPluginId,
+    string ownerPluginID,
     IReadOnlyList<string> references,
     IReadOnlyList<string> defines,
     bool nullable,
@@ -593,7 +593,7 @@ internal sealed record ScriptAssemblyInput(
     string name,
     ScriptAssemblyScope scope,
     AssemblyDomain domain,
-    string ownerPluginId,
+    string ownerPluginID,
     IReadOnlyList<ScriptSourceInput> sources,
     IReadOnlyList<string> references,
     IReadOnlyList<string> defines,
@@ -606,7 +606,7 @@ internal sealed record ScriptSourceInput(
     AssetPath assetPath,
     string sourcePath,
     string snapshotSource,
-    Guid persistentId,
+    Guid persistentID,
     string contentHash
 ) {
     internal string relativePath => assetPath.ToString();

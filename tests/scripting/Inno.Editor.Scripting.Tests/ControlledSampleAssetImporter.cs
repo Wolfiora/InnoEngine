@@ -10,7 +10,7 @@ namespace Inno.Editor.Scripting.Tests;
 [AssetImporter("tests.scripting.controlled-sample-asset")]
 internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
 {
-    private static readonly AsyncLocal<Control?> m_current = new();
+    private static readonly AsyncLocal<Control?> CURRENT = new();
 
     /// <summary>
     /// Creates a discoverable importer that uses only test-owned synchronization state.
@@ -24,8 +24,8 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
 
     internal static Control? current
     {
-        get => m_current.Value;
-        set => m_current.Value = value;
+        get => CURRENT.Value;
+        set => CURRENT.Value = value;
     }
 
     /// <summary>
@@ -48,7 +48,7 @@ internal sealed class ControlledSampleAssetImporter : AssetImporter<TextAsset>
         AssetImportWriter<TextAsset> output,
         CancellationToken cancellationToken
     ) {
-        Control? control = m_current.Value;
+        Control? control = CURRENT.Value;
         if (control is not null && context.assetPath.source == AssetSourceId.project)
         {
             control.workerThread = Environment.CurrentManagedThreadId;

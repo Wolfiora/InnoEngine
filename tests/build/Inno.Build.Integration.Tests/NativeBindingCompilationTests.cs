@@ -49,7 +49,7 @@ public sealed class NativeBindingCompilationTests
             string engine = TestRepository.GetRoot(typeof(NativeBindingCompilationTests).Assembly);
             BuildHostDescriptor host = StandardBuildHosts.Capture();
             PlatformTargetDescriptor[] targets = [WindowsX64BuildModule.target, MacOSArm64BuildModule.target];
-            string targetId = Assert.Single(
+            string targetID = Assert.Single(
                 targets.Where(target => (target.platform == host.system && target.architecture == host.architecture))
             ).id.value;
             IEnumerable<string> profileDirectories = Directory.EnumerateDirectories(Path.Combine(engine, "platforms"))
@@ -94,7 +94,7 @@ public sealed class NativeBindingCompilationTests
                         new XElement("Nullable", "enable"),
                         new XElement("IsTestProject", "true"),
                         new XElement("BindGenGeneratedBindings", "true"),
-                        new XElement("InnoBindingTargetId", targetId),
+                        new XElement("InnoBindingTargetId", targetID),
                         new XElement("InnoBindingEngineRoot", root),
                         new XElement("InnoBindingDefinition", definition),
                         new XElement("InnoBindingOutputMode", "TargetArtifacts")
@@ -124,7 +124,7 @@ public sealed class NativeBindingCompilationTests
             )
                 .Save(project);
 
-            (int success, string output) = await Build(project, []);
+            (int success, string output) = await BuildAsync(project, []);
             Assert.True(success == 0, output);
             Assert.Equal(1, output.Split("INNO-TASK-HOST verified", StringSplitOptions.None).Length - 1);
             string selected = Assert.Single(
@@ -133,7 +133,7 @@ public sealed class NativeBindingCompilationTests
             );
             Assert.Equal(Path.Combine(root, "obj", "Release", "net10.0", "bindings", "Bindings.cs"), selected);
             Assert.True(File.Exists(selected), output);
-            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "artifacts", "bindings", "fixture", targetId)));
+            string artifact = Assert.Single(Directory.GetDirectories(Path.Combine(root, "artifacts", "bindings", "fixture", targetID)));
             string publishedSource = Path.Combine(artifact, "Generated", "Bindings.cs");
             Assert.Equal(File.ReadAllBytes(publishedSource), File.ReadAllBytes(selected));
             Assert.True(File.Exists(Path.Combine(root, "bin", "Release", "net10.0", "Fixture.dll")), output);
@@ -155,7 +155,7 @@ public sealed class NativeBindingCompilationTests
                 },
                 new Dictionary<string, NativeLibraryKind> { [project] = NativeLibraryKind.Shared }
             );
-            (int reused, string reuseOutput) = await Build(project, ["-p:InnoNativeBindingSelection=" + selection]);
+            (int reused, string reuseOutput) = await BuildAsync(project, ["-p:InnoNativeBindingSelection=" + selection]);
             Assert.True(reused == 0, reuseOutput);
             Assert.Equal(
                 selected,
@@ -170,7 +170,7 @@ public sealed class NativeBindingCompilationTests
             XDocument frozenDefinition = XDocument.Load(project);
             frozenDefinition.Root!.Element("PropertyGroup")!.Element("InnoBindingEngineRoot")!.Value = frozen;
             frozenDefinition.Save(frozenProject);
-            (int frozenExit, string frozenOutput) = await Build(frozenProject, ["-p:InnoNativeBindingSelection=" + selection]);
+            (int frozenExit, string frozenOutput) = await BuildAsync(frozenProject, ["-p:InnoNativeBindingSelection=" + selection]);
             Assert.True(frozenExit == 0, frozenOutput);
             Assert.DoesNotContain("INNO-BINDINGS-PREPARE", frozenOutput);
             Assert.True(File.Exists(Path.Combine(frozen, "obj", "Release", "net10.0", "bindings", "Bindings.cs")));
@@ -200,14 +200,14 @@ public sealed class NativeBindingCompilationTests
             XDocument staticProject = XDocument.Load(project);
             staticProject.Root!.Add(new XElement("ItemGroup", new XElement("Compile", new XAttribute("Include", bootstrap))));
             staticProject.Save(project);
-            (int staticExit, string staticOutput) = await Build(project, ["-p:InnoNativeBindingSelection=" + staticSelection]);
+            (int staticExit, string staticOutput) = await BuildAsync(project, ["-p:InnoNativeBindingSelection=" + staticSelection]);
             Assert.True(staticExit == 0, staticOutput);
             staticProject.Root!.Elements("ItemGroup").Last().Remove();
             staticProject.Save(project);
 
-            await VerifyTransitiveSelection(root, engine, project, selection, sources, selected);
+            await VerifyTransitiveSelectionAsync(root, engine, project, selection, sources, selected);
 
-            (int rejected, string failure) = await Build(
+            (int rejected, string failure) = await BuildAsync(
                 project,
                 ["-p:InnoNativeBindingSelection=" + Path.Combine(root, "absent-selection.props")]
             );
@@ -223,7 +223,7 @@ public sealed class NativeBindingCompilationTests
         }
     }
 
-    private static async Task VerifyTransitiveSelection(
+    private static async Task VerifyTransitiveSelectionAsync(
         string root,
         string engine,
         string nativeProject,
@@ -272,7 +272,7 @@ public sealed class NativeBindingCompilationTests
             }
             new XDocument(document).Save(entry.path);
         }
-        (int exit, string output) = await Build(host, []);
+        (int exit, string output) = await BuildAsync(host, []);
         Assert.True(exit == 0, output);
         Assert.DoesNotContain("INNO-BINDINGS-PREPARE", output);
         Assert.DoesNotContain("INNO-TASK-RUNTIME", output);
@@ -282,7 +282,7 @@ public sealed class NativeBindingCompilationTests
         );
     }
 
-    private static async Task<(int exitCode, string output)> Build(
+    private static async Task<(int exitCode, string output)> BuildAsync(
         string project,
         string[] arguments
     ) {

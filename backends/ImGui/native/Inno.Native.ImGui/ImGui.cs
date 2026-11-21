@@ -8,9 +8,9 @@ namespace Inno.Native.ImGui;
 public static unsafe partial class ImGui
 {
 #if DEBUG
-    internal const string LibName = "libcimgui-debug";
+    internal const string C_LIB_NAME = "libcimgui-debug";
 #else
-    internal const string LibName = "libcimgui-release";
+    internal const string C_LIB_NAME = "libcimgui-release";
 #endif
 
     static ImGui()
@@ -20,7 +20,7 @@ public static unsafe partial class ImGui
 #elif INNO_STATIC_NATIVE
         FromStatic();
 #else
-        Load(NativeDllLoader.FindNativeLibrary(LibName));
+        Load(NativeDllLoader.FindNativeLibrary(C_LIB_NAME));
 #endif
     }
 }

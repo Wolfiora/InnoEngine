@@ -60,7 +60,7 @@ internal static class SceneHistoryCompensation
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(remove);
         ArgumentException.ThrowIfNullOrWhiteSpace(description);
-        Guid persistentId = target.identity.persistentId;
+        Guid persistentID = target.identity.persistentId;
         Exception? failure = null;
         bool reportedRemoved = false;
         try
@@ -72,7 +72,7 @@ internal static class SceneHistoryCompensation
             failure = exception;
         }
 
-        bool remainsRegistered = ReferenceEquals(workspace.Find<EngineObject>(persistentId), target);
+        bool remainsRegistered = ReferenceEquals(workspace.Find<EngineObject>(persistentID), target);
         if (target.isDestroyed && !remainsRegistered)
         {
             return SceneHistoryCompensationResult.Preserved(

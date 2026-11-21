@@ -15,12 +15,12 @@ namespace Inno.Scene.Assets.Importers;
 [AssetImporter("inno.engine.scene")]
 internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
 {
-    private static readonly IReadOnlyList<string> s_extensions = new[] { ".iscene" };
+    private static readonly IReadOnlyList<string> EXTENSIONS = new[] { ".iscene" };
 
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>
-    public override IReadOnlyList<string> supportedExtensions => s_extensions;
+    public override IReadOnlyList<string> supportedExtensions => EXTENSIONS;
 
     /// <summary>
     /// Imports source content into a validated runtime asset and artifact set.

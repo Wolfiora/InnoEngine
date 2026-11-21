@@ -67,13 +67,13 @@ internal sealed partial class FileBrowserTree
         }
         else
         {
-            const string rootId = "tree_virtual_plugins";
+            const string C_ROOT_ID = "tree_virtual_plugins";
             if (m_rootOpenRequest || m_currentDirectoryOpenRequest)
             {
-                widgets.SetTreeNodeOpen(rootId, true);
+                widgets.SetTreeNodeOpen(C_ROOT_ID, true);
             }
-            rows.Add(new(string.Empty, "Plugins", rootId, 0, true, true, false, null));
-            if (widgets.IsTreeNodeOpen(rootId))
+            rows.Add(new(string.Empty, "Plugins", C_ROOT_ID, 0, true, true, false, null));
+            if (widgets.IsTreeNodeOpen(C_ROOT_ID))
             {
                 AssetSourceMount[] mounts = pipeline.sourceMounts.Where(mount => m_assets.edits.IsPluginSource(mount.id))
                     .OrderBy(static mount => mount.id.value, StringComparer.OrdinalIgnoreCase)
@@ -143,7 +143,7 @@ internal sealed partial class FileBrowserTree
     private readonly record struct BrowserTreeRow(
         string path,
         string label,
-        string nodeId,
+        string nodeID,
         int depth,
         bool isRoot,
         bool virtualRoot,

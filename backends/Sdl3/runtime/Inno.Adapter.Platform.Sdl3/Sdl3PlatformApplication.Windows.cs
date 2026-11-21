@@ -114,7 +114,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
             ownsNativeWindow,
             m_hostIntegration,
             RemoveWindow,
-            m_ownerThreadId
+            m_ownerThreadID
         );
         m_windows.Add(id, window);
         return window;
@@ -134,7 +134,7 @@ public sealed unsafe partial class Sdl3PlatformApplication
 
     private void ValidateOwnerThread()
     {
-        if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        if (Environment.CurrentManagedThreadId != m_ownerThreadID)
         {
             throw new InvalidOperationException("SDL application operations must run on their owner thread.");
         }

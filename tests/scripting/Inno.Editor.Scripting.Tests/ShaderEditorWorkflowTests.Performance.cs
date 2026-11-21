@@ -32,7 +32,7 @@ public sealed partial class ShaderEditorWorkflowTests
         string source = Path.Combine(m_root, "Assets");
         string? inputRoot = Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_INPUT_ROOT");
         string? input = inputRoot is null ? null : Path.Combine(Path.GetFullPath(inputRoot), "shader-graph");
-        const string name = "Performance.ishader";
+        const string C_NAME = "Performance.ishader";
         if (input is not null && Directory.Exists(input))
         {
             CopyPerformanceInput(input, source);
@@ -67,15 +67,15 @@ public sealed partial class ShaderEditorWorkflowTests
                     );
                 }
             }
-            File.WriteAllBytes(Path.Combine(source, name), GraphDocumentCodec.Encode(graph, m_serialization));
+            File.WriteAllBytes(Path.Combine(source, C_NAME), GraphDocumentCodec.Encode(graph, m_serialization));
         }
-        Assert.True(m_assets.Import(AssetPath.Project(name)));
-        Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(name), out AssetFileEntry entry));
+        Assert.True(m_assets.Import(AssetPath.Project(C_NAME)));
+        Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(C_NAME), out AssetFileEntry entry));
         if (input is not null && !Directory.Exists(input))
         {
             CopyPerformanceInput(source, input);
         }
-        byte[] original = SHA256.HashData(File.ReadAllBytes(Path.Combine(source, name)));
+        byte[] original = SHA256.HashData(File.ReadAllBytes(Path.Combine(source, C_NAME)));
         SelectAndDraw(entry);
         GraphDocumentController controller = Controller(entry);
         Assert.Equal(2_000, controller.document.nodes.Count);
@@ -147,7 +147,7 @@ public sealed partial class ShaderEditorWorkflowTests
                 supportsVertexOffsets = true
             })
         );
-        Assert.Equal(original, SHA256.HashData(File.ReadAllBytes(Path.Combine(source, name))));
+        Assert.Equal(original, SHA256.HashData(File.ReadAllBytes(Path.Combine(source, C_NAME))));
     }
 
     private unsafe void DrawPerformanceCanvas()

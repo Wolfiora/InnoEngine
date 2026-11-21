@@ -31,8 +31,8 @@ internal static class BindingCommand
         BuildCompositionContext context = request.composition;
         BuildDistribution distribution = request.distribution;
 
-        string productId = options.Read("product", "editor");
-        ProductNativeBuildPlan product = distribution.ResolveNativeProduct(target.value, productId).plan;
+        string productID = options.Read("product", "editor");
+        ProductNativeBuildPlan product = distribution.ResolveNativeProduct(target.value, productID).plan;
         if (request.nativeDependencies.Length != 0)
         {
             using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(

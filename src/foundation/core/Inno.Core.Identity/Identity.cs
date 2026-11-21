@@ -27,7 +27,7 @@ public struct Identity
                 return null;
             }
 
-            return registry.TryGetRuntimeId(this, out int runtimeId) ? runtimeId : null;
+            return registry.TryGetRuntimeID(this, out int runtimeID) ? runtimeID : null;
         }
     }
 
@@ -45,13 +45,13 @@ public struct Identity
             {
                 return null;
             }
-            return registry.TryGetRuntimeId(this, out int runtimeId)
-                   ? new RuntimeIdentity(registry.domainId, runtimeId)
+            return registry.TryGetRuntimeID(this, out int runtimeID)
+                   ? new RuntimeIdentity(registry.domainID, runtimeID)
                    : null;
         }
     }
 
-    private int m_runtimeId;
+    private int m_runtimeID;
     private WeakReference<IdentityRegistry>? m_registryRef;
 
     /// <summary>
@@ -63,20 +63,20 @@ public struct Identity
     public Identity(Guid persistentId)
     {
         this.persistentId = persistentId;
-        m_runtimeId = 0;
+        m_runtimeID = 0;
         m_registryRef = null;
     }
 
     internal void Bind(
         IdentityRegistry registry,
-        int runtimeId
+        int runtimeID
     ) {
         if (persistentId == Guid.Empty)
         {
             persistentId = Guid.NewGuid();
         }
 
-        m_runtimeId = runtimeId;
+        m_runtimeID = runtimeID;
         m_registryRef = new WeakReference<IdentityRegistry>(registry);
     }
 
@@ -86,12 +86,12 @@ public struct Identity
             && m_registryRef.TryGetTarget(out IdentityRegistry? current)
             && ReferenceEquals(current, registry)
         ) {
-            m_runtimeId = 0;
+            m_runtimeID = 0;
             m_registryRef = null;
         }
     }
 
-    internal int rawRuntimeId => m_runtimeId;
+    internal int rawRuntimeID => m_runtimeID;
 
     /// <summary>
     /// Resolves this transient snapshot through its original weak identity registry.
@@ -105,6 +105,6 @@ public struct Identity
     public TObject? Resolve<TObject>()
         where TObject : IdentityObject
             => m_registryRef is not null && m_registryRef.TryGetTarget(out IdentityRegistry? registry)
-               ? registry.Get<TObject>(m_runtimeId)
+               ? registry.Get<TObject>(m_runtimeID)
                : null;
 }

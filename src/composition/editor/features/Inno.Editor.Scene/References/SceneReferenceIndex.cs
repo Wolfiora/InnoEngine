@@ -70,10 +70,10 @@ internal static class SceneReferenceIndex
         for (int i = 0; i < references.Count; i++)
         {
             SceneIncomingReferenceState reference = references[i];
-            EngineObject? owner = workspace.Find<EngineObject>(reference.ownerId);
+            EngineObject? owner = workspace.Find<EngineObject>(reference.ownerID);
             if (owner is null || owner.isDestroyed)
             {
-                return Rollback(rollback, $"Incoming reference owner '{reference.ownerId}' is unavailable.", workspace);
+                return Rollback(rollback, $"Incoming reference owner '{reference.ownerID}' is unavailable.", workspace);
             }
             try
             {
@@ -89,7 +89,7 @@ internal static class SceneReferenceIndex
                 {
                     return Rollback(
                         rollback,
-                        $"Incoming property '{reference.propertyName}' on '{reference.ownerId}' was not restored completely.",
+                        $"Incoming property '{reference.propertyName}' on '{reference.ownerID}' was not restored completely.",
                         workspace
                     );
                 }
@@ -98,7 +98,7 @@ internal static class SceneReferenceIndex
             {
                 return Rollback(
                     rollback,
-                    $"Incoming property '{reference.propertyName}' on '{reference.ownerId}' failed: {exception.Message}",
+                    $"Incoming property '{reference.propertyName}' on '{reference.ownerID}' failed: {exception.Message}",
                     workspace
                 );
             }
@@ -114,9 +114,9 @@ internal static class SceneReferenceIndex
         for (int i = 0; i < references.Count; i++)
         {
             SceneIncomingReferenceState reference = references[i];
-            EngineObject owner = workspace.Find<EngineObject>(reference.ownerId)
+            EngineObject owner = workspace.Find<EngineObject>(reference.ownerID)
                                  ?? throw new InvalidOperationException(
-                                     $"Incoming reference owner '{reference.ownerId}' is unavailable."
+                                     $"Incoming reference owner '{reference.ownerID}' is unavailable."
                                  );
             result[i] = CaptureRollback(owner, reference.propertyName, workspace);
         }
@@ -139,7 +139,7 @@ internal static class SceneReferenceIndex
             SceneReferenceRollbackState reference = rollback[i];
             try
             {
-                EngineObject owner = workspace.Find<EngineObject>(reference.ownerId)
+                EngineObject owner = workspace.Find<EngineObject>(reference.ownerID)
                                      ?? throw new InvalidOperationException("The rollback owner is unavailable.");
                 if (reference.data is not null)
                 {
@@ -152,7 +152,7 @@ internal static class SceneReferenceIndex
                     );
                     if (!IsComplete(result))
                     {
-                        rollbackFailures.Add($"'{reference.ownerId}.{reference.propertyName}' was incomplete");
+                        rollbackFailures.Add($"'{reference.ownerID}.{reference.propertyName}' was incomplete");
                     }
                 }
                 else
@@ -163,7 +163,7 @@ internal static class SceneReferenceIndex
             }
             catch (Exception exception)
             {
-                rollbackFailures.Add($"'{reference.ownerId}.{reference.propertyName}': {exception.Message}");
+                rollbackFailures.Add($"'{reference.ownerID}.{reference.propertyName}': {exception.Message}");
             }
         }
         return rollbackFailures.Count == 0
@@ -367,7 +367,7 @@ internal static class SceneReferenceIndex
 }
 
 internal readonly record struct SceneReferenceRollbackState(
-    Guid ownerId,
+    Guid ownerID,
     string propertyName,
     byte[]? data,
     object? runtimeValue

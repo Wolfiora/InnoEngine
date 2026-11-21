@@ -90,8 +90,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 
     internal bool TryResolveMaterial(
         MaterialAsset material,
-        ShaderContractId contractId,
-        ShaderPassRoleId passRoleId,
+        ShaderContractId contractID,
+        ShaderPassRoleId passRoleID,
         ShaderProgramKind expectedKind,
         RenderVertexLayout? vertexLayout,
         MaterialPropertyBlock? overrides,
@@ -116,7 +116,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
             return false;
         }
 
-        Guid shaderId = shader.identity.persistentId;
+        Guid shaderID = shader.identity.persistentId;
         RenderShaderVariant variant;
         try
         {
@@ -133,9 +133,9 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
             Publish("RENDER_MATERIAL_VARIANT_INVALID", failure.Message, material.assetPath.ToString(), diagnostics);
             return TryUseLastGood(
                 material,
-                shaderId,
-                contractId,
-                passRoleId,
+                shaderID,
+                contractID,
+                passRoleID,
                 expectedKind,
                 vertexLayout,
                 overrides,
@@ -145,7 +145,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
             );
         }
 
-        ProgramPublication? publication = FindPublication(shaderId, variant, scope);
+        ProgramPublication? publication = FindPublication(shaderID, variant, scope);
         ArtifactResult result;
         if (suppliedArtifact is null)
         {
@@ -153,7 +153,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         }
         else
         {
-            var lookup = new LookupKey(shaderId, variant.value, scope);
+            var lookup = new LookupKey(shaderID, variant.value, scope);
             if (!m_frameArtifacts.TryGetValue(lookup, out result))
             {
                 result = new(RenderTargetArtifactStatus.Ready, suppliedArtifact);
@@ -173,13 +173,13 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                 MaterialPassResolution? selected = MaterialPassResolver.Resolve(
                     definition,
                     material.techniqueId,
-                    contractId,
-                    passRoleId,
+                    contractID,
+                    passRoleID,
                     m_device.capabilities
                 );
                 if (selected is null)
                 {
-                    return Unavailable(material, contractId, passRoleId, diagnostics);
+                    return Unavailable(material, contractID, passRoleID, diagnostics);
                 }
                 if (selected.pass.programKind != expectedKind)
                 {
@@ -202,7 +202,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                 {
                     throw new InvalidOperationException("Shader program publication exceeds the configured program capacity.");
                 }
-                var key = new PublicationKey(shaderId, artifact.targetKey, variant.value, scope);
+                var key = new PublicationKey(shaderID, artifact.targetKey, variant.value, scope);
                 m_programs.RequireCapacity(key);
                 foreach (ProgramLayout layout in required)
                 {
@@ -255,8 +255,8 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         return TryUsePublication(
             material,
             publication,
-            contractId,
-            passRoleId,
+            contractID,
+            passRoleID,
             expectedKind,
             vertexLayout,
             overrides,
@@ -353,13 +353,13 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
     }
 
     private ProgramPublication? FindPublication(
-        Guid shaderId,
+        Guid shaderID,
         RenderShaderVariant variant,
         string scope
     ) {
         foreach ((PublicationKey key, ProgramPublication publication) in m_programs)
         {
-            if (key.shaderId == shaderId && key.variantKey == variant.value && key.scope == scope)
+            if (key.shaderID == shaderID && key.variantKey == variant.value && key.scope == scope)
             {
                 return publication;
             }
@@ -369,7 +369,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 
     private bool TryUseLastGood(
         MaterialAsset material,
-        Guid shaderId,
+        Guid shaderID,
         ShaderContractId contract,
         ShaderPassRoleId role,
         ShaderProgramKind kind,
@@ -381,7 +381,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
     ) {
         foreach ((PublicationKey key, ProgramPublication publication) in m_programs)
         {
-            if (key.shaderId != shaderId || key.scope != scope)
+            if (key.shaderID != shaderID || key.scope != scope)
             {
                 continue;
             }
@@ -872,14 +872,14 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
     );
 
     private readonly record struct PublicationKey(
-        Guid shaderId,
+        Guid shaderID,
         string targetKey,
         string variantKey,
         string scope
     );
 
     private readonly record struct LookupKey(
-        Guid shaderId,
+        Guid shaderID,
         string variantKey,
         string scope
     );

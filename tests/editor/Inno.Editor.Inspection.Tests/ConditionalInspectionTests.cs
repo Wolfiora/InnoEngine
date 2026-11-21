@@ -82,7 +82,7 @@ public sealed class ConditionalInspectionTests : IDisposable
     }
 
     [Fact]
-    public void PropertyAvailabilityUsesCurrentOwnerConditionsWithoutRequiringNativeUi()
+    public void PropertyAvailabilityUsesCurrentOwnerConditionsWithoutRequiringNativeUI()
     {
         using var properties = new PropertyDrawerRegistry(m_runtime.interactions, m_types, m_serialization, []);
         using var attributes = new InspectorAttributeDrawerRegistry(

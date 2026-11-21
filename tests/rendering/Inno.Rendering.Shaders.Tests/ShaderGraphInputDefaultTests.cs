@@ -106,7 +106,7 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
     [Fact]
     public void OptionalGraphNodeInputExpandsToTheRerouteInputDefault()
     {
-        Guid sourceId = Guid.NewGuid();
+        Guid sourceID = Guid.NewGuid();
         GraphDocument child = ShaderGraphDocument.Create(
             new ShaderDefinition("Optional Node", [], [], []),
             m_serialization,
@@ -149,7 +149,7 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         );
         var call = new GraphNodeRecord(new("call"), ShaderGraphNodes.callDefinitionId);
         parent.AddNode(call);
-        Set(call, "sourceId", sourceId);
+        Set(call, "sourceId", sourceID);
         Set(call, "sourcePath", "Optional.ishader");
         Set(
             call,
@@ -162,7 +162,7 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
             (
                 id,
                 _
-            ) => id == sourceId ? child : throw new InvalidOperationException(),
+            ) => id == sourceID ? child : throw new InvalidOperationException(),
             m_serialization,
             SerializationContext.empty
         );

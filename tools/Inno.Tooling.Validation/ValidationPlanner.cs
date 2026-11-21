@@ -667,7 +667,7 @@ internal static partial class ValidationPlanner
         bool gateOnly = !full
                         && affected.Count == 0
                         && changes.Count > 0
-                        && changes.All(path => ValidationCiContracts.GateScripts.Contains(path, StringComparer.Ordinal));
+                        && changes.All(path => ValidationCiContracts.GATE_SCRIPTS.Contains(path, StringComparer.Ordinal));
         if (full || changes.Any(static path => (
             path.StartsWith(".github/", StringComparison.Ordinal) || IsCiContractInput(path)
             || path.StartsWith("tools/Inno.Tooling.Validation/", StringComparison.Ordinal)
@@ -1283,7 +1283,7 @@ internal static partial class ValidationPlanner
                 : target,
                 hostExcludedSources: ValidationTestHosts.ExcludedSources(projects)
                     .Concat(
-                        ValidationCiContracts.GateScripts.Where(path => (
+                        ValidationCiContracts.GATE_SCRIPTS.Where(path => (
                             inputs.ContainsKey(path)
                             && !projects.Concat(nativeProjects.Values).Any(project => project.inputs.Contains(path, StringComparer.Ordinal))
                         ))

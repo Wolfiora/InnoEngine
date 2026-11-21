@@ -104,7 +104,7 @@ public static class StandardNativeDeployment
             NativeDeploymentIndex index = NativeDeploymentIndex.Decode(
                 File.ReadAllBytes(Path.Combine(root, NativeDeploymentIndex.C_FILE_NAME))
             );
-            if (index.targetId != target.value)
+            if (index.targetID != target.value)
             {
                 throw new InvalidDataException("The selected Native deployment metadata has a foreign target.");
             }

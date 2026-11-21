@@ -179,13 +179,13 @@ public sealed class NativeBindingCMakeTests
     }
 
     private static NativeBindingSourceFile Input(
-        string rootId,
+        string rootID,
         string relative,
         string path,
         bool compile
     ) {
         byte[] content = File.ReadAllBytes(path);
-        return new(rootId, relative, content.Length, Convert.ToHexStringLower(SHA256.HashData(content)), compile);
+        return new(rootID, relative, content.Length, Convert.ToHexStringLower(SHA256.HashData(content)), compile);
     }
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]

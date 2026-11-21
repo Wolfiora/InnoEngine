@@ -157,7 +157,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (m_buffers.TryGetValue(id, out BufferEntry? current)
@@ -205,7 +205,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentNullException.ThrowIfNull(subresources);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -282,7 +282,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (containerData.IsEmpty)
         {
@@ -367,7 +367,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         CancellationToken cancellationToken = default
     ) {
         ThrowIfDisposed();
-        return m_readbacks.Read(texture, mipLevel, cancellationToken);
+        return m_readbacks.ReadAsync(texture, mipLevel, cancellationToken);
     }
 
     /// <summary>
@@ -463,7 +463,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         out RenderMaterialPass? materialPass
     ) {
         ThrowIfDisposed();
-        RequireId(scope);
+        RequireID(scope);
         ArgumentNullException.ThrowIfNull(artifact);
         ArgumentNullException.ThrowIfNull(diagnostics);
         if (m_targetArtifacts is null)
@@ -603,9 +603,9 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             return false;
         }
 
-        var resourceId = new RenderPersistentResourceId($"asset:{texture.assetId:D}:texture:{texture.slot.id}");
+        var resourceID = new RenderPersistentResourceId($"asset:{texture.assetId:D}:texture:{texture.slot.id}");
         bool sRgb = texture.slot.colorSpace == TextureColorSpace.Srgb;
-        if (m_textures.TryGetValue(resourceId, out TextureEntry? current)
+        if (m_textures.TryGetValue(resourceID, out TextureEntry? current)
             && current.kind == TextureEntryKind.Ktx
             && current.revision == texture.contentRevision
             && current.sRgb == sRgb
@@ -620,10 +620,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             RenderTargetArtifactStatus status = m_targetArtifacts is null
                                                 ? RenderTargetArtifactStatus.Unavailable
                                                 : m_targetArtifacts.GetTextureArtifact(texture, out artifact);
-            string sourceId = $"{texture.assetId:D}:{texture.slot.id}";
+            string sourceID = $"{texture.assetId:D}:{texture.slot.id}";
             if (status != RenderTargetArtifactStatus.Unavailable)
             {
-                m_diagnostics.Resolve("RENDER_TEXTURE_TARGET_UNAVAILABLE", sourceId);
+                m_diagnostics.Resolve("RENDER_TEXTURE_TARGET_UNAVAILABLE", sourceID);
             }
             if (status != RenderTargetArtifactStatus.Ready)
             {
@@ -633,11 +633,11 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
                         "RENDER_TEXTURE_TARGET_UNAVAILABLE",
                         m_targetArtifacts is null
                         ? "No render target artifact provider is configured for this runtime."
-                        : $"No deployed target texture artifact exists for '{sourceId}'.",
-                        sourceId
+                        : $"No deployed target texture artifact exists for '{sourceID}'.",
+                        sourceID
                     );
                 }
-                if (m_textures.TryGetValue(resourceId, out TextureEntry? lastGood))
+                if (m_textures.TryGetValue(resourceID, out TextureEntry? lastGood))
                 {
                     lastGood.lastUsedFrame = m_frameIndex;
                     resolvedTexture = lastGood.handle;
@@ -648,11 +648,11 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             if (artifact.IsEmpty)
             {
                 throw new InvalidOperationException(
-                    $"Target artifact provider returned an empty ready texture for '{sourceId}'."
+                    $"Target artifact provider returned an empty ready texture for '{sourceID}'."
                 );
             }
-            resolvedTexture = AcquireKtxTexture(resourceId, texture.contentRevision, artifact, sRgb, sourceId);
-            m_diagnostics.Resolve("RENDER_TEXTURE_RESOLVE_FAILED", sourceId);
+            resolvedTexture = AcquireKtxTexture(resourceID, texture.contentRevision, artifact, sRgb, sourceID);
+            m_diagnostics.Resolve("RENDER_TEXTURE_RESOLVE_FAILED", sourceID);
             return true;
         }
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
@@ -666,7 +666,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
                 $"Texture artifact '{texture.assetId:D}:{texture.slot.id}' kept its last-good GPU resource: {exception.Message}",
                 $"{texture.assetId:D}:{texture.slot.id}"
             );
-            if (m_textures.TryGetValue(resourceId, out TextureEntry? lastGood))
+            if (m_textures.TryGetValue(resourceID, out TextureEntry? lastGood))
             {
                 lastGood.lastUsedFrame = m_frameIndex;
                 resolvedTexture = lastGood.handle;
@@ -701,7 +701,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (m_graphicsPipelines.TryGetValue(id, out GraphicsPipelineEntry? current)
@@ -744,7 +744,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         string name
     ) {
         ThrowIfDisposed();
-        RequireId(id);
+        RequireID(id);
         ArgumentNullException.ThrowIfNull(descriptor);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (m_computePipelines.TryGetValue(id, out ComputePipelineEntry? current)
@@ -771,7 +771,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     public void Release(RenderPersistentResourceId id)
     {
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
-        RequireId(id);
+        RequireID(id);
         if (!m_mutationAllowed)
         {
             if (m_materials.HasScope(id.value) || m_graphicsPipelines.TryGetValue(id, out _)
@@ -828,10 +828,10 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
     internal RenderResourceStatistics statistics
         => new()
     {
-        activeResources = m_buffers.Count
-                          + m_textures.Count
-                          + m_graphicsPipelines.Count
-                          + m_computePipelines.Count
+        activeResources = m_buffers.count
+                          + m_textures.count
+                          + m_graphicsPipelines.count
+                          + m_computePipelines.count
                           + m_materials.count
                           + m_geometry.count,
         retiringResources = m_buffers.pendingCount
@@ -943,7 +943,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
          && Equals(left.vertexLayout, right.vertexLayout)
          && left.indexFormat == right.indexFormat;
 
-    private static void RequireId(RenderPersistentResourceId id)
+    private static void RequireID(RenderPersistentResourceId id)
     {
         if (!id.isValid)
         {

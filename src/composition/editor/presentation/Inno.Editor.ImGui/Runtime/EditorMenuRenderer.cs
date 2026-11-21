@@ -43,10 +43,10 @@ public sealed unsafe class EditorMenuRenderer
     ) {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        uint popupId = NativeImGui.GetID(id);
+        uint popupID = NativeImGui.GetID(id);
         if (!ShouldResolveItemContextMenu(id))
         {
-            m_contextSearches.Remove((m_session.owner, popupId));
+            m_contextSearches.Remove((m_session.owner, popupID));
             return false;
         }
 
@@ -61,7 +61,7 @@ public sealed unsafe class EditorMenuRenderer
         }
         try
         {
-            DrawContextMenuContents(popupId, [new MenuSection(interaction, menu.items)]);
+            DrawContextMenuContents(popupID, [new MenuSection(interaction, menu.items)]);
         }
         finally
         {
@@ -93,10 +93,10 @@ public sealed unsafe class EditorMenuRenderer
     ) {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        uint popupId = NativeImGui.GetID(id);
+        uint popupID = NativeImGui.GetID(id);
         if (!ShouldResolveItemContextMenu(id))
         {
-            m_contextSearches.Remove((m_session.owner, popupId));
+            m_contextSearches.Remove((m_session.owner, popupID));
             return false;
         }
 
@@ -113,7 +113,7 @@ public sealed unsafe class EditorMenuRenderer
         try
         {
             DrawContextMenuContents(
-                popupId,
+                popupID,
                 [new MenuSection(scopeInteraction, scopeMenu.items), new MenuSection(itemInteraction, itemMenu.items)]
             );
         }
@@ -143,10 +143,10 @@ public sealed unsafe class EditorMenuRenderer
     ) {
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        uint popupId = NativeImGui.GetID(id);
+        uint popupID = NativeImGui.GetID(id);
         if (!ShouldResolveWindowContextMenu(id))
         {
-            m_contextSearches.Remove((m_session.owner, popupId));
+            m_contextSearches.Remove((m_session.owner, popupID));
             return false;
         }
 
@@ -161,7 +161,7 @@ public sealed unsafe class EditorMenuRenderer
         }
         try
         {
-            DrawContextMenuContents(popupId, [new MenuSection(interaction, menu.items)]);
+            DrawContextMenuContents(popupID, [new MenuSection(interaction, menu.items)]);
         }
         finally
         {
@@ -284,12 +284,12 @@ public sealed unsafe class EditorMenuRenderer
     internal void Clear() => m_contextSearches.Clear();
 
     private void DrawContextMenuContents(
-        uint popupId,
+        uint popupID,
         IReadOnlyList<MenuSection> sections
     ) {
         string search = NativeImGui.IsWindowAppearing()
                         ? string.Empty
-                        : m_contextSearches.GetValueOrDefault((m_session.owner, popupId), string.Empty);
+                        : m_contextSearches.GetValueOrDefault((m_session.owner, popupID), string.Empty);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), EditorUI.current.widgets.style.menuSearchFramePadding);
         try
         {
@@ -297,14 +297,14 @@ public sealed unsafe class EditorMenuRenderer
             {
                 NativeImGui.SetKeyboardFocusHere();
             }
-            _ = EditorUI.current.widgets.SearchInput($"context-menu-{popupId}", "Search commands…", ref search, width: -1f);
+            _ = EditorUI.current.widgets.SearchInput($"context-menu-{popupID}", "Search commands…", ref search, width: -1f);
         }
         finally
         {
             NativeImGui.PopStyleVar();
         }
 
-        m_contextSearches[(m_session.owner, popupId)] = search;
+        m_contextSearches[(m_session.owner, popupID)] = search;
         NativeImGui.Separator();
         bool searching = !string.IsNullOrWhiteSpace(search);
         bool drewSection = false;

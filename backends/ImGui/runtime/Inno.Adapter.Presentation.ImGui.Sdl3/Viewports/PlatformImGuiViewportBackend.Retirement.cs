@@ -52,7 +52,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
         {
             data.owner.m_application.ReleaseWindow(data.registeredWindow);
             data.retirement = data.externalRenderer is not null && data.externalTarget is not null
-                              ? data.externalRenderer.RetireViewport(data.externalTarget)
+                              ? data.externalRenderer.RetireViewportAsync(data.externalTarget)
                               : Task.CompletedTask;
         }
         catch (Exception failure)

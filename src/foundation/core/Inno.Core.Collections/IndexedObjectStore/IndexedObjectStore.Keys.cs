@@ -54,7 +54,7 @@ public sealed partial class IndexedObjectStore<T>
             }
 
             var index = new IndexedObjectIndex<T, TKey>(name, flags, orderComparer);
-            int id = m_nextIndexId++;
+            int id = m_nextIndexID++;
             m_indexes[id] = index;
             m_indexByName[name] = id;
             BumpVersion();

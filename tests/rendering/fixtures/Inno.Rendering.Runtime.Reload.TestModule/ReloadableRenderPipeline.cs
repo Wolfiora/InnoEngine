@@ -11,13 +11,13 @@ public sealed class ReloadableFramePayload;
 /// <summary>
 /// Supplies a collectible Plugin-owned pipeline for rendering generation removal tests.
 /// </summary>
-[RenderPipelineExtension(extensionId)]
+[RenderPipelineExtension(C_EXTENSION_ID)]
 internal sealed class ReloadableRenderPipeline : RenderPipeline
 {
     /// <summary>
     /// Identifies the pipeline independently of its collectible CLR generation.
     /// </summary>
-    internal const string extensionId = "tests.runtime.reloadable-plugin";
+    internal const string C_EXTENSION_ID = "tests.runtime.reloadable-plugin";
 
     /// <summary>
     /// Adds observable render work to the frame graph.
@@ -39,10 +39,10 @@ internal sealed class ReloadableRenderPipeline : RenderPipeline
             .HasSideEffect();
 }
 
-[RenderFeatureExtension(extensionId)]
+[RenderFeatureExtension(C_EXTENSION_ID)]
 internal sealed class ReloadableRenderFeature : RenderPipelineFeature
 {
-    internal const string extensionId = "tests.runtime.reloadable-plugin-feature";
+    internal const string C_EXTENSION_ID = "tests.runtime.reloadable-plugin-feature";
 
     /// <summary>
     /// Adds observable feature work to the active pipeline graph.

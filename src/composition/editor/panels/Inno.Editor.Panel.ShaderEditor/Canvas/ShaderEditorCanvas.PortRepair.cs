@@ -49,7 +49,7 @@ internal sealed partial class ShaderEditorCanvas
                             continue;
                         }
                         bool occupied = replacement.direction == GraphPortDirection.Input
-                                        && Controller.document.edges.Any(edge => edge.input == target);
+                                        && controller.document.edges.Any(edge => edge.input == target);
                         bool compatible = old.type.id == "missing"
                                           || replacement.type.id == "any"
                                           || old.type.IsEquivalentTo(replacement.type);
@@ -62,7 +62,7 @@ internal sealed partial class ShaderEditorCanvas
                         {
                             continue;
                         }
-                        GraphDocument candidate = Controller.document.Clone();
+                        GraphDocument candidate = controller.document.Clone();
                         foreach (GraphEdgeRecord edge in candidate.edges
                             .Where(edge => edge.input == endpoint || edge.output == endpoint)
                             .ToArray()
@@ -78,7 +78,7 @@ internal sealed partial class ShaderEditorCanvas
                             ShaderEditorDocuments.C_PORT_SNAPSHOT,
                             ShaderGraphDocument.Encode(draft.portSnapshots[node.id], owner.serialization, owner.context)
                         );
-                        Controller.ReplaceDocument(candidate, "Reconnect Shader Port");
+                        controller.ReplaceDocument(candidate, "Reconnect Shader Port");
                         owner.Changed(draft);
                         break;
                     }

@@ -7,7 +7,7 @@ using Inno.Scene.Components;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Subtree)]
+[EditorHistoryHandler(SceneHistoryKinds.C_SUBTREE)]
 internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
 {
     private readonly EditorSceneWorkspace m_workspace;
@@ -45,29 +45,29 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         try
         {
             SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
             {
-                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneId}' is no longer loaded.");
+                return EditorHistoryAvailability.Unavailable($"Scene '{data.sceneID}' is no longer loaded.");
             }
             bool shouldExist = direction == EditorHistoryDirection.Undo
                                ? data.existsBefore
                                : data.existsAfter;
-            GameObject? current = m_workspace.Find<GameObject>(data.rootId);
+            GameObject? current = m_workspace.Find<GameObject>(data.rootID);
             if (!shouldExist)
             {
                 return current is { isRuntimeValid: true }
                        ? EditorHistoryAvailability.Available()
-                       : EditorHistoryAvailability.Unavailable($"GameObject '{data.rootId}' is no longer available.");
+                       : EditorHistoryAvailability.Unavailable($"GameObject '{data.rootID}' is no longer available.");
             }
             if (current is { isRuntimeValid: true })
             {
                 return EditorHistoryAvailability.Available();
             }
-            if (data.parentId is Guid parentId
-                && m_workspace.Find<GameObject>(parentId) is not { isRuntimeValid: true }
+            if (data.parentID is Guid parentID
+                && m_workspace.Find<GameObject>(parentID) is not { isRuntimeValid: true }
             ) {
-                return EditorHistoryAvailability.Unavailable($"Parent GameObject '{parentId}' is no longer available.");
+                return EditorHistoryAvailability.Unavailable($"Parent GameObject '{parentID}' is no longer available.");
             }
             return EditorHistoryAvailability.Available();
         }
@@ -100,10 +100,10 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
         try
         {
             SceneSubtreeHistoryData data = SceneSubtreeHistoryData.Decode(change.payload.ReadBytes());
-            GameScene? scene = m_workspace.Find<GameScene>(data.sceneId);
+            GameScene? scene = m_workspace.Find<GameScene>(data.sceneID);
             if (scene is not { isLoaded: true, isDestroyed: false })
             {
-                return EditorHistoryResult.Failure($"Scene '{data.sceneId}' is no longer loaded.");
+                return EditorHistoryResult.Failure($"Scene '{data.sceneID}' is no longer loaded.");
             }
             bool shouldExist = direction == EditorHistoryDirection.Undo
                                ? data.existsBefore
@@ -111,12 +111,12 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
             Guid? selected = direction == EditorHistoryDirection.Undo
                              ? data.selectedBefore
                              : data.selectedAfter;
-            GameObject? root = m_workspace.Find<GameObject>(data.rootId);
+            GameObject? root = m_workspace.Find<GameObject>(data.rootID);
             if (shouldExist && root is null)
             {
                 var existing = new HashSet<GameObject>(scene.GetObjects(), ReferenceEqualityComparer.Instance);
-                Transform? parent = data.parentId is Guid parentId
-                                    ? m_workspace.Find<GameObject>(parentId)?.transform
+                Transform? parent = data.parentID is Guid parentID
+                                    ? m_workspace.Find<GameObject>(parentID)?.transform
                                     : null;
                 try
                 {
@@ -135,7 +135,7 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                         SceneHistoryCompensation.RemoveCreatedObjects(
                             scene,
                             existing,
-                            $"Partial scene subtree '{data.rootId}'",
+                            $"Partial scene subtree '{data.rootID}'",
                             m_workspace
                         );
                     return cleanup.statePreserved
@@ -149,7 +149,7 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                     SceneHistoryCompensationResult cleanup = SceneHistoryCompensation.Remove(
                         root,
                         () => scene.DestroyObject(root),
-                        $"Restored scene subtree '{data.rootId}'",
+                        $"Restored scene subtree '{data.rootID}'",
                         m_workspace
                     );
                     string failure = JoinFailures(referenceResult.message, cleanup.message);
@@ -164,7 +164,7 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                 {
                     if (!scene.DestroyObject(root))
                     {
-                        return EditorHistoryResult.Failure($"GameObject '{data.rootId}' could not be removed.");
+                        return EditorHistoryResult.Failure($"GameObject '{data.rootID}' could not be removed.");
                     }
                 }
                 catch (Exception exception)
@@ -175,8 +175,8 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                     }
                     try
                     {
-                        Transform? parent = data.parentId is Guid parentId
-                                            ? m_workspace.Find<GameObject>(parentId)?.transform
+                        Transform? parent = data.parentID is Guid parentID
+                                            ? m_workspace.Find<GameObject>(parentID)?.transform
                                             : null;
                         _ = SceneSubtreeSerialization.Restore(
                             scene,
@@ -204,8 +204,8 @@ internal sealed class SceneSubtreeHistoryHandler : EditorHistoryHandler
                 }
                 root = null;
             }
-            object? selection = selected is Guid selectionId
-                                ? m_workspace.Find<EngineObject>(selectionId)
+            object? selection = selected is Guid selectionID
+                                ? m_workspace.Find<EngineObject>(selectionID)
                                 : null;
             try
             {

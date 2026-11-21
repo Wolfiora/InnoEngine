@@ -8,7 +8,7 @@ using Inno.Scene;
 
 namespace Inno.Scene.Tests;
 
-[Collection(SceneTestsCollection.NAME)]
+[Collection(SceneTestsCollection.C_NAME)]
 public sealed class GameSystemTests : IDisposable
 {
     private readonly SerializationRegistry m_serialization;
@@ -86,7 +86,7 @@ public sealed class GameSystemTests : IDisposable
         system.value = 42;
         system.component = component;
         component.system = system;
-        Guid systemId = system.identity.persistentId;
+        Guid systemID = system.identity.persistentId;
 
         byte[] bytes = m_serialization.Serialize(source, m_serializationContext);
         SceneManager.LoadScene(source);
@@ -96,7 +96,7 @@ public sealed class GameSystemTests : IDisposable
         StateSystem restoredSystem = Assert.IsType<StateSystem>(Assert.Single(restored.GetSystems()));
         SystemReferenceComponent restoredComponent = Assert.Single(restored.GetObjects())
             .GetComponent<SystemReferenceComponent>();
-        Assert.Equal(systemId, restoredSystem.identity.persistentId);
+        Assert.Equal(systemID, restoredSystem.identity.persistentId);
         Assert.Equal(42, restoredSystem.value);
         Assert.Equal(0, restoredSystem.resetCount);
         Assert.Same(restoredComponent, restoredSystem.component);

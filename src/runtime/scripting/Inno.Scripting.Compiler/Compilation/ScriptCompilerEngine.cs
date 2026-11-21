@@ -34,7 +34,7 @@ internal static class ScriptCompilerEngine
     private const string C_RUNTIME_MODULE_NAME = "RuntimeScripts";
     private const string C_EDITOR_MODULE_NAME = "EditorScripts";
     private const string C_EDITOR_COMPILATION_SYMBOL = "INNO_EDITOR";
-    private static readonly object S_CACHE_SYNC = new();
+    private static readonly object CACHE_SYNC = new();
 
     internal static async ValueTask<ScriptCompilationResult> CompileAsync(
         ScriptCompilerOptions options,
@@ -212,9 +212,9 @@ internal static class ScriptCompilerEngine
                 assemblyStagingPath,
                 assembly.scope,
                 assembly.domain,
-                string.IsNullOrEmpty(assembly.ownerPluginId)
+                string.IsNullOrEmpty(assembly.ownerPluginID)
                 ? AssetSourceId.project.value
-                : assembly.ownerPluginId,
+                : assembly.ownerPluginID,
                 GetCompilationDefines(assembly, includeEditor, environment.inputs.predefinedSymbols),
                 assembly.nullable,
                 assembly.allowUnsafe,
@@ -278,7 +278,7 @@ internal static class ScriptCompilerEngine
         string outputPath,
         ScriptAssemblyScope scope,
         AssemblyDomain domain,
-        string assetSourceId,
+        string assetSourceID,
         IReadOnlyList<string> defines,
         bool nullable,
         bool allowUnsafe,
@@ -315,7 +315,7 @@ internal static class ScriptCompilerEngine
         syntaxTrees.Add(
             CSharpSyntaxTree.ParseText(
                 SourceText.From(
-                    CreateGeneratedSource(assemblyName, scope == ScriptAssemblyScope.Editor, domain, assetSourceId),
+                    CreateGeneratedSource(assemblyName, scope == ScriptAssemblyScope.Editor, domain, assetSourceID),
                     Encoding.UTF8
                 ),
                 parseOptions,
@@ -514,7 +514,7 @@ internal static class ScriptCompilerEngine
             .Concat(analyzerDiagnostics)
             .Concat(registrationDiagnostics)
             .Where(static diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden)
-            .Distinct(DiagnosticComparer.Instance)
+            .Distinct(DiagnosticComparer.INSTANCE)
             .ToArray();
         progress.Complete($"Checked {assemblyName} compilation diagnostics.");
         if (preEmitDiagnostics.Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
@@ -554,7 +554,7 @@ internal static class ScriptCompilerEngine
                 preEmitDiagnostics
                     .Concat(emit.Diagnostics)
                     .Where(static diagnostic => diagnostic.Severity != DiagnosticSeverity.Hidden)
-                    .Distinct(DiagnosticComparer.Instance)
+                    .Distinct(DiagnosticComparer.INSTANCE)
                     .Select(ToDiagnostic)
             )
             .ToArray();
@@ -578,7 +578,7 @@ internal static class ScriptCompilerEngine
         AppendHash(hash, assembly.name);
         AppendHash(hash, assembly.scope.ToString());
         AppendHash(hash, assembly.domain.ToString());
-        AppendHash(hash, assembly.ownerPluginId);
+        AppendHash(hash, assembly.ownerPluginID);
         AppendHash(hash, assembly.definitionHash);
         AppendHash(hash, assembly.nullable.ToString());
         AppendHash(hash, assembly.allowUnsafe.ToString());
@@ -686,7 +686,7 @@ internal static class ScriptCompilerEngine
         string assemblyName,
         CancellationToken cancellationToken
     ) {
-        lock (S_CACHE_SYNC)
+        lock (CACHE_SYNC)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(cacheDirectory))
@@ -750,7 +750,7 @@ internal static class ScriptCompilerEngine
         ScriptSourceSet sources,
         CancellationToken cancellationToken
     ) {
-        lock (S_CACHE_SYNC)
+        lock (CACHE_SYNC)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (Directory.Exists(outputDirectory))
@@ -876,7 +876,7 @@ internal static class ScriptCompilerEngine
         string assemblyName,
         bool isEditorAssembly,
         AssemblyDomain domain,
-        string assetSourceId
+        string assetSourceID
     ) {
         string assemblyScope = isEditorAssembly ? "Editor" : "Runtime";
         return $"""
@@ -884,7 +884,7 @@ internal static class ScriptCompilerEngine
             [assembly: System.Reflection.AssemblyMetadata("Inno.AssemblyDomain", "{domain}")]
             [assembly: System.Reflection.AssemblyMetadata("Inno.AssemblyScope", "{assemblyScope}")]
             [assembly: System.Reflection.AssemblyMetadata("Inno.ScriptAssembly", "{assemblyName}")]
-            [assembly: System.Reflection.AssemblyMetadata("Inno.AssetSource", "{assetSourceId}")]
+            [assembly: System.Reflection.AssemblyMetadata("Inno.AssetSource", "{assetSourceID}")]
             """;
     }
 
@@ -897,16 +897,16 @@ internal static class ScriptCompilerEngine
             .ToArray();
         string AssemblyPath(string name) => Path.Combine(outputDirectory, name + ".dll");
         Dictionary<string, string> pluginModules = pluginAssemblies
-            .Select(static assembly => assembly.ownerPluginId)
+            .Select(static assembly => assembly.ownerPluginID)
             .Distinct(StringComparer.Ordinal)
-            .ToDictionary(static pluginId => pluginId, static pluginId => "Plugin." + pluginId, StringComparer.Ordinal);
+            .ToDictionary(static pluginID => pluginID, static pluginID => "Plugin." + pluginID, StringComparer.Ordinal);
         Dictionary<string, ScriptAssemblyInput> assembliesByName = sources.assemblies.ToDictionary(
             static assembly => assembly.name,
             StringComparer.OrdinalIgnoreCase
         );
         var requests = new List<ScriptModuleDeployment>();
         foreach (IGrouping<string, ScriptAssemblyInput> group in pluginAssemblies
-            .GroupBy(static assembly => assembly.ownerPluginId, StringComparer.Ordinal)
+            .GroupBy(static assembly => assembly.ownerPluginID, StringComparer.Ordinal)
             .OrderBy(static group => group.Key, StringComparer.Ordinal)
         ) {
             ScriptAssemblyInput[] owned = group
@@ -916,7 +916,7 @@ internal static class ScriptCompilerEngine
             ScriptAssemblyInput main = owned[0];
             string[] dependencies = owned
                 .SelectMany(static assembly => assembly.references)
-                .Select(reference => assembliesByName[reference].ownerPluginId)
+                .Select(reference => assembliesByName[reference].ownerPluginID)
                 .Where(owner => (
                     !string.IsNullOrEmpty(owner)
                     && !string.Equals(owner, group.Key, StringComparison.Ordinal)
@@ -1123,7 +1123,7 @@ internal static class ScriptCompilerEngine
 
     private sealed class DiagnosticComparer : IEqualityComparer<Diagnostic>
     {
-        internal static readonly DiagnosticComparer Instance = new();
+        internal static readonly DiagnosticComparer INSTANCE = new();
 
         /// <summary>
         /// Determines whether this value and the supplied value represent the same logical state.

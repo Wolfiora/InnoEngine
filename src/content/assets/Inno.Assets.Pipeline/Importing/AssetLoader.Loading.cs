@@ -67,7 +67,7 @@ public sealed partial class AssetLoader
         Type requestedAssetType
     ) {
         ArgumentNullException.ThrowIfNull(requestedAssetType);
-        return Execute(() => LoadIdLocked(persistentId, requestedAssetType));
+        return Execute(() => LoadIDLocked(persistentId, requestedAssetType));
     }
 
     /// <summary>
@@ -156,7 +156,7 @@ public sealed partial class AssetLoader
                 );
             }
         }
-        return AwaitSharedLoad(operation, requestedAssetType, cancellationToken);
+        return AwaitSharedLoadAsync(operation, requestedAssetType, cancellationToken);
     }
 
     /// <summary>
@@ -184,19 +184,19 @@ public sealed partial class AssetLoader
         lock (m_asyncSync)
         {
             ObjectDisposedException.ThrowIf(m_disposeRequested, this);
-            if (!m_inFlightIdLoads.TryGetValue(persistentId, out operation!))
+            if (!m_inFlightIDLoads.TryGetValue(persistentId, out operation!))
             {
                 operation = Task.Run(() => Load(persistentId, typeof(AssetObject)));
-                m_inFlightIdLoads.Add(persistentId, operation);
+                m_inFlightIDLoads.Add(persistentId, operation);
                 _ = operation.ContinueWith(
-                    _ => RemoveIdOperation(persistentId, operation),
+                    _ => RemoveIDOperation(persistentId, operation),
                     CancellationToken.None,
                     TaskContinuationOptions.ExecuteSynchronously,
                     TaskScheduler.Default
                 );
             }
         }
-        return AwaitSharedLoad(operation, requestedAssetType, cancellationToken);
+        return AwaitSharedLoadAsync(operation, requestedAssetType, cancellationToken);
     }
 
     /// <summary>
@@ -292,18 +292,18 @@ public sealed partial class AssetLoader
         return record is null ? null : LoadRecordLocked(record, requestedAssetType);
     }
 
-    private AssetObject? LoadIdLocked(
-        Guid persistentId,
+    private AssetObject? LoadIDLocked(
+        Guid persistentID,
         Type requestedAssetType
     ) {
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
             return null;
         }
-        if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record))
+        if (!m_recordsByID.TryGetValue(persistentID, out AssetRecord? record))
         {
             LoadCatalogLocked();
-            if (!m_recordsById.TryGetValue(persistentId, out record))
+            if (!m_recordsByID.TryGetValue(persistentID, out record))
             {
                 return null;
             }
@@ -321,7 +321,7 @@ public sealed partial class AssetLoader
         // keeps a newly created asset at the same path from satisfying an older identity lookup.
         bool ownsCurrentSource = IOFile.Exists(GetSourcePath(record.relativePath))
                                  && TryReadSourceMeta(GetMetaPath(record.relativePath), out AssetSourceMeta sourceMeta)
-                                 && sourceMeta.persistentId == persistentId;
+                                 && sourceMeta.persistentId == persistentID;
         return ownsCurrentSource
                ? LoadPathLocked(record.relativePath, requestedAssetType)
                : LoadRecordLocked(record, requestedAssetType);
@@ -384,7 +384,7 @@ public sealed partial class AssetLoader
         }
         Type type = ResolveRecordType(record)
                     ?? throw new InvalidOperationException(
-                        $"Asset '{record.relativePath}' has unknown stable type '{record.stableTypeId}'."
+                        $"Asset '{record.relativePath}' has unknown stable type '{record.stableTypeID}'."
                     );
         AssetObject shell;
         try
@@ -399,10 +399,10 @@ public sealed partial class AssetLoader
                 exception
             );
         }
-        m_identities.InitializePersistentIdentity(shell, record.persistentId);
+        m_identities.InitializePersistentIdentity(shell, record.persistentID);
         if (m_identitiesActive)
         {
-            m_identities.Register(shell, record.persistentId);
+            m_identities.Register(shell, record.persistentID);
         }
         record.asset = shell;
         transaction.createdRecords.Add(record);
@@ -444,12 +444,12 @@ public sealed partial class AssetLoader
     }
 
     private AssetObject ResolveReferenceLocked(
-        Guid persistentId,
-        Guid stableTypeId,
+        Guid persistentID,
+        Guid stableTypeID,
         string lastKnownPath,
         Type expectedType
     ) {
-        AssetObject? loaded = LoadIdLocked(persistentId, expectedType);
+        AssetObject? loaded = LoadIDLocked(persistentID, expectedType);
         if (loaded is not null)
         {
             return loaded;
@@ -458,17 +458,17 @@ public sealed partial class AssetLoader
         // unavailable, not missing. Startup and atomic reload may legitimately observe this
         // state before the corresponding generation is activated; publishing a missing-reference
         // diagnostic here would turn a healthy last-good asset into a false warning.
-        if (!IsSourceBackedTypeUnavailableLocked(persistentId))
+        if (!IsSourceBackedTypeUnavailableLocked(persistentID))
         {
-            m_diagnostics.PublishMissingReference(persistentId, lastKnownPath, expectedType);
+            m_diagnostics.PublishMissingReference(persistentID, lastKnownPath, expectedType);
         }
-        if (m_missingAssets.TryGetValue(persistentId, out WeakReference<AssetObject>? weak)
+        if (m_missingAssets.TryGetValue(persistentID, out WeakReference<AssetObject>? weak)
             && weak.TryGetTarget(out AssetObject? existing) && expectedType.IsInstanceOfType(existing)
         ) {
             return existing;
         }
         Type type = ResolveDependencyExpectedType(
-            new AssetDependency(persistentId, new TypeRef(stableTypeId), lastKnownPath)
+            new AssetDependency(persistentID, new TypeRef(stableTypeID), lastKnownPath)
         );
         if (type == typeof(MissingAsset)
             && !expectedType.IsAbstract
@@ -485,7 +485,7 @@ public sealed partial class AssetLoader
         }
         AssetObject missing = (AssetObject)(Activator.CreateInstance(type, nonPublic: true)
             ?? throw new InvalidOperationException($"Missing asset type '{type.FullName}' cannot be created."));
-        m_identities.InitializePersistentIdentity(missing, persistentId);
+        m_identities.InitializePersistentIdentity(missing, persistentID);
         m_runtimeOwner.Initialize(
             missing,
             AssetPath.Parse(lastKnownPath),
@@ -494,7 +494,7 @@ public sealed partial class AssetLoader
             true,
             0
         );
-        m_missingAssets[persistentId] = new WeakReference<AssetObject>(missing);
+        m_missingAssets[persistentID] = new WeakReference<AssetObject>(missing);
         return missing;
     }
 
@@ -513,7 +513,7 @@ public sealed partial class AssetLoader
 
     private T Execute<T>(Func<T> action)
     {
-        if (ReferenceEquals(t_activeLoader, this))
+        if (ReferenceEquals(s_activeLoader, this))
         {
             return action();
         }
@@ -526,15 +526,15 @@ public sealed partial class AssetLoader
         try
         {
             m_operationGate.Wait();
-            AssetLoader? previous = t_activeLoader;
-            t_activeLoader = this;
+            AssetLoader? previous = s_activeLoader;
+            s_activeLoader = this;
             try
             {
                 return action();
             }
             finally
             {
-                t_activeLoader = previous;
+                s_activeLoader = previous;
                 m_operationGate.Release();
             }
         }
@@ -568,21 +568,21 @@ public sealed partial class AssetLoader
         }
     }
 
-    private void RemoveIdOperation(
-        Guid persistentId,
+    private void RemoveIDOperation(
+        Guid persistentID,
         Task<AssetObject?> operation
     ) {
         lock (m_asyncSync)
         {
-            if (m_inFlightIdLoads.TryGetValue(persistentId, out Task<AssetObject?>? current)
+            if (m_inFlightIDLoads.TryGetValue(persistentID, out Task<AssetObject?>? current)
                 && ReferenceEquals(current, operation)
             ) {
-                m_inFlightIdLoads.Remove(persistentId);
+                m_inFlightIDLoads.Remove(persistentID);
             }
         }
     }
 
-    private static async ValueTask<AssetObject?> AwaitSharedLoad(
+    private static async ValueTask<AssetObject?> AwaitSharedLoadAsync(
         Task<AssetObject?> operation,
         Type requestedAssetType,
         CancellationToken cancellationToken

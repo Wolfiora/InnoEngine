@@ -46,14 +46,14 @@ internal sealed class GameTagDiagnosticPublisher
                 {
                     continue;
                 }
-                Guid targetId = gameObject.identity.persistentId;
-                currentTargets.Add(targetId);
-                if (m_activeTargets.Contains(targetId))
+                Guid targetID = gameObject.identity.persistentId;
+                currentTargets.Add(targetID);
+                if (m_activeTargets.Contains(targetID))
                 {
                     continue;
                 }
                 m_diagnostics.Set(
-                    CreateSource(targetId, gameObject.name),
+                    CreateSource(targetID, gameObject.name),
                     [Diagnostic.Error(
                         "GAMEOBJECT-TAG-UNDEFINED",
                         $"GameObject '{gameObject.name}' uses undefined tag '{gameObject.tag}'."
@@ -62,9 +62,9 @@ internal sealed class GameTagDiagnosticPublisher
             }
         }
 
-        foreach (Guid targetId in m_activeTargets.Where(id => !currentTargets.Contains(id)).ToArray())
+        foreach (Guid targetID in m_activeTargets.Where(id => !currentTargets.Contains(id)).ToArray())
         {
-            m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+            m_diagnostics.Clear(CreateSource(targetID, targetID.ToString("D")));
         }
         m_activeTargets.Clear();
         m_activeTargets.UnionWith(currentTargets);
@@ -75,15 +75,15 @@ internal sealed class GameTagDiagnosticPublisher
     /// </summary>
     internal void Clear()
     {
-        foreach (Guid targetId in m_activeTargets)
+        foreach (Guid targetID in m_activeTargets)
         {
-            m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+            m_diagnostics.Clear(CreateSource(targetID, targetID.ToString("D")));
         }
         m_activeTargets.Clear();
     }
 
     private static DiagnosticSource CreateSource(
-        Guid targetId,
+        Guid targetID,
         string displayName
-    ) => new($"editor.scene.tag:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
+    ) => new($"editor.scene.tag:{targetID:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
 }

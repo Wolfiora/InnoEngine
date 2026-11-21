@@ -199,11 +199,11 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
         return true;
     }
 
-    private void Unregister(Guid registrationId)
+    private void Unregister(Guid registrationID)
     {
         lock (m_sync)
         {
-            m_participants.RemoveAll(reference => reference.id == registrationId);
+            m_participants.RemoveAll(reference => reference.id == registrationID);
         }
     }
 

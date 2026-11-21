@@ -16,9 +16,9 @@ namespace Inno.Editor.Panel.ShaderEditor;
 
 internal sealed partial class ShaderEditorCanvas
 {
-    private void SourceSettings(Guid sourceId)
+    private void SourceSettings(Guid sourceID)
     {
-        if (!owner.assets.TryGetInfo(sourceId, out AssetInfo? info) || info is null)
+        if (!owner.assets.TryGetInfo(sourceID, out AssetInfo? info) || info is null)
         {
             return;
         }
@@ -28,12 +28,12 @@ internal sealed partial class ShaderEditorCanvas
                 && owner.interactions.TryGetModule<AssetBrowserModule>(out AssetBrowserModule? browser)
                 && browser is not null
             ) {
-                RevealShaderFunction.Reveal(owner, browser, sourceId);
+                RevealShaderFunction.Reveal(owner, browser, sourceID);
             }
             EditorImGui.SameLine(0f, -1f);
             if (EditorImGui.SmallButton("Import Settings…"))
             {
-                LoadSourceSettings(info.assetPath, sourceId);
+                LoadSourceSettings(info.assetPath, sourceID);
                 EditorImGui.OpenPopup("##source-settings");
             }
         });
@@ -46,9 +46,9 @@ internal sealed partial class ShaderEditorCanvas
         {
             EditorImGui.Text(info.assetPath.ToString());
             EditorImGui.Separator();
-            if (draft.settingsSource != sourceId)
+            if (draft.settingsSource != sourceID)
             {
-                LoadSourceSettings(info.assetPath, sourceId);
+                LoadSourceSettings(info.assetPath, sourceID);
             }
             bool readOnly = !owner.assets.TryGetFileSystemEntry(info.assetPath, out AssetFileEntry entry) || entry.isReadOnly;
             EditorImGui.BeginDisabled(readOnly);
@@ -239,7 +239,7 @@ internal sealed partial class ShaderEditorCanvas
                 if (EditorImGui.Button("Apply Import Settings"))
                 {
                     bool imported = owner.importSettings.Apply(info.assetPath, settings, draft.sourceSettingsFingerprint);
-                    LoadSourceSettings(info.assetPath, sourceId);
+                    LoadSourceSettings(info.assetPath, sourceID);
                     draft.sourceSettingsStatus = imported ? "Applied · ports refreshed" : "Settings saved · import failed; see diagnostics";
                     draft.portRevision = ulong.MaxValue;
                 }
@@ -252,7 +252,7 @@ internal sealed partial class ShaderEditorCanvas
             EditorImGui.SameLine(0f, -1f);
             if (EditorImGui.Button("Reload"))
             {
-                LoadSourceSettings(info.assetPath, sourceId);
+                LoadSourceSettings(info.assetPath, sourceID);
             }
             if (readOnly)
             {
@@ -280,14 +280,14 @@ internal sealed partial class ShaderEditorCanvas
 
     private void LoadSourceSettings(
         AssetPath path,
-        Guid sourceId
+        Guid sourceID
     ) {
         AssetImportSettingsSnapshot snapshot = owner.assets.GetImportSettings(path);
         if (snapshot.value is not ShaderSourceImportSettings settings)
         {
             throw new InvalidOperationException("The source importer settings are unavailable.");
         }
-        draft.settingsSource = sourceId;
+        draft.settingsSource = sourceID;
         draft.sourceSettingsFingerprint = snapshot.fingerprint;
         draft.sourceSettings = owner.serialization.Serialize(settings, owner.context);
         draft.sourceSettingsStatus = string.Empty;

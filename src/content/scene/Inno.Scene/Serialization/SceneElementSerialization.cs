@@ -293,7 +293,7 @@ public static class SceneElementSerialization
         Func<bool> remove,
         string kind
     ) {
-        Guid persistentId = element.identity.persistentId;
+        Guid persistentID = element.identity.persistentId;
         Exception? cleanupFailure = null;
         bool reportedRemoved = false;
         if (!element.isDestroyed)
@@ -307,7 +307,7 @@ public static class SceneElementSerialization
                 cleanupFailure = exception;
             }
         }
-        bool remainsRegistered = ReferenceEquals(IdentityAllocator.current.Get<EngineObject>(persistentId), element);
+        bool remainsRegistered = ReferenceEquals(IdentityAllocator.current.Get<EngineObject>(persistentID), element);
         if ((!element.isDestroyed || remainsRegistered) && cleanupFailure is null)
         {
             cleanupFailure = new InvalidOperationException(
@@ -357,11 +357,11 @@ public static class SceneElementSerialization
 
     private static void RequireType(
         SceneElementState state,
-        Guid typeId
+        Guid typeID
     ) {
-        if (state.typeId != typeId)
+        if (state.typeId != typeID)
         {
-            throw new InvalidDataException($"Element state type '{state.typeId}' does not match logical type '{typeId}'.");
+            throw new InvalidDataException($"Element state type '{state.typeId}' does not match logical type '{typeID}'.");
         }
     }
 

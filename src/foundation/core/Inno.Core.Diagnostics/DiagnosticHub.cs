@@ -11,7 +11,7 @@ namespace Inno.Core.Diagnostics;
 /// </summary>
 public sealed class DiagnosticHub
 {
-    private static readonly ExecutionSlot<DiagnosticHub> S_CURRENT_SCOPE = new("hub");
+    private static readonly ExecutionSlot<DiagnosticHub> CURRENT_SCOPE = new("hub");
 
     private readonly Dictionary<string, DiagnosticReport> m_reports = new(StringComparer.Ordinal);
     private readonly Dictionary<string, long> m_producerEpochs = new(StringComparer.Ordinal);
@@ -59,7 +59,7 @@ public sealed class DiagnosticHub
     /// <returns>
     /// A strict last-in-first-out scope owned by the caller.
     /// </returns>
-    public IDisposable EnterScope() => S_CURRENT_SCOPE.Enter(this);
+    public IDisposable EnterScope() => CURRENT_SCOPE.Enter(this);
 
     /// <summary>
     /// Registers a sink and synchronously replays every active report before registration completes.
@@ -185,7 +185,7 @@ public sealed class DiagnosticHub
         }
     }
 
-    internal static DiagnosticHub current => S_CURRENT_SCOPE.current;
+    internal static DiagnosticHub current => CURRENT_SCOPE.current;
 
     internal object synchronizationRoot => m_sync;
 

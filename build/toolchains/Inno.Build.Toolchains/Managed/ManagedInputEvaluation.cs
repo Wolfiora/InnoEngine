@@ -14,20 +14,20 @@ internal sealed class ManagedInputEvaluation : IDisposable
     private readonly CoordinatedFileLease? m_ownership;
     private readonly BuildCachePublisher? m_cache;
     private readonly string m_directory;
-    private readonly string? m_targetId;
+    private readonly string? m_targetID;
 
     private ManagedInputEvaluation(
         IReadOnlyDictionary<string, string> properties,
         CoordinatedFileLease? ownership,
         BuildCachePublisher? cache,
         string directory,
-        string? targetId
+        string? targetID
     ) {
         this.properties = properties;
         m_ownership = ownership;
         m_cache = cache;
         m_directory = directory;
-        m_targetId = targetId;
+        m_targetID = targetID;
     }
 
     /// <inheritdoc/>
@@ -36,7 +36,7 @@ internal sealed class ManagedInputEvaluation : IDisposable
     internal IReadOnlyDictionary<string, string> properties { get; }
 
     internal void Complete(CancellationToken cancellation)
-        => m_cache?.Record(m_directory, m_directory + ".lock", [], null, m_targetId, cancellation);
+        => m_cache?.Record(m_directory, m_directory + ".lock", [], null, m_targetID, cancellation);
 
     internal static async ValueTask<ManagedInputEvaluation> OpenAsync(
         NativeBuildContext context,

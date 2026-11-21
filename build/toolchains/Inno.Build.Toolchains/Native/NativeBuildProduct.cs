@@ -14,7 +14,7 @@ public sealed class NativeBuildProduct : IDisposable
 
     internal NativeBuildProduct(
         string component,
-        string targetId,
+        string targetID,
         string fingerprint,
         string directory,
         NativeBindingGenerationDescriptor? bindingGeneration,
@@ -22,7 +22,7 @@ public sealed class NativeBuildProduct : IDisposable
         BuildArtifactReadLease readLease
     ) {
         this.component = component;
-        this.targetId = targetId;
+        this.targetId = targetID;
         this.fingerprint = fingerprint;
         this.directory = directory;
         this.bindingGeneration = bindingGeneration;

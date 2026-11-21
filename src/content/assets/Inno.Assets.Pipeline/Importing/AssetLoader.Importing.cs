@@ -58,7 +58,7 @@ public sealed partial class AssetLoader
     ) {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(inputs);
-        Guid targetId = definition.identity.persistentId;
+        Guid targetID = definition.identity.persistentId;
         string displayName = string.IsNullOrWhiteSpace(definition.assetPath.ToString())
                              ? definition.GetType().Name
                              : definition.assetPath.ToString();
@@ -81,12 +81,12 @@ public sealed partial class AssetLoader
                 }
                 string fingerprint = CreateBuildFingerprint(processor, definition, inputs);
                 AssetArtifactKey result = m_artifacts.Commit(fingerprint, output.outputs, output.authoringOutputs);
-                m_diagnostics.PublishBuild(targetId, displayName, output.diagnostics);
+                m_diagnostics.PublishBuild(targetID, displayName, output.diagnostics);
                 return result;
             }
             catch (Exception exception)
             {
-                m_diagnostics.PublishBuildFailure(targetId, displayName, exception);
+                m_diagnostics.PublishBuildFailure(targetID, displayName, exception);
                 m_log.Write(LogLevel.Error, "Asset build for '{0}' failed: {1}", [displayName, exception]);
                 throw;
             }
@@ -129,38 +129,38 @@ public sealed partial class AssetLoader
                 $"Read-only source '{relativePath}' requires a valid '{C_META_POSTFIX}' sidecar."
             );
         }
-        Guid persistentId = existingRecord?.persistentId
+        Guid persistentID = existingRecord?.persistentID
                             ?? m_pendingImportIds.GetValueOrDefault(relativePath);
-        if (persistentId == Guid.Empty
+        if (persistentID == Guid.Empty
             && TryReadSourceMeta(GetMetaPath(relativePath), out AssetSourceMeta sourceMeta)
         ) {
-            persistentId = sourceMeta.persistentId;
-            AssetRecord? sameId = FindRecordByIdWithoutLoading(persistentId);
-            if (sameId is not null
-                && !string.Equals(sameId.relativePath, relativePath, StringComparison.OrdinalIgnoreCase)
+            persistentID = sourceMeta.persistentId;
+            AssetRecord? sameID = FindRecordByIDWithoutLoading(persistentID);
+            if (sameID is not null
+                && !string.Equals(sameID.relativePath, relativePath, StringComparison.OrdinalIgnoreCase)
             ) {
-                if (sameId.meta.isTombstone)
+                if (sameID.meta.isTombstone)
                 {
-                    RebindTombstoneLocked(sameId, relativePath);
-                    existingRecord = sameId;
+                    RebindTombstoneLocked(sameID, relativePath);
+                    existingRecord = sameID;
                 }
                 else if (sourceMount.isReadOnly)
                 {
                     throw new InvalidDataException(
-                        $"Read-only source '{relativePath}' duplicates persistent ID '{persistentId}'."
+                        $"Read-only source '{relativePath}' duplicates persistent ID '{persistentID}'."
                     );
                 }
                 else
                 {
-                    persistentId = Guid.NewGuid();
+                    persistentID = Guid.NewGuid();
                 }
             }
         }
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
-            persistentId = Guid.NewGuid();
+            persistentID = Guid.NewGuid();
         }
-        m_pendingImportIds[relativePath] = persistentId;
+        m_pendingImportIds[relativePath] = persistentID;
         m_activeImports.Add(relativePath);
         try
         {
@@ -172,7 +172,7 @@ public sealed partial class AssetLoader
                     relativePath,
                     sourceBytes,
                     importer,
-                    persistentId,
+                    persistentID,
                     sourceStamp,
                     context => attemptedContext = context
                 );
@@ -204,7 +204,7 @@ public sealed partial class AssetLoader
                     relativePath,
                     sourceBytes,
                     importer,
-                    persistentId,
+                    persistentID,
                     exception,
                     sourceStamp,
                     attemptedContext
@@ -214,12 +214,12 @@ public sealed partial class AssetLoader
         }
         catch (IOException exception)
         {
-            RecordImportFailureLocked(relativePath, [], importer, persistentId, exception);
+            RecordImportFailureLocked(relativePath, [], importer, persistentID, exception);
             return false;
         }
         catch (UnauthorizedAccessException exception)
         {
-            RecordImportFailureLocked(relativePath, [], importer, persistentId, exception);
+            RecordImportFailureLocked(relativePath, [], importer, persistentID, exception);
             return false;
         }
         finally
@@ -266,7 +266,7 @@ public sealed partial class AssetLoader
         string relativePath,
         byte[] sourceBytes,
         AssetImporter importer,
-        Guid persistentId,
+        Guid persistentID,
         AssetSourceFileStamp sourceStamp = default,
         Action<AssetImportContext>? onContextCreated = null
     ) {
@@ -276,7 +276,7 @@ public sealed partial class AssetLoader
             GetSourcePath(relativePath),
             sourceBytes,
             sourceHash,
-            persistentId,
+            persistentID,
             m_types,
             m_serialization,
             this,
@@ -365,7 +365,7 @@ public sealed partial class AssetLoader
         string implementationFingerprint = GetImporterImplementationFingerprint(importer);
         var meta = new AssetMeta
         {
-            persistentId = persistentId,
+            persistentId = persistentID,
             relativePath = relativePath,
             sourceHash = sourceHash,
             importerId = importer.importerId,
@@ -487,7 +487,7 @@ public sealed partial class AssetLoader
             if (!string.Equals(
                 build.meta.importerSettingsHash,
                 ComputeSha256Hex(
-                    ReadImportSettingsBytesLocked(build.meta.relativePath, m_importers.FindById(build.meta.importerId)!)
+                    ReadImportSettingsBytesLocked(build.meta.relativePath, m_importers.FindByID(build.meta.importerId)!)
                 ),
                 StringComparison.Ordinal
             )) {
@@ -527,8 +527,8 @@ public sealed partial class AssetLoader
 
         AssetRecord record = existing ?? new AssetRecord();
         record.relativePath = build.meta.relativePath;
-        record.persistentId = build.meta.persistentId;
-        record.stableTypeId = build.meta.stableAssetTypeId;
+        record.persistentID = build.meta.persistentId;
+        record.stableTypeID = build.meta.stableAssetTypeId;
         record.meta = build.meta;
         record.payload = build.payload;
         record.importerGeneration = m_importers.GetGeneration(build.meta.importerId);

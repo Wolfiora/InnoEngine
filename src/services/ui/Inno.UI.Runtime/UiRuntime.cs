@@ -631,7 +631,7 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     );
 
     private readonly record struct FontRegistration(
-        Guid persistentId,
+        Guid persistentID,
         long version,
         int faceIndex,
         string family,

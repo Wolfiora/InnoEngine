@@ -46,7 +46,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     internal readonly AssetPipeline assets;
     internal readonly SerializationRegistry serialization;
     internal readonly EditorInteractions interactions;
-    private Guid? m_checkDraftId;
+    private Guid? m_checkDraftID;
     private long m_sourceRevision = long.MinValue;
     private LifetimeScope? m_lifetime;
     private ShaderNodeCompilerRegistry? m_nodes;
@@ -204,9 +204,9 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         m_views.Clear();
         foreach (ViewState view in state.Get("views", Array.Empty<ViewState>()))
         {
-            if (view.assetId != Guid.Empty && float.IsFinite(view.x) && float.IsFinite(view.y) && float.IsFinite(view.zoom))
+            if (view.assetID != Guid.Empty && float.IsFinite(view.x) && float.IsFinite(view.y) && float.IsFinite(view.zoom))
             {
-                m_views[view.assetId] = view;
+                m_views[view.assetID] = view;
             }
         }
     }
@@ -219,7 +219,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     /// </param>
     protected override void OnStop(EditorContext editor)
     {
-        m_checkDraftId = null;
+        m_checkDraftID = null;
         // Recovery is not an asset save. Closing the panel, shutdown and reload must not apply a draft.
         foreach (Draft draft in m_drafts.Values)
         {
@@ -302,17 +302,17 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
 
     internal void ShowCheck(Draft draft)
     {
-        m_checkDraftId = draft.id;
+        m_checkDraftID = draft.id;
         checkStatus = "Checking the current Shader draft…";
     }
 
     internal bool TryGetCheckDraft(out Draft draft)
     {
         draft = null!;
-        return m_checkDraftId is Guid id && m_drafts.TryGetValue(id, out draft!);
+        return m_checkDraftID is Guid id && m_drafts.TryGetValue(id, out draft!);
     }
 
-    internal void CloseCheck() => m_checkDraftId = null;
+    internal void CloseCheck() => m_checkDraftID = null;
 
     internal void ReleasePreview(Draft draft)
     {
@@ -339,7 +339,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         Diagnostics.Set(draft.id, C_NODE_DIAGNOSTIC_GROUP, diagnostics, draft.path.ToString());
     }
 
-    internal Draft Open(AssetFileEntry entry) => Open(entry, AssetId(entry));
+    internal Draft Open(AssetFileEntry entry) => Open(entry, AssetID(entry));
 
     internal bool TryOpen(
         AssetFileEntry entry,
@@ -361,7 +361,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             out GraphDocumentController? controller
         ) ? controller! : throw new InvalidOperationException("The Shader graph document is not available.");
 
-    internal Guid AssetId(AssetFileEntry entry)
+    internal Guid AssetID(AssetFileEntry entry)
         => assets.TryGetInfo(entry.assetPath, out AssetInfo? info)
            && info is not null ? info.persistentId : throw new InvalidOperationException("The shader asset identity is not available yet.");
 
@@ -450,9 +450,9 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             return group;
         }).Where(static group => group.nodes.Length != 0).ToArray();
         candidate.SetMetadata(GroupShaderNodes.C_GROUPS, ShaderGraphDocument.Encode(groups, serialization, context));
-        if (draft.selectedGroupId.Length != 0 && !groups.Any(group => group.id == draft.selectedGroupId))
+        if (draft.selectedGroupID.Length != 0 && !groups.Any(group => group.id == draft.selectedGroupID))
         {
-            draft.selectedGroupId = string.Empty;
+            draft.selectedGroupID = string.Empty;
         }
         controller.ReplaceDocument(candidate, "Delete Shader Nodes");
         if (draft.activeStage is GraphNodeId stage && controller.document.FindNode(stage) is null)
@@ -471,7 +471,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
             ReleasePreview(draft);
         }
         draft.observedRevision = controller.revision;
-        interactions.documents.SetDirty(draft.documentId, controller.isDirty);
+        interactions.documents.SetDirty(draft.documentID, controller.isDirty);
         if (!controller.isDirty)
         {
             string recovery = RecoveryPath(draft.id);
@@ -724,7 +724,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
                 bool wasMissing = !controller.isAvailable;
                 m_graphs.SetAvailability(draft.id, true);
                 draft.path = entry.assetPath;
-                interactions.documents.UpdateAssetPath(draft.documentId, draft.path.ToString());
+                interactions.documents.UpdateAssetPath(draft.documentID, draft.path.ToString());
                 ShaderGraphSourceSnapshot source = m_sources.Read(draft.path);
                 draft.readOnly = source.isReadOnly;
                 if (source.contentHash == draft.hash)
@@ -810,7 +810,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
     }
 
     private readonly record struct ViewState(
-        Guid assetId,
+        Guid assetID,
         float x,
         float y,
         float zoom
@@ -894,13 +894,13 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
 
     internal sealed class Draft(
         Guid id,
-        Guid documentId,
+        Guid documentID,
         AssetPath path,
         string hash,
         bool readOnly
     ) {
         internal readonly Guid id = id;
-        internal readonly Guid documentId = documentId;
+        internal readonly Guid documentID = documentID;
         internal readonly HashSet<GraphNodeId> expandedPreviews = [];
         internal readonly GraphCanvasState canvas = new();
         internal readonly EditorPlanarNavigation navigation = new();
@@ -926,7 +926,7 @@ internal sealed partial class ShaderEditorDocuments : EditorModule
         internal GraphEdgeId? selectedEdge;
         internal bool frameRequested;
         internal ShaderCanvasGroup[] groups = [];
-        internal string selectedGroupId = string.Empty;
+        internal string selectedGroupID = string.Empty;
         internal Guid settingsSource;
         internal byte[] sourceSettings = [];
         internal string sourceSettingsFingerprint = string.Empty;

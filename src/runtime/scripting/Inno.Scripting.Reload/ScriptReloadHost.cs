@@ -465,19 +465,19 @@ public sealed class ScriptReloadHost : IDisposable
             m_plugins.ApplyPendingChange();
             CompletePendingReload(pending);
             m_reloads.RefreshDiagnostics();
-            SetCompilationProgress(1f, "No scripting changes detected.", pending.operationId);
+            SetCompilationProgress(1f, "No scripting changes detected.", pending.operationID);
             return false;
         }
 
-        SetCompilationProgress(C_STAGING_PROGRESS, "Staging script reload candidates...", pending.operationId);
+        SetCompilationProgress(C_STAGING_PROGRESS, "Staging script reload candidates...", pending.operationID);
         using AssemblyReloadSession reload = m_modules.BeginReload(
             plan.requests.Select(m_moduleSourceFactory).ToArray(),
             plan.removedModuleNames
         );
-        SetCompilationProgress(C_MIGRATION_PROGRESS, "Restoring active editor state...", pending.operationId);
+        SetCompilationProgress(C_MIGRATION_PROGRESS, "Restoring active editor state...", pending.operationID);
         IAssemblyUnloadProbe unload = PublishGeneration(reload);
         m_modules.generations.TrackRetirement(unload);
-        m_retiringProgressOperation = pending.operationId;
+        m_retiringProgressOperation = pending.operationID;
         m_activeCompilationDirectory = pending.unavailability is null
                                        ? pending.compilation.outputDirectory
                                        : null;
@@ -497,7 +497,7 @@ public sealed class ScriptReloadHost : IDisposable
             !isUnloadVerificationPending
             ? completedStatus
             : completedStatus + " Verifying retired assembly unload...",
-            pending.operationId
+            pending.operationID
         );
         m_reloads.RefreshDiagnostics();
         CompletePendingReload(pending);
@@ -828,7 +828,7 @@ public sealed class ScriptReloadHost : IDisposable
     private void SetCompilationProgress(
         float fraction,
         string stage,
-        long? operationId = null,
+        long? operationID = null,
         bool cancellationRequested = false,
         bool isCompilerUpdate = false,
         bool canCancel = false
@@ -836,7 +836,7 @@ public sealed class ScriptReloadHost : IDisposable
         lock (m_sync)
         {
             ScriptReloadProgress current = m_progress;
-            if (m_disposed || (operationId is long expected && expected != current.operationId))
+            if (m_disposed || (operationID is long expected && expected != current.operationId))
             {
                 return;
             }
@@ -1121,7 +1121,7 @@ public sealed class ScriptReloadHost : IDisposable
     private sealed record PendingReload(
         ScriptCompilationResult compilation,
         ScriptReloadRequest request,
-        long operationId,
+        long operationID,
         PluginUnavailabilityPlan? unavailability = null
     );
 

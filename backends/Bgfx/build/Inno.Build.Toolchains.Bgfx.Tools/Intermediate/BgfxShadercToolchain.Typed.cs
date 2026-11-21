@@ -23,13 +23,13 @@ public sealed partial class BgfxShadercToolchain
     private const byte C_SHADER_BINARY_VERSION = 11;
     private const int C_SHADER_BINARY_HEADER_SIZE = 12;
     private const int C_SHADER_UNIFORM_METADATA_SIZE = 10;
-    private static readonly UTF8Encoding S_GLSL_ENCODING = new(false, true);
-    private static readonly IReadOnlyList<string> s_languages = Array.AsReadOnly(["inno.shader-language.bgfx-sc"]);
+    private static readonly UTF8Encoding GLSL_ENCODING = new(false, true);
+    private static readonly IReadOnlyList<string> LANGUAGES = Array.AsReadOnly(["inno.shader-language.bgfx-sc"]);
 
     /// <summary>
     /// Gets shader source languages accepted by this toolchain.
     /// </summary>
-    public IReadOnlyList<string> supportedSourceLanguages => s_languages;
+    public IReadOnlyList<string> supportedSourceLanguages => LANGUAGES;
 
     /// <summary>
     /// Gets the implementation id text used by the current instance.
@@ -186,7 +186,7 @@ public sealed partial class BgfxShadercToolchain
         List<BgfxSourceToken> tokens;
         try
         {
-            string source = S_GLSL_ENCODING.GetString(payload.Slice(sizeof(uint), (int)length));
+            string source = GLSL_ENCODING.GetString(payload.Slice(sizeof(uint), (int)length));
             tokens = BgfxSourceLexer.Tokenize(new ShaderSourceFile("bgfx-compiled-stage", source))
                 .Where(static token => token.text != "\n")
                 .ToList();

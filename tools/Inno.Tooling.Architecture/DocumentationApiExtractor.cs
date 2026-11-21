@@ -15,7 +15,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static class DocumentationApiExtractor
 {
-    private static readonly SymbolDisplayFormat S_SIGNATURE = new(
+    private static readonly SymbolDisplayFormat SIGNATURE = new(
         globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
         typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
         genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeTypeConstraints,
@@ -251,7 +251,7 @@ internal static class DocumentationApiExtractor
 
     private static string Signature(ISymbol symbol)
     {
-        string signature = symbol.ToDisplayString(S_SIGNATURE);
+        string signature = symbol.ToDisplayString(SIGNATURE);
         if (symbol is not INamedTypeSymbol type)
         {
             return signature;
@@ -286,7 +286,7 @@ internal static class DocumentationApiExtractor
         {
             return signature;
         }
-        SymbolDisplayFormat reference = S_SIGNATURE.WithKindOptions(SymbolDisplayKindOptions.None);
+        SymbolDisplayFormat reference = SIGNATURE.WithKindOptions(SymbolDisplayKindOptions.None);
         var bases = new List<string>();
         if (type.EnumUnderlyingType is not null)
         {

@@ -18,12 +18,12 @@ namespace Inno.Adapter.UI.RmlUi;
 /// </summary>
 public sealed unsafe class RmlUiBackend : IUiBackend
 {
-    private static readonly UiBackendCapabilities S_CAPABILITIES = new(
+    private static readonly UiBackendCapabilities CAPABILITIES = new(
         [RmlUiIdentifiers.documentLanguage],
         supportsFontCollectionFaces: false
     );
 
-    private static readonly Regex S_FONT_FAMILY = new(
+    private static readonly Regex FONT_FAMILY = new(
         @"(?im)(font-family\s*:\s*)([^;}]+)",
         RegexOptions.Compiled | RegexOptions.CultureInvariant
     );
@@ -52,7 +52,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     /// <summary>
     /// Gets the immutable feature and limit set reported by the active graphics backend.
     /// </summary>
-    public UiBackendCapabilities capabilities => S_CAPABILITIES;
+    public UiBackendCapabilities capabilities => CAPABILITIES;
 
     /// <summary>
     /// Creates a context using this implementation's validated inputs.
@@ -671,7 +671,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 ThrowIfFailed(RmlUiNativeFrames.GetEventInfo(m_runtime, handle, checked((ulong)index), ref info), "query UI event");
                 var targetBytes = new byte[checked((int)info.TargetIdLength + 1)];
                 ThrowIfFailed(
-                    RmlUiNativeFrames.CopyEventTargetId(m_runtime, handle, checked((ulong)index), targetBytes.AsSpan()),
+                    RmlUiNativeFrames.CopyEventTargetID(m_runtime, handle, checked((ulong)index), targetBytes.AsSpan()),
                     "copy UI event target"
                 );
                 events[index] = new UiEvent(
@@ -771,7 +771,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     }
 
     private string RewriteFontFamilies(string source)
-        => S_FONT_FAMILY.Replace(source, match =>
+        => FONT_FAMILY.Replace(source, match =>
         {
             string[] requested = match.Groups[2].Value.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             var resolved = new List<string>(requested.Length);

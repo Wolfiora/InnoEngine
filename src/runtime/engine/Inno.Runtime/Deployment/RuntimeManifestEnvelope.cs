@@ -36,20 +36,20 @@ public static class RuntimeManifestEnvelope
         ArgumentNullException.ThrowIfNull(manifest);
         ArgumentNullException.ThrowIfNull(serialization);
         manifest.Validate();
-        byte[] applicationId = Encoding.UTF8.GetBytes(manifest.applicationId);
+        byte[] applicationID = Encoding.UTF8.GetBytes(manifest.applicationId);
         byte[] persistentDataPath = Encoding.UTF8.GetBytes(
             manifest.persistentDataPath.Length == 0 ? manifest.applicationId : manifest.persistentDataPath
         );
         byte[] payload = serialization.Serialize(manifest);
         var result = new byte[checked(magic.Length + sizeof(int) * 3
-                                      + applicationId.Length + persistentDataPath.Length + payload.Length)];
+                                      + applicationID.Length + persistentDataPath.Length + payload.Length)];
         int offset = 0;
         magic.CopyTo(result);
         offset += magic.Length;
-        BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(offset), applicationId.Length);
+        BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(offset), applicationID.Length);
         offset += sizeof(int);
-        applicationId.CopyTo(result, offset);
-        offset += applicationId.Length;
+        applicationID.CopyTo(result, offset);
+        offset += applicationID.Length;
         BinaryPrimitives.WriteInt32LittleEndian(result.AsSpan(offset), persistentDataPath.Length);
         offset += sizeof(int);
         persistentDataPath.CopyTo(result, offset);
@@ -74,9 +74,9 @@ public static class RuntimeManifestEnvelope
     /// </exception>
     public static string ReadApplicationId(ReadOnlySpan<byte> data)
     {
-        Parse(data, out string applicationId, out _, out _);
-        ValidateApplicationId(applicationId);
-        return applicationId;
+        Parse(data, out string applicationID, out _, out _);
+        ValidateApplicationID(applicationID);
+        return applicationID;
     }
 
     /// <summary>
@@ -93,8 +93,8 @@ public static class RuntimeManifestEnvelope
     /// </exception>
     public static string ReadPersistentDataPath(ReadOnlySpan<byte> data)
     {
-        Parse(data, out string applicationId, out string persistentDataPath, out _);
-        ValidateApplicationId(applicationId);
+        Parse(data, out string applicationID, out string persistentDataPath, out _);
+        ValidateApplicationID(applicationID);
         ValidatePersistentDataPath(persistentDataPath);
         return persistentDataPath;
     }
@@ -119,12 +119,12 @@ public static class RuntimeManifestEnvelope
         SerializationGeneration serialization
     ) {
         ArgumentNullException.ThrowIfNull(serialization);
-        Parse(data, out string applicationId, out string persistentDataPath, out ReadOnlySpan<byte> payload);
-        ValidateApplicationId(applicationId);
+        Parse(data, out string applicationID, out string persistentDataPath, out ReadOnlySpan<byte> payload);
+        ValidateApplicationID(applicationID);
         ValidatePersistentDataPath(persistentDataPath);
         GameRuntimeManifest manifest = serialization.Deserialize<GameRuntimeManifest>(payload);
         manifest.Validate();
-        if (!string.Equals(applicationId, manifest.applicationId, StringComparison.Ordinal))
+        if (!string.Equals(applicationID, manifest.applicationId, StringComparison.Ordinal))
         {
             throw new InvalidDataException("Runtime manifest application identities do not match.");
         }
@@ -158,7 +158,7 @@ public static class RuntimeManifestEnvelope
             ) {
                 throw new InvalidDataException("Runtime manifest contains an invalid persistent data folder.");
             }
-            ValidateApplicationId(segment);
+            ValidateApplicationID(segment);
         }
     }
 
@@ -166,7 +166,7 @@ public static class RuntimeManifestEnvelope
 
     private static void Parse(
         ReadOnlySpan<byte> data,
-        out string applicationId,
+        out string applicationID,
         out string persistentDataPath,
         out ReadOnlySpan<byte> payload
     ) {
@@ -176,21 +176,21 @@ public static class RuntimeManifestEnvelope
             throw new InvalidDataException("Runtime manifest envelope has an invalid header.");
         }
         int offset = magic.Length;
-        int applicationIdLength = BinaryPrimitives.ReadInt32LittleEndian(data[offset..]);
+        int applicationIDLength = BinaryPrimitives.ReadInt32LittleEndian(data[offset..]);
         offset += sizeof(int);
-        if (applicationIdLength <= 0 || applicationIdLength > 255 || applicationIdLength > data.Length - offset - sizeof(int) * 2)
+        if (applicationIDLength <= 0 || applicationIDLength > 255 || applicationIDLength > data.Length - offset - sizeof(int) * 2)
         {
             throw new InvalidDataException("Runtime manifest envelope has an invalid application identity length.");
         }
         try
         {
-            applicationId = new UTF8Encoding(false, true).GetString(data.Slice(offset, applicationIdLength));
+            applicationID = new UTF8Encoding(false, true).GetString(data.Slice(offset, applicationIDLength));
         }
         catch (DecoderFallbackException exception)
         {
             throw new InvalidDataException("Runtime manifest application identity is not valid UTF-8.", exception);
         }
-        offset += applicationIdLength;
+        offset += applicationIDLength;
         int persistentDataPathLength = BinaryPrimitives.ReadInt32LittleEndian(data[offset..]);
         offset += sizeof(int);
         if (persistentDataPathLength <= 0 || persistentDataPathLength > 1024
@@ -216,13 +216,13 @@ public static class RuntimeManifestEnvelope
         payload = data[offset..];
     }
 
-    private static void ValidateApplicationId(string applicationId)
+    private static void ValidateApplicationID(string applicationID)
     {
-        if (string.IsNullOrWhiteSpace(applicationId))
+        if (string.IsNullOrWhiteSpace(applicationID))
         {
             throw new InvalidDataException("Runtime manifest requires an application identity.");
         }
-        foreach (char character in applicationId)
+        foreach (char character in applicationID)
         {
             if (!(character is >= 'a' and <= 'z'
                   || character is >= '0' and <= '9'

@@ -24,7 +24,7 @@ public sealed class NativeProductExecutorTests : IDisposable
             m_owner,
             new(NativeLibraryKind.Static),
             [],
-            Produce,
+            ProduceAsync,
             Recipe,
             static (
                 relative,
@@ -65,7 +65,7 @@ public sealed class NativeProductExecutorTests : IDisposable
             m_owner,
             new(NativeLibraryKind.Shared),
             [],
-            Produce,
+            ProduceAsync,
             Recipe,
             static (
                 relative,
@@ -138,7 +138,7 @@ public sealed class NativeProductExecutorTests : IDisposable
             ["probe-recipe"]
         );
 
-    private Task<NativeBuildProduct> Produce(
+    private Task<NativeBuildProduct> ProduceAsync(
         NativeBuildContext context,
         IReadOnlyDictionary<string, NativeBuildProduct> dependencies,
         CancellationToken cancellation

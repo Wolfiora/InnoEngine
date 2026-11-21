@@ -24,7 +24,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
     private const string C_SERIALIZABLE_INTERFACE =
         "Inno.Core.Serialization.ISerializable";
 
-    private static readonly DiagnosticDescriptor s_invalidType = new(
+    private static readonly DiagnosticDescriptor INVALID_TYPE = new(
         "INNOSER001",
         "Invalid generated serialization type",
         "Type '{0}' must be a non-abstract, non-generic class implementing ISerializable",
@@ -33,7 +33,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor s_missingConstructor = new(
+    private static readonly DiagnosticDescriptor MISSING_CONSTRUCTOR = new(
         "INNOSER002",
         "Generated serialization type requires a constructor",
         "Type '{0}' must expose a parameterless constructor accessible to generated code",
@@ -42,7 +42,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor s_invalidMember = new(
+    private static readonly DiagnosticDescriptor INVALID_MEMBER = new(
         "INNOSER003",
         "Invalid generated serialization member",
         "Member '{0}' cannot participate in generated {1}",
@@ -51,7 +51,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor s_duplicateKey = new(
+    private static readonly DiagnosticDescriptor DUPLICATE_KEY = new(
         "INNOSER004",
         "Duplicate generated serialization key",
         "Type '{0}' declares serialization key '{1}' more than once across its inheritance chain",
@@ -143,13 +143,13 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
             || !ImplementsSerializable(type)
             || !IsTypeAccessible(type)
         ) {
-            context.ReportDiagnostic(Diagnostic.Create(s_invalidType, location, type.ToDisplayString()));
+            context.ReportDiagnostic(Diagnostic.Create(INVALID_TYPE, location, type.ToDisplayString()));
             return;
         }
 
         if (!HasAccessibleParameterlessConstructor(type))
         {
-            context.ReportDiagnostic(Diagnostic.Create(s_missingConstructor, location, type.ToDisplayString()));
+            context.ReportDiagnostic(Diagnostic.Create(MISSING_CONSTRUCTOR, location, type.ToDisplayString()));
             return;
         }
 
@@ -160,7 +160,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
             .Where(static group => group.Count() > 1)
         ) {
             context.ReportDiagnostic(
-                Diagnostic.Create(s_duplicateKey, duplicate.First().location, type.ToDisplayString(), duplicate.Key)
+                Diagnostic.Create(DUPLICATE_KEY, duplicate.First().location, type.ToDisplayString(), duplicate.Key)
             );
             failed = true;
         }
@@ -171,7 +171,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
-                        s_invalidMember,
+                        INVALID_MEMBER,
                         member.location,
                         member.displayName,
                         "serialization because it is not readable by generated code"
@@ -183,7 +183,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
             {
                 context.ReportDiagnostic(
                     Diagnostic.Create(
-                        s_invalidMember,
+                        INVALID_MEMBER,
                         member.location,
                         member.displayName,
                         "deserialization because it is not writable by generated code"

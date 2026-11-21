@@ -27,7 +27,7 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
     protected override Snapshot Build(TypeCacheSnapshot types)
     {
         var registrations = new List<Registration>();
-        var byId = new Dictionary<string, Registration>(StringComparer.Ordinal);
+        var byID = new Dictionary<string, Registration>(StringComparer.Ordinal);
         var byMenuPath = new Dictionary<string, Registration>(StringComparer.OrdinalIgnoreCase);
         foreach (Type type in types
             .GetSubTypesOf<AssetCreationTemplate>()
@@ -48,10 +48,10 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
             }
 
             var registration = new Registration(type, template, declaration);
-            if (!byId.TryAdd(declaration.id, registration))
+            if (!byID.TryAdd(declaration.id, registration))
             {
                 throw new InvalidOperationException(
-                    $"Asset creation template id '{declaration.id}' is registered by both " + $"'{byId[declaration.id].implementationType.FullName}' and '{type.FullName}'."
+                    $"Asset creation template id '{declaration.id}' is registered by both " + $"'{byID[declaration.id].implementationType.FullName}' and '{type.FullName}'."
                 );
             }
 
@@ -72,7 +72,7 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
             static value => value.declaration.id,
             StringComparer.Ordinal
         ).ToArray();
-        return new Snapshot(ordered, byId);
+        return new Snapshot(ordered, byID);
     }
 
     /// <summary>
@@ -87,7 +87,7 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
     internal bool TryGet(
         string id,
         out Registration? registration
-    ) => current.byId.TryGetValue(id, out registration);
+    ) => current.byID.TryGetValue(id, out registration);
 
     internal sealed record Registration(
         Type implementationType,
@@ -97,6 +97,6 @@ internal sealed class AssetCreationRegistry : TypeRegistry<AssetCreationRegistry
 
     internal sealed record Snapshot(
         Registration[] registrations,
-        IReadOnlyDictionary<string, Registration> byId
+        IReadOnlyDictionary<string, Registration> byID
     );
 }

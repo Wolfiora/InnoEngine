@@ -140,11 +140,11 @@ internal sealed class TypeRegistryCoordinator
         }
     }
 
-    internal void Unregister(Guid registrationId)
+    internal void Unregister(Guid registrationID)
     {
         lock (m_sync)
         {
-            m_registries.RemoveAll(registration => registration.id == registrationId);
+            m_registries.RemoveAll(registration => registration.id == registrationID);
         }
     }
 

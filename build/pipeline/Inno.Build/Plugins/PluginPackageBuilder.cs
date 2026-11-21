@@ -18,9 +18,9 @@ namespace Inno.Build;
 
 internal sealed class PluginPackageBuilder
 {
-    private static readonly DateTimeOffset S_ARCHIVE_TIME = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset ARCHIVE_TIME = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
-    private static readonly HashSet<string> S_FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> FORBIDDEN_EXTENSIONS = new(StringComparer.OrdinalIgnoreCase)
     {
         ".dll", ".exe", ".dylib", ".so", ".a", ".lib", ".pdb"
     };
@@ -96,10 +96,10 @@ internal sealed class PluginPackageBuilder
                 {
                     PluginDependencyPlan dependency = plan.dependencies[index];
                     ZipArchiveEntry packageEntry = archive.CreateEntry(
-                        $"Dependencies/{dependency.pluginId}.iplugin",
+                        $"Dependencies/{dependency.pluginID}.iplugin",
                         CompressionLevel.Optimal
                     );
-                    packageEntry.LastWriteTime = S_ARCHIVE_TIME;
+                    packageEntry.LastWriteTime = ARCHIVE_TIME;
                     await using Stream packageStream = packageEntry.Open();
                     using var nested = new ZipArchive(packageStream, ZipArchiveMode.Create, leaveOpen: true);
                     await WriteBytesAsync(nested, "Plugin.inno", dependency.manifest, cancellationToken)
@@ -157,13 +157,13 @@ internal sealed class PluginPackageBuilder
         PluginCandidate[] installedPlugins = m_plugins.activePlugins.ToArray();
         ValidateDependencyGraph(installedPlugins);
         var selectedIds = new HashSet<string>(StringComparer.Ordinal);
-        Dictionary<string, PluginCandidate> installedById = installedPlugins.ToDictionary(
+        Dictionary<string, PluginCandidate> installedByID = installedPlugins.ToDictionary(
             static plugin => plugin.manifest.pluginId,
             StringComparer.Ordinal
         );
         void SelectDependency(string id)
         {
-            if (!installedById.TryGetValue(id, out PluginCandidate? plugin))
+            if (!installedByID.TryGetValue(id, out PluginCandidate? plugin))
             {
                 throw new InvalidOperationException($"Declared plugin dependency '{id}' is not installed and active.");
             }
@@ -220,7 +220,7 @@ internal sealed class PluginPackageBuilder
         string[] relativeFiles = projectFiles.Select(static entry => entry.assetPath.localPath).ToArray();
         foreach (string relative in relativeFiles)
         {
-            if (S_FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(relative)))
+            if (FORBIDDEN_EXTENSIONS.Contains(Path.GetExtension(relative)))
             {
                 throw new InvalidOperationException($"Plugin content '{relative}' is a forbidden binary.");
             }
@@ -335,7 +335,7 @@ internal sealed class PluginPackageBuilder
     ) {
         source.EnsureUnchanged();
         ZipArchiveEntry entry = archive.CreateEntry(source.archivePath, CompressionLevel.Optimal);
-        entry.LastWriteTime = S_ARCHIVE_TIME;
+        entry.LastWriteTime = ARCHIVE_TIME;
         await using Stream output = entry.Open();
         await using var input = new FileStream(
             source.sourcePath,
@@ -356,14 +356,14 @@ internal sealed class PluginPackageBuilder
         CancellationToken cancellationToken
     ) {
         ZipArchiveEntry entry = archive.CreateEntry(path, CompressionLevel.Optimal);
-        entry.LastWriteTime = S_ARCHIVE_TIME;
+        entry.LastWriteTime = ARCHIVE_TIME;
         await using Stream output = entry.Open();
         await output.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
     }
 
     private static void ValidateDependencyGraph(IReadOnlyList<PluginCandidate> plugins)
     {
-        Dictionary<string, PluginCandidate> byId = plugins.ToDictionary(
+        Dictionary<string, PluginCandidate> byID = plugins.ToDictionary(
             static value => value.manifest.pluginId,
             StringComparer.Ordinal
         );
@@ -384,10 +384,10 @@ internal sealed class PluginPackageBuilder
             {
                 throw new InvalidOperationException($"Plugin dependency graph contains a cycle at '{id}'.");
             }
-            PluginCandidate plugin = byId[id];
+            PluginCandidate plugin = byID[id];
             foreach (string dependency in plugin.manifest.dependencies)
             {
-                if (!byId.ContainsKey(dependency))
+                if (!byID.ContainsKey(dependency))
                 {
                     throw new InvalidOperationException($"Plugin '{id}' requires unavailable dependency '{dependency}'.");
                 }
@@ -434,7 +434,7 @@ internal sealed class PluginPackageBuilder
     );
 
     private sealed record PluginDependencyPlan(
-        string pluginId,
+        string pluginID,
         string contentHash,
         byte[] manifest,
         IReadOnlyList<SourceEntry> entries

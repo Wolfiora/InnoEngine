@@ -16,10 +16,10 @@ namespace Inno.Rendering.Assets;
 [StableTypeId("e174b6eb-f79a-470f-a460-84f88ab49d0e")]
 public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
 {
-    private static readonly RenderTextureArtifactSlot[] S_linearTextureArtifacts =
+    private static readonly RenderTextureArtifactSlot[] LINEAR_TEXTURE_ARTIFACTS =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Linear)];
 
-    private static readonly RenderTextureArtifactSlot[] S_sRgbTextureArtifacts =
+    private static readonly RenderTextureArtifactSlot[] S_RGB_TEXTURE_ARTIFACTS =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Srgb)];
 
     internal TextureAsset() {}
@@ -89,8 +89,8 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     /// </summary>
     public IReadOnlyList<RenderTextureArtifactSlot> textureArtifacts
         => colorSpace == TextureColorSpace.Srgb
-           ? S_sRgbTextureArtifacts
-           : S_linearTextureArtifacts;
+           ? S_RGB_TEXTURE_ARTIFACTS
+           : LINEAR_TEXTURE_ARTIFACTS;
 
     /// <summary>
     /// Creates a stable reference to this texture's current imported content.

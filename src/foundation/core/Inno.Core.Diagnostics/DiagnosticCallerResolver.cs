@@ -12,13 +12,13 @@ internal static class DiagnosticCallerResolver
     [MethodImpl(MethodImplOptions.NoInlining)]
     internal static DiagnosticSource Resolve(
         string group,
-        Guid? targetId = null,
+        Guid? targetID = null,
         string? displayName = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(group);
-        if (targetId == Guid.Empty)
+        if (targetID == Guid.Empty)
         {
-            throw new ArgumentException("A diagnostic target identifier cannot be empty.", nameof(targetId));
+            throw new ArgumentException("A diagnostic target identifier cannot be empty.", nameof(targetID));
         }
 
         Type callerType = ResolveCallerType();
@@ -33,8 +33,8 @@ internal static class DiagnosticCallerResolver
             };
         });
 
-        string id = targetId.HasValue
-                    ? $"{caller.sourcePrefix}/{group}/{targetId.Value:N}"
+        string id = targetID.HasValue
+                    ? $"{caller.sourcePrefix}/{group}/{targetID.Value:N}"
                     : $"{caller.sourcePrefix}/{group}";
         string resolvedDisplayName = string.IsNullOrWhiteSpace(displayName)
                                      ? group

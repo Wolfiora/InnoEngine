@@ -18,7 +18,7 @@ internal sealed class SceneSystemScheduler
     private readonly GameBehaviorLifecycleRunner m_behaviors;
     private readonly IndexedObjectStore<SystemEntry> m_systems = new();
     private readonly IndexedObjectKey<GameSystem> m_systemKey;
-    private readonly IndexedObjectKey<Guid> m_persistentIdKey;
+    private readonly IndexedObjectKey<Guid> m_persistentIDKey;
     private readonly IndexedObjectKey<int> m_typeKey;
     private readonly List<SystemEntry> m_displayOrder = [];
     private ReadOnlyCollection<GameSystem>? m_displayView;
@@ -32,17 +32,17 @@ internal sealed class SceneSystemScheduler
         m_types = types;
         m_behaviors = new GameBehaviorLifecycleRunner(scene);
         m_systemKey = m_systems.DefineKey<GameSystem>("scene.system", IndexedObjectKeyFlags.Unique);
-        m_persistentIdKey = m_systems.DefineKey<Guid>("scene.system.persistent-id", IndexedObjectKeyFlags.Unique);
+        m_persistentIDKey = m_systems.DefineKey<Guid>("scene.system.persistent-id", IndexedObjectKeyFlags.Unique);
         m_typeKey = m_systems.DefineKey<int>("scene.system.type");
     }
 
     internal TSystem Add<TSystem>()
         where TSystem : GameSystem, new()
-            => (TSystem)Add(typeof(TSystem), persistentId: null, invokeReset: true);
+            => (TSystem)Add(typeof(TSystem), persistentID: null, invokeReset: true);
 
     internal GameSystem Add(
         Type systemType,
-        Guid? persistentId,
+        Guid? persistentID,
         bool invokeReset
     ) {
         ArgumentNullException.ThrowIfNull(systemType);
@@ -56,29 +56,29 @@ internal sealed class SceneSystemScheduler
         }
 
         GameSystem system = (GameSystem)m_types.snapshot.CreateInstance(systemType);
-        Add(system, descriptor, persistentId, invokeReset);
+        Add(system, descriptor, persistentID, invokeReset);
         return system;
     }
 
     internal void Add(
         GameSystem system,
-        Guid? persistentId = null,
+        Guid? persistentID = null,
         bool invokeReset = true
     ) {
         ArgumentNullException.ThrowIfNull(system);
         SceneSystemTypeDescriptor descriptor = m_types.GetSystem(system.GetType());
-        Add(system, descriptor, persistentId, invokeReset);
+        Add(system, descriptor, persistentID, invokeReset);
     }
 
     internal MissingGameSystem AddMissing(
         TypeRef missingType,
         string missingTypeName,
         ReadOnlySpan<byte> serializedState,
-        Guid? persistentId,
+        Guid? persistentID,
         IReadOnlyList<AssetDependency>? dependencies = null
     ) {
         var system = new MissingGameSystem(missingType, missingTypeName, serializedState, dependencies);
-        Add(system, m_types.GetSystem(typeof(MissingGameSystem)), persistentId, invokeReset: false);
+        Add(system, m_types.GetSystem(typeof(MissingGameSystem)), persistentID, invokeReset: false);
         return system;
     }
 
@@ -162,7 +162,7 @@ internal sealed class SceneSystemScheduler
     internal void ReplaceForReload(
         GameSystem previous,
         GameSystem replacement,
-        int replacementRuntimeTypeId
+        int replacementRuntimeTypeID
     ) {
         if (!TryGetEntry(previous, out SystemEntry? entry))
         {
@@ -187,16 +187,16 @@ internal sealed class SceneSystemScheduler
         {
             throw new InvalidOperationException("The replacement GameSystem belongs to another scene.");
         }
-        Guid persistentId = previous.identity.persistentId;
+        Guid persistentID = previous.identity.persistentId;
         try
         {
             _ = previous.ReleaseIdentityForReplacement();
-            replacement.RegisterIdentity(persistentId);
+            replacement.RegisterIdentity(persistentID);
             m_systems.Add(entry!)
                 .Set(m_systemKey, replacement)
-                .Set(m_typeKey, replacementRuntimeTypeId);
+                .Set(m_typeKey, replacementRuntimeTypeID);
             entry!.system = replacement;
-            entry.runtimeTypeId = replacementRuntimeTypeId;
+            entry.runtimeTypeID = replacementRuntimeTypeID;
             InvalidateSnapshots();
         }
         catch (Exception exception)
@@ -218,7 +218,7 @@ internal sealed class SceneSystemScheduler
             {
                 try
                 {
-                    previous.RegisterIdentity(persistentId);
+                    previous.RegisterIdentity(persistentID);
                 }
                 catch (Exception rollbackFailure)
                 {
@@ -360,7 +360,7 @@ internal sealed class SceneSystemScheduler
     private void Add(
         GameSystem system,
         SceneSystemTypeDescriptor descriptor,
-        Guid? persistentId,
+        Guid? persistentID,
         bool invokeReset
     ) {
         if (TryGetEntry(system, out _))
@@ -369,7 +369,7 @@ internal sealed class SceneSystemScheduler
                 $"System '{descriptor.displayName}' is already registered with scene '{m_scene.name}'."
             );
         }
-        if (!descriptor.allowsMultiple && m_systems.First(m_typeKey, descriptor.runtimeTypeId) is not null)
+        if (!descriptor.allowsMultiple && m_systems.First(m_typeKey, descriptor.runtimeTypeID) is not null)
         {
             throw new InvalidOperationException(
                 $"Scene '{m_scene.name}' already contains GameSystem '{descriptor.displayName}'."
@@ -380,12 +380,12 @@ internal sealed class SceneSystemScheduler
         SystemEntry? entry = null;
         try
         {
-            system.RegisterIdentity(persistentId);
-            entry = new SystemEntry(system, descriptor.runtimeTypeId, m_displayOrder.Count);
+            system.RegisterIdentity(persistentID);
+            entry = new SystemEntry(system, descriptor.runtimeTypeID, m_displayOrder.Count);
             m_systems.Add(entry)
                 .Set(m_systemKey, system)
-                .Set(m_persistentIdKey, system.identity.persistentId)
-                .Set(m_typeKey, descriptor.runtimeTypeId);
+                .Set(m_persistentIDKey, system.identity.persistentId)
+                .Set(m_typeKey, descriptor.runtimeTypeID);
             m_displayOrder.Add(entry);
             InvalidateSnapshots();
             if (invokeReset)
@@ -472,11 +472,11 @@ internal sealed class SceneSystemScheduler
 
     private sealed class SystemEntry(
         GameSystem system,
-        int runtimeTypeId,
+        int runtimeTypeID,
         int displayIndex
     ) {
         internal GameSystem system { get; set; } = system;
-        internal int runtimeTypeId { get; set; } = runtimeTypeId;
+        internal int runtimeTypeID { get; set; } = runtimeTypeID;
         internal int displayIndex { get; set; } = displayIndex;
         internal int executionOrder { get; set; } = system.order;
     }

@@ -22,13 +22,13 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     public void Dispose()
     {
         ResolveRestore();
-        foreach (Guid sceneId in m_synchronizationStates.Keys.ToArray())
+        foreach (Guid sceneID in m_synchronizationStates.Keys.ToArray())
         {
-            ResolveSynchronization(sceneId);
+            ResolveSynchronization(sceneID);
         }
-        foreach (Guid sceneId in m_dirtyCheckStates.Keys.ToArray())
+        foreach (Guid sceneID in m_dirtyCheckStates.Keys.ToArray())
         {
-            ResolveDirtyCheck(sceneId);
+            ResolveDirtyCheck(sceneID);
         }
     }
 
@@ -64,20 +64,20 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
-        Guid targetId = scene.identity.persistentId;
+        Guid targetID = scene.identity.persistentId;
         string state = exception.ToString();
-        if (m_synchronizationStates.TryGetValue(targetId, out string? previous)
+        if (m_synchronizationStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
         ) {
             return false;
         }
         Diagnostics.Set(
-            targetId,
+            targetID,
             C_SYNCHRONIZATION_GROUP,
             Diagnostic.Error("SCENE-SYNCHRONIZATION", exception.Message),
             scene.name
         );
-        m_synchronizationStates[targetId] = state;
+        m_synchronizationStates[targetID] = state;
         return true;
     }
 
@@ -85,15 +85,15 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         GameScene scene,
         string sourcePath
     ) {
-        Guid sceneId = scene.identity.persistentId;
+        Guid sceneID = scene.identity.persistentId;
         string state = "SCENE-SOURCE-MISSING:" + sourcePath;
-        if (m_synchronizationStates.TryGetValue(sceneId, out string? previous)
+        if (m_synchronizationStates.TryGetValue(sceneID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
         ) {
             return;
         }
         Diagnostics.Set(
-            sceneId,
+            sceneID,
             C_SYNCHRONIZATION_GROUP,
             Diagnostic.Warning(
                 "SCENE-SOURCE-MISSING",
@@ -101,16 +101,16 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
             ),
             scene.name
         );
-        m_synchronizationStates[sceneId] = state;
+        m_synchronizationStates[sceneID] = state;
     }
 
-    internal void ResolveSynchronization(Guid sceneId)
+    internal void ResolveSynchronization(Guid sceneID)
     {
-        if (!m_synchronizationStates.Remove(sceneId))
+        if (!m_synchronizationStates.Remove(sceneID))
         {
             return;
         }
-        Diagnostics.Clear(sceneId, C_SYNCHRONIZATION_GROUP);
+        Diagnostics.Clear(sceneID, C_SYNCHRONIZATION_GROUP);
     }
 
     internal bool PublishDirtyCheckFailure(
@@ -119,30 +119,30 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(scene);
         ArgumentNullException.ThrowIfNull(exception);
-        Guid targetId = scene.identity.persistentId;
+        Guid targetID = scene.identity.persistentId;
         string state = exception.ToString();
-        if (m_dirtyCheckStates.TryGetValue(targetId, out string? previous)
+        if (m_dirtyCheckStates.TryGetValue(targetID, out string? previous)
             && string.Equals(previous, state, StringComparison.Ordinal)
         ) {
             return false;
         }
         Diagnostics.Set(
-            targetId,
+            targetID,
             C_DIRTY_CHECK_GROUP,
             Diagnostic.Error("SCENE-DIRTY-CHECK", exception.Message),
             scene.name
         );
-        m_dirtyCheckStates[targetId] = state;
+        m_dirtyCheckStates[targetID] = state;
         return true;
     }
 
-    internal void ResolveDirtyCheck(Guid sceneId)
+    internal void ResolveDirtyCheck(Guid sceneID)
     {
-        if (!m_dirtyCheckStates.Remove(sceneId))
+        if (!m_dirtyCheckStates.Remove(sceneID))
         {
             return;
         }
-        Diagnostics.Clear(sceneId, C_DIRTY_CHECK_GROUP);
+        Diagnostics.Clear(sceneID, C_DIRTY_CHECK_GROUP);
     }
 
     internal void RetainSynchronizationTargets(IReadOnlySet<Guid> sceneIds)

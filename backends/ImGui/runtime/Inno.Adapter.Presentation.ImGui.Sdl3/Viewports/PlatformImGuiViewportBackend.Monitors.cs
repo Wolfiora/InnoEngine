@@ -73,17 +73,17 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
     }
 
     private static void AddDisplayMonitor(
-        uint displayId,
+        uint displayID,
         List<ImGuiPlatformMonitor> monitors
     ) {
         SDLRect main = default;
-        if (SDL.Raw.GetDisplayBounds(displayId, &main) == 0)
+        if (SDL.Raw.GetDisplayBounds(displayID, &main) == 0)
         {
             return;
         }
         SDLRect work = main;
-        _ = SDL.Raw.GetDisplayUsableBounds(displayId, &work);
-        float scale = SDL.GetDisplayContentScale(displayId);
+        _ = SDL.Raw.GetDisplayUsableBounds(displayID, &work);
+        float scale = SDL.GetDisplayContentScale(displayID);
         monitors.Add(new ImGuiPlatformMonitor
         {
             MainPos = new ImVec2C { X = main.X, Y = main.Y },
@@ -91,7 +91,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
             WorkPos = new ImVec2C { X = work.X, Y = work.Y },
             WorkSize = new ImVec2C { X = work.W, Y = work.H },
             DpiScale = scale <= 0f ? 1f : scale,
-            PlatformHandle = (void*)(nuint)displayId
+            PlatformHandle = (void*)(nuint)displayID
         });
     }
 }

@@ -35,13 +35,13 @@ internal readonly record struct SceneStoreRemovedComponent(
 
 internal sealed class SceneStore
 {
-    private static readonly Lock S_TYPE_CACHE_SYNC = new();
-    private static readonly List<WeakReference<SceneStore>> S_STORES = [];
+    private static readonly Lock TYPE_CACHE_SYNC = new();
+    private static readonly List<WeakReference<SceneStore>> STORES = [];
 
     private readonly SceneTypeCatalog m_types;
     private readonly IndexedObjectStore<SceneObjectRecord> m_objects = new();
     private readonly IndexedObjectKey<GameObject> m_objectKey;
-    private readonly IndexedObjectKey<Guid> m_objectPersistentIdKey;
+    private readonly IndexedObjectKey<Guid> m_objectPersistentIDKey;
     private readonly IndexedObjectKey<string> m_objectNameKey;
     private readonly IndexedObjectKey<string> m_objectTagKey;
     private readonly IndexedObjectKey<GameLayer> m_objectLayerKey;
@@ -50,7 +50,7 @@ internal sealed class SceneStore
 
     private readonly IndexedObjectStore<ComponentEntry> m_components = new();
     private readonly IndexedObjectKey<GameComponent> m_componentKey;
-    private readonly IndexedObjectKey<Guid> m_componentPersistentIdKey;
+    private readonly IndexedObjectKey<Guid> m_componentPersistentIDKey;
     private readonly IndexedObjectKey<SceneObjectRecord> m_componentOwnerKey;
     private readonly IndexedObjectKey<int> m_componentTypeKey;
     private readonly IndexedObjectKey<bool> m_componentCommittedKey;
@@ -72,14 +72,14 @@ internal sealed class SceneStore
     internal SceneStore(SceneTypeCatalog types)
     {
         m_types = types ?? throw new ArgumentNullException(nameof(types));
-        lock (S_TYPE_CACHE_SYNC)
+        lock (TYPE_CACHE_SYNC)
         {
-            S_STORES.RemoveAll(static reference => !reference.TryGetTarget(out _));
-            S_STORES.Add(new WeakReference<SceneStore>(this));
+            STORES.RemoveAll(static reference => !reference.TryGetTarget(out _));
+            STORES.Add(new WeakReference<SceneStore>(this));
         }
 
         m_objectKey = m_objects.DefineKey<GameObject>("scene.object", IndexedObjectKeyFlags.Unique);
-        m_objectPersistentIdKey = m_objects.DefineKey<Guid>("scene.object.persistent-id", IndexedObjectKeyFlags.Unique);
+        m_objectPersistentIDKey = m_objects.DefineKey<Guid>("scene.object.persistent-id", IndexedObjectKeyFlags.Unique);
         m_objectNameKey = m_objects.DefineKey<string>("scene.object.name");
         m_objectTagKey = m_objects.DefineKey<string>("scene.object.tag");
         m_objectLayerKey = m_objects.DefineKey<GameLayer>("scene.object.layer");
@@ -91,7 +91,7 @@ internal sealed class SceneStore
         );
 
         m_componentKey = m_components.DefineKey<GameComponent>("scene.component", IndexedObjectKeyFlags.Unique);
-        m_componentPersistentIdKey = m_components.DefineKey<Guid>(
+        m_componentPersistentIDKey = m_components.DefineKey<Guid>(
             "scene.component.persistent-id",
             IndexedObjectKeyFlags.Unique
         );
@@ -127,7 +127,7 @@ internal sealed class SceneStore
         {
             m_objects.Add(record)
                 .Set(m_objectKey, gameObject)
-                .Set(m_objectPersistentIdKey, gameObject.identity.persistentId)
+                .Set(m_objectPersistentIDKey, gameObject.identity.persistentId)
                 .Set(m_objectNameKey, gameObject.storedName)
                 .Set(m_objectTagKey, gameObject.storedTag)
                 .Set(m_objectLayerKey, gameObject.storedLayer)
@@ -169,7 +169,7 @@ internal sealed class SceneStore
         {
             ComponentEntry? duplicate = m_components.Query()
                 .Find(m_componentOwnerKey, record)
-                .Find(m_componentTypeKey, descriptor.runtimeTypeId)
+                .Find(m_componentTypeKey, descriptor.runtimeTypeID)
                 .First();
             if (duplicate is { isAlive: true })
             {
@@ -180,14 +180,14 @@ internal sealed class SceneStore
             }
         }
 
-        var entry = new ComponentEntry(record, component, descriptor.runtimeTypeId);
+        var entry = new ComponentEntry(record, component, descriptor.runtimeTypeID);
         try
         {
             m_components.Add(entry)
                 .Set(m_componentKey, component)
-                .Set(m_componentPersistentIdKey, component.identity.persistentId)
+                .Set(m_componentPersistentIDKey, component.identity.persistentId)
                 .Set(m_componentOwnerKey, record)
-                .Set(m_componentTypeKey, descriptor.runtimeTypeId)
+                .Set(m_componentTypeKey, descriptor.runtimeTypeID)
                 .Set(m_componentCommittedKey, false);
             record.components.Add(component);
         }
@@ -241,7 +241,7 @@ internal sealed class SceneStore
     internal void ReplaceComponent(
         GameComponent previous,
         GameComponent replacement,
-        int replacementRuntimeTypeId
+        int replacementRuntimeTypeID
     ) {
         ArgumentNullException.ThrowIfNull(previous);
         ArgumentNullException.ThrowIfNull(replacement);
@@ -266,9 +266,9 @@ internal sealed class SceneStore
 
         m_components.Add(entry)
             .Set(m_componentKey, replacement)
-            .Set(m_componentTypeKey, replacementRuntimeTypeId);
+            .Set(m_componentTypeKey, replacementRuntimeTypeID);
         entry.component = replacement;
-        entry.runtimeTypeId = replacementRuntimeTypeId;
+        entry.runtimeTypeID = replacementRuntimeTypeID;
         entry.owner.components[index] = replacement;
         InvalidateStructureCaches();
     }
@@ -333,9 +333,9 @@ internal sealed class SceneStore
         return result;
     }
 
-    internal GameObject? FindObject(Guid persistentId)
+    internal GameObject? FindObject(Guid persistentID)
     {
-        SceneObjectRecord? record = m_objects.First(m_objectPersistentIdKey, persistentId);
+        SceneObjectRecord? record = m_objects.First(m_objectPersistentIDKey, persistentID);
         return record is { isAlive: true } ? record.gameObject : null;
     }
 
@@ -407,9 +407,9 @@ internal sealed class SceneStore
             .Select(static record => record.gameObject)
             .ToArray();
 
-    internal GameComponent? FindComponent(Guid persistentId)
+    internal GameComponent? FindComponent(Guid persistentID)
     {
-        ComponentEntry? entry = m_components.First(m_componentPersistentIdKey, persistentId);
+        ComponentEntry? entry = m_components.First(m_componentPersistentIDKey, persistentID);
         return entry is { isAlive: true } && entry.owner.isAlive ? entry.component : null;
     }
 
@@ -419,7 +419,7 @@ internal sealed class SceneStore
     internal IReadOnlyList<TComponent> GetComponents<TComponent>(
         SceneComponentTypeDescriptor requestedType) where TComponent : GameComponent
     {
-        if (m_typedComponentQueryCache.TryGetValue(requestedType.runtimeTypeId, out object? cached))
+        if (m_typedComponentQueryCache.TryGetValue(requestedType.runtimeTypeID, out object? cached))
         {
             return (ReadOnlyCollection<TComponent>)cached;
         }
@@ -431,7 +431,7 @@ internal sealed class SceneStore
             typed[i] = (TComponent)untyped[i];
         }
         ReadOnlyCollection<TComponent> view = Array.AsReadOnly(typed);
-        m_typedComponentQueryCache.Add(requestedType.runtimeTypeId, view);
+        m_typedComponentQueryCache.Add(requestedType.runtimeTypeID, view);
         return view;
     }
 
@@ -447,7 +447,7 @@ internal sealed class SceneStore
             GameComponent candidate = record.components[i];
             if (TryGetEntry(candidate, out ComponentEntry? entry)
                 && entry!.isAlive
-                && requestedType.IsAssignableFrom(entry.runtimeTypeId)
+                && requestedType.IsAssignableFrom(entry.runtimeTypeID)
             ) {
                 result.Add((TComponent)candidate);
             }
@@ -467,7 +467,7 @@ internal sealed class SceneStore
             GameComponent candidate = record.components[i];
             if (TryGetEntry(candidate, out ComponentEntry? entry)
                 && entry!.isAlive
-                && requestedType.IsAssignableFrom(entry.runtimeTypeId)
+                && requestedType.IsAssignableFrom(entry.runtimeTypeID)
             ) {
                 component = (TComponent)candidate;
                 return true;
@@ -488,7 +488,7 @@ internal sealed class SceneStore
             GameComponent candidate = record.components[i];
             if (TryGetEntry(candidate, out ComponentEntry? entry)
                 && entry!.isAlive
-                && requestedType.IsAssignableFrom(entry.runtimeTypeId)
+                && requestedType.IsAssignableFrom(entry.runtimeTypeID)
             ) {
                 component = candidate;
                 return true;
@@ -532,18 +532,18 @@ internal sealed class SceneStore
     }
 
     internal IReadOnlyList<GameObject> Query(SceneComponentTypeDescriptor requestedType)
-        => Query(ComponentQueryKey.Create(requestedType.runtimeTypeId));
+        => Query(ComponentQueryKey.Create(requestedType.runtimeTypeID));
 
     internal IReadOnlyList<GameObject> Query(
         SceneComponentTypeDescriptor first,
         SceneComponentTypeDescriptor second
-    ) => Query(ComponentQueryKey.Create(first.runtimeTypeId, second.runtimeTypeId));
+    ) => Query(ComponentQueryKey.Create(first.runtimeTypeID, second.runtimeTypeID));
 
     internal IReadOnlyList<GameObject> Query(
         SceneComponentTypeDescriptor first,
         SceneComponentTypeDescriptor second,
         SceneComponentTypeDescriptor third
-    ) => Query(ComponentQueryKey.Create(first.runtimeTypeId, second.runtimeTypeId, third.runtimeTypeId));
+    ) => Query(ComponentQueryKey.Create(first.runtimeTypeID, second.runtimeTypeID, third.runtimeTypeID));
 
     internal IDisposable BeginExecutionPhase()
     {
@@ -594,17 +594,17 @@ internal sealed class SceneStore
 
     internal static void InvalidateAllTypeCaches()
     {
-        lock (S_TYPE_CACHE_SYNC)
+        lock (TYPE_CACHE_SYNC)
         {
-            for (int i = S_STORES.Count - 1; i >= 0; i--)
+            for (int i = STORES.Count - 1; i >= 0; i--)
             {
-                if (S_STORES[i].TryGetTarget(out SceneStore? store))
+                if (STORES[i].TryGetTarget(out SceneStore? store))
                 {
                     store.InvalidateTypeCaches();
                 }
                 else
                 {
-                    S_STORES.RemoveAt(i);
+                    STORES.RemoveAt(i);
                 }
             }
         }
@@ -669,7 +669,7 @@ internal sealed class SceneStore
 
     private GameComponent[] GetCommittedComponents(SceneComponentTypeDescriptor requestedType)
     {
-        if (m_componentQueryCache.TryGetValue(requestedType.runtimeTypeId, out GameComponent[]? cached))
+        if (m_componentQueryCache.TryGetValue(requestedType.runtimeTypeID, out GameComponent[]? cached))
         {
             return cached;
         }
@@ -688,7 +688,7 @@ internal sealed class SceneStore
         }
 
         cached = result.ToArray();
-        m_componentQueryCache.Add(requestedType.runtimeTypeId, cached);
+        m_componentQueryCache.Add(requestedType.runtimeTypeID, cached);
         return cached;
     }
 
@@ -700,7 +700,7 @@ internal sealed class SceneStore
         {
             if (TryGetEntry(owner.components[i], out ComponentEntry? entry)
                 && IsVisible(entry!)
-                && requestedType.IsAssignableFrom(entry!.runtimeTypeId)
+                && requestedType.IsAssignableFrom(entry!.runtimeTypeID)
             ) {
                 return true;
             }
@@ -903,16 +903,16 @@ internal sealed class SceneStore
         internal ComponentEntry(
             SceneObjectRecord owner,
             GameComponent component,
-            int runtimeTypeId
+            int runtimeTypeID
         ) {
             this.owner = owner;
             this.component = component;
-            this.runtimeTypeId = runtimeTypeId;
+            this.runtimeTypeID = runtimeTypeID;
         }
 
         internal SceneObjectRecord owner { get; }
         internal GameComponent component { get; set; }
-        internal int runtimeTypeId { get; set; }
+        internal int runtimeTypeID { get; set; }
         internal bool isAlive { get; set; } = true;
         internal bool isCommitted { get; set; }
     }

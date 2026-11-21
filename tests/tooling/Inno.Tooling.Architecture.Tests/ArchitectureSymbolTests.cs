@@ -17,8 +17,8 @@ public sealed class ArchitectureSymbolTests
     public void SourceOnlyDefersInheritedXmlButCompiledAcceptanceStillRejectsAnUnrelatedMethod()
     {
         using var fixture = new SymbolFixture();
-        const string project = "src/foundation/core/Inno.Core.Probe";
-        const string source = """
+        const string C_PROJECT = "src/foundation/core/Inno.Core.Probe";
+        const string C_SOURCE = """
             namespace Inno.Core.Probe;
             public sealed class Probe
             {
@@ -26,8 +26,8 @@ public sealed class ArchitectureSymbolTests
                 public int Read() => 1;
             }
             """;
-        fixture.Compile(project, "Inno.Core.Probe", source);
-        fixture.WriteSource(project, source);
+        fixture.Compile(C_PROJECT, "Inno.Core.Probe", C_SOURCE);
+        fixture.WriteSource(C_PROJECT, C_SOURCE);
         Assert.DoesNotContain(
             "inheritdoc requires a documented overridden or implemented contract",
             fixture.Run("--source-only"),
@@ -35,7 +35,7 @@ public sealed class ArchitectureSymbolTests
         );
         Assert.Contains(
             "inheritdoc requires a documented overridden or implemented contract",
-            fixture.Run("--metadata-only", "--api-project", project + "/Inno.Core.Probe.csproj"),
+            fixture.Run("--metadata-only", "--api-project", C_PROJECT + "/Inno.Core.Probe.csproj"),
             StringComparison.Ordinal
         );
     }
@@ -44,9 +44,9 @@ public sealed class ArchitectureSymbolTests
     public void InheritedDocumentationUsesTheOwningProjectInsteadOfACopiedDependency()
     {
         using var fixture = new SymbolFixture();
-        const string contractProject = "src/foundation/core/Inno.Core.Contract";
-        const string consumerProject = "src/composition/editor/framework/Inno.Editor.Probe";
-        string contract = fixture.Compile(contractProject, "Inno.Core.Contract", """
+        const string C_CONTRACT_PROJECT = "src/foundation/core/Inno.Core.Contract";
+        const string C_CONSUMER_PROJECT = "src/composition/editor/framework/Inno.Editor.Probe";
+        string contract = fixture.Compile(C_CONTRACT_PROJECT, "Inno.Core.Contract", """
             namespace Inno.Core.Contract;
             public interface IContract
             {
@@ -67,8 +67,8 @@ public sealed class ArchitectureSymbolTests
                 public int Read() => 1;
             }
             """;
-        string consumer = fixture.Compile(consumerProject, "Inno.Editor.Probe", source, contract);
-        fixture.WriteSource(consumerProject, source);
+        string consumer = fixture.Compile(C_CONSUMER_PROJECT, "Inno.Editor.Probe", source, contract);
+        fixture.WriteSource(C_CONSUMER_PROJECT, source);
         string copied = Path.Combine(Path.GetDirectoryName(consumer)!, Path.GetFileName(contract));
         File.Copy(contract, copied);
         File.WriteAllText(Path.ChangeExtension(copied, ".xml"), "<doc><members /></doc>");
@@ -419,15 +419,15 @@ public sealed class ArchitectureSymbolTests
     [InlineData("new System.IO.FileStream(\"payload\", System.IO.FileMode.Open);", true)]
     [InlineData("throw new System.IO.InvalidDataException(\"Invalid payload\");", false)]
     [InlineData("new System.IO.MemoryStream(new byte[] { 1 });", false)]
-    public void SharedContentIoChecksResolvedSymbolsInsteadOfIoNamespaceText(
+    public void SharedContentIOChecksResolvedSymbolsInsteadOfIONamespaceText(
         string operation,
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
-        const string relative = "src/content/deployment/Inno.Content";
+        const string C_RELATIVE = "src/content/deployment/Inno.Content";
         string source = "internal class Probe { void Read() { " + operation + " } }";
-        fixture.Compile(relative, "Inno.Content", source);
-        fixture.WriteSource(relative, source);
+        fixture.Compile(C_RELATIVE, "Inno.Content", source);
+        fixture.WriteSource(C_RELATIVE, source);
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("shared content owners must receive reading contracts", StringComparison.Ordinal));
     }

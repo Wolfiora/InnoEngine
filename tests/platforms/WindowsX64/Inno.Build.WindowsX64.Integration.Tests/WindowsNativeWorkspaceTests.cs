@@ -56,7 +56,7 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
         string? stableObject = null;
         DateTime stableTime = default;
         int compilations = 0;
-        async Task Produce(
+        async Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -94,16 +94,16 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
                 new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(m_root, path)),
                 tools.declarations.Concat(new[] { "shared", "fixture" })
             );
-        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(Context(), Recipe(), Produce);
+        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(Context(), Recipe(), ProduceAsync);
         Assert.Equal(41, Read(first));
         File.WriteAllText(changed, "__declspec(dllexport) int value(void) { return 42; }\n");
         File.SetLastWriteTimeUtc(changed, originalTime);
-        using NativeBuildProduct second = await NativeArtifactPublisher.PublishAsync(Context(), Recipe(), Produce);
+        using NativeBuildProduct second = await NativeArtifactPublisher.PublishAsync(Context(), Recipe(), ProduceAsync);
         Assert.NotEqual(first.fingerprint, second.fingerprint);
         Assert.Equal(42, Read(second));
         Assert.Equal(41, Read(first));
         NativeBuildContext hitContext = Context();
-        using NativeBuildProduct hit = await NativeArtifactPublisher.PublishAsync(hitContext, Recipe(), Produce);
+        using NativeBuildProduct hit = await NativeArtifactPublisher.PublishAsync(hitContext, Recipe(), ProduceAsync);
         Assert.Equal(second.fingerprint, hit.fingerprint);
         Assert.Equal(2, compilations);
         Assert.Equal(0, hitContext.statistics.nativeProcesses);

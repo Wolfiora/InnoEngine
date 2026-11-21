@@ -12,7 +12,7 @@ namespace Inno.Adapter.Presentation.ImGui;
 /// </summary>
 public static class Sdl3PlatformApplicationImGuiExtensions
 {
-    private static readonly ConditionalWeakTable<Sdl3PlatformApplication, ImGuiState> s_states = new();
+    private static readonly ConditionalWeakTable<Sdl3PlatformApplication, ImGuiState> STATES = new();
 
     /// <summary>
     /// Creates one ImGui context and transfers the supplied renderer ownership only after successful creation.
@@ -69,7 +69,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
             throw new ArgumentException("The window must belong to the supplied SDL application.", nameof(window));
         }
 
-        ImGuiState state = s_states.GetValue(application, CreateState);
+        ImGuiState state = STATES.GetValue(application, CreateState);
         if (state.isRetiring)
         {
             throw new InvalidOperationException("The application presentation state is retiring and cannot create another context.");
@@ -79,16 +79,16 @@ public static class Sdl3PlatformApplicationImGuiExtensions
             throw new InvalidOperationException("This window already owns an ImGui context.");
         }
 
-        uint windowId = window.windowId;
+        uint windowID = window.windowId;
         var context = new PlatformImGuiContext(
             application,
             window,
             contextFlags,
             interaction,
             renderer,
-            retired => state.Release(windowId, retired)
+            retired => state.Release(windowID, retired)
         );
-        state.contexts[windowId] = context;
+        state.contexts[windowID] = context;
         return context;
     }
 
@@ -114,7 +114,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         ArgumentNullException.ThrowIfNull(application);
         ArgumentNullException.ThrowIfNull(window);
 
-        if (!s_states.TryGetValue(application, out ImGuiState? state))
+        if (!STATES.TryGetValue(application, out ImGuiState? state))
         {
             return;
         }
@@ -178,7 +178,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
             {
                 context.Dispose();
             }
-            s_states.Remove(application);
+            STATES.Remove(application);
             m_registration?.Dispose();
             m_registration = null;
         }
@@ -189,14 +189,14 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         internal void Register() => m_registration = m_application.RegisterExtension(this);
 
         internal void Release(
-            uint windowId,
+            uint windowID,
             PlatformImGuiContext context
         ) {
-            if (!contexts.TryGetValue(windowId, out PlatformImGuiContext? registered) || !ReferenceEquals(registered, context))
+            if (!contexts.TryGetValue(windowID, out PlatformImGuiContext? registered) || !ReferenceEquals(registered, context))
             {
                 throw new InvalidOperationException("The retired ImGui context no longer owns its application registration.");
             }
-            contexts.Remove(windowId);
+            contexts.Remove(windowID);
         }
     }
 }

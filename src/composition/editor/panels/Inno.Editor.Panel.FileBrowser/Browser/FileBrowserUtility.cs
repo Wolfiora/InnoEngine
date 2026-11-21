@@ -17,7 +17,7 @@ namespace Inno.Editor.Panel.FileBrowser;
 
 internal static class FileBrowserUtility
 {
-    internal static AssetBrowserStyle CurrentBrowserStyle => new(EditorUI.current.widgets.style);
+    internal static AssetBrowserStyle currentBrowserStyle => new(EditorUI.current.widgets.style);
 
     internal static void PushBrowserStyle()
     {
@@ -33,11 +33,11 @@ internal static class FileBrowserUtility
         Ui.PushStyleColor((ImGuiCol.Header), EditorPalette.contentAccent);
         Ui.PushStyleColor((ImGuiCol.HeaderHovered), EditorPalette.contentAccent);
         Ui.PushStyleColor((ImGuiCol.HeaderActive), EditorPalette.contentAccent);
-        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), CurrentBrowserStyle.windowPadding);
+        Ui.PushStyleVar((ImGuiStyleVar.WindowPadding), currentBrowserStyle.windowPadding);
         Ui.PushStyleVar((ImGuiStyleVar.ChildBorderSize), EditorUI.current.widgets.style.borderSize);
-        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), CurrentBrowserStyle.cellPadding);
-        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), CurrentBrowserStyle.itemSpacing);
-        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), CurrentBrowserStyle.frameRounding);
+        Ui.PushStyleVar((ImGuiStyleVar.CellPadding), currentBrowserStyle.cellPadding);
+        Ui.PushStyleVar((ImGuiStyleVar.ItemSpacing), currentBrowserStyle.itemSpacing);
+        Ui.PushStyleVar((ImGuiStyleVar.FrameRounding), currentBrowserStyle.frameRounding);
     }
 
     internal static void PopBrowserStyle()

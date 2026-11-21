@@ -281,7 +281,7 @@ public sealed class ShaderGraphProgramCompiler
 
     private void ConnectRasterStages(
         GraphDocument graph,
-        string implementationId,
+        string implementationID,
         IReadOnlyDictionary<GraphNodeId, ShaderSourceModuleAnalysis> sources,
         SerializationRegistry serialization,
         SerializationContext context
@@ -289,8 +289,8 @@ public sealed class ShaderGraphProgramCompiler
         GraphNodeRecord[] outputs = graph.nodes
             .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
             .ToArray();
-        Dictionary<string, GraphNodeRecord> outputById = outputs.ToDictionary(static node => node.id.value, StringComparer.Ordinal);
-        Dictionary<string, ShaderStage> stageById = outputs.ToDictionary(
+        Dictionary<string, GraphNodeRecord> outputByID = outputs.ToDictionary(static node => node.id.value, StringComparer.Ordinal);
+        Dictionary<string, ShaderStage> stageByID = outputs.ToDictionary(
             static node => node.id.value,
             node => ShaderGraphDocument.Read(
                 node,
@@ -351,7 +351,7 @@ public sealed class ShaderGraphProgramCompiler
                                             context
                                         ).CreateBinding()
                                         : null;
-            foreach (ShaderNodePort port in m_nodes.DescribePorts(node, serialization, context, source, implementationId, input))
+            foreach (ShaderNodePort port in m_nodes.DescribePorts(node, serialization, context, source, implementationID, input))
             {
                 ports.Add(new(node.id, new(port.id)), port);
             }
@@ -378,13 +378,13 @@ public sealed class ShaderGraphProgramCompiler
         var destinationBridges = new Dictionary<(GraphEndpoint source, string destination), GraphNodeRecord>();
         foreach ((GraphEdgeRecord edge, _, _, string sourceOwner, string destinationOwner) in crossings)
         {
-            if (!stageById.TryGetValue(sourceOwner, out ShaderStage sourceStage))
+            if (!stageByID.TryGetValue(sourceOwner, out ShaderStage sourceStage))
             {
                 throw new InvalidOperationException(
                     $"Connection '{edge.id.value}' refers to unavailable source stage '{sourceOwner}'."
                 );
             }
-            if (!stageById.TryGetValue(destinationOwner, out ShaderStage destinationStage))
+            if (!stageByID.TryGetValue(destinationOwner, out ShaderStage destinationStage))
             {
                 throw new InvalidOperationException(
                     $"Connection '{edge.id.value}' refers to unavailable destination stage '{destinationOwner}'."
@@ -418,15 +418,15 @@ public sealed class ShaderGraphProgramCompiler
                         )
                     )
                 )[..16];
-                string edgeId = "__stage-bridge-" + token + "/write";
-                if (graph.edges.Any(value => value.id.value == edgeId))
+                string edgeID = "__stage-bridge-" + token + "/write";
+                if (graph.edges.Any(value => value.id.value == edgeID))
                 {
                     throw new InvalidOperationException(
-                        $"Generated stage bridge identity '{edgeId}' collides with an authored connection."
+                        $"Generated stage bridge identity '{edgeID}' collides with an authored connection."
                     );
                 }
-                string portId = "bridge_" + token;
-                const string semantic = "texcoord";
+                string portID = "bridge_" + token;
+                const string C_SEMANTIC = "texcoord";
                 HashSet<int> occupied = occupiedLocations[sourceOwner];
                 int location = Enumerable.Range(0, 16).FirstOrDefault(value => !occupied.Contains(value), -1);
                 if (location < 0)
@@ -437,7 +437,7 @@ public sealed class ShaderGraphProgramCompiler
                 }
                 occupied.Add(location);
 
-                GraphNodeRecord sourceOutput = outputById[sourceOwner];
+                GraphNodeRecord sourceOutput = outputByID[sourceOwner];
                 ShaderGraphStageSettings outputSettings = ShaderGraphDocument.Read(
                     sourceOutput,
                     ShaderGraphDocument.settingsKey,
@@ -450,9 +450,9 @@ public sealed class ShaderGraphProgramCompiler
                     .. outputSettings.outputs,
                     new ShaderGraphOutput
                     {
-                        id = portId,
+                        id = portID,
                         kind = ShaderIrOutputKind.Varying,
-                        semantic = semantic,
+                        semantic = C_SEMANTIC,
                         location = location
                     }
                 ];
@@ -460,8 +460,8 @@ public sealed class ShaderGraphProgramCompiler
                     ShaderGraphDocument.settingsKey,
                     ShaderGraphDocument.Encode(outputSettings, serialization, context)
                 );
-                graph.AddEdge(new(new(edgeId), edge.output, new(sourceOutput.id, new(portId))));
-                sourceBridge = (portId, location);
+                graph.AddEdge(new(new(edgeID), edge.output, new(sourceOutput.id, new(portID))));
+                sourceBridge = (portID, location);
                 sourceBridges.Add(edge.output, sourceBridge);
             }
 

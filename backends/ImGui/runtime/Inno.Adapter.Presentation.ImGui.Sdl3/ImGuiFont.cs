@@ -11,8 +11,8 @@ namespace Inno.Adapter.Presentation.ImGui;
 /// </summary>
 public static unsafe class ImGuiFont
 {
-    private static readonly object s_sync = new();
-    private static readonly Dictionary<nuint, Dictionary<ImGuiFontStyle, nint>> s_fontsByContext = [];
+    private static readonly object SYNC = new();
+    private static readonly Dictionary<nuint, Dictionary<ImGuiFontStyle, nint>> FONTS_BY_CONTEXT = [];
 
     /// <summary>
     /// Gets whether an exact font style is available in the current ImGui context.
@@ -32,9 +32,9 @@ public static unsafe class ImGuiFont
             return false;
         }
 
-        lock (s_sync)
+        lock (SYNC)
         {
-            return s_fontsByContext.TryGetValue(GetContextKey(context), out Dictionary<ImGuiFontStyle, nint>? fonts)
+            return FONTS_BY_CONTEXT.TryGetValue(GetContextKey(context), out Dictionary<ImGuiFontStyle, nint>? fonts)
                    && fonts.ContainsKey(style);
         }
     }
@@ -59,9 +59,9 @@ public static unsafe class ImGuiFont
 
         nuint contextKey = GetContextKey(context);
         nint font;
-        lock (s_sync)
+        lock (SYNC)
         {
-            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts)
+            if (!FONTS_BY_CONTEXT.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts)
                 || !TryResolve(fonts, style, out font)
             ) {
                 return default;
@@ -92,9 +92,9 @@ public static unsafe class ImGuiFont
             }
         }
 
-        lock (s_sync)
+        lock (SYNC)
         {
-            s_fontsByContext[GetContextKey(context)] = registered;
+            FONTS_BY_CONTEXT[GetContextKey(context)] = registered;
         }
     }
 
@@ -113,13 +113,13 @@ public static unsafe class ImGuiFont
             throw new ArgumentException("A loaded font is required.", nameof(font));
         }
 
-        lock (s_sync)
+        lock (SYNC)
         {
             nuint contextKey = GetContextKey(context);
-            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts))
+            if (!FONTS_BY_CONTEXT.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts))
             {
                 fonts = [];
-                s_fontsByContext.Add(contextKey, fonts);
+                FONTS_BY_CONTEXT.Add(contextKey, fonts);
             }
             fonts[style] = font;
         }
@@ -131,16 +131,16 @@ public static unsafe class ImGuiFont
         {
             return;
         }
-        lock (s_sync)
+        lock (SYNC)
         {
-            s_fontsByContext.Remove(GetContextKey(context));
+            FONTS_BY_CONTEXT.Remove(GetContextKey(context));
         }
     }
 
     internal static void ValidateStyle(ImGuiFontStyle style)
     {
-        const ImGuiFontStyle supported = ImGuiFontStyle.Bold | ImGuiFontStyle.Italic;
-        if ((style & ~supported) != 0)
+        const ImGuiFontStyle C_SUPPORTED = ImGuiFontStyle.Bold | ImGuiFontStyle.Italic;
+        if ((style & ~C_SUPPORTED) != 0)
         {
             throw new ArgumentOutOfRangeException(nameof(style), style, "The font style contains unsupported flags.");
         }

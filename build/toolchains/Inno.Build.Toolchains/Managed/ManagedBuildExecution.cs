@@ -21,7 +21,7 @@ public sealed class ManagedBuildExecution : IDisposable
     private readonly BuildCachePublisher m_cache;
     private readonly string m_workspace;
     private readonly string m_currentKey;
-    private readonly string? m_targetId;
+    private readonly string? m_targetID;
     private int m_disposed;
 
     private ManagedBuildExecution(
@@ -32,7 +32,7 @@ public sealed class ManagedBuildExecution : IDisposable
         BuildCachePublisher cache,
         string workspace,
         string currentKey,
-        string? targetId
+        string? targetID
     ) {
         m_ownership = ownership;
         this.engineRoot = engineRoot;
@@ -41,7 +41,7 @@ public sealed class ManagedBuildExecution : IDisposable
         m_cache = cache;
         m_workspace = workspace;
         m_currentKey = currentKey;
-        m_targetId = targetId;
+        m_targetID = targetID;
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public sealed class ManagedBuildExecution : IDisposable
             try
             {
                 using FileLease activity = m_cache.AcquireUseAsync().AsTask().GetAwaiter().GetResult();
-                m_cache.Record(m_workspace, m_workspace + ".lock", [], m_currentKey, m_targetId);
+                m_cache.Record(m_workspace, m_workspace + ".lock", [], m_currentKey, m_targetID);
             }
             finally
             {
@@ -208,7 +208,7 @@ public sealed class ManagedBuildExecution : IDisposable
                 cache,
                 workspace,
                 project + "/" + context.configuration,
-                properties.TryGetValue("InnoNativeTarget", out string? targetId) ? targetId : context.toolchain?.targetId
+                properties.TryGetValue("InnoNativeTarget", out string? targetID) ? targetID : context.toolchain?.targetId
             );
         }
         catch

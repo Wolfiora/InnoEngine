@@ -53,7 +53,7 @@ public sealed class EditorPlayModeController :
     private EditorPlayModeState m_state;
     private float m_playTime;
     private string? m_lastFailure;
-    private LogSessionId m_activeSessionId;
+    private LogSessionId m_activeSessionID;
     private bool m_disposed;
 
     /// <summary>
@@ -128,7 +128,7 @@ public sealed class EditorPlayModeController :
     /// <summary>
     /// Gets the isolated runtime log session associated with the current request.
     /// </summary>
-    public LogSessionId activeSessionId => m_activeSessionId;
+    public LogSessionId activeSessionId => m_activeSessionID;
 
     /// <inheritdoc/>
     bool IEditorReloadGuard.canRequestReload => !m_disposed && m_state == EditorPlayModeState.Editing;
@@ -183,7 +183,7 @@ public sealed class EditorPlayModeController :
         m_entryFailed = false;
         m_retirement = null;
         m_lastFailure = null;
-        m_activeSessionId = LogSessionId.none;
+        m_activeSessionID = LogSessionId.none;
         m_compilationTicket = m_scripting.RequestCompilation();
         SetState(EditorPlayModeState.Compiling);
         return true;
@@ -404,7 +404,7 @@ public sealed class EditorPlayModeController :
             {
                 m_sceneLease = m_scenes.BeginPlayMode(m_runtimeSession);
             }
-            m_activeSessionId = m_runtimeSession.sessionId;
+            m_activeSessionID = m_runtimeSession.sessionId;
             m_playTime = 0f;
             SetState(EditorPlayModeState.Playing);
         }
@@ -531,7 +531,7 @@ public sealed class EditorPlayModeController :
     private void CompleteEditingTransition()
     {
         m_compilationTicket = null;
-        m_activeSessionId = LogSessionId.none;
+        m_activeSessionID = LogSessionId.none;
         m_playTime = 0f;
         SetState(EditorPlayModeState.Editing);
     }

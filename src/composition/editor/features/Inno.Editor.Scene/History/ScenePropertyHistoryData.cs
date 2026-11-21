@@ -13,7 +13,7 @@ internal sealed record ScenePropertyValueDelta(
 );
 
 internal sealed record ScenePropertyHistoryData(
-    Guid targetId,
+    Guid targetID,
     string propertyName,
     ScenePropertyValueDelta[] deltas,
     long timestamp
@@ -22,7 +22,7 @@ internal sealed record ScenePropertyHistoryData(
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-        writer.Write(targetId.ToByteArray());
+        writer.Write(targetID.ToByteArray());
         writer.Write(propertyName);
         writer.Write(deltas.Length);
         for (int index = 0; index < deltas.Length; index++)
@@ -38,7 +38,7 @@ internal sealed record ScenePropertyHistoryData(
     }
 
     internal static ScenePropertyHistoryData Create(
-        Guid targetId,
+        Guid targetID,
         string propertyName,
         IReadOnlyList<ScenePropertyValueDelta> deltas
     ) {
@@ -48,14 +48,14 @@ internal sealed record ScenePropertyHistoryData(
         {
             throw new ArgumentException("A scene property history change requires at least one delta.", nameof(deltas));
         }
-        return new ScenePropertyHistoryData(targetId, propertyName, [.. deltas], Stopwatch.GetTimestamp());
+        return new ScenePropertyHistoryData(targetID, propertyName, [.. deltas], Stopwatch.GetTimestamp());
     }
 
     internal static ScenePropertyHistoryData Decode(ReadOnlySpan<byte> bytes)
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        var targetId = new Guid(reader.ReadBytes(16));
+        var targetID = new Guid(reader.ReadBytes(16));
         string propertyName = reader.ReadString();
         int count = reader.ReadInt32();
         if (count <= 0)
@@ -82,7 +82,7 @@ internal sealed record ScenePropertyHistoryData(
         {
             throw new InvalidDataException("Scene property history payload contains trailing data.");
         }
-        return new ScenePropertyHistoryData(targetId, propertyName, deltas, timestamp);
+        return new ScenePropertyHistoryData(targetID, propertyName, deltas, timestamp);
     }
 
     private static void WriteBytes(

@@ -30,13 +30,13 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
         ) {
             context.cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(context.stagedRoot, path).Replace('\\', '/');
-            if (!context.TryGetSourceIdentity(relative, out Guid oldSourceId, out Guid newSourceId))
+            if (!context.TryGetSourceIdentity(relative, out Guid oldSourceID, out Guid newSourceID))
             {
                 throw new InvalidDataException($"Sample C# source '{relative}' has no asset identity metadata.");
             }
             context.MapType(
-                ScriptTypeIdentity.CreateCanonical(oldSourceId),
-                ScriptTypeIdentity.CreateCanonical(newSourceId)
+                ScriptTypeIdentity.CreateCanonical(oldSourceID),
+                ScriptTypeIdentity.CreateCanonical(newSourceID)
             );
 
             byte[] bytes = File.ReadAllBytes(path);
@@ -48,7 +48,7 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
             ).GetRoot(context.cancellationToken);
             AttributeSyntax[] attributes = root.DescendantNodes()
                 .OfType<AttributeSyntax>()
-                .Where(static attribute => IsStableTypeId(attribute.Name.ToString()))
+                .Where(static attribute => IsStableTypeID(attribute.Name.ToString()))
                 .ToArray();
             if (attributes.Length == 0)
             {
@@ -63,18 +63,18 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
                 if (attribute.ArgumentList?.Arguments is not { Count: 1 } arguments
                     || arguments[0].Expression is not LiteralExpressionSyntax literal
                     || !literal.IsKind(SyntaxKind.StringLiteralExpression)
-                    || !Guid.TryParse(literal.Token.ValueText, out Guid oldId)
+                    || !Guid.TryParse(literal.Token.ValueText, out Guid oldID)
                 ) {
                     throw new InvalidDataException(
                         $"Sample C# source '{relative}' has a StableTypeId that cannot be cloned safely."
                     );
                 }
-                Guid newId = context.identityMap.TryGetValue(oldId, out Guid mapped)
+                Guid newID = context.identityMap.TryGetValue(oldID, out Guid mapped)
                              ? mapped
                              : Guid.NewGuid();
-                context.MapType(oldId, newId);
+                context.MapType(oldID, newID);
                 LiteralExpressionSyntax replacement = SyntaxFactory
-                    .LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newId.ToString("D")))
+                    .LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(newID.ToString("D")))
                     .WithTriviaFrom(literal);
                 return attribute.WithArgumentList(
                     attribute.ArgumentList.WithArguments(
@@ -86,5 +86,5 @@ public sealed class CSharpSampleSourceRewriter : IAssetSampleSourceRewriter
         }
     }
 
-    private static bool IsStableTypeId(string name) => name.Split('.').Last() is "StableTypeId" or "StableTypeIdAttribute";
+    private static bool IsStableTypeID(string name) => name.Split('.').Last() is "StableTypeId" or "StableTypeIdAttribute";
 }

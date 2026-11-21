@@ -10,7 +10,7 @@ namespace Inno.Scene.Tests;
 /// <summary>
 /// Verifies runtime layer identifiers, masks, stack configuration, and Scene lookup behavior.
 /// </summary>
-[Collection(SceneTestsCollection.NAME)]
+[Collection(SceneTestsCollection.C_NAME)]
 public sealed class GameLayerTests : IDisposable
 {
     private readonly IDisposable m_sceneScope;

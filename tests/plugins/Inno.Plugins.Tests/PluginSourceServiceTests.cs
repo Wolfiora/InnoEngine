@@ -176,10 +176,10 @@ public sealed class PluginSourceServiceTests : IDisposable
     [Fact]
     public void RemovingAnActiveCodePackageKeepsTheLastGoodSnapshotUntilAtomicRemovalCommits()
     {
-        const string c_fileName = "active-code.iplugin";
-        string sourcePath = Path.Combine(m_plugins, c_fileName);
+        const string C_FILE_NAME = "active-code.iplugin";
+        string sourcePath = Path.Combine(m_plugins, C_FILE_NAME);
         WritePlugin(
-            c_fileName,
+            C_FILE_NAME,
             Manifest("tests.removed-package"),
             new Dictionary<string, byte[]>
             {
@@ -221,10 +221,10 @@ public sealed class PluginSourceServiceTests : IDisposable
     [Fact]
     public void StructurallyInvalidActivePluginStagesAnUnavailableGeneration()
     {
-        const string c_fileName = "invalidated-code.iplugin";
-        string sourcePath = Path.Combine(m_plugins, c_fileName);
+        const string C_FILE_NAME = "invalidated-code.iplugin";
+        string sourcePath = Path.Combine(m_plugins, C_FILE_NAME);
         WritePlugin(
-            c_fileName,
+            C_FILE_NAME,
             Manifest("tests.invalidated-package"),
             new Dictionary<string, byte[]>
             {
@@ -258,9 +258,9 @@ public sealed class PluginSourceServiceTests : IDisposable
     [Fact]
     public void InvalidAssetMetadataUpdateStagesAnUnavailableGenerationWithoutThrowing()
     {
-        const string c_fileName = "invalid-asset-metadata.iplugin";
+        const string C_FILE_NAME = "invalid-asset-metadata.iplugin";
         WritePlugin(
-            c_fileName,
+            C_FILE_NAME,
             Manifest("tests.invalid-asset-metadata"),
             new Dictionary<string, byte[]>
             {
@@ -274,7 +274,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.Single(m_environment!.activePlugins);
 
         WritePlugin(
-            c_fileName,
+            C_FILE_NAME,
             Manifest("tests.invalid-asset-metadata"),
             new Dictionary<string, byte[]>
             {
@@ -773,8 +773,8 @@ public sealed class PluginSourceServiceTests : IDisposable
     [Fact]
     public void SourceMountCandidate_TransfersLiveIdentitiesOnlyDuringActivation()
     {
-        const string c_fileName = "identity-handoff.iplugin";
-        WritePlugin(c_fileName, Manifest("tests.identity-handoff"), new Dictionary<string, byte[]>
+        const string C_FILE_NAME = "identity-handoff.iplugin";
+        WritePlugin(C_FILE_NAME, Manifest("tests.identity-handoff"), new Dictionary<string, byte[]>
         {
             ["Assets/Plugin.cs"] = "public sealed class IdentityHandoffV1 { }"u8.ToArray(),
             ["Assets/Plugin.cs.imeta"] = CreateTextSourceMeta()
@@ -785,7 +785,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.True(m_assets!.TryGetFileSystemEntry(AssetPath.Project(string.Empty), out AssetFileEntry activeEntry));
         Assert.NotNull(activeEntry.identity.runtimeIdentity);
 
-        WritePlugin(c_fileName, Manifest("tests.identity-handoff"), new Dictionary<string, byte[]>
+        WritePlugin(C_FILE_NAME, Manifest("tests.identity-handoff"), new Dictionary<string, byte[]>
         {
             ["Assets/Plugin.cs"] = "public sealed class IdentityHandoffV2 { }"u8.ToArray(),
             ["Assets/Plugin.cs.imeta"] = CreateTextSourceMeta()

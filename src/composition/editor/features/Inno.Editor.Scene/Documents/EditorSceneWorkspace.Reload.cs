@@ -38,7 +38,7 @@ internal sealed partial class EditorSceneWorkspace
         }
         ApplyPendingSourceChanges();
         var documents = new List<ReloadDocumentState>(m_documents.Count);
-        foreach ((Guid sceneId, SceneDocument document) in m_documents)
+        foreach ((Guid sceneID, SceneDocument document) in m_documents)
         {
             GameScene scene = document.scene;
             if (scene.isDestroyed)
@@ -51,7 +51,7 @@ internal sealed partial class EditorSceneWorkspace
                             || HasSerializedChanges(scene, document);
             documents.Add(
                 new ReloadDocumentState(
-                    sceneId,
+                    sceneID,
                     document.savedHash.ToArray(),
                     document.isDirty,
                     document.nextRefreshTimestamp,
@@ -85,7 +85,7 @@ internal sealed partial class EditorSceneWorkspace
             }
             foreach (ReloadDocumentState state in documents)
             {
-                if (!workspace.m_documents.TryGetValue(state.sceneId, out SceneDocument? document))
+                if (!workspace.m_documents.TryGetValue(state.sceneID, out SceneDocument? document))
                 {
                     continue;
                 }
@@ -123,7 +123,7 @@ internal sealed partial class EditorSceneWorkspace
             workspace.SynchronizeReplacedScenes();
             foreach (ReloadDocumentState state in documents)
             {
-                if (!workspace.m_documents.TryGetValue(state.sceneId, out SceneDocument? document))
+                if (!workspace.m_documents.TryGetValue(state.sceneID, out SceneDocument? document))
                 {
                     continue;
                 }
@@ -135,7 +135,7 @@ internal sealed partial class EditorSceneWorkspace
     }
 
     private readonly record struct ReloadDocumentState(
-        Guid sceneId,
+        Guid sceneID,
         byte[] savedHash,
         bool isDirty,
         long nextRefreshTimestamp,

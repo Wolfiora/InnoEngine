@@ -57,7 +57,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
             try
             {
                 EditorUI.current.widgets.SetupPropertyColumns();
-                DrawReadOnly("Application ID", window.gameApplicationId);
+                DrawReadOnly("Application ID", window.gameApplicationID);
                 DrawText("Product Name", "game_name", window.gameProductName, value => window.gameProductName = value);
                 DrawText(
                     "Persistent Data Folder",

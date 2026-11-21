@@ -35,7 +35,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
             {
                 BgfxNativeCalls.EncoderBlit(
                     m_encoder,
-                    m_viewId,
+                    m_viewID,
                     destinationTexture,
                     checked((byte)mipLevel),
                     0,
@@ -89,7 +89,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
         BgfxNativeCalls.EncoderBlit(
             m_encoder,
-            m_viewId,
+            m_viewID,
             m_device.ResolveTexture(destination),
             checked((byte)destinationRegion.mip),
             checked((ushort)destinationRegion.x),

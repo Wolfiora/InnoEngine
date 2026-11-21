@@ -89,10 +89,10 @@ public sealed class AdapterCatalogTests
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([rendering, rendering]));
         Assert.Throws<ArgumentException>(() => new RenderingBackendCatalog([null!]));
         Assert.Throws<ArgumentException>(() => new TestRenderingProvider(default));
-        var ui = new TestUiProvider(new UiBackendId("test.ui"));
+        var ui = new TestUIProvider(new UiBackendId("test.ui"));
         Assert.Throws<ArgumentException>(() => new UiBackendCatalog([ui, ui]));
         Assert.Throws<ArgumentException>(() => new UiBackendCatalog([null!]));
-        Assert.Throws<ArgumentException>(() => new TestUiProvider(default));
+        Assert.Throws<ArgumentException>(() => new TestUIProvider(default));
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public sealed class AdapterCatalogTests
         private readonly TestAudioProvider m_audio = new(new AudioBackendId("test.audio"));
         private readonly TestTextProvider m_text = new(new TextBackendId("test.text"));
         private readonly TestRenderingProvider m_rendering = new(new RenderingBackendId("test.rendering"));
-        private readonly TestUiProvider m_ui = new(new UiBackendId("test.ui"));
+        private readonly TestUIProvider m_ui = new(new UiBackendId("test.ui"));
 
         public TestCatalog()
         {
@@ -273,9 +273,9 @@ public sealed class AdapterCatalogTests
             => throw new InvalidOperationException("Registration validation must not create composition programs.");
     }
 
-    private sealed class TestUiProvider : UiBackendProvider
+    private sealed class TestUIProvider : UiBackendProvider
     {
-        public TestUiProvider(UiBackendId id)
+        public TestUIProvider(UiBackendId id)
             : base(id) {}
 
         public int creationCount { get; private set; }

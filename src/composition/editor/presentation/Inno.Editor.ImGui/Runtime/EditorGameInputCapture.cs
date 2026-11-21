@@ -15,8 +15,8 @@ public sealed class EditorGameInputCapture
     private readonly HashSet<MouseButton> m_pressedButtons = [];
     private Vector2 m_origin;
     private Vector2 m_size;
-    private uint m_targetWindowId;
-    private uint m_deliveredWindowId;
+    private uint m_targetWindowID;
+    private uint m_deliveredWindowID;
     private bool m_reported;
     private bool m_focused;
     private bool m_hovered;
@@ -70,10 +70,10 @@ public sealed class EditorGameInputCapture
         bool hovered
     ) {
         m_reported = true;
-        m_targetWindowId = m_resolveWindow(viewportId) ?? 0;
+        m_targetWindowID = m_resolveWindow(viewportId) ?? 0;
         m_origin = origin;
         m_size = size;
-        m_focused = focused && m_targetWindowId != 0;
+        m_focused = focused && m_targetWindowID != 0;
         m_hovered = hovered && m_focused;
         m_pointerInside = m_hovered;
         return m_focused;
@@ -89,22 +89,22 @@ public sealed class EditorGameInputCapture
     {
         if (!m_reported)
         {
-            m_targetWindowId = 0;
+            m_targetWindowID = 0;
             m_focused = false;
             m_hovered = false;
             m_pointerInside = false;
         }
 
-        if (m_deliveredWindowId == 0
-            || m_focused && m_deliveredWindowId == m_targetWindowId
+        if (m_deliveredWindowID == 0
+            || m_focused && m_deliveredWindowID == m_targetWindowID
         ) {
             return 0;
         }
 
-        uint formerWindowId = m_deliveredWindowId;
-        m_deliveredWindowId = 0;
+        uint formerWindowID = m_deliveredWindowID;
+        m_deliveredWindowID = 0;
         m_pressedButtons.Clear();
-        return formerWindowId;
+        return formerWindowID;
     }
 
     /// <summary>
@@ -127,60 +127,60 @@ public sealed class EditorGameInputCapture
     public Event? Route(Event evnt)
     {
         ArgumentNullException.ThrowIfNull(evnt);
-        if (evnt is MouseMovedEvent observed && observed.windowId == m_targetWindowId)
+        if (evnt is MouseMovedEvent observed && observed.windowId == m_targetWindowID)
         {
             UpdatePointerBounds(observed);
         }
         if (evnt.isGlobalHandled)
         {
-            if (m_deliveredWindowId != 0 && IsReleaseFromWindow(evnt, m_deliveredWindowId)
-                || IsWindowExit(evnt, m_targetWindowId)
+            if (m_deliveredWindowID != 0 && IsReleaseFromWindow(evnt, m_deliveredWindowID)
+                || IsWindowExit(evnt, m_targetWindowID)
             ) {
-                uint formerWindowId = m_deliveredWindowId;
+                uint formerWindowID = m_deliveredWindowID;
                 ReleaseCapture();
-                return formerWindowId != 0 ? new WindowFocusChangedEvent(formerWindowId, false) : null;
+                return formerWindowID != 0 ? new WindowFocusChangedEvent(formerWindowID, false) : null;
             }
             return null;
         }
         if (evnt is WindowFocusChangedEvent { isFocused: false } lostFocus
-            && (lostFocus.windowId == m_deliveredWindowId || lostFocus.windowId == m_targetWindowId)
+            && (lostFocus.windowId == m_deliveredWindowID || lostFocus.windowId == m_targetWindowID)
         ) {
-            bool needsReset = m_deliveredWindowId != 0;
+            bool needsReset = m_deliveredWindowID != 0;
             ReleaseCapture();
             return needsReset ? lostFocus : null;
         }
         if (evnt is WindowCloseEvent closed
-            && (closed.windowId == m_deliveredWindowId || closed.windowId == m_targetWindowId)
+            && (closed.windowId == m_deliveredWindowID || closed.windowId == m_targetWindowID)
         ) {
-            bool needsReset = m_deliveredWindowId != 0;
+            bool needsReset = m_deliveredWindowID != 0;
             ReleaseCapture();
             return needsReset ? new WindowFocusChangedEvent(closed.windowId, false) : null;
         }
-        if (!m_focused || m_targetWindowId == 0)
+        if (!m_focused || m_targetWindowID == 0)
         {
             return null;
         }
 
         Event? routed = evnt switch
         {
-            KeyEvent key when key.windowId == m_targetWindowId => key,
-            TextInputEvent text when text.windowId == m_targetWindowId => text,
-            MouseMovedEvent moved when moved.windowId == m_targetWindowId => RouteMove(moved),
-            MouseButtonPressedEvent pressed when pressed.windowId == m_targetWindowId => RoutePress(pressed),
-            MouseButtonReleasedEvent released when released.windowId == m_targetWindowId => RouteRelease(released),
-            MouseScrolledEvent scrolled when scrolled.windowId == m_targetWindowId && m_pointerInside => scrolled,
+            KeyEvent key when key.windowId == m_targetWindowID => key,
+            TextInputEvent text when text.windowId == m_targetWindowID => text,
+            MouseMovedEvent moved when moved.windowId == m_targetWindowID => RouteMove(moved),
+            MouseButtonPressedEvent pressed when pressed.windowId == m_targetWindowID => RoutePress(pressed),
+            MouseButtonReleasedEvent released when released.windowId == m_targetWindowID => RouteRelease(released),
+            MouseScrolledEvent scrolled when scrolled.windowId == m_targetWindowID && m_pointerInside => scrolled,
             _ => null
         };
         if (routed is not null)
         {
-            m_deliveredWindowId = m_targetWindowId;
+            m_deliveredWindowID = m_targetWindowID;
         }
         return routed;
     }
 
     private void ReleaseCapture()
     {
-        m_deliveredWindowId = 0;
+        m_deliveredWindowID = 0;
         m_pressedButtons.Clear();
         m_focused = false;
         m_hovered = false;
@@ -216,21 +216,21 @@ public sealed class EditorGameInputCapture
 
     private static bool IsReleaseFromWindow(
         Event evnt,
-        uint windowId
+        uint windowID
     ) => evnt switch
     {
-        KeyReleasedEvent key => key.windowId == windowId,
-        MouseButtonReleasedEvent button => button.windowId == windowId,
-        _ => IsWindowExit(evnt, windowId)
+        KeyReleasedEvent key => key.windowId == windowID,
+        MouseButtonReleasedEvent button => button.windowId == windowID,
+        _ => IsWindowExit(evnt, windowID)
     };
 
     private static bool IsWindowExit(
         Event evnt,
-        uint windowId
+        uint windowID
     ) => evnt switch
     {
-        WindowFocusChangedEvent { isFocused: false } focus => focus.windowId == windowId,
-        WindowCloseEvent close => close.windowId == windowId,
+        WindowFocusChangedEvent { isFocused: false } focus => focus.windowId == windowID,
+        WindowCloseEvent close => close.windowId == windowID,
         _ => false
     };
 }

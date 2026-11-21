@@ -24,9 +24,9 @@ public sealed class AssetCoreTests
     [Fact]
     public void AssetDependency_UsesPersistentIdentityForEquality()
     {
-        Guid persistentId = Guid.NewGuid();
-        var first = new AssetDependency(persistentId, new TypeRef(Guid.NewGuid()), "A/first.txt");
-        var second = new AssetDependency(persistentId, new TypeRef(Guid.NewGuid()), "B/second.txt");
+        Guid persistentID = Guid.NewGuid();
+        var first = new AssetDependency(persistentID, new TypeRef(Guid.NewGuid()), "A/first.txt");
+        var second = new AssetDependency(persistentID, new TypeRef(Guid.NewGuid()), "B/second.txt");
 
         Assert.Equal(first, second);
         Assert.Equal(first.GetHashCode(), second.GetHashCode());

@@ -12,7 +12,7 @@ namespace Inno.Build.Toolchains.Sdl3;
 /// </summary>
 public static class Sdl3Toolchain
 {
-    private static readonly string[] S_ARGUMENTS = ["-DSDL_SHARED=ON", "-DSDL_STATIC=OFF", "-DSDL_TESTS=OFF", "-DSDL_EXAMPLES=OFF"];
+    private static readonly string[] ARGUMENTS = ["-DSDL_SHARED=ON", "-DSDL_STATIC=OFF", "-DSDL_TESTS=OFF", "-DSDL_EXAMPLES=OFF"];
 
     /// <summary>
     /// Gets the component's sole source, binding and intermediate owner.
@@ -69,7 +69,7 @@ public static class Sdl3Toolchain
                     componentDescriptor,
                     source,
                     "SDL3-shared",
-                    S_ARGUMENTS,
+                    ARGUMENTS,
                     token
                 ).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*SDL3" + selection.sharedLibraryExtension);
@@ -130,7 +130,7 @@ public static class Sdl3Toolchain
             "sdl3",
             selection.targetId,
             [Path.Combine(context.engineRoot, "extern", "SDL")],
-            S_ARGUMENTS,
+            ARGUMENTS,
             [Path.Combine(implementation, "Sdl3Toolchain.cs")]
         );
     }

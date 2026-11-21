@@ -11,7 +11,7 @@ using Inno.Extensibility.Types;
 
 namespace Inno.Extensibility.Types.Tests;
 
-[Collection(TypeCacheCollection.NAME)]
+[Collection(TypeCacheCollection.C_NAME)]
 public sealed class TypeCacheTests : IDisposable
 {
     private readonly string m_cacheDirectory = Path.Combine(
@@ -167,14 +167,14 @@ public sealed class TypeCacheTests : IDisposable
         using var second = new TransactionalTestRegistry(m_types);
         first.Refresh();
         second.Refresh();
-        int firstPrevious = first.snapshotId;
-        int secondPrevious = second.snapshotId;
+        int firstPrevious = first.snapshotID;
+        int secondPrevious = second.snapshotID;
         second.failActivation = true;
 
         Assert.Throws<InvalidOperationException>(m_types.Rebuild);
 
-        Assert.Equal(firstPrevious, first.snapshotId);
-        Assert.Equal(secondPrevious, second.snapshotId);
+        Assert.Equal(firstPrevious, first.snapshotID);
+        Assert.Equal(secondPrevious, second.snapshotID);
         Assert.Equal(1, first.rollbackCount);
         Assert.Equal(1, second.rollbackCount);
         Assert.Contains(firstPrevious + 1, first.disposedSnapshotIds);
@@ -186,12 +186,12 @@ public sealed class TypeCacheTests : IDisposable
     {
         using var registry = new TransactionalTestRegistry(m_types);
         registry.Refresh();
-        int previous = registry.snapshotId;
+        int previous = registry.snapshotID;
         registry.failSnapshotCleanup = true;
 
         Assert.Throws<AggregateException>(m_types.Rebuild);
 
-        Assert.Equal(previous + 1, registry.snapshotId);
+        Assert.Equal(previous + 1, registry.snapshotID);
         Assert.Equal(0, registry.rollbackCount);
         Assert.Equal(1, registry.cleanupFailureCount);
         Assert.Contains(previous, registry.disposedSnapshotIds);
@@ -207,13 +207,13 @@ public sealed class TypeCacheTests : IDisposable
         using var survivor = new TransactionalTestRegistry(m_types);
         retiring.Refresh();
         survivor.Refresh();
-        int retiringPrevious = retiring.snapshotId;
-        int survivorPrevious = survivor.snapshotId;
+        int retiringPrevious = retiring.snapshotID;
+        int survivorPrevious = survivor.snapshotID;
         retiring.disposeOnActivation = survivor;
 
         m_types.Rebuild();
 
-        Assert.Equal(retiringPrevious + 1, retiring.snapshotId);
+        Assert.Equal(retiringPrevious + 1, retiring.snapshotID);
         Assert.Contains(survivorPrevious, survivor.disposedSnapshotIds);
         Assert.Contains(survivorPrevious + 1, survivor.disposedSnapshotIds);
     }
@@ -229,15 +229,15 @@ public sealed class TypeCacheTests : IDisposable
 
     private sealed class CandidateOwnershipRegistry(TypeCatalog types) : TypeRegistry<object[]>(types)
     {
-        private int m_nextId;
+        private int m_nextID;
         internal bool failBuild;
         internal bool failCleanup;
         internal List<int> released { get; } = [];
 
         protected override object[] Build(TypeCacheSnapshot types)
         {
-            Resource first = OwnCandidateExtension(new Resource(this, ++m_nextId));
-            Resource second = OwnCandidateExtension(new Resource(this, ++m_nextId));
+            Resource first = OwnCandidateExtension(new Resource(this, ++m_nextID));
+            Resource second = OwnCandidateExtension(new Resource(this, ++m_nextID));
             if (failBuild)
             {
                 throw new InvalidOperationException("Expected candidate validation failure.");
@@ -265,23 +265,23 @@ public sealed class TypeCacheTests : IDisposable
 
     private sealed class TransactionalTestRegistry(TypeCatalog types) : TypeRegistry<TransactionalTestRegistry.Snapshot>(types)
     {
-        private int m_nextSnapshotId;
+        private int m_nextSnapshotID;
 
         internal bool failActivation;
         internal bool failSnapshotCleanup;
         internal IDisposable? disposeOnActivation;
         internal int rollbackCount;
         internal int cleanupFailureCount;
-        internal int snapshotId;
+        internal int snapshotID;
         internal List<int> disposedSnapshotIds { get; } = [];
 
-        protected override Snapshot Build(TypeCacheSnapshot types) => new(++m_nextSnapshotId);
+        protected override Snapshot Build(TypeCacheSnapshot types) => new(++m_nextSnapshotID);
 
         protected override void OnActivating(
             Snapshot? previous,
             Snapshot candidate
         ) {
-            snapshotId = candidate.id;
+            snapshotID = candidate.id;
             disposeOnActivation?.Dispose();
             disposeOnActivation = null;
             if (failActivation)
@@ -294,7 +294,7 @@ public sealed class TypeCacheTests : IDisposable
             Snapshot? previous,
             Snapshot candidate
         ) {
-            snapshotId = previous?.id ?? 0;
+            snapshotID = previous?.id ?? 0;
             rollbackCount++;
         }
 

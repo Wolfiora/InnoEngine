@@ -35,7 +35,7 @@ public sealed partial class SceneEdits
         );
         m_interactions.history.RecordApplied(
             name,
-            new EditorHistoryChange(SceneHistoryKinds.Document, EditorHistoryPayload.FromBytes(data.Encode()))
+            new EditorHistoryChange(SceneHistoryKinds.C_DOCUMENT, EditorHistoryPayload.FromBytes(data.Encode()))
         );
     }
 
@@ -61,7 +61,7 @@ public sealed partial class SceneEdits
             selectedBefore,
             selectedAfter
         );
-        Record(name, SceneHistoryKinds.Subtree, data.Encode());
+        Record(name, SceneHistoryKinds.C_SUBTREE, data.Encode());
     }
 
     private void Record(
@@ -77,9 +77,9 @@ public sealed partial class SceneEdits
     private void RecordElement(
         string name,
         SceneElementHistoryData data
-    ) => Record(name, SceneHistoryKinds.Element, data.Encode());
+    ) => Record(name, SceneHistoryKinds.C_ELEMENT, data.Encode());
 
-    private Guid? GetActiveSceneId()
+    private Guid? GetActiveSceneID()
         => m_workspace.activeScene is { isDestroyed: false } scene
            ? scene.identity.persistentId
            : null;
@@ -95,7 +95,7 @@ public sealed partial class SceneEdits
         _ => throw new InvalidOperationException("The object has no loaded scene.")
     };
 
-    private Guid? GetSelectionId()
+    private Guid? GetSelectionID()
         => m_interactions.selection.selectedTarget is EngineObject { isDestroyed: false } target
            ? target.identity.persistentId
            : null;

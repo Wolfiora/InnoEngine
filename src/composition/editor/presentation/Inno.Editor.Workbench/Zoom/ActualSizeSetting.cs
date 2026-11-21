@@ -11,7 +11,7 @@ namespace Inno.Editor.Workbench;
 [EditorSettingPath("Editor/Appearance/Accessibility/Actual Size")]
 internal sealed class ActualSizeSetting : EditorSetting
 {
-    private static readonly (float Value, string Label)[] C_CHOICES =
+    private static readonly (float Value, string Label)[] CHOICES =
     [
         (0.75f, "75%"),
         (0.9f, "90%"),
@@ -53,9 +53,9 @@ internal sealed class ActualSizeSetting : EditorSetting
         }
         try
         {
-            for (int i = 0; i < C_CHOICES.Length; i++)
+            for (int i = 0; i < CHOICES.Length; i++)
             {
-                (float candidate, string label) = C_CHOICES[i];
+                (float candidate, string label) = CHOICES[i];
                 if (Ui.Selectable(label, MathF.Abs(candidate - value) < 0.0001f))
                 {
                     setting.SetAsSingle("value", candidate);
@@ -77,11 +77,11 @@ internal sealed class ActualSizeSetting : EditorSetting
 
     private static string GetLabel(float value)
     {
-        for (int i = 0; i < C_CHOICES.Length; i++)
+        for (int i = 0; i < CHOICES.Length; i++)
         {
-            if (MathF.Abs(C_CHOICES[i].Value - value) < 0.0001f)
+            if (MathF.Abs(CHOICES[i].Value - value) < 0.0001f)
             {
-                return C_CHOICES[i].Label;
+                return CHOICES[i].Label;
             }
         }
 

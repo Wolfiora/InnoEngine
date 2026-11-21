@@ -66,9 +66,9 @@ public sealed class TaskPublisherBootstrapTests
                     + "</ProjectReference></ItemDefinitionGroup><ItemGroup>" + references + "</ItemGroup></Project>"
                 );
             }
-            (string output, string binlog) first = await Build(root, configuration);
+            (string output, string binlog) first = await BuildAsync(root, configuration);
             string firstOwner = Validate(first.output, first.binlog);
-            (string output, string binlog) second = await Build(root, configuration);
+            (string output, string binlog) second = await BuildAsync(root, configuration);
             string secondOwner = Validate(second.output, second.binlog);
             Assert.NotEqual(firstOwner, secondOwner);
         }
@@ -244,7 +244,7 @@ public sealed class TaskPublisherBootstrapTests
         return owner;
     }
 
-    private static async Task<(string output, string binlog)> Build(
+    private static async Task<(string output, string binlog)> BuildAsync(
         string root,
         string configuration
     ) {

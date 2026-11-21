@@ -8,7 +8,7 @@ namespace Inno.Tooling.Architecture;
 
 internal static class RepositorySourceInventory
 {
-    private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> EXCLUDED_DIRECTORIES = new(StringComparer.OrdinalIgnoreCase)
     {
         "bin", "obj", "Generated", "extern", "artifacts", ".git"
     };
@@ -70,7 +70,7 @@ internal static class RepositorySourceInventory
         {
             foreach (string child in Directory.EnumerateDirectories(pending.Pop()))
             {
-                if (ExcludedDirectories.Contains(Path.GetFileName(child)))
+                if (EXCLUDED_DIRECTORIES.Contains(Path.GetFileName(child)))
                 {
                     continue;
                 }

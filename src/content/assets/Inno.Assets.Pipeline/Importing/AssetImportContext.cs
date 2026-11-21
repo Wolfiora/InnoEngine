@@ -36,7 +36,7 @@ public sealed class AssetImportContext
     /// <param name="sourceHash">
     /// The deterministic source hash.
     /// </param>
-    /// <param name="persistentId">
+    /// <param name="persistentID">
     /// The persistent identity assigned to the source asset.
     /// </param>
     /// <param name="types">
@@ -62,7 +62,7 @@ public sealed class AssetImportContext
         string absolutePath,
         ReadOnlyMemory<byte> sourceBytes,
         string sourceHash,
-        Guid persistentId,
+        Guid persistentID,
         TypeCatalog types,
         SerializationRegistry serialization,
         IAssetReferenceResolver references,
@@ -74,7 +74,7 @@ public sealed class AssetImportContext
         this.absolutePath = absolutePath ?? throw new ArgumentNullException(nameof(absolutePath));
         this.sourceBytes = sourceBytes;
         this.sourceHash = sourceHash ?? throw new ArgumentNullException(nameof(sourceHash));
-        this.persistentId = persistentId;
+        this.persistentId = persistentID;
         this.types = types ?? throw new ArgumentNullException(nameof(types));
         this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         this.references = references ?? throw new ArgumentNullException(nameof(references));

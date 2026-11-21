@@ -8,9 +8,9 @@ namespace Inno.Native.MiniAudio;
 public static unsafe partial class MiniAudio
 {
 #if DEBUG
-    internal const string LibName = "miniaudio-debug";
+    internal const string C_LIB_NAME = "miniaudio-debug";
 #else
-    internal const string LibName = "miniaudio-release";
+    internal const string C_LIB_NAME = "miniaudio-release";
 #endif
 
     static MiniAudio()
@@ -20,7 +20,7 @@ public static unsafe partial class MiniAudio
 #elif INNO_STATIC_NATIVE
         FromStatic();
 #else
-        Load(NativeDllLoader.FindNativeLibrary(LibName));
+        Load(NativeDllLoader.FindNativeLibrary(C_LIB_NAME));
 #endif
     }
 }

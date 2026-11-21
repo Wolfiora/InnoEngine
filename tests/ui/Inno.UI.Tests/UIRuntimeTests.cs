@@ -11,7 +11,7 @@ using Inno.UI.Runtime;
 
 namespace Inno.UI.Tests;
 
-public sealed class UiRuntimeTests
+public sealed class UIRuntimeTests
 {
     [Fact]
     public void FrameScopeCapturesInputAndBindsTheScriptFacade()

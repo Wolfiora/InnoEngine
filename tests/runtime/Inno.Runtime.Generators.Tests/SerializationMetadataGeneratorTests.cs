@@ -82,7 +82,7 @@ public sealed class SerializationMetadataGeneratorTests
     [Fact]
     public void GeneratedAccessorsRoundTripPrivateMembersHooksStructsAndClosedCollections()
     {
-        const string source = """
+        const string C_SOURCE = """
             using System;
             using System.Collections.Generic;
             using System.Collections.ObjectModel;
@@ -167,7 +167,7 @@ public sealed class SerializationMetadataGeneratorTests
             ?? throw new InvalidOperationException("The test host supplies no platform references.")).Split(Path.PathSeparator);
         CSharpCompilation input = CSharpCompilation.Create(
             "Inno.SerializationMetadataFixture",
-            [CSharpSyntaxTree.ParseText(source)],
+            [CSharpSyntaxTree.ParseText(C_SOURCE)],
             references.Select(static path => MetadataReference.CreateFromFile(path)),
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
         );

@@ -297,21 +297,21 @@ public sealed unsafe class ViewportMetricsTests
         for (int frame = 0; frame < 24; frame++)
         {
             var requested = new Vector2(500 + frame * 7, 200 + frame * 3);
-            uint viewportId = 0;
+            uint viewportID = 0;
             context.RenderFrame(() =>
             {
                 NativeImGui.SetNextWindowPos(requested);
                 NativeImGui.SetNextWindowSize(new Vector2(200, 120));
                 using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Detached movement", allowsNull: false);
                 NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, (int)(UiWindowFlags.NoFocusOnAppearing));
-                viewportId = NativeImGui.Raw.GetWindowViewport()->ID;
+                viewportID = NativeImGui.Raw.GetWindowViewport()->ID;
                 NativeImGui.TextUnformatted("Moving viewport");
                 NativeImGui.End();
             });
-            Assert.True(context.TryGetWindowId(viewportId, out uint windowId));
+            Assert.True(context.TryGetWindowID(viewportID, out uint windowID));
             int x = 0;
             int y = 0;
-            Assert.True(SDL.Raw.GetWindowPosition(SDL.Raw.GetWindowFromId(windowId), &x, &y) != 0);
+            Assert.True(SDL.Raw.GetWindowPosition(SDL.Raw.GetWindowFromId(windowID), &x, &y) != 0);
             Assert.Equal(requested, new Vector2(x, y));
             // A real OS move acknowledgement owns reconciliation in the following frame.
             // Complete that frame before submitting the next application position request.
@@ -393,8 +393,8 @@ public sealed unsafe class ViewportMetricsTests
         {
             Assert.Equal(2, application.GetWindows().Count);
             PlatformImGuiViewportTarget target = Assert.IsType<PlatformImGuiViewportTarget>(renderer.target);
-            Assert.True(context.TryGetWindowId(viewport.ID, out uint id));
-            Assert.Equal(target.windowId, id);
+            Assert.True(context.TryGetWindowID(viewport.ID, out uint id));
+            Assert.Equal(target.windowID, id);
             Assert.Equal(target.nativeHandles.windowHandle, (nint)viewport.PlatformHandleRaw);
             Assert.Equal(window.nativeHandles.handleKind, target.nativeHandles.handleKind);
         }
@@ -432,7 +432,7 @@ public sealed unsafe class ViewportMetricsTests
 
         public void PresentViewport(PlatformImGuiViewportTarget target) {}
 
-        public Task RetireViewport(PlatformImGuiViewportTarget target)
+        public Task RetireViewportAsync(PlatformImGuiViewportTarget target)
         {
             this.target = null;
             return Task.CompletedTask;

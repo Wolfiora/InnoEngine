@@ -450,13 +450,13 @@ public abstract class Shell : IDisposable
         m_allowBlockingPacing = allowBlockingPacing;
     }
 
-    private void Redraw(uint windowId)
+    private void Redraw(uint windowID)
     {
         if (state != ShellState.Running || !hasCompletedFrame || m_frameActive || m_exitRequested || primaryWindow.isClosed)
         {
             return;
         }
-        if (windowId == primaryWindow.windowId)
+        if (windowID == primaryWindow.windowId)
         {
             UpdatePrimaryPresentationSize();
         }

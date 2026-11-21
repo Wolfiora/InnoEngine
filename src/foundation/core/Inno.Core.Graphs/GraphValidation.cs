@@ -295,7 +295,7 @@ public static class GraphValidator
         GraphEndpoint endpoint,
         GraphPortDefinition port,
         Dictionary<GraphEndpoint, int> connectionCounts,
-        GraphEdgeId edgeId,
+        GraphEdgeId edgeID,
         List<GraphDiagnostic> diagnostics
     ) {
         connectionCounts.TryGetValue(endpoint, out int currentCount);
@@ -309,7 +309,7 @@ public static class GraphValidator
                     $"Port '{endpoint.portId}' accepts only one connection.",
                     DiagnosticSeverity.Error,
                     endpoint.nodeId,
-                    edgeId
+                    edgeID
                 )
             );
         }
@@ -326,20 +326,20 @@ public static class GraphValidator
             connectedInputs.Add(edge.input);
         }
 
-        foreach ((GraphNodeId nodeId, IReadOnlyDictionary<GraphPortId, GraphPortDefinition> ports) in portsByNode)
+        foreach ((GraphNodeId nodeID, IReadOnlyDictionary<GraphPortId, GraphPortDefinition> ports) in portsByNode)
         {
             foreach (GraphPortDefinition port in ports.Values)
             {
                 if (port.direction == GraphPortDirection.Input
                     && port.required
-                    && !connectedInputs.Contains(new GraphEndpoint(nodeId, port.id))
+                    && !connectedInputs.Contains(new GraphEndpoint(nodeID, port.id))
                 ) {
                     diagnostics.Add(
                         new GraphDiagnostic(
                             "GRAPH_REQUIRED_INPUT",
                             $"Required input '{port.displayName}' is not connected.",
                             DiagnosticSeverity.Error,
-                            nodeId
+                            nodeID
                         )
                     );
                 }

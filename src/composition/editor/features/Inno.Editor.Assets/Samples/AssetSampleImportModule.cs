@@ -192,7 +192,7 @@ public sealed class AssetSampleImportModule : EditorModule
                 m_assets.interactions.history.RecordApplied(
                     "Import Sample",
                     new EditorHistoryChange(
-                        AssetHistoryKinds.SourceOperation,
+                        AssetHistoryKinds.C_SOURCE_OPERATION,
                         m_historyPayload ?? throw new InvalidOperationException("Validated sample history is missing.")
                     )
                 );
@@ -297,13 +297,13 @@ public sealed class AssetSampleImportModule : EditorModule
     private void SetProgress(
         float progress,
         string status,
-        long? operationId = null
+        long? operationID = null
     ) {
         lock (m_progressLock)
         {
             if (!m_acceptProgress
                 || m_progress.cancellationRequested
-                || (operationId is long expected && expected != m_progress.operationId)
+                || (operationID is long expected && expected != m_progress.operationId)
             ) {
                 return;
             }

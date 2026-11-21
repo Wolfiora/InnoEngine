@@ -43,14 +43,14 @@ public readonly record struct ImGuiTextureHandle
 public sealed class PlatformImGuiViewportTarget
 {
     internal PlatformImGuiViewportTarget(
-        uint viewportId,
-        uint windowId,
+        uint viewportID,
+        uint windowID,
         PlatformNativeHandles nativeHandles,
         int width,
         int height
     ) {
-        this.viewportId = viewportId;
-        this.windowId = windowId;
+        this.viewportID = viewportID;
+        this.windowID = windowID;
         this.nativeHandles = nativeHandles;
         this.width = width;
         this.height = height;
@@ -59,12 +59,12 @@ public sealed class PlatformImGuiViewportTarget
     /// <summary>
     /// Gets the stable Dear ImGui viewport identity.
     /// </summary>
-    public uint viewportId { get; }
+    public uint viewportID { get; }
 
     /// <summary>
     /// Gets the platform window identity.
     /// </summary>
-    public uint windowId { get; }
+    public uint windowID { get; }
 
     /// <summary>
     /// Gets backend-neutral native-window integration handles.
@@ -169,7 +169,7 @@ public interface IPlatformImGuiRenderer : IDisposable
     /// <remarks>
     /// Native callbacks may request retirement but must not wait or advance rendering.
     /// </remarks>
-    Task RetireViewport(PlatformImGuiViewportTarget target);
+    Task RetireViewportAsync(PlatformImGuiViewportTarget target);
 
     /// <summary>
     /// Drains requested retirements at a closed-frame owner-thread point outside native UI callbacks.

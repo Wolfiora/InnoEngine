@@ -88,12 +88,12 @@ internal sealed class NativeBindingInputPaths
         {
             return declaration[..(declaration.IndexOf('=') + 1)] + "selected-generation";
         }
-        const string nativePrefix = "bindingNativeRoot=";
-        if (declaration.StartsWith(nativePrefix, StringComparison.Ordinal))
+        const string C_NATIVE_PREFIX = "bindingNativeRoot=";
+        if (declaration.StartsWith(C_NATIVE_PREFIX, StringComparison.Ordinal))
         {
-            string path = declaration[nativePrefix.Length..];
+            string path = declaration[C_NATIVE_PREFIX.Length..];
             return path.Length > 0 && ResolveRelative(path) is { } native
-                   ? nativePrefix + "workspace-input:" + native
+                   ? C_NATIVE_PREFIX + "workspace-input:" + native
                    : declaration;
         }
         int start = declaration.IndexOf("-D", StringComparison.Ordinal);

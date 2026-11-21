@@ -291,7 +291,7 @@ public sealed partial class SceneEdits
             () => m_interactions.history.RecordApplied(
                 historyName,
                 new EditorHistoryChange(
-                    SceneHistoryKinds.Property,
+                    SceneHistoryKinds.C_PROPERTY,
                     EditorHistoryPayload.FromBytes(data.Encode()),
                     mergeKey
                 )
@@ -345,7 +345,7 @@ public sealed partial class SceneEdits
                     before,
                     after
                 );
-                Record(historyName, SceneHistoryKinds.Scalar, data.Encode(), mergeKey);
+                Record(historyName, SceneHistoryKinds.C_SCALAR, data.Encode(), mergeKey);
             },
             () => setter(before)
         );

@@ -184,13 +184,13 @@ public sealed class EditorViewportNavigationProfile
         {
             throw new ArgumentException("A valid navigation profile ID is required.", nameof(id));
         }
-        const EditorViewportNavigationCapabilities validCapabilities
+        const EditorViewportNavigationCapabilities C_VALID_CAPABILITIES
             = EditorViewportNavigationCapabilities.Pan
               | EditorViewportNavigationCapabilities.Zoom
               | EditorViewportNavigationCapabilities.Orbit
               | EditorViewportNavigationCapabilities.Fly
               | EditorViewportNavigationCapabilities.FrameSelection;
-        if ((capabilities & ~validCapabilities) != 0)
+        if ((capabilities & ~C_VALID_CAPABILITIES) != 0)
         {
             throw new ArgumentOutOfRangeException(nameof(capabilities));
         }

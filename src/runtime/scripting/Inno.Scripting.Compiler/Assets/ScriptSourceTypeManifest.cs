@@ -13,7 +13,7 @@ internal sealed class ScriptSourceTypeManifest : ISerializable
     /// <summary>
     /// Creates a validated script source type manifest instance.
     /// </summary>
-    /// <param name="sourcePersistentId">
+    /// <param name="sourcePersistentID">
     /// The source persistent id consumed by script source type manifest; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     /// <param name="sourcePath">
@@ -23,11 +23,11 @@ internal sealed class ScriptSourceTypeManifest : ISerializable
     /// The declarations consumed by script source type manifest; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
     public ScriptSourceTypeManifest(
-        Guid sourcePersistentId,
+        Guid sourcePersistentID,
         string sourcePath,
         ScriptSourceTypeDeclaration[] declarations
     ) {
-        this.sourcePersistentId = sourcePersistentId;
+        this.sourcePersistentId = sourcePersistentID;
         this.sourcePath = sourcePath;
         this.declarations = declarations;
     }

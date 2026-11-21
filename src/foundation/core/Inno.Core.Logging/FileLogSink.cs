@@ -16,8 +16,8 @@ public sealed class FileLogSink : ILogSink, IDisposable
     public const string C_LOG_FILE_PREFIX = "log_";
 
     private const string C_LOG_FILE_EXTENSION = ".log";
-    private static readonly UTF8Encoding S_ENCODING = new(encoderShouldEmitUTF8Identifier: false);
-    private static readonly int S_NEWLINE_BYTES = S_ENCODING.GetByteCount(Environment.NewLine);
+    private static readonly UTF8Encoding ENCODING = new(encoderShouldEmitUTF8Identifier: false);
+    private static readonly int NEWLINE_BYTES = ENCODING.GetByteCount(Environment.NewLine);
 
     private readonly string m_logDirectory;
     private readonly long m_maxFileSize;
@@ -104,7 +104,7 @@ public sealed class FileLogSink : ILogSink, IDisposable
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             string line = FormatEntry(entry);
-            int bytes = S_ENCODING.GetByteCount(line) + S_NEWLINE_BYTES;
+            int bytes = ENCODING.GetByteCount(line) + NEWLINE_BYTES;
             if (m_currentSize > 0 && bytes > m_maxFileSize - m_currentSize)
             {
                 RotateFile();
@@ -192,7 +192,7 @@ public sealed class FileLogSink : ILogSink, IDisposable
         );
         try
         {
-            m_writer = new StreamWriter(stream, S_ENCODING);
+            m_writer = new StreamWriter(stream, ENCODING);
             m_currentSize = 0;
         }
         catch

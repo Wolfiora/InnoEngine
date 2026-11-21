@@ -87,7 +87,7 @@ internal sealed class AudioClipCache : IDisposable
         Exception? preparationFailure = null;
         try
         {
-            return PreparePreload(request, loadMode, cancellationToken);
+            return PreparePreloadAsync(request, loadMode, cancellationToken);
         }
         catch (Exception exception)
         {
@@ -119,7 +119,7 @@ internal sealed class AudioClipCache : IDisposable
     {
         ArgumentNullException.ThrowIfNull(clip);
         ClipCacheEntry? retiring = m_clips.Values.FirstOrDefault(entry => (
-            entry.key.persistentId == clip.identity.persistentId && entry.isRetiring
+            entry.key.persistentID == clip.identity.persistentId && entry.isRetiring
         ));
         if (retiring is not null)
         {
@@ -128,7 +128,7 @@ internal sealed class AudioClipCache : IDisposable
         }
         ClipCacheEntry? entry = m_clips
             .Where(pair => (
-                pair.Key.persistentId == clip.identity.persistentId
+                pair.Key.persistentID == clip.identity.persistentId
                 && pair.Value.preloadReferences > pair.Value.pendingPreloadReferences
             ))
             .Select(static pair => pair.Value)
@@ -154,7 +154,7 @@ internal sealed class AudioClipCache : IDisposable
                                             ? AudioClipLoadMode.Stream
                                             : AudioClipLoadMode.Decode)
                                          : requestedMode;
-        var key = new ClipCacheKey(clip.persistentId, clip.contentVersion, artifact.key, resolvedMode);
+        var key = new ClipCacheKey(clip.persistentID, clip.contentVersion, artifact.key, resolvedMode);
         if (m_clips.TryGetValue(key, out ClipCacheEntry? cached))
         {
             if (!cached.isRetiring)
@@ -260,7 +260,7 @@ internal sealed class AudioClipCache : IDisposable
         DrainRetiringClips();
     }
 
-    private ValueTask PreparePreload(
+    private ValueTask PreparePreloadAsync(
         AudioClipRequest request,
         AudioClipLoadMode loadMode,
         CancellationToken cancellationToken
@@ -336,7 +336,7 @@ internal sealed class AudioClipCache : IDisposable
     }
 
     internal readonly record struct ClipCacheKey(
-        Guid persistentId,
+        Guid persistentID,
         long contentVersion,
         AssetArtifactKey artifactKey,
         AudioClipLoadMode loadMode

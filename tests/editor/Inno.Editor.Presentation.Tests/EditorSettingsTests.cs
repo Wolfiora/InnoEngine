@@ -180,12 +180,12 @@ public sealed class EditorSettingsTests : IDisposable
     [Fact]
     public void ClearOnPlaySettingDefaultsToTrueAndImmediatelyControlsTheConsole()
     {
-        const string path = "Editor/Diagnostics/Console/Clear on Play";
-        Assert.True(m_settings.Get(path).GetAsBoolean("value"));
+        const string C_PATH = "Editor/Diagnostics/Console/Clear on Play";
+        Assert.True(m_settings.Get(C_PATH).GetAsBoolean("value"));
         Assert.True(m_console.clearOnPlay);
         var disabled = new EditorSettingObject();
         disabled.SetAsBoolean("value", false);
-        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { [path] = disabled }));
+        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { [C_PATH] = disabled }));
         Assert.False(m_console.clearOnPlay);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.True(m_console.clearOnPlay);

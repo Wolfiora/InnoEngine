@@ -29,11 +29,11 @@ public sealed class NativeBindingGenerationTests : IDisposable
     {
         CreateConfig("int sample(int value);");
         File.WriteAllText(Path.Combine(m_root, ".gitignore"), "artifacts/\nobj/\nconsumer/\n");
-        await Git(m_root, "init");
-        await Git(m_root, "add", ".");
-        await Git(m_root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Binding source");
+        await GitAsync(m_root, "init");
+        await GitAsync(m_root, "add", ".");
+        await GitAsync(m_root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Binding source");
         string consumer = Path.Combine(m_root, "consumer");
-        await Git(m_root, "clone", "--no-hardlinks", m_root, consumer);
+        await GitAsync(m_root, "clone", "--no-hardlinks", m_root, consumer);
         var component = new NativeComponentDescriptor(
             "fixture",
             "Fixture.csproj",
@@ -138,7 +138,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.Equal(managed, File.ReadAllText(warm[0].bindingGeneration!.bindingsPath));
         Assert.Equal(1, productions);
 
-        static Task<string> Git(
+        static Task<string> GitAsync(
             string root,
             params string[] arguments
         ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);

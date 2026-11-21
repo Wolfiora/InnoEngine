@@ -5,7 +5,7 @@ using Inno.Editor.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
 
-public sealed class EditorUiSessionTests
+public sealed class EditorUISessionTests
 {
     [Fact]
     public void StyleAndControlsBelongToOneSession()

@@ -86,14 +86,14 @@ public sealed class ReflectionSerializationMetadataSource : ISerializationMetada
                 );
             }
         }
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-        FieldInfo? field = type.GetField(revision.memberName, flags);
+        const BindingFlags C_FLAGS = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        FieldInfo? field = type.GetField(revision.memberName, C_FLAGS);
         if (field is not null && !field.IsStatic && (field.FieldType == typeof(ulong) || field.FieldType == typeof(ulong?)))
         {
             Func<object, object?> readField = field.GetValue;
             return metadata.WithCaptureRevision(value => ReadCaptureRevision(value, readField));
         }
-        PropertyInfo? property = type.GetProperty(revision.memberName, flags);
+        PropertyInfo? property = type.GetProperty(revision.memberName, C_FLAGS);
         if (property is not null && property.GetIndexParameters().Length == 0
             && property.GetGetMethod(true) is { IsStatic: false }
             && (property.PropertyType == typeof(ulong) || property.PropertyType == typeof(ulong?))

@@ -18,7 +18,7 @@ public static class RenderShaderArtifactCodec
     private const int C_MAX_PASSES = 1024;
     private const int C_MAX_STAGE_BYTES = 128 * 1024 * 1024;
     private const int C_MAX_STRING_BYTES = 1024 * 1024;
-    private static readonly byte[] S_MAGIC = "INNOSHDR"u8.ToArray();
+    private static readonly byte[] MAGIC = "INNOSHDR"u8.ToArray();
 
     /// <summary>
     /// Encodes a validated shader artifact into its deterministic runtime deployment representation.
@@ -34,7 +34,7 @@ public static class RenderShaderArtifactCodec
         ArgumentNullException.ThrowIfNull(artifact);
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
-        writer.Write(S_MAGIC);
+        writer.Write(MAGIC);
         WriteString(writer, artifact.shaderName);
         WriteString(writer, artifact.targetKey);
         WriteString(writer, artifact.variant.value);
@@ -88,7 +88,7 @@ public static class RenderShaderArtifactCodec
         {
             using var stream = new MemoryStream(bytes.ToArray(), writable: false);
             using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
-            if (!reader.ReadBytes(S_MAGIC.Length).AsSpan().SequenceEqual(S_MAGIC))
+            if (!reader.ReadBytes(MAGIC.Length).AsSpan().SequenceEqual(MAGIC))
             {
                 throw new InvalidDataException("Shader artifact magic is invalid.");
             }
@@ -196,8 +196,8 @@ public static class RenderShaderArtifactCodec
             }
             ShaderPropertyType type = ReadEnum<ShaderPropertyType>(reader);
             ShaderStage stages = (ShaderStage)reader.ReadInt32();
-            const ShaderStage validStages = ShaderStage.Vertex | ShaderStage.Fragment | ShaderStage.Compute;
-            if (stages == ShaderStage.None || (stages & ~validStages) != 0)
+            const ShaderStage C_VALID_STAGES = ShaderStage.Vertex | ShaderStage.Fragment | ShaderStage.Compute;
+            if (stages == ShaderStage.None || (stages & ~C_VALID_STAGES) != 0)
             {
                 throw new InvalidDataException($"Shader binding '{id}' has an invalid stage mask.");
             }

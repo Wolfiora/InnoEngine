@@ -113,12 +113,12 @@ public sealed class AssetFileSystem : IDisposable
         {
             throw new ArgumentException("At least one asset source mount is required.", nameof(mounts));
         }
-        Dictionary<AssetSourceId, AssetSourceMount> byId = mounts.ToDictionary(static mount => mount.id);
-        if (byId.Count != mounts.Count)
+        Dictionary<AssetSourceId, AssetSourceMount> byID = mounts.ToDictionary(static mount => mount.id);
+        if (byID.Count != mounts.Count)
         {
             throw new ArgumentException("Asset source mount IDs must be unique.", nameof(mounts));
         }
-        if (!byId.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
+        if (!byID.TryGetValue(AssetSourceId.project, out AssetSourceMount? project)
             || project.isReadOnly && requireWritableProject
         ) {
             throw new ArgumentException(
@@ -135,7 +135,7 @@ public sealed class AssetFileSystem : IDisposable
 
         this.assetRoot = project.rootPath;
         m_identities = identities;
-        m_mounts = byId;
+        m_mounts = byID;
         m_persistentIdentityResolver = persistentIdentityResolver;
         m_identitiesActive = activateIdentities;
         foreach (AssetSourceMount mount in mounts)
@@ -223,12 +223,12 @@ public sealed class AssetFileSystem : IDisposable
             {
                 foreach (SourceEntry source in candidate)
                 {
-                    if (!existing.TryGetValue(source.persistentId, out AssetFileEntry? entry))
+                    if (!existing.TryGetValue(source.persistentID, out AssetFileEntry? entry))
                     {
                         entry = new AssetFileEntry();
                         if (m_identitiesActive)
                         {
-                            if (!m_identities.Register(entry, source.persistentId))
+                            if (!m_identities.Register(entry, source.persistentID))
                             {
                                 throw new InvalidOperationException($"Asset source entry '{source.path}' could not acquire its identity.");
                             }
@@ -236,7 +236,7 @@ public sealed class AssetFileSystem : IDisposable
                         }
                         else
                         {
-                            m_identities.InitializePersistentIdentity(entry, source.persistentId);
+                            m_identities.InitializePersistentIdentity(entry, source.persistentID);
                         }
                     }
                     prepared.Add((source, entry));
@@ -254,7 +254,7 @@ public sealed class AssetFileSystem : IDisposable
             foreach ((SourceEntry source, AssetFileEntry entry) in prepared)
             {
                 IndexEntry(entry, source);
-                existing.Remove(source.persistentId);
+                existing.Remove(source.persistentID);
             }
             if (m_identitiesActive)
             {
@@ -555,13 +555,13 @@ public sealed class AssetFileSystem : IDisposable
             bool isReadOnly,
             bool isDirectory
         ) {
-            Guid sourceId = m_persistentIdentityResolver?.Invoke(path) ?? CreateFallbackPersistentId(path.ToString());
-            Guid entryId = CreateEntryPersistentId(sourceId);
-            if (!identities.Add(entryId))
+            Guid sourceID = m_persistentIdentityResolver?.Invoke(path) ?? CreateFallbackPersistentID(path.ToString());
+            Guid entryID = CreateEntryPersistentID(sourceID);
+            if (!identities.Add(entryID))
             {
                 throw new InvalidDataException($"Asset source path '{path}' duplicates a persistent entry identity.");
             }
-            entries.Add(new(path, entryId, isReadOnly, isDirectory));
+            entries.Add(new(path, entryID, isReadOnly, isDirectory));
         }
     }
 
@@ -620,7 +620,7 @@ public sealed class AssetFileSystem : IDisposable
         return path.ToString();
     }
 
-    private static Guid CreateFallbackPersistentId(string path)
+    private static Guid CreateFallbackPersistentID(string path)
     {
         byte[] pathBytes = Encoding.UTF8.GetBytes(path);
         Span<byte> namespaceBytes = stackalloc byte[16];
@@ -631,10 +631,10 @@ public sealed class AssetFileSystem : IDisposable
         return new Guid(hash.GetHashAndReset().AsSpan(0, 16));
     }
 
-    private static Guid CreateEntryPersistentId(Guid sourcePersistentId)
+    private static Guid CreateEntryPersistentID(Guid sourcePersistentID)
     {
         Span<byte> input = stackalloc byte[32];
-        sourcePersistentId.TryWriteBytes(input[..16]);
+        sourcePersistentID.TryWriteBytes(input[..16]);
         new Guid("f42622a8-893d-4d5d-b1c0-30910cf5378e").TryWriteBytes(input[16..]);
         Span<byte> hash = stackalloc byte[32];
         SHA256.HashData(input, hash);
@@ -665,7 +665,7 @@ public sealed class AssetFileSystem : IDisposable
 
     private readonly record struct SourceEntry(
         AssetPath path,
-        Guid persistentId,
+        Guid persistentID,
         bool isReadOnly,
         bool isDirectory
     );

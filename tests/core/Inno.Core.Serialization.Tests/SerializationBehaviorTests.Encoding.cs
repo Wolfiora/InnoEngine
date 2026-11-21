@@ -85,12 +85,12 @@ public sealed partial class SerializationBehaviorTests
         }
         long before = GC.GetAllocatedBytesForCurrentThread();
         byte[] data = [];
-        const int repetitions = 16;
-        for (int index = 0; index < repetitions; index++)
+        const int C_REPETITIONS = 16;
+        for (int index = 0; index < C_REPETITIONS; index++)
         {
             data = m_serialization.Encode(writer => writer.Write("value", source));
         }
-        long allocated = (GC.GetAllocatedBytesForCurrentThread() - before) / repetitions;
+        long allocated = (GC.GetAllocatedBytesForCurrentThread() - before) / C_REPETITIONS;
         // Retain the per-call bound while amortizing one-time runtime/catalog admission during the suite.
         Assert.InRange(allocated, source.Length * 2, source.Length * 2 + 8192);
         source[0] = 0;

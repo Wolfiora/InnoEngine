@@ -21,7 +21,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private static int s_nextGeneration;
 
     private readonly BgfxProcessDeviceLease m_processLease;
-    private readonly int m_apiThreadId;
+    private readonly int m_apiThreadID;
     private readonly int m_deferredDestroyFrames;
     private readonly bool m_hasPrimarySurface;
     private readonly List<BgfxSurfaceRetirement> m_surfaceRetirements = [];
@@ -43,13 +43,13 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
 
     private CompiledRenderGraph? m_activeGraph;
     private bgfx.Encoder* m_activeEncoder;
-    private ulong m_nextPersistentId = 1;
-    private ulong m_nextReadbackId = 1;
+    private ulong m_nextPersistentID = 1;
+    private ulong m_nextReadbackID = 1;
     private uint m_backendFrame;
     private int m_activeGraphViewBase;
     private int m_backbufferWidth;
     private int m_backbufferHeight;
-    private int m_nextViewId;
+    private int m_nextViewID;
     private RenderPresentationSize? m_pendingPresentationSize;
     private bool m_presentationUpdatePending;
     private int m_drawCount;
@@ -87,7 +87,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
                  ?? throw new ArgumentException("A windowed BGFX device requires an explicit surface integration.", nameof(options)))
                     .Resolve(nativeHandles, BgfxSurfaceRole.Primary)
             );
-        m_apiThreadId = Environment.CurrentManagedThreadId;
+        m_apiThreadID = Environment.CurrentManagedThreadId;
         m_deferredDestroyFrames = options.deferredDestroyFrames;
         m_hasPrimarySurface = options.window is not null;
         int pixelWidth = options.backbufferWidth;
@@ -215,7 +215,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     /// </summary>
     public uint backendFrame => m_backendFrame;
 
-    internal int allocatedViewCount => m_nextViewId;
+    internal int allocatedViewCount => m_nextViewID;
 
     internal void RecordDraw(int count = 1) => Interlocked.Add(ref m_drawCount, count);
 
@@ -249,7 +249,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
 
     private void EnsureApiThread()
     {
-        if (Environment.CurrentManagedThreadId != m_apiThreadId)
+        if (Environment.CurrentManagedThreadId != m_apiThreadID)
         {
             throw new InvalidOperationException("BGFX API operations must run on the device API thread.");
         }

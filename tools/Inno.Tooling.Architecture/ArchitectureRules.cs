@@ -9,9 +9,9 @@ namespace Inno.Tooling.Architecture;
 
 internal static partial class ArchitectureRules
 {
-    private static readonly string[] S_SCAN_ROOTS = ["entry", "src", "backends", "platforms", "build", "tests"];
+    private static readonly string[] SCAN_ROOTS = ["entry", "src", "backends", "platforms", "build", "tests"];
 
-    private static readonly string[] S_FORBIDDEN_PLAYER_PROJECT_FRAGMENTS = [
+    private static readonly string[] FORBIDDEN_PLAYER_PROJECT_FRAGMENTS = [
         "Inno.Editor.",
         "Inno.Build",
         "Inno.Scripting.Compiler",
@@ -26,9 +26,9 @@ internal static partial class ArchitectureRules
         "Toolchains"
     ];
 
-    private static readonly string[] S_FORBIDDEN_IMPLEMENTATION_WORDS = ["Legacy", "Compatibility", "Migration", "Former", "Deprecated"];
+    private static readonly string[] FORBIDDEN_IMPLEMENTATION_WORDS = ["Legacy", "Compatibility", "Migration", "Former", "Deprecated"];
 
-    private static readonly string[] S_REMOVED_PROJECT_NAMES = [
+    private static readonly string[] REMOVED_PROJECT_NAMES = [
         "Inno.Core.Framework",
         "Inno.Core.Assemblies",
         "Inno.Core.Reflection",
@@ -48,7 +48,7 @@ internal static partial class ArchitectureRules
         "Inno.Build.Platform.Browser"
     ];
 
-    private static readonly string[] S_CONCRETE_ADAPTER_MARKERS = [
+    private static readonly string[] CONCRETE_ADAPTER_MARKERS = [
         "Inno.Adapter.Platform.Sdl3",
         "Inno.Adapter.Storage.FileSystem",
         "Inno.Adapter.Rendering.Bgfx",
@@ -66,7 +66,7 @@ internal static partial class ArchitectureRules
         ICollection<string> failures
     ) {
         ValidateHostIsolation(repositoryRoot, failures);
-        EditorUiBoundaryValidator.Validate(repositoryRoot, failures);
+        EditorUIBoundaryValidator.Validate(repositoryRoot, failures);
         PlatformOwnershipValidator.Validate(repositoryRoot, failures);
         NativePlatformPolicyValidator.Validate(repositoryRoot, failures);
         string backendRoot = Path.Combine(repositoryRoot, "backends");
@@ -84,7 +84,7 @@ internal static partial class ArchitectureRules
     }
 
     internal static bool IsForbiddenPlayerDependency(string assemblyName)
-        => S_FORBIDDEN_PLAYER_PROJECT_FRAGMENTS.Any(fragment => assemblyName.Contains(fragment, StringComparison.Ordinal))
+        => FORBIDDEN_PLAYER_PROJECT_FRAGMENTS.Any(fragment => assemblyName.Contains(fragment, StringComparison.Ordinal))
            || assemblyName.StartsWith("Inno.Integration.", StringComparison.Ordinal)
               && assemblyName.EndsWith(".Bgfx", StringComparison.Ordinal);
 
@@ -165,7 +165,7 @@ internal static partial class ArchitectureRules
         string repositoryRoot,
         ICollection<string> failures
     ) {
-        foreach (string rootName in S_SCAN_ROOTS)
+        foreach (string rootName in SCAN_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
             if (!Directory.Exists(root))
@@ -199,7 +199,7 @@ internal static partial class ArchitectureRules
         ICollection<string> failures
     ) {
         string fileName = Path.GetFileNameWithoutExtension(relative);
-        foreach (string word in S_FORBIDDEN_IMPLEMENTATION_WORDS)
+        foreach (string word in FORBIDDEN_IMPLEMENTATION_WORDS)
         {
             if (fileName.Contains(word, StringComparison.OrdinalIgnoreCase))
             {
@@ -210,7 +210,7 @@ internal static partial class ArchitectureRules
         foreach (Match match in DeclaredTypePattern().Matches(source))
         {
             string name = match.Groups[2].Value;
-            foreach (string word in S_FORBIDDEN_IMPLEMENTATION_WORDS)
+            foreach (string word in FORBIDDEN_IMPLEMENTATION_WORDS)
             {
                 if (name.Contains(word, StringComparison.OrdinalIgnoreCase))
                 {
@@ -265,7 +265,7 @@ internal static partial class ArchitectureRules
 
         if ((relative.StartsWith("src/composition/player/Inno.Player.Runtime/", StringComparison.Ordinal)
              || relative.StartsWith("src/composition/shell/", StringComparison.Ordinal))
-            && S_CONCRETE_ADAPTER_MARKERS.Any(source.Contains)
+            && CONCRETE_ADAPTER_MARKERS.Any(source.Contains)
         ) {
             failures.Add(
                 $"{relative}: product composition must use Shell and backend-neutral adapter contracts instead of concrete backend types."
@@ -532,7 +532,7 @@ internal static partial class ArchitectureRules
             failures.Add($"{sourcePath}: miniaudio native code is restricted to the MiniAudio adapter and toolchain.");
         }
 
-        if (target.name.Contains("Inno.Native.UI", StringComparison.Ordinal) && !IsAllowedUiNativeConsumer(project.name))
+        if (target.name.Contains("Inno.Native.UI", StringComparison.Ordinal) && !IsAllowedUINativeConsumer(project.name))
         {
             failures.Add($"{sourcePath}: RmlUi native code is restricted to the RmlUi adapter and UI toolchain.");
         }
@@ -602,7 +602,7 @@ internal static partial class ArchitectureRules
                 continue;
             }
             if (!ReferenceEquals(current, player)
-                && S_FORBIDDEN_PLAYER_PROJECT_FRAGMENTS.Any(fragment => current.name.Contains(fragment, StringComparison.OrdinalIgnoreCase))
+                && FORBIDDEN_PLAYER_PROJECT_FRAGMENTS.Any(fragment => current.name.Contains(fragment, StringComparison.OrdinalIgnoreCase))
             ) {
                 failures.Add(
                     $"{Relative(repositoryRoot, player.path)}: Player dependency closure contains forbidden project {current.name}."
@@ -621,7 +621,7 @@ internal static partial class ArchitectureRules
         ICollection<string> failures
     ) {
         string solution = File.ReadAllText(Path.Combine(repositoryRoot, "InnoEngine.sln"));
-        foreach (string removed in S_REMOVED_PROJECT_NAMES)
+        foreach (string removed in REMOVED_PROJECT_NAMES)
         {
             if (solution.Contains("= \"" + removed + "\",", StringComparison.Ordinal))
             {
@@ -757,7 +757,7 @@ internal static partial class ArchitectureRules
            || name.StartsWith("Inno.Build.Toolchains.MiniAudio", StringComparison.Ordinal)
            || name.StartsWith("Inno.Native.MiniAudio", StringComparison.Ordinal);
 
-    private static bool IsAllowedUiNativeConsumer(string name)
+    private static bool IsAllowedUINativeConsumer(string name)
         => name.StartsWith("Inno.Adapter.UI.RmlUi", StringComparison.Ordinal)
            || name.StartsWith("Inno.Build.Toolchains.UI", StringComparison.Ordinal)
            || name.StartsWith("Inno.Native.UI", StringComparison.Ordinal)

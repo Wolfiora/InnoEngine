@@ -623,11 +623,11 @@ public sealed class DocumentationExampleTests : IDisposable
         );
 
     private async Task AssertReceiptAsync(
-        string snapshotId,
+        string snapshotID,
         string reportPath,
-        string pageId
+        string pageID
     ) {
-        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, snapshotId);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, snapshotID);
         DocumentationCatalogReport catalog = await snapshot.ExportCatalogAsync();
         Write("receipt/documentation-catalog.json", JsonSerializer.Serialize(catalog));
         File.Copy(reportPath, Path.Combine(m_root, "receipt/managed-documentation-examples.json"), overwrite: true);
@@ -662,7 +662,7 @@ public sealed class DocumentationExampleTests : IDisposable
             "-File",
             Path.Combine(m_root, "receipt/check.ps1"),
             TestRepository.GetRoot(typeof(DocumentationExampleTests).Assembly),
-            pageId
+            pageID
         }) {
             start.ArgumentList.Add(argument);
         }

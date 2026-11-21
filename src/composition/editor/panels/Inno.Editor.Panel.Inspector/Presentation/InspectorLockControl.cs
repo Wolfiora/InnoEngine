@@ -13,7 +13,7 @@ internal sealed class InspectorLockControl
     private WeakReference<object>? m_collectibleTarget;
     private object? m_lockedTarget;
     private RuntimeIdentity? m_lockedIdentity;
-    private Guid m_lockedPersistentId;
+    private Guid m_lockedPersistentID;
     private bool m_isLocked;
 
     /// <summary>
@@ -78,7 +78,7 @@ internal sealed class InspectorLockControl
             if (identityObject.identity.runtimeIdentity is RuntimeIdentity runtimeIdentity)
             {
                 m_lockedIdentity = runtimeIdentity;
-                m_lockedPersistentId = identityObject.identity.persistentId;
+                m_lockedPersistentID = identityObject.identity.persistentId;
                 return;
             }
         }
@@ -97,7 +97,7 @@ internal sealed class InspectorLockControl
         m_collectibleTarget = null;
         m_lockedTarget = null;
         m_lockedIdentity = null;
-        m_lockedPersistentId = Guid.Empty;
+        m_lockedPersistentID = Guid.Empty;
         m_isLocked = false;
     }
 
@@ -109,7 +109,7 @@ internal sealed class InspectorLockControl
             {
                 return target;
             }
-            return interactions.TryResolveIdentity(identity.domainId, m_lockedPersistentId, out target)
+            return interactions.TryResolveIdentity(identity.domainId, m_lockedPersistentID, out target)
                    ? target
                    : null;
         }

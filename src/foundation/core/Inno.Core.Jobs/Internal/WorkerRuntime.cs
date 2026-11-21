@@ -5,15 +5,15 @@ namespace Inno.Core.Jobs.Internal;
 internal sealed class WorkerRuntime
 {
     internal WorkerRuntime(
-        int workerId,
+        int workerID,
         ThreadStart loopBody
     ) {
-        this.id = workerId;
+        this.id = workerID;
         this.localQueue = new WorkStealingDeque<int>();
         this.thread = new Thread(loopBody)
         {
             IsBackground = true,
-            Name = $"Inno.JobWorker.{workerId}"
+            Name = $"Inno.JobWorker.{workerID}"
         };
     }
 

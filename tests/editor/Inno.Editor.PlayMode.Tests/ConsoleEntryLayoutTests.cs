@@ -25,10 +25,10 @@ public sealed unsafe class ConsoleEntryLayoutTests
             using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated("Console identity test", allowsNull: false);
             _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText0.pointer, null, 0);
 
-            uint logCardId = GetCardId("occurrence/log/1");
-            uint diagnosticCardId = GetCardId("occurrence/diagnostic/1");
+            uint logCardID = GetCardID("occurrence/log/1");
+            uint diagnosticCardID = GetCardID("occurrence/diagnostic/1");
 
-            Assert.NotEqual(logCardId, diagnosticCardId);
+            Assert.NotEqual(logCardID, diagnosticCardID);
             NativeImGui.End();
             NativeImGui.Render();
         }
@@ -54,7 +54,7 @@ public sealed unsafe class ConsoleEntryLayoutTests
         }
     }
 
-    private static uint GetCardId(string identity)
+    private static uint GetCardID(string identity)
     {
         NativeImGui.PushID(identity);
         uint result = NativeImGui.GetID("##ConsoleEntryCard");

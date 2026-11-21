@@ -106,14 +106,14 @@ public sealed partial class RenderRuntime
         graph
             .AddRasterPass(
                 "Primary Presentation Background",
-                S_PRESENTATION_BACKGROUND_PHASE,
+                PRESENTATION_BACKGROUND_PHASE,
                 0,
                 static (
                     _,
                     _
                 ) => {}
             )
-            .ClearPresentationTarget(S_PRESENTATION_BACKGROUND_COLOR)
+            .ClearPresentationTarget(PRESENTATION_BACKGROUND_COLOR)
             .HasSideEffect();
     }
 

@@ -169,7 +169,7 @@ public sealed class AudioRuntimeTests : IDisposable
         runtime.Update(0);
         AudioClipAsset next = CreateClip(48_000);
         events.Enqueue(new AudioVoiceCompletedEvent(new AudioVoiceAllocator().Allocate(), AudioCompletionReason.Stopped));
-        m_artifacts.pendingReleaseId = next.identity.persistentId;
+        m_artifacts.pendingReleaseID = next.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         Assert.Throws<InvalidOperationException>(() => runtime.Play(next));
         Assert.Empty(m_artifacts.retainedKeys);
@@ -847,7 +847,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
-        m_artifacts.pendingReleaseId = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         Action release = shutdown ? runtime.Dispose : () => runtime.ReleasePreload(clip);
         Assert.Throws<RetirementPendingException>(release);
@@ -879,7 +879,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(4800);
         using var cancellation = new CancellationTokenSource();
         Task pending = runtime.PreloadAsync(clip, cancellationToken: cancellation.Token).AsTask();
-        m_artifacts.pendingReleaseId = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         cancellation.Cancel();
         Assert.Throws<RetirementPendingException>(() => runtime.Update(0));
@@ -901,7 +901,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
-        m_artifacts.pendingReleaseId = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         Assert.Throws<RetirementPendingException>(() => runtime.ReleasePreload(clip));
         AudioVoiceHandle voice = runtime.Play(clip, new AudioPlayOptions(loop: true));
@@ -922,7 +922,7 @@ public sealed class AudioRuntimeTests : IDisposable
         using AudioRuntime runtime = CreateRuntime();
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
-        m_artifacts.pendingReleaseId = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         await runtime.PreloadAsync(clip);
         Assert.Equal(2, m_artifacts.releaseAttempts);
@@ -939,7 +939,7 @@ public sealed class AudioRuntimeTests : IDisposable
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Decode);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Stream);
-        m_artifacts.pendingReleaseId = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         Assert.Throws<RetirementPendingException>(() => runtime.ReleasePreload(clip));
         runtime.ReleasePreload(clip);
@@ -975,7 +975,7 @@ public sealed class AudioRuntimeTests : IDisposable
         {
             device.clipState = AudioClipState.Failed;
         }
-        m_artifacts.pendingReleaseId = clip.identity.persistentId;
+        m_artifacts.pendingReleaseID = clip.identity.persistentId;
         m_artifacts.pendingReleases = 1;
         InvalidOperationException failure = Assert.Throws<InvalidOperationException>(() => runtime.PreloadAsync(clip));
         Assert.Contains(queryThrows ? "query failure" : "preparation failed", failure.Message);
@@ -1170,7 +1170,7 @@ public sealed class AudioRuntimeTests : IDisposable
         private readonly Dictionary<Guid, string> m_paths = [];
         internal int acquisitions;
         internal Exception? acquisitionFailure;
-        internal Guid pendingReleaseId;
+        internal Guid pendingReleaseID;
         internal int pendingReleases;
         internal int releaseAttempts;
 
@@ -1190,7 +1190,7 @@ public sealed class AudioRuntimeTests : IDisposable
             return CreateArtifactLease(retained.info, retained.OpenRead, () =>
             {
                 releaseAttempts++;
-                if (persistentId == pendingReleaseId && pendingReleases-- > 0)
+                if (persistentId == pendingReleaseID && pendingReleases-- > 0)
                 {
                     throw new RetirementPendingException("Expected admitted artifact drain.");
                 }

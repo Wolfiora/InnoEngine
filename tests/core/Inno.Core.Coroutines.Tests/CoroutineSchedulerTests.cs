@@ -221,13 +221,13 @@ public sealed class CoroutineSchedulerTests
     public void ConcurrentStartAndTick_IsStable()
     {
         using var scheduler = new CoroutineScheduler();
-        const int workers = 8;
-        const int perWorker = 4000;
+        const int C_WORKERS = 8;
+        const int C_PER_WORKER = 4000;
         int count = 0;
 
-        Parallel.For(0, workers, _ =>
+        Parallel.For(0, C_WORKERS, _ =>
         {
-            for (int i = 0; i < perWorker; i++)
+            for (int i = 0; i < C_PER_WORKER; i++)
             {
                 scheduler.StartCoroutine(Routine());
             }
@@ -236,7 +236,7 @@ public sealed class CoroutineSchedulerTests
         scheduler.Tick(0.016f);
         scheduler.Tick(0.016f);
 
-        Assert.Equal(workers * perWorker, count);
+        Assert.Equal(C_WORKERS * C_PER_WORKER, count);
         return;
 
         IEnumerator Routine()
@@ -250,16 +250,16 @@ public sealed class CoroutineSchedulerTests
     public void ConcurrentStopByHandle_IsStable()
     {
         using var scheduler = new CoroutineScheduler();
-        const int count = 3000;
-        var handles = new CoroutineHandle[count];
+        const int C_COUNT = 3000;
+        var handles = new CoroutineHandle[C_COUNT];
         int ran = 0;
 
-        for (int i = 0; i < count; i++)
+        for (int i = 0; i < C_COUNT; i++)
         {
             handles[i] = scheduler.StartCoroutine(Routine());
         }
 
-        Parallel.For(0, count, i =>
+        Parallel.For(0, C_COUNT, i =>
         {
             scheduler.StopCoroutine(handles[i]);
         });

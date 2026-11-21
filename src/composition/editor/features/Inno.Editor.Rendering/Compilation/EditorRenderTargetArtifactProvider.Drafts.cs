@@ -21,24 +21,24 @@ public sealed partial class EditorRenderTargetArtifactProvider
     private readonly Dictionary<Guid, DraftEntry> m_drafts = [];
 
     internal EditorShaderDraftCompilationSnapshot RequestDraft(
-        Guid documentId,
+        Guid documentID,
         GraphDocument graph,
         ulong revision,
         RenderShaderVariant variant,
         GraphicsCapabilities capabilities
     ) {
-        if (documentId == Guid.Empty)
+        if (documentID == Guid.Empty)
         {
-            throw new ArgumentException("A preview requires a document identity.", nameof(documentId));
+            throw new ArgumentException("A preview requires a document identity.", nameof(documentID));
         }
         ArgumentNullException.ThrowIfNull(graph);
         lock (m_sync)
         {
             EnsureActive();
             ShaderCompileTarget target = m_shaderCompiler.CreateTarget(capabilities, optimize: false, debugInformation: true);
-            if (!m_drafts.TryGetValue(documentId, out DraftEntry? draft))
+            if (!m_drafts.TryGetValue(documentID, out DraftEntry? draft))
             {
-                m_drafts.Add(documentId, draft = new());
+                m_drafts.Add(documentID, draft = new());
             }
             ShaderEntry entry = draft.compilation;
             string targetVariant = target.key + "\n" + variant.value;
@@ -94,7 +94,7 @@ public sealed partial class EditorRenderTargetArtifactProvider
                         entry.pending = null;
                         entry.cancellation = CancellationTokenSource.CreateLinkedTokenSource(m_lifetime.Token);
                         entry.semanticHash = hash;
-                        entry.pending = RunOwned(token => m_shaderCompiler.CompileGraphAsync(
+                        entry.pending = RunOwnedAsync(token => m_shaderCompiler.CompileGraphAsync(
                             captured,
                             target,
                             variant,
@@ -150,12 +150,12 @@ public sealed partial class EditorRenderTargetArtifactProvider
         }
     }
 
-    internal void ReleaseDraft(Guid documentId)
+    internal void ReleaseDraft(Guid documentID)
     {
         lock (m_sync)
         {
             EnsureActive();
-            if (!m_drafts.Remove(documentId, out DraftEntry? draft))
+            if (!m_drafts.Remove(documentID, out DraftEntry? draft))
             {
                 return;
             }

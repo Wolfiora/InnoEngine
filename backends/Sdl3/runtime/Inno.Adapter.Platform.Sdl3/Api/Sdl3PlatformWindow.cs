@@ -12,7 +12,7 @@ public sealed unsafe partial class Sdl3PlatformWindow : IPlatformWindow, INative
     /// <summary>
     /// Gets the platform window identifier.
     /// </summary>
-    public uint windowId => m_windowId;
+    public uint windowId => m_windowID;
 
     /// <summary>
     /// Gets the window title.

@@ -141,7 +141,7 @@ internal sealed partial class ShaderEditorCanvas
         {
             return;
         }
-        ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
+        ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(controller.document, owner.serialization, owner.context);
         int index = Array.FindIndex(definition.properties, value => value.id.value == input.id);
         if (index < 0)
         {
@@ -213,7 +213,7 @@ internal sealed partial class ShaderEditorCanvas
         }
 
         ShaderParameterPresentation presentation = ShaderParameterPresentation.Read(
-            Controller.document,
+            controller.document,
             property.id,
             owner.serialization,
             owner.context
@@ -330,9 +330,9 @@ internal sealed partial class ShaderEditorCanvas
         void SavePresentation(bool continuous)
         {
             Gesture();
-            GraphDocument candidate = Controller.document.Clone();
+            GraphDocument candidate = controller.document.Clone();
             ShaderParameterPresentation.Write(candidate, property.id, presentation, owner.serialization, owner.context);
-            Controller.ReplaceDocument(candidate, "Edit Parameter Presentation", continuous ? EditorUI.current.widgets.editMergeKey : null);
+            controller.ReplaceDocument(candidate, "Edit Parameter Presentation", continuous ? EditorUI.current.widgets.editMergeKey : null);
             owner.Changed(draft);
         }
 
@@ -350,12 +350,12 @@ internal sealed partial class ShaderEditorCanvas
         string label,
         bool continuous = false
     ) {
-        GraphDocument candidate = Controller.document.Clone();
+        GraphDocument candidate = controller.document.Clone();
         candidate.SetMetadata(
             ShaderGraphDocument.definitionKey,
             ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
         );
-        Controller.ReplaceDocument(candidate, label, continuous ? EditorUI.current.widgets.editMergeKey : null);
+        controller.ReplaceDocument(candidate, label, continuous ? EditorUI.current.widgets.editMergeKey : null);
         owner.Changed(draft);
     }
 

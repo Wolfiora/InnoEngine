@@ -36,7 +36,7 @@ public sealed record BuildArtifactOptions(
 /// </summary>
 public static class BuildArtifactCopier
 {
-    private const string DSYM_TOKEN = ".dSYM";
+    private const string C_DSYM_TOKEN = ".dSYM";
 
     /// <summary>
     /// Copies all artifacts accepted by one product policy into its output directory.
@@ -68,7 +68,7 @@ public static class BuildArtifactCopier
         List<string> candidates = Directory.EnumerateFiles(buildDir, "*", SearchOption.AllDirectories)
             .Where(path =>
             {
-                if (path.Contains(DSYM_TOKEN, StringComparison.OrdinalIgnoreCase))
+                if (path.Contains(C_DSYM_TOKEN, StringComparison.OrdinalIgnoreCase))
                 {
                     return false;
                 }

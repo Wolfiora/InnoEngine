@@ -38,8 +38,8 @@ internal sealed class SceneViewPanel : EditorPanel
     private const string C_GIZMO_CLUSTER_POPUP = "##scene-gizmo-cluster";
     private const int C_MANIPULATION_TOOL_COUNT = 4;
     private const string C_TRANSFORM_EDIT = "scene-view.transform";
-    private static readonly EditorViewportKindId S_KIND = new("inno.editor.viewport.scene");
-    private static readonly Vector2 S_UNAVAILABLE_PADDING = new(48f, 32f);
+    private static readonly EditorViewportKindId KIND = new("inno.editor.viewport.scene");
+    private static readonly Vector2 UNAVAILABLE_PADDING = new(48f, 32f);
     private readonly EditorRenderingModule m_rendering;
     private readonly EditorInteractions m_interactions;
     private readonly SceneEdits m_sceneEdits;
@@ -111,9 +111,9 @@ internal sealed class SceneViewPanel : EditorPanel
         ManipulationToolbarLayout toolbar = CreateManipulationToolbarLayout(minimum, maximum);
         bool hovered = Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows) && Ui.IsMouseHoveringRect(minimum, maximum);
         bool toolbarHovered = IsManipulationToolbarHovered(toolbar);
-        _ = m_rendering.TryConfigureNavigation(S_KIND, C_VIEWPORT_ID, width, height, out EditorViewportNavigationProfile navigationProfile);
+        _ = m_rendering.TryConfigureNavigation(KIND, C_VIEWPORT_ID, width, height, out EditorViewportNavigationProfile navigationProfile);
         bool navigationOwnsPointer = HandleNavigation(navigationProfile, hovered && !toolbarHovered, minimum, maximum);
-        if (!m_rendering.TrySubmit(S_KIND, C_VIEWPORT_ID, width, height, out EditorViewportOutput output))
+        if (!m_rendering.TrySubmit(KIND, C_VIEWPORT_ID, width, height, out EditorViewportOutput output))
         {
             DrawUnavailable(available, m_rendering.GetCompositionError(C_VIEWPORT_ID) ?? "No rendering model contributes to Scene View.");
             _ = DrawManipulationToolbar(toolbar);
@@ -163,7 +163,7 @@ internal sealed class SceneViewPanel : EditorPanel
         Vector2 mouse = Ui.GetMousePos();
         float x = (mouse.X - minimum.X) / Math.Max(1f, maximum.X - minimum.X);
         float y = (mouse.Y - minimum.Y) / Math.Max(1f, maximum.Y - minimum.Y);
-        m_rendering.HandlePointer(S_KIND, C_VIEWPORT_ID, width, height, x, y, button: 0);
+        m_rendering.HandlePointer(KIND, C_VIEWPORT_ID, width, height, x, y, button: 0);
     }
 
     /// <summary>
@@ -524,7 +524,7 @@ internal sealed class SceneViewPanel : EditorPanel
         Ui.PushStyleColor(ImGuiCol.Text, EditorPalette.textDisabled);
         try
         {
-            EditorUI.current.widgets.CenteredWrappedText(message, size, S_UNAVAILABLE_PADDING);
+            EditorUI.current.widgets.CenteredWrappedText(message, size, UNAVAILABLE_PADDING);
         }
         finally
         {
@@ -785,8 +785,8 @@ internal sealed class SceneViewPanel : EditorPanel
         m_gestureTargets = [];
     }
 
-    private static string GizmoIconGlyph(string iconId)
-        => iconId switch
+    private static string GizmoIconGlyph(string iconID)
+        => iconID switch
     {
         "camera" => ImGuiIcon.Camera,
         "light" => ImGuiIcon.Lightbulb,

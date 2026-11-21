@@ -10,7 +10,7 @@ namespace Inno.Build.Toolchains.UI;
 /// <summary>
 /// Owns this backend's native recipe while SDK selection remains with the platform provider.
 /// </summary>
-public static class UiToolchain
+public static class UIToolchain
 {
     /// <summary>
     /// Gets the component's sole source, binding and intermediate owner.
@@ -136,7 +136,7 @@ public static class UiToolchain
             selection.targetId,
             componentDescriptor.staticBuild!.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
             [],
-            [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UiToolchain.cs")]
+            [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UIToolchain.cs")]
         );
     }
 }

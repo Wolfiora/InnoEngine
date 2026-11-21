@@ -112,14 +112,14 @@ public sealed class SettingsReferenceTests
         byte[] first = fixture.serialization.CapturePropertiesData(new ClipSettings { labels = ["previous"] }, fixture.context);
         byte[] next = fixture.serialization.CapturePropertiesData(new ClipSettings { labels = ["candidate"] }, fixture.context);
         fixture.settings.Rebuild(
-            [new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, first)])]
+            [new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.TYPE_ID, first)])]
         );
         byte[] document = fixture.settings.CaptureDocument();
         long revision = fixture.settings.revision;
         IGenerationChange change = fixture.settings.CreateReloadChange();
         change.PrepareForActivation();
         fixture.settings.SetContributors(
-            [new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, next)])]
+            [new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.TYPE_ID, next)])]
         );
         change.Apply();
         Assert.Equal("candidate", Assert.Single(fixture.settings.Get<ClipSettings>(ClipSettings.id).labels));
@@ -138,7 +138,7 @@ public sealed class SettingsReferenceTests
         using var fixture = new Fixture();
         var value = new ClipSettings { labels = ["stable"] };
         byte[] payload = fixture.serialization.CapturePropertiesData(value, fixture.context);
-        var record = new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, payload);
+        var record = new ProjectSettingRecord(ClipSettings.id, ClipSettings.TYPE_ID, payload);
         string[] dependencies = ["base"];
         var contributor = new ProjectSettingsContributor("extension", dependencies, [], [record]);
         dependencies[0] = "changed";
@@ -156,7 +156,7 @@ public sealed class SettingsReferenceTests
                 "broken",
                 [],
                 [],
-                [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, [1, 2, 3])]
+                [new ProjectSettingRecord(ClipSettings.id, ClipSettings.TYPE_ID, [1, 2, 3])]
             )]));
         Assert.Equal(revision, fixture.settings.revision);
         Assert.Equal("stable", Assert.Single(fixture.settings.Get<ClipSettings>(ClipSettings.id).labels));
@@ -261,7 +261,7 @@ internal abstract class ClipSettingsBase : ISerializable
 [ProjectSettingDefinition("tests.settings.clip")]
 internal sealed class ClipSettings : ClipSettingsBase
 {
-    internal static readonly Guid typeId = new("2c7288db-eb9e-43a5-9894-bf9d10b22a2d");
+    internal static readonly Guid TYPE_ID = new("2c7288db-eb9e-43a5-9894-bf9d10b22a2d");
     internal static ProjectSettingId id => new("tests.settings.clip");
 }
 

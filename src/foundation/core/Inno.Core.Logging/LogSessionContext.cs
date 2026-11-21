@@ -9,12 +9,12 @@ namespace Inno.Core.Logging;
 /// </summary>
 public static class LogSessionContext
 {
-    private static readonly ExecutionSlot<LogSessionId> S_CURRENT = new("sessionId");
+    private static readonly ExecutionSlot<LogSessionId> CURRENT = new("sessionId");
 
     /// <summary>
     /// Gets the runtime session associated with the current asynchronous execution flow.
     /// </summary>
-    public static LogSessionId current => S_CURRENT.TryGet(out LogSessionId session) ? session : LogSessionId.none;
+    public static LogSessionId current => CURRENT.TryGet(out LogSessionId session) ? session : LogSessionId.none;
 
     /// <summary>
     /// Enters a nested execution scope whose emitted logs belong to the supplied runtime session.
@@ -34,6 +34,6 @@ public static class LogSessionContext
         {
             throw new ArgumentException("A runtime log session identifier is required.", nameof(sessionId));
         }
-        return S_CURRENT.Enter(sessionId);
+        return CURRENT.Enter(sessionId);
     }
 }

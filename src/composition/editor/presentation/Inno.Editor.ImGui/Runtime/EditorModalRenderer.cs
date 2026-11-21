@@ -53,7 +53,7 @@ internal static unsafe class EditorModalRenderer
         ArgumentNullException.ThrowIfNull(context);
         EditorUiSession session = EditorUI.current;
         // The runtime established this session; revalidate below after invoking extension preparation.
-        string popupId = $"{title}##{id}";
+        string popupID = $"{title}##{id}";
         ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();
         ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         Vector2 workSize = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize));
@@ -64,7 +64,7 @@ internal static unsafe class EditorModalRenderer
         Vector2 initialSize = presentation.initialSize * EditorUI.current.widgets.style.zoom;
         if (presentation.canResize && initialSize.Y <= 0f)
         {
-            using NativeStringLease nativeTitle = Utf8Codec.EncodeNullTerminated(popupId, allowsNull: false);
+            using NativeStringLease nativeTitle = Utf8Codec.EncodeNullTerminated(popupID, allowsNull: false);
             ImGuiWindow* existing = NativeImGui.Raw.FindWindowByName((sbyte*)nativeTitle.pointer);
             if (existing is not null && existing->WasActive != 0)
             {
@@ -112,7 +112,7 @@ internal static unsafe class EditorModalRenderer
         Vector2 center = ImGui.FromNative(viewport->WorkPos) + workSize * 0.5f;
         if (presentation.blocksInteraction)
         {
-            NativeImGui.OpenPopup(popupId, (int)ImGuiPopupFlags.NoReopen);
+            NativeImGui.OpenPopup(popupID, (int)ImGuiPopupFlags.NoReopen);
         }
         NativeImGui.SetNextWindowViewport(viewport->ID);
         ImGuiCond placementCondition = presentation.canMove || presentation.canResize ? ImGuiCond.Appearing : ImGuiCond.Always;
@@ -147,8 +147,8 @@ internal static unsafe class EditorModalRenderer
         try
         {
             bool visible = presentation.blocksInteraction
-                           ? ImGui.BeginNativeWindow(popupId, flags, modal: true)
-                           : ImGui.BeginNativeWindow(popupId, flags | ImGuiWindowFlags.NoSavedSettings, modal: false);
+                           ? ImGui.BeginNativeWindow(popupID, flags, modal: true)
+                           : ImGui.BeginNativeWindow(popupID, flags | ImGuiWindowFlags.NoSavedSettings, modal: false);
             beganWindow = !presentation.blocksInteraction || visible;
             if (visible)
             {
@@ -190,8 +190,8 @@ internal static unsafe class EditorModalRenderer
         string id,
         string title
     ) {
-        string popupId = $"{title}##{id}";
-        if (!NativeImGui.IsPopupOpen(popupId) || !ImGui.BeginNativeWindow(popupId, ImGuiWindowFlags.None, modal: true))
+        string popupID = $"{title}##{id}";
+        if (!NativeImGui.IsPopupOpen(popupID) || !ImGui.BeginNativeWindow(popupID, ImGuiWindowFlags.None, modal: true))
         {
             return;
         }

@@ -18,7 +18,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 {
     private const uint C_PROCESS_BLOCK_FRAMES = 4096;
 
-    private static int S_NEXT_GENERATION;
+    private static int s_nextGeneration;
 
     private readonly Dictionary<ulong, BusRecord> m_buses = [];
     private readonly Dictionary<ulong, AudioClipDescriptor> m_clips = [];
@@ -1011,9 +1011,9 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
     private static uint NextGeneration()
     {
-        uint generation = unchecked((uint)Interlocked.Increment(ref S_NEXT_GENERATION));
+        uint generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
         return generation == 0
-               ? unchecked((uint)Interlocked.Increment(ref S_NEXT_GENERATION))
+               ? unchecked((uint)Interlocked.Increment(ref s_nextGeneration))
                : generation;
     }
 

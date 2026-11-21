@@ -12,8 +12,8 @@ internal static class InspectorMemberMetadata
     private const BindingFlags C_DECLARED_MEMBERS = BindingFlags.Instance | BindingFlags.Public
                                                     | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
-    private static readonly ConditionalWeakTable<Type, TypeMembers> S_MEMBERS = new();
-    private static readonly ConditionalWeakTable<MemberInfo, AttributesBox> S_ATTRIBUTES = new();
+    private static readonly ConditionalWeakTable<Type, TypeMembers> MEMBERS = new();
+    private static readonly ConditionalWeakTable<MemberInfo, AttributesBox> ATTRIBUTES = new();
 
     internal static MemberInfo? Resolve(
         Type ownerType,
@@ -21,14 +21,14 @@ internal static class InspectorMemberMetadata
     ) {
         ArgumentNullException.ThrowIfNull(ownerType);
         ArgumentException.ThrowIfNullOrWhiteSpace(memberName);
-        return S_MEMBERS.GetValue(ownerType, static type => new TypeMembers(type)).members
+        return MEMBERS.GetValue(ownerType, static type => new TypeMembers(type)).members
             .GetValueOrDefault(memberName);
     }
 
     internal static Attribute[] GetAttributes(MemberInfo member)
     {
         ArgumentNullException.ThrowIfNull(member);
-        return S_ATTRIBUTES.GetValue(member, static value => new AttributesBox(value)).attributes;
+        return ATTRIBUTES.GetValue(member, static value => new AttributesBox(value)).attributes;
     }
 
     private static Attribute[] BuildAttributes(MemberInfo member)

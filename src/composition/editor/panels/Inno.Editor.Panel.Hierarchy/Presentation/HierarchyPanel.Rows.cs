@@ -54,9 +54,9 @@ internal sealed partial class HierarchyPanel
         var visited = new HashSet<RuntimeIdentity>();
         foreach (GameScene scene in scenes)
         {
-            RuntimeIdentity sceneId = RequireIdentity(scene);
-            inputs.Add((sceneId, scene.hierarchyRevision));
-            rows.Add(new(sceneId, 0));
+            RuntimeIdentity sceneID = RequireIdentity(scene);
+            inputs.Add((sceneID, scene.hierarchyRevision));
+            rows.Add(new(sceneID, 0));
             if (!widgets.IsTreeNodeOpen("scene_" + scene.identity.persistentId.ToString("N")))
             {
                 continue;

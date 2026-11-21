@@ -65,9 +65,9 @@ internal sealed class SceneStructureSnapshot
     private static bool HasCurrentIdentities(Dictionary<EngineObject, Guid> sourceIds)
     {
         // Core registry rebinding can replace an identity without changing the structural snapshot.
-        foreach ((EngineObject value, Guid persistentId) in sourceIds)
+        foreach ((EngineObject value, Guid persistentID) in sourceIds)
         {
-            if (value.identity.persistentId != persistentId)
+            if (value.identity.persistentId != persistentID)
             {
                 return false;
             }

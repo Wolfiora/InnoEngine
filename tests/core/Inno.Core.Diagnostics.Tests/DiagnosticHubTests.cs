@@ -16,7 +16,7 @@ public sealed class DiagnosticHubTests : IDisposable
     private const string C_IMPORT_DIAGNOSTICS = "Import";
     private const string C_RELOAD_DIAGNOSTICS = "Reload";
 
-    private readonly Guid m_assetId = Guid.NewGuid();
+    private readonly Guid m_assetID = Guid.NewGuid();
     private readonly DiagnosticHub m_hub = new();
     private readonly IDisposable m_scope;
 
@@ -86,26 +86,26 @@ public sealed class DiagnosticHubTests : IDisposable
     public void Set_TargetedReportsRemainIndependent()
     {
         var sink = new ProbeSink();
-        Guid otherAssetId = Guid.NewGuid();
+        Guid otherAssetID = Guid.NewGuid();
         m_hub.RegisterSink(sink);
         Diagnostics.Set(
-            m_assetId,
+            m_assetID,
             C_IMPORT_DIAGNOSTICS,
             Diagnostic.Error("A", "First asset"),
             displayName: "Assets/First.asset"
         );
         Diagnostics.Set(
-            otherAssetId,
+            otherAssetID,
             C_IMPORT_DIAGNOSTICS,
             Diagnostic.Warning("B", "Second asset"),
             displayName: "Assets/Second.asset"
         );
 
-        Diagnostics.Clear(m_assetId, C_IMPORT_DIAGNOSTICS);
+        Diagnostics.Clear(m_assetID, C_IMPORT_DIAGNOSTICS);
 
         DiagnosticReport remaining = Assert.Single(sink.reports);
         Assert.Equal("Assets/Second.asset", remaining.source.displayName);
-        Diagnostics.Clear(otherAssetId, C_IMPORT_DIAGNOSTICS);
+        Diagnostics.Clear(otherAssetID, C_IMPORT_DIAGNOSTICS);
         m_hub.UnregisterSink(sink);
     }
 
@@ -158,11 +158,11 @@ public sealed class DiagnosticHubTests : IDisposable
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
         using DiagnosticReporter reporter = m_hub.CreateReporter(new DiagnosticSource("tests.audio", "Audio"));
-        reporter.Publish(new Diagnostic("LOAD", "First", DiagnosticSeverity.Warning, objectId: m_assetId));
-        reporter.Publish(new Diagnostic("LOAD", "Updated", DiagnosticSeverity.Error, objectId: m_assetId));
+        reporter.Publish(new Diagnostic("LOAD", "First", DiagnosticSeverity.Warning, objectId: m_assetID));
+        reporter.Publish(new Diagnostic("LOAD", "Updated", DiagnosticSeverity.Error, objectId: m_assetID));
         Assert.Equal("Updated", Assert.Single(Assert.Single(sink.reports).diagnostics).message);
         reporter.Publish(new Diagnostic("DEVICE", "Muted", DiagnosticSeverity.Warning));
-        reporter.Resolve("LOAD", objectId: m_assetId);
+        reporter.Resolve("LOAD", objectId: m_assetID);
         Assert.Equal("DEVICE", Assert.Single(Assert.Single(sink.reports).diagnostics).code);
         reporter.Dispose();
         Assert.Empty(sink.reports);
@@ -218,7 +218,7 @@ public sealed class DiagnosticHubTests : IDisposable
     {
         Diagnostics.Clear(C_COMPILATION_DIAGNOSTICS);
         Diagnostics.Clear(C_RELOAD_DIAGNOSTICS);
-        Diagnostics.Clear(m_assetId, C_IMPORT_DIAGNOSTICS);
+        Diagnostics.Clear(m_assetID, C_IMPORT_DIAGNOSTICS);
         m_scope.Dispose();
     }
 

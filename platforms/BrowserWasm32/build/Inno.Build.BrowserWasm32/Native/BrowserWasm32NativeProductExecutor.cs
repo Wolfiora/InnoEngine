@@ -236,7 +236,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
 
     private static void ValidateNativeOutputs(
         string directory,
-        string targetId,
+        string targetID,
         ProductNativeBuildPlan plan
     ) {
         var expected = new HashSet<string>(StringComparer.Ordinal);
@@ -245,7 +245,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
             foreach (string archive in step.component.staticBuild!.logicalOutputs.Select(
                 BrowserWasm32LinkerSettings.Create().GetStaticFileName
             )) {
-                string path = Path.Combine(directory, step.id, targetId, archive);
+                string path = Path.Combine(directory, step.id, targetID, archive);
                 if (!File.Exists(path) || new FileInfo(path).Length == 0)
                 {
                     throw new InvalidDataException($"Component '{step.id}' did not produce its required archive '{archive}'.");

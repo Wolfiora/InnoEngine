@@ -8,9 +8,9 @@ namespace Inno.Native.UI;
 public static unsafe partial class UiNative
 {
 #if DEBUG
-    internal const string LibName = "inno-ui-debug";
+    internal const string C_LIB_NAME = "inno-ui-debug";
 #else
-    internal const string LibName = "inno-ui-release";
+    internal const string C_LIB_NAME = "inno-ui-release";
 #endif
 
     static UiNative()
@@ -20,7 +20,7 @@ public static unsafe partial class UiNative
 #elif INNO_STATIC_NATIVE
         FromStatic();
 #else
-        Load(NativeDllLoader.FindNativeLibrary(LibName));
+        Load(NativeDllLoader.FindNativeLibrary(C_LIB_NAME));
 #endif
     }
 }

@@ -77,9 +77,9 @@ internal sealed partial class ShaderEditorCanvas
             if (ImGuiApi.IsItemActive() && ImGuiApi.IsMouseButtonDown(ImGuiMouseButton.Left))
             {
                 Vector2 graphPoint = layout.ToWorld(Vector2.Clamp(ImGuiApi.GetMousePos(), minimum, maximum));
-                Canvas.SetViewport(
-                    new(m_size.X * 0.5f - graphPoint.X * Canvas.zoom, m_size.Y * 0.5f - graphPoint.Y * Canvas.zoom),
-                    Canvas.zoom
+                canvas.SetViewport(
+                    new(m_size.X * 0.5f - graphPoint.X * canvas.zoom, m_size.Y * 0.5f - graphPoint.Y * canvas.zoom),
+                    canvas.zoom
                 );
             }
 
@@ -101,12 +101,12 @@ internal sealed partial class ShaderEditorCanvas
         Vector2 minimum,
         Vector2 maximum
     ) {
-        Vector2 viewMinimum = -new Vector2(Canvas.pan.x, Canvas.pan.y) / Canvas.zoom;
-        Vector2 viewMaximum = viewMinimum + m_size / Canvas.zoom;
+        Vector2 viewMinimum = -new Vector2(canvas.pan.x, canvas.pan.y) / canvas.zoom;
+        Vector2 viewMaximum = viewMinimum + m_size / canvas.zoom;
         Vector2 worldMinimum = viewMinimum;
         Vector2 worldMaximum = viewMaximum;
         m_miniMapGeometry.Clear();
-        foreach (GraphNodeRecord node in Controller.document.nodes)
+        foreach (GraphNodeRecord node in controller.document.nodes)
         {
             GraphPosition position = draft.pointer.previewPositions.GetValueOrDefault(node.id, node.position);
             var nodeMinimum = new Vector2(position.x, position.y);
@@ -128,7 +128,7 @@ internal sealed partial class ShaderEditorCanvas
         EditorDrawList draw,
         MiniMapLayout layout
     ) {
-        foreach (GraphEdgeRecord edge in Controller.document.edges)
+        foreach (GraphEdgeRecord edge in controller.document.edges)
         {
             if (!m_miniMapGeometry.TryGetValue(edge.output.nodeId, out MiniMapNodeGeometry source)
                 || !m_miniMapGeometry.TryGetValue(edge.input.nodeId, out MiniMapNodeGeometry target)
@@ -138,15 +138,15 @@ internal sealed partial class ShaderEditorCanvas
             draw.Line(layout.ToScreen(source.center), layout.ToScreen(target.center), Color(0.55f, 0.42f, 0.76f, 0.65f), 1f);
         }
 
-        foreach (GraphNodeRecord node in Controller.document.nodes)
+        foreach (GraphNodeRecord node in controller.document.nodes)
         {
             MiniMapNodeGeometry geometry = m_miniMapGeometry[node.id];
-            uint fill = Canvas.selectedNodes.Contains(node.id) ? Color(0.6f, 0.44f, 0.83f) : Color(0.34f, 0.37f, 0.44f);
+            uint fill = canvas.selectedNodes.Contains(node.id) ? Color(0.6f, 0.44f, 0.83f) : Color(0.34f, 0.37f, 0.44f);
             draw.FilledRectangle(layout.ToScreen(geometry.minimum), layout.ToScreen(geometry.maximum), fill, 2f, false);
         }
 
-        Vector2 viewMinimum = -new Vector2(Canvas.pan.x, Canvas.pan.y) / Canvas.zoom;
-        Vector2 viewMaximum = viewMinimum + m_size / Canvas.zoom;
+        Vector2 viewMinimum = -new Vector2(canvas.pan.x, canvas.pan.y) / canvas.zoom;
+        Vector2 viewMaximum = viewMinimum + m_size / canvas.zoom;
         Vector2 screenMinimum = layout.ToScreen(viewMinimum);
         Vector2 screenMaximum = layout.ToScreen(viewMaximum);
         draw.FilledRectangle(screenMinimum, screenMaximum, Color(0.65f, 0.47f, 0.88f, 0.1f), 0, false);

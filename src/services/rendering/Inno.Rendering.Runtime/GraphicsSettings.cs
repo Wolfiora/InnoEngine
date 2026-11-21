@@ -96,17 +96,17 @@ internal sealed class GraphicsSettingsState
 [StableTypeId("0f145d08-b261-54bf-92aa-5ee6605d819e")]
 internal static class GraphicsSettingsExecutionContext
 {
-    private static readonly ExecutionSlot<GraphicsSettingsState> S_CURRENT = new("state");
+    private static readonly ExecutionSlot<GraphicsSettingsState> CURRENT = new("state");
 
     internal static GraphicsSettingsState current
         => currentOrNull
            ?? throw new InvalidOperationException("No rendering runtime is bound to the current execution context.");
 
-    internal static GraphicsSettingsState? currentOrNull => S_CURRENT.TryGet(out GraphicsSettingsState? state) ? state : null;
+    internal static GraphicsSettingsState? currentOrNull => CURRENT.TryGet(out GraphicsSettingsState? state) ? state : null;
 
     internal static IDisposable Enter(GraphicsSettingsState state)
     {
         ArgumentNullException.ThrowIfNull(state);
-        return S_CURRENT.Enter(state);
+        return CURRENT.Enter(state);
     }
 }

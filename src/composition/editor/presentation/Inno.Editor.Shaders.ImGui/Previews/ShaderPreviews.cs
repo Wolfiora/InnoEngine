@@ -144,7 +144,7 @@ public sealed class ShaderPreviews : EditorModule
 
             int pixels = Math.Clamp((int)MathF.Ceiling(logicalSize * ImGuiApi.GetWindowDpiScale()), 1, 2048);
             var context = new ShaderPreviewContext(
-                new(state.viewportId),
+                new(state.viewportID),
                 material,
                 artifact,
                 definition,
@@ -154,7 +154,7 @@ public sealed class ShaderPreviews : EditorModule
             );
             EditorViewportLayer layer = m_registry.providers[contracts[0]].CreateLayer(context);
             if (m_previews.TryRender(
-                new(state.viewportId, pixels, pixels, RenderTextureFormat.RGBA8, [layer]),
+                new(state.viewportID, pixels, pixels, RenderTextureFormat.RGBA8, [layer]),
                 out EditorPreviewHandle handle
             )) {
                 m_previews.Draw(handle, new(logicalSize, logicalSize));
@@ -187,7 +187,7 @@ public sealed class ShaderPreviews : EditorModule
     {
         if (m_states.Remove(ownerId, out State? state))
         {
-            m_previews.ReleaseRendered(state.viewportId);
+            m_previews.ReleaseRendered(state.viewportID);
         }
     }
 
@@ -225,9 +225,9 @@ public sealed class ShaderPreviews : EditorModule
         => RetirementPendingException.Find(error) is null
            && error is InvalidOperationException or ArgumentException or FormatException;
 
-    private sealed class State(string viewportId) : IDiagnosticReporter
+    private sealed class State(string viewportID) : IDiagnosticReporter
     {
-        internal readonly string viewportId = viewportId;
+        internal readonly string viewportID = viewportID;
         internal readonly Dictionary<(string code, string? semanticId, Guid? objectId), Diagnostic> errors = [];
         internal ulong frame;
 

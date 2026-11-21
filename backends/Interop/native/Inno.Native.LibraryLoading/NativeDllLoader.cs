@@ -32,7 +32,7 @@ public static class NativeDllLoader
     public static string FindNativeLibrary(string libraryName)
     {
         ValidateFileName(libraryName, nameof(libraryName));
-        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.C_NATIVE_DIR_NAME);
         return ReadIndex(nativeRoot).ResolveLibrary(nativeRoot, libraryName);
     }
 
@@ -57,7 +57,7 @@ public static class NativeDllLoader
     public static string FindNativeFile(string fileName)
     {
         ValidateFileName(fileName, nameof(fileName));
-        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.NATIVE_DIR_NAME);
+        string nativeRoot = Path.Combine(S_OUTPUT_ROOT, NativeDllConstants.C_NATIVE_DIR_NAME);
         return ReadIndex(nativeRoot).ResolveFile(nativeRoot, fileName);
     }
 

@@ -196,11 +196,11 @@ public sealed class RuntimeRetirementTests
             {
                 return new FailingSubsystem(this, resource);
             }
-            context.resources.Track(Drain(context.resources.cancellationToken));
+            context.resources.Track(DrainAsync(context.resources.cancellationToken));
             throw new InvalidOperationException("startup failure");
         }
 
-        internal async Task Drain(CancellationToken cancellationToken)
+        internal async Task DrainAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -217,7 +217,7 @@ public sealed class RuntimeRetirementTests
         {
             protected override void OnStart()
             {
-                lifetime.Track(factory.Drain(lifetime.cancellationToken));
+                lifetime.Track(factory.DrainAsync(lifetime.cancellationToken));
                 throw new InvalidOperationException("startup failure");
             }
 

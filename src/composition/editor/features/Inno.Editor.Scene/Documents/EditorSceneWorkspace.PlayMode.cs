@@ -53,23 +53,23 @@ internal sealed partial class EditorSceneWorkspace
                 .Select(CaptureDocumentSnapshot)
                 .OrderBy(static snapshot => snapshot.sceneIndex)
                 .ToArray();
-            Guid? activeSceneId = m_runtimeSession.scenes.activeScene?.identity.persistentId;
-            Guid? selectedSceneObjectId = GetSelectedSceneObjectId();
+            Guid? activeSceneID = m_runtimeSession.scenes.activeScene?.identity.persistentId;
+            Guid? selectedSceneObjectID = GetSelectedSceneObjectID();
             var session = new PlayModeLease(
                 this,
                 runtimeSession,
                 snapshots,
-                activeSceneId,
-                selectedSceneObjectId,
+                activeSceneID,
+                selectedSceneObjectID,
                 m_selection?.RegisterIdentityDomain(runtimeSession.identities)
             );
             try
             {
                 MaterializeRuntimeSceneSet(session);
                 m_playModeSession = session;
-                if (selectedSceneObjectId is not null)
+                if (selectedSceneObjectID is not null)
                 {
-                    RestoreSelection(selectedSceneObjectId);
+                    RestoreSelection(selectedSceneObjectID);
                 }
                 return session;
             }
@@ -103,19 +103,19 @@ internal sealed partial class EditorSceneWorkspace
             return;
         }
         object? runtimeSelection = m_selection?.selectedTarget;
-        Guid? runtimeSelectionId = runtimeSelection is EngineObject { isDestroyed: false } selected
+        Guid? runtimeSelectionID = runtimeSelection is EngineObject { isDestroyed: false } selected
                                    ? selected.identity.persistentId
                                    : null;
         m_playModeSession = null;
-        Guid? editSelectionId = runtimeSelectionId is Guid currentId
-                                && m_runtimeSession.scenes.Find<EngineObject>(currentId) is not null
-                                ? currentId
-                                : session.editSelectionId;
+        Guid? editSelectionID = runtimeSelectionID is Guid currentID
+                                && m_runtimeSession.scenes.Find<EngineObject>(currentID) is not null
+                                ? currentID
+                                : session.editSelectionID;
         try
         {
-            if (runtimeSelection is EngineObject || runtimeSelection is null && session.editSelectionId is not null)
+            if (runtimeSelection is EngineObject || runtimeSelection is null && session.editSelectionID is not null)
             {
-                RestoreSelection(editSelectionId, selectActiveSceneWhenMissing: false);
+                RestoreSelection(editSelectionID, selectActiveSceneWhenMissing: false);
             }
         }
         catch
@@ -141,10 +141,10 @@ internal sealed partial class EditorSceneWorkspace
                 runtimeWorld.LoadSceneAdditive(runtimeScene, makeActive: false);
                 runtimeWorld.SetSceneIndex(runtimeScene, snapshot.sceneIndex);
             }
-            if (session.activeSceneId is Guid activeSceneId)
+            if (session.activeSceneID is Guid activeSceneID)
             {
                 GameScene? activeScene = runtimeWorld.loadedScenes.FirstOrDefault(
-                    scene => scene.identity.persistentId == activeSceneId
+                    scene => scene.identity.persistentId == activeSceneID
                 );
                 if (activeScene is not null)
                 {
@@ -182,8 +182,8 @@ internal sealed partial class EditorSceneWorkspace
         IDisposable? identityDomain
     ) : IDisposable
     {
-        private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneId =
-            sceneSnapshots.ToDictionary(static snapshot => snapshot.sceneId);
+        private readonly Dictionary<Guid, SceneDocumentSnapshot> m_snapshotBySceneID =
+            sceneSnapshots.ToDictionary(static snapshot => snapshot.sceneID);
 
         private bool m_disposed;
 
@@ -203,9 +203,9 @@ internal sealed partial class EditorSceneWorkspace
 
         internal IReadOnlyList<SceneDocumentSnapshot> snapshots { get; } = sceneSnapshots;
 
-        internal Guid? activeSceneId { get; } = activeScene;
+        internal Guid? activeSceneID { get; } = activeScene;
 
-        internal Guid? editSelectionId { get; } = selectedSceneObject;
+        internal Guid? editSelectionID { get; } = selectedSceneObject;
 
         internal RuntimeSession runtimeSession { get; } = playSession;
 
@@ -220,16 +220,16 @@ internal sealed partial class EditorSceneWorkspace
                     .Where(static path => !string.IsNullOrEmpty(path))
                     .ToArray()
             );
-            string activePath = activeSceneId is Guid activeId
-                                && m_snapshotBySceneId.TryGetValue(activeId, out SceneDocumentSnapshot? active)
+            string activePath = activeSceneID is Guid activeID
+                                && m_snapshotBySceneID.TryGetValue(activeID, out SceneDocumentSnapshot? active)
                                 ? active.sourcePath
                                 : string.Empty;
             state.Set("activeScene", activePath);
         }
 
         internal bool TryGetSnapshot(
-            Guid sceneId,
+            Guid sceneID,
             out SceneDocumentSnapshot snapshot
-        ) => m_snapshotBySceneId.TryGetValue(sceneId, out snapshot!);
+        ) => m_snapshotBySceneID.TryGetValue(sceneID, out snapshot!);
     }
 }

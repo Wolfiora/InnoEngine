@@ -7,7 +7,7 @@ namespace Inno.Core.Jobs;
 /// </summary>
 public readonly struct JobSchedulerOptions
 {
-    private const int DEFAULT_MAX_WORKER_THREADS = 64;
+    private const int C_DEFAULT_MAX_WORKER_THREADS = 64;
 
     /// <summary>
     /// Gets the worker-pool thread count, clamped to 1 through 64 for positive values.
@@ -47,10 +47,10 @@ public readonly struct JobSchedulerOptions
         {
             int cpuCount = Environment.ProcessorCount;
             int resolved = cpuCount > 1 ? cpuCount - 1 : 1;
-            return Math.Clamp(resolved, 1, DEFAULT_MAX_WORKER_THREADS);
+            return Math.Clamp(resolved, 1, C_DEFAULT_MAX_WORKER_THREADS);
         }
 
-        return Math.Clamp(workerCount, 1, DEFAULT_MAX_WORKER_THREADS);
+        return Math.Clamp(workerCount, 1, C_DEFAULT_MAX_WORKER_THREADS);
     }
 
     private static int ResolvePositive(

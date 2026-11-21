@@ -285,7 +285,7 @@ public sealed class ProjectIdentitySettings : ISerializable
     /// </summary>
     public const string settingProtocolId = "inno.project.identity";
 
-    private string m_projectId = "inno.project";
+    private string m_projectID = "inno.project";
 
     /// <summary>
     /// Gets the stable project setting protocol identity.
@@ -298,14 +298,14 @@ public sealed class ProjectIdentitySettings : ISerializable
     [SerializableProperty]
     public string projectId
     {
-        get => m_projectId;
-        set => m_projectId = new ProjectId(value).value;
+        get => m_projectID;
+        set => m_projectID = new ProjectId(value).value;
     }
 
     /// <summary>
     /// Gets the validated project identifier.
     /// </summary>
-    public ProjectId id => new(m_projectId);
+    public ProjectId id => new(m_projectID);
 
     /// <summary>
     /// Qualifies a display name under the current project identifier.

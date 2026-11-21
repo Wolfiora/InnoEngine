@@ -273,7 +273,7 @@ internal sealed partial class EditorSceneWorkspace
         string relativePath
     ) {
         SceneDocument document = GetOrCreateDocument(scene);
-        if (document.sourceAssetId != Guid.Empty
+        if (document.sourceAssetID != Guid.Empty
             && string.Equals(document.sourcePath, relativePath, StringComparison.Ordinal) && !SynchronizeSource(scene, document)
         ) {
             throw new InvalidOperationException(
@@ -294,7 +294,7 @@ internal sealed partial class EditorSceneWorkspace
 
         byte[] savedHash = ComputeSceneHash(scene);
         document.sourcePath = relativePath;
-        document.sourceAssetId = sceneAsset.identity.persistentId;
+        document.sourceAssetID = sceneAsset.identity.persistentId;
         document.savedHash = savedHash;
         document.isDirty = false;
         document.nextRefreshTimestamp = Stopwatch.GetTimestamp()
@@ -303,14 +303,14 @@ internal sealed partial class EditorSceneWorkspace
 
     private SceneDocument GetOrCreateDocument(GameScene scene)
     {
-        Guid sceneId = scene.identity.persistentId;
-        if (m_documents.TryGetValue(sceneId, out SceneDocument? document))
+        Guid sceneID = scene.identity.persistentId;
+        if (m_documents.TryGetValue(sceneID, out SceneDocument? document))
         {
             document.scene = scene;
             return document;
         }
         document = new SceneDocument(scene, string.Empty, Guid.Empty, []);
-        m_documents.Add(sceneId, document);
+        m_documents.Add(sceneID, document);
         return document;
     }
 
@@ -372,15 +372,15 @@ internal sealed partial class EditorSceneWorkspace
 
     private static string CreateUniqueSceneName(IReadOnlyList<GameScene> scenes)
     {
-        const string c_baseName = "Untitled Scene";
+        const string C_BASE_NAME = "Untitled Scene";
         HashSet<string> names = scenes.Select(static scene => scene.name).ToHashSet(StringComparer.Ordinal);
-        if (!names.Contains(c_baseName))
+        if (!names.Contains(C_BASE_NAME))
         {
-            return c_baseName;
+            return C_BASE_NAME;
         }
         for (int suffix = 1; ; suffix++)
         {
-            string candidate = $"{c_baseName} {suffix}";
+            string candidate = $"{C_BASE_NAME} {suffix}";
             if (!names.Contains(candidate))
             {
                 return candidate;
@@ -419,7 +419,7 @@ internal sealed partial class EditorSceneWorkspace
     private sealed class SceneDocument(
         GameScene scene,
         string sourcePath,
-        Guid sourceAssetId,
+        Guid sourceAssetID,
         byte[] savedHash
     ) {
         internal SerializationSnapshot? observedSnapshot;
@@ -438,7 +438,7 @@ internal sealed partial class EditorSceneWorkspace
         /// <summary>
         /// The source asset id value used as part of this type's public representation.
         /// </summary>
-        public Guid sourceAssetId = sourceAssetId;
+        public Guid sourceAssetID = sourceAssetID;
 
         /// <summary>
         /// The saved hash value used as part of this type's public representation.

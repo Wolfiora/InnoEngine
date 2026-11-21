@@ -83,14 +83,14 @@ internal static class SceneGraphSerialization
                 GameObject gameObject = entry.gameObject;
                 Transform? parent = gameObject.transform.parent;
                 bool parentIsIncluded = parent is not null && containsObject(parent.gameObject);
-                objectWriter.Write(C_OBJECT_ID_KEY, GetSourceId(sourceIds, gameObject));
+                objectWriter.Write(C_OBJECT_ID_KEY, GetSourceID(sourceIds, gameObject));
                 objectWriter.Write(C_NAME_KEY, gameObject.name);
                 objectWriter.Write(C_TAG_KEY, gameObject.tag);
                 objectWriter.Write(C_LAYER_KEY, gameObject.layer.index);
                 objectWriter.Write(C_ACTIVE_SELF_KEY, gameObject.activeSelf);
                 objectWriter.Write(
                     C_PARENT_ID_KEY,
-                    parentIsIncluded ? GetSourceId(sourceIds, parent!.gameObject) : Guid.Empty
+                    parentIsIncluded ? GetSourceID(sourceIds, parent!.gameObject) : Guid.Empty
                 );
                 objectWriter.Write(
                     C_SIBLING_INDEX_KEY,
@@ -105,7 +105,7 @@ internal static class SceneGraphSerialization
                     objectWriter.Write(C_PREFAB_SOURCE_ASSET_KEY, sourceAsset);
                     objectWriter.Write(C_PREFAB_SOURCE_ASSET_ID_KEY, prefab!.sourceAssetId);
                     objectWriter.Write(C_PREFAB_SOURCE_OBJECT_ID_KEY, prefab.sourceObjectId);
-                    objectWriter.Write(C_PREFAB_INSTANCE_ROOT_ID_KEY, GetSourceId(sourceIds, prefab.instanceRoot));
+                    objectWriter.Write(C_PREFAB_INSTANCE_ROOT_ID_KEY, GetSourceID(sourceIds, prefab.instanceRoot));
                     objectWriter.Write(C_PREFAB_IS_VARIANT_KEY, prefab.isVariant);
                     objectWriter.Write(C_PREFAB_IS_MISSING_KEY, prefab.isMissing);
                     PrefabOverrideSet? capturedOverrides = null;
@@ -143,8 +143,8 @@ internal static class SceneGraphSerialization
                 }
                 Transform? parent = gameObject.transform.parent;
                 bool parentIsIncluded = parent is not null && containsObject(parent.gameObject);
-                key.AddValue(GetSourceId(sourceIds, gameObject));
-                key.AddValue(parentIsIncluded ? GetSourceId(sourceIds, parent!.gameObject) : Guid.Empty);
+                key.AddValue(GetSourceID(sourceIds, gameObject));
+                key.AddValue(parentIsIncluded ? GetSourceID(sourceIds, parent!.gameObject) : Guid.Empty);
                 key.AddValue((ulong)(parentIsIncluded || preserveRootSiblingOrder ? gameObject.transform.siblingIndex : 0));
                 for (int componentIndex = 0; componentIndex < entry.components.Count; componentIndex++)
                 {
@@ -153,7 +153,7 @@ internal static class SceneGraphSerialization
                     {
                         return false;
                     }
-                    key.AddValue(GetSourceId(sourceIds, component));
+                    key.AddValue(GetSourceID(sourceIds, component));
                 }
                 return true;
             }
@@ -174,51 +174,51 @@ internal static class SceneGraphSerialization
         ArgumentNullException.ThrowIfNull(references);
         ValidateObjects(objectReaders);
 
-        var gameObjectBySourceId = new Dictionary<Guid, GameObject>();
-        var componentBySourceId = new Dictionary<Guid, GameComponent>();
+        var gameObjectBySourceID = new Dictionary<Guid, GameObject>();
+        var componentBySourceID = new Dictionary<Guid, GameComponent>();
         var componentRestores = new List<(GameComponent component, byte[] state)>();
         var missingPlaceholders = new List<EngineObject>();
 
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {
             SerializationReader objectReader = objectReaders[objectIndex];
-            Guid sourceObjectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
+            Guid sourceObjectID = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
             IReadOnlyList<SerializationReader> componentReaders = objectReader.ReadObjectArray(C_COMPONENTS_KEY);
             SerializationReader transformReader = componentReaders.Single(IsTransform);
-            Guid sourceTransformId = transformReader.Read<Guid>(C_COMPONENT_ID_KEY);
+            Guid sourceTransformID = transformReader.Read<Guid>(C_COMPONENT_ID_KEY);
             GameObject gameObject = scene.CreateObject(
                 objectReader.Read<string>(C_NAME_KEY),
-                preservePersistentIds ? sourceObjectId : null,
-                preservePersistentIds ? sourceTransformId : null,
+                preservePersistentIds ? sourceObjectID : null,
+                preservePersistentIds ? sourceTransformID : null,
                 invokeReset: false
             );
             gameObject.SetTagDirect(objectReader.Read<string>(C_TAG_KEY));
             gameObject.SetLayerDirect(new GameLayer(objectReader.Read<int>(C_LAYER_KEY)));
             gameObject.SetActiveSelfDirect(objectReader.Read<bool>(C_ACTIVE_SELF_KEY));
-            gameObjectBySourceId.Add(sourceObjectId, gameObject);
-            componentBySourceId.Add(sourceTransformId, gameObject.transform);
+            gameObjectBySourceID.Add(sourceObjectID, gameObject);
+            componentBySourceID.Add(sourceTransformID, gameObject.transform);
             componentRestores.Add((gameObject.transform, transformReader.Read<byte[]>(C_STATE_KEY)));
         }
 
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {
             SerializationReader objectReader = objectReaders[objectIndex];
-            Guid sourceObjectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
-            GameObject gameObject = gameObjectBySourceId[sourceObjectId];
+            Guid sourceObjectID = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
+            GameObject gameObject = gameObjectBySourceID[sourceObjectID];
             IReadOnlyList<SerializationReader> componentReaders = objectReader.ReadObjectArray(C_COMPONENTS_KEY);
             int transformIndex = -1;
             for (int componentIndex = 0; componentIndex < componentReaders.Count; componentIndex++)
             {
                 SerializationReader componentReader = componentReaders[componentIndex];
-                Guid stableTypeId = componentReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
-                if (TryResolveComponentType(stableTypeId, componentReader.context, out Type? componentType)
+                Guid stableTypeID = componentReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
+                if (TryResolveComponentType(stableTypeID, componentReader.context, out Type? componentType)
                     && componentType == typeof(Transform)
                 ) {
                     transformIndex = componentIndex;
                     continue;
                 }
 
-                Guid sourceComponentId = componentReader.Read<Guid>(C_COMPONENT_ID_KEY);
+                Guid sourceComponentID = componentReader.Read<Guid>(C_COMPONENT_ID_KEY);
                 byte[] state = componentReader.Read<byte[]>(C_STATE_KEY);
                 AssetDependency[] dependencies = ReadStateDependencies(componentReader);
                 GameComponent component;
@@ -226,10 +226,10 @@ internal static class SceneGraphSerialization
                 {
                     component = scene.AddMissingComponent(
                         gameObject,
-                        new TypeRef(stableTypeId),
+                        new TypeRef(stableTypeID),
                         componentReader.Read<string>(C_TYPE_NAME_KEY),
                         state,
-                        preservePersistentIds ? sourceComponentId : null,
+                        preservePersistentIds ? sourceComponentID : null,
                         dependencies
                     );
                     missingPlaceholders.Add(component);
@@ -239,29 +239,29 @@ internal static class SceneGraphSerialization
                     component = scene.AddComponent(
                         gameObject,
                         componentType,
-                        preservePersistentIds ? sourceComponentId : null,
+                        preservePersistentIds ? sourceComponentID : null,
                         invokeReset: false
                     );
                     componentRestores.Add((component, state));
                 }
-                componentBySourceId.Add(sourceComponentId, component);
+                componentBySourceID.Add(sourceComponentID, component);
             }
             if (transformIndex < 0)
             {
                 throw new InvalidDataException(
-                    $"Scene graph object '{sourceObjectId}' does not contain its validated Transform component."
+                    $"Scene graph object '{sourceObjectID}' does not contain its validated Transform component."
                 );
             }
             gameObject.SetComponentIndex(gameObject.transform, transformIndex);
         }
 
-        foreach ((Guid sourceId, GameObject gameObject) in gameObjectBySourceId)
+        foreach ((Guid sourceID, GameObject gameObject) in gameObjectBySourceID)
         {
-            references.Register(sourceId, gameObject);
+            references.Register(sourceID, gameObject);
         }
-        foreach ((Guid sourceId, GameComponent component) in componentBySourceId)
+        foreach ((Guid sourceID, GameComponent component) in componentBySourceID)
         {
-            references.Register(sourceId, component);
+            references.Register(sourceID, component);
         }
 
         if (restoreProperties)
@@ -284,16 +284,16 @@ internal static class SceneGraphSerialization
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {
             SerializationReader objectReader = objectReaders[objectIndex];
-            Guid sourceObjectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
-            Guid parentId = objectReader.Read<Guid>(C_PARENT_ID_KEY);
-            Transform? parent = parentId == Guid.Empty
+            Guid sourceObjectID = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
+            Guid parentID = objectReader.Read<Guid>(C_PARENT_ID_KEY);
+            Transform? parent = parentID == Guid.Empty
                                 ? null
-                                : gameObjectBySourceId.TryGetValue(parentId, out GameObject? parentObject)
+                                : gameObjectBySourceID.TryGetValue(parentID, out GameObject? parentObject)
                                   ? parentObject.transform
                                   : throw new InvalidDataException(
-                                      $"Parent object '{parentId}' for object '{sourceObjectId}' is outside the restored boundary."
+                                      $"Parent object '{parentID}' for object '{sourceObjectID}' is outside the restored boundary."
                                   );
-            scene.SetParent(gameObjectBySourceId[sourceObjectId].transform, parent, worldPositionStays: false);
+            scene.SetParent(gameObjectBySourceID[sourceObjectID].transform, parent, worldPositionStays: false);
         }
 
         foreach (IGrouping<Guid, SerializationReader> siblingGroup in objectReaders.GroupBy(
@@ -303,13 +303,13 @@ internal static class SceneGraphSerialization
                 reader => reader.Read<int>(C_SIBLING_INDEX_KEY)
             )) {
                 scene.SetSiblingIndex(
-                    gameObjectBySourceId[objectReader.Read<Guid>(C_OBJECT_ID_KEY)].transform,
+                    gameObjectBySourceID[objectReader.Read<Guid>(C_OBJECT_ID_KEY)].transform,
                     objectReader.Read<int>(C_SIBLING_INDEX_KEY)
                 );
             }
         }
 
-        var connectionByRootId = new Dictionary<Guid, PrefabConnectionRecord>();
+        var connectionByRootID = new Dictionary<Guid, PrefabConnectionRecord>();
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {
             SerializationReader objectReader = objectReaders[objectIndex];
@@ -317,21 +317,21 @@ internal static class SceneGraphSerialization
             {
                 continue;
             }
-            Guid serializedObjectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
-            Guid instanceRootId = objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY);
-            if (serializedObjectId != instanceRootId)
+            Guid serializedObjectID = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
+            Guid instanceRootID = objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY);
+            if (serializedObjectID != instanceRootID)
             {
                 continue;
             }
-            if (!gameObjectBySourceId.TryGetValue(instanceRootId, out GameObject? instanceRoot))
+            if (!gameObjectBySourceID.TryGetValue(instanceRootID, out GameObject? instanceRoot))
             {
                 throw new InvalidDataException(
-                    $"Prefab instance root '{instanceRootId}' at '{objectReader.path}' is outside the restored graph."
+                    $"Prefab instance root '{instanceRootID}' at '{objectReader.path}' is outside the restored graph."
                 );
             }
             AssetObject sourceAsset = objectReader.Read<AssetObject>(C_PREFAB_SOURCE_ASSET_KEY);
-            Guid sourceAssetId = objectReader.Read<Guid>(C_PREFAB_SOURCE_ASSET_ID_KEY);
-            if (sourceAsset.identity.persistentId != sourceAssetId)
+            Guid sourceAssetID = objectReader.Read<Guid>(C_PREFAB_SOURCE_ASSET_ID_KEY);
+            if (sourceAsset.identity.persistentId != sourceAssetID)
             {
                 throw new InvalidDataException(
                     $"Prefab source token and source identity disagree at '{objectReader.path}'."
@@ -348,17 +348,17 @@ internal static class SceneGraphSerialization
             foreach (SerializationReader mappingReader in
                      objectReader.ReadObjectArray(C_PREFAB_COMPONENT_MAPPINGS_KEY)
             ) {
-                Guid componentSourceId = mappingReader.Read<Guid>(C_PREFAB_MAPPING_SOURCE_ID_KEY);
-                Guid componentInstanceId = mappingReader.Read<Guid>(C_PREFAB_MAPPING_INSTANCE_ID_KEY);
-                if (!componentBySourceId.TryGetValue(componentInstanceId, out GameComponent? component))
+                Guid componentSourceID = mappingReader.Read<Guid>(C_PREFAB_MAPPING_SOURCE_ID_KEY);
+                Guid componentInstanceID = mappingReader.Read<Guid>(C_PREFAB_MAPPING_INSTANCE_ID_KEY);
+                if (!componentBySourceID.TryGetValue(componentInstanceID, out GameComponent? component))
                 {
                     throw new InvalidDataException(
-                        $"Prefab component mapping '{componentInstanceId}' at '{mappingReader.path}' does not resolve."
+                        $"Prefab component mapping '{componentInstanceID}' at '{mappingReader.path}' does not resolve."
                     );
                 }
-                connection.MapComponent(componentSourceId, component);
+                connection.MapComponent(componentSourceID, component);
             }
-            connectionByRootId.Add(instanceRootId, connection);
+            connectionByRootID.Add(instanceRootID, connection);
             instanceRoot.SetPrefabConnectionDirect(connection);
         }
 
@@ -369,22 +369,22 @@ internal static class SceneGraphSerialization
             {
                 continue;
             }
-            Guid serializedObjectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
-            Guid instanceRootId = objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY);
-            if (!gameObjectBySourceId.TryGetValue(instanceRootId, out GameObject? instanceRoot)
-                || !connectionByRootId.TryGetValue(instanceRootId, out PrefabConnectionRecord? connection)
+            Guid serializedObjectID = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
+            Guid instanceRootID = objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY);
+            if (!gameObjectBySourceID.TryGetValue(instanceRootID, out GameObject? instanceRoot)
+                || !connectionByRootID.TryGetValue(instanceRootID, out PrefabConnectionRecord? connection)
             ) {
                 throw new InvalidDataException(
-                    $"Prefab instance root '{instanceRootId}' at '{objectReader.path}' has no connection record."
+                    $"Prefab instance root '{instanceRootID}' at '{objectReader.path}' has no connection record."
                 );
             }
-            GameObject gameObject = gameObjectBySourceId[serializedObjectId];
-            Guid prefabSourceObjectId = objectReader.Read<Guid>(C_PREFAB_SOURCE_OBJECT_ID_KEY);
-            connection.MapObject(prefabSourceObjectId, gameObject);
+            GameObject gameObject = gameObjectBySourceID[serializedObjectID];
+            Guid prefabSourceObjectID = objectReader.Read<Guid>(C_PREFAB_SOURCE_OBJECT_ID_KEY);
+            connection.MapObject(prefabSourceObjectID, gameObject);
             gameObject.SetPrefabInstanceDirect(
                 new PrefabInstanceInfo(
                     connection.sourceAsset.identity.persistentId,
-                    prefabSourceObjectId,
+                    prefabSourceObjectID,
                     instanceRoot,
                     ReferenceEquals(gameObject, instanceRoot),
                     connection.isVariant,
@@ -396,14 +396,14 @@ internal static class SceneGraphSerialization
             );
         }
 
-        foreach (GameObject root in gameObjectBySourceId.Values.Where(
+        foreach (GameObject root in gameObjectBySourceID.Values.Where(
             static candidate => candidate.transform.parent is null
         )) {
             scene.RecomputeActiveSubtree(root);
         }
         return new RestoredSceneGraph(
-            gameObjectBySourceId,
-            componentBySourceId,
+            gameObjectBySourceID,
+            componentBySourceID,
             componentRestores,
             missingPlaceholders,
             missingReferenceAliases
@@ -412,7 +412,7 @@ internal static class SceneGraphSerialization
 
     internal static void ValidateScene(SerializationReader reader)
     {
-        EnsurePersistentId(reader.Read<Guid>(C_SCENE_ID_KEY), $"{reader.path}.{C_SCENE_ID_KEY}");
+        EnsurePersistentID(reader.Read<Guid>(C_SCENE_ID_KEY), $"{reader.path}.{C_SCENE_ID_KEY}");
         _ = reader.Read<string>(C_NAME_KEY);
         ValidateMissingReferenceAliases(reader);
         ValidateObjects(reader.ReadObjectArray(C_OBJECTS_KEY));
@@ -428,7 +428,7 @@ internal static class SceneGraphSerialization
         system
     ) =>
     {
-            systemWriter.Write(C_SYSTEM_ID_KEY, GetSourceId(sourceIds, system));
+            systemWriter.Write(C_SYSTEM_ID_KEY, GetSourceID(sourceIds, system));
             if (system is MissingGameSystem missing)
             {
                 systemWriter.Write(C_STABLE_TYPE_ID_KEY, missing.missingType.stableId);
@@ -454,28 +454,28 @@ internal static class SceneGraphSerialization
         var result = new List<(GameSystem, byte[])>(systemReaders.Count);
         foreach (SerializationReader systemReader in systemReaders)
         {
-            Guid sourceId = systemReader.Read<Guid>(C_SYSTEM_ID_KEY);
-            Guid stableTypeId = systemReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
+            Guid sourceID = systemReader.Read<Guid>(C_SYSTEM_ID_KEY);
+            Guid stableTypeID = systemReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
             byte[] state = systemReader.Read<byte[]>(C_STATE_KEY);
             AssetDependency[] dependencies = ReadStateDependencies(systemReader);
             GameSystem system;
-            if (!TryResolveSystemType(stableTypeId, systemReader.context, out Type? systemType) || systemType is null)
+            if (!TryResolveSystemType(stableTypeID, systemReader.context, out Type? systemType) || systemType is null)
             {
                     system = scene.AddMissingSystem(
-                        new TypeRef(stableTypeId),
+                        new TypeRef(stableTypeID),
                         systemReader.Read<string>(C_TYPE_NAME_KEY),
                         state,
-                        preservePersistentIds ? sourceId : null,
+                        preservePersistentIds ? sourceID : null,
                         dependencies
                     );
                 missingPlaceholders?.Add(system);
             }
             else
             {
-                system = scene.AddSystem(systemType, preservePersistentIds ? sourceId : null, invokeReset: false);
+                system = scene.AddSystem(systemType, preservePersistentIds ? sourceID : null, invokeReset: false);
                 result.Add((system, state));
             }
-            references.Register(sourceId, system);
+            references.Register(sourceID, system);
         }
         return result;
     }
@@ -516,11 +516,11 @@ internal static class SceneGraphSerialization
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {
             SerializationReader objectReader = objectReaders[objectIndex];
-            Guid objectId = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
-            EnsurePersistentId(objectId, $"{objectReader.path}.{C_OBJECT_ID_KEY}");
-            if (!objectIds.Add(objectId))
+            Guid objectID = objectReader.Read<Guid>(C_OBJECT_ID_KEY);
+            EnsurePersistentID(objectID, $"{objectReader.path}.{C_OBJECT_ID_KEY}");
+            if (!objectIds.Add(objectID))
             {
-                throw new InvalidDataException($"Duplicate GameObject local identity '{objectId}' at '{objectReader.path}'.");
+                throw new InvalidDataException($"Duplicate GameObject local identity '{objectID}' at '{objectReader.path}'.");
             }
             _ = objectReader.Read<string>(C_NAME_KEY);
             if (objectReader.Contains(C_TAG_KEY))
@@ -537,15 +537,15 @@ internal static class SceneGraphSerialization
                 {
                     throw new InvalidDataException($"Prefab source token is missing at '{objectReader.path}'.");
                 }
-                EnsurePersistentId(
+                EnsurePersistentID(
                     objectReader.Read<Guid>(C_PREFAB_SOURCE_ASSET_ID_KEY),
                     $"{objectReader.path}.{C_PREFAB_SOURCE_ASSET_ID_KEY}"
                 );
-                EnsurePersistentId(
+                EnsurePersistentID(
                     objectReader.Read<Guid>(C_PREFAB_SOURCE_OBJECT_ID_KEY),
                     $"{objectReader.path}.{C_PREFAB_SOURCE_OBJECT_ID_KEY}"
                 );
-                EnsurePersistentId(
+                EnsurePersistentID(
                     objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY),
                     $"{objectReader.path}.{C_PREFAB_INSTANCE_ROOT_ID_KEY}"
                 );
@@ -553,7 +553,7 @@ internal static class SceneGraphSerialization
                 _ = objectReader.Read<bool>(C_PREFAB_IS_MISSING_KEY);
                 _ = objectReader.Read<int>(C_PREFAB_OVERRIDE_COUNT_KEY);
                 _ = objectReader.Read<int>(C_PREFAB_ORPHANED_OVERRIDE_COUNT_KEY);
-                if (objectId == objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY))
+                if (objectID == objectReader.Read<Guid>(C_PREFAB_INSTANCE_ROOT_ID_KEY))
                 {
                     _ = objectReader.ReadObjectArray(C_PREFAB_COMPONENT_MAPPINGS_KEY);
                     _ = objectReader.ReadObjectArray(C_PREFAB_PROPERTY_OVERRIDES_KEY);
@@ -570,15 +570,15 @@ internal static class SceneGraphSerialization
             for (int componentIndex = 0; componentIndex < componentReaders.Count; componentIndex++)
             {
                 SerializationReader componentReader = componentReaders[componentIndex];
-                Guid componentId = componentReader.Read<Guid>(C_COMPONENT_ID_KEY);
-                EnsurePersistentId(componentId, $"{componentReader.path}.{C_COMPONENT_ID_KEY}");
-                if (!componentIds.Add(componentId))
+                Guid componentID = componentReader.Read<Guid>(C_COMPONENT_ID_KEY);
+                EnsurePersistentID(componentID, $"{componentReader.path}.{C_COMPONENT_ID_KEY}");
+                if (!componentIds.Add(componentID))
                 {
-                    throw new InvalidDataException($"Duplicate GameComponent local identity '{componentId}' at '{componentReader.path}'.");
+                    throw new InvalidDataException($"Duplicate GameComponent local identity '{componentID}' at '{componentReader.path}'.");
                 }
-                Guid stableTypeId = componentReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
-                EnsurePersistentId(stableTypeId, $"{componentReader.path}.{C_STABLE_TYPE_ID_KEY}");
-                if (TryResolveComponentType(stableTypeId, componentReader.context, out Type? componentType)
+                Guid stableTypeID = componentReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
+                EnsurePersistentID(stableTypeID, $"{componentReader.path}.{C_STABLE_TYPE_ID_KEY}");
+                if (TryResolveComponentType(stableTypeID, componentReader.context, out Type? componentType)
                     && componentType == typeof(Transform)
                 ) {
                     transformCount++;
@@ -591,18 +591,18 @@ internal static class SceneGraphSerialization
             if (transformCount != 1)
             {
                 throw new InvalidDataException(
-                    $"Scene graph object '{objectId}' must contain exactly one Transform, but found '{transformCount}'."
+                    $"Scene graph object '{objectID}' must contain exactly one Transform, but found '{transformCount}'."
                 );
             }
         }
 
         for (int objectIndex = 0; objectIndex < objectReaders.Count; objectIndex++)
         {
-            Guid parentId = objectReaders[objectIndex].Read<Guid>(C_PARENT_ID_KEY);
-            if (parentId != Guid.Empty && !objectIds.Contains(parentId))
+            Guid parentID = objectReaders[objectIndex].Read<Guid>(C_PARENT_ID_KEY);
+            if (parentID != Guid.Empty && !objectIds.Contains(parentID))
             {
                 throw new InvalidDataException(
-                    $"Parent object '{parentId}' at '{objectReaders[objectIndex].path}' is outside the serialized boundary."
+                    $"Parent object '{parentID}' at '{objectReaders[objectIndex].path}' is outside the serialized boundary."
                 );
             }
         }
@@ -643,15 +643,15 @@ internal static class SceneGraphSerialization
         var identities = new HashSet<Guid>();
         foreach (SerializationReader systemReader in systemReaders)
         {
-            Guid systemId = systemReader.Read<Guid>(C_SYSTEM_ID_KEY);
-            EnsurePersistentId(systemId, $"{systemReader.path}.{C_SYSTEM_ID_KEY}");
-            if (!identities.Add(systemId))
+            Guid systemID = systemReader.Read<Guid>(C_SYSTEM_ID_KEY);
+            EnsurePersistentID(systemID, $"{systemReader.path}.{C_SYSTEM_ID_KEY}");
+            if (!identities.Add(systemID))
             {
-                throw new InvalidDataException($"Duplicate GameSystem identity '{systemId}' at '{systemReader.path}'.");
+                throw new InvalidDataException($"Duplicate GameSystem identity '{systemID}' at '{systemReader.path}'.");
             }
-            Guid stableTypeId = systemReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
-            EnsurePersistentId(stableTypeId, $"{systemReader.path}.{C_STABLE_TYPE_ID_KEY}");
-            _ = TryResolveSystemType(stableTypeId, systemReader.context, out _);
+            Guid stableTypeID = systemReader.Read<Guid>(C_STABLE_TYPE_ID_KEY);
+            EnsurePersistentID(stableTypeID, $"{systemReader.path}.{C_STABLE_TYPE_ID_KEY}");
+            _ = TryResolveSystemType(stableTypeID, systemReader.context, out _);
             EnsureTypeName(systemReader.Read<string>(C_TYPE_NAME_KEY), systemReader.path);
             _ = systemReader.Read<byte[]>(C_STATE_KEY);
             _ = ReadStateDependencies(systemReader);
@@ -685,11 +685,11 @@ internal static class SceneGraphSerialization
         }
     }
 
-    private static Guid GetSourceId(
+    private static Guid GetSourceID(
         IReadOnlyDictionary<EngineObject, Guid> sourceIds,
         EngineObject engineObject
-    ) => sourceIds.TryGetValue(engineObject, out Guid sourceId)
-         ? sourceId
+    ) => sourceIds.TryGetValue(engineObject, out Guid sourceID)
+         ? sourceID
          : throw new InvalidOperationException(
              $"Engine object '{engineObject.identity.persistentId}' has no source-local identity."
          );
@@ -708,16 +708,16 @@ internal static class SceneGraphSerialization
             return;
         }
 
-        Dictionary<Guid, Guid> targetByPersistentId = sourceIds.Keys.ToDictionary(
+        Dictionary<Guid, Guid> targetByPersistentID = sourceIds.Keys.ToDictionary(
             static engineObject => engineObject.identity.persistentId,
             engineObject => sourceIds[engineObject]
         );
         var aliases = new Dictionary<Guid, Guid>();
-        foreach ((Guid persistentId, Guid sourceId) in targetByPersistentId)
+        foreach ((Guid persistentID, Guid sourceID) in targetByPersistentID)
         {
-            if (persistentId != sourceId)
+            if (persistentID != sourceID)
             {
-                aliases[persistentId] = sourceId;
+                aliases[persistentID] = sourceID;
             }
         }
         for (int i = 0; i < missing.Length; i++)
@@ -728,12 +728,12 @@ internal static class SceneGraphSerialization
                 MissingGameSystem system => system.referenceAliases,
                 _ => throw new InvalidOperationException("Unknown missing scene element.")
             };
-            foreach ((Guid alias, Guid runtimePersistentId) in retained)
+            foreach ((Guid alias, Guid runtimePersistentID) in retained)
             {
-                if (targetByPersistentId.TryGetValue(runtimePersistentId, out Guid targetSourceId)
-                    && alias != targetSourceId
+                if (targetByPersistentID.TryGetValue(runtimePersistentID, out Guid targetSourceID)
+                    && alias != targetSourceID
                 ) {
-                    aliases[alias] = targetSourceId;
+                    aliases[alias] = targetSourceID;
                 }
             }
         }
@@ -750,9 +750,9 @@ internal static class SceneGraphSerialization
         IReadOnlyList<EngineObject> missingPlaceholders
     ) {
         Dictionary<Guid, Guid> retained = references.CaptureRemappedAliases();
-        foreach ((Guid alias, Guid targetSourceId) in aliases)
+        foreach ((Guid alias, Guid targetSourceID) in aliases)
         {
-            EngineObject target = references.GetRegistered(targetSourceId);
+            EngineObject target = references.GetRegistered(targetSourceID);
             references.Register(alias, target);
             retained[alias] = target.identity.persistentId;
         }
@@ -789,7 +789,7 @@ internal static class SceneGraphSerialization
             {
                 GameComponent component = scene.FindComponent(pair.Value)!;
                 mappingWriter.Write(C_PREFAB_MAPPING_SOURCE_ID_KEY, pair.Key);
-                mappingWriter.Write(C_PREFAB_MAPPING_INSTANCE_ID_KEY, GetSourceId(serializedIds, component));
+                mappingWriter.Write(C_PREFAB_MAPPING_INSTANCE_ID_KEY, GetSourceID(serializedIds, component));
             }
         );
         writer.WriteObjectArray(
@@ -800,7 +800,7 @@ internal static class SceneGraphSerialization
                 property
             ) =>
             {
-                overrideWriter.Write(C_PREFAB_MAPPING_SOURCE_ID_KEY, property.sourceComponentId);
+                overrideWriter.Write(C_PREFAB_MAPPING_SOURCE_ID_KEY, property.sourceComponentID);
                 overrideWriter.Write(C_PREFAB_PROPERTY_NAME_KEY, property.propertyName);
                 overrideWriter.Write(C_PREFAB_PROPERTY_VALUE_KEY, property.value);
                 overrideWriter.Write(C_PREFAB_OVERRIDE_ORPHANED_KEY, property.isOrphaned);
@@ -814,7 +814,7 @@ internal static class SceneGraphSerialization
                 structure
             ) =>
             {
-                overrideWriter.Write(C_PREFAB_MAPPING_SOURCE_ID_KEY, structure.sourceObjectId);
+                overrideWriter.Write(C_PREFAB_MAPPING_SOURCE_ID_KEY, structure.sourceObjectID);
                 overrideWriter.Write(C_PREFAB_STRUCTURE_KIND_KEY, (int)structure.kind);
                 overrideWriter.Write(C_PREFAB_OVERRIDE_ORPHANED_KEY, structure.isOrphaned);
             }
@@ -849,21 +849,21 @@ internal static class SceneGraphSerialization
                 structureReader.Read<bool>(C_PREFAB_OVERRIDE_ORPHANED_KEY)
             );
         }
-        foreach (Guid sourceId in reader.Read<Guid[]>(C_PREFAB_REMOVED_OBJECTS_KEY))
+        foreach (Guid sourceID in reader.Read<Guid[]>(C_PREFAB_REMOVED_OBJECTS_KEY))
         {
-            result.MarkObjectRemoved(sourceId);
+            result.MarkObjectRemoved(sourceID);
         }
-        foreach (Guid sourceId in reader.Read<Guid[]>(C_PREFAB_REMOVED_COMPONENTS_KEY))
+        foreach (Guid sourceID in reader.Read<Guid[]>(C_PREFAB_REMOVED_COMPONENTS_KEY))
         {
-            result.MarkComponentRemoved(sourceId);
+            result.MarkComponentRemoved(sourceID);
         }
-        foreach (Guid instanceId in reader.Read<Guid[]>(C_PREFAB_ADDED_OBJECTS_KEY))
+        foreach (Guid instanceID in reader.Read<Guid[]>(C_PREFAB_ADDED_OBJECTS_KEY))
         {
-            result.MarkObjectAdded(instanceId);
+            result.MarkObjectAdded(instanceID);
         }
-        foreach (Guid instanceId in reader.Read<Guid[]>(C_PREFAB_ADDED_COMPONENTS_KEY))
+        foreach (Guid instanceID in reader.Read<Guid[]>(C_PREFAB_ADDED_COMPONENTS_KEY))
         {
-            result.MarkComponentAdded(instanceId);
+            result.MarkComponentAdded(instanceID);
         }
         return result;
     }
@@ -873,11 +873,11 @@ internal static class SceneGraphSerialization
            && type == typeof(Transform);
 
     private static bool TryResolveComponentType(
-        Guid stableTypeId,
+        Guid stableTypeID,
         SerializationContext context,
         out Type? componentType
     ) {
-        if (!TryResolve(new TypeRef(stableTypeId), context, out componentType))
+        if (!TryResolve(new TypeRef(stableTypeID), context, out componentType))
         {
             return false;
         }
@@ -885,25 +885,25 @@ internal static class SceneGraphSerialization
         if (!typeof(GameComponent).IsAssignableFrom(resolved) || resolved.IsAbstract)
         {
             throw new InvalidDataException(
-                $"Stable type id '{stableTypeId}' resolves to invalid component type '{resolved.FullName}'."
+                $"Stable type id '{stableTypeID}' resolves to invalid component type '{resolved.FullName}'."
             );
         }
         return true;
     }
 
     private static bool TryResolveSystemType(
-        Guid stableTypeId,
+        Guid stableTypeID,
         SerializationContext context,
         out Type? systemType
     ) {
-        if (!TryResolve(new TypeRef(stableTypeId), context, out systemType))
+        if (!TryResolve(new TypeRef(stableTypeID), context, out systemType))
         {
             return false;
         }
         Type resolved = systemType!;
         if (!typeof(GameSystem).IsAssignableFrom(resolved) || resolved.IsAbstract)
         {
-            throw new InvalidDataException($"Stable type id '{stableTypeId}' resolves to invalid system '{resolved.FullName}'.");
+            throw new InvalidDataException($"Stable type id '{stableTypeID}' resolves to invalid system '{resolved.FullName}'.");
         }
         return true;
     }
@@ -919,7 +919,7 @@ internal static class SceneGraphSerialization
         GameComponent component,
         IReadOnlyDictionary<EngineObject, Guid> sourceIds
     ) {
-        writer.Write(C_COMPONENT_ID_KEY, GetSourceId(sourceIds, component));
+        writer.Write(C_COMPONENT_ID_KEY, GetSourceID(sourceIds, component));
         if (component is MissingGameComponent missing)
         {
             writer.Write(C_STABLE_TYPE_ID_KEY, missing.missingType.stableId);
@@ -1007,11 +1007,11 @@ internal static class SceneGraphSerialization
         return dependencies;
     }
 
-    private static void EnsurePersistentId(
-        Guid persistentId,
+    private static void EnsurePersistentID(
+        Guid persistentID,
         string path
     ) {
-        if (persistentId == Guid.Empty)
+        if (persistentID == Guid.Empty)
         {
             throw new InvalidDataException($"Persistent or local identity at '{path}' cannot be empty.");
         }

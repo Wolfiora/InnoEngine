@@ -82,10 +82,10 @@ internal sealed class BuildCommand
         };
     }
 
-    internal PluginBuildRequest CreatePluginRequest(ProjectId projectId)
+    internal PluginBuildRequest CreatePluginRequest(ProjectId projectID)
         => new()
     {
-        pluginId = projectId.value,
+        pluginId = projectID.value,
         displayName = Require(m_values, "display-name"),
         outputPath = Require(m_values, "output"),
         dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)

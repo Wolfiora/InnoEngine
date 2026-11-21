@@ -179,7 +179,7 @@ public sealed class BuildCacheCleanupPlan
         string path
     ) {
         if (!Path.IsPathFullyQualified(path) || !IsContained(root, path)
-            || BuildCacheInventory.pathComparer.Equals(
+            || BuildCacheInventory.PATH_COMPARER.Equals(
                 Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)),
                 Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))
             )
@@ -203,7 +203,7 @@ public sealed class BuildCacheCleanupPlan
         IReadOnlyList<BuildCacheOwnerDescriptor> owners,
         BuildCachePolicy policy,
         bool retireAll,
-        string? targetId,
+        string? targetID,
         CancellationToken cancellationToken,
         Stopwatch elapsed
     ) {
@@ -220,13 +220,13 @@ public sealed class BuildCacheCleanupPlan
         ValidateOwners(root, frozen);
         BuildCacheInventory inventory = BuildCacheInventory.Read(root, frozen, cancellationToken);
         HashSet<string> protectedPaths = inventory.Protect(inventory.roots);
-        if (targetId is not null)
+        if (targetID is not null)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(targetID);
             protectedPaths.UnionWith(
                 inventory.Protect(
                     inventory.artifacts.Values
-                        .Where(entry => entry.artifact.targetId != targetId)
+                        .Where(entry => entry.artifact.targetId != targetID)
                         .Select(static entry => entry.artifact.directory)
                 )
             );

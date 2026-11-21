@@ -18,7 +18,7 @@ internal static class ScriptApiStubSourceBuilder
         | BindingFlags.Static
         | BindingFlags.DeclaredOnly;
 
-    private static readonly HashSet<string> C_KEYWORDS = new(StringComparer.Ordinal)
+    private static readonly HashSet<string> KEYWORDS = new(StringComparer.Ordinal)
     {
         "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked",
         "class", "const", "continue", "decimal", "default", "delegate", "do", "double", "else",
@@ -31,7 +31,7 @@ internal static class ScriptApiStubSourceBuilder
         "void", "volatile", "while"
     };
 
-    private static readonly IReadOnlyDictionary<Type, string> C_TYPE_ALIASES =
+    private static readonly IReadOnlyDictionary<Type, string> TYPE_ALIASES =
         new Dictionary<Type, string>
         {
             [typeof(void)] = "void",
@@ -802,7 +802,7 @@ internal static class ScriptApiStubSourceBuilder
         {
             return type.Name + annotation;
         }
-        if (C_TYPE_ALIASES.TryGetValue(type, out string? alias))
+        if (TYPE_ALIASES.TryGetValue(type, out string? alias))
         {
             return alias + annotation;
         }
@@ -935,7 +935,7 @@ internal static class ScriptApiStubSourceBuilder
         {
             return type.GetGenericParameterConstraints().All(IsApiType);
         }
-        if (C_TYPE_ALIASES.ContainsKey(type) || type == typeof(void))
+        if (TYPE_ALIASES.ContainsKey(type) || type == typeof(void))
         {
             return true;
         }
@@ -996,7 +996,7 @@ internal static class ScriptApiStubSourceBuilder
             }
             yield break;
         }
-        if (C_TYPE_ALIASES.ContainsKey(type) || type == typeof(void))
+        if (TYPE_ALIASES.ContainsKey(type) || type == typeof(void))
         {
             yield break;
         }
@@ -1095,7 +1095,7 @@ internal static class ScriptApiStubSourceBuilder
         return symbol is not null;
     }
 
-    private static string EscapeIdentifier(string value) => C_KEYWORDS.Contains(value) ? "@" + value : value;
+    private static string EscapeIdentifier(string value) => KEYWORDS.Contains(value) ? "@" + value : value;
 
     private static string RemoveArity(string value)
     {

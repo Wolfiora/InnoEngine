@@ -36,7 +36,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
     /// </summary>
     public const string compilationWideUsingDiagnosticId = "INNO2003";
 
-    private static readonly DiagnosticDescriptor s_directImplementationNamespace = new(
+    private static readonly DiagnosticDescriptor DIRECT_IMPLEMENTATION_NAMESPACE = new(
         directImplementationNamespaceDiagnosticId,
         "Implementation namespace is not part of the scripting API",
         "Use scripting namespace '{0}' instead of implementation namespace '{1}'",
@@ -45,7 +45,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor s_missingLogicalNamespace = new(
+    private static readonly DiagnosticDescriptor MISSING_LOGICAL_NAMESPACE = new(
         missingLogicalNamespaceDiagnosticId,
         "Scripting API namespace is not imported",
         "Type '{0}' requires 'using {1};'",
@@ -54,7 +54,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         isEnabledByDefault: true
     );
 
-    private static readonly DiagnosticDescriptor s_compilationWideUsing = new(
+    private static readonly DiagnosticDescriptor COMPILATION_WIDE_USING = new(
         compilationWideUsingDiagnosticId,
         "Compilation-wide namespace imports are not supported",
         "Use an ordinary using directive in each source file",
@@ -67,7 +67,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
     /// Gets the complete compiler diagnostic set enforced by this analyzer.
     /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-        => [s_directImplementationNamespace, s_missingLogicalNamespace, s_compilationWideUsing];
+        => [DIRECT_IMPLEMENTATION_NAMESPACE, MISSING_LOGICAL_NAMESPACE, COMPILATION_WIDE_USING];
 
     /// <summary>
     /// Initializes owned resources and establishes the instance's active lifetime.
@@ -111,7 +111,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        context.ReportDiagnostic(Diagnostic.Create(s_compilationWideUsing, usingDirective.GlobalKeyword.GetLocation()));
+        context.ReportDiagnostic(Diagnostic.Create(COMPILATION_WIDE_USING, usingDirective.GlobalKeyword.GetLocation()));
     }
 
     private static void AnalyzeUsing(
@@ -131,7 +131,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         }
         context.ReportDiagnostic(
             Diagnostic.Create(
-                s_directImplementationNamespace,
+                DIRECT_IMPLEMENTATION_NAMESPACE,
                 usingDirective.Name.GetLocation(),
                 mapping.apiNamespace,
                 namespaceName
@@ -169,7 +169,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         }
         context.ReportDiagnostic(
             Diagnostic.Create(
-                s_missingLogicalNamespace,
+                MISSING_LOGICAL_NAMESPACE,
                 context.Node.GetLocation(),
                 type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat),
                 mapping.apiNamespace
@@ -199,7 +199,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         }
         context.ReportDiagnostic(
             Diagnostic.Create(
-                s_directImplementationNamespace,
+                DIRECT_IMPLEMENTATION_NAMESPACE,
                 context.Node.GetLocation(),
                 mapping.apiNamespace,
                 implementationNamespace

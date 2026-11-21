@@ -42,7 +42,7 @@ public sealed class NativeDeploymentIndex
         IReadOnlyDictionary<string, string> files
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
-        this.targetId = targetId;
+        this.targetID = targetId;
         this.libraries = Freeze(libraries);
         this.files = Freeze(files);
     }
@@ -50,7 +50,7 @@ public sealed class NativeDeploymentIndex
     /// <summary>
     /// Gets the explicit product target, without reconstructing it from OS or CPU names.
     /// </summary>
-    public string targetId { get; }
+    public string targetID { get; }
 
     /// <summary>
     /// Gets immutable logical library mappings selected by composition.
@@ -74,7 +74,7 @@ public sealed class NativeDeploymentIndex
         using (var writer = new Utf8JsonWriter(stream))
         {
             writer.WriteStartObject();
-            writer.WriteString("targetId", targetId);
+            writer.WriteString("targetId", targetID);
             WriteMapping(writer, "libraries", libraries);
             WriteMapping(writer, "files", files);
             writer.WriteEndObject();

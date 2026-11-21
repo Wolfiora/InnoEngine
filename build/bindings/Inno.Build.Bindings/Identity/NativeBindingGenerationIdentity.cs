@@ -21,7 +21,7 @@ namespace Inno.Build.Bindings;
 
 internal static class NativeBindingGenerationIdentity
 {
-    private static readonly JsonSerializerOptions S_OPTIONS = new()
+    private static readonly JsonSerializerOptions OPTIONS = new()
     {
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
     };
@@ -138,7 +138,7 @@ internal static class NativeBindingGenerationIdentity
     {
         var buffer = new ArrayBufferWriter<byte>();
         using var writer = new Utf8JsonWriter(buffer);
-        WriteIdentity(writer, JsonSerializer.SerializeToElement(value, S_OPTIONS));
+        WriteIdentity(writer, JsonSerializer.SerializeToElement(value, OPTIONS));
         writer.Flush();
         return Encoding.UTF8.GetString(buffer.WrittenSpan);
     }

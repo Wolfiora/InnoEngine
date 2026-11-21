@@ -32,13 +32,13 @@ public sealed class NativeProcessTestHostTests
             NativeProcessTestHost.Run(typeof(NativeProcessHostFixture).Assembly.Location, "timeout", 3_000));
         Assert.Contains("Fixture stdout: timeout", failure.Message);
         Assert.Contains("Fixture stderr: timeout", failure.Message);
-        const string childPrefix = "Child PID: ";
-        int start = failure.Message.IndexOf(childPrefix, StringComparison.Ordinal);
+        const string C_CHILD_PREFIX = "Child PID: ";
+        int start = failure.Message.IndexOf(C_CHILD_PREFIX, StringComparison.Ordinal);
         Assert.True(start >= 0, failure.Message);
-        ReadOnlySpan<char> identifier = failure.Message.AsSpan(start + childPrefix.Length);
+        ReadOnlySpan<char> identifier = failure.Message.AsSpan(start + C_CHILD_PREFIX.Length);
         int end = identifier.IndexOfAny('\r', '\n');
-        int childId = int.Parse(end < 0 ? identifier : identifier[..end], CultureInfo.InvariantCulture);
-        Assert.True(SpinWait.SpinUntil(() => HasExited(childId), TimeSpan.FromSeconds(5)), failure.Message);
+        int childID = int.Parse(end < 0 ? identifier : identifier[..end], CultureInfo.InvariantCulture);
+        Assert.True(SpinWait.SpinUntil(() => HasExited(childID), TimeSpan.FromSeconds(5)), failure.Message);
     }
 
     [Fact]
@@ -50,11 +50,11 @@ public sealed class NativeProcessTestHostTests
         );
     }
 
-    private static bool HasExited(int processId)
+    private static bool HasExited(int processID)
     {
         try
         {
-            using Process child = Process.GetProcessById(processId);
+            using Process child = Process.GetProcessById(processID);
             return child.HasExited;
         }
         catch (ArgumentException)

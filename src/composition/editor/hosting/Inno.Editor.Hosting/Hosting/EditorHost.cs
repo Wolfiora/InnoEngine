@@ -165,10 +165,10 @@ internal sealed class EditorHost : ShellHost
                 }
                 finally
                 {
-                    uint resetWindowId = m_gameInputCapture?.CompleteFrame() ?? 0;
-                    if (resetWindowId != 0)
+                    uint resetWindowID = m_gameInputCapture?.CompleteFrame() ?? 0;
+                    if (resetWindowID != 0)
                     {
-                        m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(resetWindowId, false));
+                        m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(resetWindowID, false));
                     }
                 }
             }
@@ -443,10 +443,10 @@ internal sealed class EditorHost : ShellHost
             static context => context.Dispose()
         );
         m_gameInputCapture = new EditorGameInputCapture(
-            viewportId => (
-                presentation.TryGetWindowId(viewportId, out uint windowId)
-                && m_focusedWindowIds.Contains(windowId)
-                ? windowId
+            viewportID => (
+                presentation.TryGetWindowId(viewportID, out uint windowID)
+                && m_focusedWindowIds.Contains(windowID)
+                ? windowID
                 : null
             )
         );

@@ -17,7 +17,7 @@ internal sealed class EditorActionRouter(
     private readonly Queue<PendingAction> m_pending = [];
     private readonly HashSet<string> m_presentationFailures = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_queryFailures = new(StringComparer.Ordinal);
-    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]>? m_byId;
+    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]>? m_byID;
     private Dictionary<(KeyCode key, KeyModifier modifiers, string area), string[]>? m_shortcutIndex;
 
     internal EditorActionState Query(
@@ -171,7 +171,7 @@ internal sealed class EditorActionRouter(
 
     internal void InvalidateDiscovery()
     {
-        m_byId = null;
+        m_byID = null;
         m_shortcutIndex = null;
     }
 
@@ -310,7 +310,7 @@ internal sealed class EditorActionRouter(
         IReadOnlySet<string> placed
     ) {
         var result = new List<EditorMenuItem>();
-        foreach (string id in Index.Keys)
+        foreach (string id in index.Keys)
         {
             if (placed.Contains(id))
             {
@@ -332,8 +332,8 @@ internal sealed class EditorActionRouter(
         return result;
     }
 
-    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]> Index
-        => m_byId ??= catalog.extensions.actions.GroupBy(
+    private IReadOnlyDictionary<string, EditorExtensionCatalog.ActionRegistration[]> index
+        => m_byID ??= catalog.extensions.actions.GroupBy(
             static registration => registration.id,
             StringComparer.Ordinal
         ).ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
@@ -371,7 +371,7 @@ internal sealed class EditorActionRouter(
     ) {
         EditorExtensionCatalog.ActionRegistration? best = null;
         int bestDistance = int.MaxValue;
-        if (!Index.TryGetValue(action, out EditorExtensionCatalog.ActionRegistration[]? registrations))
+        if (!index.TryGetValue(action, out EditorExtensionCatalog.ActionRegistration[]? registrations))
         {
             return null;
         }
@@ -449,7 +449,7 @@ internal sealed class EditorActionRouter(
 
     private void TryCancel(
         EditorAction action,
-        string actionId,
+        string actionID,
         string phase
     ) {
         try
@@ -458,7 +458,7 @@ internal sealed class EditorActionRouter(
         }
         catch (Exception exception)
         {
-            log.Write(LogLevel.Error, "Editor action '{0}' failed during {1}: {2}", [actionId, phase, exception]);
+            log.Write(LogLevel.Error, "Editor action '{0}' failed during {1}: {2}", [actionID, phase, exception]);
         }
     }
 

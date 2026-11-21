@@ -37,7 +37,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     private bool m_explicitReloadPending;
     private bool m_reportedReloadWait;
     private string? m_activationFailure;
-    private long m_nextRequestId;
+    private long m_nextRequestID;
 
     internal EditorScripting(
         AssetPipeline assets,
@@ -144,7 +144,7 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
     /// </returns>
     public IScriptCompilationTicket RequestCompilation()
     {
-        var ticket = new ScriptCompilationTicket(++m_nextRequestId, "Script compilation is queued.");
+        var ticket = new ScriptCompilationTicket(++m_nextRequestID, "Script compilation is queued.");
         ScriptReloadHost? manager = m_manager;
         if (!m_reloads.CanRequestReload(out string? reason))
         {

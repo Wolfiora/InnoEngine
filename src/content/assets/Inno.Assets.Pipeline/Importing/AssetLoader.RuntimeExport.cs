@@ -133,7 +133,7 @@ public sealed partial class AssetLoader
             }
         }
         HashSet<Guid> exportedIds = exported
-            .Select(static record => record.persistentId)
+            .Select(static record => record.persistentID)
             .ToHashSet();
         foreach (AssetRecord record in exported)
         {
@@ -197,7 +197,7 @@ public sealed partial class AssetLoader
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!validated.Add(record.persistentId))
+        if (!validated.Add(record.persistentID))
         {
             return;
         }
@@ -219,7 +219,7 @@ public sealed partial class AssetLoader
                 continue;
             }
             if (!Guid.TryParse(dependency.key, out Guid id)
-                || !m_recordsById.TryGetValue(id, out AssetRecord? input)
+                || !m_recordsByID.TryGetValue(id, out AssetRecord? input)
             ) {
                 throw new InvalidOperationException(
                     $"Runtime export has a missing artifact input: {dependencyChain} -> {dependency.key}."

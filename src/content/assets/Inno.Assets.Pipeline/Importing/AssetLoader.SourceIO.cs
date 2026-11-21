@@ -35,7 +35,7 @@ public sealed partial class AssetLoader
         {
             return true;
         }
-        AssetImporter? importer = m_importers.FindById(record.meta.importerId);
+        AssetImporter? importer = m_importers.FindByID(record.meta.importerId);
         if (importer is null
             || !string.Equals(
                 record.meta.importerImplementationFingerprint,
@@ -176,7 +176,7 @@ public sealed partial class AssetLoader
                     WriteAtomic(metaPath, m_serialization.Serialize(sourceMeta));
                 }
 
-                AssetRecord? record = FindRecordByIdWithoutLoading(sourceMeta.persistentId);
+                AssetRecord? record = FindRecordByIDWithoutLoading(sourceMeta.persistentId);
                 if (record is not null
                     && !string.Equals(record.relativePath, relativePath, StringComparison.OrdinalIgnoreCase)
                     && Directory.Exists(GetSourcePath(record.relativePath))
@@ -193,7 +193,7 @@ public sealed partial class AssetLoader
                 }
                 record ??= new AssetRecord();
                 record.relativePath = relativePath;
-                record.persistentId = sourceMeta.persistentId;
+                record.persistentID = sourceMeta.persistentId;
                 record.meta.relativePath = relativePath;
                 record.meta.persistentId = sourceMeta.persistentId;
                 record.meta.isDirectory = true;
@@ -270,7 +270,7 @@ public sealed partial class AssetLoader
             .OrderBy(static value => value.persistentId)
         ) {
             parts.Add(dependency.persistentId.ToString("D"));
-            if (m_recordsById.TryGetValue(dependency.persistentId, out AssetRecord? record))
+            if (m_recordsByID.TryGetValue(dependency.persistentId, out AssetRecord? record))
             {
                 parts.Add(record.meta.artifactKey);
             }

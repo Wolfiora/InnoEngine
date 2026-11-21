@@ -282,7 +282,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         AssetFileEntry entry = Create("Surface.ishader");
         SelectAndDraw(entry);
         EditorDocumentContext document = Assert.Single(m_runtime.interactions.documents.documents);
-        Assert.Equal(AssetId(entry), document.assetId);
+        Assert.Equal(AssetID(entry), document.assetId);
         Assert.NotEqual(entry.identity.persistentId, document.assetId);
         Assert.DoesNotContain(m_runtime.panels, panel => panel.id == "editor.documents" && panel.isOpen);
         m_runtime.interactions.SetSelection(null);
@@ -295,7 +295,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     [Theory]
     [MemberData(nameof(CanvasMetrics))]
     [Trait("Acceptance", "Visual")]
-    public unsafe void NativeCanvasResizeCompletesLayoutAtFractionalUiScales(
+    public unsafe void NativeCanvasResizeCompletesLayoutAtFractionalUIScales(
         float zoom,
         float density,
         float width,
@@ -390,7 +390,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         SelectAndDraw(second);
         Assert.Null(m_source.Read(first.assetPath).document.FindNode(missing));
         Assert.NotNull(Controller(first).document.FindNode(missing));
-        EditorDocumentContext firstDocument = m_runtime.interactions.documents.documents.Single(value => value.assetId == AssetId(first));
+        EditorDocumentContext firstDocument = m_runtime.interactions.documents.documents.Single(value => value.assetId == AssetID(first));
         Assert.True(m_runtime.interactions.documents.Close(firstDocument.documentId, EditorDocumentCloseMode.Save));
         SelectAndDraw(first);
         Assert.NotNull(Controller(first).document.FindNode(missing));
@@ -526,7 +526,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             Assert.True(m_runtime.interactions.documents.Close(document.documentId, EditorDocumentCloseMode.Discard));
             Assert.Empty(m_runtime.interactions.documents.documents);
             Assert.False(controller.isAvailable);
-            Assert.False(m_sink.graphs!.TryOpenDocument(AssetId(entry), m_runtime.interactions.history, out _));
+            Assert.False(m_sink.graphs!.TryOpenDocument(AssetID(entry), m_runtime.interactions.history, out _));
         }
         Assert.Equal(source, File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath)));
     }
@@ -546,7 +546,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.Equal(externalBytes, File.ReadAllBytes(Path.Combine(m_root, "Assets", "Conflict.ishader")));
         Assert.NotNull(Controller(entry).document.FindNode(pending));
         Assert.True(Assert.Single(m_runtime.interactions.documents.documents).isDirty);
-        Assert.True(File.Exists(Path.Combine(m_assets.libraryRoot, "Editor", "ShaderRecovery", AssetId(entry).ToString("N") + ".inno")));
+        Assert.True(File.Exists(Path.Combine(m_assets.libraryRoot, "Editor", "ShaderRecovery", AssetID(entry).ToString("N") + ".inno")));
     }
 
     [Theory]
@@ -843,7 +843,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     {
         AssetFileEntry entry = Create("Apply.ishader");
         SelectAndDraw(entry);
-        ShaderAsset asset = m_assets.Load<ShaderAsset>(AssetId(entry));
+        ShaderAsset asset = m_assets.Load<ShaderAsset>(AssetID(entry));
         long before = asset.contentVersion;
         GraphDocumentController controller = Controller(entry);
         GraphDocument graph = controller.document.Clone();
@@ -869,7 +869,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, save.key, save.modifiers));
         Tick();
-        Assert.True(m_assets.TryLoad(AssetId(entry), out ShaderAsset? saved));
+        Assert.True(m_assets.TryLoad(AssetID(entry), out ShaderAsset? saved));
         Assert.Equal("Saved Change", saved!.definition!.name);
         Assert.True(saved.contentVersion > before);
         long savedVersion = saved.contentVersion;
@@ -879,7 +879,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.Equal(savedVersion, saved.contentVersion);
         Assert.True(interaction.Execute("shader/save"));
         Tick();
-        Assert.True(m_assets.TryLoad(AssetId(entry), out ShaderAsset? undone));
+        Assert.True(m_assets.TryLoad(AssetID(entry), out ShaderAsset? undone));
         Assert.NotEqual("Saved Change", undone!.definition!.name);
     }
 
@@ -959,14 +959,14 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             ShaderGraphDocument.definitionKey,
             ShaderGraphDocument.Encode(m_serialization.Serialize(definition, context), m_serialization, context)
         );
-        Guid previewId = Guid.NewGuid();
+        Guid previewID = Guid.NewGuid();
         EditorShaderDraftCompilationSnapshot Poll(ulong revision)
         {
-            EditorShaderDraftCompilationSnapshot result = compilation.RequestDraft(previewId, draft, revision, RenderShaderVariant.empty);
+            EditorShaderDraftCompilationSnapshot result = compilation.RequestDraft(previewID, draft, revision, RenderShaderVariant.empty);
             for (int i = 0; i < 100 && result.state == EditorShaderCompilationState.Compiling; i++)
             {
                 Thread.Sleep(1);
-                result = compilation.RequestDraft(previewId, draft, revision, RenderShaderVariant.empty);
+                result = compilation.RequestDraft(previewID, draft, revision, RenderShaderVariant.empty);
             }
 
             return result;
@@ -987,7 +987,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         _ = m_artifacts.GetShaderArtifact(shader, RenderShaderVariant.empty, capabilities, out RenderShaderArtifact? unchanged);
         Assert.Same(canonical, unchanged);
         Assert.Equal(disk, File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath)));
-        compilation.ReleaseDraft(previewId);
+        compilation.ReleaseDraft(previewID);
     }
 
     [Fact]
@@ -1432,7 +1432,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     private GraphDocumentController Controller(AssetFileEntry entry)
     {
         Assert.NotNull(m_sink.graphs);
-        Assert.True(m_sink.graphs.TryOpenDocument(AssetId(entry), m_runtime.interactions.history, out GraphDocumentController? controller));
+        Assert.True(m_sink.graphs.TryOpenDocument(AssetID(entry), m_runtime.interactions.history, out GraphDocumentController? controller));
         return controller!;
     }
 
@@ -1441,7 +1441,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         GraphNodeId id
     ) => m_source.Read(entry.assetPath).document.FindNode(id)!.position;
 
-    private Guid AssetId(AssetFileEntry entry)
+    private Guid AssetID(AssetFileEntry entry)
     {
         Assert.True(m_assets.TryGetInfo(entry.assetPath, out AssetInfo? info));
         return info!.persistentId;

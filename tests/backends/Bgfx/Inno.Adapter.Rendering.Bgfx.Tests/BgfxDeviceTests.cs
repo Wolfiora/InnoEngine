@@ -6,13 +6,13 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
-[Collection(BgfxDeviceCollection.name)]
+[Collection(BgfxDeviceCollection.C_NAME)]
 [Trait("ProcessIsolation", "Required")]
 public sealed class BgfxDeviceTests
 {
-    private static readonly RenderPhaseId C_FIRST = new("tests.first");
-    private static readonly RenderPhaseId C_COMPUTE = new("tests.compute");
-    private static readonly RenderPhaseId C_LAYERED = new("tests.layered");
+    private static readonly RenderPhaseId FIRST = new("tests.first");
+    private static readonly RenderPhaseId COMPUTE = new("tests.compute");
+    private static readonly RenderPhaseId LAYERED = new("tests.layered");
 
     private readonly BgfxDevice m_device;
 
@@ -26,7 +26,7 @@ public sealed class BgfxDeviceTests
     {
         var builder = new RenderGraphBuilder(1, m_device.capabilities);
         builder
-            .AddRasterPass("Noop Clear", C_FIRST, 0, static (
+            .AddRasterPass("Noop Clear", FIRST, 0, static (
                 _,
                 _
             ) => {})
@@ -215,7 +215,7 @@ public sealed class BgfxDeviceTests
             new RenderBufferDescriptor(64, 16, RenderBufferUsage.Storage)
         );
         builder
-            .AddComputePass("Build Data", C_COMPUTE, 0, static (
+            .AddComputePass("Build Data", COMPUTE, 0, static (
                 _,
                 _
             ) => {})
@@ -241,7 +241,7 @@ public sealed class BgfxDeviceTests
             new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Storage)
         );
         builder
-            .AddComputePass("Write Image", C_COMPUTE, 0, static (
+            .AddComputePass("Write Image", COMPUTE, 0, static (
                 _,
                 _
             ) => {})
@@ -295,12 +295,12 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_RetiresSupersededNamedFramebuffersDuringResizeChurn()
     {
-        const int passCount = 16;
+        const int C_PASS_COUNT = 16;
         for (uint frame = 0; frame < 32; frame++)
         {
             var builder = new RenderGraphBuilder(1000 + frame, m_device.capabilities);
             int extent = 64 + checked((int)frame);
-            for (int passIndex = 0; passIndex < passCount; passIndex++)
+            for (int passIndex = 0; passIndex < C_PASS_COUNT; passIndex++)
             {
                 RenderTextureHandle texture = builder.CreateTexture(
                     $"Resize Target {passIndex}",
@@ -314,7 +314,7 @@ public sealed class BgfxDeviceTests
                 builder
                     .AddRasterPass(
                         $"Resize Pass {passIndex}",
-                        C_FIRST,
+                        FIRST,
                         passIndex,
                         static (
                             _,
@@ -365,7 +365,7 @@ public sealed class BgfxDeviceTests
             )
         );
         builder
-            .AddRasterPass("Layer One", C_LAYERED, 0, static (
+            .AddRasterPass("Layer One", LAYERED, 0, static (
                 _,
                 _
             ) => {})
@@ -427,7 +427,7 @@ public sealed class BgfxDeviceTests
             )
         );
         builder
-            .AddRasterPass(passName, C_FIRST, 0, static (
+            .AddRasterPass(passName, FIRST, 0, static (
                 _,
                 _
             ) => {})
@@ -437,10 +437,10 @@ public sealed class BgfxDeviceTests
     }
 }
 
-[CollectionDefinition(name, DisableParallelization = true)]
+[CollectionDefinition(C_NAME, DisableParallelization = true)]
 public sealed class BgfxDeviceCollection : ICollectionFixture<BgfxDeviceFixture>
 {
-    public const string name = "BGFX device";
+    public const string C_NAME = "BGFX device";
 }
 
 public sealed class BgfxDeviceFixture : IDisposable

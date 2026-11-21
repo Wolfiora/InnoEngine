@@ -13,7 +13,7 @@ namespace Inno.Editor.Workbench;
 
 internal abstract class IconSetting : EditorSetting
 {
-    private static readonly IReadOnlyList<(string Name, string Glyph)> C_ICONS = EditorIconCatalog.standard;
+    private static readonly IReadOnlyList<(string Name, string Glyph)> ICONS = EditorIconCatalog.standard;
     private readonly string m_glyph;
 
     /// <summary>
@@ -54,9 +54,9 @@ internal abstract class IconSetting : EditorSetting
         {
             try
             {
-                for (int i = 0; i < C_ICONS.Count; i++)
+                for (int i = 0; i < ICONS.Count; i++)
                 {
-                    (string name, string candidate) = C_ICONS[i];
+                    (string name, string candidate) = ICONS[i];
                     Ui.PushId(name);
                     try
                     {
@@ -111,11 +111,11 @@ internal abstract class IconSetting : EditorSetting
 
     private static string GetIconName(string glyph)
     {
-        for (int i = 0; i < C_ICONS.Count; i++)
+        for (int i = 0; i < ICONS.Count; i++)
         {
-            if (string.Equals(C_ICONS[i].Glyph, glyph, StringComparison.Ordinal))
+            if (string.Equals(ICONS[i].Glyph, glyph, StringComparison.Ordinal))
             {
-                return C_ICONS[i].Name;
+                return ICONS[i].Name;
             }
         }
 

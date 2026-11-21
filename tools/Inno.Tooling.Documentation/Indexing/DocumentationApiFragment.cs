@@ -21,9 +21,9 @@ internal sealed record DocumentationApiFragment(
     bool outdated,
     YamlMappingNode metadata
 ) {
-    private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
+    private static readonly MarkdownPipeline PIPELINE = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
 
-    internal bool ExplicitlyOutdated => outdated && !metadata.Children.ContainsKey(new YamlScalarNode("reviewed"));
+    internal bool explicitlyOutdated => outdated && !metadata.Children.ContainsKey(new YamlScalarNode("reviewed"));
 
     // Compare the prose that was present at the source change with the text being displayed.
     // Ordinary Markdown edits take effect immediately without writing generated metadata.
@@ -63,7 +63,7 @@ internal sealed record DocumentationApiFragment(
         string path,
         string text
     ) {
-        YamlFrontMatterBlock? block = Markdown.Parse(text, S_PIPELINE).OfType<YamlFrontMatterBlock>().SingleOrDefault();
+        YamlFrontMatterBlock? block = Markdown.Parse(text, PIPELINE).OfType<YamlFrontMatterBlock>().SingleOrDefault();
         if (block is null) return null;
         YamlMappingNode map = ReadMetadata(path, block);
         string? symbol = Field("symbol");
@@ -117,7 +117,7 @@ internal sealed record DocumentationApiFragment(
         string path,
         string text
     ) {
-        YamlFrontMatterBlock? block = Markdown.Parse(text, S_PIPELINE).OfType<YamlFrontMatterBlock>().SingleOrDefault();
+        YamlFrontMatterBlock? block = Markdown.Parse(text, PIPELINE).OfType<YamlFrontMatterBlock>().SingleOrDefault();
         return block is null
                ? throw new InvalidDataException("Documentation requires identity metadata: " + path)
                : ReadMetadata(path, block);

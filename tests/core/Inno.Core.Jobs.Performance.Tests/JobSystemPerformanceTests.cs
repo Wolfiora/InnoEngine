@@ -13,8 +13,8 @@ public sealed class JobSystemPerformanceTests
     {
         Assert.True(Environment.ProcessorCount >= 2, "Worker scaling measurements require at least two logical processors.");
 
-        const int jobCount = 64;
-        const int sleepMilliseconds = 4;
+        const int C_JOB_COUNT = 64;
+        const int C_SLEEP_MILLISECONDS = 4;
         int multiWorkerCount = Math.Min(4, Environment.ProcessorCount);
 
         using JobScheduler oneWorker = CreateWorkStealing(1);
@@ -23,8 +23,8 @@ public sealed class JobSystemPerformanceTests
         _ = MeasureScheduleAndCompleteAll(oneWorker, 8, 1);
         _ = MeasureScheduleAndCompleteAll(multiWorker, 8, 1);
 
-        TimeSpan oneWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(oneWorker, jobCount, sleepMilliseconds));
-        TimeSpan multiWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multiWorker, jobCount, sleepMilliseconds));
+        TimeSpan oneWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(oneWorker, C_JOB_COUNT, C_SLEEP_MILLISECONDS));
+        TimeSpan multiWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multiWorker, C_JOB_COUNT, C_SLEEP_MILLISECONDS));
 
         Assert.True(
             multiWorkerBest < oneWorkerBest,
@@ -37,8 +37,8 @@ public sealed class JobSystemPerformanceTests
     {
         Assert.True(Environment.ProcessorCount >= 2, "Worker scaling measurements require at least two logical processors.");
 
-        const int jobCount = 48;
-        const int sleepMilliseconds = 4;
+        const int C_JOB_COUNT = 48;
+        const int C_SLEEP_MILLISECONDS = 4;
         int workerCount = Math.Min(4, Environment.ProcessorCount);
 
         using var single = new JobScheduler(JobExecutionMode.SingleThread);
@@ -47,8 +47,8 @@ public sealed class JobSystemPerformanceTests
         _ = MeasureScheduleAndCompleteAll(single, 8, 1);
         _ = MeasureScheduleAndCompleteAll(multi, 8, 1);
 
-        TimeSpan singleBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(single, jobCount, sleepMilliseconds));
-        TimeSpan multiBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multi, jobCount, sleepMilliseconds));
+        TimeSpan singleBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(single, C_JOB_COUNT, C_SLEEP_MILLISECONDS));
+        TimeSpan multiBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multi, C_JOB_COUNT, C_SLEEP_MILLISECONDS));
 
         Assert.True(
             multiBest < singleBest,
@@ -61,9 +61,9 @@ public sealed class JobSystemPerformanceTests
     {
         Assert.True(Environment.ProcessorCount >= 2, "Worker scaling measurements require at least two logical processors.");
 
-        const int length = 48;
-        const int batchSize = 1;
-        const int sleepMilliseconds = 4;
+        const int C_LENGTH = 48;
+        const int C_BATCH_SIZE = 1;
+        const int C_SLEEP_MILLISECONDS = 4;
         int workerCount = Math.Min(4, Environment.ProcessorCount);
 
         using var single = new JobScheduler(JobExecutionMode.SingleThread);
@@ -72,8 +72,8 @@ public sealed class JobSystemPerformanceTests
         _ = MeasureParallelFor(single, 8, 1, 1);
         _ = MeasureParallelFor(multi, 8, 1, 1);
 
-        TimeSpan singleBest = MeasureBestOf(3, () => MeasureParallelFor(single, length, batchSize, sleepMilliseconds));
-        TimeSpan multiBest = MeasureBestOf(3, () => MeasureParallelFor(multi, length, batchSize, sleepMilliseconds));
+        TimeSpan singleBest = MeasureBestOf(3, () => MeasureParallelFor(single, C_LENGTH, C_BATCH_SIZE, C_SLEEP_MILLISECONDS));
+        TimeSpan multiBest = MeasureBestOf(3, () => MeasureParallelFor(multi, C_LENGTH, C_BATCH_SIZE, C_SLEEP_MILLISECONDS));
 
         Assert.True(
             multiBest < singleBest,

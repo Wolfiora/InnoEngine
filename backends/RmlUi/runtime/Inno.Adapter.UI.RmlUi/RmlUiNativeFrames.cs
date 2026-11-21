@@ -39,23 +39,23 @@ internal static unsafe class RmlUiNativeFrames
         return result;
     }
 
-    internal static Result CopyEventTargetId(
+    internal static Result CopyEventTargetID(
         InnoUIRmlUiAdapterRuntime* runtime,
         ulong context,
         ulong index,
-        Span<byte> targetId
+        Span<byte> targetID
     ) {
         Result result = default;
         BgcsInnoRmluiError* error = null;
-        fixed (byte* targetIdPointer = targetId)
+        fixed (byte* targetIDPointer = targetID)
         {
             RmlUiNativeErrors.CheckBridge(
                 UiNative.Raw.CopyEventTargetId(
                     runtime,
                     context,
                     index,
-                    (sbyte*)targetIdPointer,
-                    checked((ulong)targetId.Length),
+                    (sbyte*)targetIDPointer,
+                    checked((ulong)targetID.Length),
                     &result,
                     &error
                 ),

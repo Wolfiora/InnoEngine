@@ -23,20 +23,20 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     private const int C_INITIAL_VERTEX_CAPACITY = 4096;
     private const int C_INITIAL_INDEX_CAPACITY = 8192;
 
-    private static readonly RenderBindingId S_TEXTURE_BINDING = new("s_tex");
-    private static readonly RenderBindingId S_OUTPUT_ENCODING = new("outputEncoding");
-    private static readonly byte[] S_LINEAR_OUTPUT = new byte[16];
-    private static readonly byte[] S_ENCODED_OUTPUT = CreateOutputEncoding();
-    private static readonly RenderPhaseId S_USER_INTERFACE_PHASE = new("inno.imgui.compose");
+    private static readonly RenderBindingId TEXTURE_BINDING = new("s_tex");
+    private static readonly RenderBindingId OUTPUT_ENCODING = new("outputEncoding");
+    private static readonly byte[] LINEAR_OUTPUT = new byte[16];
+    private static readonly byte[] ENCODED_OUTPUT = CreateOutputEncoding();
+    private static readonly RenderPhaseId USER_INTERFACE_PHASE = new("inno.imgui.compose");
 
-    private static readonly RenderClearColor S_PRESENTATION_CLEAR_COLOR = new(
+    private static readonly RenderClearColor PRESENTATION_CLEAR_COLOR = new(
         SrgbToLinear(0.08f),
         SrgbToLinear(0.08f),
         SrgbToLinear(0.09f),
         1f
     );
 
-    private static readonly RenderVertexLayout S_VERTEX_LAYOUT = new(
+    private static readonly RenderVertexLayout VERTEX_LAYOUT = new(
         [
             new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
             new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
@@ -97,7 +97,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <summary>
     /// Gets the exact interleaved vertex layout required by the built-in ImGui shaders.
     /// </summary>
-    public static RenderVertexLayout vertexLayout => S_VERTEX_LAYOUT;
+    public static RenderVertexLayout vertexLayout => VERTEX_LAYOUT;
 
     /// <summary>
     /// Gets the last recoverable shader replacement error while the last-good pipeline remains active.
@@ -233,9 +233,9 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_disposeRequested, this);
-            if (!m_viewports.TryAdd(target.viewportId, new ViewportState(target)))
+            if (!m_viewports.TryAdd(target.viewportID, new ViewportState(target)))
             {
-                throw new ArgumentException($"Viewport {target.viewportId} is already registered.", nameof(target));
+                throw new ArgumentException($"Viewport {target.viewportID} is already registered.", nameof(target));
             }
         }
     }
@@ -251,7 +251,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
-            if (m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
+            if (m_viewports.TryGetValue(target.viewportID, out ViewportState? state))
             {
                 state.target = target;
                 state.resizePending = true;
@@ -275,13 +275,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
-            if (m_disposeRequested || !m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
+            if (m_disposeRequested || !m_viewports.TryGetValue(target.viewportID, out ViewportState? state))
             {
                 return;
             }
 
             state.target = target;
-            state.packet = CaptureDrawData(drawData, target.viewportId, state.surface);
+            state.packet = CaptureDrawData(drawData, target.viewportID, state.surface);
         }
     }
 
@@ -302,18 +302,18 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <returns>
     /// Completion of render-thread window release, or an already completed task for an unallocated viewport.
     /// </returns>
-    public Task RetireViewport(PlatformImGuiViewportTarget target)
+    public Task RetireViewportAsync(PlatformImGuiViewportTarget target)
     {
         ArgumentNullException.ThrowIfNull(target);
         lock (m_sync)
         {
-            if (m_viewports.TryGetValue(target.viewportId, out ViewportState? state))
+            if (m_viewports.TryGetValue(target.viewportID, out ViewportState? state))
             {
                 Task retirement = state.surface.isValid
-                                  ? m_bgfxDevice.RetireWindowSurface(state.surface)
+                                  ? m_bgfxDevice.RetireWindowSurfaceAsync(state.surface)
                                   : Task.CompletedTask;
-                m_viewports.Remove(target.viewportId);
-                m_framePackets = m_framePackets.Where(packet => packet.viewportId != target.viewportId).ToArray();
+                m_viewports.Remove(target.viewportID);
+                m_framePackets = m_framePackets.Where(packet => packet.viewportID != target.viewportID).ToArray();
                 return retirement;
             }
         }
@@ -390,15 +390,15 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
             foreach (PreparedPacket packet in m_framePackets)
             {
-                if (packet.viewportId == 0 && !m_device.primaryPresentationSize.HasValue)
+                if (packet.viewportID == 0 && !m_device.primaryPresentationSize.HasValue)
                 {
                     continue;
                 }
-                string name = packet.viewportId == 0 ? "ImGui/Main" : $"ImGui/Viewport/{packet.viewportId}";
+                string name = packet.viewportID == 0 ? "ImGui/Main" : $"ImGui/Viewport/{packet.viewportID}";
                 bool needsOutputTransfer = packet.surface.isValid
                                            ? !m_bgfxDevice.WindowSurfaceIsSrgb(packet.surface)
                                            : !m_bgfxDevice.backbufferIsSrgb;
-                RasterPassBuilder pass = graph.AddRasterPass(name, S_USER_INTERFACE_PHASE, packet, ExecutePacket);
+                RasterPassBuilder pass = graph.AddRasterPass(name, USER_INTERFACE_PHASE, packet, ExecutePacket);
                 pass.SetViewTransform(Identity(), Orthographic(packet.displayPosition, packet.displaySize));
                 if (needsOutputTransfer)
                 {
@@ -416,7 +416,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                         0,
                         RenderLoadAction.Clear,
                         RenderStoreAction.Store,
-                        S_PRESENTATION_CLEAR_COLOR
+                        PRESENTATION_CLEAR_COLOR
                     );
                     var presentation = new PresentationPacket(
                         packet.surface,
@@ -429,7 +429,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     );
                     RasterPassBuilder output = graph.AddRasterPass(
                         $"{name}/Present",
-                        S_USER_INTERFACE_PHASE,
+                        USER_INTERFACE_PHASE,
                         presentation,
                         ExecutePresentationPacket
                     );
@@ -444,7 +444,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                 }
                 else
                 {
-                    pass.ClearPresentationTarget(S_PRESENTATION_CLEAR_COLOR).HasSideEffect();
+                    pass.ClearPresentationTarget(PRESENTATION_CLEAR_COLOR).HasSideEffect();
                     if (packet.surface.isValid)
                     {
                         pass.UseSurface(packet.surface);
@@ -462,9 +462,9 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         lock (m_sync)
         {
             m_disposeRequested = true;
-            foreach (uint viewportId in m_viewports.Keys.ToArray())
+            foreach (uint viewportID in m_viewports.Keys.ToArray())
             {
-                _ = RetireViewport(m_viewports[viewportId].target);
+                _ = RetireViewportAsync(m_viewports[viewportID].target);
             }
             m_mainPacket = null;
             m_framePackets = [];
@@ -512,7 +512,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         try
         {
             vertices = m_device.CreateBuffer(
-                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, C_VERTEX_STRIDE, RenderBufferUsage.Vertex), S_VERTEX_LAYOUT),
+                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, C_VERTEX_STRIDE, RenderBufferUsage.Vertex), VERTEX_LAYOUT),
                 CreatePresentationVertices(m_device.capabilities.originBottomLeft),
                 "ImGui Presentation Vertices"
             );
@@ -551,7 +551,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     state.target.nativeHandles,
                     state.target.width,
                     state.target.height,
-                    $"ImGui Viewport {state.target.viewportId}"
+                    $"ImGui Viewport {state.target.viewportID}"
                 );
                 state.resizePending = false;
             }
@@ -619,7 +619,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             m_mainPacket = null;
         }
 
-        foreach (ViewportState state in m_viewports.Values.OrderBy(static value => value.target.viewportId))
+        foreach (ViewportState state in m_viewports.Values.OrderBy(static value => value.target.viewportID))
         {
             if (state.packet is not null)
             {
@@ -668,7 +668,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
             prepared.Add(
                 new PreparedPacket(
-                    packet.viewportId,
+                    packet.viewportID,
                     packet.surface,
                     packet.displayPosition,
                     packet.displaySize,
@@ -699,7 +699,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             PersistentBufferHandle replacement = m_device.CreateBuffer(
                 new PersistentBufferDescriptor(
                     new RenderBufferDescriptor(capacity, C_VERTEX_STRIDE, RenderBufferUsage.Vertex | RenderBufferUsage.Dynamic),
-                    S_VERTEX_LAYOUT
+                    VERTEX_LAYOUT
                 ),
                 [],
                 "ImGui Vertices"
@@ -736,7 +736,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
     private DrawPacket? CaptureDrawData(
         nint address,
-        uint viewportId,
+        uint viewportID,
         RenderSurfaceHandle surface
     ) {
         if (address == nint.Zero)
@@ -811,7 +811,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
 
         return new DrawPacket(
-            viewportId,
+            viewportID,
             surface,
             new Vector2(drawData->DisplayPos.X, drawData->DisplayPos.Y),
             new Vector2(drawData->DisplaySize.X, drawData->DisplaySize.Y),
@@ -965,13 +965,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         RenderPassContext context
     ) {
         context.commands.BindGraphicsPipeline(packet.pipeline);
-        context.commands.SetUniform(S_OUTPUT_ENCODING, S_LINEAR_OUTPUT);
+        context.commands.SetUniform(OUTPUT_ENCODING, LINEAR_OUTPUT);
         foreach (PreparedDrawCommand command in packet.commands)
         {
             context.commands.SetScissor(command.clipX, command.clipY, command.clipWidth, command.clipHeight);
             context.commands.BindVertexBuffer(packet.vertexBuffer, command.firstVertex);
             context.commands.BindIndexBuffer(packet.indexBuffer, command.firstIndex);
-            context.commands.BindTexture(S_TEXTURE_BINDING, command.texture);
+            context.commands.BindTexture(TEXTURE_BINDING, command.texture);
             context.commands.DrawIndexed(command.indexCount);
         }
     }
@@ -983,29 +983,29 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         context.commands.SetViewport(0, 0, packet.width, packet.height);
         context.commands.SetScissor(0, 0, packet.width, packet.height);
         context.commands.BindGraphicsPipeline(packet.pipeline);
-        context.commands.SetUniform(S_OUTPUT_ENCODING, S_ENCODED_OUTPUT);
+        context.commands.SetUniform(OUTPUT_ENCODING, ENCODED_OUTPUT);
         context.commands.BindVertexBuffer(packet.vertices);
         context.commands.BindIndexBuffer(packet.indices);
-        context.commands.BindTexture(S_TEXTURE_BINDING, packet.source);
+        context.commands.BindTexture(TEXTURE_BINDING, packet.source);
         context.commands.DrawIndexed(6);
     }
 
     private static void ValidatePipelineDescriptor(GraphicsPipelineDescriptor descriptor)
     {
-        if (descriptor.vertexLayout is null || !descriptor.vertexLayout.Equals(S_VERTEX_LAYOUT))
+        if (descriptor.vertexLayout is null || !descriptor.vertexLayout.Equals(VERTEX_LAYOUT))
         {
             throw new ArgumentException("ImGui pipeline vertex layout must be Position2, UV2, ColorRGBA8.", nameof(descriptor));
         }
 
         RenderShaderBindingDescriptor? texture = descriptor.bindings.SingleOrDefault(
-            static value => value.id == S_TEXTURE_BINDING
+            static value => value.id == TEXTURE_BINDING
         );
         if (texture is null || texture.kind != RenderShaderBindingKind.Texture || texture.slot != 0)
         {
             throw new ArgumentException("ImGui pipeline must declare texture binding 's_tex' at slot zero.", nameof(descriptor));
         }
         RenderShaderBindingDescriptor? outputEncoding = descriptor.bindings.SingleOrDefault(
-            static value => value.id == S_OUTPUT_ENCODING
+            static value => value.id == OUTPUT_ENCODING
         );
         if (descriptor.bindings.Count != 2 || outputEncoding is null
             || outputEncoding.kind != RenderShaderBindingKind.Uniform
@@ -1172,7 +1172,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     );
 
     private sealed record DrawPacket(
-        uint viewportId,
+        uint viewportID,
         RenderSurfaceHandle initialSurface,
         Vector2 displayPosition,
         Vector2 displaySize,
@@ -1189,7 +1189,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     }
 
     private sealed record PreparedPacket(
-        uint viewportId,
+        uint viewportID,
         RenderSurfaceHandle surface,
         Vector2 displayPosition,
         Vector2 displaySize,

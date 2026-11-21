@@ -136,18 +136,18 @@ public sealed partial class RenderRuntimeGenerationTests
         {
             CompleteContributorFrame(runtime, proxy);
         }
-        const int frames = 64;
+        const int C_FRAMES = 64;
         long before = GC.GetAllocatedBytesForCurrentThread();
         long start = Stopwatch.GetTimestamp();
-        for (int frame = 0; frame < frames; frame++)
+        for (int frame = 0; frame < C_FRAMES; frame++)
         {
             CompleteContributorFrame(runtime, proxy);
         }
         double elapsedMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.All(contributors, contributor => Assert.Equal(frames + 16, contributor.builds));
-        Assert.Equal(frames + 16, proxy.endFrameCount);
-        Assert.Equal(contributorCount != 0 && !fail ? frames + 16 : 0, proxy.executeCount);
+        Assert.All(contributors, contributor => Assert.Equal(C_FRAMES + 16, contributor.builds));
+        Assert.Equal(C_FRAMES + 16, proxy.endFrameCount);
+        Assert.Equal(contributorCount != 0 && !fail ? C_FRAMES + 16 : 0, proxy.executeCount);
         string directory = Path.Combine(
             TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly),
             "artifacts/acceptance/architecture-cleanup/results"
@@ -159,11 +159,11 @@ public sealed partial class RenderRuntimeGenerationTests
             {
                 contributorCount,
                 fail,
-                frames,
+                C_FRAMES,
                 elapsedMs,
                 allocatedBytes,
-                bytesPerFrame = allocatedBytes / (double)frames,
-                millisecondsPerFrame = elapsedMs / frames,
+                bytesPerFrame = allocatedBytes / (double)C_FRAMES,
+                millisecondsPerFrame = elapsedMs / C_FRAMES,
                 graphCompileCount = ReadGraphCompileCount(runtime),
                 runtime = RuntimeInformation.FrameworkDescription
             }, new JsonSerializerOptions { WriteIndented = true })
@@ -195,18 +195,18 @@ public sealed partial class RenderRuntimeGenerationTests
             CompleteContributorRetirementCycle(runtime, proxy, contributors);
         }
 
-        const int cycles = 64;
+        const int C_CYCLES = 64;
         long before = GC.GetAllocatedBytesForCurrentThread();
         long start = Stopwatch.GetTimestamp();
-        for (int cycle = 0; cycle < cycles; cycle++)
+        for (int cycle = 0; cycle < C_CYCLES; cycle++)
         {
             CompleteContributorRetirementCycle(runtime, proxy, contributors);
         }
         double elapsedMs = Stopwatch.GetElapsedTime(start).TotalMilliseconds;
         long allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - before;
-        Assert.All(contributors, contributor => Assert.Equal(cycles + 16, contributor.builds));
-        Assert.Equal(2 * (cycles + 16), proxy.endFrameCount);
-        Assert.Equal(contributorCount == 0 ? 0 : cycles + 16, proxy.executeCount);
+        Assert.All(contributors, contributor => Assert.Equal(C_CYCLES + 16, contributor.builds));
+        Assert.Equal(2 * (C_CYCLES + 16), proxy.endFrameCount);
+        Assert.Equal(contributorCount == 0 ? 0 : C_CYCLES + 16, proxy.executeCount);
 
         string directory = Path.Combine(
             TestRepository.GetRoot(typeof(RenderRuntimeGenerationTests).Assembly),
@@ -218,12 +218,12 @@ public sealed partial class RenderRuntimeGenerationTests
             JsonSerializer.Serialize(new
             {
                 contributorCount,
-                cycles,
-                frames = 2 * cycles,
+                C_CYCLES,
+                frames = 2 * C_CYCLES,
                 elapsedMs,
                 allocatedBytes,
-                bytesPerCycle = allocatedBytes / (double)cycles,
-                millisecondsPerCycle = elapsedMs / cycles,
+                bytesPerCycle = allocatedBytes / (double)C_CYCLES,
+                millisecondsPerCycle = elapsedMs / C_CYCLES,
                 graphCompileCount = ReadGraphCompileCount(runtime),
                 runtime = RuntimeInformation.FrameworkDescription
             }, new JsonSerializerOptions { WriteIndented = true })

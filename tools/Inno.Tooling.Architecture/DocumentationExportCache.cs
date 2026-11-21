@@ -20,8 +20,8 @@ namespace Inno.Tooling.Architecture;
 /// </summary>
 internal sealed class DocumentationExportCache : IDisposable
 {
-    private static readonly string S_TOOL_IDENTITY = ToolIdentity();
-    private static readonly JsonSerializerOptions S_JSON = new() { WriteIndented = true, NewLine = "\n" };
+    private static readonly string TOOL_IDENTITY = ToolIdentity();
+    private static readonly JsonSerializerOptions JSON = new() { WriteIndented = true, NewLine = "\n" };
     private readonly string m_root;
     private readonly BuildCachePublisher m_publisher;
     private readonly FileLease m_activity;
@@ -49,7 +49,7 @@ internal sealed class DocumentationExportCache : IDisposable
         out T? value,
         CancellationToken cancellationToken
     ) {
-        string key = Hash(Encoding.UTF8.GetBytes(S_TOOL_IDENTITY + "\n" + inputIdentity));
+        string key = Hash(Encoding.UTF8.GetBytes(TOOL_IDENTITY + "\n" + inputIdentity));
         string directory = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "entries", key));
         string leasePath = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "leases", key + ".lock"));
         using FileLease ownership = FileLease.AcquireAsync(
@@ -80,7 +80,7 @@ internal sealed class DocumentationExportCache : IDisposable
         CancellationToken cancellationToken
     ) {
         cancellationToken.ThrowIfCancellationRequested();
-        string key = Hash(Encoding.UTF8.GetBytes(S_TOOL_IDENTITY + "\n" + inputIdentity));
+        string key = Hash(Encoding.UTF8.GetBytes(TOOL_IDENTITY + "\n" + inputIdentity));
         string directory = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "entries", key));
         string leasePath = PathBoundary.RequireUnlinkedPath(m_root, Path.Combine(m_root, "leases", key + ".lock"));
         using FileLease ownership = FileLease.AcquireAsync(
@@ -113,7 +113,7 @@ internal sealed class DocumentationExportCache : IDisposable
         try
         {
             Directory.CreateDirectory(Path.Combine(staging, "facts"));
-            File.WriteAllBytes(Path.Combine(staging, "facts", "project.json"), JsonSerializer.SerializeToUtf8Bytes(captured, S_JSON));
+            File.WriteAllBytes(Path.Combine(staging, "facts", "project.json"), JsonSerializer.SerializeToUtf8Bytes(captured, JSON));
             BuildArtifactManifest.Write(staging, key, ["facts"]);
             cancellationToken.ThrowIfCancellationRequested();
             Directory.CreateDirectory(Path.GetDirectoryName(directory)!);

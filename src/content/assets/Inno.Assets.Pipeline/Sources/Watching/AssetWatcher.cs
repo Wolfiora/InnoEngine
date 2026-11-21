@@ -11,7 +11,7 @@ namespace Inno.Assets.Pipeline;
 /// </summary>
 internal sealed class AssetWatcher : IDisposable
 {
-    private static readonly TimeSpan S_DEFAULT_IDLE_WAIT_TIMEOUT = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan DEFAULT_IDLE_WAIT_TIMEOUT = TimeSpan.FromSeconds(10);
 
     private readonly string m_root;
     private readonly FileSystemWatcher m_watcher;
@@ -120,7 +120,7 @@ internal sealed class AssetWatcher : IDisposable
                     return new WatcherPollResult(Array.Empty<AssetChangedEvent>(), false);
                 }
             }
-            if (stopwatch.Elapsed > S_DEFAULT_IDLE_WAIT_TIMEOUT)
+            if (stopwatch.Elapsed > DEFAULT_IDLE_WAIT_TIMEOUT)
             {
                 throw new TimeoutException("Timed out waiting for AssetWatcher to become idle.");
             }

@@ -94,23 +94,23 @@ public sealed class ToolchainProcessTests : IDisposable
             Assert.True(File.Exists(marker), "The process tree did not reach its waiting stage.");
             processes = File.ReadAllText(marker).Trim().Split(',').Select(int.Parse).ToArray();
             Assert.Equal(2, processes.Length);
-            Assert.All(processes, processId => Assert.True(IsRunning(processId)));
+            Assert.All(processes, processID => Assert.True(IsRunning(processID)));
 
             cancellation.Cancel();
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => running.WaitAsync(TimeSpan.FromSeconds(10)));
 
-            Assert.All(processes, processId => Assert.False(IsRunning(processId)));
+            Assert.All(processes, processID => Assert.False(IsRunning(processID)));
         }
         finally
         {
             cancellation.Cancel();
-            foreach (int processId in processes)
+            foreach (int processID in processes)
             {
-                if (!IsRunning(processId))
+                if (!IsRunning(processID))
                 {
                     continue;
                 }
-                using Process process = Process.GetProcessById(processId);
+                using Process process = Process.GetProcessById(processID);
                 process.Kill(entireProcessTree: true);
             }
         }
@@ -196,7 +196,7 @@ public sealed class ToolchainProcessTests : IDisposable
             Assert.True(File.Exists(marker), "The process tree did not reach its output stage.");
             int[] processes = File.ReadAllText(marker).Trim().Split(',').Select(int.Parse).ToArray();
             Assert.Equal(2, processes.Length);
-            Assert.All(processes, processId => Assert.False(IsRunning(processId)));
+            Assert.All(processes, processID => Assert.False(IsRunning(processID)));
         }
         finally
         {
@@ -225,11 +225,11 @@ public sealed class ToolchainProcessTests : IDisposable
 
     private static string Quote(string argument) => '"' + argument.Replace("\"", "\\\"", StringComparison.Ordinal) + '"';
 
-    private static bool IsRunning(int processId)
+    private static bool IsRunning(int processID)
     {
         try
         {
-            using Process process = Process.GetProcessById(processId);
+            using Process process = Process.GetProcessById(processID);
             return !process.HasExited;
         }
         catch (ArgumentException)

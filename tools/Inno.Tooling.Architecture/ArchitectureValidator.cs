@@ -16,9 +16,9 @@ namespace Inno.Tooling.Architecture;
 /// </summary>
 public static partial class ArchitectureValidator
 {
-    private static readonly string[] S_PRODUCTION_ROOTS = ["entry", "src", "backends", "platforms", "build", "tools"];
+    private static readonly string[] PRODUCTION_ROOTS = ["entry", "src", "backends", "platforms", "build", "tools"];
 
-    private static readonly HashSet<string> S_IGNORED_DIRECTORIES = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> IGNORED_DIRECTORIES = new(StringComparer.OrdinalIgnoreCase)
     {
         "bin",
         "obj",
@@ -26,7 +26,7 @@ public static partial class ArchitectureValidator
         "Generated"
     };
 
-    private static readonly HashSet<string> S_FORBIDDEN_DIRECTORY_NAMES = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> FORBIDDEN_DIRECTORY_NAMES = new(StringComparer.OrdinalIgnoreCase)
     {
         "Legacy",
         "Compatibility",
@@ -199,7 +199,7 @@ public static partial class ArchitectureValidator
         var sourceTrees = new Dictionary<string, SyntaxTree>(StringComparer.Ordinal);
         if (!metadataOnly)
         {
-        foreach (string rootName in S_PRODUCTION_ROOTS)
+        foreach (string rootName in PRODUCTION_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
             if (!Directory.Exists(root))
@@ -250,7 +250,7 @@ public static partial class ArchitectureValidator
         if (metadataOnly)
         {
             IEnumerable<string> projects = apiProjects.Count == 0
-                ? S_PRODUCTION_ROOTS.SelectMany(root => RepositorySourceInventory.Files(Path.Combine(repositoryRoot, root), "*.csproj"))
+                ? PRODUCTION_ROOTS.SelectMany(root => RepositorySourceInventory.Files(Path.Combine(repositoryRoot, root), "*.csproj"))
                 : apiProjects.Select(project => Path.GetFullPath(project, repositoryRoot));
             foreach (string project in projects.Where(
                 project => !Relative(repositoryRoot, project).StartsWith("tests/", StringComparison.Ordinal)
@@ -308,7 +308,7 @@ public static partial class ArchitectureValidator
         foreach (string directory in EnumerateDirectories(root))
         {
             string name = Path.GetFileName(directory);
-            if (S_FORBIDDEN_DIRECTORY_NAMES.Contains(name))
+            if (FORBIDDEN_DIRECTORY_NAMES.Contains(name))
             {
                 failures.Add($"{Relative(repositoryRoot, directory)}: forbidden compatibility directory name '{name}'.");
             }
@@ -445,7 +445,7 @@ public static partial class ArchitectureValidator
     private static int ExpandXmlDocumentation(string repositoryRoot)
     {
         int changedFileCount = 0;
-        foreach (string rootName in S_PRODUCTION_ROOTS)
+        foreach (string rootName in PRODUCTION_ROOTS)
         {
             string root = Path.Combine(repositoryRoot, rootName);
             if (!Directory.Exists(root))
@@ -638,27 +638,27 @@ public static partial class ArchitectureValidator
             }
         }
 
-        foreach ((string projectPath, string projectId) in declaredTestProjects)
+        foreach ((string projectPath, string projectID) in declaredTestProjects)
         {
-            if (!parents.TryGetValue(projectId, out string? parentId)
-                || string.Equals(parentId, testsRoot, StringComparison.OrdinalIgnoreCase)
-                || !solutionFolders.Contains(parentId)
-                || !HasSolutionAncestor(parentId, testsRoot, parents)
+            if (!parents.TryGetValue(projectID, out string? parentID)
+                || string.Equals(parentID, testsRoot, StringComparison.OrdinalIgnoreCase)
+                || !solutionFolders.Contains(parentID)
+                || !HasSolutionAncestor(parentID, testsRoot, parents)
             ) {
                 failures.Add($"{projectPath}: test project must be nested below a tests/<domain> Solution Folder.");
                 continue;
             }
 
-            string projectName = names[projectId];
+            string projectName = names[projectID];
             bool isFixture = projectName.Contains(".TestModule", StringComparison.Ordinal)
                              || projectName.Contains(".TestAssembly", StringComparison.Ordinal)
                              || projectName.Contains(".TestDependency", StringComparison.Ordinal);
-            if (isFixture && !HasNamedSolutionAncestor(parentId, "fixtures", names, parents))
+            if (isFixture && !HasNamedSolutionAncestor(parentID, "fixtures", names, parents))
             {
                 failures.Add($"{projectPath}: test support project must be nested below a fixtures Solution Folder.");
             }
 
-            string actualPath = GetSolutionFolderPath(projectId, names, solutionFolders, parents);
+            string actualPath = GetSolutionFolderPath(projectID, names, solutionFolders, parents);
             string physicalGroup = Path.GetDirectoryName(Path.GetDirectoryName(projectPath))?
                 .Replace('\\', '/')
                 .TrimEnd('/') ?? string.Empty;
@@ -720,23 +720,23 @@ public static partial class ArchitectureValidator
             {
                 continue;
             }
-            string childId = nesting.Groups[1].Value;
-            string parentId = nesting.Groups[2].Value;
-            if (!parents.TryAdd(childId, parentId))
+            string childID = nesting.Groups[1].Value;
+            string parentID = nesting.Groups[2].Value;
+            if (!parents.TryAdd(childID, parentID))
             {
                 failures.Add(
-                    $"InnoEngine.sln: project or folder '{names.GetValueOrDefault(childId, childId)}' has more than one Solution Folder parent."
+                    $"InnoEngine.sln: project or folder '{names.GetValueOrDefault(childID, childID)}' has more than one Solution Folder parent."
                 );
             }
         }
 
         Dictionary<string, string> declaredSourceProjects = paths
             .Where(static pair => (
-                S_PRODUCTION_ROOTS.Any(root => pair.Value.StartsWith(root + "/", StringComparison.Ordinal))
+                PRODUCTION_ROOTS.Any(root => pair.Value.StartsWith(root + "/", StringComparison.Ordinal))
                 && pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
             ))
             .ToDictionary(static pair => pair.Value, static pair => pair.Key, StringComparer.OrdinalIgnoreCase);
-        foreach (string projectPath in S_PRODUCTION_ROOTS
+        foreach (string projectPath in PRODUCTION_ROOTS
             .Select(root => Path.Combine(repositoryRoot, root))
             .Where(Directory.Exists)
             .SelectMany(root => EnumerateFiles(root, "*.csproj"))
@@ -748,9 +748,9 @@ public static partial class ArchitectureValidator
             }
         }
 
-        foreach ((string projectPath, string projectId) in declaredSourceProjects)
+        foreach ((string projectPath, string projectID) in declaredSourceProjects)
         {
-            string projectName = names[projectId];
+            string projectName = names[projectID];
             string sourceRoot = projectPath[..projectPath.IndexOf('/')];
             string? expectedPath = sourceRoot switch
             {
@@ -771,7 +771,7 @@ public static partial class ArchitectureValidator
             )) {
                 expectedPath = Path.GetDirectoryName(projectPath)!.Replace('\\', '/');
             }
-            string actualPath = GetSolutionFolderPath(projectId, names, solutionFolders, parents);
+            string actualPath = GetSolutionFolderPath(projectID, names, solutionFolders, parents);
             if (!string.Equals(actualPath, expectedPath, StringComparison.Ordinal))
             {
                 failures.Add($"{projectPath}: expected Solution Folder '{expectedPath}', found '{actualPath}'.");
@@ -971,26 +971,26 @@ public static partial class ArchitectureValidator
     }
 
     private static string GetSolutionFolderPath(
-        string projectId,
+        string projectID,
         IReadOnlyDictionary<string, string> names,
         IReadOnlySet<string> solutionFolders,
         IReadOnlyDictionary<string, string> parents
     ) {
-        if (!parents.TryGetValue(projectId, out string? currentId))
+        if (!parents.TryGetValue(projectID, out string? currentID))
         {
             return "<solution-root>";
         }
 
         var segments = new List<string>();
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        while (visited.Add(currentId))
+        while (visited.Add(currentID))
         {
-            if (!solutionFolders.Contains(currentId))
+            if (!solutionFolders.Contains(currentID))
             {
                 return "<invalid-parent>";
             }
-            segments.Add(names.GetValueOrDefault(currentId, currentId));
-            if (!parents.TryGetValue(currentId, out currentId!))
+            segments.Add(names.GetValueOrDefault(currentID, currentID));
+            if (!parents.TryGetValue(currentID, out currentID!))
             {
                 break;
             }
@@ -1000,19 +1000,19 @@ public static partial class ArchitectureValidator
     }
 
     private static bool HasSolutionAncestor(
-        string startingId,
-        string expectedAncestorId,
+        string startingID,
+        string expectedAncestorID,
         IReadOnlyDictionary<string, string> parents
     ) {
-        string currentId = startingId;
+        string currentID = startingID;
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        while (visited.Add(currentId))
+        while (visited.Add(currentID))
         {
-            if (string.Equals(currentId, expectedAncestorId, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(currentID, expectedAncestorID, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
-            if (!parents.TryGetValue(currentId, out currentId!))
+            if (!parents.TryGetValue(currentID, out currentID!))
             {
                 return false;
             }
@@ -1021,20 +1021,20 @@ public static partial class ArchitectureValidator
     }
 
     private static bool HasNamedSolutionAncestor(
-        string startingId,
+        string startingID,
         string expectedName,
         IReadOnlyDictionary<string, string> names,
         IReadOnlyDictionary<string, string> parents
     ) {
-        string currentId = startingId;
+        string currentID = startingID;
         var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        while (visited.Add(currentId))
+        while (visited.Add(currentID))
         {
-            if (string.Equals(names.GetValueOrDefault(currentId), expectedName, StringComparison.Ordinal))
+            if (string.Equals(names.GetValueOrDefault(currentID), expectedName, StringComparison.Ordinal))
             {
                 return true;
             }
-            if (!parents.TryGetValue(currentId, out currentId!))
+            if (!parents.TryGetValue(currentID, out currentID!))
             {
                 return false;
             }
@@ -1066,7 +1066,7 @@ public static partial class ArchitectureValidator
         string pattern
     ) => RepositorySourceInventory.Files(root, pattern);
 
-    private static bool IsIgnoredPath(string path) => path.Split(Path.DirectorySeparatorChar).Any(S_IGNORED_DIRECTORIES.Contains);
+    private static bool IsIgnoredPath(string path) => path.Split(Path.DirectorySeparatorChar).Any(IGNORED_DIRECTORIES.Contains);
 
     private static bool IsGenerated(string source)
         => source.Contains("<auto-generated>", StringComparison.OrdinalIgnoreCase)

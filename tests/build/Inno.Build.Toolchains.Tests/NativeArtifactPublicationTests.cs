@@ -30,7 +30,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         NativeBuildRecipe recipe = CreateRecipe(context, owner, "fixture", "fixture-x64", [source], []);
         var prepared = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         int calls = 0;
-        async Task Produce(
+        async Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -41,10 +41,10 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 prepared.TrySetResult();
             }
         }
-        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(context, recipe, Produce);
+        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(context, recipe, ProduceAsync);
         File.WriteAllText(first.files[0], "damaged");
         using var cancellation = new CancellationTokenSource();
-        Task<NativeBuildProduct> waiting = NativeArtifactPublisher.PublishAsync(CreateContext(), recipe, Produce, cancellation.Token);
+        Task<NativeBuildProduct> waiting = NativeArtifactPublisher.PublishAsync(CreateContext(), recipe, ProduceAsync, cancellation.Token);
         await prepared.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await Task.Delay(80);
         Assert.False(waiting.IsCompleted);
@@ -52,7 +52,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waiting);
         Assert.Equal("damaged", File.ReadAllText(first.files[0]));
         first.Dispose();
-        using NativeBuildProduct repaired = await NativeArtifactPublisher.PublishAsync(CreateContext(), recipe, Produce);
+        using NativeBuildProduct repaired = await NativeArtifactPublisher.PublishAsync(CreateContext(), recipe, ProduceAsync);
         Assert.Equal("complete", File.ReadAllText(repaired.files[0]));
     }
 
@@ -170,16 +170,16 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string header = Path.Combine(headers, "api.h");
         File.WriteAllText(header, "first declaration");
         string alias = Path.Combine(source, "include");
-        await CreateDirectoryAlias(alias, headers);
+        await CreateDirectoryAliasAsync(alias, headers);
         string cycle = Path.Combine(source, "cycle");
         try
         {
-            Task Produce(
+            Task ProduceAsync(
                 NativeBuildContext scoped,
                 string output,
                 CancellationToken cancellation
             ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
-            Task<NativeBuildProduct> Publish()
+            Task<NativeBuildProduct> PublishAsync()
             {
                 NativeBuildContext operation = CreateContext();
                 return NativeArtifactPublisher.PublishAsync(
@@ -196,16 +196,16 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                         [source],
                         []
                     ),
-                    Produce
+                    ProduceAsync
                 );
             }
-            using NativeBuildProduct first = await Publish();
+            using NativeBuildProduct first = await PublishAsync();
             File.WriteAllText(header, "changed declaration");
-            using NativeBuildProduct changed = await Publish();
+            using NativeBuildProduct changed = await PublishAsync();
             Assert.NotEqual(first.fingerprint, changed.fingerprint);
 
-            await CreateDirectoryAlias(cycle, source);
-            IOException failure = await Assert.ThrowsAsync<IOException>(() => Publish());
+            await CreateDirectoryAliasAsync(cycle, source);
+            IOException failure = await Assert.ThrowsAsync<IOException>(() => PublishAsync());
 
             Assert.Contains("cycle", failure.Message, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("complete", File.ReadAllText(first.files[0]));
@@ -231,7 +231,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(Path.Combine(source, "api.h"), "source");
         int builds = 0;
         string? toolDirectory = null;
-        async Task Produce(
+        async Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -250,7 +250,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             Assert.True(Directory.Exists(intermediate));
             await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
         }
-        Task<NativeBuildProduct> Publish()
+        Task<NativeBuildProduct> PublishAsync()
             => NativeArtifactPublisher.PublishAsync(
                 context,
                 CreateRecipe(
@@ -265,10 +265,10 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                     [source],
                     ["sdk"]
                 ),
-                Produce
+                ProduceAsync
             );
 
-        NativeBuildProduct[] products = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Publish()));
+        NativeBuildProduct[] products = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => PublishAsync()));
         Assert.Equal(1, builds);
         Assert.True(Directory.Exists(toolDirectory));
         Assert.All(products, product => Assert.Equal(products[0].directory, product.directory));
@@ -279,7 +279,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         {
             product.Dispose();
         }
-        using NativeBuildProduct repaired = await Publish();
+        using NativeBuildProduct repaired = await PublishAsync();
         Assert.Equal(2, builds);
         Assert.Equal(products[0].fingerprint, repaired.fingerprint);
         Assert.Equal("complete", File.ReadAllText(repaired.files[0]));
@@ -292,7 +292,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         NativeBuildContext context = CreateContext();
         string source = Path.Combine(m_root, "shared.h");
         File.WriteAllText(source, "shared");
-        Task Produce(
+        Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -311,7 +311,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 [source],
                 []
             ),
-            Produce
+            ProduceAsync
         );
         using NativeBuildProduct result4 = await NativeArtifactPublisher.PublishAsync(
             context,
@@ -327,7 +327,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 [source],
                 []
             ),
-            Produce
+            ProduceAsync
         );
         Assert.Equal(5, context.statistics.hashedFiles);
         Assert.Equal(30, context.statistics.hashedBytes);
@@ -349,7 +349,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 [source],
                 []
             ),
-            Produce
+            ProduceAsync
         ));
     }
 
@@ -360,7 +360,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string source = Path.Combine(m_root, "Source");
         Directory.CreateDirectory(source);
         File.WriteAllText(Path.Combine(source, "api.h"), "source");
-        Task Produce(
+        Task ProduceAsync(
             NativeBuildContext scoped,
             string output,
             CancellationToken cancellation
@@ -379,7 +379,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 [source],
                 []
             ),
-            Produce
+            ProduceAsync
         );
 
         File.WriteAllText(Path.Combine(source, "added.h"), "new closure");
@@ -427,7 +427,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 cancellation
             ) =>
             {
-                await Produce(scoped, output, cancellation);
+                await ProduceAsync(scoped, output, cancellation);
                 File.WriteAllText(Path.Combine(source, "changed-during-build.h"), "changed");
             }
         ));
@@ -481,7 +481,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
                 dependencies,
                 token
             ) => Task.FromResult(product),
-            selected => CreateRecipe(selected, productOwner(), "fixture", "fixture-x64", [source], []),
+            selected => CreateRecipe(selected, ProductOwner(), "fixture", "fixture-x64", [source], []),
             (
                 relative,
                 target
@@ -532,7 +532,7 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         Assert.Empty(Directory.EnumerateFileSystemEntries(canceledCandidate));
         Assert.Empty(Directory.EnumerateDirectories(application, "*.staging-*"));
 
-        static NativeComponentDescriptor productOwner()
+        static NativeComponentDescriptor ProductOwner()
             => new(
                 "fixture",
                 "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
@@ -599,19 +599,19 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         NativeBuildContext context,
         NativeComponentDescriptor owner,
         string component,
-        string targetId,
+        string targetID,
         IReadOnlyList<string> inputPaths,
         IReadOnlyList<string> declarations
     ) => new(
         owner,
         component,
-        targetId,
+        targetID,
         inputPaths.Concat(context.toolchain?.inputPaths ?? [])
             .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
         declarations.Concat(context.toolchain?.declarations ?? [])
     );
 
-    private static async Task CreateDirectoryAlias(
+    private static async Task CreateDirectoryAliasAsync(
         string path,
         string target
     ) {

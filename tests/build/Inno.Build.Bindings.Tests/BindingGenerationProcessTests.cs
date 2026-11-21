@@ -69,12 +69,12 @@ public sealed class BindingGenerationProcessTests
             Dictionary<string, string> names = Enumerable.Range(0, 64)
                 .ToDictionary(static index => $"sample_{index}", static index => $"Sample{index}", StringComparer.Ordinal);
             WriteConfiguration(root, names);
-            string first = await RunHost(root, "first");
-            string second = await RunHost(root, "second");
+            string first = await RunHostAsync(root, "first");
+            string second = await RunHostAsync(root, "second");
             Assert.Equal(first, second);
             names["sample_0"] = "Changed";
             WriteConfiguration(root, names);
-            Assert.NotEqual(first, await RunHost(root, "changed"));
+            Assert.NotEqual(first, await RunHostAsync(root, "changed"));
         }
         finally
         {
@@ -97,7 +97,7 @@ public sealed class BindingGenerationProcessTests
         })
     );
 
-    private static async Task<string> RunHost(
+    private static async Task<string> RunHostAsync(
         string root,
         string name
     ) {

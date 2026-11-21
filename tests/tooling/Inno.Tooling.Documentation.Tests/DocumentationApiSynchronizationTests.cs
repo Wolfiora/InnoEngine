@@ -46,16 +46,16 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             "---\nuid: project.probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners: [Inno.Probe]\nsource: xml\n---\n"
         );
         Bind(description: "The value\ncontract.");
-        await Sync();
+        await SyncAsync();
         string path = Path.Combine(m_root, C_PAGE);
         Assert.Contains("The value contract.", File.ReadAllText(path));
         string first = File.ReadAllText(path);
-        await Sync();
+        await SyncAsync();
         Assert.Equal(first, File.ReadAllText(path));
         string manual = first.Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
                         + "\nIndependent lifetime guidance.\n";
         File.WriteAllText(path, manual);
-        await Sync();
+        await SyncAsync();
         Assert.Equal(manual, File.ReadAllText(path));
         string cache = Path.Combine(m_root, "artifacts/project-query");
         DocumentationResult initial = await DocumentationStore.IndexAsync(m_root, m_root, cache);
@@ -68,10 +68,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         }
         string original = File.ReadAllText(path);
         Bind(description: "The value\r\ncontract.");
-        await Sync();
+        await SyncAsync();
         Assert.Equal(original, File.ReadAllText(path));
         Bind(description: "Changed XML contract.");
-        await Sync();
+        await SyncAsync();
         Assert.Equal(Body(manual), Body(File.ReadAllText(path)));
         Assert.Contains("outdatedFor:", File.ReadAllText(path));
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
@@ -97,7 +97,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
                 entries = new[] { new { path = "content/en/manual/keep.md", uid = "manual.keep", project = "Inno.Probe" } }
             })
         );
-        await Assert.ThrowsAsync<InvalidDataException>(() => Sync(CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidDataException>(() => SyncAsync(CancellationToken.None));
         Assert.Equal("Preserve this unrelated guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/keep.md")));
     }
 
@@ -115,7 +115,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             ("Inno.Platform.Probe", "platforms/Probe/Inno.Platform.Probe.csproj"),
             ("Inno.Authored.Tests", "tests/Inno.Authored.Tests/Inno.Authored.Tests.csproj")
         );
-        await Sync();
+        await SyncAsync();
         string source = File.ReadAllText(Path.Combine(m_root, "content/en/architecture/projects/inno-probe.md"));
         Assert.Contains(
             "uid: project.inno-probe\nsymbol: project:Inno.Probe\ntitle: Inno.Probe\nkind: project\nowners:\n- Inno.Probe\n",
@@ -154,7 +154,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         const string C_PAGE = "content/en/architecture/projects/inno-retired.md";
         WriteGuideRegistry();
         SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"), ("Inno.Retired", "tools/Inno.Retired/Inno.Retired.csproj"));
-        await Sync();
+        await SyncAsync();
         string path = Path.Combine(m_root, C_PAGE);
         if (manual)
         {
@@ -164,7 +164,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             );
         }
         SetProjects(("Inno.Probe", "src/Inno.Probe.csproj"));
-        await Sync();
+        await SyncAsync();
         Assert.Equal(manual, File.Exists(path));
         Assert.Equal(manual, GuideRegistry().Contains(C_PAGE));
         if (manual) Assert.Contains("Retained guidance.", File.ReadAllText(path));
@@ -178,7 +178,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         const string C_PAGE = "content/en/architecture/projects/inno-probe.md";
         WriteGuideRegistry();
         Write(C_PAGE, "Preserve this unregistered page.");
-        await Assert.ThrowsAsync<InvalidDataException>(() => Sync(CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidDataException>(() => SyncAsync(CancellationToken.None));
         Assert.Equal("Preserve this unregistered page.", File.ReadAllText(Path.Combine(m_root, C_PAGE)));
         Assert.Empty(GuideRegistry());
     }
@@ -186,7 +186,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task CheckoutsWithoutAGuideRegistryDoNotManageProjectGuides()
     {
-        await Sync();
+        await SyncAsync();
         Assert.False(File.Exists(Path.Combine(m_root, "reference/projects/content.json")));
         Assert.False(Directory.Exists(Path.Combine(m_root, "content/en/architecture/projects")));
     }
@@ -208,7 +208,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string expected
     ) {
         SetTypes((id, signature));
-        await Sync();
+        await SyncAsync();
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -230,7 +230,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             (C_TWO, "public class Inno.Probe.Value<TTarget, TArgument>"),
             (C_OTHER, "public class Other.Value<TValue>")
         );
-        await Sync();
+        await SyncAsync();
         string[] paths = new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment).ToArray();
         Assert.Equal(4, paths.Distinct().Count());
         string manual = File.ReadAllText(paths[2]).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
@@ -242,7 +242,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             (C_TWO, "public class Inno.Probe.Value<TOwner, TArgument>"),
             (C_OTHER, "public class Other.Value<TValue>")
         );
-        await Sync();
+        await SyncAsync();
         Assert.Equal(paths, new[] { C_TYPE, C_ONE, C_TWO, C_OTHER }.Select(Fragment));
         Assert.Equal(Body(manual), Body(File.ReadAllText(paths[2])));
         Assert.Contains("outdatedFor:", File.ReadAllText(paths[2]));
@@ -266,14 +266,14 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     public async Task SynchronizationIsDeterministicAndNeverTouchesManualGuides()
     {
         Write("content/en/manual/task.md", "A hand-written guide without source metadata.");
-        await Sync();
+        await SyncAsync();
         string[] paths = Directory.GetFiles(Path.Combine(m_root, "content/en/api"), "*.md", SearchOption.AllDirectories)
             .Where(path => File.ReadAllText(path).Contains("symbol:", StringComparison.Ordinal))
             .ToArray();
         Assert.Equal(2, paths.Length);
         Assert.All(paths, path => Assert.Contains("source: xml", File.ReadAllText(path)));
         DateTime[] times = paths.Select(File.GetLastWriteTimeUtc).ToArray();
-        await Sync();
+        await SyncAsync();
         Assert.Equal(times, paths.Select(File.GetLastWriteTimeUtc));
         Assert.Equal("A hand-written guide without source metadata.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/task.md")));
     }
@@ -281,13 +281,13 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task ManualMemberSurvivesXmlChangesWhileItsSiblingUpdates()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
                         + "\nUse this count after the owner has published the snapshot.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated source documentation.");
-        await Sync();
+        await SyncAsync();
         Assert.Equal(Body(manual), Body(File.ReadAllText(member)));
         Assert.Contains("outdatedFor:", File.ReadAllText(member));
         Assert.True(string.IsNullOrWhiteSpace(Body(File.ReadAllText(Fragment(C_TYPE)))));
@@ -309,31 +309,31 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task EditingADescriptionClearsAutomaticStalenessUntilTheNextSourceChange()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml", "source: Ada", StringComparison.Ordinal));
         Bind(description: "A changed\ncontract.");
-        await Sync();
+        await SyncAsync();
         string path = Path.Combine(m_root, "artifacts/query");
-        async Task AssertStatus(string status)
+        async Task AssertStatusAsync(string status)
         {
             DocumentationResult index = await DocumentationStore.IndexAsync(m_root, m_root, path);
             using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(path, index.snapshot);
             Assert.Contains("> [!" + status + "]", (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
         }
-        await AssertStatus("OUTDATED");
+        await AssertStatusAsync("OUTDATED");
         File.WriteAllText(
             member,
             File.ReadAllText(member).Replace("description: null", "description:\n- An updated explanation.", StringComparison.Ordinal)
         );
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
-        await AssertStatus("AUTHORED");
+        await AssertStatusAsync("AUTHORED");
         Bind(description: "A changed\r\ncontract.");
-        await Sync();
-        await AssertStatus("AUTHORED");
+        await SyncAsync();
+        await AssertStatusAsync("AUTHORED");
         Bind(description: "A newer contract.");
-        await Sync();
-        await AssertStatus("OUTDATED");
+        await SyncAsync();
+        await AssertStatusAsync("OUTDATED");
     }
 
     [Theory]
@@ -341,25 +341,25 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData("[true]")]
     public async Task InvalidOutdatedMetadataCannotBeOverwritten(string value)
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string invalid = File.ReadAllText(member).Replace("outdated: false", "outdated: " + value, StringComparison.Ordinal);
         File.WriteAllText(member, invalid);
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal(invalid, File.ReadAllText(member));
     }
 
     [Fact]
     public async Task LegacyStaleApiRetainsOutdatedStatusDuringMigration()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string legacy = File.ReadAllText(member)
             .Replace("sourceFingerprint:", "reviewed:", StringComparison.Ordinal)
             .Replace("source: xml", "source: Ada", StringComparison.Ordinal)
             .Replace("outdated: false", "outdated: true", StringComparison.Ordinal);
         File.WriteAllText(member, legacy);
-        await Sync();
+        await SyncAsync();
         Assert.Contains("outdatedFor:", File.ReadAllText(member));
         Assert.DoesNotContain("reviewed:", File.ReadAllText(member));
     }
@@ -367,11 +367,11 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task MissingSourceRemainsGeneratorOwned()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml\n", string.Empty, StringComparison.Ordinal));
         Bind(description: "A fresh description.");
-        await Sync();
+        await SyncAsync();
         Assert.Contains("source: xml", File.ReadAllText(member));
         Assert.True(string.IsNullOrWhiteSpace(Body(File.ReadAllText(member))));
         Assert.Contains("A fresh description.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
@@ -382,7 +382,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData(true)]
     public async Task RemovalDeletesXmlAndPreservesManualProse(bool manual)
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         if (manual)
         {
@@ -390,7 +390,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         }
         string before = File.ReadAllText(member);
         Bind(member: false);
-        await Sync();
+        await SyncAsync();
         Assert.Equal(manual, File.Exists(member));
         if (manual) Assert.Equal(before, File.ReadAllText(member));
     }
@@ -398,36 +398,36 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task BlankAuthorCannotOverwriteAnyContent()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string invalid = File.ReadAllText(member).Replace("source: xml", "source: \"\"", StringComparison.Ordinal);
         File.WriteAllText(member, invalid);
         Bind(description: "New XML.");
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal(invalid, File.ReadAllText(member));
     }
 
     [Fact]
     public async Task CorruptCaptureAndPrecancellationCannotChangeContent()
     {
-        await Sync();
+        await SyncAsync();
         string type = File.ReadAllText(Fragment(C_TYPE));
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => Sync(new CancellationToken(true)));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => SyncAsync(new CancellationToken(true)));
         File.AppendAllText(Path.Combine(m_root, "reference/api/probe.json"), " ");
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal(type, File.ReadAllText(Fragment(C_TYPE)));
     }
 
     [Fact]
     public async Task RegisteredPathCannotEscapeApiOwnership()
     {
-        await Sync();
+        await SyncAsync();
         string path = Path.Combine(m_root, "reference/api/content.json");
         JsonNode registry = JsonNode.Parse(File.ReadAllText(path))!;
         registry["entries"]![0]!["path"] = "content/en/manual/task.md";
         Write("content/en/manual/task.md", "Preserve this independent guide.");
         File.WriteAllText(path, registry.ToJsonString());
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal("Preserve this independent guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/task.md")));
     }
 
@@ -435,38 +435,38 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     public async Task UnregisteredFilesAreNotSilentlyClaimed()
     {
         Write("content/en/api/engine/probe/value/index.md", "Unregistered authored prose.");
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal("Unregistered authored prose.", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/value/index.md")));
     }
 
     [Fact]
     public async Task AnApiPrefixCannotAuthorizeTraversalIntoManualContent()
     {
-        await Sync();
+        await SyncAsync();
         string path = Path.Combine(m_root, "reference/api/content.json");
         JsonNode registry = JsonNode.Parse(File.ReadAllText(path))!;
         registry["entries"]![0]!["path"] = "content/en/api/engine/../../manual/task.md";
         Write("content/en/manual/task.md", "Preserve the independent guide.");
         File.WriteAllText(path, registry.ToJsonString());
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal("Preserve the independent guide.", File.ReadAllText(Path.Combine(m_root, "content/en/manual/task.md")));
     }
 
     [Fact]
     public async Task EditorialWarningsDoNotFailButStaleGeneratedContentDoes()
     {
-        await Sync();
+        await SyncAsync();
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
         Bind(description: "Changed XML must be synchronized.");
         Assert.Equal(1, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
-        await Sync();
+        await SyncAsync();
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
     }
 
     [Fact]
     public async Task MissingProjectCaptureCannotBePresentedAsACompleteApiSet()
     {
-        await Sync();
+        await SyncAsync();
         string path = Path.Combine(m_root, "reference/projects/catalog.json");
         JsonArray inventory = JsonNode.Parse(File.ReadAllText(path))!.AsArray();
         inventory.Add(new JsonObject { ["name"] = "Inno.Missing", ["path"] = "src/Inno.Missing.csproj", ["isTest"] = false });
@@ -475,7 +475,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
         binding["projectManifestIdentity"] = Hash(text);
         Write("reference/engine.lock.json", binding.ToJsonString());
-        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Contains("Inno.Missing", failure.Message);
     }
 
@@ -509,7 +509,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/projects/catalog.json", inventory.ToJsonString());
         binding["projectManifestIdentity"] = Hash(inventory.ToJsonString());
         Write("reference/engine.lock.json", binding.ToJsonString());
-        await Sync();
+        await SyncAsync();
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -547,13 +547,13 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task WebsiteCatalogAndSymbolReadsShareComposedDeclarationsAndManualProse()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
                         + "\nRead the count only after publication.\n";
         File.WriteAllText(member, manual);
         Bind(description: "Updated XML.", countType: "long");
-        await Sync();
+        await SyncAsync();
         Write(
             "content/en/manual/ownership.md",
             "---\nuid: manual.ownership\ntitle: Ownership and retirement\nkind: explanation\n---\n\n# Ownership and retirement\n\n## Release\n\nKeep the owner alive until all borrows end.\n"
@@ -612,7 +612,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         capture["sha256"] = Hash(text);
         binding["apiManifests"]!.AsArray().Add(capture);
         Write("reference/engine.lock.json", binding.ToJsonString());
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         File.WriteAllText(
             member,
@@ -638,7 +638,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string source,
         bool notice
     ) {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string original = File.ReadAllText(member);
         File.WriteAllText(
@@ -681,7 +681,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Add("M:Inno.Probe.Value.Read(System.Int32)", "Method", "public void Inno.Probe.Value.Read(int value)", C_TYPE);
         Add("M:Inno.Probe.Value.Read(System.String)", "Method", "public void Inno.Probe.Value.Read(string value)", C_TYPE);
         SaveFacts(facts);
-        await Sync();
+        await SyncAsync();
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -721,7 +721,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task MovingLegacyMembersRepairsIncomingAnchorsAndManualRelativeLinks()
     {
-        await Sync();
+        await SyncAsync();
         string current = Fragment(C_MEMBER);
         string legacy = Path.Combine(Path.GetDirectoryName(current)!, "_members/count.md");
         Directory.CreateDirectory(Path.GetDirectoryName(legacy)!);
@@ -743,7 +743,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             + Hash(C_MEMBER)[..16]
             + ").\n"
         );
-        await Sync();
+        await SyncAsync();
         Assert.False(File.Exists(legacy));
         Assert.Contains("Keep the original explanation. [Owner](index.md).", File.ReadAllText(current));
         Assert.Contains("source: Ada Example", File.ReadAllText(current));
@@ -753,14 +753,14 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         await DocumentationStore.IndexAsync(m_root, m_root, cache);
         string after = File.ReadAllText(current);
-        await Sync();
+        await SyncAsync();
         Assert.Equal(after, File.ReadAllText(current));
     }
 
     [Fact]
     public async Task XmlRefreshPreservesAuthoredContractAndExampleAssociations()
     {
-        await Sync();
+        await SyncAsync();
         string type = Fragment(C_TYPE);
         string text = File.ReadAllText(type)
             .Replace(
@@ -770,7 +770,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             );
         File.WriteAllText(type, text);
         Bind(description: "Fresh XML still needs shared ownership guidance.");
-        await Sync();
+        await SyncAsync();
         string updated = File.ReadAllText(type);
         Assert.Contains("manual.ownership#release", updated);
         Assert.Contains("persistent value", updated);
@@ -778,7 +778,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Contains("exampleProjects:", updated);
         Assert.DoesNotContain("Fresh XML still needs", updated);
         Assert.Contains("Fresh XML still needs", File.ReadAllText(Path.Combine(m_root, "content/en/api/engine/probe/index.md")));
-        await Sync();
+        await SyncAsync();
         Assert.Equal(updated, File.ReadAllText(type));
     }
 
@@ -801,7 +801,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
         binding["apiManifests"]![0]!["sha256"] = Hash(text);
         Write("reference/engine.lock.json", binding.ToJsonString());
-        await Sync();
+        await SyncAsync();
         string prose = File.ReadAllText(Fragment(C_TYPE));
         Assert.Contains("`left + (right - left) * amount`", prose);
         Assert.Contains("- Retain the owner.", prose);
@@ -846,11 +846,11 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Write("reference/engine.lock.json", binding.ToJsonString());
         if (mismatch)
         {
-            InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(Sync);
+            InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
             Assert.Contains("different Runtime projection", failure.Message);
             return;
         }
-        await Sync();
+        await SyncAsync();
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -863,7 +863,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task PackageImportPreservesManualProseAndSkipsRevisionOnlyChanges()
     {
-        await Sync();
+        await SyncAsync();
         string member = Fragment(C_MEMBER);
         string manual = File.ReadAllText(member).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal)
                         + "\nRead this value only after publication.\n";
@@ -900,7 +900,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData("mixed-revisions")]
     public async Task InvalidPackagesCannotModifyTheCheckout(string corruption)
     {
-        await Sync();
+        await SyncAsync();
         string package = Path.Combine(m_root, "artifacts/api-package.json");
         await DocumentationCommand.ExecuteAsync(["api-package", "--docs-root", m_root, "--package", package]);
         JsonNode packet = JsonNode.Parse(File.ReadAllText(package))!;
@@ -925,7 +925,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task ImportWaitsForTheSharedWriterBeforeChangingFactsAndCancellationPreservesInputs()
     {
-        await Sync();
+        await SyncAsync();
         Bind(description: "New import contract.");
         string package = Path.Combine(m_root, "artifacts/api-package.json");
         await DocumentationCommand.ExecuteAsync(["api-package", "--docs-root", m_root, "--package", package]);
@@ -955,7 +955,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task ImportRestoresFactsWhenAuthoredContentRejectsSynchronization()
     {
-        await Sync();
+        await SyncAsync();
         Bind(description: "Changed package XML.");
         string package = Path.Combine(m_root, "artifacts/api-package.json");
         await DocumentationCommand.ExecuteAsync(["api-package", "--docs-root", m_root, "--package", package]);
@@ -985,7 +985,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
         facts["projects"]![0]!["symbols"]![0]!["baseType"] = "System.Object";
         SaveFacts(facts);
-        await Sync();
+        await SyncAsync();
         string prose = File.ReadAllText(Fragment(C_TYPE));
         Assert.DoesNotContain("Owns a value.", prose);
         Assert.DoesNotContain("Release it when finished.", prose);
@@ -1021,7 +1021,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [Fact]
     public async Task NamedAuthorAndDescriptionsSurviveSyncAndReachTablesAndQueries()
     {
-        await Sync();
+        await SyncAsync();
         string typePath = Fragment(C_TYPE);
         string memberPath = Fragment(C_MEMBER);
         File.WriteAllText(
@@ -1035,7 +1035,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string body = "\n\n## Remarks\n\nKeep this author explanation byte for byte.\n";
         File.WriteAllText(memberPath, original[..(original.Length - Body(original).Length)] + body);
         Bind(description: "Changed XML.", countType: "long");
-        await Sync();
+        await SyncAsync();
         string saved = File.ReadAllText(memberPath);
         Assert.Contains("source: Ada Lovelace", saved);
         Assert.Contains("outdatedFor:", saved);
@@ -1068,11 +1068,11 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData("[null]")]
     public async Task InvalidDescriptionDoesNotOverwriteContent(string value)
     {
-        await Sync();
+        await SyncAsync();
         string path = Fragment(C_TYPE);
         string invalid = File.ReadAllText(path).Replace("description: null", "description: " + value, StringComparison.Ordinal);
         File.WriteAllText(path, invalid);
-        await Assert.ThrowsAsync<InvalidDataException>(Sync);
+        await Assert.ThrowsAsync<InvalidDataException>(SyncAsync);
         Assert.Equal(invalid, File.ReadAllText(path));
     }
 
@@ -1083,7 +1083,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             <member><summary>First declaration.<para>Still the first summary.</para></summary>
             <summary>Second declaration with <c>Value</c>.</summary><remarks>Shared lifetime.</remarks></member>
             """);
-        await Sync();
+        await SyncAsync();
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -1109,13 +1109,13 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     public async Task ManualBodySectionsRemainEditableWhileSummaryFollowsSource()
     {
         SetTypeDocumentation("<member><summary>Original summary.</summary><remarks>Original remarks.</remarks></member>");
-        await Sync();
+        await SyncAsync();
         string path = Fragment(C_TYPE);
         string text = File.ReadAllText(path).Replace("source: xml", "source: Ada Example", StringComparison.Ordinal);
         string body = "\n\n## Remarks\n\nMy independently maintained ownership explanation.\n";
         File.WriteAllText(path, text[..(text.Length - Body(text).Length)] + body);
         SetTypeDocumentation("<member><summary>Updated source summary.</summary><remarks>Changed source remarks.</remarks></member>");
-        await Sync();
+        await SyncAsync();
         Assert.Equal(body, Body(File.ReadAllText(path)));
         Assert.DoesNotContain("Updated source summary.", File.ReadAllText(path));
         string cache = Path.Combine(m_root, "artifacts/query");
@@ -1146,7 +1146,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             </list></description></item><item><description>Retain the owner.</description></item></list>
             <para>After the list, observe failure.</para></remarks></member>
             """);
-        await Sync();
+        await SyncAsync();
         string prose = File.ReadAllText(Fragment(C_TYPE));
         Assert.Contains("- **Borrow** the value.", prose);
         Assert.Contains("  Do not release it.", prose);
@@ -1161,10 +1161,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     [InlineData("<!DOCTYPE member [<!ENTITY injected SYSTEM 'file:///missing'>]><member><summary>&injected;</summary></member>")]
     public async Task InvalidXmlCannotDiscardConstraintsOrReplaceLastGoodProse(string xml)
     {
-        await Sync();
+        await SyncAsync();
         string previous = File.ReadAllText(Fragment(C_TYPE));
         SetTypeDocumentation(xml);
-        Exception? failure = await Record.ExceptionAsync(Sync);
+        Exception? failure = await Record.ExceptionAsync(SyncAsync);
         Assert.NotNull(failure);
         Assert.True(failure is InvalidDataException or XmlException);
         Assert.Equal(previous, File.ReadAllText(Fragment(C_TYPE)));
@@ -1181,7 +1181,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
                 }
             </code><para>Observe failure after this example.</para></example></member>
             """);
-        await Sync();
+        await SyncAsync();
         string prose = File.ReadAllText(Fragment(C_TYPE));
         Assert.Contains("````csharp\nif (ready)\n{\n    string marker = \"``` <script>\";\n}\n````", prose);
         Assert.Contains("Observe failure after this example.", prose);
@@ -1219,15 +1219,15 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         binding["projectManifestIdentity"] = Hash(inventoryText);
         binding["apiManifests"]![0]!["sha256"] = Hash(factsText);
         Write("reference/engine.lock.json", binding.ToJsonString());
-        await Sync();
+        await SyncAsync();
         JsonNode registry = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/content.json")))!;
         Assert.Equal(2, registry["entries"]!.AsArray().Count);
         Assert.DoesNotContain("Excluded.Probe", registry.ToJsonString());
     }
 
-    private Task<int> Sync() => Sync(CancellationToken.None);
+    private Task<int> SyncAsync() => SyncAsync(CancellationToken.None);
 
-    private Task<int> Sync(CancellationToken cancellation)
+    private Task<int> SyncAsync(CancellationToken cancellation)
         => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);
 
     private void SaveFacts(JsonNode facts)

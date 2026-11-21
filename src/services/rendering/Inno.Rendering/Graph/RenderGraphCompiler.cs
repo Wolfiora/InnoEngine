@@ -74,7 +74,7 @@ internal static partial class RenderGraphCompiler
             RenderTextureRecord texture = textures[index];
             compiledTextures.Add(
                 new CompiledRenderTexture(
-                    new RenderTextureHandle(index, generation, texture.allocationId),
+                    new RenderTextureHandle(index, generation, texture.allocationID),
                     texture.name,
                     texture.descriptor,
                     texture.imported,
@@ -90,7 +90,7 @@ internal static partial class RenderGraphCompiler
             RenderBufferRecord buffer = buffers[index];
             compiledBuffers.Add(
                 new CompiledRenderBuffer(
-                    new RenderBufferHandle(index, generation, buffer.allocationId),
+                    new RenderBufferHandle(index, generation, buffer.allocationID),
                     buffer.name,
                     buffer.descriptor,
                     buffer.imported,

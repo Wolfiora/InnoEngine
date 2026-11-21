@@ -42,7 +42,7 @@ internal sealed class EditorMenuCatalog(
                 }
                 foreach (EditorMenuPlacement item in builder.items)
                 {
-                    placements.Add(CreatePlacement(item.path, item.actionId, item.order, item.separatorBefore, item.argument));
+                    placements.Add(CreatePlacement(item.path, item.actionID, item.order, item.separatorBefore, item.argument));
                 }
                 dynamicPlacements.AddRange(placements);
             }
@@ -124,7 +124,7 @@ internal sealed class EditorMenuCatalog(
             bool separatorBefore = false;
             foreach (Placement placement in node.placements)
             {
-                if (placement.actionId is string action)
+                if (placement.actionID is string action)
                 {
                     EditorActionState candidate = actions.Query(action, context.CreateActionContext(placement.argument));
                     if (!candidate.isVisible)
@@ -149,7 +149,7 @@ internal sealed class EditorMenuCatalog(
             result.Add(
                 new EditorMenuItem(
                     label,
-                    actionPlacement?.actionId ?? string.Empty,
+                    actionPlacement?.actionID ?? string.Empty,
                     order,
                     separatorBefore,
                     state,
@@ -175,7 +175,7 @@ internal sealed class EditorMenuCatalog(
 
     private static Placement CreatePlacement(
         string path,
-        string? actionId,
+        string? actionID,
         int order,
         bool separatorBefore,
         object? argument
@@ -185,7 +185,7 @@ internal sealed class EditorMenuCatalog(
         {
             throw new InvalidOperationException("An editor menu path must contain at least one segment.");
         }
-        return new Placement(string.Join('/', segments), segments, actionId, order, separatorBefore, argument);
+        return new Placement(string.Join('/', segments), segments, actionID, order, separatorBefore, argument);
     }
 
     private static void AddPlacement(
@@ -275,7 +275,7 @@ internal sealed class EditorMenuCatalog(
     private sealed record Placement(
         string path,
         string[] segments,
-        string? actionId,
+        string? actionID,
         int order,
         bool separatorBefore,
         object? argument

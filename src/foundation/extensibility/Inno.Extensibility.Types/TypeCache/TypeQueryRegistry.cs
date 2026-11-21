@@ -76,8 +76,8 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetSubTypesOf<T>(TypeIdentityRegistry typeIdentityRegistry)
-        => typeIdentityRegistry.TryGetRuntimeTypeId(typeof(T), out int keyId)
-           && m_subclassCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+        => typeIdentityRegistry.TryGetRuntimeTypeID(typeof(T), out int keyID)
+           && m_subclassCache.TryGetValue(keyID, out IReadOnlyList<TypeRef>? set)
            ? set
            : [];
 
@@ -94,8 +94,8 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesImplementing<TInterface>(TypeIdentityRegistry typeIdentityRegistry)
-        => typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TInterface), out int keyId)
-           && m_interfaceCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+        => typeIdentityRegistry.TryGetRuntimeTypeID(typeof(TInterface), out int keyID)
+           && m_interfaceCache.TryGetValue(keyID, out IReadOnlyList<TypeRef>? set)
            ? set
            : [];
 
@@ -112,8 +112,8 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttr>(TypeIdentityRegistry typeIdentityRegistry)
-        where TAttr : Attribute => typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TAttr), out int keyId)
-                                   && m_attributeCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+        where TAttr : Attribute => typeIdentityRegistry.TryGetRuntimeTypeID(typeof(TAttr), out int keyID)
+                                   && m_attributeCache.TryGetValue(keyID, out IReadOnlyList<TypeRef>? set)
                                    ? set
                                    : [];
 
@@ -123,11 +123,11 @@ internal sealed class TypeQueryRegistry
         Type valueType,
         TypeIdentityRegistry typeIdentityRegistry
     ) {
-        int keyId = typeIdentityRegistry.GetOrAddRuntimeTypeId(keyType);
-        if (!index.TryGetValue(keyId, out HashSet<Type>? set))
+        int keyID = typeIdentityRegistry.GetOrAddRuntimeTypeID(keyType);
+        if (!index.TryGetValue(keyID, out HashSet<Type>? set))
         {
             set = [];
-            index[keyId] = set;
+            index[keyID] = set;
         }
 
         set.Add(valueType);

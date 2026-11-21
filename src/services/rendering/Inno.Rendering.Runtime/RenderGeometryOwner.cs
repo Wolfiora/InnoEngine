@@ -46,7 +46,7 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         m_allocation = null;
     }
 
-    internal int count => m_entries.Count;
+    internal int count => m_entries.count;
     internal int retiringCount => m_entries.pendingCount;
     internal long rejectedCount => m_entries.rejectedCount;
 

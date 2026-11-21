@@ -48,7 +48,7 @@ public sealed unsafe partial class BgfxDevice
         {
             BgfxNativeCalls.SetTextureName(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
         }
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_persistentTextures.Add(id, nativeTexture);
         m_persistentTextureDescriptors.Add(id, descriptor);
         return CreatePersistentTextureHandle(id, generation);
@@ -118,7 +118,7 @@ public sealed unsafe partial class BgfxDevice
         {
             BgfxNativeCalls.SetTextureName(nativeTexture, (sbyte*)textureNamePointer, textureNameLength);
         }
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_persistentTextures.Add(id, nativeTexture);
         return CreatePersistentTextureHandle(id, generation);
     }

@@ -14,7 +14,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Scene.Tests;
 
-[Collection(SceneTestsCollection.NAME)]
+[Collection(SceneTestsCollection.C_NAME)]
 public sealed partial class EngineAssetIntegrationTests : IDisposable
 {
     private readonly string m_root = Path.Combine(
@@ -70,12 +70,12 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
 
         Assert.True(m_assets.Save(AssetPath.Project("Scenes/sample.iscene"), captured));
         SceneAsset byPath = m_assets.Load<SceneAsset>(AssetPath.Project("Scenes/sample.iscene"));
-        SceneAsset byId = m_assets.Load<SceneAsset>(byPath.identity.persistentId);
+        SceneAsset byID = m_assets.Load<SceneAsset>(byPath.identity.persistentId);
         GameScene first = byPath.Instantiate(m_fixture.serialization, m_assets);
         GameScene second = byPath.Instantiate(m_fixture.serialization, m_assets);
 
         Assert.Same(captured, byPath);
-        Assert.Same(byPath, byId);
+        Assert.Same(byPath, byID);
         Assert.Equal("sample", first.name);
         Assert.Equal("Object", Assert.Single(first.GetObjects()).name);
         Assert.NotEqual(first.identity.persistentId, second.identity.persistentId);
@@ -256,14 +256,14 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         GameObject sourceRoot = sourceScene.CreateObject("Root");
         sourceScene.CreateObject("Child").transform.SetParent(sourceRoot.transform);
         PrefabAsset captured = PrefabAsset.Capture(sourceRoot, m_fixture.serialization, m_assets);
-        const string relativePath = "Prefabs/missing.iprefab";
-        AssetPath assetPath = AssetPath.Project(relativePath);
+        const string C_RELATIVE_PATH = "Prefabs/missing.iprefab";
+        AssetPath assetPath = AssetPath.Project(C_RELATIVE_PATH);
         Assert.True(m_assets.Save(assetPath, captured));
         PrefabAsset prefab = m_assets.Load<PrefabAsset>(assetPath);
         var targetScene = new GameScene("Target");
         _ = prefab.Instantiate(targetScene, m_fixture.serialization, m_assets);
         byte[] sceneBytes = m_fixture.serialization.Serialize(targetScene, m_assetSerializationContext);
-        string sourcePath = Path.Combine(m_root, "Assets", relativePath);
+        string sourcePath = Path.Combine(m_root, "Assets", C_RELATIVE_PATH);
         string metaPath = sourcePath + ".imeta";
         byte[] sourceBytes = File.ReadAllBytes(sourcePath);
         byte[] metaBytes = File.ReadAllBytes(metaPath);

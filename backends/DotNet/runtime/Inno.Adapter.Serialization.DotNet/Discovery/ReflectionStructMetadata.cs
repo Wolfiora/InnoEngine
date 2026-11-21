@@ -12,10 +12,10 @@ internal static class ReflectionStructMetadata
     private const BindingFlags C_MEMBERS =
         BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-    private static readonly ConditionalWeakTable<Type, MembersBox> S_CACHE = new();
+    private static readonly ConditionalWeakTable<Type, MembersBox> CACHE = new();
 
     internal static SerializationMemberMetadata[] GetMembers(Type structType)
-        => S_CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
+        => CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
 
     internal static bool HasPureFieldAccess(
         Type type,

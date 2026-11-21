@@ -26,7 +26,7 @@ namespace Inno.Build.Toolchains.Bgfx.Integration.Tests;
 
 public sealed class BgfxToolchainTests : IDisposable
 {
-    private static readonly byte[] C_KTX_IDENTIFIER =
+    private static readonly byte[] KTX_IDENTIFIER =
     [
         0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31,
         0x31, 0xBB, 0x0D, 0x0A, 0x1A, 0x0A
@@ -199,8 +199,8 @@ public sealed class BgfxToolchainTests : IDisposable
         using FileStream source = File.OpenRead(sourcePath);
         byte[] artifact = await new BgfxTextureTargetCompiler().CompileKtxAsync(source, TextureColorSpace.Srgb);
 
-        Assert.True(artifact.Length > C_KTX_IDENTIFIER.Length);
-        Assert.Equal(C_KTX_IDENTIFIER, artifact[..C_KTX_IDENTIFIER.Length]);
+        Assert.True(artifact.Length > KTX_IDENTIFIER.Length);
+        Assert.Equal(KTX_IDENTIFIER, artifact[..KTX_IDENTIFIER.Length]);
     }
 
     /// <summary>

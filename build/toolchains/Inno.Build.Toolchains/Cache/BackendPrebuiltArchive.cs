@@ -18,7 +18,7 @@ public static class BackendPrebuiltArchive
 {
     private const string C_MANIFEST = "manifest.json";
     private const long C_MAX_BYTES = 8L * 1024 * 1024 * 1024;
-    private static readonly DateTimeOffset S_EPOCH = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset EPOCH = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     /// <summary>
     /// Creates a fresh platform ZIP from an explicit inventory and an owned staging directory.
@@ -76,7 +76,7 @@ public static class BackendPrebuiltArchive
                         path,
                         path.EndsWith(".zip", StringComparison.Ordinal) ? CompressionLevel.NoCompression : CompressionLevel.Fastest
                     );
-                    entry.LastWriteTime = S_EPOCH;
+                    entry.LastWriteTime = EPOCH;
                     entry.ExternalAttributes = 0;
                     return entry;
                 }

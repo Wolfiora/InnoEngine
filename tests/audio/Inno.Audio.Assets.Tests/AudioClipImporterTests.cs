@@ -89,8 +89,8 @@ public sealed class AudioClipImporterTests : IDisposable
         using AssetLoader loader = CreateLoader();
 
         Assert.False(loader.Import(AssetPath.Project("broken.wav")));
-        Assert.True(loader.TryGetPersistentId(AssetPath.Project("broken.wav"), out Guid persistentId));
-        Assert.False(loader.TryGetArtifact(persistentId, "audio-data", out _));
+        Assert.True(loader.TryGetPersistentId(AssetPath.Project("broken.wav"), out Guid persistentID));
+        Assert.False(loader.TryGetArtifact(persistentID, "audio-data", out _));
     }
 
     private AssetLoader CreateLoader()

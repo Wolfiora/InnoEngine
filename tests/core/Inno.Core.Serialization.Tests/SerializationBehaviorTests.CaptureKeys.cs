@@ -170,19 +170,19 @@ public sealed partial class SerializationBehaviorTests
     [Fact]
     public void CaptureKeyQueriesDoNotConstructOrSkipStatefulConverters()
     {
-        CaptureConvertedValueConverter.events.Clear();
+        CaptureConvertedValueConverter.EVENTS.Clear();
         CaptureConvertedValueConverter.calls = 0;
         var identities = new IdentityAllocator();
         var properties = new ConvertedCaptureProperties();
         var value = new CaptureKeyRoot
         {
             properties = properties,
-            onWrite = () => CaptureConvertedValueConverter.events.Add("root-write")
+            onWrite = () => CaptureConvertedValueConverter.EVENTS.Add("root-write")
         };
         Assert.True(identities.Register(value));
         Assert.True(identities.Register(properties));
         SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
-        Assert.Equal(new[] { "root-write", "construct", "convert-write" }, CaptureConvertedValueConverter.events);
+        Assert.Equal(new[] { "root-write", "construct", "convert-write" }, CaptureConvertedValueConverter.EVENTS);
         SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: before);
         Assert.Equal(2, CaptureConvertedValueConverter.calls);
         Assert.NotEqual(before.ToArray(), changed.ToArray());
@@ -529,19 +529,19 @@ internal struct CaptureConvertedValue
 
 internal sealed class CaptureConvertedValueConverter : SerializationConverter<CaptureConvertedValue>
 {
-    internal static readonly List<string> events = [];
+    internal static readonly List<string> EVENTS = [];
     internal static int calls;
 
     public CaptureConvertedValueConverter()
     {
-        events.Add("construct");
+        EVENTS.Add("construct");
     }
 
     public override void Write(
         SerializationWriter writer,
         CaptureConvertedValue value
     ) {
-        events.Add("convert-write");
+        EVENTS.Add("convert-write");
         writer.Write("number", value.number);
         writer.Write("call", ++calls);
     }

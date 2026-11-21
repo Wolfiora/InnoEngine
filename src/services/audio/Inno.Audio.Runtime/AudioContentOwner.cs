@@ -17,8 +17,8 @@ internal sealed class AudioContentOwner : IDisposable
     private readonly Func<ContentReadScope>? m_contentScopeProvider;
     private readonly int m_capacity;
     private AudioListenerHandle m_listener;
-    private Guid m_listenerId;
-    private Guid m_listenerDiagnosticId;
+    private Guid m_listenerID;
+    private Guid m_listenerDiagnosticID;
 
     internal AudioContentOwner(
         IAudioDevice device,
@@ -45,18 +45,18 @@ internal sealed class AudioContentOwner : IDisposable
             _ = m_device.DestroyListener(m_listener);
         }
         m_listener = default;
-        m_listenerId = Guid.Empty;
+        m_listenerID = Guid.Empty;
         m_emitters.Clear();
         foreach (string id in m_providerDiagnosticIds)
         {
             m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", id);
         }
         m_providerDiagnosticIds.Clear();
-        if (m_listenerDiagnosticId != Guid.Empty)
+        if (m_listenerDiagnosticID != Guid.Empty)
         {
-            m_diagnostics.Resolve("AUDIO_LISTENER_PRIORITY_TIE", m_listenerDiagnosticId.ToString("D"));
+            m_diagnostics.Resolve("AUDIO_LISTENER_PRIORITY_TIE", m_listenerDiagnosticID.ToString("D"));
         }
-        m_listenerDiagnosticId = Guid.Empty;
+        m_listenerDiagnosticID = Guid.Empty;
     }
 
     internal AudioContentStatistics statistics { get; private set; }
@@ -92,12 +92,12 @@ internal sealed class AudioContentOwner : IDisposable
         var listeners = new List<AudioListenerSnapshot>();
         var ids = new HashSet<Guid>();
         int rejectedProviders = 0;
-        foreach (string retiredId in m_providerDiagnosticIds
+        foreach (string retiredID in m_providerDiagnosticIds
             .Where(id => !providers.providers.Any(entry => entry.id == id))
             .ToArray()
         ) {
-            m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", retiredId);
-            m_providerDiagnosticIds.Remove(retiredId);
+            m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", retiredID);
+            m_providerDiagnosticIds.Remove(retiredID);
         }
         foreach (AudioExtensionRegistry.ProviderEntry entry in providers.providers)
         {
@@ -162,7 +162,7 @@ internal sealed class AudioContentOwner : IDisposable
             }
             if (m_emitters.TryGetValue(snapshot.id, out EmitterRecord? current))
             {
-                if (current.clipId != snapshot.clip.identity.persistentId
+                if (current.clipID != snapshot.clip.identity.persistentId
                     || current.contentVersion != snapshot.clip.contentVersion
                     || current.playbackRevision != snapshot.playbackRevision
                 ) {
@@ -202,10 +202,10 @@ internal sealed class AudioContentOwner : IDisposable
 
     private void SynchronizeListener(IReadOnlyList<AudioListenerSnapshot> snapshots)
     {
-        if (m_listenerDiagnosticId != Guid.Empty)
+        if (m_listenerDiagnosticID != Guid.Empty)
         {
-            m_diagnostics.Resolve("AUDIO_LISTENER_PRIORITY_TIE", m_listenerDiagnosticId.ToString("D"));
-            m_listenerDiagnosticId = Guid.Empty;
+            m_diagnostics.Resolve("AUDIO_LISTENER_PRIORITY_TIE", m_listenerDiagnosticID.ToString("D"));
+            m_listenerDiagnosticID = Guid.Empty;
         }
         AudioListenerSnapshot[] active = snapshots
             .Where(static listener => listener.active)
@@ -219,13 +219,13 @@ internal sealed class AudioContentOwner : IDisposable
                 _ = m_device.DestroyListener(m_listener);
             }
             m_listener = default;
-            m_listenerId = Guid.Empty;
+            m_listenerID = Guid.Empty;
             return;
         }
         AudioListenerSnapshot selected = active[0];
         if (active.Length > 1 && active[1].priority == selected.priority)
         {
-            m_listenerDiagnosticId = selected.id;
+            m_listenerDiagnosticID = selected.id;
             Publish(
                 "AUDIO_LISTENER_PRIORITY_TIE",
                 "Multiple active listeners share the highest priority; stable identity selected the winner.",
@@ -233,14 +233,14 @@ internal sealed class AudioContentOwner : IDisposable
                 selected.id.ToString("D")
             );
         }
-        if (!m_listener.isValid || m_listenerId != selected.id)
+        if (!m_listener.isValid || m_listenerID != selected.id)
         {
             if (m_listener.isValid)
             {
                 _ = m_device.DestroyListener(m_listener);
             }
             m_listener = m_device.CreateListener(selected.state);
-            m_listenerId = selected.id;
+            m_listenerID = selected.id;
             return;
         }
         _ = m_device.SetListener(m_listener, selected.state);
@@ -258,7 +258,7 @@ internal sealed class AudioContentOwner : IDisposable
         ulong playbackRevision,
         AudioVoiceHandle voice
     ) {
-        internal Guid clipId { get; } = clip.identity.persistentId;
+        internal Guid clipID { get; } = clip.identity.persistentId;
         internal long contentVersion { get; } = clip.contentVersion;
         internal ulong playbackRevision { get; } = playbackRevision;
         internal AudioVoiceHandle voice { get; } = voice;

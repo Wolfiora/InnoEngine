@@ -18,14 +18,14 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// The persistent type identity, or an empty value for an invalid reference.
     /// </param>
     public TypeRef(Guid stableId)
-        : this(stableId, runtimeId: 0) {}
+        : this(stableId, runtimeID: 0) {}
 
     internal TypeRef(
-        Guid stableId,
-        int runtimeId
+        Guid stableID,
+        int runtimeID
     ) {
-        this.stableId = stableId;
-        this.runtimeId = runtimeId;
+        this.stableId = stableID;
+        this.runtimeId = runtimeID;
     }
 
     /// <summary>

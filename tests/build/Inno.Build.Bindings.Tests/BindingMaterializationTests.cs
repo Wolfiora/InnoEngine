@@ -84,7 +84,7 @@ public sealed class BindingMaterializationTests : IDisposable
     public async Task HostConsumerYieldsItsNodeAndWaitsForThePublicationOwner()
     {
         MaterializeBindingsTask task = CreateHostTask();
-        using FileLease publisher = await FileLease.AcquireAsync(HostPublicationLock, TimeSpan.FromSeconds(5));
+        using FileLease publisher = await FileLease.AcquireAsync(hostPublicationLock, TimeSpan.FromSeconds(5));
         Task<bool> waiting = Task.Run(task.Execute);
         try
         {
@@ -112,7 +112,7 @@ public sealed class BindingMaterializationTests : IDisposable
         Directory.CreateDirectory(Path.Combine(task.IntermediateDirectory, "bindings"));
         string previous = Path.Combine(task.IntermediateDirectory, "bindings", "Bindings.cs");
         File.WriteAllText(previous, "previous");
-        using FileLease publisher = await FileLease.AcquireAsync(HostPublicationLock, TimeSpan.FromSeconds(5));
+        using FileLease publisher = await FileLease.AcquireAsync(hostPublicationLock, TimeSpan.FromSeconds(5));
         Task<bool> waiting = Task.Run(task.Execute);
         await m_engine.yielded.Task.WaitAsync(TimeSpan.FromSeconds(5));
         task.Cancel();
@@ -123,7 +123,7 @@ public sealed class BindingMaterializationTests : IDisposable
         Assert.Equal("public static class HostBinding { }", File.ReadAllText(task.Source));
         await Assert.ThrowsAsync<TimeoutException>(async () =>
         {
-            using FileLease conflicting = await FileLease.AcquireAsync(HostPublicationLock, TimeSpan.FromMilliseconds(100));
+            using FileLease conflicting = await FileLease.AcquireAsync(hostPublicationLock, TimeSpan.FromMilliseconds(100));
         });
     }
 
@@ -134,11 +134,11 @@ public sealed class BindingMaterializationTests : IDisposable
         m_engine.failReacquire = true;
         Assert.False(task.Execute());
         Assert.False(Directory.Exists(task.IntermediateDirectory));
-        using FileLease next = await FileLease.AcquireAsync(HostPublicationLock, TimeSpan.FromSeconds(5));
+        using FileLease next = await FileLease.AcquireAsync(hostPublicationLock, TimeSpan.FromSeconds(5));
         Assert.NotEmpty(m_engine.errors);
     }
 
-    private string HostPublicationLock => Path.Combine(m_root, "component", "obj", "bindings", "generation.lock");
+    private string hostPublicationLock => Path.Combine(m_root, "component", "obj", "bindings", "generation.lock");
 
     private MaterializeBindingsTask CreateHostTask()
     {

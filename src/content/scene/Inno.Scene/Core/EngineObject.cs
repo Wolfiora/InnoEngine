@@ -83,13 +83,13 @@ public abstract class EngineObject : IdentityObject
         EngineObject? right
     ) => !(left == right);
 
-    internal void RegisterIdentity(Guid? persistentId = null)
+    internal void RegisterIdentity(Guid? persistentID = null)
     {
         if (m_isDestroyed)
         {
             throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be registered.");
         }
-        if (!IdentityAllocator.current.Register(this, persistentId))
+        if (!IdentityAllocator.current.Register(this, persistentID))
         {
             throw new InvalidOperationException($"Identity registration failed for '{GetType().FullName}'.");
         }
@@ -114,12 +114,12 @@ public abstract class EngineObject : IdentityObject
     internal Guid ReleaseIdentityForReplacement()
     {
         ValidateIdentityForReplacement();
-        Guid persistentId = identity.persistentId;
+        Guid persistentID = identity.persistentId;
         if (!IdentityAllocator.current.Unregister(this))
         {
             throw new InvalidOperationException($"Identity release failed for '{GetType().FullName}'.");
         }
-        return persistentId;
+        return persistentID;
     }
 
     internal void ValidateIdentityForReplacement()

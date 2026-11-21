@@ -12,7 +12,7 @@ namespace Inno.Runtime.Tests;
 
 public sealed class StaticProjectSettingsTests
 {
-    private static readonly ProjectSettingId SettingId = new("tests.static-setting");
+    private static readonly ProjectSettingId SETTING_ID = new("tests.static-setting");
 
     [Fact]
     public void SettingsUseContributedMetadataAndFactoryWithoutReflectiveDeclarations()
@@ -29,12 +29,12 @@ public sealed class StaticProjectSettingsTests
                 SerializationContext.empty
             );
 
-            Setting first = settings.Get<Setting>(SettingId);
+            Setting first = settings.Get<Setting>(SETTING_ID);
             Assert.Equal(17, first.value);
             first.value = 42;
-            Assert.Equal(17, settings.Get<Setting>(SettingId).value);
-            settings.SetProjectOverride(SettingId, first, []);
-            Assert.Equal(42, settings.Get<Setting>(SettingId).value);
+            Assert.Equal(17, settings.Get<Setting>(SETTING_ID).value);
+            settings.SetProjectOverride(SETTING_ID, first, []);
+            Assert.Equal(42, settings.Get<Setting>(SETTING_ID).value);
         }
         finally
         {
@@ -72,7 +72,7 @@ public sealed class StaticProjectSettingsTests
         Attribute[] attributes =
         [
             new StableTypeIdAttribute("f506944b-bcfa-48e4-b839-a66b4d8f5887"),
-            new ProjectSettingDefinitionAttribute(SettingId.value)
+            new ProjectSettingDefinitionAttribute(SETTING_ID.value)
         ];
         var types = new StaticTypeCatalogSource([register => register.Register(
             new TypeCatalogMetadata(typeof(Setting), [], [typeof(ISerializable)], attributes, attributes, []),

@@ -10,8 +10,8 @@ namespace Inno.Core.Identity;
 /// </summary>
 public sealed class IdentityAllocator
 {
-    private static readonly ExecutionSlot<IdentityAllocator> S_CURRENT_SCOPE = new("allocator");
-    private static int S_NEXT_DOMAIN_ID;
+    private static readonly ExecutionSlot<IdentityAllocator> CURRENT_SCOPE = new("allocator");
+    private static int s_nextDomainID;
 
     private readonly IdentityRegistry m_registry;
 
@@ -23,19 +23,19 @@ public sealed class IdentityAllocator
     /// </exception>
     public IdentityAllocator()
     {
-        int nextDomainId = Interlocked.Increment(ref S_NEXT_DOMAIN_ID);
-        if (nextDomainId <= 0)
+        int nextDomainID = Interlocked.Increment(ref s_nextDomainID);
+        if (nextDomainID <= 0)
         {
             throw new InvalidOperationException("The process exhausted available identity domains.");
         }
-        this.domainId = new IdentityDomainId(nextDomainId);
+        this.domainId = new IdentityDomainId(nextDomainID);
         m_registry = new IdentityRegistry(domainId);
     }
 
     /// <summary>
     /// Gets whether the current asynchronous execution context is bound to an allocator.
     /// </summary>
-    public static bool hasCurrent => S_CURRENT_SCOPE.TryGet(out _);
+    public static bool hasCurrent => CURRENT_SCOPE.TryGet(out _);
 
     /// <summary>
     /// Gets the allocator bound to the current asynchronous execution context.
@@ -43,7 +43,7 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when the caller is outside a runtime session execution scope.
     /// </exception>
-    public static IdentityAllocator current => S_CURRENT_SCOPE.current;
+    public static IdentityAllocator current => CURRENT_SCOPE.current;
 
     /// <summary>
     /// Gets the number of currently registered identity entries.
@@ -77,7 +77,7 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when scopes are disposed out of order.
     /// </exception>
-    public IDisposable EnterScope() => S_CURRENT_SCOPE.Enter(this);
+    public IDisposable EnterScope() => CURRENT_SCOPE.Enter(this);
 
     /// <summary>
     /// Registers an object and assigns its session-local runtime identity.

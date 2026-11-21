@@ -7,9 +7,9 @@ namespace Inno.Editor.Scene;
 
 internal sealed record SceneElementHistoryData(
     SceneElementKind elementKind,
-    Guid sceneId,
-    Guid ownerId,
-    Guid elementId,
+    Guid sceneID,
+    Guid ownerID,
+    Guid elementID,
     TypeRef type,
     int beforeIndex,
     int afterIndex,
@@ -24,9 +24,9 @@ internal sealed record SceneElementHistoryData(
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write((byte)elementKind);
-        writer.Write(sceneId.ToByteArray());
-        writer.Write(ownerId.ToByteArray());
-        writer.Write(elementId.ToByteArray());
+        writer.Write(sceneID.ToByteArray());
+        writer.Write(ownerID.ToByteArray());
+        writer.Write(elementID.ToByteArray());
         writer.Write(type.stableId.ToByteArray());
         writer.Write(beforeIndex);
         writer.Write(afterIndex);
@@ -38,7 +38,7 @@ internal sealed record SceneElementHistoryData(
         for (int i = 0; i < incomingReferences.Length; i++)
         {
             SceneIncomingReferenceState reference = incomingReferences[i];
-            writer.Write(reference.ownerId.ToByteArray());
+            writer.Write(reference.ownerID.ToByteArray());
             writer.Write(reference.propertyName);
             WriteBytes(writer, reference.data);
         }
@@ -55,9 +55,9 @@ internal sealed record SceneElementHistoryData(
         {
             throw new InvalidDataException($"Unknown scene element history kind '{elementKind}'.");
         }
-        var sceneId = new Guid(reader.ReadBytes(16));
-        var ownerId = new Guid(reader.ReadBytes(16));
-        var elementId = new Guid(reader.ReadBytes(16));
+        var sceneID = new Guid(reader.ReadBytes(16));
+        var ownerID = new Guid(reader.ReadBytes(16));
+        var elementID = new Guid(reader.ReadBytes(16));
         var type = new TypeRef(new Guid(reader.ReadBytes(16)));
         int beforeIndex = reader.ReadInt32();
         int afterIndex = reader.ReadInt32();
@@ -85,9 +85,9 @@ internal sealed record SceneElementHistoryData(
         }
         return new SceneElementHistoryData(
             elementKind,
-            sceneId,
-            ownerId,
-            elementId,
+            sceneID,
+            ownerID,
+            elementID,
             type,
             beforeIndex,
             afterIndex,

@@ -258,11 +258,11 @@ public sealed class VectorMatrixTests
             q2 = new Quaternion(-q2.x, -q2.y, -q2.z, -q2.w);
         }
 
-        const float epsilon = 1e-3f;
-        Assert.True(MathF.Abs(q.x - q2.x) < epsilon);
-        Assert.True(MathF.Abs(q.y - q2.y) < epsilon);
-        Assert.True(MathF.Abs(q.z - q2.z) < epsilon);
-        Assert.True(MathF.Abs(q.w - q2.w) < epsilon);
+        const float C_EPSILON = 1e-3f;
+        Assert.True(MathF.Abs(q.x - q2.x) < C_EPSILON);
+        Assert.True(MathF.Abs(q.y - q2.y) < C_EPSILON);
+        Assert.True(MathF.Abs(q.z - q2.z) < C_EPSILON);
+        Assert.True(MathF.Abs(q.w - q2.w) < C_EPSILON);
     }
 
     [Fact]

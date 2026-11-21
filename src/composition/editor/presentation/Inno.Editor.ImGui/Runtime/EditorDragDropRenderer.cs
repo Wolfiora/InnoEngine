@@ -65,7 +65,7 @@ public static class EditorDragDropRenderer
         }
         bool delivered = EditorUI.current.widgets.DragDropTarget(
             GetPayloadType(activeIdentity.domainId),
-            out int runtimeId,
+            out int runtimeID,
             out bool isPreviewing,
             drawDefaultHighlight: false
         );
@@ -73,18 +73,18 @@ public static class EditorDragDropRenderer
         {
             return EditorDropWidgetResult.none;
         }
-        if (runtimeId <= 0)
+        if (runtimeID <= 0)
         {
             return EditorDropWidgetResult.none;
         }
-        var identity = new RuntimeIdentity(activeIdentity.domainId, runtimeId);
+        var identity = new RuntimeIdentity(activeIdentity.domainId, runtimeID);
         EditorDropStatus status = interaction.QueryDrop(identity, placement);
         EditorDropResult result = delivered && status.canDrop ? interaction.Drop(identity, placement) : EditorDropResult.rejected;
         return new EditorDropWidgetResult(isPreviewing, status, result);
     }
 
-    private static string GetPayloadType(IdentityDomainId domainId)
-        => C_IDENTITY_PAYLOAD_PREFIX + domainId.value.ToString("X8", CultureInfo.InvariantCulture);
+    private static string GetPayloadType(IdentityDomainId domainID)
+        => C_IDENTITY_PAYLOAD_PREFIX + domainID.value.ToString("X8", CultureInfo.InvariantCulture);
 }
 
 /// <summary>

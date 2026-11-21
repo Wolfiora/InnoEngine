@@ -303,7 +303,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         try
         {
             CancellationToken token = entry.cancellation.Token;
-            entry.pending = RunOwned(token => m_shaderCompiler.CompileGraphAsync(
+            entry.pending = RunOwnedAsync(token => m_shaderCompiler.CompileGraphAsync(
                 shader,
                 target,
                 variant,
@@ -368,7 +368,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 : diagnostic.severity == DiagnosticSeverity.Warning
                   ? DiagnosticSeverity.Warning
                   : DiagnosticSeverity.Info,
-                diagnostic.location?.assetPath ?? key.shaderId.ToString("D")
+                diagnostic.location?.assetPath ?? key.shaderID.ToString("D")
             ))
             .ToList();
         if (result.succeeded)
@@ -381,9 +381,9 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
             diagnostics.Add(
                 new Diagnostic(
                     "RENDER_SHADER_USING_LAST_GOOD",
-                    $"Shader '{key.shaderId:D}' kept its last-good target artifact.",
+                    $"Shader '{key.shaderID:D}' kept its last-good target artifact.",
                     DiagnosticSeverity.Warning,
-                    key.shaderId.ToString("D")
+                    key.shaderID.ToString("D")
                 )
             );
             entry.status = RenderTargetArtifactStatus.Ready;
@@ -409,7 +409,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         try
         {
             CancellationToken token = entry.cancellation.Token;
-            entry.pending = RunOwned(async token =>
+            entry.pending = RunOwnedAsync(async token =>
             {
                 using ArtifactLease lease = m_assets.AcquireArtifact(texture.assetId, texture.slot.sourceOutputName);
                 return await Task.Run(
@@ -465,9 +465,9 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                          : pending.Exception?.GetBaseException().Message ?? "Texture compilation failed without an exception.";
         ReplaceDiagnostics(entry.diagnostics, [new Diagnostic(
             "RENDER_TEXTURE_PREWARM_FAILED",
-            $"Texture '{key.textureId:D}' kept its last-good target artifact: {message}",
+            $"Texture '{key.textureID:D}' kept its last-good target artifact: {message}",
             DiagnosticSeverity.Error,
-            key.textureId.ToString("D")
+            key.textureID.ToString("D")
         )]);
         entry.status = entry.artifact is null
                        ? RenderTargetArtifactStatus.Failed
@@ -478,13 +478,13 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         => m_assets.sourceMounts.FirstOrDefault(mount => mount.id == source)
            ?? throw new InvalidOperationException($"Asset source mount '{source}' is not active.");
 
-    private Task<T> RunOwned<T>(
+    private Task<T> RunOwnedAsync<T>(
         Func<CancellationToken, ValueTask<T>> operation,
         CancellationToken token
     ) {
         // Admit before starting work or acquiring leases. Ordinary compilation errors are data;
         // retirement-pending failures stay in the lifetime and retain every dependent owner.
-        return Unwrap(
+        return UnwrapAsync(
             m_work.RunAsync<(T value, Exception? failure)>(async cancellation =>
             {
                 try
@@ -498,7 +498,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
             }, token)
         );
 
-        static async Task<T> Unwrap(Task<(T value, Exception? failure)> task)
+        static async Task<T> UnwrapAsync(Task<(T value, Exception? failure)> task)
         {
             (T value, Exception? failure) result = await task.ConfigureAwait(false);
             if (result.failure is not null)
@@ -525,7 +525,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     {
         foreach (DiagnosticIdentity diagnostic in active)
         {
-            m_diagnostics.Resolve(diagnostic.code, diagnostic.semanticId);
+            m_diagnostics.Resolve(diagnostic.code, diagnostic.semanticID);
         }
         active.Clear();
     }
@@ -570,20 +570,20 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     }
 
     private readonly record struct ShaderKey(
-        Guid shaderId,
+        Guid shaderID,
         string targetKey,
         string variantKey
     );
 
     private readonly record struct TextureKey(
-        Guid textureId,
-        string slotId,
+        Guid textureID,
+        string slotID,
         TextureColorSpace colorSpace
     );
 
     private readonly record struct DiagnosticIdentity(
         string code,
-        string? semanticId
+        string? semanticID
     );
 
     private sealed class ShaderEntry

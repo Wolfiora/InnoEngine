@@ -8,7 +8,7 @@ using Inno.Scene;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Property)]
+[EditorHistoryHandler(SceneHistoryKinds.C_PROPERTY)]
 internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
 {
     private const double C_MERGE_WINDOW_SECONDS = 1.0;
@@ -42,15 +42,15 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         try
         {
             ScenePropertyHistoryData data = ScenePropertyHistoryData.Decode(change.payload.ReadBytes());
-            EngineObject? target = m_workspace.Find<EngineObject>(data.targetId);
+            EngineObject? target = m_workspace.Find<EngineObject>(data.targetID);
             if (target is null || target.isDestroyed)
             {
-                return EditorHistoryAvailability.Unavailable($"Scene object '{data.targetId}' is no longer available.");
+                return EditorHistoryAvailability.Unavailable($"Scene object '{data.targetID}' is no longer available.");
             }
             if (target is not ISerializable serializable)
             {
                 return EditorHistoryAvailability.Unavailable(
-                    $"Scene object '{data.targetId}' is not serializable in the current generation."
+                    $"Scene object '{data.targetID}' is not serializable in the current generation."
                 );
             }
             HashSet<string> currentProperties = ScenePropertySerialization
@@ -62,7 +62,7 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
                    ? EditorHistoryAvailability.Available()
                    : EditorHistoryAvailability.Unavailable(
                        $"One or more properties affected by '{data.propertyName}' no longer exist on "
-                       + $"scene object '{data.targetId}'."
+                       + $"scene object '{data.targetID}'."
                    );
         }
         catch (Exception exception)
@@ -96,10 +96,10 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         try
         {
             data = ScenePropertyHistoryData.Decode(change.payload.ReadBytes());
-            target = m_workspace.Find<EngineObject>(data.targetId);
+            target = m_workspace.Find<EngineObject>(data.targetID);
             if (target is null || target.isDestroyed)
             {
-                return EditorHistoryResult.Failure($"Scene object '{data.targetId}' is no longer available.");
+                return EditorHistoryResult.Failure($"Scene object '{data.targetID}' is no longer available.");
             }
         }
         catch (Exception exception)
@@ -177,7 +177,7 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         {
             ScenePropertyHistoryData previous = ScenePropertyHistoryData.Decode(older.payload.ReadBytes());
             ScenePropertyHistoryData current = ScenePropertyHistoryData.Decode(newer.payload.ReadBytes());
-            if (previous.targetId != current.targetId
+            if (previous.targetID != current.targetID
                 || !string.Equals(previous.propertyName, current.propertyName, StringComparison.Ordinal)
                 || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS
             ) {
@@ -213,13 +213,13 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
                 return false;
             }
             var data = new ScenePropertyHistoryData(
-                previous.targetId,
+                previous.targetID,
                 previous.propertyName,
                 deltas,
                 current.timestamp
             );
             merged = new EditorHistoryChange(
-                SceneHistoryKinds.Property,
+                SceneHistoryKinds.C_PROPERTY,
                 EditorHistoryPayload.FromBytes(data.Encode()),
                 older.mergeKey
             );

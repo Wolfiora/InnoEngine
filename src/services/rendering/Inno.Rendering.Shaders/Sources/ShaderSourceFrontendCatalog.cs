@@ -92,7 +92,7 @@ public sealed class ShaderSourceFrontendCatalog
         var results = new List<ShaderSourceImplementationAnalysis>();
         var diagnostics = new List<ShaderSourceDiagnostic>();
         ShaderSourceFunction? common = null;
-        string? commonId = null;
+        string? commonID = null;
         foreach (ShaderSourceImplementationRequest request in requests.OrderBy(
             static value => value.implementationId,
             StringComparer.Ordinal
@@ -144,7 +144,7 @@ public sealed class ShaderSourceFrontendCatalog
             if (common is null)
             {
                 common = analysis.function;
-                commonId = request.implementationId;
+                commonID = request.implementationId;
             }
             else if (!common.HasSameInterface(analysis.function))
             {
@@ -152,7 +152,7 @@ public sealed class ShaderSourceFrontendCatalog
                     new(
                         "SHADER_SOURCE_IMPLEMENTATION_INTERFACE",
                         DiagnosticSeverity.Error,
-                        $"Implementation '{request.implementationId}' does not match '{commonId}': public parameter names, directions, order and complete value types must agree.",
+                        $"Implementation '{request.implementationId}' does not match '{commonID}': public parameter names, directions, order and complete value types must agree.",
                         analysis.function!.location
                     )
                 );

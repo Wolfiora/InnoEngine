@@ -10,10 +10,10 @@ namespace Inno.Rendering.Runtime;
 /// </summary>
 internal sealed class RenderLayerCompositor : IDisposable
 {
-    private static readonly RenderPhaseId S_PHASE = new("inno.runtime.model-composition");
-    private static readonly RenderBindingId S_TEXTURE = new("s_tex");
+    private static readonly RenderPhaseId PHASE = new("inno.runtime.model-composition");
+    private static readonly RenderBindingId TEXTURE = new("s_tex");
 
-    private static readonly float[] S_IDENTITY =
+    private static readonly float[] IDENTITY =
     [
         1f, 0f, 0f, 0f,
         0f, 1f, 0f, 0f,
@@ -21,7 +21,7 @@ internal sealed class RenderLayerCompositor : IDisposable
         0f, 0f, 0f, 1f
     ];
 
-    private static readonly RenderVertexLayout S_VERTEX_LAYOUT = new(
+    private static readonly RenderVertexLayout VERTEX_LAYOUT = new(
         [
             new(RenderVertexSemantic.Position, RenderVertexFormat.Float2),
             new(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Float2),
@@ -128,14 +128,14 @@ internal sealed class RenderLayerCompositor : IDisposable
             var data = new PassData(m_pipeline, m_vertices, m_indices, layers[index], compositionViewport);
             RasterPassBuilder pass = graph.AddRasterPass(
                 $"{name}/Layer {index + 1}",
-                S_PHASE,
+                PHASE,
                 data,
                 static (
                     value,
                     context
                 ) => DrawFullscreen(value, context)
             );
-            pass.SetViewTransform(S_IDENTITY, S_IDENTITY);
+            pass.SetViewTransform(IDENTITY, IDENTITY);
             pass.ReadTexture(layers[index]);
             if (compositionTarget.isValid)
             {
@@ -170,14 +170,14 @@ internal sealed class RenderLayerCompositor : IDisposable
         }
         IRenderLayerCompositionProgramProvider provider = m_programProvider
             ?? throw new InvalidOperationException("The rendering host has no layer composition program provider.");
-        GraphicsPipelineDescriptor descriptor = provider.CreateDescriptor(m_device.capabilities, S_VERTEX_LAYOUT);
+        GraphicsPipelineDescriptor descriptor = provider.CreateDescriptor(m_device.capabilities, VERTEX_LAYOUT);
         GraphicsPipelineHandle pipeline = m_device.CreateGraphicsPipeline(descriptor, "Render Model Composition");
         PersistentBufferHandle vertices = default;
         PersistentBufferHandle indices = default;
         try
         {
             vertices = m_device.CreateBuffer(
-                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, 20, RenderBufferUsage.Vertex), S_VERTEX_LAYOUT),
+                new PersistentBufferDescriptor(new RenderBufferDescriptor(4, 20, RenderBufferUsage.Vertex), VERTEX_LAYOUT),
                 CreateVertices(m_device.capabilities.originBottomLeft),
                 "Render Model Composition Vertices"
             );
@@ -218,7 +218,7 @@ internal sealed class RenderLayerCompositor : IDisposable
             ?? throw new InvalidOperationException("The rendering host has no layer composition program provider.");
         GraphicsPipelineDescriptor descriptor = provider.CreateOutputTransferDescriptor(
             m_device.capabilities,
-            S_VERTEX_LAYOUT
+            VERTEX_LAYOUT
         );
         m_outputTransferPipeline = m_device.CreateGraphicsPipeline(descriptor, "Render Model Output Transfer");
     }
@@ -232,14 +232,14 @@ internal sealed class RenderLayerCompositor : IDisposable
         var data = new PassData(m_outputTransferPipeline, m_vertices, m_indices, source, viewport);
         RasterPassBuilder transfer = graph.AddRasterPass(
             $"{name}/Output Transfer",
-            S_PHASE,
+            PHASE,
             data,
             static (
                 value,
                 context
             ) => DrawFullscreen(value, context)
         );
-        transfer.SetViewTransform(S_IDENTITY, S_IDENTITY);
+        transfer.SetViewTransform(IDENTITY, IDENTITY);
         transfer.ReadTexture(source);
         transfer.ClearPresentationTarget(default);
         transfer.HasSideEffect();
@@ -254,7 +254,7 @@ internal sealed class RenderLayerCompositor : IDisposable
         context.commands.BindGraphicsPipeline(value.pipeline);
         context.commands.BindVertexBuffer(value.vertices);
         context.commands.BindIndexBuffer(value.indices);
-        context.commands.BindTexture(S_TEXTURE, value.source);
+        context.commands.BindTexture(TEXTURE, value.source);
         context.commands.DrawIndexed(6);
     }
 

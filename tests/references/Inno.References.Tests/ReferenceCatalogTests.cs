@@ -9,13 +9,13 @@ namespace Inno.References.Tests;
 
 public sealed class ReferenceCatalogTests
 {
-    private static readonly ReferenceKindId S_KIND = new("asset");
+    private static readonly ReferenceKindId KIND = new("asset");
 
     [Fact]
     public void Resolve_PreservesUnassignedAndMissingIntent()
     {
-        var unassigned = new ReferenceDescriptor(S_KIND, Guid.Empty);
-        var missing = new ReferenceDescriptor(S_KIND, Guid.NewGuid(), lastKnownName: "Portrait");
+        var unassigned = new ReferenceDescriptor(KIND, Guid.Empty);
+        var missing = new ReferenceDescriptor(KIND, Guid.NewGuid(), lastKnownName: "Portrait");
 
         ReferenceResolution unassignedResult = ReferenceCatalog.empty.Resolve(unassigned);
         ReferenceResolution missingResult = ReferenceCatalog.empty.Resolve(missing);
@@ -29,8 +29,8 @@ public sealed class ReferenceCatalogTests
     [Fact]
     public void Create_RejectsDuplicateReferenceKinds()
     {
-        var first = new FixedResolver(S_KIND, null);
-        var second = new FixedResolver(S_KIND, null);
+        var first = new FixedResolver(KIND, null);
+        var second = new FixedResolver(KIND, null);
 
         Assert.Throws<InvalidOperationException>(() => ReferenceCatalog.Create(1, [first, second]));
     }
@@ -41,8 +41,8 @@ public sealed class ReferenceCatalogTests
         var allocator = new IdentityAllocator();
         var target = new Target();
         Assert.True(allocator.Register(target));
-        var descriptor = new ReferenceDescriptor(S_KIND, target.identity.persistentId);
-        ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
+        var descriptor = new ReferenceDescriptor(KIND, target.identity.persistentId);
+        ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var first = new RecordingParticipant("first", events);
         var second = new RecordingParticipant("second", events, failApply: true);
@@ -67,8 +67,8 @@ public sealed class ReferenceCatalogTests
         var allocator = new IdentityAllocator();
         var target = new Target();
         allocator.Register(target);
-        var descriptor = new ReferenceDescriptor(S_KIND, target.identity.persistentId);
-        ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
+        var descriptor = new ReferenceDescriptor(KIND, target.identity.persistentId);
+        ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var state = new SerializedMissingState(new ReferenceKey(Guid.NewGuid(), "asset"), descriptor, [1]);
         var transaction = new ReferenceRecoveryTransaction(
@@ -92,7 +92,7 @@ public sealed class ReferenceCatalogTests
     {
         var state = new SerializedMissingState(
             new ReferenceKey(Guid.NewGuid(), "asset"),
-            new ReferenceDescriptor(S_KIND, Guid.NewGuid()),
+            new ReferenceDescriptor(KIND, Guid.NewGuid()),
             []
         );
         Assert.Throws<ArgumentException>(() => new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [state, state], []));
@@ -107,11 +107,11 @@ public sealed class ReferenceCatalogTests
     private sealed class Target : IdentityObject;
 
     private sealed class FixedResolver(
-        ReferenceKindId kindId,
+        ReferenceKindId kindID,
         RuntimeIdentity? runtimeIdentity
     ) : IReferenceResolver
     {
-        public ReferenceKindId kindId { get; } = kindId;
+        public ReferenceKindId kindId { get; } = kindID;
 
         public ReferenceResolution Resolve(ReferenceDescriptor descriptor)
             => runtimeIdentity.HasValue

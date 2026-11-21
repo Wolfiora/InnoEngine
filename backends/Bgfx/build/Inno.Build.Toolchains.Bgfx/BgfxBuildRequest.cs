@@ -14,7 +14,7 @@ internal sealed class BgfxBuildRequest
         ArgumentNullException.ThrowIfNull(operation);
         NativeToolchainSelection initial = operation.RequireToolchain();
         ArgumentNullException.ThrowIfNull(profile);
-        if (profile.targetId != initial.targetId)
+        if (profile.targetID != initial.targetId)
         {
             throw new ArgumentException("The BGFX profile does not match the frozen toolchain target.", nameof(profile));
         }

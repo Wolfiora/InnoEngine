@@ -69,20 +69,20 @@ public sealed class AtomicFilePublicationTests : IDisposable
     [Fact]
     public async Task ConcurrentCandidatesPublishExactlyOneCompleteFile()
     {
-        const int count = 16;
+        const int C_COUNT = 16;
         for (int round = 0; round < 12; round++)
         {
             string destination = Path.Combine(m_root, "document-" + round);
-            string[] candidates = Enumerable.Range(0, count).Select(index => destination + ".candidate-" + index).ToArray();
+            string[] candidates = Enumerable.Range(0, C_COUNT).Select(index => destination + ".candidate-" + index).ToArray();
             foreach (string candidate in candidates)
             {
                 File.WriteAllBytes(candidate, Enumerable.Repeat((byte)Array.IndexOf(candidates, candidate), 64 * 1024).ToArray());
             }
             int winner = -1;
             int successes = 0;
-            using var ready = new CountdownEvent(count);
+            using var ready = new CountdownEvent(C_COUNT);
             using var start = new ManualResetEventSlim();
-            Task[] writers = Enumerable.Range(0, count).Select(index => Task.Factory.StartNew(() =>
+            Task[] writers = Enumerable.Range(0, C_COUNT).Select(index => Task.Factory.StartNew(() =>
             {
                 ready.Signal();
                 start.Wait();
@@ -104,7 +104,7 @@ public sealed class AtomicFilePublicationTests : IDisposable
             byte[] bytes = File.ReadAllBytes(destination);
             Assert.Equal(64 * 1024, bytes.Length);
             Assert.All(bytes, value => Assert.Equal((byte)winner, value));
-            for (int index = 0; index < count; index++)
+            for (int index = 0; index < C_COUNT; index++)
             {
                 Assert.Equal(index != winner, File.Exists(candidates[index]));
             }
@@ -176,9 +176,9 @@ public sealed class AtomicFilePublicationTests : IDisposable
         Process[] creators = Enumerable.Range(1, 8).Select(index => Start(assembly, destination, gate, index.ToString())).ToArray();
         try
         {
-            await WaitUntil(() => Directory.GetFiles(m_root, "start.ready-*").Length == creators.Length);
+            await WaitUntilAsync(() => Directory.GetFiles(m_root, "start.ready-*").Length == creators.Length);
             File.WriteAllText(gate, "start");
-            await WaitUntil(() => File.Exists(destination));
+            await WaitUntilAsync(() => File.Exists(destination));
             var document = new FileByteDocumentStore(destination);
             byte[] winner = Assert.IsType<byte[]>(document.Read());
             Assert.Equal(1024 * 1024, winner.Length);
@@ -230,7 +230,7 @@ public sealed class AtomicFilePublicationTests : IDisposable
         return Process.Start(start) ?? throw new InvalidOperationException("The SDK fixture did not start.");
     }
 
-    private static async Task WaitUntil(Func<bool> condition)
+    private static async Task WaitUntilAsync(Func<bool> condition)
     {
         long deadline = Environment.TickCount64 + 20_000;
         while (!condition())

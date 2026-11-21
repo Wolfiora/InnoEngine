@@ -25,7 +25,7 @@ internal sealed partial class ShaderEditorCanvas
         }
         try
         {
-            ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
+            ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(controller.document, owner.serialization, owner.context);
             bool definitionChanged = false;
             EditorImGui.SeparatorText("Shader");
             string name = definition.name;
@@ -39,7 +39,7 @@ internal sealed partial class ShaderEditorCanvas
 
             Gesture();
             EditorImGui.SeparatorText(stage.stage + " Interface");
-            ShaderGraphPassProgram[] programs = ShaderGraphPrograms.Read(Controller.document, owner.serialization, owner.context);
+            ShaderGraphPassProgram[] programs = ShaderGraphPrograms.Read(controller.document, owner.serialization, owner.context);
             string activePass = draft.inspectedPass;
             if (!definition.passes.Any(pass => pass.name == activePass))
             {
@@ -90,15 +90,15 @@ internal sealed partial class ShaderEditorCanvas
                 {
                     stageIds.RemoveAll(
                         id => (
-                            Controller.document.FindNode(id) is GraphNodeRecord existing
+                            controller.document.FindNode(id) is GraphNodeRecord existing
                             && Read(existing, "settings", new ShaderGraphStageSettings()).stage == stage.stage
                         )
                     );
                     stageIds.Add(node.id);
                 }
 
-                Controller.ReplaceDocument(
-                    ShaderGraphPrograms.Bind(Controller.document, activePass, stageIds, owner.serialization, owner.context),
+                controller.ReplaceDocument(
+                    ShaderGraphPrograms.Bind(controller.document, activePass, stageIds, owner.serialization, owner.context),
                     "Assign Shared Shader Stage"
                 );
                 owner.Changed(draft);
@@ -459,12 +459,12 @@ internal sealed partial class ShaderEditorCanvas
 
             if (definitionChanged)
             {
-                GraphDocument candidate = Controller.document.Clone();
+                GraphDocument candidate = controller.document.Clone();
                 candidate.SetMetadata(
                     ShaderGraphDocument.definitionKey,
                     ShaderGraphDocument.Encode(owner.serialization.Serialize(definition, owner.context), owner.serialization, owner.context)
                 );
-                Controller.ReplaceDocument(candidate, "Edit Shader Settings", EditorImGui.IsAnyItemActive() ? draft.valueGesture : null);
+                controller.ReplaceDocument(candidate, "Edit Shader Settings", EditorImGui.IsAnyItemActive() ? draft.valueGesture : null);
                 owner.Changed(draft);
             }
         }

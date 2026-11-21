@@ -11,8 +11,8 @@ namespace Inno.Adapter.Platform.Sdl3;
 public sealed unsafe partial class Sdl3PlatformWindow
 {
     private readonly Action<Sdl3PlatformWindow> m_onDisposed;
-    private readonly int m_ownerThreadId;
-    private readonly uint m_windowId;
+    private readonly int m_ownerThreadID;
+    private readonly uint m_windowID;
     private readonly string m_title;
     private readonly bool m_ownsNativeWindow;
     private readonly PlatformNativeHandles m_nativeHandles;
@@ -34,15 +34,15 @@ public sealed unsafe partial class Sdl3PlatformWindow
         bool ownsNativeWindow,
         ISdl3HostIntegration hostIntegration,
         Action<Sdl3PlatformWindow> onDisposed,
-        int ownerThreadId
+        int ownerThreadID
     ) {
         m_onDisposed = onDisposed;
-        m_ownerThreadId = ownerThreadId;
+        m_ownerThreadID = ownerThreadID;
         m_window = window;
         m_sdlWindowHandle = (nint)window;
         m_title = title;
         m_ownsNativeWindow = ownsNativeWindow;
-        m_windowId = SDL.Raw.GetWindowId(m_window);
+        m_windowID = SDL.Raw.GetWindowId(m_window);
 
         int currentWidth = 0;
         int currentHeight = 0;
@@ -70,7 +70,7 @@ public sealed unsafe partial class Sdl3PlatformWindow
     /// </summary>
     public partial void Dispose()
     {
-        if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        if (Environment.CurrentManagedThreadId != m_ownerThreadID)
         {
             throw new InvalidOperationException("SDL window disposal must run on its owner thread.");
         }

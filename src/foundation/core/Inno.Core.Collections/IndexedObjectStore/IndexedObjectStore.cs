@@ -48,7 +48,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     private readonly Dictionary<string, int> m_indexByName = new(StringComparer.Ordinal);
     private readonly ReaderWriterLockSlim m_lock = new(LockRecursionPolicy.NoRecursion);
     private Stack<int> m_freeSlots = new();
-    private int m_nextIndexId = 1;
+    private int m_nextIndexID = 1;
     private int m_version;
 
     /// <summary>
@@ -98,7 +98,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
             m_freeSlots = new Stack<int>();
             m_indexes.Clear();
             m_indexByName.Clear();
-            m_nextIndexId = 1;
+            m_nextIndexID = 1;
             BumpVersion();
         }
         finally

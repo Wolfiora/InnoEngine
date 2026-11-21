@@ -38,8 +38,8 @@ public sealed partial class AssetPipeline
         if (imported)
         {
             GetFileSystem().Refresh();
-            _ = loader.TryGetPersistentId(path, out Guid persistentId);
-            PublishMutation(new AssetChange(AssetChangeKind.Modified, persistentId, path));
+            _ = loader.TryGetPersistentId(path, out Guid persistentID);
+            PublishMutation(new AssetChange(AssetChangeKind.Modified, persistentID, path));
         }
         return imported;
     }
@@ -89,8 +89,8 @@ public sealed partial class AssetPipeline
         AssetLoader loader = GetLoader();
         bool imported = loader.SaveImportSettings(path, settings, expectedFingerprint);
         GetFileSystem().Refresh();
-        _ = loader.TryGetPersistentId(path, out Guid persistentId);
-        PublishMutation(new AssetChange(AssetChangeKind.Modified, persistentId, path));
+        _ = loader.TryGetPersistentId(path, out Guid persistentID);
+        PublishMutation(new AssetChange(AssetChangeKind.Modified, persistentID, path));
         return imported;
     }
 
@@ -135,9 +135,9 @@ public sealed partial class AssetPipeline
         if (saved)
         {
             GetFileSystem().Refresh();
-            _ = loader.TryGetPersistentId(path, out Guid persistentId);
+            _ = loader.TryGetPersistentId(path, out Guid persistentID);
             PublishMutation(
-                new AssetChange(existed ? AssetChangeKind.Modified : AssetChangeKind.Added, persistentId, path)
+                new AssetChange(existed ? AssetChangeKind.Modified : AssetChangeKind.Added, persistentID, path)
             );
         }
         return saved;

@@ -9,8 +9,8 @@ namespace Inno.Scene;
 /// </summary>
 internal sealed class SceneGraphReferenceMap : SceneReferenceScope
 {
-    private readonly IReadOnlyDictionary<EngineObject, Guid>? m_sourceIdByObject;
-    private readonly Dictionary<Guid, EngineObject> m_objectBySourceId = [];
+    private readonly IReadOnlyDictionary<EngineObject, Guid>? m_sourceIDByObject;
+    private readonly Dictionary<Guid, EngineObject> m_objectBySourceID = [];
 
     internal SceneGraphReferenceMap(
         GameScene scene,
@@ -19,53 +19,53 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
     ) : base(scene, captureRoot)
     {
         // Capture callers own the complete map and keep it fixed for this synchronous scope.
-        m_sourceIdByObject = sourceIds;
+        m_sourceIDByObject = sourceIds;
     }
 
     /// <inheritdoc/>
-    protected override bool TryGetSourceId(
+    protected override bool TryGetSourceID(
         EngineObject engineObject,
         out Guid sourceId
     ) {
         sourceId = default;
-        return m_sourceIdByObject is not null && m_sourceIdByObject.TryGetValue(engineObject, out sourceId);
+        return m_sourceIDByObject is not null && m_sourceIDByObject.TryGetValue(engineObject, out sourceId);
     }
 
     /// <inheritdoc/>
     protected override bool TryResolve(
         Guid sourceId,
         out EngineObject? engineObject
-    ) => m_objectBySourceId.TryGetValue(sourceId, out engineObject);
+    ) => m_objectBySourceID.TryGetValue(sourceId, out engineObject);
 
     internal void Register(
-        Guid sourceId,
+        Guid sourceID,
         EngineObject engineObject
     ) {
-        if (!m_objectBySourceId.TryAdd(sourceId, engineObject)
-            && !ReferenceEquals(m_objectBySourceId[sourceId], engineObject)
+        if (!m_objectBySourceID.TryAdd(sourceID, engineObject)
+            && !ReferenceEquals(m_objectBySourceID[sourceID], engineObject)
         ) {
-            throw new InvalidOperationException($"Duplicate scene graph local identity '{sourceId}'.");
+            throw new InvalidOperationException($"Duplicate scene graph local identity '{sourceID}'.");
         }
     }
 
     internal Dictionary<Guid, Guid> CaptureRemappedAliases()
     {
         var aliases = new Dictionary<Guid, Guid>();
-        foreach ((Guid sourceId, EngineObject engineObject) in m_objectBySourceId)
+        foreach ((Guid sourceID, EngineObject engineObject) in m_objectBySourceID)
         {
-            Guid persistentId = engineObject.identity.persistentId;
-            if (sourceId != persistentId)
+            Guid persistentID = engineObject.identity.persistentId;
+            if (sourceID != persistentID)
             {
-                aliases.Add(sourceId, persistentId);
+                aliases.Add(sourceID, persistentID);
             }
         }
         return aliases;
     }
 
-    internal EngineObject GetRegistered(Guid sourceId)
-        => m_objectBySourceId.TryGetValue(sourceId, out EngineObject? engineObject)
+    internal EngineObject GetRegistered(Guid sourceID)
+        => m_objectBySourceID.TryGetValue(sourceID, out EngineObject? engineObject)
            ? engineObject
            : throw new InvalidOperationException(
-               $"Scene graph reference alias target '{sourceId}' could not be resolved."
+               $"Scene graph reference alias target '{sourceID}' could not be resolved."
            );
 }

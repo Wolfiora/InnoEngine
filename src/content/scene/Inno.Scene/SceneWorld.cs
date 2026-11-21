@@ -16,7 +16,7 @@ namespace Inno.Scene;
 /// </summary>
 public sealed class SceneWorld : IDisposable
 {
-    private static readonly ExecutionSlot<SceneWorld> S_CURRENT_SCOPE = new("scene world");
+    private static readonly ExecutionSlot<SceneWorld> CURRENT_SCOPE = new("scene world");
 
     private readonly List<GameScene> m_loadedScenes = [];
     private readonly IdentityAllocator m_identities;
@@ -120,7 +120,7 @@ public sealed class SceneWorld : IDisposable
     {
         EnsureActive();
         IDisposable identityScope = m_identities.EnterScope();
-        return new Scope(S_CURRENT_SCOPE.Enter(this), identityScope);
+        return new Scope(CURRENT_SCOPE.Enter(this), identityScope);
     }
 
     /// <summary>
@@ -238,7 +238,7 @@ public sealed class SceneWorld : IDisposable
     public GameScene LoadNewScene(string name = "Untitled Scene")
     {
         EnsureActive();
-        var scene = new GameScene(m_types, name, persistentId: null);
+        var scene = new GameScene(m_types, name, persistentID: null);
         LoadScene(scene);
         return scene;
     }
@@ -260,7 +260,7 @@ public sealed class SceneWorld : IDisposable
         bool makeActive = true
     ) {
         EnsureActive();
-        var scene = new GameScene(m_types, name, persistentId: null);
+        var scene = new GameScene(m_types, name, persistentID: null);
         LoadSceneAdditive(scene, makeActive);
         return scene;
     }
@@ -465,7 +465,7 @@ public sealed class SceneWorld : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the caller is outside a scene execution scope.
     /// </exception>
-    internal static SceneWorld current => S_CURRENT_SCOPE.current;
+    internal static SceneWorld current => CURRENT_SCOPE.current;
 
     internal SceneTypeCatalog typeCatalog => m_types;
 

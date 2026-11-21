@@ -603,7 +603,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [Fact]
     public void RuntimeSourceCannotReferenceEditorApiButEditorSourceCan()
     {
-        const string source = """
+        const string C_SOURCE = """
             using InnoEditor.Core;
 
             public sealed class EditorApiProbe
@@ -611,7 +611,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 public EditorContext? context { get; set; }
             }
             """;
-        m_fixture.Write("EditorApiProbe.cs", source);
+        m_fixture.Write("EditorApiProbe.cs", C_SOURCE);
         ScriptCompilationResult runtimeResult = m_fixture.Compile();
         Assert.False(runtimeResult.success);
         m_fixture.Move("EditorApiProbe.cs", "EditorApiProbe.editor.cs");
@@ -770,7 +770,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.True(sampleContent.isReadOnly);
         Assert.True(sampleContent.isSampleContent);
         Assert.True(fixture.assets.TryGetInfo(sourceFile, out AssetInfo? templateInfo));
-        Guid sourcePersistentId = Assert.IsType<AssetInfo>(templateInfo).persistentId;
+        Guid sourcePersistentID = Assert.IsType<AssetInfo>(templateInfo).persistentId;
         ScriptCompilationResult authoring = fixture.Compile();
         Assert.True(authoring.success, FormatDiagnostics(authoring));
         Assert.Contains(authoring.compiledAssemblyNames, name => name.EndsWith(".Samples", StringComparison.Ordinal));
@@ -804,7 +804,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             StringComparison.OrdinalIgnoreCase
         );
         Assert.True(fixture.assets.TryGetInfo(AssetPath.Project("~Starter/StarterBehavior.cs"), out AssetInfo? importedInfo));
-        Assert.NotEqual(sourcePersistentId, Assert.IsType<AssetInfo>(importedInfo).persistentId);
+        Assert.NotEqual(sourcePersistentID, Assert.IsType<AssetInfo>(importedInfo).persistentId);
         Assert.True(fixture.assets.TryGetFileSystemEntry(imported, out AssetFileEntry importedDirectory));
         Assert.False(importedDirectory.isReadOnly);
         Assert.False(importedDirectory.isSample);
@@ -1105,7 +1105,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [Fact]
     public void SampleDirectoryMetadataRemapsNestedImportSettingsIdentities()
     {
-        Guid sourceId = Guid.Parse("75f6a70b-93b2-47f0-8747-cc359474b7a3");
+        Guid sourceID = Guid.Parse("75f6a70b-93b2-47f0-8747-cc359474b7a3");
         using var fixture = new ScriptingFixture((
             root,
             serialization
@@ -1123,7 +1123,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     {
                         persistentId = Guid.Parse("7726b1d2-9aee-4d2c-a865-2fd53155095f"),
                         sourceKind = (int)AssetSourceKind.Directory,
-                        importerSettingsBytes = serialization.Serialize(new SampleIdentitySettings { referenceId = sourceId })
+                        importerSettingsBytes = serialization.Serialize(new SampleIdentitySettings { referenceId = sourceID })
                     }
                 )
             );
@@ -1142,7 +1142,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 metadata.importerSettingsBytes
             );
             Assert.Equal(info!.persistentId, settings.referenceId);
-            Assert.NotEqual(sourceId, settings.referenceId);
+            Assert.NotEqual(sourceID, settings.referenceId);
             return ValueTask.CompletedTask;
         });
         Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
@@ -1544,8 +1544,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             MissingGameComponent missingScript = Assert.IsType<MissingGameComponent>(
                 state.scriptOwner.GetComponents().Single(component => component is not Transform)
             );
-            Assert.Equal(state.pluginComponentId, missingPlugin.identity.persistentId);
-            Assert.Equal(state.scriptComponentId, missingScript.identity.persistentId);
+            Assert.Equal(state.pluginComponentID, missingPlugin.identity.persistentId);
+            Assert.Equal(state.scriptComponentID, missingScript.identity.persistentId);
             Assert.Equal("UnavailabilityPlugin.PluginBehavior", missingPlugin.missingTypeName);
             Assert.Equal("DependentBehavior", missingScript.missingTypeName);
             CompleteUnloadVerification(reload);
@@ -1645,7 +1645,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         MissingGameComponent missing = Assert.IsType<MissingGameComponent>(
             expectation.owner.GetComponents().Single(component => component is not Transform)
         );
-        Assert.Equal(expectation.componentId, missing.identity.persistentId);
+        Assert.Equal(expectation.componentID, missing.identity.persistentId);
         Assert.Equal("UnavailabilityPlugin.PluginBehavior", missing.missingTypeName);
     }
 
@@ -1759,20 +1759,20 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             }
             """);
         fixture.Write("Content/value.shutdownasset", "last-good");
-        (Guid persistentId, Guid stableTypeId) = LoadScriptAssetAndUnloadScripts(fixture);
+        (Guid persistentID, Guid stableTypeID) = LoadScriptAssetAndUnloadScripts(fixture);
         Assert.Empty(fixture.host.modules.modules);
-        Assert.True(fixture.assets.TryGetInfo(persistentId, out AssetInfo? preserved));
+        Assert.True(fixture.assets.TryGetInfo(persistentID, out AssetInfo? preserved));
         Assert.Equal(AssetImportStatus.Imported, preserved!.status);
-        Assert.Equal(stableTypeId, preserved.stableAssetTypeId);
+        Assert.Equal(stableTypeID, preserved.stableAssetTypeId);
         AssetObject missing = ((IAssetReferenceResolver)fixture.assets).Resolve(
-            persistentId,
-            stableTypeId,
+            persistentID,
+            stableTypeID,
             "Content/value.shutdownasset",
             typeof(AssetObject),
             "$test"
         );
         Assert.True(missing.isMissing);
-        Assert.Equal(persistentId, missing.identity.persistentId);
+        Assert.Equal(persistentID, missing.identity.persistentId);
     }
 
     [Fact]
@@ -2027,8 +2027,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         GameComponent recoveredScript = state.scriptOwner.GetComponents().Single(component => component is not Transform);
         Assert.IsNotType<MissingGameComponent>(recoveredPlugin);
         Assert.IsNotType<MissingGameComponent>(recoveredScript);
-        Assert.Equal(state.pluginComponentId, recoveredPlugin.identity.persistentId);
-        Assert.Equal(state.scriptComponentId, recoveredScript.identity.persistentId);
+        Assert.Equal(state.pluginComponentID, recoveredPlugin.identity.persistentId);
+        Assert.Equal(state.scriptComponentID, recoveredScript.identity.persistentId);
         Assert.Equal(47, recoveredPlugin.GetType().GetProperty("retained")!.GetValue(recoveredPlugin));
         Assert.Equal(73, recoveredScript.GetType().GetProperty("retained")!.GetValue(recoveredScript));
     }
@@ -2053,10 +2053,10 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         AssetObject loaded = fixture.assets.Load(AssetPath.Project("Content/value.shutdownasset"), assetType);
         Assert.True(fixture.assets.TryGetInfo(loaded.identity.persistentId, out AssetInfo? imported));
         Assert.Equal(AssetImportStatus.Imported, imported!.status);
-        Guid persistentId = loaded.identity.persistentId;
-        Guid stableTypeId = imported.stableAssetTypeId;
+        Guid persistentID = loaded.identity.persistentId;
+        Guid stableTypeID = imported.stableAssetTypeId;
         reload.Dispose();
-        return (persistentId, stableTypeId);
+        return (persistentID, stableTypeID);
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -2192,7 +2192,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         GameObject owner = scene.CreateObject("Plugin Owner");
         Type pluginType = fixture.ResolveActiveType("PluginBehavior");
         GameComponent component = owner.AddComponent(pluginType);
-        Guid componentId = component.identity.persistentId;
+        Guid componentID = component.identity.persistentId;
         string installedPlugin = Path.Combine(fixture.projectRoot, "Plugins", "unavailability.iplugin");
         string detachedPlugin = Path.Combine(fixture.projectRoot, "UnavailabilityPlugin.detached");
         File.Move(installedPlugin, detachedPlugin);
@@ -2212,7 +2212,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 || module.upstreamModuleNames.Contains("Plugin.tests.unavailability", StringComparer.Ordinal)
             )
         );
-        return new MissingGenerationExpectation(owner, componentId, new WeakReference(component), new WeakReference(pluginType));
+        return new MissingGenerationExpectation(owner, componentID, new WeakReference(component), new WeakReference(pluginType));
     }
 
     private static void ForceFullCollection()
@@ -2226,7 +2226,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         string projectRoot,
         SerializationRegistry serialization
     ) {
-        const string c_source = """
+        const string C_SOURCE = """
             using InnoEngine.Scene;
 
             namespace ProjectionPlugin;
@@ -2242,7 +2242,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             new PluginManifest { pluginId = "tests.projection", displayName = "Projection Plugin" },
             new Dictionary<string, byte[]>
             {
-                ["Assets/ProjectionRuntime.cs"] = Encoding.UTF8.GetBytes(c_source),
+                ["Assets/ProjectionRuntime.cs"] = Encoding.UTF8.GetBytes(C_SOURCE),
                 ["Assets/ProjectionRuntime.cs.imeta"] = CreateScriptSourceMeta(serialization, Guid.NewGuid())
             }
         );
@@ -2289,10 +2289,10 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         string projectRoot,
         SerializationRegistry serialization
     ) {
-        const string c_source = "using InnoEngine.Reflection; using InnoEngine.Scene; "
+        const string C_SOURCE = "using InnoEngine.Reflection; using InnoEngine.Scene; "
                                 + "[StableTypeId(\"ce3b52c6-2a07-42ea-b632-a307a0ef7407\")] "
                                 + "public sealed class StarterBehavior : GameBehavior { }";
-        WriteSamplePlugin(projectRoot, serialization, c_source);
+        WriteSamplePlugin(projectRoot, serialization, C_SOURCE);
     }
 
     private static void WriteSamplePlugin(
@@ -2325,11 +2325,11 @@ public sealed partial class ScriptingPipelineTests : IDisposable
 
     private static byte[] CreateScriptSourceMeta(
         SerializationRegistry serialization,
-        Guid persistentId
+        Guid persistentID
     ) => serialization.Serialize(
         new ScriptingAssetSourceMeta
         {
-            persistentId = persistentId,
+            persistentId = persistentID,
             sourceKind = (int)AssetSourceKind.File,
             importerId = "inno.editor.csharp-script"
         }
@@ -2425,7 +2425,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
 
     private readonly record struct MissingGenerationExpectation(
         GameObject owner,
-        Guid componentId,
+        Guid componentID,
         WeakReference retiredComponent,
         WeakReference retiredType
     );
@@ -2438,8 +2438,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     private readonly record struct AvailabilitySceneState(
         GameObject pluginOwner,
         GameObject scriptOwner,
-        Guid pluginComponentId,
-        Guid scriptComponentId
+        Guid pluginComponentID,
+        Guid scriptComponentID
     );
 
     private sealed class CompilationGate : IProgress<ScriptCompilationProgress>, IDisposable

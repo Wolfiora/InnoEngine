@@ -7,7 +7,7 @@ internal sealed class AssetPipelineDiagnosticPublisher
 {
     private const string C_SOURCE_DATABASE_GROUP = "Asset Source Database";
 
-    private static readonly DiagnosticSource S_SOURCE_DATABASE = new(
+    private static readonly DiagnosticSource SOURCE_DATABASE = new(
         "inno.assets.pipeline/source-database",
         C_SOURCE_DATABASE_GROUP
     );
@@ -27,7 +27,7 @@ internal sealed class AssetPipelineDiagnosticPublisher
         ArgumentNullException.ThrowIfNull(refreshException);
         ArgumentNullException.ThrowIfNull(recoveryException);
         m_diagnostics.Set(
-            S_SOURCE_DATABASE,
+            SOURCE_DATABASE,
             [
             Diagnostic.Error(
                 "ASSET-SOURCE",
@@ -38,5 +38,5 @@ internal sealed class AssetPipelineDiagnosticPublisher
         );
     }
 
-    internal void ResolveSourceDatabase() => m_diagnostics.Clear(S_SOURCE_DATABASE);
+    internal void ResolveSourceDatabase() => m_diagnostics.Clear(SOURCE_DATABASE);
 }

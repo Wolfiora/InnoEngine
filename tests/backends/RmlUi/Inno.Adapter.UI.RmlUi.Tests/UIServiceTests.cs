@@ -25,7 +25,7 @@ using Inno.UI.Runtime;
 
 namespace Inno.Adapter.UI.RmlUi.Tests;
 
-public sealed class UiServiceTests : IDisposable
+public sealed class UIServiceTests : IDisposable
 {
     private readonly DiagnosticHub m_diagnostics = new();
     private readonly IdentityAllocator m_identities = new();
@@ -38,7 +38,7 @@ public sealed class UiServiceTests : IDisposable
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCatalog m_types;
 
-    public UiServiceTests()
+    public UIServiceTests()
     {
         m_root = Path.Combine(Path.GetTempPath(), "InnoUiTests", Guid.NewGuid().ToString("N"));
         m_assets = Path.Combine(m_root, "Assets");
@@ -47,7 +47,7 @@ public sealed class UiServiceTests : IDisposable
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
         {
-            catalogSource = new DotNetAssemblyCatalogSource(typeof(UiServiceTests).Assembly)
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(UIServiceTests).Assembly)
         });
         _ = Assembly.Load("Inno.UI.Assets");
         _ = Assembly.Load("Inno.Text.Assets");
@@ -60,15 +60,15 @@ public sealed class UiServiceTests : IDisposable
     [Fact]
     public void ImporterPublishesValidatedUtf8Document()
     {
-        const string markup = "<rml><head/><body><div>Hello</div></body></rml>";
-        File.WriteAllText(Path.Combine(m_assets, "Hud.rml"), markup);
+        const string C_MARKUP = "<rml><head/><body><div>Hello</div></body></rml>";
+        File.WriteAllText(Path.Combine(m_assets, "Hud.rml"), C_MARKUP);
         using AssetLoader loader = CreateLoader();
 
         UiDocumentAsset document = Assert.IsType<UiDocumentAsset>(
             loader.Load(AssetPath.Project("Hud.rml"), typeof(UiDocumentAsset))
         );
 
-        Assert.Equal(markup, Assert.IsType<UiDocumentSource>(document.source).text);
+        Assert.Equal(C_MARKUP, Assert.IsType<UiDocumentSource>(document.source).text);
         Assert.Equal(RmlUiIdentifiers.documentLanguage, document.source.language);
         Assert.Equal(RmlUiIdentifiers.backend.value, document.implementationId);
     }

@@ -64,7 +64,7 @@ internal sealed partial class FileBrowserPanel
 
     private void DrawGridScaleSlider()
     {
-        m_gridScale = Math.Clamp(m_gridScale, CurrentBrowserStyle.gridMinimumScale, CurrentBrowserStyle.gridMaximumScale);
+        m_gridScale = Math.Clamp(m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
         DrawFooterTopSplitter();
         Vector2 cursor = Ui.GetCursorPosition();
         float labelOffsetY = MathF.Max(0f, (Ui.GetFrameHeight() - Ui.GetTextLineHeight()) * 0.5f);
@@ -73,8 +73,8 @@ internal sealed partial class FileBrowserPanel
         Ui.SameLine(0f, -1f);
         Ui.SetCursorPosY(cursor.Y);
         Ui.SetNextItemWidth(-1f);
-        _ = Ui.SliderFloat("##GridScale", ref m_gridScale, CurrentBrowserStyle.gridMinimumScale, CurrentBrowserStyle.gridMaximumScale);
-        m_gridScale = Math.Clamp(m_gridScale, CurrentBrowserStyle.gridMinimumScale, CurrentBrowserStyle.gridMaximumScale);
+        _ = Ui.SliderFloat("##GridScale", ref m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
+        m_gridScale = Math.Clamp(m_gridScale, currentBrowserStyle.gridMinimumScale, currentBrowserStyle.gridMaximumScale);
     }
 
     private void DrawGrid(
@@ -142,7 +142,7 @@ internal sealed partial class FileBrowserPanel
         string name = item.isPluginRoot ? item.displayName : entry.name;
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.Grid);
-        var itemSize = new Vector2(cellSize - CurrentBrowserStyle.gridCellPadding, cellSize - CurrentBrowserStyle.gridCellPadding);
+        var itemSize = new Vector2(cellSize - currentBrowserStyle.gridCellPadding, cellSize - currentBrowserStyle.gridCellPadding);
         Ui.PushId(entry.assetPath.ToString());
         Ui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
         Ui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
@@ -180,13 +180,13 @@ internal sealed partial class FileBrowserPanel
             DrawGridItemVisual(icon, name, selected, m_gridScale, itemHovered, itemActive, itemMin, itemMax, drawName: !editing);
             if (editing)
             {
-                float width = MathF.Max(1f, itemMax.X - itemMin.X - CurrentBrowserStyle.gridLabelHorizontalPadding);
+                float width = MathF.Max(1f, itemMax.X - itemMin.X - currentBrowserStyle.gridLabelHorizontalPadding);
                 float lineHeight = Ui.GetTextLineHeight();
-                float lineAdvance = MathF.Max(1f, lineHeight + CurrentBrowserStyle.gridLabelLineSpacing);
+                float lineAdvance = MathF.Max(1f, lineHeight + currentBrowserStyle.gridLabelLineSpacing);
                 float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
-                float labelAreaTop = itemMax.Y - CurrentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
+                float labelAreaTop = itemMax.Y - currentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
                 float y = labelAreaTop + (labelAreaHeight - lineHeight) * 0.5f;
-                Ui.SetCursorScreenPosition(new Vector2(itemMin.X + CurrentBrowserStyle.gridLabelHorizontalPadding * 0.5f, y));
+                Ui.SetCursorScreenPosition(new Vector2(itemMin.X + currentBrowserStyle.gridLabelHorizontalPadding * 0.5f, y));
                 m_rename.Draw(
                     context,
                     $"grid_{entry.assetPath.ToString()}",
@@ -210,8 +210,8 @@ internal sealed partial class FileBrowserPanel
     {
         float fontSize = Ui.GetFontSize();
         return MathF.Max(
-            CurrentBrowserStyle.gridMinimumCellSize,
-            fontSize * (m_gridScale + CurrentBrowserStyle.gridScaleBias) + CurrentBrowserStyle.gridFixedCellPadding
+            currentBrowserStyle.gridMinimumCellSize,
+            fontSize * (m_gridScale + currentBrowserStyle.gridScaleBias) + currentBrowserStyle.gridFixedCellPadding
         );
     }
 
@@ -237,25 +237,25 @@ internal sealed partial class FileBrowserPanel
             bg = EditorPalette.GetHovered(bg);
         }
         uint bgColor = Ui.ToPackedColor(bg);
-        Ui.DrawFilledRectangle(min, max, bgColor, CurrentBrowserStyle.frameRounding);
+        Ui.DrawFilledRectangle(min, max, bgColor, currentBrowserStyle.frameRounding);
         float fontSize = Ui.GetFontSize();
         float iconFontSize = fontSize * scale;
         Vector4 iconBounds = EditorUI.current.widgets.GetGlyphVisualBounds(iconFontSize, icon);
         var iconSize = new Vector2(iconBounds.Z - iconBounds.X, iconBounds.W - iconBounds.Y);
         string[] nameLines = FitTextToLines(
             name,
-            MathF.Max(1f, size.X - CurrentBrowserStyle.gridLabelHorizontalPadding),
+            MathF.Max(1f, size.X - currentBrowserStyle.gridLabelHorizontalPadding),
             C_GRID_LABEL_LINE_COUNT
         );
         float lineHeight = Ui.GetTextLineHeight();
-        float lineAdvance = MathF.Max(1f, lineHeight + CurrentBrowserStyle.gridLabelLineSpacing);
+        float lineAdvance = MathF.Max(1f, lineHeight + currentBrowserStyle.gridLabelLineSpacing);
         float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
-        float labelAreaTop = max.Y - CurrentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
+        float labelAreaTop = max.Y - currentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
         float labelHeight = lineHeight + lineAdvance * Math.Max(0, nameLines.Length - 1);
         float labelY = labelAreaTop + (labelAreaHeight - labelHeight) * 0.5f;
-        float iconAreaTop = min.Y + CurrentBrowserStyle.gridIconTopPadding;
-        float iconAreaBottom = MathF.Max(iconAreaTop + 1f, labelAreaTop - CurrentBrowserStyle.gridIconLabelSpacing);
-        float maximumIconWidth = MathF.Max(1f, size.X - CurrentBrowserStyle.gridIconHorizontalPadding * 2f);
+        float iconAreaTop = min.Y + currentBrowserStyle.gridIconTopPadding;
+        float iconAreaBottom = MathF.Max(iconAreaTop + 1f, labelAreaTop - currentBrowserStyle.gridIconLabelSpacing);
+        float maximumIconWidth = MathF.Max(1f, size.X - currentBrowserStyle.gridIconHorizontalPadding * 2f);
         float maximumIconHeight = MathF.Max(1f, iconAreaBottom - iconAreaTop);
         float fit = MathF.Min(1f, MathF.Min(maximumIconWidth / MathF.Max(1f, iconSize.X), maximumIconHeight / MathF.Max(1f, iconSize.Y)));
         if (fit < 1f)

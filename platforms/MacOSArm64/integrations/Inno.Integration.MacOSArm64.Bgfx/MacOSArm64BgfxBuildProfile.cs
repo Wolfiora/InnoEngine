@@ -9,7 +9,7 @@ namespace Inno.Integration.MacOSArm64.Bgfx;
 internal sealed class MacOSArm64BgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc/>
-    public override string targetId => MacOSArm64BuildModule.target.id.value;
+    public override string targetID => MacOSArm64BuildModule.target.id.value;
 
     /// <inheritdoc/>
     public override IReadOnlyList<string> generatorArguments => ["--gcc=osx-arm64", "gmake"];

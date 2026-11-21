@@ -53,12 +53,12 @@ public sealed class ProjectSettingContributionContext
     private readonly IReadOnlySet<string> m_overrides;
 
     internal ProjectSettingContributionContext(
-        string contributorId,
+        string contributorID,
         ProjectSettingContributionSource source,
         IReadOnlySet<string> dependencies,
         IReadOnlySet<string> overrides
     ) {
-        this.contributorId = contributorId;
+        this.contributorId = contributorID;
         this.source = source;
         m_dependencies = dependencies;
         m_overrides = overrides;

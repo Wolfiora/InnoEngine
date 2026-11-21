@@ -79,7 +79,7 @@ public sealed partial class PlayerWithoutFileSystemTests
 
         public ITextBackend CreateBackend(TextBackendId backend) => new MemoryText(retired);
 
-        public IUiBackend CreateBackend(UiBackendId backend) => new MemoryUi(retired);
+        public IUiBackend CreateBackend(UiBackendId backend) => new MemoryUI(retired);
 
         public IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider(RenderingBackendId backend)
             => new UnusedCompositionPrograms();
@@ -259,7 +259,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         public void Dispose() => retired.Add("render");
     }
 
-    private sealed class MemoryUi(List<string> retired) : IUiBackend
+    private sealed class MemoryUI(List<string> retired) : IUiBackend
     {
         public string implementationId => "tests.ui";
         public UiBackendCapabilities capabilities { get; } = new([new("tests.ui-language")], true);

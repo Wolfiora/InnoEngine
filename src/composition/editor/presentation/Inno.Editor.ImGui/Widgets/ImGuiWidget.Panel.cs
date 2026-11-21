@@ -260,8 +260,8 @@ public sealed unsafe partial class ImGuiWidget
         {
             return DrawFloatingPanelCloseButton(title);
         }
-        uint dockId = NativeImGui.GetWindowDockID();
-        ImGuiDockNode* dockNode = NativeImGui.Raw.DockBuilderGetNode(dockId);
+        uint dockID = NativeImGui.GetWindowDockID();
+        ImGuiDockNode* dockNode = NativeImGui.Raw.DockBuilderGetNode(dockID);
         if (dockNode is null || NativeImGui.Raw.DockNodeBeginAmendTabBar(dockNode) == 0)
         {
             return false;
@@ -284,7 +284,7 @@ public sealed unsafe partial class ImGuiWidget
                 Min = ImGui.ToNative(itemMinimum),
                 Max = ImGui.ToNative(itemMaximum)
             };
-            uint itemId = NativeImGui.GetID($"##panel_close_{dockId}");
+            uint itemID = NativeImGui.GetID($"##panel_close_{dockID}");
             bool hovered = false;
             bool held = false;
             ImGuiButtonFlags buttonFlags = (ImGuiButtonFlags)((int)ImGuiButtonFlagsPrivate.AllowOverlap
@@ -293,10 +293,10 @@ public sealed unsafe partial class ImGuiWidget
             ImGuiWindow* hoveredWindow = NativeImGui.Raw.GetCurrentContext()->HoveredWindow;
             bool hostHovered = hoveredWindow is not null && hoveredWindow->RootWindowDockTree == dockNode->HostWindow->RootWindowDockTree;
             bool mouseHovered = hostHovered && NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
-            bool itemAdded = NativeImGui.Raw.ItemAdd(&itemBounds, itemId, null, 0) != 0;
+            bool itemAdded = NativeImGui.Raw.ItemAdd(&itemBounds, itemID, null, 0) != 0;
             bool pressed = hostHovered
                            && itemAdded
-                           && NativeImGui.ButtonBehavior(itemBounds, itemId, out hovered, out held, (int)buttonFlags);
+                           && NativeImGui.ButtonBehavior(itemBounds, itemID, out hovered, out held, (int)buttonFlags);
             hovered |= mouseHovered;
             pressed |= mouseHovered && NativeImGui.IsMouseClicked((int)(ImGuiMouseButton.Left));
             uint iconColor = hovered || held

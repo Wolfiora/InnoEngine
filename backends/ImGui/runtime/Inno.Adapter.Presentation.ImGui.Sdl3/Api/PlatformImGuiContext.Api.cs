@@ -11,10 +11,10 @@ public sealed partial class PlatformImGuiContext : IDisposable
     /// <summary>
     /// Resolves the SDL window currently owned by an ImGui viewport.
     /// </summary>
-    /// <param name="viewportId">
+    /// <param name="viewportID">
     /// The ImGui viewport identity.
     /// </param>
-    /// <param name="windowId">
+    /// <param name="windowID">
     /// The SDL window identity when available.
     /// </param>
     /// <returns>
@@ -23,9 +23,9 @@ public sealed partial class PlatformImGuiContext : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the presentation context has been disposed.
     /// </exception>
-    public partial bool TryGetWindowId(
-        uint viewportId,
-        out uint windowId
+    public partial bool TryGetWindowID(
+        uint viewportID,
+        out uint windowID
     );
 
     /// <summary>

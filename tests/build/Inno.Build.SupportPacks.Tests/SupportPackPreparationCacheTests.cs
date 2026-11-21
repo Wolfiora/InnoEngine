@@ -13,7 +13,7 @@ namespace Inno.Build.SupportPacks.Tests;
 
 public sealed class SupportPackPreparationCacheTests : IDisposable
 {
-    private static readonly BuildTargetId S_TARGET = new("fixture-target");
+    private static readonly BuildTargetId TARGET = new("fixture-target");
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoPackPreparationCache", Guid.NewGuid().ToString("N"));
     private readonly Source m_source;
 
@@ -31,14 +31,14 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
         string directory;
-        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             directory = first.directory;
         }
-        string current = Path.Combine(output, S_TARGET.value, "current");
+        string current = Path.Combine(output, TARGET.value, "current");
         File.SetLastWriteTimeUtc(current, DateTime.UtcNow.AddDays(-1));
         DateTime selectedAt = File.GetLastWriteTimeUtc(current);
-        using (PlayerSupportPackPublication repeated = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication repeated = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             Assert.Equal(directory, repeated.directory);
         }
@@ -48,13 +48,13 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         DateTime timestamp = File.GetLastWriteTimeUtc(file);
         File.WriteAllText(file, "other");
         File.SetLastWriteTimeUtc(file, timestamp);
-        using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             Assert.Equal("first", File.ReadAllText(Path.Combine(repaired.directory, "References", "Inno.Fixture.dll")));
         }
         Assert.Equal(2, m_source.preparations);
         File.WriteAllText(Path.Combine(directory, "References", "Extra.dll"), "extra");
-        using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication repaired = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             Assert.Single(Directory.EnumerateFiles(Path.Combine(repaired.directory, "References")));
         }
@@ -68,15 +68,15 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
         string previous;
-        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             previous = first.directory;
         }
-        string indexes = Path.Combine(output, S_TARGET.value, ".preparations");
+        string indexes = Path.Combine(output, TARGET.value, ".preparations");
         string oldIndex = Assert.Single(Directory.GetFiles(indexes));
         File.WriteAllText(Path.Combine(m_root, "input.txt"), "changed");
         string current;
-        using (PlayerSupportPackPublication second = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication second = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             current = second.directory;
         }
@@ -101,7 +101,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([m_source]);
         PlayerSupportPackPublication[] readers = await Task.WhenAll(
             Enumerable.Range(0, 4)
-                .Select(_ => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask())
+                .Select(_ => publisher.PublishAsync(m_root, output, TARGET, "unused").AsTask())
         );
         try
         {
@@ -126,12 +126,12 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         var publisher = new PlayerSupportPackPublisher([m_source]);
         if (cacheHit)
         {
-            using PlayerSupportPackPublication prior = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
+            using PlayerSupportPackPublication prior = await publisher.PublishAsync(m_root, output, TARGET, "unused");
         }
-        string current = Path.Combine(output, S_TARGET.value, "current");
+        string current = Path.Combine(output, TARGET.value, "current");
         string? previous = File.Exists(current) ? File.ReadAllText(current) : null;
         m_source.onValidate = () => File.WriteAllText(Path.Combine(m_root, "input.txt"), "other");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => publisher.PublishAsync(m_root, output, S_TARGET, "unused").AsTask());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => publisher.PublishAsync(m_root, output, TARGET, "unused").AsTask());
         Assert.Equal(1, m_source.preparations);
         Assert.Equal(previous, File.Exists(current) ? File.ReadAllText(current) : null);
         Assert.Empty(Directory.EnumerateDirectories(output, ".support-pack-*"));
@@ -142,24 +142,24 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
     {
         string output = Path.Combine(m_root, "Packs");
         var publisher = new PlayerSupportPackPublisher([m_source]);
-        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, S_TARGET, "unused"))
+        using (PlayerSupportPackPublication first = await publisher.PublishAsync(m_root, output, TARGET, "unused"))
         {
             Assert.Empty(first.diagnostics);
         }
-        string current = Path.Combine(output, S_TARGET.value, "current");
+        string current = Path.Combine(output, TARGET.value, "current");
         string previous = File.ReadAllText(current);
         File.WriteAllText(Path.Combine(m_root, "input.txt"), "other");
         m_source.onPrepared = _ =>
         {
-            string index = Path.Combine(output, S_TARGET.value, ".preparations");
+            string index = Path.Combine(output, TARGET.value, ".preparations");
             Directory.Move(index, index + ".saved");
             File.WriteAllText(index, "blocked");
         };
-        using PlayerSupportPackPublication published = await publisher.PublishAsync(m_root, output, S_TARGET, "unused");
+        using PlayerSupportPackPublication published = await publisher.PublishAsync(m_root, output, TARGET, "unused");
         Assert.NotEqual(previous, File.ReadAllText(current));
         Assert.Contains(published.diagnostics, static message => message.Contains("preparation index", StringComparison.Ordinal));
         Assert.Equal("other", File.ReadAllText(Path.Combine(published.directory, "References", "Inno.Fixture.dll")));
-        using PlayerSupportPackLease selected = new PlayerSupportPackCatalog(output).Acquire(S_TARGET, m_source);
+        using PlayerSupportPackLease selected = new PlayerSupportPackCatalog(output).Acquire(TARGET, m_source);
         Assert.Equal(published.directory, selected.directory);
     }
 
@@ -181,7 +181,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         try
         {
             using PlayerSupportPackPublication published = await new PlayerSupportPackPublisher([m_source])
-                .PublishAsync(m_root, output, S_TARGET, "unused");
+                .PublishAsync(m_root, output, TARGET, "unused");
             Assert.Contains(published.diagnostics, static message => message.Contains("could not be removed", StringComparison.Ordinal));
             Assert.True(File.Exists(Path.Combine(published.directory, "References", "Inno.Fixture.dll")));
             ProcessOwnedDirectoryDescriptor retained = Assert.Single(ProcessOwnedDirectory.ReadClaims(output));
@@ -201,9 +201,9 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         m_source.onPlan = entered.SetResult;
         Task<PlayerSupportPackPublication> waiting;
-        using (FileLease owner = await FileLease.AcquireAsync(Path.Combine(output, S_TARGET.value + ".lock"), TimeSpan.FromSeconds(5)))
+        using (FileLease owner = await FileLease.AcquireAsync(Path.Combine(output, TARGET.value + ".lock"), TimeSpan.FromSeconds(5)))
         {
-            waiting = new PlayerSupportPackPublisher([m_source]).PublishAsync(m_root, output, S_TARGET, "unused").AsTask();
+            waiting = new PlayerSupportPackPublisher([m_source]).PublishAsync(m_root, output, TARGET, "unused").AsTask();
             await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
             DateTime timestamp = File.GetLastWriteTimeUtc(Path.Combine(m_root, "input.txt"));
             File.WriteAllText(Path.Combine(m_root, "input.txt"), "other");
@@ -211,7 +211,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         }
         await Assert.ThrowsAsync<InvalidOperationException>(() => waiting);
         Assert.Equal(0, m_source.preparations);
-        Assert.False(File.Exists(Path.Combine(output, S_TARGET.value, "current")));
+        Assert.False(File.Exists(Path.Combine(output, TARGET.value, "current")));
     }
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
@@ -223,7 +223,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
         public Action? onPlan { get; set; }
         public Action? onValidate { get; set; }
         public Action<string>? onPrepared { get; set; }
-        public BuildTargetId target => S_TARGET;
+        public BuildTargetId target => TARGET;
 
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,
@@ -247,7 +247,7 @@ public sealed class SupportPackPreparationCacheTests : IDisposable
             Source owner,
             string identity,
             string content
-        ) : PlayerSupportPackPlan(S_TARGET, identity)
+        ) : PlayerSupportPackPlan(TARGET, identity)
         {
             public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken)
             {

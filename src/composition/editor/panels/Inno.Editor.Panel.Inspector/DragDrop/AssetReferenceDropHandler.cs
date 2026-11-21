@@ -19,8 +19,8 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDr
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
-        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentId)
-            || persistentId == Guid.Empty
+        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentID)
+            || persistentID == Guid.Empty
             || !assets.TryGetAssetType(context.source.assetPath, out Type? assetType)
             || assetType is null
             || !context.target.expectedType.IsAssignableFrom(assetType)
@@ -45,11 +45,11 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDr
         {
             return EditorDropResult.rejected;
         }
-        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentId))
+        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentID))
         {
             return EditorDropResult.rejected;
         }
-        context.target.Assign(persistentId);
+        context.target.Assign(persistentID);
         return EditorDropResult.Accepted();
     }
 }

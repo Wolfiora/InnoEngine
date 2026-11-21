@@ -337,7 +337,7 @@ public sealed partial class AssetEditingModule : EditorModule
         {
             m_interactions.history.RecordApplied(
                 "Rename Asset",
-                new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()))
+                new EditorHistoryChange(AssetHistoryKinds.C_SOURCE_OPERATION, EditorHistoryPayload.FromBytes(data.Encode()))
             );
         }
         catch (Exception exception)
@@ -417,7 +417,7 @@ public sealed partial class AssetEditingModule : EditorModule
         {
             history.RecordApplied(
                 "Move Asset",
-                new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()))
+                new EditorHistoryChange(AssetHistoryKinds.C_SOURCE_OPERATION, EditorHistoryPayload.FromBytes(data.Encode()))
             );
         }
         catch (Exception exception)
@@ -466,7 +466,7 @@ public sealed partial class AssetEditingModule : EditorModule
         {
             history.RecordApplied(
                 "Delete Asset",
-                new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()))
+                new EditorHistoryChange(AssetHistoryKinds.C_SOURCE_OPERATION, EditorHistoryPayload.FromBytes(data.Encode()))
             );
         }
         catch (Exception exception)

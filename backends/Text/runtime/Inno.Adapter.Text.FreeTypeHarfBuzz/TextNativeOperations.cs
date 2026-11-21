@@ -114,7 +114,7 @@ internal static unsafe class TextNativeOperations
     internal static Result RasterizeGlyph(
         InnoTextFontAdapterRuntime* runtime,
         ulong handle,
-        uint glyphId,
+        uint glyphID,
         float fontSize,
         byte* pixels,
         uint capacity,
@@ -126,7 +126,7 @@ internal static unsafe class TextNativeOperations
             TextNative.Raw.RasterizeGlyph(
                 runtime,
                 handle,
-                glyphId,
+                glyphID,
                 fontSize,
                 pixels,
                 capacity,

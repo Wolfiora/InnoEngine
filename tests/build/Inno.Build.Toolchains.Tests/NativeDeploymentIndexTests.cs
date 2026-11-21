@@ -27,7 +27,7 @@ public sealed class NativeDeploymentIndexTests : IDisposable
         libraries.Clear();
         files.Clear();
         NativeDeploymentIndex decoded = NativeDeploymentIndex.Decode(source.Encode());
-        Assert.Equal("new-system-custom-abi", decoded.targetId);
+        Assert.Equal("new-system-custom-abi", decoded.targetID);
         Assert.Equal(OperatingSystem.IsWindows() ? @"\\?\" + payload : payload, decoded.ResolveLibrary(m_root, "renderer"));
         Assert.Equal(payload, decoded.ResolveFile(m_root, "compiler"));
         Assert.Throws<FileNotFoundException>(() => decoded.ResolveLibrary(m_root, "not-registered"));

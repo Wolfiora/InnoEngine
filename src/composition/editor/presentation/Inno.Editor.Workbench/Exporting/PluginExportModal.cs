@@ -41,7 +41,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     ) {
         EditorExportProgress progress = window.progress;
         m_operation = progress.operationId;
-        m_identity = $"{window.pluginId} (from Project ID)";
+        m_identity = $"{window.pluginID} (from Project ID)";
         m_name = window.pluginDisplayName;
         m_destination = window.pluginOutputPath;
         m_dependencies = window.includePluginDependencies;

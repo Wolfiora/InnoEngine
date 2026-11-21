@@ -30,7 +30,7 @@ public sealed class ValidationPlanningTests
         string output = repository.PathOf("artifacts/bound");
         JsonNode plan = JsonNode.Parse(planned.RootElement.GetRawText())!;
         File.WriteAllText(source, plan.ToJsonString());
-        Task<int> Bind()
+        Task<int> BindAsync()
             => ValidationCommand.ExecuteAsync([
                 "plan",
                 "--engine-root",
@@ -44,13 +44,13 @@ public sealed class ValidationPlanningTests
                 "--output",
                 output
             ]);
-        Assert.Equal(0, await Bind());
+        Assert.Equal(0, await BindAsync());
         using JsonDocument bound = JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
         Assert.Equal(planned.RootElement.GetProperty("environment").GetString(), bound.RootElement.GetProperty("environment").GetString());
         File.Delete(Path.Combine(output, "plan.json"));
         plan["environment"] = new string('0', 64);
         File.WriteAllText(source, plan.ToJsonString());
-        Assert.Equal(3, await Bind());
+        Assert.Equal(3, await BindAsync());
         Assert.False(File.Exists(Path.Combine(output, "plan.json")));
     }
 
@@ -687,8 +687,8 @@ public sealed class ValidationPlanningTests
         using var repository = new ValidationRepository();
         using var external = new ValidationRepository();
         string path = external.PathOf("Linked.cs");
-        const string original = "namespace Example; public class Linked { public const int Value = 1; }";
-        external.Write("Linked.cs", original);
+        const string C_ORIGINAL = "namespace Example; public class Linked { public const int Value = 1; }";
+        external.Write("Linked.cs", C_ORIGINAL);
         repository.Write(
             "src/Example/Example.csproj",
             ValidationRepository.Project(
@@ -699,9 +699,9 @@ public sealed class ValidationPlanningTests
         repository.Git("commit", "-m", "Declare external source input");
         using JsonDocument plan = await repository.PlanAsync();
         DateTime timestamp = File.GetLastWriteTimeUtc(path);
-        external.Write("Linked.cs", original.Replace("= 1", "= 2", StringComparison.Ordinal));
+        external.Write("Linked.cs", C_ORIGINAL.Replace("= 1", "= 2", StringComparison.Ordinal));
         File.SetLastWriteTimeUtc(path, timestamp);
-        Assert.Equal(original.Length, new FileInfo(path).Length);
+        Assert.Equal(C_ORIGINAL.Length, new FileInfo(path).Length);
         InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(
             () => repository.EvidenceAsync(repository.PathOf("artifacts/unread-evidence.json"))
         );
@@ -714,8 +714,8 @@ public sealed class ValidationPlanningTests
         using var repository = new ValidationRepository();
         using var external = new ValidationRepository();
         string path = external.PathOf("Shared.props");
-        const string original = "<Project><PropertyGroup><WarningLevel>4</WarningLevel></PropertyGroup></Project>";
-        external.Write("Shared.props", original);
+        const string C_ORIGINAL = "<Project><PropertyGroup><WarningLevel>4</WarningLevel></PropertyGroup></Project>";
+        external.Write("Shared.props", C_ORIGINAL);
         repository.Write(
             "src/Example/Example.csproj",
             ValidationRepository.Project("<Import Project=\"" + SecurityElement.Escape(path) + "\" />")
@@ -724,9 +724,9 @@ public sealed class ValidationPlanningTests
         repository.Git("commit", "-m", "Declare external SDK import");
         using JsonDocument plan = await repository.PlanAsync();
         DateTime timestamp = File.GetLastWriteTimeUtc(path);
-        external.Write("Shared.props", original.Replace(">4<", ">3<", StringComparison.Ordinal));
+        external.Write("Shared.props", C_ORIGINAL.Replace(">4<", ">3<", StringComparison.Ordinal));
         File.SetLastWriteTimeUtc(path, timestamp);
-        Assert.Equal(original.Length, new FileInfo(path).Length);
+        Assert.Equal(C_ORIGINAL.Length, new FileInfo(path).Length);
         InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(
             () => repository.EvidenceAsync(repository.PathOf("artifacts/unread-evidence.json"))
         );
@@ -738,9 +738,9 @@ public sealed class ValidationPlanningTests
     {
         using var repository = new ValidationRepository();
         using var external = new ValidationRepository();
-        const string original = "<Project><PropertyGroup><WarningLevel>4</WarningLevel></PropertyGroup></Project>";
-        external.Write("Shared.props", original);
-        repository.Write("Shared.props", original);
+        const string C_ORIGINAL = "<Project><PropertyGroup><WarningLevel>4</WarningLevel></PropertyGroup></Project>";
+        external.Write("Shared.props", C_ORIGINAL);
+        repository.Write("Shared.props", C_ORIGINAL);
         string dependency = external.PathOf("Shared.props");
         repository.Write(
             "src/Example/Example.csproj",

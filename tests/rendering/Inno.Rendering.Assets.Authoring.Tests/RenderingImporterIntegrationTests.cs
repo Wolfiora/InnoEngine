@@ -158,8 +158,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
     [Fact]
     public void ShaderIncludesUseTheCandidateMountSnapshotAndDeclaredPluginDependencies()
     {
-        var providerId = new AssetSourceId("tests.provider");
-        var consumerId = new AssetSourceId("tests.consumer");
+        var providerID = new AssetSourceId("tests.provider");
+        var consumerID = new AssetSourceId("tests.consumer");
         string providerRoot = Path.Combine(m_root, "ProviderPlugin");
         string consumerRoot = Path.Combine(m_root, "ConsumerPlugin");
         Directory.CreateDirectory(providerRoot);
@@ -186,8 +186,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             """
         );
         var project = new AssetSourceMount(AssetSourceId.project, m_assets, isReadOnly: false);
-        var provider = new AssetSourceMount(providerId, providerRoot, isReadOnly: true);
-        var undeclaredConsumer = new AssetSourceMount(consumerId, consumerRoot, isReadOnly: true);
+        var provider = new AssetSourceMount(providerID, providerRoot, isReadOnly: true);
+        var undeclaredConsumer = new AssetSourceMount(consumerID, consumerRoot, isReadOnly: true);
 
         using (AssetLoader undeclared = CreateLoader(
             [project, provider, undeclaredConsumer],
@@ -197,11 +197,11 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             Assert.Contains("did not declare dependency", error.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        var declaredConsumer = new AssetSourceMount(consumerId, consumerRoot, isReadOnly: true, dependencies: [providerId]);
+        var declaredConsumer = new AssetSourceMount(consumerID, consumerRoot, isReadOnly: true, dependencies: [providerID]);
         using AssetLoader loader = CreateLoader([project, provider, declaredConsumer], Path.Combine(m_root, "DeclaredLibrary"));
         loader.Rescan();
         ShaderFunctionAsset shader = Assert.IsType<ShaderFunctionAsset>(
-            loader.Load(new AssetPath(consumerId, "main.ishadersource"), typeof(ShaderFunctionAsset))
+            loader.Load(new AssetPath(consumerID, "main.ishadersource"), typeof(ShaderFunctionAsset))
         );
         ShaderSourceImplementationRequest request = Assert.Single(
             ShaderSourceBundle.Decode(ShaderSourceBundle.Read(shader, loader), "Evaluate", m_serialization)
@@ -213,8 +213,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         Assert.Equal(3, Assert.Single(analysis.implementations).sources.Count);
         Assert.Equal(
             [
-                new AssetPath(consumerId, "local.ishadersource"),
-                new AssetPath(providerId, "common.ishadersource")
+                new AssetPath(consumerID, "local.ishadersource"),
+                new AssetPath(providerID, "common.ishadersource")
             ],
             loader.GetImportDependencies(shader)
         );

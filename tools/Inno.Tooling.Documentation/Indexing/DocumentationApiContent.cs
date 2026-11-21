@@ -388,7 +388,7 @@ internal static class DocumentationApiContent
                              && previous.metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
                              ? description
                              : new YamlScalarNode("null") { Style = ScalarStyle.Plain } },
-            { "outdated", manual && previous!.ExplicitlyOutdated ? "true" : "false" }
+            { "outdated", manual && previous!.explicitlyOutdated ? "true" : "false" }
         };
         if (previous is not null)
         {

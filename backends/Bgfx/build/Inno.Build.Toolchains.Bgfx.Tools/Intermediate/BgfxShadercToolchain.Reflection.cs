@@ -71,15 +71,15 @@ public sealed partial class BgfxShadercToolchain
     ) {
         byte[] name = Encoding.UTF8.GetBytes(nativeName);
         int count = input.type.elementType is null ? 1 : input.type.elementCount;
-        string typeId = input.type.elementType?.id ?? input.type.id;
+        string typeID = input.type.elementType?.id ?? input.type.id;
         ShaderUniformType type = input.kind == ShaderIrInputKind.SampledTexture
             ? ShaderUniformType.Sampler
-            : typeId switch
+            : typeID switch
             {
                 "float" or "float2" or "float3" or "float4" => ShaderUniformType.Vec4,
                 "float3x3" => ShaderUniformType.Mat3,
                 "float4x4" => ShaderUniformType.Mat4,
-                _ => throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' has unsupported storage '{typeId}'.")
+                _ => throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' has unsupported storage '{typeID}'.")
             };
         if (name.Length == 0 || name.Length > byte.MaxValue || count <= 0 || count > byte.MaxValue)
         {

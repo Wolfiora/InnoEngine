@@ -29,17 +29,17 @@ public sealed unsafe partial class BgfxDevice
         }
 
         int requestedViews = graph.passes.Count;
-        if (requestedViews > capabilities.limits.maxViews - m_nextViewId)
+        if (requestedViews > capabilities.limits.maxViews - m_nextViewID)
         {
             throw new InvalidOperationException(
-                $"Frame requires at least {m_nextViewId + requestedViews} views, "
+                $"Frame requires at least {m_nextViewID + requestedViews} views, "
                 + $"but the device supports {capabilities.limits.maxViews}. "
                 + "Reduce active cameras, viewports, or render passes."
             );
         }
 
         m_activeGraph = graph;
-        m_activeGraphViewBase = m_nextViewId;
+        m_activeGraphViewBase = m_nextViewID;
         m_graphTextures.Clear();
         m_transientTextureSlots.Clear();
         m_transientTextureSlotDescriptors.Clear();
@@ -98,7 +98,7 @@ public sealed unsafe partial class BgfxDevice
                 );
             }
 
-            m_nextViewId += requestedViews;
+            m_nextViewID += requestedViews;
         }
         catch
         {
@@ -125,7 +125,7 @@ public sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException("Pass execution is outside a valid BGFX graph scope.");
         }
 
-        ushort viewId = checked((ushort)(m_activeGraphViewBase + pass.viewIndex));
+        ushort viewID = checked((ushort)(m_activeGraphViewBase + pass.viewIndex));
         int viewNameLength = Encoding.UTF8.GetByteCount(pass.name);
         Span<byte> viewNameBytes = viewNameLength < 256
                                    ? stackalloc byte[256]
@@ -134,19 +134,19 @@ public sealed unsafe partial class BgfxDevice
         viewNameBytes[viewNameLength] = 0;
         fixed (byte* viewNamePointer = viewNameBytes)
         {
-            bgfx.Raw.set_view_name(viewId, (sbyte*)viewNamePointer, viewNameLength);
+            bgfx.Raw.set_view_name(viewID, (sbyte*)viewNamePointer, viewNameLength);
         }
-        bgfx.set_view_mode(viewId, bgfx.ViewMode.Sequential);
-        ApplyViewTransform(viewId, pass.viewTransform);
-        ConfigureViewTarget(viewId, pass);
+        bgfx.set_view_mode(viewID, bgfx.ViewMode.Sequential);
+        ApplyViewTransform(viewID, pass.viewTransform);
+        ConfigureViewTarget(viewID, pass);
         m_activeEncoder = bgfx.Raw.encoder_begin(0);
         if (m_activeEncoder is null)
         {
             throw new InvalidOperationException($"BGFX could not acquire an encoder for pass '{pass.name}'.");
         }
 
-        bgfx.Raw.encoder_touch(m_activeEncoder, viewId);
-        return new BgfxCommandEncoder(this, m_activeEncoder, viewId);
+        bgfx.Raw.encoder_touch(m_activeEncoder, viewID);
+        return new BgfxCommandEncoder(this, m_activeEncoder, viewID);
     }
 
     /// <summary>
@@ -200,12 +200,12 @@ public sealed unsafe partial class BgfxDevice
     }
 
     private static void ApplyViewTransform(
-        ushort viewId,
+        ushort viewID,
         RenderViewTransform? transform
     ) {
         if (transform is null)
         {
-            bgfx.Raw.set_view_transform(viewId, null, null);
+            bgfx.Raw.set_view_transform(viewID, null, null);
             return;
         }
 
@@ -214,7 +214,7 @@ public sealed unsafe partial class BgfxDevice
         fixed (float* viewPointer = view)
         fixed (float* projectionPointer = projection)
         {
-            bgfx.Raw.set_view_transform(viewId, viewPointer, projectionPointer);
+            bgfx.Raw.set_view_transform(viewID, viewPointer, projectionPointer);
         }
     }
 }

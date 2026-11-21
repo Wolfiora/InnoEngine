@@ -569,7 +569,7 @@ internal sealed partial class ConsolePanel : EditorPanel
 
     private void DrawEntryContextMenu()
     {
-        const string popupId = "##ConsoleEntryContextMenu";
+        const string C_POPUP_ID = "##ConsoleEntryContextMenu";
         if (m_contextKey is null)
         {
             return;
@@ -577,7 +577,7 @@ internal sealed partial class ConsolePanel : EditorPanel
         int index = m_view.FindIndex(m_contextKey);
         if (index < 0)
         {
-            if (Ui.BeginPopup(popupId))
+            if (Ui.BeginPopup(C_POPUP_ID))
             {
                 try
                 {
@@ -594,11 +594,11 @@ internal sealed partial class ConsolePanel : EditorPanel
         }
         if (m_requestContextMenu)
         {
-            Ui.OpenPopup(popupId);
+            Ui.OpenPopup(C_POPUP_ID);
             m_requestContextMenu = false;
         }
         if (!EditorUI.current.menus.ContextMenu(
-            popupId,
+            C_POPUP_ID,
             m_interactions.For(LoggingInteractionIds.C_ENTRY_AREA, m_view.rows[index].copyTarget)
         )) {
             m_contextKey = null;

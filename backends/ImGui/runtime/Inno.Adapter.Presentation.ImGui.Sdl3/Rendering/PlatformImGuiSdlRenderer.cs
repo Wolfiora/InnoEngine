@@ -111,7 +111,7 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
     /// <returns>
     /// An already completed task because this renderer owns no additional native windows.
     /// </returns>
-    public Task RetireViewport(PlatformImGuiViewportTarget target) => Task.CompletedTask;
+    public Task RetireViewportAsync(PlatformImGuiViewportTarget target) => Task.CompletedTask;
 
     /// <inheritdoc/>
     public void DrainViewportRetirements() {}
@@ -228,8 +228,8 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
                     m_indexScratch[i] = srcIndices[idxOffset + i] + vtxOffset;
                 }
 
-                ulong textureId = ImGuiNative.Raw.GetTexID(&drawCmd);
-                SDLTexture* texture = TextureFromImGui(textureId);
+                ulong textureID = ImGuiNative.Raw.GetTexID(&drawCmd);
+                SDLTexture* texture = TextureFromImGui(textureID);
                 if (texture is null)
                 {
                     texture = m_fontTexture;
@@ -444,5 +444,5 @@ internal sealed unsafe class PlatformImGuiSdlRenderer : IPlatformImGuiRenderer
         };
     }
 
-    private static SDLTexture* TextureFromImGui(ulong textureId) => (SDLTexture*)(nuint)textureId;
+    private static SDLTexture* TextureFromImGui(ulong textureID) => (SDLTexture*)(nuint)textureID;
 }

@@ -15,12 +15,12 @@ namespace Inno.Scene.Assets.Importers;
 [AssetImporter("inno.engine.prefab")]
 internal sealed class PrefabAssetImporter : AssetImporter<PrefabAsset>
 {
-    private static readonly IReadOnlyList<string> s_extensions = new[] { ".iprefab" };
+    private static readonly IReadOnlyList<string> EXTENSIONS = new[] { ".iprefab" };
 
     /// <summary>
     /// Gets the normalized source extensions accepted by this importer.
     /// </summary>
-    public override IReadOnlyList<string> supportedExtensions => s_extensions;
+    public override IReadOnlyList<string> supportedExtensions => EXTENSIONS;
 
     /// <summary>
     /// Imports source content into a validated runtime asset and artifact set.

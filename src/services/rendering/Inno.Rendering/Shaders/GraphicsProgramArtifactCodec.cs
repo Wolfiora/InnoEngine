@@ -12,8 +12,8 @@ public static class GraphicsProgramArtifactCodec
     private const int C_MAX_STAGE_BYTES = 128 * 1024 * 1024;
     private const int C_MAX_BINDINGS = 4096;
     private const int C_MAX_NAME_BYTES = 8192;
-    private static readonly UTF8Encoding Utf8 = new(false, true);
-    private static readonly byte[] Magic = "INNOGPU"u8.ToArray();
+    private static readonly UTF8Encoding UTF8 = new(false, true);
+    private static readonly byte[] MAGIC = "INNOGPU"u8.ToArray();
 
     /// <summary>
     /// Encodes owned program binaries, reflected bindings, and raster state for device distribution.
@@ -35,8 +35,8 @@ public static class GraphicsProgramArtifactCodec
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         using var output = new MemoryStream();
-        using var writer = new BinaryWriter(output, Utf8, leaveOpen: true);
-        writer.Write(Magic);
+        using var writer = new BinaryWriter(output, UTF8, leaveOpen: true);
+        writer.Write(MAGIC);
         WriteStage(writer, descriptor.vertexShader.Span);
         WriteStage(writer, descriptor.fragmentShader.Span);
         if (descriptor.bindings.Count > C_MAX_BINDINGS)
@@ -85,8 +85,8 @@ public static class GraphicsProgramArtifactCodec
         try
         {
             using var input = new MemoryStream(bytes.ToArray(), writable: false);
-            using var reader = new BinaryReader(input, Utf8, leaveOpen: true);
-            if (!ReadBytes(reader, Magic.Length).AsSpan().SequenceEqual(Magic))
+            using var reader = new BinaryReader(input, UTF8, leaveOpen: true);
+            if (!ReadBytes(reader, MAGIC.Length).AsSpan().SequenceEqual(MAGIC))
             {
                 throw new InvalidDataException("The graphics program magic is invalid.");
             }
@@ -139,7 +139,7 @@ public static class GraphicsProgramArtifactCodec
         BinaryWriter writer,
         string value
     ) {
-        byte[] bytes = Utf8.GetBytes(value);
+        byte[] bytes = UTF8.GetBytes(value);
         if (bytes.Length == 0 || bytes.Length > C_MAX_NAME_BYTES)
         {
             throw new InvalidDataException("A graphics program binding name has an invalid length.");
@@ -149,7 +149,7 @@ public static class GraphicsProgramArtifactCodec
     }
 
     private static string ReadName(BinaryReader reader)
-        => Utf8.GetString(ReadBytes(reader, ReadCount(reader, C_MAX_NAME_BYTES)));
+        => UTF8.GetString(ReadBytes(reader, ReadCount(reader, C_MAX_NAME_BYTES)));
 
     private static int ReadCount(
         BinaryReader reader,

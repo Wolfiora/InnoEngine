@@ -14,7 +14,7 @@ namespace Inno.Runtime.Generators;
 [Generator]
 public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
 {
-    private static readonly DiagnosticDescriptor S_INVALID = new(
+    private static readonly DiagnosticDescriptor INVALID = new(
         "INNORUN001",
         "Invalid subsystem composition",
         "{0}",
@@ -192,7 +192,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
         SourceProductionContext context,
         IMethodSymbol method,
         string message
-    ) => context.ReportDiagnostic(Diagnostic.Create(S_INVALID, method.Locations.FirstOrDefault(), message));
+    ) => context.ReportDiagnostic(Diagnostic.Create(INVALID, method.Locations.FirstOrDefault(), message));
 
     private sealed class Registration(
         IMethodSymbol method,

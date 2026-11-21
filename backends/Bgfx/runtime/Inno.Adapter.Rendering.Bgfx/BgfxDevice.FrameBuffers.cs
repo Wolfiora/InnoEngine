@@ -14,7 +14,7 @@ namespace Inno.Adapter.Rendering.Bgfx;
 public sealed unsafe partial class BgfxDevice
 {
     private void ConfigureViewTarget(
-        ushort viewId,
+        ushort viewID,
         CompiledRenderPass pass
     ) {
         int width = m_backbufferWidth;
@@ -29,14 +29,14 @@ public sealed unsafe partial class BgfxDevice
             BgfxWindowSurfaceResource surface = ResolveSurface(pass.surface);
             width = surface.width;
             height = surface.height;
-            bgfx.set_view_frame_buffer(viewId, surface.frameBuffer);
+            bgfx.set_view_frame_buffer(viewID, surface.frameBuffer);
         }
         else if (pass.attachments.Count != 0)
         {
             bgfx.FrameBufferHandle cachedFrameBuffer = FindCachedFrameBuffer(pass);
             if (cachedFrameBuffer.Valid)
             {
-                bgfx.set_view_frame_buffer(viewId, cachedFrameBuffer);
+                bgfx.set_view_frame_buffer(viewID, cachedFrameBuffer);
             }
             else
             {
@@ -80,7 +80,7 @@ public sealed unsafe partial class BgfxDevice
                     new CachedGraphFrameBuffer(frameBuffer, pass.name, signature, m_submissionSequence)
                 );
                 m_graphFrameBuffers.Add(frameBuffer);
-                bgfx.set_view_frame_buffer(viewId, frameBuffer);
+                bgfx.set_view_frame_buffer(viewID, frameBuffer);
             }
 
             ApplyAttachmentState(
@@ -95,7 +95,7 @@ public sealed unsafe partial class BgfxDevice
         }
         else
         {
-            bgfx.set_view_frame_buffer(viewId, new bgfx.FrameBufferHandle { idx = ushort.MaxValue });
+            bgfx.set_view_frame_buffer(viewID, new bgfx.FrameBufferHandle { idx = ushort.MaxValue });
         }
 
         if (pass.clearsPresentationTarget)
@@ -104,8 +104,8 @@ public sealed unsafe partial class BgfxDevice
             clearColor = PackColor(pass.presentationClearColor);
         }
 
-        bgfx.set_view_rect(viewId, 0, 0, checked((ushort)width), checked((ushort)height));
-        bgfx.set_view_clear(viewId, (ushort)clearFlags, clearColor, clearDepth, clearStencil);
+        bgfx.set_view_rect(viewID, 0, 0, checked((ushort)width), checked((ushort)height));
+        bgfx.set_view_clear(viewID, (ushort)clearFlags, clearColor, clearDepth, clearStencil);
     }
 
     private bgfx.FrameBufferHandle FindCachedFrameBuffer(CompiledRenderPass pass)

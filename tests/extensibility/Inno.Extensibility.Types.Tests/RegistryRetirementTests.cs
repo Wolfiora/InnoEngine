@@ -10,7 +10,7 @@ using Inno.Extensibility.Types;
 
 namespace Inno.Extensibility.Types.Tests;
 
-[Collection(TypeCacheCollection.NAME)]
+[Collection(TypeCacheCollection.C_NAME)]
 public sealed class RegistryRetirementTests
 {
     [Fact]

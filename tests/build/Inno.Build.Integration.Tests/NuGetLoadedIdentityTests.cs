@@ -31,7 +31,7 @@ public sealed class NuGetLoadedIdentityTests
     public Task SdkOutputScopesMatchTheActuallyLoadedRuntime(
         bool isolated,
         bool staleDefault
-    ) => VerifyScope(isolated, staleDefault);
+    ) => VerifyScopeAsync(isolated, staleDefault);
 
     [Fact]
     [Trait("ProcessIsolation", "Required")]
@@ -40,7 +40,7 @@ public sealed class NuGetLoadedIdentityTests
         string? expected = Environment.GetEnvironmentVariable(C_EXPECTED_RUNTIME);
         if (expected is null)
         {
-            return VerifyScope(true, true);
+            return VerifyScopeAsync(true, true);
         }
         string mismatch = Environment.GetEnvironmentVariable(C_MISMATCH_RUNTIME)
                           ?? throw new InvalidOperationException("The loaded-package probe has no owned mismatch input.");
@@ -56,7 +56,7 @@ public sealed class NuGetLoadedIdentityTests
         return Task.CompletedTask;
     }
 
-    private static async Task VerifyScope(
+    private static async Task VerifyScopeAsync(
         bool isolated,
         bool staleDefault
     ) {
@@ -102,11 +102,11 @@ public sealed class NuGetLoadedIdentityTests
                 )
             ).Save(project);
             string defaultAssets = Path.Combine(root, "obj", "project.assets.json");
-            const string stale = "unrelated stale default assets must never be consumed";
+            const string C_STALE = "unrelated stale default assets must never be consumed";
             if (staleDefault)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(defaultAssets)!);
-                File.WriteAllText(defaultAssets, stale);
+                File.WriteAllText(defaultAssets, C_STALE);
             }
             string[] owner = isolated ? ["-p:ArtifactsPath=" + Path.Combine(root, "owned-output")] : [];
             string evaluated = await ToolchainEnvironment.CaptureOutputAsync(
@@ -123,7 +123,7 @@ public sealed class NuGetLoadedIdentityTests
                 Assert.StartsWith(Path.Combine(root, "owned-output"), assetsPath, StringComparison.OrdinalIgnoreCase);
                 if (staleDefault)
                 {
-                    Assert.Equal(stale, File.ReadAllText(defaultAssets));
+                    Assert.Equal(C_STALE, File.ReadAllText(defaultAssets));
                 }
                 else
                 {

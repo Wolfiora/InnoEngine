@@ -21,9 +21,9 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
 {
     private const int C_MAX_QUEUED_REQUESTS = 4096;
 
-    private static readonly RenderPhaseId S_PRESENTATION_BACKGROUND_PHASE = new("inno.runtime.presentation-background");
+    private static readonly RenderPhaseId PRESENTATION_BACKGROUND_PHASE = new("inno.runtime.presentation-background");
 
-    private static readonly RenderClearColor S_PRESENTATION_BACKGROUND_COLOR = new(0f, 0f, 0f, 1f);
+    private static readonly RenderClearColor PRESENTATION_BACKGROUND_COLOR = new(0f, 0f, 0f, 1f);
 
     private readonly object m_requestLock = new();
     private readonly object m_contributorLock = new();
@@ -48,8 +48,8 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     private readonly RenderFrameScratch m_scratch = new();
     private readonly Dictionary<FrameIssueKey, Diagnostic> m_previousFrameIssues = [];
     private readonly Dictionary<FrameIssueKey, Diagnostic> m_currentFrameIssues = [];
-    private RenderContributorSnapshot m_contributorSnapshot = RenderContributorSnapshot.empty;
-    private RenderContributorSnapshot m_frameContributors = RenderContributorSnapshot.empty;
+    private RenderContributorSnapshot m_contributorSnapshot = RenderContributorSnapshot.EMPTY;
+    private RenderContributorSnapshot m_frameContributors = RenderContributorSnapshot.EMPTY;
     private long m_prunedTypeCacheVersion = -1;
     private ulong m_frameIndex;
     private uint m_graphGeneration;

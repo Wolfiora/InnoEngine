@@ -314,14 +314,14 @@ public sealed class EditorGameInputCaptureTests
     [Fact]
     public void MovingGameViewToAnotherPlatformWindowResetsOldInput()
     {
-        uint currentWindowId = 1;
-        var capture = new EditorGameInputCapture(_ => currentWindowId);
+        uint currentWindowID = 1;
+        var capture = new EditorGameInputCapture(_ => currentWindowID);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         capture.CompleteFrame();
         Assert.IsType<KeyPressedEvent>(capture.Route(new KeyPressedEvent(1, KeyCode.A)));
 
-        currentWindowId = 42;
+        currentWindowID = 42;
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         Assert.Equal(1u, capture.CompleteFrame());

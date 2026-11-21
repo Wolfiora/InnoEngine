@@ -72,7 +72,7 @@ public sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException($"BGFX could not create detached window surface '{name}'.");
         }
 
-        ulong id = m_nextPersistentId++;
+        ulong id = m_nextPersistentID++;
         m_windowSurfaces.Add(id, new BgfxWindowSurfaceResource(frameBuffer, width, height, descriptor, name));
         return CreateRenderSurfaceHandle(id, generation);
     }
@@ -159,7 +159,7 @@ public sealed unsafe partial class BgfxDevice
     /// <exception cref="InvalidOperationException">
     /// The caller is not the API thread or a graph or encoder is active.
     /// </exception>
-    public Task RetireWindowSurface(RenderSurfaceHandle surface)
+    public Task RetireWindowSurfaceAsync(RenderSurfaceHandle surface)
     {
         EnsureSurfaceSafetyPoint();
         BgfxWindowSurfaceResource resource = ResolveSurface(surface);

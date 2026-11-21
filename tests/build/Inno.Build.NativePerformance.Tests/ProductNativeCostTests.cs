@@ -69,7 +69,7 @@ public sealed class ProductNativeCostTests
         string root = TestRepository.GetRoot(typeof(ProductNativeCostTests).Assembly);
         ProductNativeBuildPlan plan = m_distribution.ResolveNativeProduct("windows-x64", "editor").plan;
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
-        async Task<NativeBuildContext> Context()
+        async Task<NativeBuildContext> ContextAsync()
         {
             NativeBuildContext context = new NativeBuildContext(root, "debug").WithBindingGenerator(
                 m_distribution.ResolveBindingGenerator("windows-x64")
@@ -82,7 +82,7 @@ public sealed class ProductNativeCostTests
             );
             return context.WithToolchain(sdk);
         }
-        NativeBuildContext serial = await Context();
+        NativeBuildContext serial = await ContextAsync();
         Stopwatch elapsed = Stopwatch.StartNew();
         using (NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(
             serial,
@@ -116,7 +116,7 @@ public sealed class ProductNativeCostTests
         m_output.WriteLine(JsonSerializer.Serialize(new { sample, phase = "serial", seconds = serialSeconds, serial.statistics }));
         Assert.Equal(0, serial.statistics.nativeProcesses);
         Assert.Equal(0, serial.statistics.bindingGenerations);
-        NativeBuildContext batch = await Context();
+        NativeBuildContext batch = await ContextAsync();
         elapsed.Restart();
         using ProductNativeBuildResult result = await new ComponentNativeProductExecutor().BuildAsync(batch, plan, cancellation.Token);
         double batchSeconds = elapsed.Elapsed.TotalSeconds;

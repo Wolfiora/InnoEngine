@@ -61,7 +61,7 @@ public sealed unsafe partial class ImGuiWidget
         }
 
         float fieldWidth = MathF.Max(1f, width < 0f ? NativeImGui.GetContentRegionAvail().X : width);
-        string controlId = $"##rename_{id}";
+        string controlID = $"##rename_{id}";
         bool selectAll = requestFocus;
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FramePadding), style.inlineRenameFramePadding);
         NativeImGui.PushStyleVar((int)(ImGuiStyleVar.FrameRounding), style.frameRounding);
@@ -82,7 +82,7 @@ public sealed unsafe partial class ImGuiWidget
             try
             {
                 submitted = ImGuiUtf8Buffer.InputText(
-                    controlId,
+                    controlID,
                     null,
                     ref text,
                     (nuint)capacity,
@@ -100,8 +100,8 @@ public sealed unsafe partial class ImGuiWidget
             bool contextMenuRequested = active && NativeImGui.IsMouseReleased((int)(ImGuiMouseButton.Right));
             if (selectAll && active)
             {
-                uint inputId = NativeImGui.GetItemID();
-                ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputId);
+                uint inputID = NativeImGui.GetItemID();
+                ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputID);
                 if (inputState is not null)
                 {
                     NativeImGui.Raw.SelectAll(inputState);

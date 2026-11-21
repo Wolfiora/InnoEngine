@@ -21,7 +21,7 @@ internal static class DocumentationMarkdown
     // Changes to parsing, tokenization or cached contracts must change this schema identity.
     internal const string C_SCHEMA = "inno-doc/6;markdig/1.5.1;yaml/16.3.0;tokens/1";
 
-    private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder()
+    private static readonly MarkdownPipeline PIPELINE = new MarkdownPipelineBuilder()
         .UseYamlFrontMatter()
         .UsePipeTables()
         .UseAutoIdentifiers(AutoIdentifierOptions.GitHub)
@@ -32,7 +32,7 @@ internal static class DocumentationMarkdown
         string path,
         string text
     ) {
-        MarkdownDocument document = Markdown.Parse(text, S_PIPELINE);
+        MarkdownDocument document = Markdown.Parse(text, PIPELINE);
         YamlFrontMatterBlock? front = document.OfType<YamlFrontMatterBlock>().SingleOrDefault();
         if (front is null)
         {
@@ -209,7 +209,7 @@ internal static class DocumentationMarkdown
         );
 
         string HeadingText(HeadingBlock heading)
-            => Markdown.ToPlainText(text[heading.Span.Start..(heading.Span.End + 1)], S_PIPELINE).Trim();
+            => Markdown.ToPlainText(text[heading.Span.Start..(heading.Span.End + 1)], PIPELINE).Trim();
 
         string? Scalar(string key)
         {

@@ -32,43 +32,43 @@ internal sealed class PrefabOverrideSet
            + m_structures.Values.Count(static item => item.isOrphaned);
 
     internal bool IsPropertyOverridden(
-        Guid sourceComponentId,
+        Guid sourceComponentID,
         string propertyName
-    ) => m_properties.ContainsKey((sourceComponentId, propertyName));
+    ) => m_properties.ContainsKey((sourceComponentID, propertyName));
 
-    internal PrefabObjectOverrideKind GetStructureOverride(Guid sourceObjectId)
-        => m_structures.TryGetValue(sourceObjectId, out PrefabStructureOverride? value)
+    internal PrefabObjectOverrideKind GetStructureOverride(Guid sourceObjectID)
+        => m_structures.TryGetValue(sourceObjectID, out PrefabStructureOverride? value)
            ? value.kind
            : PrefabObjectOverrideKind.None;
 
     internal void SetProperty(PrefabPropertyOverride value)
     {
         ArgumentNullException.ThrowIfNull(value);
-        m_properties[(value.sourceComponentId, value.propertyName)] = value;
+        m_properties[(value.sourceComponentID, value.propertyName)] = value;
     }
 
     internal void SetStructure(
-        Guid sourceObjectId,
+        Guid sourceObjectID,
         PrefabObjectOverrideKind kind,
         bool isOrphaned = false
     ) {
         if (kind == PrefabObjectOverrideKind.None)
         {
-            m_structures.Remove(sourceObjectId);
+            m_structures.Remove(sourceObjectID);
             return;
         }
-        m_structures[sourceObjectId] = new PrefabStructureOverride(sourceObjectId, kind, isOrphaned);
+        m_structures[sourceObjectID] = new PrefabStructureOverride(sourceObjectID, kind, isOrphaned);
     }
 
-    internal void MarkObjectRemoved(Guid sourceObjectId) => m_removedObjects.Add(sourceObjectId);
+    internal void MarkObjectRemoved(Guid sourceObjectID) => m_removedObjects.Add(sourceObjectID);
 
-    internal void MarkComponentRemoved(Guid sourceComponentId) => m_removedComponents.Add(sourceComponentId);
+    internal void MarkComponentRemoved(Guid sourceComponentID) => m_removedComponents.Add(sourceComponentID);
 
-    internal void MarkObjectAdded(Guid instanceObjectId) => m_addedObjects.Add(instanceObjectId);
+    internal void MarkObjectAdded(Guid instanceObjectID) => m_addedObjects.Add(instanceObjectID);
 
-    internal void MarkComponentAdded(Guid instanceComponentId) => m_addedComponents.Add(instanceComponentId);
+    internal void MarkComponentAdded(Guid instanceComponentID) => m_addedComponents.Add(instanceComponentID);
 
-    internal bool IsObjectRemoved(Guid sourceObjectId) => m_removedObjects.Contains(sourceObjectId);
+    internal bool IsObjectRemoved(Guid sourceObjectID) => m_removedObjects.Contains(sourceObjectID);
 
-    internal bool IsComponentRemoved(Guid sourceComponentId) => m_removedComponents.Contains(sourceComponentId);
+    internal bool IsComponentRemoved(Guid sourceComponentID) => m_removedComponents.Contains(sourceComponentID);
 }

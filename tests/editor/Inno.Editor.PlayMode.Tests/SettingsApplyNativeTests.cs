@@ -56,7 +56,7 @@ public sealed unsafe class SettingsApplyNativeTests
     [Trait("Acceptance", "Lifecycle")]
     public void OneHundredSettingsCyclesReleaseDrawnValuesAndReloadAdmission()
     {
-        AtomicEditorSetting.snapshots.Clear();
+        AtomicEditorSetting.SNAPSHOTS.Clear();
         AtomicEditorSetting.observe = true;
         try
         {
@@ -68,16 +68,16 @@ public sealed unsafe class SettingsApplyNativeTests
             {
                 OpenAndClose(host);
             }
-            Assert.True(AtomicEditorSetting.snapshots.Count >= 100);
+            Assert.True(AtomicEditorSetting.SNAPSHOTS.Count >= 100);
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
-            Assert.All(AtomicEditorSetting.snapshots, snapshot => Assert.False(snapshot.TryGetTarget(out _)));
+            Assert.All(AtomicEditorSetting.SNAPSHOTS, snapshot => Assert.False(snapshot.TryGetTarget(out _)));
         }
         finally
         {
             AtomicEditorSetting.observe = false;
-            AtomicEditorSetting.snapshots.Clear();
+            AtomicEditorSetting.SNAPSHOTS.Clear();
         }
     }
 
@@ -331,7 +331,7 @@ public sealed unsafe class SettingsApplyNativeTests
 [EditorSettingPath("Editor/Atomic Editor/Value")]
 public sealed class AtomicEditorSetting : EditorSetting
 {
-    public static readonly List<WeakReference<EditorSettingObject>> snapshots = [];
+    public static readonly List<WeakReference<EditorSettingObject>> SNAPSHOTS = [];
     public static bool stage;
     public static bool throwOnDraw;
     public static bool observe;
@@ -353,9 +353,9 @@ public sealed class AtomicEditorSetting : EditorSetting
             throw new InvalidOperationException("Controlled Settings drawer failure.");
         }
         if (observe
-            && (snapshots.Count == 0 || !snapshots[^1].TryGetTarget(out EditorSettingObject? last) || !ReferenceEquals(last, setting))
+            && (SNAPSHOTS.Count == 0 || !SNAPSHOTS[^1].TryGetTarget(out EditorSettingObject? last) || !ReferenceEquals(last, setting))
         ) {
-            snapshots.Add(new WeakReference<EditorSettingObject>(setting));
+            SNAPSHOTS.Add(new WeakReference<EditorSettingObject>(setting));
         }
         if (!stage)
         {

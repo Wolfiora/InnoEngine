@@ -29,14 +29,14 @@ public sealed partial class AssetLoader
         => Execute(() =>
         {
             var states = new Dictionary<Guid, SerializedMissingState>();
-            foreach (AssetRecord record in m_recordsById.Values)
+            foreach (AssetRecord record in m_recordsByID.Values)
             {
                 // Catalog tombstones preserve source identity, but they are not live reference
                 // roots. Only a materialized canonical asset belongs to the active generation;
                 // retained missing placeholders are captured separately below.
                 if (record.asset is not null)
                 {
-                    Capture(record.persistentId, record.relativePath, record.stableTypeId, record.meta.assetStateBytes);
+                    Capture(record.persistentID, record.relativePath, record.stableTypeID, record.meta.assetStateBytes);
                 }
             }
             foreach ((Guid id, SerializedMissingState state) in m_preservedMissingStates)
@@ -47,8 +47,8 @@ public sealed partial class AssetLoader
             {
                 if (!states.ContainsKey(id) && reference.TryGetTarget(out AssetObject? missing))
                 {
-                    m_recordsById.TryGetValue(id, out AssetRecord? record);
-                    Capture(id, missing.assetPath.ToString(), record?.stableTypeId ?? Guid.Empty, record?.meta.assetStateBytes ?? []);
+                    m_recordsByID.TryGetValue(id, out AssetRecord? record);
+                    Capture(id, missing.assetPath.ToString(), record?.stableTypeID ?? Guid.Empty, record?.meta.assetStateBytes ?? []);
                 }
             }
             return (IReadOnlyList<SerializedMissingState>)Array.AsReadOnly(states.Values.ToArray());
@@ -56,13 +56,13 @@ public sealed partial class AssetLoader
             void Capture(
                 Guid id,
                 string path,
-                Guid stableTypeId,
+                Guid stableTypeID,
                 byte[] payload
             ) => states.Add(
                 id,
                 new SerializedMissingState(
                     new ReferenceKey(id, "$asset"),
-                    new ReferenceDescriptor(AssetReferenceProtocol.id, id, stableTypeId, lastKnownPath: path),
+                    new ReferenceDescriptor(AssetReferenceProtocol.id, id, stableTypeID, lastKnownPath: path),
                     payload
                 )
             );
@@ -83,7 +83,7 @@ public sealed partial class AssetLoader
             }
         });
 
-    internal bool IsSourceBackedTypeUnavailable(Guid persistentId) => Execute(() => IsSourceBackedTypeUnavailableLocked(persistentId));
+    internal bool IsSourceBackedTypeUnavailable(Guid persistentID) => Execute(() => IsSourceBackedTypeUnavailableLocked(persistentID));
 
     internal void SetIdentitiesActive(bool active)
         => Execute(() =>
@@ -95,7 +95,7 @@ public sealed partial class AssetLoader
             var attempted = new List<AssetObject>();
             try
             {
-                foreach (AssetRecord record in m_recordsById.Values)
+                foreach (AssetRecord record in m_recordsByID.Values)
                 {
                     if (record.asset is null)
                     {
@@ -104,7 +104,7 @@ public sealed partial class AssetLoader
                     attempted.Add(record.asset);
                     if (active)
                     {
-                        m_identities.Register(record.asset, record.persistentId);
+                        m_identities.Register(record.asset, record.persistentID);
                     }
                     else
                     {
@@ -151,11 +151,11 @@ public sealed partial class AssetLoader
             }
         });
 
-    private bool IsSourceBackedTypeUnavailableLocked(Guid persistentId)
+    private bool IsSourceBackedTypeUnavailableLocked(Guid persistentID)
     {
-        if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record)
+        if (!m_recordsByID.TryGetValue(persistentID, out AssetRecord? record)
             || record.meta.isTombstone
-            || record.persistentId == Guid.Empty
+            || record.persistentID == Guid.Empty
             || string.IsNullOrWhiteSpace(record.meta.importerId)
             || !IsMounted(record.relativePath)
             || !IOFile.Exists(GetSourcePath(record.relativePath))

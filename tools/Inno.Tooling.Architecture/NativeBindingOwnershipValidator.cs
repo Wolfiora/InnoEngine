@@ -73,14 +73,14 @@ internal static class NativeBindingOwnershipValidator
                         throw new InvalidDataException("Binding definitions cannot contain executable build logic.");
                     }
                 }
-                if (!properties.TryGetValue("InnoNativeComponentId", out string? componentId)
-                    || string.IsNullOrWhiteSpace(componentId)
+                if (!properties.TryGetValue("InnoNativeComponentId", out string? componentID)
+                    || string.IsNullOrWhiteSpace(componentID)
                 ) {
                     throw new InvalidDataException("A binding definition requires its component identity.");
                 }
-                if (!components.TryAdd(componentId, relative))
+                if (!components.TryAdd(componentID, relative))
                 {
-                    failures.Add($"{relative}: binding component '{componentId}' already belongs to '{components[componentId]}'.");
+                    failures.Add($"{relative}: binding component '{componentID}' already belongs to '{components[componentID]}'.");
                 }
                 if (!properties.TryGetValue("InnoBindingConfig", out string? hostConfig))
                 {

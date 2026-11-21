@@ -9,11 +9,11 @@ namespace Inno.Rendering.Tests;
 
 public sealed class RenderGraphCompilerTests
 {
-    private static readonly RenderPhaseId C_GEOMETRY = new("tests.geometry");
-    private static readonly RenderPhaseId C_PROCESS = new("tests.process");
-    private static readonly RenderPhaseId C_TRANSPARENT = new("tests.transparent");
-    private static readonly RenderPhaseId C_POST = new("tests.post");
-    private static readonly RenderPhaseId C_FINAL = new("tests.final");
+    private static readonly RenderPhaseId GEOMETRY = new("tests.geometry");
+    private static readonly RenderPhaseId PROCESS = new("tests.process");
+    private static readonly RenderPhaseId TRANSPARENT = new("tests.transparent");
+    private static readonly RenderPhaseId POST = new("tests.post");
+    private static readonly RenderPhaseId FINAL = new("tests.final");
 
     [Fact]
     public void NameScopesIsolateRepeatedProducerNamesInsideOneFrameGraph()
@@ -22,7 +22,7 @@ public sealed class RenderGraphCompilerTests
         using (graph.BeginNameScope("Request[0] First"))
         {
             graph
-                .AddRasterPass("Visible", C_GEOMETRY, 0, static (
+                .AddRasterPass("Visible", GEOMETRY, 0, static (
                     _,
                     _
                 ) => {})
@@ -31,7 +31,7 @@ public sealed class RenderGraphCompilerTests
         using (graph.BeginNameScope("Request[1] Second"))
         {
             graph
-                .AddRasterPass("Visible", C_GEOMETRY, 0, static (
+                .AddRasterPass("Visible", GEOMETRY, 0, static (
                     _,
                     _
                 ) => {})
@@ -52,7 +52,7 @@ public sealed class RenderGraphCompilerTests
         {
             RenderTextureHandle temporary = graph.CreateTexture("Temporary", ColorDescriptor());
             graph
-                .AddRasterPass("Failed Feature", C_GEOMETRY, 0, static (
+                .AddRasterPass("Failed Feature", GEOMETRY, 0, static (
                     _,
                     _
                 ) => {})
@@ -61,7 +61,7 @@ public sealed class RenderGraphCompilerTests
         }
 
         graph
-            .AddRasterPass("Survivor", C_FINAL, 0, static (
+            .AddRasterPass("Survivor", FINAL, 0, static (
                 _,
                 _
             ) => {})
@@ -81,13 +81,13 @@ public sealed class RenderGraphCompilerTests
         RenderTextureHandle intermediate = graph.CreateTexture("Intermediate", ColorDescriptor());
         RenderTextureHandle output = graph.CreateTexture("Output", ColorDescriptor());
         graph
-            .AddRasterPass("Producer", C_GEOMETRY, 0, static (
+            .AddRasterPass("Producer", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
             .UseColorAttachment(intermediate, 0, RenderLoadAction.Clear);
         graph
-            .AddRasterPass("Consumer", C_POST, 0, static (
+            .AddRasterPass("Consumer", POST, 0, static (
                 _,
                 _
             ) => {})
@@ -108,13 +108,13 @@ public sealed class RenderGraphCompilerTests
         RenderTextureHandle unused = graph.CreateTexture("Unused", ColorDescriptor());
         RenderTextureHandle output = graph.CreateTexture("Output", ColorDescriptor());
         graph
-            .AddRasterPass("Unused Pass", C_GEOMETRY, 0, static (
+            .AddRasterPass("Unused Pass", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
             .UseColorAttachment(unused, 0, RenderLoadAction.Clear);
         graph
-            .AddRasterPass("Output Pass", C_GEOMETRY, 0, static (
+            .AddRasterPass("Output Pass", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
@@ -134,7 +134,7 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle input = graph.CreateTexture("Input", SampledDescriptor());
         graph
-            .AddRasterPass("Reader", C_GEOMETRY, 0, static (
+            .AddRasterPass("Reader", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
@@ -161,14 +161,14 @@ public sealed class RenderGraphCompilerTests
             )
         );
         graph
-            .AddComputePass("Hazard", C_PROCESS, 0, static (
+            .AddComputePass("Hazard", PROCESS, 0, static (
                 _,
                 _
             ) => {})
             .ReadTexture(texture);
         ComputePassBuilder writer = graph.AddComputePass(
             "Writer",
-            C_PROCESS,
+            PROCESS,
             0,
             static (
                 _,
@@ -195,27 +195,27 @@ public sealed class RenderGraphCompilerTests
         RenderTextureHandle output = graph.CreateTexture("Output", ColorDescriptor());
 
         graph
-            .AddRasterPass("A", C_GEOMETRY, 0, static (
+            .AddRasterPass("A", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
             .UseColorAttachment(first, 0, RenderLoadAction.Clear);
         graph
-            .AddRasterPass("B", C_PROCESS, 0, static (
+            .AddRasterPass("B", PROCESS, 0, static (
                 _,
                 _
             ) => {})
             .UseColorAttachment(middle, 0, RenderLoadAction.Clear)
             .ReadTexture(first);
         graph
-            .AddRasterPass("C", C_TRANSPARENT, 0, static (
+            .AddRasterPass("C", TRANSPARENT, 0, static (
                 _,
                 _
             ) => {})
             .UseColorAttachment(second, 0, RenderLoadAction.Clear)
             .ReadTexture(middle);
         graph
-            .AddRasterPass("D", C_POST, 0, static (
+            .AddRasterPass("D", POST, 0, static (
                 _,
                 _
             ) => {})
@@ -232,11 +232,11 @@ public sealed class RenderGraphCompilerTests
     public void Compile_WhenViewLimitExceeded_FailsClearly()
     {
         var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 1));
-        graph.AddRasterPass("A", C_GEOMETRY, 0, static (
+        graph.AddRasterPass("A", GEOMETRY, 0, static (
             _,
             _
         ) => {}).HasSideEffect();
-        graph.AddRasterPass("B", C_TRANSPARENT, 0, static (
+        graph.AddRasterPass("B", TRANSPARENT, 0, static (
             _,
             _
         ) => {}).HasSideEffect();
@@ -286,7 +286,7 @@ public sealed class RenderGraphCompilerTests
             )
         );
         graph
-            .AddRasterPass("Invalid Layer", C_GEOMETRY, 0, static (
+            .AddRasterPass("Invalid Layer", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
@@ -308,7 +308,7 @@ public sealed class RenderGraphCompilerTests
             new RenderTextureDescriptor(64, 64, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled)
         );
         graph
-            .AddComputePass("Storage Writer", C_PROCESS, 0, static (
+            .AddComputePass("Storage Writer", PROCESS, 0, static (
                 _,
                 _
             ) => {})
@@ -327,7 +327,7 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle output = graph.CreateTexture("Discarded", ColorDescriptor());
         graph
-            .AddRasterPass("Discard", C_FINAL, 0, static (
+            .AddRasterPass("Discard", FINAL, 0, static (
                 _,
                 _
             ) => {})
@@ -353,7 +353,7 @@ public sealed class RenderGraphCompilerTests
             new RenderBufferDescriptor(16, 4, RenderBufferUsage.CopyDestination)
         );
         graph
-            .AddCopyPass("Copy", C_PROCESS, 0, static (
+            .AddCopyPass("Copy", PROCESS, 0, static (
                 _,
                 _
             ) => {})
@@ -506,7 +506,7 @@ public sealed class RenderGraphCompilerTests
             )
         );
         graph
-            .AddRasterPass("MSAA", C_GEOMETRY, 0, static (
+            .AddRasterPass("MSAA", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
@@ -536,13 +536,13 @@ public sealed class RenderGraphCompilerTests
             )
         );
         readGraph
-            .AddRasterPass("Initialize", C_GEOMETRY, 0, static (
+            .AddRasterPass("Initialize", GEOMETRY, 0, static (
                 _,
                 _
             ) => {})
             .UseColorAttachment(readTexture, 0, RenderLoadAction.Clear);
         readGraph
-            .AddComputePass("Read", C_PROCESS, 0, static (
+            .AddComputePass("Read", PROCESS, 0, static (
                 _,
                 _
             ) => {})
@@ -562,7 +562,7 @@ public sealed class RenderGraphCompilerTests
             new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Storage)
         );
         writeGraph
-            .AddComputePass("Write", C_PROCESS, 0, static (
+            .AddComputePass("Write", PROCESS, 0, static (
                 _,
                 _
             ) => {})
@@ -582,7 +582,7 @@ public sealed class RenderGraphCompilerTests
             new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Storage)
         );
         readWriteGraph
-            .AddComputePass("Read Write", C_PROCESS, 0, static (
+            .AddComputePass("Read Write", PROCESS, 0, static (
                 _,
                 _
             ) => {})
@@ -605,7 +605,7 @@ public sealed class RenderGraphCompilerTests
         graph
             .AddRasterPass(
                 "Failure",
-                C_GEOMETRY,
+                GEOMETRY,
                 0,
                 static (
                     _,
@@ -650,13 +650,13 @@ public sealed class RenderGraphCompilerTests
             _ = Interlocked.Decrement(ref activeRecorders);
         }
 
-        graph.AddRasterPass("Parallel A", C_GEOMETRY, 1, Record)
+        graph.AddRasterPass("Parallel A", GEOMETRY, 1, Record)
             .AllowParallelRecording()
             .HasSideEffect();
-        graph.AddRasterPass("Parallel B", C_PROCESS, 2, Record)
+        graph.AddRasterPass("Parallel B", PROCESS, 2, Record)
             .AllowParallelRecording()
             .HasSideEffect();
-        graph.AddRasterPass("Serial", C_FINAL, 3, Record)
+        graph.AddRasterPass("Serial", FINAL, 3, Record)
             .HasSideEffect();
         CompiledRenderGraph compiled = graph.Compile().graph!;
         var backend = new RecordingBackend();

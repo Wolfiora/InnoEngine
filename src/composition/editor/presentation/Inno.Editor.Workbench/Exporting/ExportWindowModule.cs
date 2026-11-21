@@ -11,23 +11,23 @@ namespace Inno.Editor.Workbench;
 
 [EditorModule("export.windows", order: 310)]
 internal sealed class ExportWindowModule(
-    EditorContext m_editor,
-    EditorExportService m_exports,
-    BuildSettingsStore m_buildSettings,
-    ProjectSettingsStore m_projectSettings
+    EditorContext editor,
+    EditorExportService exports,
+    BuildSettingsStore buildSettings,
+    ProjectSettingsStore projectSettings
 ) : EditorModule
 {
     private bool m_gameProgressVisible;
     private string m_formError = string.Empty;
     internal bool isPluginVisible { get; private set; }
     internal bool isGameVisible { get; private set; }
-    internal bool isGameProgressVisible => m_gameProgressVisible && m_exports.isGameBusy;
-    internal bool isPluginBusy => m_exports.isPluginBusy;
-    internal bool isGameBusy => m_exports.isGameBusy;
-    internal string pluginId => m_projectSettings.projectId.value;
+    internal bool isGameProgressVisible => m_gameProgressVisible && exports.isGameBusy;
+    internal bool isPluginBusy => exports.isPluginBusy;
+    internal bool isGameBusy => exports.isGameBusy;
+    internal string pluginID => projectSettings.projectId.value;
     internal string pluginDisplayName { get; set; } = string.Empty;
     internal string pluginOutputPath { get; set; } = string.Empty;
-    internal string gameApplicationId => m_projectSettings.projectId.value;
+    internal string gameApplicationID => projectSettings.projectId.value;
     internal string gameProductName { get; set; } = string.Empty;
     internal string gamePersistentDataPath { get; set; } = string.Empty;
     internal string gameStartupScene { get; set; } = string.Empty;
@@ -36,14 +36,14 @@ internal sealed class ExportWindowModule(
     internal int gameWindowHeight { get; set; } = 720;
     internal BuildTargetId gameTarget { get; set; }
     internal ManagedDeploymentId? gameManagedDeployment { get; set; }
-    internal IReadOnlyList<ManagedDeploymentId> availableManagedDeployments => m_exports.GetManagedDeployments(gameTarget);
-    internal IReadOnlyList<BuildTargetId> availableGameTargets => m_exports.availableGameTargets;
-    internal EditorExportProgress progress => m_exports.progress;
+    internal IReadOnlyList<ManagedDeploymentId> availableManagedDeployments => exports.GetManagedDeployments(gameTarget);
+    internal IReadOnlyList<BuildTargetId> availableGameTargets => exports.availableGameTargets;
+    internal EditorExportProgress progress => exports.progress;
     internal string status => progress.status;
-    internal string error => m_formError.Length == 0 ? m_exports.progress.error : m_formError;
+    internal string error => m_formError.Length == 0 ? exports.progress.error : m_formError;
     internal bool includePluginDependencies { get; set; }
 
-    internal string GetGameTargetDisplayName(BuildTargetId target) => m_exports.GetGameTargetDisplayName(target);
+    internal string GetGameTargetDisplayName(BuildTargetId target) => exports.GetGameTargetDisplayName(target);
 
     internal void OpenPlugin()
     {
@@ -82,10 +82,10 @@ internal sealed class ExportWindowModule(
     internal void BeginPluginExport()
     {
         m_formError = string.Empty;
-        m_exports.StartPlugin(
+        exports.StartPlugin(
             new PluginBuildRequest
             {
-                pluginId = pluginId,
+                pluginId = pluginID,
                 displayName = pluginDisplayName,
                 outputPath = ResolveOutputPath(pluginOutputPath),
                 includeDependencies = includePluginDependencies
@@ -96,12 +96,12 @@ internal sealed class ExportWindowModule(
     internal void BeginGameExport()
     {
         m_formError = string.Empty;
-        m_exports.StartGame(
+        exports.StartGame(
             new GameBuildRequest
             {
                 profile = new BuildProfile
                 {
-                    applicationId = gameApplicationId,
+                    applicationId = gameApplicationID,
                     productName = gameProductName,
                     persistentDataPath = gamePersistentDataPath,
                     startupScene = gameStartupScene,
@@ -117,15 +117,15 @@ internal sealed class ExportWindowModule(
         m_gameProgressVisible = true;
     }
 
-    internal void CancelPluginExport(long operationId) => m_exports.Cancel(operationId);
+    internal void CancelPluginExport(long operationID) => exports.Cancel(operationID);
 
-    internal void CancelGameExport(long operationId) => m_exports.Cancel(operationId);
+    internal void CancelGameExport(long operationID) => exports.Cancel(operationID);
 
     internal void ClosePlugin()
     {
         if (isPluginBusy)
         {
-            m_exports.Cancel(m_exports.progress.operationId);
+            exports.Cancel(exports.progress.operationId);
         }
         isPluginVisible = false;
     }
@@ -134,7 +134,7 @@ internal sealed class ExportWindowModule(
     {
         if (isGameBusy)
         {
-            m_exports.Cancel(m_exports.progress.operationId);
+            exports.Cancel(exports.progress.operationId);
         }
         isGameVisible = false;
     }
@@ -143,7 +143,7 @@ internal sealed class ExportWindowModule(
     {
         try
         {
-            return m_buildSettings.Load();
+            return buildSettings.Load();
         }
         catch (Exception exception) when (exception is IOException
                                           or InvalidDataException
@@ -151,7 +151,7 @@ internal sealed class ExportWindowModule(
                                           or UnauthorizedAccessException)
         {
             m_formError = exception.Message;
-            return m_buildSettings.defaultSettings;
+            return buildSettings.defaultSettings;
         }
     }
 
@@ -161,6 +161,6 @@ internal sealed class ExportWindowModule(
         {
             return path;
         }
-        return Path.IsPathFullyQualified(path) ? Path.GetFullPath(path) : Path.GetFullPath(path, m_editor.projectDirectory);
+        return Path.IsPathFullyQualified(path) ? Path.GetFullPath(path) : Path.GetFullPath(path, editor.projectDirectory);
     }
 }

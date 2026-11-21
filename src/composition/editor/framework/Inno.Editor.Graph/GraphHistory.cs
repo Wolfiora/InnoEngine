@@ -47,7 +47,7 @@ internal static class GraphHistoryDocumentCodec
 }
 
 internal sealed record GraphHistoryData(
-    Guid documentId,
+    Guid documentID,
     byte[] before,
     byte[] after,
     long timestamp
@@ -57,7 +57,7 @@ internal sealed record GraphHistoryData(
     /// </summary>
     public const string C_KIND = "editor.graph.document";
 
-    private static readonly UTF8Encoding S_UTF8 = new(false, true);
+    private static readonly UTF8Encoding UTF8 = new(false, true);
 
     /// <summary>
     /// Encodes the supplied value into deterministic structured data.
@@ -67,7 +67,7 @@ internal sealed record GraphHistoryData(
     /// </returns>
     public byte[] Encode()
     {
-        byte[] id = S_UTF8.GetBytes(documentId.ToString("D"));
+        byte[] id = UTF8.GetBytes(documentID.ToString("D"));
         var result = new byte[checked((sizeof(int) * 3) + sizeof(long) + id.Length + before.Length + after.Length)];
         Span<byte> span = result;
         BinaryPrimitives.WriteInt32LittleEndian(span, id.Length);
@@ -88,7 +88,7 @@ internal sealed record GraphHistoryData(
     /// <summary>
     /// Creates and validates a caller-owned change value.
     /// </summary>
-    /// <param name="documentId">
+    /// <param name="documentID">
     /// The document id text validated by the create change operation.
     /// </param>
     /// <param name="before">
@@ -104,12 +104,12 @@ internal sealed record GraphHistoryData(
     /// The validated editor history change that represents the completed operation.
     /// </returns>
     public static EditorHistoryChange CreateChange(
-        Guid documentId,
+        Guid documentID,
         ReadOnlySpan<byte> before,
         ReadOnlySpan<byte> after,
         string? mergeKey
     ) {
-        var data = new GraphHistoryData(documentId, before.ToArray(), after.ToArray(), Stopwatch.GetTimestamp());
+        var data = new GraphHistoryData(documentID, before.ToArray(), after.ToArray(), Stopwatch.GetTimestamp());
         return new EditorHistoryChange(C_KIND, EditorHistoryPayload.FromBytes(data.Encode()), mergeKey);
     }
 
@@ -131,7 +131,7 @@ internal sealed record GraphHistoryData(
     ) {
         int offset = 0;
         int idLength = ReadLength(payload, ref offset);
-        Guid id = Guid.ParseExact(S_UTF8.GetString(ReadSlice(payload, ref offset, idLength)), "D");
+        Guid id = Guid.ParseExact(UTF8.GetString(ReadSlice(payload, ref offset, idLength)), "D");
         if (id == Guid.Empty)
         {
             throw new InvalidDataException("Graph history requires a persistent document identity.");
@@ -211,10 +211,10 @@ internal static class GraphHistoryTransition
         try
         {
             GraphHistoryData data = GraphHistoryData.Decode(change.payload.ReadBytes(), module.serialization);
-            if (!module.TryResolve(data.documentId, out GraphDocumentSession? session) || session is null)
+            if (!module.TryResolve(data.documentID, out GraphDocumentSession? session) || session is null)
             {
                 return new GraphHistoryTransitionResult(
-                    EditorHistoryResult.Failure($"Graph document '{data.documentId}' is not open."),
+                    EditorHistoryResult.Failure($"Graph document '{data.documentID}' is not open."),
                     false
                 );
             }
@@ -289,9 +289,9 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
         try
         {
             GraphHistoryData data = GraphHistoryData.Decode(change.payload.ReadBytes(), module.serialization);
-            return module.TryResolve(data.documentId, out _)
+            return module.TryResolve(data.documentID, out _)
                    ? EditorHistoryAvailability.Available()
-                   : EditorHistoryAvailability.Unavailable($"Graph document '{data.documentId}' is not open.");
+                   : EditorHistoryAvailability.Unavailable($"Graph document '{data.documentID}' is not open.");
         }
         catch (Exception exception)
         {
@@ -356,13 +356,13 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
         {
             GraphHistoryData previous = GraphHistoryData.Decode(older.payload.ReadBytes(), module.serialization);
             GraphHistoryData current = GraphHistoryData.Decode(newer.payload.ReadBytes(), module.serialization);
-            if (previous.documentId != current.documentId
+            if (previous.documentID != current.documentID
                 || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > 1.0
             ) {
                 return false;
             }
 
-            var combined = new GraphHistoryData(previous.documentId, previous.before, current.after, current.timestamp);
+            var combined = new GraphHistoryData(previous.documentID, previous.before, current.after, current.timestamp);
             merged = new EditorHistoryChange(
                 GraphHistoryData.C_KIND,
                 EditorHistoryPayload.FromBytes(combined.Encode()),

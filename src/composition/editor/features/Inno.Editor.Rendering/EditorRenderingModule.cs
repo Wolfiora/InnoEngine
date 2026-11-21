@@ -634,7 +634,7 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return;
         }
-        var groupId = new EditorStatisticGroupId("inno.rendering.frame");
+        var groupID = new EditorStatisticGroupId("inno.rendering.frame");
         context.statistics.Publish(new EditorStatistic[]
         {
             CreateStatistic("frame", "Frame", statistics.frameIndex.ToString(), 0),
@@ -674,7 +674,7 @@ public sealed class EditorRenderingModule : EditorModule
             int order
         ) => new(
             new EditorStatisticId($"inno.rendering.frame.{id}"),
-            groupId,
+            groupID,
             "Rendering",
             label,
             value,
@@ -733,7 +733,7 @@ public sealed class EditorRenderingModule : EditorModule
 
     private bool TryCreateContext(
         EditorViewportKindId kind,
-        string viewportId,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         out EditorViewportContext? context
@@ -743,29 +743,29 @@ public sealed class EditorRenderingModule : EditorModule
             context = null;
             return false;
         }
-        ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(viewportID);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
         context = new EditorViewportContext(
             m_context,
             m_interactions,
             kind,
-            viewportId,
+            viewportID,
             pixelWidth,
             pixelHeight,
-            GetNavigationState(viewportId),
-            m_contentScopes.GetValueOrDefault(viewportId, ContentReadScope.empty),
-            m_presentations.GetValueOrDefault(viewportId, new EditorViewportPresentation(EngineColor.DARKGRAY)),
+            GetNavigationState(viewportID),
+            m_contentScopes.GetValueOrDefault(viewportID, ContentReadScope.empty),
+            m_presentations.GetValueOrDefault(viewportID, new EditorViewportPresentation(EngineColor.DARKGRAY)),
             m_host.viewContent,
             m_host.currentFrameIndex,
-            m_outputInputs.GetValueOrDefault(viewportId, RenderOutputInput.empty)
+            m_outputInputs.GetValueOrDefault(viewportID, RenderOutputInput.empty)
         );
         return true;
     }
 
     private void PublishViewportStatistics(
         EditorViewportKindId kind,
-        string viewportId,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         string state,
@@ -776,9 +776,9 @@ public sealed class EditorRenderingModule : EditorModule
         {
             return;
         }
-        string groupKey = $"inno.rendering.viewport.{viewportId}";
-        var groupId = new EditorStatisticGroupId(groupKey);
-        string groupName = GetDisplayName(viewportId);
+        string groupKey = $"inno.rendering.viewport.{viewportID}";
+        var groupID = new EditorStatisticGroupId(groupKey);
+        string groupName = GetDisplayName(viewportID);
         var statistics = new List<EditorStatistic>
         {
             CreateStatistic("kind", "Kind", kind.value, 0),
@@ -823,7 +823,7 @@ public sealed class EditorRenderingModule : EditorModule
             int order
         ) => new(
             new EditorStatisticId($"{groupKey}.{id}"),
-            groupId,
+            groupID,
             groupName,
             label,
             value,
@@ -865,13 +865,13 @@ public sealed class EditorRenderingModule : EditorModule
     }
 
     private EditorViewportContributorRegistry.Registration? SelectController(
-        string viewportId,
+        string viewportID,
         IReadOnlyList<EditorViewportContributorRegistry.Registration> contributors
     ) {
-        if (m_controllerIds.TryGetValue(viewportId, out string? controllerId))
+        if (m_controllerIds.TryGetValue(viewportID, out string? controllerID))
         {
             EditorViewportContributorRegistry.Registration? selected = contributors.FirstOrDefault(
-                contributor => string.Equals(contributor.attribute.id, controllerId, StringComparison.Ordinal)
+                contributor => string.Equals(contributor.attribute.id, controllerID, StringComparison.Ordinal)
             );
             if (selected is not null)
             {
@@ -887,7 +887,7 @@ public sealed class EditorRenderingModule : EditorModule
 
     private void HandleViewportFailure(
         EditorViewportKindId kind,
-        string viewportId,
+        string viewportID,
         int pixelWidth,
         int pixelHeight,
         IReadOnlyList<EditorViewportContributorRegistry.Registration> contributors,
@@ -895,30 +895,30 @@ public sealed class EditorRenderingModule : EditorModule
     ) {
         PublishViewportStatistics(
             kind,
-            viewportId,
+            viewportID,
             pixelWidth,
             pixelHeight,
             "Failed",
             string.Join(", ", contributors.Select(static contributor => contributor.attribute.id))
         );
-        m_host.Release(viewportId);
-        m_controllerIds.Remove(viewportId);
-        m_manipulationSpaces.Remove(viewportId);
-        SetCompositionFailures(viewportId, failures);
+        m_host.Release(viewportID);
+        m_controllerIds.Remove(viewportID);
+        m_manipulationSpaces.Remove(viewportID);
+        SetCompositionFailures(viewportID, failures);
     }
 
     private void SetCompositionFailures(
-        string viewportId,
+        string viewportID,
         IReadOnlyList<string> failures
     ) {
         string[] distinct = failures.Distinct(StringComparer.Ordinal).ToArray();
         if (distinct.Length == 0)
         {
-            m_compositionErrors.Remove(viewportId);
+            m_compositionErrors.Remove(viewportID);
         }
         else
         {
-            m_compositionErrors[viewportId] = string.Join(Environment.NewLine, distinct);
+            m_compositionErrors[viewportID] = string.Join(Environment.NewLine, distinct);
         }
     }
 

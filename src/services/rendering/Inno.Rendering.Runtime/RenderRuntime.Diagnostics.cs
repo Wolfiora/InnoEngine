@@ -32,7 +32,7 @@ public sealed partial class RenderRuntime
         {
             if (!m_currentFrameIssues.ContainsKey(key))
             {
-                m_diagnostics.Resolve(key.code, key.semanticId, key.objectId);
+                m_diagnostics.Resolve(key.code, key.semanticID, key.objectID);
             }
         }
         m_previousFrameIssues.Clear();
@@ -79,7 +79,7 @@ public sealed partial class RenderRuntime
 
     private readonly record struct FrameIssueKey(
         string code,
-        string? semanticId,
-        Guid? objectId
+        string? semanticID,
+        Guid? objectID
     );
 }

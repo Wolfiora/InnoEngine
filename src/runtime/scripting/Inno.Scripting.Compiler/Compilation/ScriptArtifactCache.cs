@@ -9,7 +9,7 @@ internal sealed class ScriptArtifactCache
 {
     private const int C_BUILD_KEY_LENGTH = 64;
     private const long C_DEFAULT_MAXIMUM_SIZE = 4L * 1024 * 1024 * 1024;
-    private static readonly TimeSpan S_DEFAULT_GRACE_PERIOD = TimeSpan.FromDays(7);
+    private static readonly TimeSpan DEFAULT_GRACE_PERIOD = TimeSpan.FromDays(7);
 
     private readonly string m_root;
 
@@ -25,7 +25,7 @@ internal sealed class ScriptArtifactCache
             .Where(static value => !string.IsNullOrWhiteSpace(value))
             .Select(static value => Path.GetFullPath(value!))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        DateTime cutoff = DateTime.UtcNow - S_DEFAULT_GRACE_PERIOD;
+        DateTime cutoff = DateTime.UtcNow - DEFAULT_GRACE_PERIOD;
         string assemblyRoot = Path.Combine(m_root, ".assemblies");
         IEnumerable<string> candidates = Directory.EnumerateDirectories(m_root);
         if (Directory.Exists(assemblyRoot))

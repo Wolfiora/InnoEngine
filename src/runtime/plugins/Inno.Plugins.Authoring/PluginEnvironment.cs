@@ -195,8 +195,8 @@ public sealed class PluginEnvironment : IDisposable
     /// </summary>
     public event Action? Changed
     {
-        add => m_catalog.Changed += value;
-        remove => m_catalog.Changed -= value;
+        add => m_catalog.changed += value;
+        remove => m_catalog.changed -= value;
     }
 
     /// <summary>

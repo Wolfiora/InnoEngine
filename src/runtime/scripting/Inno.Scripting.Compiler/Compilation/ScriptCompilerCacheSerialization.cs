@@ -74,8 +74,8 @@ internal static class ScriptCompilerCacheSerialization
         {
             writer.Write(type.typeName);
             writer.Write(type.kind);
-            writer.Write(type.stableTypeId.ToByteArray());
-            writer.Write(type.sourcePersistentId.ToByteArray());
+            writer.Write(type.stableTypeID.ToByteArray());
+            writer.Write(type.sourcePersistentID.ToByteArray());
             writer.Write(type.sourcePath);
             writer.Write(type.line);
             writer.Write(type.column);

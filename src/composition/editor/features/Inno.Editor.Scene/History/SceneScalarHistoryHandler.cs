@@ -7,7 +7,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-[EditorHistoryHandler(SceneHistoryKinds.Scalar)]
+[EditorHistoryHandler(SceneHistoryKinds.C_SCALAR)]
 internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
 {
     private const double C_MERGE_WINDOW_SECONDS = 1.0;
@@ -44,7 +44,7 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
             return Resolve(data) is not null
                    ? EditorHistoryAvailability.Available()
                    : EditorHistoryAvailability.Unavailable(
-                       $"Scene target '{data.targetId}' is no longer available for '{data.scalarKind}'."
+                       $"Scene target '{data.targetID}' is no longer available for '{data.scalarKind}'."
                    );
         }
         catch (Exception exception)
@@ -77,7 +77,7 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
         {
             SceneScalarHistoryData data = SceneScalarHistoryData.Decode(change.payload.ReadBytes());
             EngineObject target = Resolve(data)
-                                  ?? throw new InvalidOperationException($"Scene target '{data.targetId}' is no longer available.");
+                                  ?? throw new InvalidOperationException($"Scene target '{data.targetID}' is no longer available.");
             string rollback = GetValue(target, data.scalarKind);
             string value = direction == EditorHistoryDirection.Undo ? data.before : data.after;
             try
@@ -135,21 +135,21 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
         {
             SceneScalarHistoryData previous = SceneScalarHistoryData.Decode(older.payload.ReadBytes());
             SceneScalarHistoryData current = SceneScalarHistoryData.Decode(newer.payload.ReadBytes());
-            if (previous.targetId != current.targetId
+            if (previous.targetID != current.targetID
                 || previous.scalarKind != current.scalarKind
                 || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS
             ) {
                 return false;
             }
             var data = new SceneScalarHistoryData(
-                previous.targetId,
+                previous.targetID,
                 previous.scalarKind,
                 previous.before,
                 current.after,
                 current.timestamp
             );
             merged = new EditorHistoryChange(
-                SceneHistoryKinds.Scalar,
+                SceneHistoryKinds.C_SCALAR,
                 EditorHistoryPayload.FromBytes(data.Encode()),
                 older.mergeKey
             );
@@ -164,13 +164,13 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
     private EngineObject? Resolve(SceneScalarHistoryData data)
         => data.scalarKind switch
     {
-        SceneScalarKind.SceneName => m_workspace.Find<GameScene>(data.targetId) is
+        SceneScalarKind.SceneName => m_workspace.Find<GameScene>(data.targetID) is
             { isLoaded: true, isDestroyed: false } scene ? scene : null,
         SceneScalarKind.GameObjectName
         or SceneScalarKind.GameObjectActive
         or SceneScalarKind.GameObjectTag
         or SceneScalarKind.GameObjectLayer =>
-            m_workspace.Find<GameObject>(data.targetId) is { isRuntimeValid: true } gameObject
+            m_workspace.Find<GameObject>(data.targetID) is { isRuntimeValid: true } gameObject
             ? gameObject
             : null,
         _ => null

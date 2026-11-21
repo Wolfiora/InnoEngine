@@ -4,7 +4,7 @@ using System.IO;
 namespace Inno.Editor.Scene;
 
 internal readonly record struct SceneOrderHistoryData(
-    Guid sceneId,
+    Guid sceneID,
     int beforeIndex,
     int afterIndex
 ) {
@@ -12,7 +12,7 @@ internal readonly record struct SceneOrderHistoryData(
     {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream);
-        writer.Write(sceneId.ToByteArray());
+        writer.Write(sceneID.ToByteArray());
         writer.Write(beforeIndex);
         writer.Write(afterIndex);
         writer.Flush();

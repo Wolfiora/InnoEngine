@@ -12,9 +12,9 @@ internal static class ValidationCiContracts
 
     internal const string C_GATE = "tests/ci/Invoke-ValidationGate.ps1";
 
-    internal static readonly string[] GateScripts = [C_GATE, "tests/ci/Invoke-ValidationGate.Tests.ps1"];
+    internal static readonly string[] GATE_SCRIPTS = [C_GATE, "tests/ci/Invoke-ValidationGate.Tests.ps1"];
 
-    internal static readonly string[] GateContracts =
+    internal static readonly string[] GATE_CONTRACTS =
     [
         "tests/ci/Invoke-ValidationGate.Tests.ps1",
         "tests/ci/Join-ValidationCi.Tests.ps1",

@@ -24,7 +24,7 @@ internal sealed record ScriptApiReferenceSet(
 
 internal static class ScriptApiReferenceBuilder
 {
-    private static readonly SemaphoreSlim S_BUILD_GATE = new(1, 1);
+    private static readonly SemaphoreSlim BUILD_GATE = new(1, 1);
 
     internal static ScriptApiReferenceSet Build(
         ScriptCompilerOptions options,
@@ -34,14 +34,14 @@ internal static class ScriptApiReferenceBuilder
         ScriptApiReferenceSet? baseReferences = null,
         CancellationToken cancellationToken = default
     ) {
-        S_BUILD_GATE.Wait(cancellationToken);
+        BUILD_GATE.Wait(cancellationToken);
         try
         {
             return BuildLocked(options, profile, environment, baseProfile, baseReferences, cancellationToken);
         }
         finally
         {
-            S_BUILD_GATE.Release();
+            BUILD_GATE.Release();
         }
     }
 

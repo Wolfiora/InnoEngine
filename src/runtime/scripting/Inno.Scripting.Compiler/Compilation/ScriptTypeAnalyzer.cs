@@ -61,9 +61,9 @@ internal static class ScriptTypeAnalyzer
         var manifestEntries = new List<ScriptTypeManifestEntry>();
         var mappings = new List<ScriptTypeMapping>();
         Dictionary<Guid, int> implicitTypesBySource = discovered.Values
-            .Where(static type => GetExplicitStableTypeId(type.symbol) is null)
-            .SelectMany(static type => type.declarations.Select(declaration => (declaration.source.persistentId, type)))
-            .GroupBy(static value => value.persistentId)
+            .Where(static type => GetExplicitStableTypeID(type.symbol) is null)
+            .SelectMany(static type => type.declarations.Select(declaration => (declaration.source.persistentID, type)))
+            .GroupBy(static value => value.persistentID)
             .ToDictionary(
                 static group => group.Key,
                 static group => group.Select(static value => value.type)
@@ -75,24 +75,24 @@ internal static class ScriptTypeAnalyzer
             .OrderBy(static value => GetMetadataTypeName(value.symbol), StringComparer.Ordinal)
         ) {
             string typeName = GetMetadataTypeName(type.symbol);
-            string? explicitIdValue = GetExplicitStableTypeId(type.symbol);
-            if (explicitIdValue is not null)
+            string? explicitIDValue = GetExplicitStableTypeID(type.symbol);
+            if (explicitIDValue is not null)
             {
                 ScriptDeclaration declaration = SelectManifestDeclaration(type);
-                if (!Guid.TryParse(explicitIdValue, out Guid explicitId))
+                if (!Guid.TryParse(explicitIDValue, out Guid explicitID))
                 {
                     diagnostics.Add(
                         CreateDiagnostic(
                             "INNO2000",
                             EngineSeverity.Error,
-                            $"Type '{typeName}' has invalid StableTypeId '{explicitIdValue}'.",
+                            $"Type '{typeName}' has invalid StableTypeId '{explicitIDValue}'.",
                             declaration
                         )
                     );
                     continue;
                 }
                 manifestEntries.Add(
-                    CreateManifestEntry(type, declaration, explicitId, explicitIdentity: true, canonicalSource: true)
+                    CreateManifestEntry(type, declaration, explicitID, explicitIdentity: true, canonicalSource: true)
                 );
                 continue;
             }
@@ -103,7 +103,7 @@ internal static class ScriptTypeAnalyzer
                     type.symbol.Name,
                     StringComparison.Ordinal
                 ))
-                .GroupBy(static declaration => declaration.source.persistentId)
+                .GroupBy(static declaration => declaration.source.persistentID)
                 .Select(static group => group.First())
                 .ToArray();
             ScriptDeclaration? canonical = null;
@@ -126,11 +126,11 @@ internal static class ScriptTypeAnalyzer
             else
             {
                 ScriptDeclaration[] distinctSources = type.declarations
-                    .GroupBy(static declaration => declaration.source.persistentId)
+                    .GroupBy(static declaration => declaration.source.persistentID)
                     .Select(static group => group.First())
                     .ToArray();
                 if (distinctSources.Length == 1
-                    && implicitTypesBySource.GetValueOrDefault(distinctSources[0].source.persistentId) == 1
+                    && implicitTypesBySource.GetValueOrDefault(distinctSources[0].source.persistentID) == 1
                 ) {
                     canonical = distinctSources[0];
                     diagnostics.Add(
@@ -162,15 +162,15 @@ internal static class ScriptTypeAnalyzer
             {
                 continue;
             }
-            Guid stableTypeId = ScriptTypeIdentity.CreateCanonical(canonical.source.persistentId);
-            mappings.Add(new ScriptTypeMapping(typeName, stableTypeId));
+            Guid stableTypeID = ScriptTypeIdentity.CreateCanonical(canonical.source.persistentID);
+            mappings.Add(new ScriptTypeMapping(typeName, stableTypeID));
             manifestEntries.Add(
-                CreateManifestEntry(type, canonical, stableTypeId, explicitIdentity: false, canonicalSource: true)
+                CreateManifestEntry(type, canonical, stableTypeID, explicitIdentity: false, canonicalSource: true)
             );
         }
 
         foreach (IGrouping<Guid, ScriptTypeMapping> collision in mappings
-            .GroupBy(static mapping => mapping.stableTypeId)
+            .GroupBy(static mapping => mapping.stableTypeID)
             .Where(static group => group.Count() > 1)
         ) {
             ScriptTypeMapping[] conflicting = collision.ToArray();
@@ -202,7 +202,7 @@ internal static class ScriptTypeAnalyzer
         var source = new StringBuilder("#nullable enable\n");
         foreach (ScriptTypeMapping mapping in mappings.OrderBy(static value => value.typeName, StringComparer.Ordinal))
         {
-            string value = $"{mapping.stableTypeId:D}|{mapping.typeName}";
+            string value = $"{mapping.stableTypeID:D}|{mapping.typeName}";
             source.Append("[assembly: global::System.Reflection.AssemblyMetadataAttribute(")
                 .Append(SymbolDisplay.FormatLiteral("Inno.StableTypeId", quote: true))
                 .Append(", ")
@@ -229,7 +229,7 @@ internal static class ScriptTypeAnalyzer
         return false;
     }
 
-    private static string? GetExplicitStableTypeId(INamedTypeSymbol symbol)
+    private static string? GetExplicitStableTypeID(INamedTypeSymbol symbol)
     {
         AttributeData? attribute = symbol.GetAttributes().FirstOrDefault(value => string.Equals(
             value.AttributeClass?.ToDisplayString(),
@@ -275,7 +275,7 @@ internal static class ScriptTypeAnalyzer
     private static ScriptTypeManifestEntry CreateManifestEntry(
         MutableScriptType type,
         ScriptDeclaration declaration,
-        Guid stableTypeId,
+        Guid stableTypeID,
         bool explicitIdentity,
         bool canonicalSource
     ) {
@@ -283,8 +283,8 @@ internal static class ScriptTypeAnalyzer
         return new ScriptTypeManifestEntry(
             GetMetadataTypeName(type.symbol),
             type.kind,
-            stableTypeId,
-            declaration.source.persistentId,
+            stableTypeID,
+            declaration.source.persistentID,
             declaration.source.relativePath,
             span.StartLinePosition.Line + 1,
             span.StartLinePosition.Character + 1,

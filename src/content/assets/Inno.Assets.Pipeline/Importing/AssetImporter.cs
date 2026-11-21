@@ -36,13 +36,13 @@ public sealed class AssetImporterAttribute : Attribute
 /// </summary>
 public abstract class AssetImporter
 {
-    private string? m_importerId;
+    private string? m_importerID;
 
     /// <summary>
     /// Gets the stable importer implementation identifier.
     /// </summary>
     public string importerId
-        => m_importerId
+        => m_importerID
            ?? throw new InvalidOperationException(
                $"Asset importer '{GetType().FullName}' has not been bound to discovery metadata."
            );
@@ -82,16 +82,16 @@ public abstract class AssetImporter
         CancellationToken cancellationToken
     );
 
-    internal void BindImporterId(string id)
+    internal void BindImporterID(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
-        if (m_importerId is not null && !string.Equals(m_importerId, id, StringComparison.Ordinal))
+        if (m_importerID is not null && !string.Equals(m_importerID, id, StringComparison.Ordinal))
         {
             throw new InvalidOperationException(
                 $"Asset importer '{GetType().FullName}' cannot be bound to more than one protocol ID."
             );
         }
-        m_importerId = id;
+        m_importerID = id;
     }
 }
 

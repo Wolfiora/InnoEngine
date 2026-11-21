@@ -90,15 +90,15 @@ internal sealed class RegistryFrontendProbe : IShaderSourceFrontend, IDisposable
     internal static int created;
     internal static int disposed;
     internal static bool conflict;
-    private readonly string m_languageId;
+    private readonly string m_languageID;
 
     public RegistryFrontendProbe()
     {
         created++;
-        m_languageId = conflict ? "inno.shader-language.bgfx-sc" : "tests.registry.language";
+        m_languageID = conflict ? "inno.shader-language.bgfx-sc" : "tests.registry.language";
     }
 
-    public string languageId => m_languageId;
+    public string languageId => m_languageID;
 
     public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
         => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);

@@ -6,7 +6,7 @@ namespace Inno.Rendering.Shaders.Tests;
 
 public sealed class ShaderSourceNodeDefinitionTests
 {
-    private static readonly GraphNodeRecord S_node = new(new GraphNodeId("test-node"), "inno.shader.source");
+    private static readonly GraphNodeRecord NODE = new(new GraphNodeId("test-node"), "inno.shader.source");
 
     [Fact]
     public void FunctionPortsUseSemanticNamesAndInOutCreatesBothDirections()
@@ -24,10 +24,10 @@ public sealed class ShaderSourceNodeDefinitionTests
         );
         Assert.Equal(
             ["input.uv", "input.color", "output.color", "return"],
-            definition.GetPorts(S_node).Select(static port => port.id.value)
+            definition.GetPorts(NODE).Select(static port => port.id.value)
         );
-        Assert.Equal(GraphPortCapacity.Multiple, definition.GetPorts(S_node)[2].capacity);
-        Assert.Same(definition.GetPorts(S_node), definition.GetPorts(S_node));
+        Assert.Equal(GraphPortCapacity.Multiple, definition.GetPorts(NODE)[2].capacity);
+        Assert.Same(definition.GetPorts(NODE), definition.GetPorts(NODE));
     }
 
     [Fact]
@@ -44,9 +44,9 @@ public sealed class ShaderSourceNodeDefinitionTests
         );
         Assert.Equal(
             ["input.surface", "input.surface.normal", "return", "return.normal"],
-            definition.GetPorts(S_node).Select(static port => port.id.value)
+            definition.GetPorts(NODE).Select(static port => port.id.value)
         );
-        Assert.Equal(definition.GetPorts(S_node)[0].valueTypeId, definition.GetPorts(S_node)[2].valueTypeId);
+        Assert.Equal(definition.GetPorts(NODE)[0].valueTypeId, definition.GetPorts(NODE)[2].valueTypeId);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class ShaderSourceNodeDefinitionTests
     {
         string FirstPortType(ShaderSourceType type)
             => new ShaderSourceNodeDefinition(new("Shade", type, [], new("source", 1, 1)))
-                .GetPorts(S_node)[0].valueTypeId;
+                .GetPorts(NODE)[0].valueTypeId;
         Assert.NotEqual(
             FirstPortType(ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float"), 2)),
             FirstPortType(ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float"), 3))

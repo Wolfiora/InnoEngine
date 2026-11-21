@@ -106,17 +106,17 @@ public sealed unsafe partial class ImGuiWidget
             throw new ArgumentOutOfRangeException(nameof(minimumPopupWidth), minimumPopupWidth, "Popup width must be positive.");
         }
 
-        string popupId = $"##menu_selector_popup_{id}";
+        string popupID = $"##menu_selector_popup_{id}";
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         float height = NativeImGui.GetFrameHeight();
         var size = new Vector2(width, height);
         bool pressed = NativeImGui.InvisibleButton($"##menu_selector_{id}", size);
         bool hovered = NativeImGui.IsItemHovered();
         bool active = NativeImGui.IsItemActive();
-        bool open = NativeImGui.IsPopupOpen(popupId);
+        bool open = NativeImGui.IsPopupOpen(popupID);
         if (pressed)
         {
-            NativeImGui.OpenPopup(popupId);
+            NativeImGui.OpenPopup(popupID);
         }
         DrawMenuSelectorFrame(minimum, size, preview, hovered, active || open);
         var popupOrigin = new Vector2(minimum.X, minimum.Y + height);
@@ -124,7 +124,7 @@ public sealed unsafe partial class ImGuiWidget
         ImGuiViewport* parentViewport = NativeImGui.Raw.GetWindowViewport();
         NativeImGui.SetNextWindowViewport(parentViewport->ID);
         SetWorkAreaPopupSize(MathF.Max(width, minimumPopupWidth), popupOrigin, parentViewport);
-        return BeginMenuPopup(popupId);
+        return BeginMenuPopup(popupID);
     }
 
     /// <summary>

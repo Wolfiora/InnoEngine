@@ -1104,7 +1104,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
 
     private sealed class TransactionOperation(
         string operationName,
-        Guid transactionId
+        Guid transactionID
     ) : EditorHistoryOperation
     {
         private readonly List<EditorHistoryOperation> m_children = [];
@@ -1139,7 +1139,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         /// </summary>
         public override long estimatedDiskSize => Sum(m_children, static operation => operation.estimatedDiskSize);
 
-        internal Guid id => transactionId;
+        internal Guid id => transactionID;
         internal int count => m_children.Count;
 
         /// <summary>

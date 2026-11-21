@@ -623,7 +623,7 @@ internal sealed class SaveShader(ShaderEditorDocuments documents) : ShaderSelect
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void Execute(EditorActionContext<AssetFileEntry> context)
-        => context.interactions.documents.Save(documents.Open(context.target).documentId);
+        => context.interactions.documents.Save(documents.Open(context.target).documentID);
 }
 
 [EditorAction("shader/format", ShaderEditorCanvas.C_AREA)]
@@ -673,5 +673,5 @@ internal sealed class ReloadShaderSource(ShaderEditorDocuments documents) : Shad
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void Execute(EditorActionContext<AssetFileEntry> context)
-        => context.interactions.documents.Revert(documents.Open(context.target).documentId);
+        => context.interactions.documents.Revert(documents.Open(context.target).documentID);
 }

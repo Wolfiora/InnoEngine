@@ -13,12 +13,12 @@ namespace Inno.Animation.Assets;
 [AssetImporter("inno.animation.clip")]
 public sealed partial class AnimationClipImporter : AssetImporter<AnimationClipAsset>
 {
-    private static readonly IReadOnlyList<string> S_EXTENSIONS = [".ianim"];
+    private static readonly IReadOnlyList<string> EXTENSIONS = [".ianim"];
 
     /// <summary>
     /// Gets the current structured animation source extension.
     /// </summary>
-    public override IReadOnlyList<string> supportedExtensions => S_EXTENSIONS;
+    public override IReadOnlyList<string> supportedExtensions => EXTENSIONS;
 
     /// <summary>
     /// Imports one validated structured animation clip.

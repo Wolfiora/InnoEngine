@@ -10,7 +10,7 @@ namespace Inno.Integration.WindowsX64.Bgfx;
 internal sealed class WindowsX64BgfxBuildProfile : BgfxNativeBuildProfile
 {
     /// <inheritdoc/>
-    public override string targetId => WindowsX64BuildModule.target.id.value;
+    public override string targetID => WindowsX64BuildModule.target.id.value;
 
     /// <inheritdoc/>
     public override IReadOnlyList<string> generatorArguments => ["vs2022"];
