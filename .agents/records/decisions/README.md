@@ -10,6 +10,10 @@ Record durable reasons, constraints and tradeoffs, with links to the current aut
 - [C# code style rulebook](CSHARP_STYLE_RULEBOOK.md): the detailed style authority, its registration and the coding clauses it replaced.
 - [Root test ownership](ROOT_TEST_OWNERSHIP.md): one root tests boundary replacing backend-local test ownership.
 
+## Delivery
+
+- [Human commit attribution](HUMAN_COMMIT_ATTRIBUTION.md): a human vouches for every commit; no agent, bot or application attribution.
+
 ## Documentation and API
 
 - [API draft rule amendment](API_DRAFT_RULE_AMENDMENT.md) with its [clause changes](API_DRAFT_RULE_CHANGES.json): the draft/main API workflow.

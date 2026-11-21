@@ -3830,6 +3830,15 @@
             "sourceHash": "de6a01673254e95d66beda0153ba848d3f808fb9e3164e41d4561dfe6d07aed2",
             "targetHash": "faacd093eb7499bf0665183a078ed48662b8b4e6e81a754b834705c231dc08c4"
           }
+        ],
+        "amendments": [
+          {
+            "ordinal": 5,
+            "previousHash": "4c4fefa0ee638f7972f8c844c775cb7271426e48aa62cff4424e65448f1286e8",
+            "currentHash": "b9af9afc94393f7f1d5f2a036e4581c37537d7f7ced82986b4228978817ec4f0",
+            "approval": "Explicit user instruction, 2026-11-21: a human vouches for every commit; no agent or application attribution",
+            "review": ".agents/records/decisions/HUMAN_COMMIT_ATTRIBUTION.md"
+          }
         ]
       }
     },
