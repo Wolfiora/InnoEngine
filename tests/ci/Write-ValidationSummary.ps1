@@ -22,12 +22,38 @@ foreach ($platform in $Hosts) {
     try {
         $artifact = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-plan-$platform" -MaximumAttempt $Attempt
         $plan = Get-Content -LiteralPath (Join-Path $artifact.directory 'plan.json') -Raw | ConvertFrom-Json
+        $missing = [Collections.Generic.List[string]]::new()
+        $faults = [Collections.Generic.List[object]]::new()
         $results = @(foreach ($shard in @($plan.shards)) {
-            $receipt = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-result-$platform-$($shard.id)" -MaximumAttempt $Attempt
-            (Get-Content -LiteralPath (Join-Path $receipt.directory 'results.json') -Raw | ConvertFrom-Json).results
+            try {
+                $receipt = & "$PSScriptRoot/Select-ValidationArtifact.ps1" -Artifacts $available -Name "validation-result-$platform-$($shard.id)" -MaximumAttempt $Attempt
+                $part = Get-Content -LiteralPath (Join-Path $receipt.directory 'results.json') -Raw | ConvertFrom-Json
+                if ($part.version -ne 2 -or $part.failures -isnot [array] -or $part.commit -cne $plan.commit) { throw 'Invalid receipt identity or format.' }
+                foreach ($batch in $part.batchSeconds.PSObject.Properties | Where-Object MemberType -EQ NoteProperty) {
+                    $lines.Add("  - $platform/$($batch.Name) test process: $([Math]::Round($batch.Value, 2)) s.")
+                }
+                if ($part.closingSeconds) { $lines.Add("  - $platform/$($shard.id) final evidence verification: $([Math]::Round($part.closingSeconds, 2)) s.") }
+                foreach ($fault in $part.failures) { $faults.Add($fault) }
+                $part.results
+            } catch { $missing.Add($shard.id) }
         })
         $failed = @($results | Where-Object { $_.status -cin @('Failed', 'Blocked') })
-        $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; frozen plan: $($artifact.name).")
+        if ($missing.Count) {
+            $lines.Add("- ${platform}: complete results unavailable for shards " + ($missing -join ', '))
+        } else {
+            $lines.Add("- ${platform}: $($failed.Count) failed or blocked checks; frozen plan: $($artifact.name).")
+        }
+        $seenIds = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+        foreach ($result in $results) {
+            if (!$seenIds.Add($result.id)) { $lines.Add("  - Duplicate check: $($result.id)") }
+            if ($result.id -cnotin $plan.checks.id) { $lines.Add("  - Unplanned check: $($result.id)") }
+        }
+        $absent = @($plan.checks | Where-Object { !$seenIds.Contains($_.id) })
+        if ($absent.Count) {
+            $lines.Add("  - Missing planned checks: " + ($absent.id -join ', '))
+        } else {
+            $lines.Add("  - All $($plan.checks.Count) planned checks returned results.")
+        }
         $required = @($plan.checks | Where-Object { !$_.exclusion }).Count
         $reused = @($results | Where-Object status -CEQ 'Reused').Count
         $excluded = @($plan.checks | Where-Object exclusion).Count
@@ -48,6 +74,9 @@ foreach ($platform in $Hosts) {
                 $detail = $detail.Substring(0, 500) + ' [Complete first-failure detail is retained in results.json and the check log.] ' + $detail.Substring($detail.Length - 3000)
             }
             $lines.Add("  - $($result.id): $detail")
+        }
+        foreach ($fault in $faults) {
+            $lines.Add("  - $($fault.stage) $($fault.owner): $($fault.detail) ($([Math]::Round($fault.seconds, 2)) s). Log: $($fault.log)")
         }
     } catch {
         $lines.Add("- ${platform}: complete results unavailable; inspect the retained bootstrap/planning log and required job conclusion.")

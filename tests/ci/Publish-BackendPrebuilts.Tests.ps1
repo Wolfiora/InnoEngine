@@ -92,7 +92,7 @@ try {
             backendPackages=@(@{target=$platform.target;sha256=(Get-FileHash -LiteralPath $archive).Hash.ToLowerInvariant()})
             checks=@(@{id='consumer';kind='instructions';owner='engine';exclusion=$null;prerequisites=@()})}
         $plan | ConvertTo-Json -Depth 8 | Set-Content (Join-Path $directory 'plan.json')
-        @{commit=$revision;tree=$plan.tree;environment=$plan.environment;completed=$true
+        @{commit=$revision;tree=$plan.tree;environment=$plan.environment;version = 2; failures = @(); completed=$true
           planIdentity=(Get-FileHash (Join-Path $directory 'plan.json')).Hash.ToLowerInvariant()
           results=@(@{id='consumer';status='Passed';seconds=1.0;inputIdentity='d'*64;outputs=@{}})} |
             ConvertTo-Json -Depth 8 | Set-Content (Join-Path $directory 'results.json')

@@ -44,9 +44,12 @@ internal static class FileSystemRename
                 rename();
                 return;
             }
-            catch (Exception exception) when (IsTemporarilyBlocked(exception)
-                && Stopwatch.GetElapsedTime(started).TotalMilliseconds < C_RETRY_WINDOW_MILLISECONDS)
+            catch (Exception exception) when (IsTemporarilyBlocked(exception))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (Stopwatch.GetElapsedTime(started).TotalMilliseconds >= C_RETRY_WINDOW_MILLISECONDS)
+                    throw;
+
                 // Windows readers and indexers may briefly open files without delete sharing.
                 // Retry only the atomic rename; permanent access failures retain their original exception.
                 if (cancellationToken.CanBeCanceled)

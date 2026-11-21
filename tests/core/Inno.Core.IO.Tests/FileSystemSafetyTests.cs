@@ -1,12 +1,14 @@
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Inno.Core.IO.Tests;
 
@@ -17,8 +19,13 @@ public sealed class FileSystemSafetyTests : IDisposable
         "InnoCoreIoTests",
         Guid.NewGuid().ToString("N"));
 
-    public FileSystemSafetyTests()
-        => Directory.CreateDirectory(m_root);
+    private readonly ITestOutputHelper m_output;
+
+    public FileSystemSafetyTests(ITestOutputHelper output)
+    {
+        m_output = output;
+        Directory.CreateDirectory(m_root);
+    }
 
     [Fact]
     public void WriteAllBytesReplacesTheCompletePayloadWithoutLeavingStagingFiles()
@@ -155,103 +162,150 @@ public sealed class FileSystemSafetyTests : IDisposable
         Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*", SearchOption.AllDirectories));
     }
 
-    /// <summary>
-    /// Restores an evacuated destination even though the request token is already canceled.
-    /// </summary>
-    /// <returns>The completed cancellation and rollback checks.</returns>
-    [WindowsDirectorySharingFact]
+    [Fact]
     [SupportedOSPlatform("windows")]
-    public async Task DirectoryInstallCancellationRestoresThePreviousTreeDuringABlockedRename()
+    [Trait("ProcessIsolation", "Required")]
+    public void DirectoryInstallCancellationRestoresThePreviousTreeDuringABlockedRename()
     {
-        string candidate = Path.Combine(m_root, "candidate");
-        string destination = Path.Combine(m_root, "destination");
-        Directory.CreateDirectory(candidate);
-        Directory.CreateDirectory(destination);
-        string candidateFile = Path.Combine(candidate, "current.txt");
-        File.WriteAllText(candidateFile, "current");
+        if (!OperatingSystem.IsWindows())
+            return;
+        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
+        string destination = Directory.CreateDirectory(Path.Combine(m_root, "destination")).FullName;
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "current");
         File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
-        using var reader = new FileStream(candidateFile, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var cancellation = new CancellationTokenSource();
-        var evacuated = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        using var watcher = new FileSystemWatcher(m_root) { NotifyFilter = NotifyFilters.DirectoryName };
-        watcher.Renamed += (
-            _,
-            change
-        ) => {
-            if (string.Equals(change.OldFullPath, destination, StringComparison.OrdinalIgnoreCase))
-                evacuated.TrySetResult(true);
-        };
-        watcher.EnableRaisingEvents = true;
-        Task installation = Task.Run(() => AtomicDirectory.Install(candidate, destination, cancellation.Token));
-        try
-        {
-            await evacuated.Task.WaitAsync(TimeSpan.FromSeconds(1));
-            Assert.False(installation.IsCompleted);
-            Assert.False(Directory.Exists(destination));
+        bool evacuated = false;
+        ObserveBlockedRename(() => {
+            evacuated = !Directory.Exists(destination);
             cancellation.Cancel();
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => installation);
-        }
-        finally
-        {
-            cancellation.Cancel();
-            reader.Dispose();
-            watcher.EnableRaisingEvents = false;
-            _ = await Record.ExceptionAsync(() => installation);
-        }
-
+        }, () => {
+            var failure = Assert.ThrowsAny<OperationCanceledException>(() => AtomicDirectory.Install(candidate, destination, cancellation.Token));
+            Assert.Equal(cancellation.Token, failure.CancellationToken);
+        });
+        Assert.True(evacuated);
         Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
-        Assert.Equal("current", File.ReadAllText(candidateFile));
+        Assert.Equal("current", File.ReadAllText(file));
         Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*"));
     }
 
     [Fact]
     [SupportedOSPlatform("windows")]
-    public async Task DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
+    [Trait("ProcessIsolation", "Required")]
+    public void DirectoryPublicationObservesCancellationAfterARealSharingFailure() => VerifyBlockedCancellation(false);
+
+    [Fact]
+    [SupportedOSPlatform("windows")]
+    [Trait("ProcessIsolation", "Required")]
+    public void DirectoryPublicationObservesPendingCancellationAtTheDeadline() => VerifyBlockedCancellation(true);
+
+    [SupportedOSPlatform("windows")]
+    private void VerifyBlockedCancellation(bool expireWindow)
     {
         if (!OperatingSystem.IsWindows())
             return;
-        string candidate = Path.Combine(m_root, "candidate");
+        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
         string destination = Path.Combine(m_root, "published");
-        Directory.CreateDirectory(candidate);
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "complete");
-        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-        Task publication = Task.Run(() => AtomicDirectory.Publish(candidate, destination));
-        await Task.Delay(150);
-        Assert.False(publication.IsCompleted);
-        reader.Dispose();
-        await publication;
+        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var cancellation = new CancellationTokenSource();
+        ObserveBlockedRename(() => {
+            cancellation.Cancel();
+            if (expireWindow)
+                Thread.Sleep(TimeSpan.FromMilliseconds(2100));
+        }, () => {
+            var failure = Assert.ThrowsAny<OperationCanceledException>(() => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
+            Assert.Equal(cancellation.Token, failure.CancellationToken);
+        });
+        Assert.Equal("complete", File.ReadAllText(file));
+        Assert.False(Directory.Exists(destination));
+    }
 
+    [Fact]
+    [SupportedOSPlatform("windows")]
+    [Trait("ProcessIsolation", "Required")]
+    public void DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
+    {
+        if (!OperatingSystem.IsWindows())
+            return;
+        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
+        string destination = Path.Combine(m_root, "published");
+        string file = Path.Combine(candidate, "value.txt");
+        File.WriteAllText(file, "complete");
+        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var cancellation = new CancellationTokenSource();
+        ObserveBlockedRename(reader.Dispose, () => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
+        cancellation.Cancel();
         Assert.Equal("complete", File.ReadAllText(Path.Combine(destination, "value.txt")));
         Assert.False(Directory.Exists(candidate));
     }
 
     [Fact]
     [SupportedOSPlatform("windows")]
-    public async Task DirectoryPublicationCancellationPreservesTheCandidateAndDoesNotReplaceAnExistingOwner()
+    public void PersistentReaderPreservesCandidateAndReturnsWindowsError()
     {
         if (!OperatingSystem.IsWindows())
             return;
-        string candidate = Path.Combine(m_root, "candidate");
+        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
         string destination = Path.Combine(m_root, "published");
-        Directory.CreateDirectory(candidate);
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "complete");
-        using var reader = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read);
-        using var cancellation = new CancellationTokenSource();
-        Task publication = Task.Run(() => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
-        await Task.Delay(100);
-        cancellation.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => publication);
-
-        Assert.True(Directory.Exists(candidate));
+        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        Exception? failure = Record.Exception(() => AtomicDirectory.Publish(candidate, destination));
+        Assert.True(failure is IOException or UnauthorizedAccessException && IsSharingError(failure));
         Assert.False(Directory.Exists(destination));
-        reader.Dispose();
-        Directory.CreateDirectory(destination);
-        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
-        Assert.Throws<IOException>(() => AtomicDirectory.Publish(candidate, destination));
-        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
         Assert.Equal("complete", File.ReadAllText(file));
+    }
+
+    [Fact]
+    public void DirectoryPublicationPreservesAnExistingOwner()
+    {
+        string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
+        string destination = Directory.CreateDirectory(Path.Combine(m_root, "published")).FullName;
+        File.WriteAllText(Path.Combine(candidate, "value.txt"), "complete");
+        File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
+        Assert.ThrowsAny<IOException>(() => AtomicDirectory.Publish(candidate, destination));
+        Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        Assert.Equal("complete", File.ReadAllText(Path.Combine(candidate, "value.txt")));
+    }
+
+    private static bool IsSharingError(Exception exception)
+        => exception.HResult is unchecked((int)0x80070005) or unchecked((int)0x80070020) or unchecked((int)0x80070021);
+
+    private void ObserveBlockedRename(
+        Action onBlocked,
+        Action operation
+    ) {
+        // The isolated test intercepts the actual Windows denial before the production catch filter runs.
+        int thread = Environment.CurrentManagedThreadId;
+        var clock = Stopwatch.StartNew();
+        long blocked = -1;
+        long resumed = -1;
+        int hresult = 0;
+        void Observe(
+            object? sender,
+            FirstChanceExceptionEventArgs args
+        ) {
+            if (Environment.CurrentManagedThreadId != thread || blocked >= 0 || !IsSharingError(args.Exception))
+                return;
+            blocked = clock.ElapsedMilliseconds;
+            hresult = args.Exception.HResult;
+            onBlocked();
+            resumed = clock.ElapsedMilliseconds;
+        }
+        AppDomain.CurrentDomain.FirstChanceException += Observe;
+        try
+        {
+            operation();
+        }
+        finally
+        {
+            AppDomain.CurrentDomain.FirstChanceException -= Observe;
+            m_output.WriteLine($"Rename worker started at 0 ms, denied at {blocked} ms, intervention completed at {resumed} ms, exited at {clock.ElapsedMilliseconds} ms, HRESULT 0x{hresult:X8}.");
+        }
+        Assert.True(blocked >= 0, "Expected an actual Windows sharing failure on the publishing thread.");
     }
 
     [Fact]
@@ -345,15 +399,5 @@ public sealed class FileSystemSafetyTests : IDisposable
     {
         if (Directory.Exists(m_root))
             Directory.Delete(m_root, recursive: true);
-    }
-
-    private sealed class WindowsDirectorySharingFactAttribute : FactAttribute
-    {
-        /// <summary>Marks the Windows directory-sharing fixture as unexecuted on other hosts.</summary>
-        public WindowsDirectorySharingFactAttribute()
-        {
-            if (!OperatingSystem.IsWindows())
-                Skip = "This fixture requires Windows directory rename sharing semantics.";
-        }
     }
 }

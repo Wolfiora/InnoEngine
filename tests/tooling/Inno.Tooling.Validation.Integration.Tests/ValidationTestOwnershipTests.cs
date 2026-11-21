@@ -48,7 +48,9 @@ public sealed class ValidationTestOwnershipTests
         using (JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json"))))
         {
             JsonElement[] checks = results.RootElement.GetProperty("results").EnumerateArray().ToArray();
-            Assert.Equal("Failed", checks.Single(check => check.GetProperty("id").GetString() == "test-execution:managed").GetProperty("status").GetString());
+            JsonElement fault = Assert.Single(results.RootElement.GetProperty("failures").EnumerateArray());
+            Assert.Equal("test-execution", fault.GetProperty("stage").GetString());
+            Assert.Equal("managed", fault.GetProperty("owner").GetString());
             JsonElement input = checks.Single(check => check.GetProperty("id").GetString() == "test:" + C_INPUT);
             Assert.Equal("Failed", input.GetProperty("status").GetString());
             Assert.Contains("SharedFailure", input.GetProperty("detail").GetString());
@@ -68,7 +70,8 @@ public sealed class ValidationTestOwnershipTests
             "Expected " + expected + "; original owner evidence: " + originalUi.GetRawText() + "; repaired: " + ui.GetRawText());
 
         const string C_EXECUTOR = "tests/Invoke-IsolatedTests.ps1";
-        repository.Write(C_EXECUTOR, File.ReadAllText(repository.PathOf(C_EXECUTOR)).Replace("Add-CheckResult 'Isolated' $name",
+        string executor = File.ReadAllText(repository.PathOf(C_EXECUTOR));
+        repository.Write(C_EXECUTOR, executor.Replace("Add-CheckResult 'Isolated' $name",
             "if ($project.BaseName -eq 'Inno.UI.Tests') { continue }; Add-CheckResult 'Isolated' $name", StringComparison.Ordinal));
         repository.Git("add", C_EXECUTOR);
         repository.Git("commit", "-m", "Model an executor losing an isolated receipt");
@@ -78,5 +81,24 @@ public sealed class ValidationTestOwnershipTests
         JsonElement missing = incomplete.RootElement.GetProperty("results").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "test:" + C_UI);
         Assert.Equal("Failed", missing.GetProperty("status").GetString());
         Assert.Contains("Required isolated execution is missing", missing.GetProperty("detail").GetString());
+
+        repository.Write(C_EXECUTOR, executor + "\nexit 17\n");
+        repository.Git("add", C_EXECUTOR);
+        repository.Git("commit", "-m", "Model a process failure after passing TRX output");
+        using (await repository.PlanAsync()) { }
+        var failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync(output: "artifacts/process-failure"));
+        Assert.Contains("exited with 17", failure.Message);
+        using JsonDocument process = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/process-failure/results.json")));
+        JsonElement[] tests = process.RootElement.GetProperty("results").EnumerateArray()
+            .Where(check => check.GetProperty("id").GetString()!.StartsWith("test:", StringComparison.Ordinal)).ToArray();
+        foreach (JsonElement check in tests)
+        {
+            string? id = check.GetProperty("id").GetString();
+            string expectedStatus = id == "test:" + C_INPUT || id == "test:" + C_UI ? "Passed" : "NotApplicable";
+            Assert.Equal(expectedStatus, check.GetProperty("status").GetString());
+        }
+        Assert.Contains(tests, check => check.GetProperty("id").GetString() == "test:" + C_INPUT);
+        Assert.Contains(tests, check => check.GetProperty("id").GetString() == "test:" + C_UI);
+        Assert.Equal("test-execution", Assert.Single(process.RootElement.GetProperty("failures").EnumerateArray()).GetProperty("stage").GetString());
     }
 }

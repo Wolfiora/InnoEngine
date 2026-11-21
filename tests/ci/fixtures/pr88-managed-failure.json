@@ -1,0 +1,14 @@
+{
+  "run": 44760191698,
+  "planned": 300,
+  "passed": 299,
+  "failedOwner": "test:tests/core/Inno.Core.IO.Tests/Inno.Core.IO.Tests.csproj",
+  "test": "DirectoryPublicationCancellationPreservesTheCandidateAndDoesNotReplaceAnExistingOwner",
+  "expected": "OperationCanceledException",
+  "actual": "IOException",
+  "trxDuration": "00:00:02.0144153",
+  "legacyExtraId": "test-execution:managed",
+  "exit": 1,
+  "batchSeconds": 6409.8,
+  "gate": "failure"
+}

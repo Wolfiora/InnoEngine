@@ -389,6 +389,8 @@ public sealed class ValidationPlanningTests
 
     [Theory]
     [InlineData("tests/ci/Scope.Tests.ps1", false)]
+    [InlineData("tests/ci/Invoke-ValidationGate.ps1", false)]
+    [InlineData("tests/ci/Invoke-ValidationGate.Tests.ps1", false)]
     [InlineData("tests/ci/Test-AgentRules.ps1", false)]
     [InlineData("tests/ci/Prepare-Unknown.ps1", true)]
     [InlineData("tests/ci/nested/Scope.Tests.ps1", true)]
@@ -402,6 +404,11 @@ public sealed class ValidationPlanningTests
         Assert.Equal(unknown, plan.RootElement.GetProperty("full").GetBoolean());
         JsonElement[] checks = plan.RootElement.GetProperty("checks").EnumerateArray().ToArray();
         JsonElement contract = Assert.Single(checks.Where(check => check.GetProperty("id").GetString() == "ci-contracts"));
+        if (path.Contains("Invoke-ValidationGate", StringComparison.Ordinal))
+        {
+            Assert.Equal("gate-contracts", contract.GetProperty("kind").GetString());
+            Assert.False(plan.RootElement.GetProperty("backendRequired").GetBoolean());
+        }
         Assert.Contains(path, contract.GetProperty("inputs").EnumerateArray().Select(input => input.GetString()));
         if (!unknown)
         {
@@ -418,17 +425,18 @@ public sealed class ValidationPlanningTests
     public async Task StaticContractRecognitionDoesNotHideAnExplicitProjectConsumer()
     {
         using var repository = new ValidationRepository();
-        const string C_SCRIPT = "tests/ci/Shared.Tests.ps1";
+        const string C_SCRIPT = "tests/ci/Invoke-ValidationGate.ps1";
         const string C_OWNER = "tests/Example.Tests/Example.Tests.csproj";
         repository.Write(C_SCRIPT, "Write-Output 'Original'\n");
         repository.Write(C_OWNER, File.ReadAllText(repository.PathOf(C_OWNER)).Replace("</Project>",
-            "<ItemGroup><InnoValidationInput Include=\"../ci/Shared.Tests.ps1\" /></ItemGroup></Project>", StringComparison.Ordinal));
+            "<ItemGroup><InnoValidationInput Include=\"../ci/Invoke-ValidationGate.ps1\" /></ItemGroup></Project>", StringComparison.Ordinal));
         repository.Git("add", C_SCRIPT, C_OWNER);
         repository.Git("commit", "-m", "Declare the contract's additional runtime consumer");
         repository.Write(C_SCRIPT, "Write-Output 'Changed'\n");
         using JsonDocument plan = await repository.PlanAsync();
         Assert.False(plan.RootElement.GetProperty("full").GetBoolean());
         Assert.Contains(C_OWNER, Owners(plan));
+        Assert.DoesNotContain(C_SCRIPT, plan.RootElement.GetProperty("hostExcludedSources").EnumerateArray().Select(item => item.GetString()));
         Assert.Contains(plan.RootElement.GetProperty("checks").EnumerateArray(),
             check => check.GetProperty("id").GetString() == "build:" + C_OWNER
                 && check.GetProperty("exclusion").ValueKind == JsonValueKind.Null);
@@ -541,8 +549,7 @@ public sealed class ValidationPlanningTests
         Assert.Contains(results, result => result.GetProperty("id").GetString() == "instructions"
             && result.GetProperty("status").GetString() == "Passed");
         foreach (string id in new[] { "input-stability", "environment-stability" })
-            Assert.Contains(results, result => result.GetProperty("id").GetString() == id
-                && result.GetProperty("status").GetString() == "Failed");
+            Assert.Contains(evidence.RootElement.GetProperty("failures").EnumerateArray(), fault => fault.GetProperty("stage").GetString() == id);
     }
 
     [Fact]
@@ -861,10 +868,8 @@ public sealed class ValidationPlanningTests
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync());
         using JsonDocument results = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/run/results.json")));
         JsonElement[] recorded = results.RootElement.GetProperty("results").EnumerateArray().ToArray();
-        Assert.Equal(sequence, recorded.Select(result => result.GetProperty("id").GetString()!)
-            .Where(id => !id.StartsWith("test-execution:", StringComparison.Ordinal)).ToArray());
-        Assert.All(recorded.Where(result => result.GetProperty("id").GetString()!.StartsWith("test-execution:", StringComparison.Ordinal)),
-            result => Assert.Equal("Failed", result.GetProperty("status").GetString()));
+        Assert.Equal(sequence, recorded.Select(result => result.GetProperty("id").GetString()!).ToArray());
+        Assert.All(results.RootElement.GetProperty("failures").EnumerateArray(), fault => Assert.Equal("test-execution", fault.GetProperty("stage").GetString()));
         Assert.Equal("Blocked", results.RootElement.GetProperty("results").EnumerateArray().Single(result => result.GetProperty("id").GetString() == C_NATIVE_BUILD)
             .GetProperty("status").GetString());
     }

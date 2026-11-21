@@ -28,11 +28,15 @@ try {
     $zip = [IO.Compression.ZipArchive]::new($stream,[IO.Compression.ZipArchiveMode]::Create)
     try {
         $writer = [IO.StreamWriter]::new($zip.CreateEntry('host-routing.json').Open())
-        try { $writer.Write((ConvertTo-Json @{commit=$baseline;hosts=@{conditional=@('tests/Feature/Test.cs')}} -Depth 5)) }
+        try { $writer.Write((ConvertTo-Json @{commit=$baseline;hosts=@{conditional=@('tests/Feature/Test.cs','tests/ci/Invoke-ValidationGate.ps1')}} -Depth 5)) }
         finally { $writer.Dispose() }
     } finally { $zip.Dispose(); $stream.Dispose() }
     $digest = 'sha256:'+(Get-FileHash -LiteralPath $routingFixture).Hash.ToLowerInvariant()
     Check 1
+    $change = "M`ttests/ci/Invoke-ValidationGate.ps1"
+    Check 1
+    $change = "M`t.github/workflows/engine-ci.yml"
+    Check 2
     $change = "A`ttests/Feature/Test.cs"
     Check 2
     $change = "M`ttests/Shared.cs"

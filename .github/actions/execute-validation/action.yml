@@ -50,8 +50,8 @@ runs:
         if (!$ids.Count) { return }
         $joined = Get-Content artifacts/validation/host-certification/results.json -Raw | ConvertFrom-Json -AsHashtable -Depth 40
         $tests = @($joined.results | Where-Object { $_.id -cin $ids -and $_.status -cin @('Passed','Reused') })
-        if (!$joined.completed -or $tests.Count -ne $ids.Count -or $joined.environment -cne $plan.environment) { throw 'Backend test certification is incomplete.' }
-        $proof = @{commit=$plan.commit;environment=$plan.environment;hostTarget=$plan.backendHost;attempt=[int]$env:GITHUB_RUN_ATTEMPT;tests=$tests}
+        if ($joined.version -ne 2 -or $joined.failures -isnot [array] -or $joined.failures.Count -or !$joined.completed -or $tests.Count -ne $ids.Count -or $joined.environment -cne $plan.environment) { throw 'Backend test certification is incomplete.' }
+        $proof = @{version=$joined.version;commit=$plan.commit;environment=$plan.environment;hostTarget=$plan.backendHost;attempt=[int]$env:GITHUB_RUN_ATTEMPT;tests=$tests}
         [IO.File]::WriteAllText([IO.Path]::GetFullPath('artifacts/validation/backend-tests.json'), (ConvertTo-Json $proof -Depth 25 -Compress))
         "name=backend-tests-$($plan.backendHost)-$($plan.environment)" >> $env:GITHUB_OUTPUT
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

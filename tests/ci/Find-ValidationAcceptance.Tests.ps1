@@ -20,7 +20,7 @@ try {
             $destination = Join-Path $evidenceRoot $platform
             New-Item -ItemType Directory -Path $destination | Out-Null
             Copy-Item (Join-Path $planRoot 'plan.json') $destination
-            @{ commit = $revision; tree = $plan.tree; environment = $plan.environment; completed = $true; planIdentity = $planIdentity;
+            @{ commit = $revision; tree = $plan.tree; environment = $plan.environment; version = 2; failures = @(); completed = $true; planIdentity = $planIdentity;
                 results = @(@{ id = 'policy'; status = $(if ($case -ceq 'failed-result') { 'Failed' } else { 'Passed' }); inputIdentity = 'd' * 64; outputs = @{} }) } |
                 ConvertTo-Json -Depth 8 | Set-Content (Join-Path $destination 'results.json')
             @{ platform = $platform; receipt = @{ full = $true; planIdentity = $planIdentity;

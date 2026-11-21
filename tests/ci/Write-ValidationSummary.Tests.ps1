@@ -11,7 +11,7 @@ try {
         @{ checks = @(@{ id = 'contract'; kind = 'test' }); shards = @(@{ id = 'managed' }) } |
             ConvertTo-Json -Depth 5 | Set-Content (Join-Path $planDirectory 'plan.json')
         if ($case -cne 'missing') {
-            @{ results = @(@{ id = 'contract'; seconds = 12.5; status = $(if ($case -ceq 'failed') { 'Failed' } else { 'Passed' }); detail = 'Retained first failure' }) } |
+            @{ version = 2; failures = @(); results = @(@{ id = 'contract'; seconds = 12.5; status = $(if ($case -ceq 'failed') { 'Failed' } else { 'Passed' }); detail = 'Retained first failure' }) } |
                 ConvertTo-Json -Depth 5 | Set-Content (Join-Path $resultDirectory 'results.json')
         }
         $summary = Join-Path $directory "$case/summary.md"
