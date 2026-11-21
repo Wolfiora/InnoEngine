@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,7 +13,6 @@ namespace Inno.Build.Toolchains.Tests;
 
 public sealed class NativeWorkspaceReuseTests : IDisposable
 {
-
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoWorkspaceTests", Guid.NewGuid().ToString("N"));
     private readonly string m_bindingRoot = Path.Combine(Path.GetTempPath(), "InnoWorkspaceBindings", Guid.NewGuid().ToString("N"));
     private readonly NativeComponentDescriptor m_owner = new("fixture", "native/fixture.csproj", "build/fixture.csproj");
@@ -50,8 +49,14 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             Interlocked.Increment(ref compilations);
             return File.WriteAllTextAsync(Path.Combine(output, "result.native"), File.ReadAllText(source), cancellation);
         }
-        NativeBuildRecipe Recipe() => new(m_owner, "fixture", "fixture-x64",
-            [new NativeBuildInput("input.cpp", source)], ["shared", "compiler-flag"]);
+        NativeBuildRecipe Recipe()
+            => new(
+                m_owner,
+                "fixture",
+                "fixture-x64",
+                [new NativeBuildInput("input.cpp", source)],
+                ["shared", "compiler-flag"]
+            );
         using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"), Recipe(), Produce);
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         await File.WriteAllTextAsync(source, "other");
@@ -80,15 +85,22 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         ) {
             string current = scoped.GetNativeBuildRoot(m_owner);
             if (calls++ == 0)
+            {
                 first = current;
+            }
             else
+            {
                 Assert.NotEqual(first, current);
+            }
             return File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", cancellation);
         }
         foreach (string argument in new[] { "-O0", "-O2" })
         {
-            using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(new(m_root, "release"),
-                new(m_owner, "fixture", "fixture-x64", [new NativeBuildInput("input.cpp", source)], [argument]), Produce);
+            using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(
+                new(m_root, "release"),
+                new(m_owner, "fixture", "fixture-x64", [new NativeBuildInput("input.cpp", source)], [argument]),
+                Produce
+            );
         }
         Assert.Equal(2, calls);
     }
@@ -102,14 +114,25 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
         bool aggregate,
         bool externalBindings
     ) {
-        var owner = new NativeComponentDescriptor("fixture", "native/fixture.csproj", "build/fixture.csproj",
-            bindingDefinition: "native/Bindings/bindings.props");
+        var owner = new NativeComponentDescriptor(
+            "fixture",
+            "native/fixture.csproj",
+            "build/fixture.csproj",
+            bindingDefinition: "native/Bindings/bindings.props"
+        );
         string? workspace = null;
         string? copiedBridge = null;
         string? previousProduct = null;
-        var tools = new NativeToolchainSelection("fixture-x64", new BuildHostDescriptor("Fixture", "x64"),
+        var tools = new NativeToolchainSelection(
+            "fixture-x64",
+            new BuildHostDescriptor("Fixture", "x64"),
             new Dictionary<string, string> { ["fixture"] = ToolchainEnvironment.ResolveExecutable("dotnet") },
-            new Dictionary<string, string>(), [], [], new NativeLinkPlan(".native"), false);
+            new Dictionary<string, string>(),
+            [],
+            [],
+            new NativeLinkPlan(".native"),
+            false
+        );
         foreach (string generation in new[] { new string('a', 64), new string('b', 64) })
         {
             string artifact = Path.Combine(externalBindings ? m_bindingRoot : m_root, "native", "obj", "fixture-x64", generation);
@@ -120,11 +143,23 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             string header = Path.Combine(bridge, "fixture.h");
             File.WriteAllText(header, generation);
             File.WriteAllText(managed, generation);
-            File.WriteAllText(Path.Combine(bridge, "compilation.json"), System.Text.Json.JsonSerializer.Serialize(new NativeBindingCompilation
-            {
-                roots = [new("generated", "", true, true)], files = [], includeDirectories = [], defines = [], compilerDefines = [],
-                cxxStandard = 0, cStandard = 0, requiredExports = [], staticExportSymbols = [], staticExportAbi = "", staticExportNames = []
-            }));
+            File.WriteAllText(
+                Path.Combine(bridge, "compilation.json"),
+                System.Text.Json.JsonSerializer.Serialize(new NativeBindingCompilation
+                {
+                    roots = [new("generated", "", true, true)],
+                    files = [],
+                    includeDirectories = [],
+                    defines = [],
+                    compilerDefines = [],
+                    cxxStandard = 0,
+                    cStandard = 0,
+                    requiredExports = [],
+                    staticExportSymbols = [],
+                    staticExportAbi = "",
+                    staticExportNames = []
+                })
+            );
             var descriptor = new NativeBindingGenerationDescriptor
             {
                 fingerprint = generation,
@@ -135,18 +170,29 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                 artifactOwnerDirectory = externalBindings ? m_bindingRoot : m_root
             };
             using var bindings = new NativeBindingGenerationResult(
-                new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor }, []);
+                new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor },
+                []
+            );
             NativeBuildContext context = new NativeBuildContext(m_root, "release").WithToolchain(tools).WithBindings(bindings);
-            var recipe = new NativeBuildRecipe(owner, "fixture", "fixture-x64",
+            var recipe = new NativeBuildRecipe(
+                owner,
+                "fixture",
+                "fixture-x64",
                 [NativeBuildInput.FromPath(m_root, bridge), NativeBuildInput.FromPath(m_root, managed)],
-                [(aggregate ? owner.nativeProject + "=" : "bindings=") + generation,
-                    (aggregate ? "componentArgument=" : string.Empty) + "-DINNO_FIXTURE_BRIDGE_ROOT=" + bridge]);
-            using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe,
+                [
+                    (aggregate ? owner.nativeProject + "=" : "bindings=") + generation,
+                    (aggregate ? "componentArgument=" : string.Empty) + "-DINNO_FIXTURE_BRIDGE_ROOT=" + bridge
+                ]
+            );
+            using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(
+                context,
+                recipe,
                 async (
                     @scoped,
                     output,
                     cancellation
-                ) => {
+                ) =>
+                {
                     string current = scoped.GetNativeBuildRoot(owner);
                     string physical = new DirectoryInfo(current).LinkTarget ?? current;
                     NativeCMakeSource sources = await NativeCMakeExecutor.PrepareSourceAsync(scoped, owner, cancellation);
@@ -159,12 +205,17 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                     workspace = physical;
                     copiedBridge = input;
                     Assert.Equal(generation, File.ReadAllText(input));
-                    Assert.Equal("-DINNO_FIXTURE_BRIDGE_ROOT=" + Path.GetDirectoryName(input),
-                        sources.ResolveDefinition("-DINNO_FIXTURE_BRIDGE_ROOT=" + bridge));
+                    Assert.Equal(
+                        "-DINNO_FIXTURE_BRIDGE_ROOT=" + Path.GetDirectoryName(input),
+                        sources.ResolveDefinition("-DINNO_FIXTURE_BRIDGE_ROOT=" + bridge)
+                    );
                     await File.WriteAllTextAsync(Path.Combine(output, "result.native"), generation, cancellation);
-                });
+                }
+            );
             if (previousProduct is not null)
+            {
                 Assert.NotEqual(previousProduct, product.fingerprint);
+            }
             previousProduct = product.fingerprint;
         }
     }
@@ -172,9 +223,12 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
         if (Directory.Exists(m_bindingRoot))
+        {
             Directory.Delete(m_bindingRoot, recursive: true);
+        }
     }
-
 }

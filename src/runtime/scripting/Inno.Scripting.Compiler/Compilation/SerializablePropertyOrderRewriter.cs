@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -27,7 +26,9 @@ internal sealed class SerializablePropertyOrderRewriter : CSharpSyntaxRewriter
     public override SyntaxNode? Visit(SyntaxNode? node)
     {
         if (node is not TypeDeclarationSyntax)
+        {
             return base.Visit(node);
+        }
 
         m_nextOrders.Push(0);
         try
@@ -71,23 +72,25 @@ internal sealed class SerializablePropertyOrderRewriter : CSharpSyntaxRewriter
     private TMember RewriteMember<TMember>(
         TMember member,
         SyntaxList<AttributeListSyntax> attributeLists
-    )
-        where TMember : MemberDeclarationSyntax
+    ) where TMember : MemberDeclarationSyntax
     {
         if (m_nextOrders.Count == 0 || !TryFindSerializableAttribute(attributeLists, out AttributeSyntax attribute))
+        {
             return member;
+        }
 
         int order = m_nextOrders.Pop();
         m_nextOrders.Push(order + 1);
         if (HasExplicitOrder(attribute))
+        {
             return member;
+        }
 
         AttributeArgumentSyntax orderArgument = SyntaxFactory.AttributeArgument(
             SyntaxFactory.NameEquals(C_ORDER_PROPERTY_NAME),
             nameColon: null,
-            SyntaxFactory.LiteralExpression(
-                SyntaxKind.NumericLiteralExpression,
-                SyntaxFactory.Literal(order)));
+            SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(order))
+        );
         AttributeArgumentListSyntax argumentList = attribute.ArgumentList ?? SyntaxFactory.AttributeArgumentList();
         AttributeSyntax rewrittenAttribute = attribute.WithArgumentList(argumentList.AddArguments(orderArgument));
         return member.ReplaceNode(attribute, rewrittenAttribute);
@@ -114,8 +117,11 @@ internal sealed class SerializablePropertyOrderRewriter : CSharpSyntaxRewriter
     private static bool HasExplicitOrder(AttributeSyntax attribute)
     {
         return attribute.ArgumentList?.Arguments.Any(static argument =>
-            string.Equals(argument.NameEquals?.Name.Identifier.ValueText, C_ORDER_PROPERTY_NAME,
-                System.StringComparison.Ordinal)) == true;
+            string.Equals(
+                argument.NameEquals?.Name.Identifier.ValueText,
+                C_ORDER_PROPERTY_NAME,
+                System.StringComparison.Ordinal
+            )) == true;
     }
 
     private static string GetRightmostName(NameSyntax name)

@@ -9,7 +9,6 @@ public enum LogDeliveryMode
     /// Delivers queued entries through a dedicated background worker.
     /// </summary>
     Background,
-
     /// <summary>
     /// Delivers entries synchronously on the producer's thread.
     /// </summary>

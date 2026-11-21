@@ -1,5 +1,5 @@
-using Inno.Scripting.Api;
 using Inno.Editor.Interactions;
+using Inno.Scripting.Api;
 
 [assembly: ScriptingApiNamespace("InnoEditor.Interactions", "Inno.Editor.Interactions", ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorInteractions), ScriptingApiScope.Editor)]

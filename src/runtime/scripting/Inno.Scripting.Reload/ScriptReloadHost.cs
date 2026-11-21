@@ -1,4 +1,3 @@
-using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,14 +5,14 @@ using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
+using Inno.Core.Diagnostics;
+using Inno.Core.Settings;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
-using Inno.Core.Settings;
+using Inno.Plugins.Authoring;
 using Inno.Scripting.Compiler;
 
 namespace Inno.Scripting.Reload;
@@ -39,8 +38,11 @@ public sealed class ScriptReloadHost : IDisposable
     private readonly Func<ScriptModuleDeployment, IModuleSource> m_moduleSourceFactory;
     private readonly SemaphoreSlim m_compileGate = new(1, 1);
     private readonly CancellationTokenSource m_lifetimeCancellation = new();
+
     private readonly TaskCompletionSource<Exception?> m_disposalCompleted = new(
-        TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCreationOptions.RunContinuationsAsynchronously
+    );
+
     private readonly CancellationToken m_lifetimeToken;
 
     private CancellationTokenSource? m_activeCompilationCancellation;
@@ -120,22 +122,28 @@ public sealed class ScriptReloadHost : IDisposable
         ArgumentNullException.ThrowIfNull(reloads);
         ArgumentNullException.ThrowIfNull(moduleSourceFactory);
         if (options.debounceMilliseconds < 0)
-            throw new ArgumentOutOfRangeException(nameof(options), "Debounce duration cannot be negative.");
-        if (options.compilationWarningTimeout <= TimeSpan.Zero &&
-            options.compilationWarningTimeout != Timeout.InfiniteTimeSpan)
         {
+            throw new ArgumentOutOfRangeException(nameof(options), "Debounce duration cannot be negative.");
+        }
+        if (options.compilationWarningTimeout <= TimeSpan.Zero
+            && options.compilationWarningTimeout != Timeout.InfiniteTimeSpan
+        ) {
             throw new ArgumentOutOfRangeException(
                 nameof(options),
-                "Compilation warning timeout must be positive or infinite.");
+                "Compilation warning timeout must be positive or infinite."
+            );
         }
         if (options.unloadCollectionInterval < TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(options), "Unload collection interval cannot be negative.");
-        if (options.unloadRetentionTimeout <= TimeSpan.Zero &&
-            options.unloadRetentionTimeout != Timeout.InfiniteTimeSpan)
         {
+            throw new ArgumentOutOfRangeException(nameof(options), "Unload collection interval cannot be negative.");
+        }
+        if (options.unloadRetentionTimeout <= TimeSpan.Zero
+            && options.unloadRetentionTimeout != Timeout.InfiniteTimeSpan
+        ) {
             throw new ArgumentOutOfRangeException(
                 nameof(options),
-                "Unload retention timeout must be positive or infinite.");
+                "Unload retention timeout must be positive or infinite."
+            );
         }
         m_assets = assets;
         m_compiler = compiler;
@@ -173,7 +181,9 @@ public sealed class ScriptReloadHost : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_requestedReload != ScriptReloadRequest.None;
+            }
         }
     }
 
@@ -191,8 +201,8 @@ public sealed class ScriptReloadHost : IDisposable
         {
             long started = Volatile.Read(ref m_compilationStartedTimestamp);
             return isCompiling && started != 0
-                ? TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64 - started))
-                : m_lastCompilationElapsed;
+                   ? TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64 - started))
+                   : m_lastCompilationElapsed;
         }
     }
 
@@ -200,9 +210,9 @@ public sealed class ScriptReloadHost : IDisposable
     /// Gets whether the active compilation exceeded the configured warning duration.
     /// </summary>
     public bool isCompilationTakingLong
-        => isCompiling &&
-           m_options.compilationWarningTimeout != Timeout.InfiniteTimeSpan &&
-           compilationElapsed >= m_options.compilationWarningTimeout;
+        => isCompiling
+           && m_options.compilationWarningTimeout != Timeout.InfiniteTimeSpan
+           && compilationElapsed >= m_options.compilationWarningTimeout;
 
     /// <summary>
     /// Gets the most recently completed compilation.
@@ -212,7 +222,9 @@ public sealed class ScriptReloadHost : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_lastCompilation;
+            }
         }
     }
 
@@ -224,7 +236,9 @@ public sealed class ScriptReloadHost : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_modules.generations.state == GenerationState.AwaitingCollection;
+            }
         }
     }
 
@@ -236,7 +250,9 @@ public sealed class ScriptReloadHost : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_modules.generations.state == GenerationState.Faulted;
+            }
         }
     }
 
@@ -247,7 +263,9 @@ public sealed class ScriptReloadHost : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_assets.isInitialized)
+        {
             throw new InvalidOperationException("ScriptReloadHost requires AssetPipeline to be initialized first.");
+        }
         m_assets.Update();
         m_assets.Changed -= OnAssetDatabaseChanged;
         m_assets.Changed += OnAssetDatabaseChanged;
@@ -259,17 +277,19 @@ public sealed class ScriptReloadHost : IDisposable
         {
             lock (m_sync)
             {
-                bool hasActiveScripting = m_modules.isInitialized &&
-                    m_modules.modules.Any(static module => module.domain == AssemblyDomain.InnoScripting);
+                bool hasActiveScripting = m_modules.isInitialized
+                                          && m_modules.modules.Any(static module => module.domain == AssemblyDomain.InnoScripting);
                 m_requestedReload = m_plugins.hasPendingActivation
-                    ? ScriptReloadRequest.ReloadPlugins
-                    : hasActiveScripting
-                        ? ScriptReloadRequest.Recompile
-                        : ScriptReloadRequest.ReloadScripting;
+                                    ? ScriptReloadRequest.ReloadPlugins
+                                    : hasActiveScripting
+                                      ? ScriptReloadRequest.Recompile
+                                      : ScriptReloadRequest.ReloadScripting;
                 m_initialCompileRequested = true;
                 m_lastCompileRequestTimestamp = Environment.TickCount64;
-                Volatile.Write(ref m_progress, new ScriptReloadProgress(++m_progressOperation, 0f,
-                    "Initial scripting cache probe queued.", false));
+                Volatile.Write(
+                    ref m_progress,
+                    new ScriptReloadProgress(++m_progressOperation, 0f, "Initial scripting cache probe queued.", false)
+                );
             }
         }
     }
@@ -293,13 +313,19 @@ public sealed class ScriptReloadHost : IDisposable
         lock (m_sync)
         {
             if (operationId != m_progress.operationId || operationId != m_activeProgressOperation)
+            {
                 return false;
+            }
             cancellation = m_activeCompilationCancellation;
             if (cancellation is not null)
+            {
                 SetCompilationProgress(m_progress.fraction, "Canceling script compilation...", operationId, cancellationRequested: true);
+            }
         }
         if (cancellation is null)
+        {
             return false;
+        }
         try
         {
             cancellation.Cancel();
@@ -372,10 +398,10 @@ public sealed class ScriptReloadHost : IDisposable
                 return false;
             }
             long elapsed = Environment.TickCount64 - m_lastCompileRequestTimestamp;
-            if (m_requestedReload == ScriptReloadRequest.None ||
-                isCompiling ||
-                !m_initialCompileRequested && elapsed < m_options.debounceMilliseconds)
-            {
+            if (m_requestedReload == ScriptReloadRequest.None
+                || isCompiling
+                || !m_initialCompileRequested && elapsed < m_options.debounceMilliseconds
+            ) {
                 compilation = null;
                 return false;
             }
@@ -385,10 +411,12 @@ public sealed class ScriptReloadHost : IDisposable
             m_initialCompileRequested = false;
         }
         if (m_assets.isInitialized)
+        {
             m_assets.Update();
+        }
         PluginUnavailabilityPlan? unavailability = request == ScriptReloadRequest.ReloadPlugins
-            ? CapturePluginUnavailabilityPlan()
-            : null;
+                                                   ? CapturePluginUnavailabilityPlan()
+                                                   : null;
         compilation = CompileAsync(request, unavailability, operation).AsTask();
         return true;
     }
@@ -402,7 +430,8 @@ public sealed class ScriptReloadHost : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         using CancellationTokenSource linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(
             cancellationToken,
-            m_lifetimeToken);
+            m_lifetimeToken
+        );
         CancellationToken effectiveCancellation = linkedCancellation.Token;
         await m_compileGate.WaitAsync(effectiveCancellation).ConfigureAwait(false);
         try
@@ -429,8 +458,11 @@ public sealed class ScriptReloadHost : IDisposable
                         ) => SetCompilationProgress(
                             progress * C_COMPILATION_PROGRESS_SHARE,
                             progress >= 1f ? "Compilation finished; waiting for generation activation and state recovery." : status,
-                            operation, isCompilerUpdate: true)),
-                        effectiveCancellation)
+                            operation,
+                            isCompilerUpdate: true
+                        )),
+                        effectiveCancellation
+                    )
                     .ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (effectiveCancellation.IsCancellationRequested)
@@ -446,7 +478,9 @@ public sealed class ScriptReloadHost : IDisposable
                         exception.ToString(),
                         filePath: null,
                         line: 0,
-                        column: 0));
+                        column: 0
+                    )
+                );
             }
             lock (m_sync)
             {
@@ -457,7 +491,9 @@ public sealed class ScriptReloadHost : IDisposable
                     if (m_requestedReload != ScriptReloadRequest.None)
                     {
                         if (request > m_requestedReload)
+                        {
                             m_requestedReload = request;
+                        }
                         m_pendingCompilation = null;
                     }
                     else if (result.success || unavailability is not null)
@@ -466,18 +502,21 @@ public sealed class ScriptReloadHost : IDisposable
                             result,
                             request,
                             operation,
-                            result.success ? null : unavailability);
+                            result.success ? null : unavailability
+                        );
                     }
                     SetCompilationProgress(
                         result.success || unavailability is not null ? C_COMPILATION_PROGRESS_SHARE : progress.fraction,
                         m_requestedReload != ScriptReloadRequest.None
-                            ? "Compilation superseded by a queued reload request."
-                            : result.success
-                                ? "Script compilation completed; waiting for generation activation and state recovery."
-                                : unavailability is not null
-                                    ? "Compilation failed after a Plugin availability change; the unavailable " +
-                                      "generation is ready to activate."
-                                : "Script compilation failed.", operation);
+                        ? "Compilation superseded by a queued reload request."
+                        : result.success
+                          ? "Script compilation completed; waiting for generation activation and state recovery."
+                          : unavailability is not null
+                            ? "Compilation failed after a Plugin availability change; the unavailable "
+                              + "generation is ready to activate."
+                            : "Script compilation failed.",
+                        operation
+                    );
                 }
             }
             return result;
@@ -487,8 +526,7 @@ public sealed class ScriptReloadHost : IDisposable
             long started = Interlocked.Exchange(ref m_compilationStartedTimestamp, 0);
             if (started != 0)
             {
-                m_lastCompilationElapsed = TimeSpan.FromMilliseconds(
-                    Math.Max(0, Environment.TickCount64 - started));
+                m_lastCompilationElapsed = TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64 - started));
             }
             lock (m_sync)
             {
@@ -521,18 +559,26 @@ public sealed class ScriptReloadHost : IDisposable
         {
             ThrowIfFaultedLocked();
             if (m_modules.generations.state == GenerationState.AwaitingCollection)
-                throw new InvalidOperationException("A new script generation cannot activate before the previous unload barrier completes.");
+            {
+                throw new InvalidOperationException(
+                    "A new script generation cannot activate before the previous unload barrier completes."
+                );
+            }
             pending = m_pendingCompilation;
             if (pending is not null && m_requestedReload != ScriptReloadRequest.None)
             {
                 if (pending.request > m_requestedReload)
+                {
                     m_requestedReload = pending.request;
+                }
                 m_pendingCompilation = null;
                 pending = null;
             }
         }
         if (pending is null)
+        {
             return false;
+        }
 
         ReloadPlan plan = SelectReloadPlan(pending);
         if (plan.requests.Count == 0 && plan.removedModuleNames.Count == 0)
@@ -547,28 +593,33 @@ public sealed class ScriptReloadHost : IDisposable
         SetCompilationProgress(C_STAGING_PROGRESS, "Staging script reload candidates...", pending.operationId);
         using AssemblyReloadSession reload = m_modules.BeginReload(
             plan.requests.Select(m_moduleSourceFactory).ToArray(),
-            plan.removedModuleNames);
+            plan.removedModuleNames
+        );
         SetCompilationProgress(C_MIGRATION_PROGRESS, "Restoring active editor state...", pending.operationId);
         IAssemblyUnloadProbe unload = PublishGeneration(reload);
         m_modules.generations.TrackRetirement(unload);
         m_retiringProgressOperation = pending.operationId;
         m_activeCompilationDirectory = pending.unavailability is null
-            ? pending.compilation.outputDirectory
-            : null;
-        _ = m_compiler.CollectArtifacts(m_activeCompilationDirectory is null
+                                       ? pending.compilation.outputDirectory
+                                       : null;
+        _ = m_compiler.CollectArtifacts(
+            m_activeCompilationDirectory is null
             ? Array.Empty<string?>()
-            : [m_activeCompilationDirectory]);
+            : [m_activeCompilationDirectory]
+        );
         RefreshModuleHandles();
         UpdateActiveFingerprints(plan);
         string completedStatus = pending.unavailability is null
-            ? "Script reload completed."
-            : "Plugin availability change committed. Unavailable scene types are preserved as Missing until their " +
-              "Stable IDs return.";
+                                 ? "Script reload completed."
+                                 : "Plugin availability change committed. Unavailable scene types are preserved as Missing until their "
+                                   + "Stable IDs return.";
         SetCompilationProgress(
             !isUnloadVerificationPending ? 1f : C_UNLOAD_VERIFICATION_PROGRESS,
             !isUnloadVerificationPending
-                ? completedStatus
-                : completedStatus + " Verifying retired assembly unload...", pending.operationId);
+            ? completedStatus
+            : completedStatus + " Verifying retired assembly unload...",
+            pending.operationId
+        );
         m_reloads.RefreshDiagnostics();
         CompletePendingReload(pending);
         return true;
@@ -601,7 +652,9 @@ public sealed class ScriptReloadHost : IDisposable
         {
             Exception? previousFailure = m_disposalCompleted.Task.GetAwaiter().GetResult();
             if (previousFailure is not null)
+            {
                 ExceptionDispatchInfo.Capture(previousFailure).Throw();
+            }
             return;
         }
         Exception? disposalFailure = null;
@@ -635,12 +688,16 @@ public sealed class ScriptReloadHost : IDisposable
                         .. m_pluginModules.Values
                     ];
                     if (modules.Length > 0)
+                    {
                         _ = m_modules.Unload(modules);
+                    }
                     m_pluginModules.Clear();
                     m_runtimeScriptModule = null;
                     m_editorScriptModule = null;
                     if (modules.Length > 0 && m_assets.isInitialized)
+                    {
                         m_assets.Rescan();
+                    }
                 }
                 m_activeCompilationDirectory = null;
                 m_activeCompilation = null;
@@ -677,14 +734,21 @@ public sealed class ScriptReloadHost : IDisposable
         failure = m_modules.generations.failure;
         if (failure is not null)
         {
-            SetCompilationProgress(progress.fraction, "Generation retirement failed. Restart the host before Play, Build, Export or reload.");
+            SetCompilationProgress(
+                progress.fraction,
+                "Generation retirement failed. Restart the host before Play, Build, Export or reload."
+            );
             return true;
         }
         try
         {
             if (!m_modules.generations.Advance())
             {
-                SetCompilationProgress(C_UNLOAD_VERIFICATION_PROGRESS, "Verifying retired generation unload...", m_retiringProgressOperation);
+                SetCompilationProgress(
+                    C_UNLOAD_VERIFICATION_PROGRESS,
+                    "Verifying retired generation unload...",
+                    m_retiringProgressOperation
+                );
                 return false;
             }
             SetCompilationProgress(1f, "Generation publication and retired assembly unload completed.", m_retiringProgressOperation);
@@ -693,7 +757,10 @@ public sealed class ScriptReloadHost : IDisposable
         catch (Exception exception)
         {
             failure = exception;
-            SetCompilationProgress(progress.fraction, "Generation retirement failed. Restart the host before Play, Build, Export or reload.");
+            SetCompilationProgress(
+                progress.fraction,
+                "Generation retirement failed. Restart the host before Play, Build, Export or reload."
+            );
             return true;
         }
     }
@@ -701,17 +768,23 @@ public sealed class ScriptReloadHost : IDisposable
     private void OnAssetDatabaseChanged(AssetChangeSet changeSet)
     {
         if (m_disposed || !m_options.autoCompile)
+        {
             return;
+        }
         for (int i = 0; i < changeSet.changes.Count; i++)
         {
             AssetChange change = changeSet.changes[i];
             string path = change.assetPath.ToString();
             string previousPath = change.previousAssetPath?.ToString() ?? string.Empty;
             if (!IsScriptInput(path) && !IsScriptInput(previousPath))
+            {
                 continue;
-            QueueReload(IsPluginInput(path) || IsPluginInput(previousPath)
+            }
+            QueueReload(
+                IsPluginInput(path) || IsPluginInput(previousPath)
                 ? ScriptReloadRequest.ReloadPlugins
-                : ScriptReloadRequest.Recompile);
+                : ScriptReloadRequest.Recompile
+            );
             return;
         }
     }
@@ -719,9 +792,13 @@ public sealed class ScriptReloadHost : IDisposable
     private void OnSourceMountsChanged()
     {
         if (m_disposed || !m_options.autoCompile || m_publishingGeneration)
+        {
             return;
+        }
         if (m_plugins.hasPendingActivation)
+        {
             return;
+        }
         QueueReload(ScriptReloadRequest.ReloadPlugins);
     }
 
@@ -743,7 +820,9 @@ public sealed class ScriptReloadHost : IDisposable
     private void OnPluginActivationCandidateChanged()
     {
         if (m_disposed || !m_options.autoCompile)
+        {
             return;
+        }
         QueueReload(ScriptReloadRequest.ReloadPlugins);
     }
 
@@ -759,13 +838,24 @@ public sealed class ScriptReloadHost : IDisposable
         {
             ScriptReloadProgress current = m_progress;
             if (m_disposed || (operationId is long expected && expected != current.operationId))
+            {
                 return;
+            }
             if (isCompilerUpdate && (!m_acceptCompilerProgress || current.cancellationRequested))
+            {
                 return;
-            Volatile.Write(ref m_progress, new ScriptReloadProgress(current.operationId,
-                Math.Clamp(fraction, 0f, 1f), stage, current.cancellationRequested || cancellationRequested,
-                m_activeCompilationCancellation is not null && m_activeProgressOperation == current.operationId &&
-                (canCancel || isCompilerUpdate) && !current.cancellationRequested && !cancellationRequested));
+            }
+            Volatile.Write(
+                ref m_progress,
+                new ScriptReloadProgress(
+                    current.operationId,
+                    Math.Clamp(fraction, 0f, 1f),
+                    stage,
+                    current.cancellationRequested || cancellationRequested,
+                    m_activeCompilationCancellation is not null && m_activeProgressOperation == current.operationId
+                    && (canCancel || isCompilerUpdate) && !current.cancellationRequested && !cancellationRequested
+                )
+            );
         }
     }
 
@@ -776,14 +866,24 @@ public sealed class ScriptReloadHost : IDisposable
         {
             ThrowIfFaultedLocked();
             if (request > m_requestedReload)
-                m_requestedReload = request;
-            m_lastCompileRequestTimestamp = Environment.TickCount64;
-            Volatile.Write(ref m_progress, new ScriptReloadProgress(++m_progressOperation, 0f, m_requestedReload switch
             {
-                ScriptReloadRequest.ReloadPlugins => "Plugin and scripting reload queued.",
-                ScriptReloadRequest.ReloadScripting => "Full scripting reload queued.",
-                _ => "Scripting recompile queued."
-            }, false));
+                m_requestedReload = request;
+            }
+            m_lastCompileRequestTimestamp = Environment.TickCount64;
+            Volatile.Write(
+                ref m_progress,
+                new ScriptReloadProgress(
+                    ++m_progressOperation,
+                    0f,
+                    m_requestedReload switch
+                    {
+                        ScriptReloadRequest.ReloadPlugins => "Plugin and scripting reload queued.",
+                        ScriptReloadRequest.ReloadScripting => "Full scripting reload queued.",
+                        _ => "Scripting recompile queued."
+                    },
+                    false
+                )
+            );
         }
     }
 
@@ -791,9 +891,7 @@ public sealed class ScriptReloadHost : IDisposable
     {
         if (pending.unavailability is not null)
         {
-            return new ReloadPlan(
-                Array.Empty<ScriptModuleDeployment>(),
-                pending.unavailability.removedModuleNames);
+            return new ReloadPlan(Array.Empty<ScriptModuleDeployment>(), pending.unavailability.removedModuleNames);
         }
 
         IReadOnlyList<ScriptModuleDeployment> requests = pending.compilation.moduleDeployments;
@@ -802,99 +900,110 @@ public sealed class ScriptReloadHost : IDisposable
             .Select(static request => request.moduleName)
             .ToArray();
         string[] removedPlugins = pending.request == ScriptReloadRequest.ReloadPlugins
-            ? m_pluginModules.Keys.Except(candidatePlugins, StringComparer.Ordinal).ToArray()
-            : [];
-        if (m_runtimeScriptModule is null || m_editorScriptModule is null ||
-            candidatePlugins.Any(plugin => !m_pluginModules.ContainsKey(plugin)))
-        {
+                                  ? m_pluginModules.Keys.Except(candidatePlugins, StringComparer.Ordinal).ToArray()
+                                  : [];
+        if (m_runtimeScriptModule is null || m_editorScriptModule is null
+            || candidatePlugins.Any(plugin => !m_pluginModules.ContainsKey(plugin))
+        ) {
             return new ReloadPlan(requests, removedPlugins);
         }
         if (pending.request == ScriptReloadRequest.ReloadPlugins)
+        {
             return new ReloadPlan(requests, removedPlugins);
+        }
         if (pending.request == ScriptReloadRequest.ReloadScripting)
         {
             return new ReloadPlan(
                 requests.Where(static request => request.domain == AssemblyDomain.InnoScripting).ToArray(),
-                []);
+                []
+            );
         }
         if (string.Equals(
-                pending.compilation.outputDirectory,
-                m_activeCompilationDirectory,
-                StringComparison.OrdinalIgnoreCase))
-        {
+            pending.compilation.outputDirectory,
+            m_activeCompilationDirectory,
+            StringComparison.OrdinalIgnoreCase
+        )) {
             return new ReloadPlan([], []);
         }
 
         var compiled = pending.compilation.compiledAssemblyNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var selected = requests
-            .Where(request => GetOwnedAssemblyNames(request).Any(compiled.Contains) ||
-                              !m_activeModuleFingerprints.TryGetValue(
-                                  request.moduleName,
-                                  out string? activeFingerprint) ||
-                              !string.Equals(
-                                  ComputeRequestFingerprint(request),
-                                  activeFingerprint,
-                                  StringComparison.Ordinal))
+            .Where(request => (
+                GetOwnedAssemblyNames(request).Any(compiled.Contains)
+                || !m_activeModuleFingerprints.TryGetValue(request.moduleName, out string? activeFingerprint)
+                || !string.Equals(ComputeRequestFingerprint(request), activeFingerprint, StringComparison.Ordinal)
+            ))
             .Select(static request => request.moduleName)
             .ToHashSet(StringComparer.Ordinal);
-        if (selected.Any(name => requests.Any(request =>
-                request.domain == AssemblyDomain.InnoPlugin &&
-                string.Equals(request.moduleName, name, StringComparison.Ordinal))))
-        {
+        if (selected.Any(name => requests.Any(request => (
+            request.domain == AssemblyDomain.InnoPlugin
+            && string.Equals(request.moduleName, name, StringComparison.Ordinal)
+        )))
+        ) {
             bool changed;
             do
             {
                 changed = false;
-                foreach (ScriptModuleDeployment request in requests.Where(static request =>
-                             request.domain == AssemblyDomain.InnoPlugin))
-                {
+                foreach (ScriptModuleDeployment request in requests.Where(static request => (
+                    request.domain == AssemblyDomain.InnoPlugin
+                ))
+                ) {
                     if (!selected.Contains(request.moduleName) && request.upstreamModuleNames.Any(selected.Contains))
+                    {
                         changed |= selected.Add(request.moduleName);
+                    }
                 }
             }
             while (changed);
-            selected.UnionWith(requests
-                .Where(static request => request.domain == AssemblyDomain.InnoScripting)
-                .Select(static request => request.moduleName));
+            selected.UnionWith(
+                requests
+                    .Where(static request => request.domain == AssemblyDomain.InnoScripting)
+                    .Select(static request => request.moduleName)
+            );
         }
         // Closed generic editor extensions over project runtime types can create CLR loader
         // allocator dependencies in both directions even though assembly references are one-way.
         // Project scripts therefore retire as one authoring generation, preserving scene state
         // through the same candidate transaction used for runtime-source changes.
-        if (requests.Any(request => request.domain == AssemblyDomain.InnoScripting &&
-                                    selected.Contains(request.moduleName)))
-        {
-            selected.UnionWith(requests
-                .Where(static request => request.domain == AssemblyDomain.InnoScripting)
-                .Select(static request => request.moduleName));
+        if (requests.Any(request => (
+            request.domain == AssemblyDomain.InnoScripting
+            && selected.Contains(request.moduleName)
+        ))
+        ) {
+            selected.UnionWith(
+                requests
+                    .Where(static request => request.domain == AssemblyDomain.InnoScripting)
+                    .Select(static request => request.moduleName)
+            );
         }
-        return new ReloadPlan(
-            requests.Where(request => selected.Contains(request.moduleName)).ToArray(),
-            []);
+        return new ReloadPlan(requests.Where(request => selected.Contains(request.moduleName)).ToArray(), []);
     }
 
     private void RefreshModuleHandles()
     {
         IReadOnlyList<AssemblyModuleInfo> modules = m_modules.modules;
         m_pluginModules.Clear();
-        foreach (AssemblyModuleInfo module in modules.Where(static module =>
-                     module.domain == AssemblyDomain.InnoPlugin &&
-                     module.moduleName.StartsWith("Plugin.", StringComparison.Ordinal)))
-        {
+        foreach (AssemblyModuleInfo module in modules.Where(static module => (
+            module.domain == AssemblyDomain.InnoPlugin
+            && module.moduleName.StartsWith("Plugin.", StringComparison.Ordinal)
+        ))
+        ) {
             m_pluginModules.Add(module.moduleName, module.handle);
         }
-        m_runtimeScriptModule = modules.SingleOrDefault(static module =>
-            module.moduleName == "RuntimeScripts")?.handle;
-        m_editorScriptModule = modules.SingleOrDefault(static module =>
-            module.moduleName == "EditorScripts")?.handle;
+        m_runtimeScriptModule = modules.SingleOrDefault(static module => module.moduleName == "RuntimeScripts")?.handle;
+        m_editorScriptModule = modules.SingleOrDefault(static module => module.moduleName == "EditorScripts")?.handle;
     }
 
     private void UpdateActiveFingerprints(ReloadPlan plan)
     {
         foreach (string removed in plan.removedModuleNames)
+        {
             m_activeModuleFingerprints.Remove(removed);
+        }
         foreach (ScriptModuleDeployment request in plan.requests)
+        {
             m_activeModuleFingerprints[request.moduleName] = ComputeRequestFingerprint(request);
+        }
     }
 
     private static IEnumerable<string> GetOwnedAssemblyNames(ScriptModuleDeployment request)
@@ -906,9 +1015,9 @@ public sealed class ScriptReloadHost : IDisposable
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string path in new[] { request.mainAssemblyPath }
-                     .Concat(request.preloadAssemblyPaths)
-                     .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase))
-        {
+            .Concat(request.preloadAssemblyPaths)
+            .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
+        ) {
             byte[] name = System.Text.Encoding.UTF8.GetBytes(System.IO.Path.GetFileName(path));
             hash.AppendData(name);
             hash.AppendData(System.IO.File.ReadAllBytes(path));
@@ -921,38 +1030,42 @@ public sealed class ScriptReloadHost : IDisposable
         lock (m_sync)
         {
             m_activeCompilation = applied.unavailability is null
-                ? applied.compilation
-                : null;
+                                  ? applied.compilation
+                                  : null;
             if (ReferenceEquals(m_pendingCompilation, applied))
+            {
                 m_pendingCompilation = null;
+            }
         }
     }
 
     private PluginUnavailabilityPlan? CapturePluginUnavailabilityPlan()
     {
         if (!m_plugins.hasPendingActivation || m_pluginModules.Count == 0)
+        {
             return null;
+        }
 
         Dictionary<string, string> candidatePluginHashes = m_plugins.compilationPlugins
             .Where(static plugin => plugin.containsCode)
             .ToDictionary(
                 static plugin => plugin.manifest.pluginId,
                 static plugin => plugin.contentHash,
-                StringComparer.Ordinal);
+                StringComparer.Ordinal
+            );
         var removedModuleNames = m_plugins.activePlugins
             .Where(static plugin => plugin.containsCode)
-            .Where(plugin => !candidatePluginHashes.TryGetValue(
-                                 plugin.manifest.pluginId,
-                                 out string? candidateHash) ||
-                             !string.Equals(
-                                 plugin.contentHash,
-                                 candidateHash,
-                                 StringComparison.Ordinal))
+            .Where(plugin => (
+                !candidatePluginHashes.TryGetValue(plugin.manifest.pluginId, out string? candidateHash)
+                || !string.Equals(plugin.contentHash, candidateHash, StringComparison.Ordinal)
+            ))
             .Select(static plugin => "Plugin." + plugin.manifest.pluginId)
             .Where(m_pluginModules.ContainsKey)
             .ToHashSet(StringComparer.Ordinal);
         if (removedModuleNames.Count == 0)
+        {
             return null;
+        }
 
         AssemblyModuleInfo[] activeModules = m_modules.modules.ToArray();
         bool changed;
@@ -961,9 +1074,9 @@ public sealed class ScriptReloadHost : IDisposable
             changed = false;
             foreach (AssemblyModuleInfo module in activeModules)
             {
-                if (removedModuleNames.Contains(module.moduleName) ||
-                    !module.upstreamModuleNames.Any(removedModuleNames.Contains))
-                {
+                if (removedModuleNames.Contains(module.moduleName)
+                    || !module.upstreamModuleNames.Any(removedModuleNames.Contains)
+                ) {
                     continue;
                 }
                 changed |= removedModuleNames.Add(module.moduleName);
@@ -974,17 +1087,20 @@ public sealed class ScriptReloadHost : IDisposable
         return new PluginUnavailabilityPlan(
             removedModuleNames
                 .OrderBy(static moduleName => moduleName, StringComparer.Ordinal)
-                .ToArray());
+                .ToArray()
+        );
     }
 
     private static bool IsScriptInput(string path)
-        => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) ||
-           path.EndsWith(".iasmdef", StringComparison.OrdinalIgnoreCase);
+        => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+           || path.EndsWith(".iasmdef", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsPluginInput(string path)
     {
         if (string.IsNullOrWhiteSpace(path) || !IsScriptInput(path))
+        {
             return false;
+        }
         try
         {
             return AssetPath.Parse(path).source != AssetSourceId.project;
@@ -998,7 +1114,9 @@ public sealed class ScriptReloadHost : IDisposable
     private void ThrowIfFaultedLocked()
     {
         if (m_modules.generations.state == GenerationState.Faulted)
+        {
             throw new InvalidOperationException("The generation owner is Faulted; restart the host.", m_modules.generations.failure);
+        }
     }
 
     private sealed record PendingReload(
@@ -1015,8 +1133,7 @@ public sealed class ScriptReloadHost : IDisposable
         IReadOnlyList<string> removedModuleNames
     );
 
-    private sealed class ScriptProgressObserver(Action<float, string> report)
-        : IProgress<ScriptCompilationProgress>
+    private sealed class ScriptProgressObserver(Action<float, string> report) : IProgress<ScriptCompilationProgress>
     {
         /// <summary>
         /// Publishes one progress update to the receiving workflow.

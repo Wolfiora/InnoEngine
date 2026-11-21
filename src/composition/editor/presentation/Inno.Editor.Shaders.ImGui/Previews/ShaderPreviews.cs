@@ -1,5 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Shaders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +6,16 @@ using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Editor.Core;
 using Inno.Editor.Rendering;
+using Inno.Editor.Shaders;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using ImGuiApi = Inno.Editor.ImGui.ImGui;
 using Inno.Rendering.Assets;
 
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using ImGuiApi = Inno.Editor.ImGui.ImGui;
+
 namespace Inno.Editor.Shaders.ImGui;
+
 /// <summary>
 /// Hosts isolated Shader and Material images using domain-contributed preview pipelines.
 /// </summary>
@@ -26,6 +28,7 @@ public sealed class ShaderPreviews : EditorModule
     private readonly EditorShaderCompilation m_compilation;
     private readonly Dictionary<Guid, State> m_states = [];
     private ulong m_frame;
+
     internal ShaderPreviews(
         TypeCatalog types,
         IEditorPreviewService previews,
@@ -62,7 +65,12 @@ public sealed class ShaderPreviews : EditorModule
 
         try
         {
-            Draw(ownerId, material, m_compilation.RequestArtifact(material.shader, RenderShaderVariant.FromMaterial(material)), logicalSize);
+            Draw(
+                ownerId,
+                material,
+                m_compilation.RequestArtifact(material.shader, RenderShaderVariant.FromMaterial(material)),
+                logicalSize
+            );
         }
         catch (Exception error) when (Recoverable(error))
         {
@@ -92,11 +100,15 @@ public sealed class ShaderPreviews : EditorModule
         float logicalSize
     ) {
         if (ownerId == Guid.Empty)
+        {
             throw new ArgumentException("A preview owner identity is required.", nameof(ownerId));
+        }
         ArgumentNullException.ThrowIfNull(material);
         ArgumentNullException.ThrowIfNull(compilation);
         if (!(logicalSize > 0f) || !float.IsFinite(logicalSize))
+        {
             throw new ArgumentOutOfRangeException(nameof(logicalSize));
+        }
         if (compilation.artifact is not { } artifact)
         {
             EditorUI.current.widgets.Hint("Preview: " + compilation.state);
@@ -104,13 +116,20 @@ public sealed class ShaderPreviews : EditorModule
         }
 
         if (!m_states.TryGetValue(ownerId, out State? state))
+        {
             m_states.Add(ownerId, state = new("shader-preview/" + ownerId.ToString("N")));
+        }
         state.frame = m_frame;
         try
         {
             using IDisposable operation = m_types.AcquireOperation("Build isolated Shader preview");
             ShaderDefinition definition = m_compilation.ReadDefinition(artifact);
-            string[] contracts = definition.techniques.Where(value => !material.techniqueId.isValid || value.id == material.techniqueId).Select(value => value.contract.value).Distinct(StringComparer.Ordinal).Where(m_registry.providers.ContainsKey).ToArray();
+            string[] contracts = definition.techniques
+                .Where(value => !material.techniqueId.isValid || value.id == material.techniqueId)
+                .Select(value => value.contract.value)
+                .Distinct(StringComparer.Ordinal)
+                .Where(m_registry.providers.ContainsKey)
+                .ToArray();
             if (contracts.Length == 0)
             {
                 EditorUI.current.widgets.Hint("No preview provider for this Shader contract.");
@@ -127,12 +146,20 @@ public sealed class ShaderPreviews : EditorModule
             var context = new ShaderPreviewContext(new(state.viewportId), material, artifact, definition, state, pixels, pixels);
             EditorViewportLayer layer = m_registry.providers[contracts[0]].CreateLayer(context);
             if (m_previews.TryRender(new(state.viewportId, pixels, pixels, RenderTextureFormat.RGBA8, [layer]), out var handle))
+            {
                 m_previews.Draw(handle, new(logicalSize, logicalSize));
+            }
             else
+            {
                 ImGuiApi.Dummy(new(logicalSize, logicalSize));
-            EditorUI.current.widgets.Hint(compilation.usingLastGood ? "Draft preview · last-good candidate · Scene/Game unchanged" : "Isolated preview · Scene/Game unchanged");
+            }
+            EditorUI.current.widgets.Hint(
+                compilation.usingLastGood ? "Draft preview · last-good candidate · Scene/Game unchanged" : "Isolated preview · Scene/Game unchanged"
+            );
             foreach (Diagnostic error in state.errors.Values)
+            {
                 EditorUI.current.widgets.WrappedText(error.message);
+            }
         }
         catch (Exception error) when (Recoverable(error))
         {
@@ -149,7 +176,9 @@ public sealed class ShaderPreviews : EditorModule
     public void Release(Guid ownerId)
     {
         if (m_states.Remove(ownerId, out State? state))
+        {
             m_previews.ReleaseRendered(state.viewportId);
+        }
     }
 
     /// <summary>
@@ -162,7 +191,9 @@ public sealed class ShaderPreviews : EditorModule
     {
         m_frame++;
         foreach (Guid id in m_states.Where(pair => m_frame - pair.Value.frame > 2).Select(pair => pair.Key).ToArray())
+        {
             Release(id);
+        }
     }
 
     /// <summary>
@@ -174,17 +205,22 @@ public sealed class ShaderPreviews : EditorModule
     protected override void OnStop(EditorContext context)
     {
         foreach (Guid id in m_states.Keys.ToArray())
+        {
             Release(id);
+        }
         m_registry.Dispose();
     }
 
-    private static bool Recoverable(Exception error) => RetirementPendingException.Find(error) is null
-        && error is InvalidOperationException or ArgumentException or FormatException;
+    private static bool Recoverable(Exception error)
+        => RetirementPendingException.Find(error) is null
+           && error is InvalidOperationException or ArgumentException or FormatException;
+
     private sealed class State(string viewportId) : IDiagnosticReporter
     {
         internal readonly string viewportId = viewportId;
         internal readonly Dictionary<(string code, string? semanticId, Guid? objectId), Diagnostic> errors = [];
         internal ulong frame;
+
         /// <summary>
         /// Publishes the supplied diagnostic to the configured observers.
         /// </summary>
@@ -192,6 +228,7 @@ public sealed class ShaderPreviews : EditorModule
         /// The diagnostic consumed by publish; ownership remains with the caller unless explicitly stated otherwise.
         /// </param>
         public void Publish(Diagnostic diagnostic) => errors[(diagnostic.code, diagnostic.semanticId, diagnostic.objectId)] = diagnostic;
+
         /// <summary>
         /// Resolves the requested stable identity to its current-generation value.
         /// </summary>
@@ -209,6 +246,7 @@ public sealed class ShaderPreviews : EditorModule
             string? semanticId = null,
             Guid? objectId = null
         ) => errors.Remove((code, semanticId, objectId));
+
         /// <summary>
         /// Records errors from the current diagnostic report.
         /// </summary>
@@ -219,7 +257,9 @@ public sealed class ShaderPreviews : EditorModule
         {
             errors.Clear();
             foreach (Diagnostic value in diagnostics)
+            {
                 Publish(value);
+            }
         }
     }
 
@@ -241,11 +281,15 @@ public sealed class ShaderPreviews : EditorModule
             var result = new Dictionary<string, ShaderPreviewProvider>(StringComparer.Ordinal);
             try
             {
-                foreach (Type type in snapshot.GetTypesWithAttribute<ShaderPreviewProviderAttribute>().Select(value => value.Resolve(snapshot)))
-                {
+                foreach (Type type in snapshot
+                    .GetTypesWithAttribute<ShaderPreviewProviderAttribute>()
+                    .Select(value => value.Resolve(snapshot))
+                ) {
                     string id = type.GetCustomAttribute<ShaderPreviewProviderAttribute>()!.contractId;
                     if (result.ContainsKey(id))
+                    {
                         throw new InvalidOperationException("Duplicate Shader preview contract: " + id);
+                    }
                     result.Add(id, CreateExtension<ShaderPreviewProvider>(type));
                 }
 
@@ -272,6 +316,7 @@ public sealed class ShaderPreviews : EditorModule
         /// <param name="snapshot">
         /// The immutable state snapshot consumed by this operation.
         /// </param>
-        protected override void DisposeSnapshot(IReadOnlyDictionary<string, ShaderPreviewProvider> snapshot) => DisposeExtensions(snapshot.Values);
+        protected override void DisposeSnapshot(IReadOnlyDictionary<string, ShaderPreviewProvider> snapshot)
+            => DisposeExtensions(snapshot.Values);
     }
 }

@@ -72,7 +72,6 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
     /// </summary>
     public NativeBuildRecipe? aggregateRecipe { get; }
 
-
     /// <summary>
     /// Borrows a product whose lease is owned by this result until disposal.
     /// </summary>
@@ -119,7 +118,9 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
     public void Dispose()
     {
         if (Interlocked.Exchange(ref m_disposed, 1) != 0)
+        {
             return;
+        }
         Release(m_products, m_bindings);
     }
 
@@ -148,7 +149,9 @@ public sealed class ProductNativeBuildResult : IReadOnlyList<NativeBuildProduct>
             failures.Add(failure);
         }
         if (failures.Count != 0)
+        {
             throw new AggregateException("Native product reading ownership could not be completely released.", failures);
+        }
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

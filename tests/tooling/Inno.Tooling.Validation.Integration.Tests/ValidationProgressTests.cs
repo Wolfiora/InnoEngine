@@ -1,4 +1,3 @@
-using Inno.Testing.Validation;
 using System;
 using System.IO;
 using System.Linq;
@@ -7,6 +6,7 @@ using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Testing.Validation;
 
 namespace Inno.Tooling.Validation.Integration.Tests;
 
@@ -14,7 +14,7 @@ namespace Inno.Tooling.Validation.Integration.Tests;
 /// Isolates the process console while observing the public validation entry's live progress.
 /// </summary>
 [CollectionDefinition(nameof(ValidationProgressCollection), DisableParallelization = true)]
-public sealed class ValidationProgressCollection { }
+public sealed class ValidationProgressCollection;
 
 [Collection(nameof(ValidationProgressCollection))]
 public sealed class ValidationProgressTests
@@ -71,7 +71,10 @@ public sealed class ValidationProgressTests
             cancellation.Cancel();
             if (running is not null)
             {
-                try { await running; }
+                try
+                {
+                    await running;
+                }
                 catch (Exception) when (cancellation.IsCancellationRequested) { }
             }
             Console.SetOut(original);
@@ -90,14 +93,18 @@ public sealed class ValidationProgressTests
             {
                 base.WriteLine(value);
                 if (value?.StartsWith("Process active:", StringComparison.Ordinal) == true)
+                {
                     activity.TrySetResult(value);
+                }
             }
         }
 
         internal string Read()
         {
             lock (m_sync)
+            {
                 return ToString();
+            }
         }
     }
 }

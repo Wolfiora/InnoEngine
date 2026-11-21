@@ -38,7 +38,9 @@ internal sealed class ImGuizmoModuleProvider : INativeModuleProvider
         lock (m_gate)
         {
             if (m_closing)
+            {
                 return;
+            }
             m_closing = true;
             // A failed API unload is terminal; its dependency must remain retained for process lifetime.
             m_api.Dispose();

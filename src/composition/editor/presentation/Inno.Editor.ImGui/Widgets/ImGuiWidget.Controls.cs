@@ -1,9 +1,11 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
@@ -26,7 +28,10 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(label);
         Vector2 textSize = NativeImGui.CalcTextSize(label);
-        return new Vector2(textSize.X + style.labelChipPadding.X * 2f, MathF.Max(NativeImGui.GetFrameHeight(), textSize.Y + style.labelChipPadding.Y * 2f));
+        return new Vector2(
+            textSize.X + style.labelChipPadding.X * 2f,
+            MathF.Max(NativeImGui.GetFrameHeight(), textSize.Y + style.labelChipPadding.Y * 2f)
+        );
     }
 
     /// <summary>
@@ -51,7 +56,14 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         Vector2 textSize = NativeImGui.CalcTextSize(label);
         ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
-        ImGui.DrawNativeFilledRectangle(drawList, minimum, minimum + size, NativeImGui.ColorConvertFloat4ToU32(background), style.labelChipRounding, 0);
+        ImGui.DrawNativeFilledRectangle(
+            drawList,
+            minimum,
+            minimum + size,
+            NativeImGui.ColorConvertFloat4ToU32(background),
+            style.labelChipRounding,
+            0
+        );
         ImGui.DrawNativeText(drawList, minimum + (size - textSize) * 0.5f, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), label);
         NativeImGui.Dummy(size);
     }
@@ -106,8 +118,23 @@ public sealed unsafe partial class ImGuiWidget
         background.W = EditorPalette.opacityOpaque;
         Vector4 outline = accent;
         outline.W = EditorPalette.opacityStrong;
-        ImGui.DrawNativeFilledRectangle(draw, minimum, minimum + size, NativeImGui.ColorConvertFloat4ToU32(background), style.typeBadgeRounding, 0);
-        ImGui.DrawNativeRectangle(draw, minimum, minimum + size, NativeImGui.ColorConvertFloat4ToU32(outline), style.typeBadgeRounding, (int)(ImDrawFlags.None), style.borderSize);
+        ImGui.DrawNativeFilledRectangle(
+            draw,
+            minimum,
+            minimum + size,
+            NativeImGui.ColorConvertFloat4ToU32(background),
+            style.typeBadgeRounding,
+            0
+        );
+        ImGui.DrawNativeRectangle(
+            draw,
+            minimum,
+            minimum + size,
+            NativeImGui.ColorConvertFloat4ToU32(outline),
+            style.typeBadgeRounding,
+            (int)(ImDrawFlags.None),
+            style.borderSize
+        );
         ImGui.DrawNativeText(draw, minimum + (size - textSize) * 0.5f, NativeImGui.ColorConvertFloat4ToU32(accent), label);
         NativeImGui.Dummy(size);
         DrawItemTooltip(tooltip);
@@ -140,7 +167,9 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (size < 0f)
+        {
             size = style.compactCheckboxSize;
+        }
         if (size <= 0f)
         {
             throw new ArgumentOutOfRangeException(nameof(size), size, "Checkbox size must be positive.");
@@ -164,8 +193,20 @@ public sealed unsafe partial class ImGuiWidget
         {
             ImGui.DrawNativeFilledRectangle(drawList, min, max, textColor, 1f, 0);
             uint checkColor = NativeImGui.ColorConvertFloat4ToU32(EditorPalette.cardHeader);
-            ImGui.DrawNativeLine(drawList, min + new Vector2(size * 0.22f, size * 0.52f), min + new Vector2(size * 0.43f, size * 0.72f), checkColor, 1.5f);
-            ImGui.DrawNativeLine(drawList, min + new Vector2(size * 0.43f, size * 0.72f), min + new Vector2(size * 0.80f, size * 0.28f), checkColor, 1.5f);
+            ImGui.DrawNativeLine(
+                drawList,
+                min + new Vector2(size * 0.22f, size * 0.52f),
+                min + new Vector2(size * 0.43f, size * 0.72f),
+                checkColor,
+                1.5f
+            );
+            ImGui.DrawNativeLine(
+                drawList,
+                min + new Vector2(size * 0.43f, size * 0.72f),
+                min + new Vector2(size * 0.80f, size * 0.28f),
+                checkColor,
+                1.5f
+            );
         }
         else
         {
@@ -174,7 +215,15 @@ public sealed unsafe partial class ImGuiWidget
 
         if (hovered)
         {
-            ImGui.DrawNativeRectangle(drawList, min - Vector2.One, max + Vector2.One, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered), 1f, 0, 1.5f);
+            ImGui.DrawNativeRectangle(
+                drawList,
+                min - Vector2.One,
+                max + Vector2.One,
+                NativeImGui.ColorConvertFloat4ToU32(EditorPalette.compactControlHovered),
+                1f,
+                0,
+                1.5f
+            );
         }
 
         DrawItemTooltip(tooltip);
@@ -235,7 +284,12 @@ public sealed unsafe partial class ImGuiWidget
         }
 
         float width = ImGuiUtf8Buffer.MeasureText(label, -1f).X + NativeImGui.Raw.GetStyle()->FramePadding.X * 2f;
-        return DrawCenteredButton(label, NativeImGui.GetCursorScreenPos() + new Vector2(0f, topPadding), NativeImGui.GetContentRegionAvail().X, width);
+        return DrawCenteredButton(
+            label,
+            NativeImGui.GetCursorScreenPos() + new Vector2(0f, topPadding),
+            NativeImGui.GetContentRegionAvail().X,
+            width
+        );
     }
 
     /// <summary>
@@ -263,7 +317,9 @@ public sealed unsafe partial class ImGuiWidget
         ImVec2C nativeSize = ImGui.ToNative(size);
         ReadOnlySpan<byte> emptyOverlay = "\0"u8;
         fixed (byte* empty = emptyOverlay)
+        {
             NativeImGui.Raw.ProgressBar(fraction, &nativeSize, (sbyte*)empty);
+        }
         Vector2 minimum = NativeImGui.GetItemRectMin();
         Vector2 maximum = NativeImGui.GetItemRectMax();
         Vector2 textSize = NativeImGui.CalcTextSize(overlay);

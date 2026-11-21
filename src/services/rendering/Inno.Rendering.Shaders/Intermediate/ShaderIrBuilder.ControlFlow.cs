@@ -40,7 +40,9 @@ public sealed partial class ShaderIrBuilder
         ArgumentNullException.ThrowIfNull(whenTrue);
         ArgumentNullException.ThrowIfNull(whenFalse);
         if (!condition.type.IsEquivalentTo(ShaderSourceType.Atomic("bool")))
+        {
             throw new ArgumentException("A branch condition must be bool.", nameof(condition));
+        }
         int nextValue = m_root.m_nextValue;
         try
         {
@@ -88,13 +90,18 @@ public sealed partial class ShaderIrBuilder
         ArgumentNullException.ThrowIfNull(initialState);
         ArgumentNullException.ThrowIfNull(body);
         if (!iterations.type.IsEquivalentTo(ShaderSourceType.Atomic("uint")))
+        {
             throw new ArgumentException("A loop count must be uint.", nameof(iterations));
+        }
         foreach ((string name, ShaderIrValue value) in initialState)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(name);
             RequireOwned(value);
         }
-        var initial = new SortedDictionary<string, ShaderIrValue>(initialState.ToDictionary(static pair => pair.Key, static pair => pair.Value), StringComparer.Ordinal);
+        var initial = new SortedDictionary<string, ShaderIrValue>(
+            initialState.ToDictionary(static pair => pair.Key, static pair => pair.Value),
+            StringComparer.Ordinal
+        );
         int nextValue = m_root.m_nextValue;
         try
         {
@@ -103,7 +110,9 @@ public sealed partial class ShaderIrBuilder
                 ShaderIrValue index = builder.RegionInput("iteration", ShaderSourceType.Atomic("uint"));
                 var carried = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
                 foreach ((string name, ShaderIrValue value) in initial)
+                {
                     carried.Add(name, builder.RegionInput("state." + name, value.type));
+                }
                 return body(builder, index, new ReadOnlyDictionary<string, ShaderIrValue>(carried));
             });
             ValidateOutputs(initial, region.outputs);
@@ -148,7 +157,9 @@ public sealed partial class ShaderIrBuilder
         foreach ((string name, ShaderIrValue value) in contract.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
         {
             if (value.type.storage is not null || value.type.id.StartsWith("sampled-texture", StringComparison.Ordinal))
+            {
                 throw new ArgumentException("Resource bindings cannot be merged or loop-carried as ordinary values.");
+            }
             values.Add(name, NewValue(value.type));
         }
         return new ReadOnlyDictionary<string, ShaderIrValue>(values);
@@ -158,7 +169,10 @@ public sealed partial class ShaderIrBuilder
         IReadOnlyDictionary<string, ShaderIrValue> expected,
         IReadOnlyDictionary<string, ShaderIrValue> actual
     ) {
-        if (expected.Count != actual.Count || expected.Any(pair => !actual.TryGetValue(pair.Key, out ShaderIrValue? value) || !pair.Value.type.IsEquivalentTo(value.type)))
+        if (expected.Count != actual.Count
+            || expected.Any(pair => !actual.TryGetValue(pair.Key, out ShaderIrValue? value) || !pair.Value.type.IsEquivalentTo(value.type))
+        ) {
             throw new ArgumentException("Control-flow regions require identical named output types.");
+        }
     }
 }

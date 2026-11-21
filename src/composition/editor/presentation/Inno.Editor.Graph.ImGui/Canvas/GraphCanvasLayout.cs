@@ -45,15 +45,23 @@ public sealed class GraphCanvasLayout
             GraphCanvasNode node = candidate[index];
             ArgumentNullException.ThrowIfNull(node);
             if (m_byId.TryGetValue(node.id, out GraphCanvasNode? current) && Equivalent(current, node))
+            {
                 candidate[index] = node = current;
+            }
             else
+            {
                 changes++;
+            }
             if (!byId.TryAdd(node.id, node))
+            {
                 throw new ArgumentException("A graph layout cannot contain duplicate node identities.", nameof(nodes));
+            }
         }
         changes += m_byId.Keys.Count(id => !byId.ContainsKey(id));
         if (changes == 0 && m_nodes.SequenceEqual(candidate))
+        {
             return 0;
+        }
         m_nodes = Array.AsReadOnly(candidate);
         m_byId = byId;
         return changes;

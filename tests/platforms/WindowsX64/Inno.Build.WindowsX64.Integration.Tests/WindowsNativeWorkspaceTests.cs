@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -33,14 +33,24 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
     public async Task WindowsCMakeReusesUnchangedObjectsAndPublishesChangedSourceBytes()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(
-            ToolchainEnvironment.ResolveExecutable("dotnet")).ResolveAsync(new(m_root, "release"),
-            (new WindowsBuildHostProvider().TryCapture() ?? throw new PlatformNotSupportedException("A Windows build host is required.")), "windows-x64", CancellationToken.None);
+            ToolchainEnvironment.ResolveExecutable("dotnet")
+        ).ResolveAsync(
+            new(m_root, "release"),
+            (new WindowsBuildHostProvider().TryCapture()
+             ?? throw new PlatformNotSupportedException("A Windows build host is required.")),
+            "windows-x64",
+            CancellationToken.None
+        );
         string source = Path.Combine(m_root, "Source");
         Directory.CreateDirectory(source);
-        File.WriteAllText(Path.Combine(source, "CMakeLists.txt"),
-            "cmake_minimum_required(VERSION 3.20)\nproject(WorkspaceFixture C)\nadd_library(fixture SHARED api.c stable.c)\n");
+        File.WriteAllText(
+            Path.Combine(source, "CMakeLists.txt"),
+            "cmake_minimum_required(VERSION 3.20)\nproject(WorkspaceFixture C)\nadd_library(fixture SHARED api.c stable.c)\n"
+        );
         string changed = Path.Combine(source, "api.c");
         File.WriteAllText(changed, "__declspec(dllexport) int value(void) { return 41; }\n");
         File.WriteAllText(Path.Combine(source, "stable.c"), "int stable(void) { return 7; }\n");
@@ -57,7 +67,9 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
             string current = scoped.GetNativeBuildRoot(m_owner);
             string physical = new DirectoryInfo(current).LinkTarget ?? current;
             if (workspace is not null)
+            {
                 Assert.Equal(workspace, physical);
+            }
             workspace = physical;
             string build = await NativeCMakeExecutor.BuildAsync(scoped, m_owner, source, "fixture", [], cancellation);
             File.Copy(NativeCMakeExecutor.FindOutput(scoped, build, "fixture.dll"), Path.Combine(output, "fixture.dll"));
@@ -74,11 +86,17 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
                 Assert.Equal(stableTime, File.GetLastWriteTimeUtc(objectPath));
             }
         }
-        NativeBuildContext Context() => new NativeBuildContext(m_root, "release").WithToolchain(tools)
-            .WithComponentOptions(m_owner, new(NativeLibraryKind.Shared));
-        NativeBuildRecipe Recipe() => new(m_owner, "fixture", "windows-x64",
-            new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(m_root, path)),
-            tools.declarations.Concat(new[] { "shared", "fixture" }));
+        NativeBuildContext Context()
+            => new NativeBuildContext(m_root, "release").WithToolchain(tools)
+                .WithComponentOptions(m_owner, new(NativeLibraryKind.Shared));
+        NativeBuildRecipe Recipe()
+            => new(
+                m_owner,
+                "fixture",
+                "windows-x64",
+                new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(m_root, path)),
+                tools.declarations.Concat(new[] { "shared", "fixture" })
+            );
         using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(Context(), Recipe(), Produce);
         Assert.Equal(41, Read(first));
         File.WriteAllText(changed, "__declspec(dllexport) int value(void) { return 42; }\n");
@@ -97,9 +115,13 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
         if (Directory.Exists(m_bindingRoot))
+        {
             Directory.Delete(m_bindingRoot, recursive: true);
+        }
     }
 
     private static int Read(NativeBuildProduct product)
@@ -114,5 +136,4 @@ public sealed class WindowsNativeWorkspaceTests : IDisposable
             NativeLibrary.Free(library);
         }
     }
-
 }

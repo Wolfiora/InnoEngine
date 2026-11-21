@@ -27,5 +27,5 @@ public abstract class AnimationBindingProvider : IDisposable
     /// <summary>
     /// Releases subscriptions and resources owned by this extension generation.
     /// </summary>
-    public virtual void Dispose() { }
+    public virtual void Dispose() {}
 }

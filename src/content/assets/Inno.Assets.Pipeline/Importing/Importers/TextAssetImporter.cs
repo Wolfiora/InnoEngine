@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 
@@ -54,7 +53,8 @@ internal sealed class TextAssetImporter : AssetImporter<TextAsset>
         await output.WriteArtifactAsync(
             "runtime",
             Encoding.UTF8.GetBytes(content),
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -76,6 +76,5 @@ internal sealed class TextAssetImporter : AssetImporter<TextAsset>
         AssetExportContext context,
         TextAsset asset,
         CancellationToken cancellationToken
-    )
-        => ValueTask.FromResult<ReadOnlyMemory<byte>?>(Encoding.UTF8.GetBytes(asset.content));
+    ) => ValueTask.FromResult<ReadOnlyMemory<byte>?>(Encoding.UTF8.GetBytes(asset.content));
 }

@@ -24,7 +24,9 @@ public abstract class TextBackendProvider
     protected TextBackendProvider(TextBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
@@ -41,4 +43,3 @@ public abstract class TextBackendProvider
     /// </returns>
     public abstract ITextBackend CreateBackend();
 }
-

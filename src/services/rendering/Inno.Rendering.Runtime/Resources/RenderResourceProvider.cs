@@ -1,8 +1,8 @@
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -44,8 +44,7 @@ public abstract class RenderResourceProvider
     protected static MaterialBinding CreateUniformBinding(
         RenderBindingId id,
         ReadOnlySpan<byte> data
-    )
-        => new(new RenderMaterialBinding(RenderMaterialBindingKind.Uniform, id, data.ToArray(), default, default));
+    ) => new(new RenderMaterialBinding(RenderMaterialBindingKind.Uniform, id, data.ToArray(), default, default));
 
     /// <summary>
     /// Creates a protected sampled-texture binding value.
@@ -66,8 +65,7 @@ public abstract class RenderResourceProvider
         RenderBindingId id,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
-    )
-        => new(new RenderMaterialBinding(RenderMaterialBindingKind.Texture, id, null, texture, sampler));
+    ) => new(new RenderMaterialBinding(RenderMaterialBindingKind.Texture, id, null, texture, sampler));
 
     /// <summary>
     /// Creates a generation-scoped resolved material pass when no compiled-interface query is required.
@@ -93,8 +91,7 @@ public abstract class RenderResourceProvider
         GraphicsPipelineHandle graphicsPipeline,
         ComputePipelineHandle computePipeline,
         IReadOnlyList<MaterialBinding> bindings
-    )
-        => CreateMaterialPass(definition, graphicsPipeline, computePipeline, [], new ShaderInterface([]), bindings);
+    ) => CreateMaterialPass(definition, graphicsPipeline, computePipeline, [], new ShaderInterface([]), bindings);
 
     /// <summary>
     /// Creates a generation-scoped resolved material pass.
@@ -127,14 +124,14 @@ public abstract class RenderResourceProvider
         IReadOnlyList<ShaderPropertyDefinition> declaredBindings,
         ShaderInterface activeInterface,
         IReadOnlyList<MaterialBinding> bindings
-    )
-        => new(
-            definition,
-            graphicsPipeline,
-            computePipeline,
-            declaredBindings,
-            activeInterface,
-            bindings.Select(static binding => binding.value).ToArray());
+    ) => new(
+        definition,
+        graphicsPipeline,
+        computePipeline,
+        declaredBindings,
+        activeInterface,
+        bindings.Select(static binding => binding.value).ToArray()
+    );
 
     /// <summary>
     /// Creates generation-scoped resolved geometry from persistent buffers and immutable sections.
@@ -167,7 +164,5 @@ public abstract class RenderResourceProvider
         int vertexCount,
         int indexCount,
         IReadOnlyList<RenderGeometrySection> sections
-    )
-        => new(vertexBuffer, indexBuffer, vertexLayout, vertexCount, indexCount, sections);
+    ) => new(vertexBuffer, indexBuffer, vertexLayout, vertexCount, indexCount, sections);
 }
-

@@ -60,4 +60,3 @@ public readonly record struct RenderTarget
         return new RenderTarget(RenderTargetKind.Texture, texture);
     }
 }
-

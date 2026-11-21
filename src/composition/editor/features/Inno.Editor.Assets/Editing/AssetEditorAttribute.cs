@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Associates an asset editor with an imported asset type.
 /// </summary>
@@ -36,10 +37,12 @@ public sealed class AssetEditorAttribute : Attribute
     /// Gets the imported asset type handled by the editor.
     /// </summary>
     public Type assetType { get; }
+
     /// <summary>
     /// Gets whether derived asset types are accepted.
     /// </summary>
     public bool useForChildren { get; }
+
     /// <summary>
     /// Gets the tie-breaking priority.
     /// </summary>

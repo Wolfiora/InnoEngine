@@ -17,10 +17,13 @@ public static class BrowserWasm32BgfxIntegration
     /// </summary>
     public static NativeComponentBuildOptions nativeOptions { get; } = new(
         NativeLibraryKind.Static,
-        ["-DINNO_BGFX_RENDERER_DEFINITIONS=BGFX_CONFIG_RENDERER_OPENGLES=30",
+        [
+            "-DINNO_BGFX_RENDERER_DEFINITIONS=BGFX_CONFIG_RENDERER_OPENGLES=30",
             "-DINNO_BGFX_SDK_DEFINITIONS=__EMSCRIPTEN_MAJOR__=__EMSCRIPTEN_major__;__EMSCRIPTEN_MINOR__=__EMSCRIPTEN_minor__;__EMSCRIPTEN_TINY__=__EMSCRIPTEN_tiny__",
-            "-DINNO_BGFX_SDK_OPTIONS=-include;emscripten/version.h"],
-        ["platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/BrowserWasm32BgfxIntegration.cs"]);
+            "-DINNO_BGFX_SDK_OPTIONS=-include;emscripten/version.h"
+        ],
+        ["platforms/BrowserWasm32/integrations/Inno.Integration.BrowserWasm32.Bgfx/BrowserWasm32BgfxIntegration.cs"]
+    );
 
     /// <summary>
     /// Gets the explicit shader configuration used by this integration.

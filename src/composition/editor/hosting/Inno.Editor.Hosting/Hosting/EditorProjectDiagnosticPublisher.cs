@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Diagnostics;
 
 namespace Inno.Editor.Hosting;
@@ -17,10 +16,10 @@ internal sealed class EditorProjectDiagnosticPublisher : IDisposable
         ArgumentNullException.ThrowIfNull(exception);
         string state = exception.ToString();
         if (string.Equals(m_state, state, StringComparison.Ordinal))
+        {
             return false;
-        Diagnostics.Set(
-            C_PERSISTENCE_GROUP,
-            Diagnostic.Error("EDITOR-PERSISTENCE", exception.Message));
+        }
+        Diagnostics.Set(C_PERSISTENCE_GROUP, Diagnostic.Error("EDITOR-PERSISTENCE", exception.Message));
         m_state = state;
         return true;
     }
@@ -28,7 +27,9 @@ internal sealed class EditorProjectDiagnosticPublisher : IDisposable
     internal void ResolvePersistence()
     {
         if (string.IsNullOrEmpty(m_state))
+        {
             return;
+        }
         Diagnostics.Clear(C_PERSISTENCE_GROUP);
         m_state = string.Empty;
     }

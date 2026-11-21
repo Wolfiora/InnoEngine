@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Runtime;
 
 namespace Inno.Editor.Scene;

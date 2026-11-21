@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Logging;
 
 namespace Inno.Editor.PlayMode;

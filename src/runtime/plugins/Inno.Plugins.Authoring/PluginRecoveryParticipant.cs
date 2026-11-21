@@ -53,8 +53,10 @@ internal sealed class PluginRecoveryParticipant : IReferenceRecoveryParticipant
     public void Validate(IReadOnlyList<ReferenceRecoveryChange> changes)
     {
         if (m_owner.activePlugins.Select(static plugin => plugin.sourceMount.id).Distinct().Count()
-            != m_owner.activePlugins.Count)
+            != m_owner.activePlugins.Count
+        ) {
             throw new InvalidOperationException("Plugin publication contains duplicate source identities.");
+        }
         // Setting and Plugin IDs identify protocols, not live objects. Asset slots are validated by the mount
         // transaction; composing settings above restores their references with the owner's complete context.
     }
@@ -80,7 +82,9 @@ internal sealed class PluginRecoveryParticipant : IReferenceRecoveryParticipant
     {
         m_owner.RollbackPending();
         if (!m_prepared)
+        {
             return;
+        }
         m_assets.Update();
         m_settings.RestorePreviousState();
     }

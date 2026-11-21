@@ -17,22 +17,27 @@ public sealed class ShaderParameterPresentation : ISerializable
     /// Gets or sets the Material Inspector section; empty uses the standard Parameters section.
     /// </summary>
     [SerializableProperty] public string group { get; set; } = "";
+
     /// <summary>
     /// Gets or sets the hover description without adding a permanent paragraph.
     /// </summary>
     [SerializableProperty] public string description { get; set; } = "";
+
     /// <summary>
     /// Gets or sets whether this Material-owned parameter appears in ordinary Material Inspectors.
     /// </summary>
     [SerializableProperty] public bool visible { get; set; } = true;
+
     /// <summary>
     /// Gets or sets whether a scalar Float control uses the declared editing bounds.
     /// </summary>
     [SerializableProperty] public bool hasRange { get; set; }
+
     /// <summary>
     /// Gets or sets the inclusive editing minimum; existing values are not changed by presentation metadata.
     /// </summary>
     [SerializableProperty] public double minimum { get; set; }
+
     /// <summary>
     /// Gets or sets the inclusive editing maximum.
     /// </summary>
@@ -64,8 +69,11 @@ public sealed class ShaderParameterPresentation : ISerializable
     ) {
         ArgumentNullException.ThrowIfNull(graph);
         return graph.metadata.TryGetValue(C_PREFIX + propertyId.value, out GraphSerializedValue? encoded)
-            ? serialization.Deserialize<ShaderParameterPresentation>(ShaderGraphDocument.Decode<byte[]>(encoded!, serialization, context), context)
-            : new();
+               ? serialization.Deserialize<ShaderParameterPresentation>(
+                   ShaderGraphDocument.Decode<byte[]>(encoded!, serialization, context),
+                   context
+               )
+               : new();
     }
 
     /// <summary>
@@ -100,9 +108,13 @@ public sealed class ShaderParameterPresentation : ISerializable
         ArgumentNullException.ThrowIfNull(presentation);
         if (!propertyId.isValid || !double.IsFinite(presentation.minimum) || !double.IsFinite(presentation.maximum)
             || presentation.minimum < -float.MaxValue || presentation.maximum > float.MaxValue
-            || presentation.minimum > presentation.maximum)
+            || presentation.minimum > presentation.maximum
+        ) {
             throw new ArgumentException("Parameter presentation requires a stable identity and finite ordered Float bounds.");
-        graph.SetMetadata(C_PREFIX + propertyId.value,
-            ShaderGraphDocument.Encode(serialization.Serialize(presentation, context), serialization, context));
+        }
+        graph.SetMetadata(
+            C_PREFIX + propertyId.value,
+            ShaderGraphDocument.Encode(serialization.Serialize(presentation, context), serialization, context)
+        );
     }
 }

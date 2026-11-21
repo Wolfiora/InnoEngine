@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.CompilerServices;
-
 using Inno.Core.Identity;
 
 namespace Inno.Scene;
@@ -34,11 +33,17 @@ public abstract class EngineObject : IdentityObject
         EngineObject? right
     ) {
         if (ReferenceEquals(left, right))
+        {
             return true;
+        }
         if (ReferenceEquals(left, null))
+        {
             return right!.m_isDestroyed;
+        }
         if (ReferenceEquals(right, null))
+        {
             return left.m_isDestroyed;
+        }
         return ReferenceEquals(left, right);
     }
 
@@ -81,15 +86,21 @@ public abstract class EngineObject : IdentityObject
     internal void RegisterIdentity(Guid? persistentId = null)
     {
         if (m_isDestroyed)
+        {
             throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be registered.");
+        }
         if (!IdentityAllocator.current.Register(this, persistentId))
+        {
             throw new InvalidOperationException($"Identity registration failed for '{GetType().FullName}'.");
+        }
     }
 
     internal void MarkDestroyed()
     {
         if (m_isDestroyed)
+        {
             return;
+        }
         try
         {
             IdentityAllocator.current.Unregister(this);
@@ -105,22 +116,27 @@ public abstract class EngineObject : IdentityObject
         ValidateIdentityForReplacement();
         Guid persistentId = identity.persistentId;
         if (!IdentityAllocator.current.Unregister(this))
+        {
             throw new InvalidOperationException($"Identity release failed for '{GetType().FullName}'.");
+        }
         return persistentId;
     }
 
     internal void ValidateIdentityForReplacement()
     {
         if (m_isDestroyed)
+        {
             throw new InvalidOperationException($"Destroyed object '{GetType().FullName}' cannot be replaced.");
+        }
         RuntimeIdentity? owner = identity.runtimeIdentity;
         IdentityAllocator allocator = IdentityAllocator.current;
         if (owner is not RuntimeIdentity registered || registered.domainId != allocator.domainId
-            || !ReferenceEquals(allocator.Get<EngineObject>(registered), this))
-        {
+            || !ReferenceEquals(allocator.Get<EngineObject>(registered), this)
+        ) {
             throw new InvalidOperationException(
                 $"Identity replacement for '{GetType().FullName}' requires its owning domain "
-                + $"'{owner?.domainId.ToString() ?? "detached"}', but the current domain is '{allocator.domainId}'.");
+                + $"'{owner?.domainId.ToString() ?? "detached"}', but the current domain is '{allocator.domainId}'."
+            );
         }
     }
 }

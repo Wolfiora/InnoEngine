@@ -28,7 +28,6 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
         m_supportPackValidator = supportPackValidator ?? throw new ArgumentNullException(nameof(supportPackValidator));
     }
 
-
     /// <summary>
     /// Validates the target closure before runtime script compilation.
     /// </summary>
@@ -56,8 +55,6 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// </summary>
     public string displayName => "macOS (Apple silicon)";
 
-
-
     /// <summary>
     /// Composes a macOS application bundle in isolated staging.
     /// </summary>
@@ -79,20 +76,31 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
         string contents = Path.Combine(application, "Contents");
         string executableRoot = Path.Combine(contents, "MacOS");
         string resources = Path.Combine(contents, "Resources");
-        await CopyDirectoryAsync(context.managedDeployment.outputDirectory, executableRoot, cancellationToken,
-                excludeCompilerReferences: true)
+        await CopyDirectoryAsync(
+            context.managedDeployment.outputDirectory,
+            executableRoot,
+            cancellationToken,
+            excludeCompilerReferences: true
+        )
             .ConfigureAwait(false);
         string player = Path.Combine(executableRoot, "Inno.Player.MacOSArm64");
         if (!File.Exists(player))
+        {
             throw new InvalidDataException("The macOS managed publication does not contain Inno.Player.MacOSArm64.");
+        }
         File.Move(player, Path.Combine(executableRoot, context.profile.productName));
-        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(resources, "Content"), cancellationToken,
-                excludeCompilerReferences: false)
+        await CopyDirectoryAsync(
+            context.contentDirectory,
+            Path.Combine(resources, "Content"),
+            cancellationToken,
+            excludeCompilerReferences: false
+        )
             .ConfigureAwait(false);
         Directory.CreateDirectory(contents);
         string product = SecurityElement.Escape(context.profile.productName) ?? context.profile.productName;
         string identifier = SecurityElement.Escape(context.profile.applicationId) ?? context.profile.applicationId;
-        await File.WriteAllTextAsync(
+        await File
+            .WriteAllTextAsync(
                 Path.Combine(contents, "Info.plist"),
                 $"""
                 <?xml version="1.0" encoding="UTF-8"?>
@@ -105,7 +113,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
                   <key>NSHighResolutionCapable</key><true/>
                 </dict></plist>
                 """,
-                cancellationToken)
+                cancellationToken
+            )
             .ConfigureAwait(false);
         return application;
     }
@@ -122,7 +131,9 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
             cancellationToken.ThrowIfCancellationRequested();
             string relativePath = Path.GetRelativePath(source, directory);
             if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+            {
                 continue;
+            }
             Directory.CreateDirectory(Path.Combine(destination, relativePath));
         }
         foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
@@ -130,14 +141,18 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
             cancellationToken.ThrowIfCancellationRequested();
             string relativePath = Path.GetRelativePath(source, file);
             if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+            {
                 continue;
+            }
             string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
             await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
             await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
             if (!OperatingSystem.IsWindows())
+            {
                 File.SetUnixFileMode(target, File.GetUnixFileMode(file));
+            }
         }
     }
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
@@ -27,7 +26,9 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         ArgumentNullException.ThrowIfNull(writer);
         ArgumentNullException.ThrowIfNull(value);
         if (value.isDestroyed)
+        {
             throw new InvalidOperationException("A destroyed scene cannot be serialized.");
+        }
 
         SceneStructureSnapshot snapshot = value.CaptureStructure();
         IReadOnlyList<GameSystem> systems = value.GetSystems();
@@ -43,7 +44,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
                 snapshot.objects,
                 sourceIds,
                 gameObject => sourceIds.ContainsKey(gameObject),
-                preserveRootSiblingOrder: true);
+                preserveRootSiblingOrder: true
+            );
             SceneGraphSerialization.WriteSystems(writer, systems, sourceIds);
         }
     }
@@ -66,9 +68,12 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         var scene = new GameScene(
             SceneWorld.current.typeCatalog,
             reader.Read<string>(SceneGraphSerialization.C_NAME_KEY),
-            instantiateFromAsset ? null : sceneId);
+            instantiateFromAsset ? null : sceneId
+        );
         if (sourceAsset is not null)
+        {
             scene.SetSourceAsset(sourceAsset);
+        }
         try
         {
             RestoreSceneGraph(scene, reader, preservePersistentIds: !instantiateFromAsset);
@@ -78,12 +83,12 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         catch
         {
             if (!scene.isDestroyed)
+            {
                 scene.Unload();
+            }
             throw;
         }
     }
-
-
 
     /// <summary>
     /// Restores the supplied snapshot while preserving current invariants.
@@ -112,12 +117,16 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         catch
         {
             foreach (GameSystem system in target.GetSystems().ToArray())
+            {
                 target.RemoveSystem(system);
+            }
             GameObject[] createdObjects = target.GetObjects().ToArray();
             for (int i = 0; i < createdObjects.Length; i++)
             {
                 if (createdObjects[i].isRuntimeValid)
+                {
                     target.DestroyObject(createdObjects[i]);
+                }
             }
             throw;
         }
@@ -136,7 +145,8 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
             references,
             SceneGraphSerialization.ReadMissingReferenceAliases(reader),
             reader.context,
-            restoreProperties: false);
+            restoreProperties: false
+        );
         IReadOnlyList<SerializationReader> systemReaders =
             reader.ReadObjectArray(SceneGraphSerialization.C_SYSTEMS_KEY);
         var missingPlaceholders = graph.missingPlaceholders.ToList();
@@ -146,18 +156,23 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
                 systemReaders,
                 preservePersistentIds,
                 references,
-                missingPlaceholders);
+                missingPlaceholders
+            );
         SceneGraphSerialization.RestoreMissingReferenceAliases(
             graph with { missingPlaceholders = missingPlaceholders },
-            references);
+            references
+        );
         using (references.Enter())
         {
             SerializationRegistry serialization = reader.context.GetRequired<SerializationRegistry>();
             foreach ((GameComponent component, byte[] state) in graph.componentStates)
+            {
                 serialization.RestorePropertiesData(component, state, context: reader.context);
+            }
             foreach ((GameSystem system, byte[] state) in systemStates)
+            {
                 serialization.RestorePropertiesData(system, state, context: reader.context);
+            }
         }
     }
-
 }

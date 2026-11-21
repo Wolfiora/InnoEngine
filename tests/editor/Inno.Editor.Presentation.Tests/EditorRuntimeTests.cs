@@ -1,11 +1,10 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Inno.Extensibility.Modules;
-using Inno.Extensibility.Reload;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
 using Inno.Core.Events;
 using Inno.Core.Execution;
@@ -14,14 +13,16 @@ using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Extensibility.Types;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Presentation.Tests;
+
 public sealed partial class EditorRuntimeTests : IDisposable
 {
     private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoEditorRuntimeTests", Guid.NewGuid().ToString("N"));
@@ -33,11 +34,14 @@ public sealed partial class EditorRuntimeTests : IDisposable
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly EditorInteractionRuntime m_runtime;
+
     public EditorRuntimeTests()
     {
         Directory.CreateDirectory(Path.Combine(m_projectRoot, "Assets"));
         m_diagnosticScope = m_diagnostics.EnterScope();
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorRuntimeTests).Assembly) });
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorRuntimeTests).Assembly) }
+        );
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         TestModule.startCount = 0;
         TestModule.stopCount = 0;
@@ -85,13 +89,16 @@ public sealed partial class EditorRuntimeTests : IDisposable
         m_diagnosticScope.Dispose();
         m_modules.Dispose();
         if (Directory.Exists(m_projectRoot))
+        {
             Directory.Delete(m_projectRoot, recursive: true);
+        }
     }
 
     private EditorInteractionRuntime CreateRuntime(
         EditorContext context,
         params object[] hostServices
     ) => new(context, m_types, m_logs, [m_types, m_identities, m_secondaryIdentities, ..hostServices]);
+
     [Fact]
     public void FeatureLookupReturnsOnlyStartedNonQuarantinedModules()
     {
@@ -137,7 +144,10 @@ public sealed partial class EditorRuntimeTests : IDisposable
     {
         var service = new TestHostService();
         HostServicePanel.current = null;
-        using EditorInteractionRuntime runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), service);
+        using EditorInteractionRuntime runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            service
+        );
         runtime.Start();
         Assert.Contains(runtime.panels, static panel => panel.id == "tests.host-service");
         Assert.Same(service, HostServicePanel.current);
@@ -147,7 +157,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
     public void InteractionRuntimeRejectsExtensionWhenHostServiceIsUnavailable()
     {
         HostServicePanel.current = null;
-        using EditorInteractionRuntime runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
+        using EditorInteractionRuntime runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        );
         runtime.Start();
         Assert.DoesNotContain(runtime.panels, static panel => panel.id == "tests.host-service");
         Assert.Null(HostServicePanel.current);
@@ -269,8 +281,21 @@ public sealed partial class EditorRuntimeTests : IDisposable
             KeyModifier.None
         );
         Assert.True(session.HandlePointer(down));
-        Assert.False(session.HandlePointer(new EditorViewportPointerEvent(8, EditorViewportPointerPhase.Move, default, default, 0, KeyModifier.None)));
-        Assert.True(session.HandlePointer(new EditorViewportPointerEvent(7, EditorViewportPointerPhase.Up, down.screenPosition, down.worldPosition, 0, KeyModifier.None)));
+        Assert.False(
+            session.HandlePointer(new EditorViewportPointerEvent(8, EditorViewportPointerPhase.Move, default, default, 0, KeyModifier.None))
+        );
+        Assert.True(
+            session.HandlePointer(
+                new EditorViewportPointerEvent(
+                    7,
+                    EditorViewportPointerPhase.Up,
+                    down.screenPosition,
+                    down.worldPosition,
+                    0,
+                    KeyModifier.None
+                )
+            )
+        );
         Assert.Equal(1, tool.downCount);
         Assert.Equal(1, tool.upCount);
         Assert.True(history.canUndo);
@@ -398,7 +423,10 @@ public sealed partial class EditorRuntimeTests : IDisposable
     [Fact]
     public void MissingHistoryHandlerCreatesAnExplicitBarrier()
     {
-        m_runtime.interactions.history.RecordApplied("Unavailable Change", new EditorHistoryChange("tests/missing-history-handler", EditorHistoryPayload.FromBytes([1, 2, 3])));
+        m_runtime.interactions.history.RecordApplied(
+            "Unavailable Change",
+            new EditorHistoryChange("tests/missing-history-handler", EditorHistoryPayload.FromBytes([1, 2, 3]))
+        );
         Assert.False(m_runtime.interactions.history.canUndo);
         Assert.Contains("tests/missing-history-handler", m_runtime.interactions.history.undoUnavailableReason);
         Assert.False(m_runtime.interactions.history.Undo().succeeded);
@@ -412,7 +440,10 @@ public sealed partial class EditorRuntimeTests : IDisposable
         byte[] bytes = new byte[128 * 1024];
         BitConverter.GetBytes(9).CopyTo(bytes, 0);
         BitConverter.GetBytes(32).CopyTo(bytes, sizeof(int));
-        m_runtime.interactions.history.RecordApplied("Large Neutral Change", new EditorHistoryChange(NeutralHistoryHandler.KIND, EditorHistoryPayload.FromBytes(bytes)));
+        m_runtime.interactions.history.RecordApplied(
+            "Large Neutral Change",
+            new EditorHistoryChange(NeutralHistoryHandler.KIND, EditorHistoryPayload.FromBytes(bytes))
+        );
         Assert.Equal(0, m_runtime.interactions.history.residentBytes);
         Assert.Equal(bytes.LongLength, m_runtime.interactions.history.diskBytes);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -567,7 +598,13 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.Same(primary, primaryResult);
         Assert.True(m_runtime.interactions.TryResolveIdentity(secondaryIdentity, out IdentityObject? secondaryResult));
         Assert.Same(secondary, secondaryResult);
-        Assert.True(m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainId, secondary.identity.persistentId, out IdentityObject? persistentResult));
+        Assert.True(
+            m_runtime.interactions.TryResolveIdentity(
+                secondaryIdentity.domainId,
+                secondary.identity.persistentId,
+                out IdentityObject? persistentResult
+            )
+        );
         Assert.Same(secondary, persistentResult);
         var crossDomainAlias = new RuntimeIdentity(secondaryIdentity.domainId, primaryIdentity.runtimeId);
         Assert.NotSame(primary, m_runtime.interactions.TryResolveIdentity(crossDomainAlias, out IdentityObject? alias) ? alias : null);
@@ -575,7 +612,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.True(m_secondaryIdentities.Unregister(secondary));
         var replacement = new DragSource();
         Assert.True(m_secondaryIdentities.Register(replacement, persistentId));
-        Assert.True(m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainId, persistentId, out IdentityObject? replacementResult));
+        Assert.True(
+            m_runtime.interactions.TryResolveIdentity(secondaryIdentity.domainId, persistentId, out IdentityObject? replacementResult)
+        );
         Assert.Same(replacement, replacementResult);
     }
 
@@ -586,7 +625,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         DragSource source = Register(new DragSource());
         var target = new DropTarget();
         var data = new EditorDragData(source, "source");
-        RuntimeIdentity supersededIdentity = m_runtime.interactions.For("tests/other", supersededSource).BeginDrag(new EditorDragData(supersededSource, "superseded"));
+        RuntimeIdentity supersededIdentity = m_runtime.interactions
+            .For("tests/other", supersededSource)
+            .BeginDrag(new EditorDragData(supersededSource, "superseded"));
         RuntimeIdentity identity = m_runtime.interactions.For("tests/other", source).BeginDrag(data);
         EditorInteraction dropTarget = m_runtime.interactions.For("tests/drop", target);
         Assert.NotEqual(supersededIdentity, identity);
@@ -646,7 +687,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         m_runtime.Dispose();
         int stops = TestModule.stopCount;
         TestModule.throwOnStart = true;
-        using var runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
+        using var runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        );
         try
         {
             Assert.Throws<InvalidOperationException>(runtime.Start);
@@ -665,7 +708,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         m_runtime.Dispose();
         int detaches = TestPanel.detachCount;
         TestPanel.throwOnAttach = true;
-        using var runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
+        using var runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        );
         try
         {
             runtime.Start();
@@ -748,7 +793,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         string document = File.ReadAllText(settingsPath);
         Assert.Contains("[InnoEditor][Module.tests.state]", document);
         Assert.DoesNotContain("[InnoEditor][Module.tests.update-barrier]", document);
-        using EditorInteractionRuntime restored = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
+        using EditorInteractionRuntime restored = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        );
         restored.Start();
         Assert.Equal(42, TestModule.restoredStateValue);
         Assert.True(Assert.Single(restored.panels.Where(static value => value.id == "tests.panel")).isOpen);
@@ -776,7 +823,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         {
             TestModule.captureFailure = true;
             m_runtime.Update(new EditorFrame(0.016f, 3f, isFocused: true));
-            DiagnosticReport report = Assert.Single(sink.reports.Values.Where(static value => value.source.displayName == "Editor State Capture"));
+            DiagnosticReport report = Assert.Single(
+                sink.reports.Values.Where(static value => value.source.displayName == "Editor State Capture")
+            );
             Assert.Equal("EDITOR-STATE-CAPTURE", Assert.Single(report.diagnostics).code);
             TestModule.captureFailure = false;
             m_runtime.Update(new EditorFrame(0.016f, 6f, isFocused: true));
@@ -818,7 +867,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
         TestModule.startCount = 0;
         TestModule.restoredStateValue = 0;
         TestModule.rebuildDuringRestore = true;
-        using EditorInteractionRuntime restored = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
+        using EditorInteractionRuntime restored = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        );
         restored.Start();
         Assert.Equal(91, TestModule.restoredStateValue);
         TestModule.stateValue = TestModule.restoredStateValue;
@@ -835,13 +886,17 @@ public sealed partial class EditorRuntimeTests : IDisposable
         internal Dictionary<string, DiagnosticReport> reports { get; } = new(StringComparer.Ordinal);
 
         public void Replace(DiagnosticReport report) => reports[report.source.id] = report;
+
         public void Clear(DiagnosticSource source) => reports.Remove(source.id);
     }
 }
 
 public class BaseTarget;
+
 public sealed class DerivedTarget : BaseTarget;
+
 public sealed class DragSource : IdentityObject;
+
 public sealed class DropTarget
 {
     public bool wasDropped { get; set; }
@@ -858,11 +913,13 @@ public sealed record InteractionPresentation(
     bool submit,
     bool cancel = false
 );
+
 [EditorHistoryHandler(NeutralHistoryHandler.KIND)]
 public sealed class NeutralHistoryHandler : EditorHistoryHandler
 {
     public const string KIND = "tests/neutral-value";
     public static int value;
+
     public static EditorHistoryChange CreateChange(
         int before,
         int after
@@ -877,7 +934,10 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
         EditorHistoryContext context,
         EditorHistoryChange change,
         EditorHistoryDirection direction
-    ) => change.payload.length >= sizeof(int) * 2 ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable("The neutral value payload is truncated.");
+    ) => change.payload.length >= sizeof(int) * 2
+         ? EditorHistoryAvailability.Available()
+         : EditorHistoryAvailability.Unavailable("The neutral value payload is truncated.");
+
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
@@ -890,11 +950,14 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
 }
 
 public interface ITestHostService;
+
 public sealed class TestHostService : ITestHostService;
+
 [EditorPanel("tests.host-service", "Host Service")]
 public sealed class HostServicePanel : EditorPanel
 {
     public static ITestHostService? current;
+
     public HostServicePanel(ITestHostService service)
     {
         current = service;
@@ -916,6 +979,7 @@ public sealed class TestModule : EditorModule
     public static bool throwOnStart;
     public static bool throwOnStop;
     public static int pendingStops;
+
     public TestModule(TypeCatalog types)
     {
         m_types = types;
@@ -924,7 +988,9 @@ public sealed class TestModule : EditorModule
     protected override void Capture(EditorState state)
     {
         if (captureFailure)
+        {
             throw new InvalidOperationException("The test module state cannot be captured.");
+        }
         state.Set("value", stateValue);
     }
 
@@ -932,7 +998,9 @@ public sealed class TestModule : EditorModule
     {
         restoredStateValue = state.Get("value", 0);
         if (!rebuildDuringRestore)
+        {
             return;
+        }
         rebuildDuringRestore = false;
         m_types.Rebuild();
     }
@@ -941,9 +1009,13 @@ public sealed class TestModule : EditorModule
     {
         startCount++;
         if (throwOnStart)
+        {
             throw new InvalidOperationException("Injected module startup failure.");
+        }
         if (startCount == 1)
+        {
             m_types.Rebuild();
+        }
     }
 
     protected override void OnStop(EditorContext context)
@@ -951,9 +1023,13 @@ public sealed class TestModule : EditorModule
         stopCount++;
         ShutdownOrder.events.Add("module.stop");
         if (pendingStops-- > 0)
+        {
             throw new RetirementPendingException("Module-owned work has not drained.");
+        }
         if (throwOnStop)
+        {
             throw new InvalidOperationException("Injected module stop failure.");
+        }
     }
 }
 
@@ -963,6 +1039,7 @@ public sealed class UpdateBarrierModule : EditorModule
     public static bool block;
     public static bool throwWhenRead;
     public static int barrierReadCount;
+
     public override bool blocksFollowingUpdates
     {
         get
@@ -977,6 +1054,7 @@ public sealed class UpdateBarrierModule : EditorModule
 public sealed class FollowingUpdateModule : EditorModule
 {
     public static int updateCount;
+
     protected override void OnUpdate(EditorContext context) => updateCount++;
 }
 
@@ -990,16 +1068,22 @@ public sealed class TestPanel(TestModule module) : EditorPanel
     public static bool throwOnAttach;
     public static bool throwOnDetach;
     public static int pendingDetaches;
-    public override bool useWindowPadding => throwFromWindowPadding ? throw new InvalidOperationException("Injected panel presentation failure.") : true;
+
+    public override bool useWindowPadding
+        => throwFromWindowPadding ? throw new InvalidOperationException("Injected panel presentation failure.") : true;
 
     protected override void OnAttach(EditorContext context)
     {
         _ = module;
         if (attachCount == 0)
+        {
             firstAttachPrecededModuleStart = TestModule.startCount == 0;
+        }
         attachCount++;
         if (throwOnAttach)
+        {
             throw new InvalidOperationException("Injected panel attachment failure.");
+        }
     }
 
     protected override void OnDetach(EditorContext context)
@@ -1007,14 +1091,16 @@ public sealed class TestPanel(TestModule module) : EditorPanel
         detachCount++;
         ShutdownOrder.events.Add("panel.detach");
         if (pendingDetaches-- > 0)
+        {
             throw new RetirementPendingException("Panel-owned work has not drained.");
+        }
         if (throwOnDetach)
+        {
             throw new InvalidOperationException("Injected panel detach failure.");
+        }
     }
 
-    protected override void OnDraw(EditorContext context)
-    {
-    }
+    protected override void OnDraw(EditorContext context) {}
 }
 
 [StableTypeId("0fbd66e2-303e-4b35-83a1-fc2b90d58360")]
@@ -1043,24 +1129,23 @@ public sealed class SecondaryMultiPresentationEditor : ProjectSettingEditor<Mult
 public sealed class BaseResolveAction : EditorAction<BaseTarget>
 {
     protected override EditorActionState Query(EditorActionContext<BaseTarget> context) => new(true, true, displayName: "base");
-    protected override void Execute(EditorActionContext<BaseTarget> context)
-    {
-    }
+
+    protected override void Execute(EditorActionContext<BaseTarget> context) {}
 }
 
 [EditorAction("tests.resolve", "tests/special", priority: 100)]
 public sealed class AreaResolveAction : EditorAction<DerivedTarget>
 {
     protected override EditorActionState Query(EditorActionContext<DerivedTarget> context) => new(true, true, displayName: "area");
-    protected override void Execute(EditorActionContext<DerivedTarget> context)
-    {
-    }
+
+    protected override void Execute(EditorActionContext<DerivedTarget> context) {}
 }
 
 [EditorAction("tests.deferred")]
 public sealed class DeferredAction : EditorAction
 {
     public static int executeCount;
+
     protected override void Execute(EditorActionContext context) => executeCount++;
 }
 
@@ -1069,6 +1154,7 @@ public sealed class MetadataAction : EditorAction
 {
     public static int targetTypeReadCount;
     public static bool throwWhenRead;
+
     public override Type? targetType
     {
         get
@@ -1078,9 +1164,7 @@ public sealed class MetadataAction : EditorAction
         }
     }
 
-    protected override void Execute(EditorActionContext context)
-    {
-    }
+    protected override void Execute(EditorActionContext context) {}
 }
 
 [EditorAction("tests.multiple-shortcuts", "tests/multiple-shortcuts")]
@@ -1089,6 +1173,7 @@ public sealed class MetadataAction : EditorAction
 public sealed class MultiShortcutAction : EditorAction
 {
     public static int executeCount;
+
     protected override void Execute(EditorActionContext context) => executeCount++;
 }
 
@@ -1098,7 +1183,10 @@ public sealed class ToolbarAction : EditorAction
 {
     public static bool isChecked;
     public static int executeCount;
-    protected override EditorActionState Query(EditorActionContext context) => new(true, true, isChecked, isChecked ? "Stop Runtime" : "Start Runtime");
+
+    protected override EditorActionState Query(EditorActionContext context)
+        => new(true, true, isChecked, isChecked ? "Stop Runtime" : "Start Runtime");
+
     protected override void Execute(EditorActionContext context) => executeCount++;
 }
 
@@ -1106,6 +1194,7 @@ public sealed class ToolbarAction : EditorAction
 public sealed class ThrowAfterActivateAction : EditorAction
 {
     public static int cancelCount;
+
     protected override void Execute(EditorActionContext context)
     {
         Activate(context);
@@ -1121,10 +1210,13 @@ public sealed class ADisposeObserverModule(EditorInteractions interactions) : Ed
     public static bool historyAvailableDuringStop;
     public static bool historyDisposedDuringDispose;
     public static int disposeCount;
+
     protected override void OnStop(EditorContext context)
     {
         if (interactions.history.isFaulted)
+        {
             return;
+        }
         using EditorHistoryTransaction transaction = interactions.history.BeginTransaction("Shutdown probe");
         historyAvailableDuringStop = transaction.Rollback().succeeded;
     }
@@ -1148,11 +1240,14 @@ public sealed class ZThrowingDisposeModule : EditorModule
 {
     public static bool throwOnDispose;
     public static int disposeCount;
+
     protected override void OnDispose()
     {
         disposeCount++;
         if (throwOnDispose)
+        {
             throw new InvalidOperationException("Injected extension disposal failure.");
+        }
     }
 }
 
@@ -1165,6 +1260,7 @@ internal static class ShutdownOrder
 public sealed class InteractionAction : EditorPresentationAction<InteractionTarget, InteractionPresentation>
 {
     private string m_value = string.Empty;
+
     protected override void Execute(EditorActionContext<InteractionTarget> context)
     {
         m_value = "Initial";
@@ -1183,7 +1279,9 @@ public sealed class InteractionAction : EditorPresentationAction<InteractionTarg
 
         m_value = presentation.value;
         if (!presentation.submit)
+        {
             return true;
+        }
         if (string.IsNullOrWhiteSpace(m_value))
         {
             context.target.validationMessage = "A name is required.";
@@ -1203,6 +1301,7 @@ public sealed class InteractionAction : EditorPresentationAction<InteractionTarg
 public sealed class CommitOnPresentationLostAction : EditorAction<InteractionTarget>
 {
     private InteractionTarget? m_target;
+
     protected override void Execute(EditorActionContext<InteractionTarget> context)
     {
         m_target = context.target;
@@ -1212,7 +1311,9 @@ public sealed class CommitOnPresentationLostAction : EditorAction<InteractionTar
     protected override void OnPresentationLost()
     {
         if (m_target is not null)
+        {
             m_target.committedValue = "Committed on focus loss";
+        }
         m_target = null;
         Complete();
     }
@@ -1224,9 +1325,7 @@ public sealed class CommitOnPresentationLostAction : EditorAction<InteractionTar
 [EditorMenu("tests/menu", "Tools/Create/Asset", order: 100)]
 public sealed class MenuAction : EditorAction
 {
-    protected override void Execute(EditorActionContext context)
-    {
-    }
+    protected override void Execute(EditorActionContext context) {}
 }
 
 [EditorMenuSource("tests/menu")]
@@ -1246,6 +1345,7 @@ public sealed class DynamicMenuSource : EditorMenuSource
 public sealed class TestDrop : EditorDrop<DragSource, DropTarget>
 {
     protected override EditorDropStatus Query(EditorDropContext<DragSource, DropTarget> context) => EditorDropStatus.Accept();
+
     protected override EditorDropResult Drop(EditorDropContext<DragSource, DropTarget> context)
     {
         context.target.wasDropped = true;
@@ -1260,15 +1360,12 @@ public sealed class TestDocumentProvider : EditorDocumentProvider
     public int closeCount { get; private set; }
     public override string id => "tests.documents";
 
-    public override bool CanOpen(string assetPath) => assetPath.EndsWith(
-        ".ispriteatlas2d",
-        StringComparison.Ordinal
-    )
-        || assetPath.EndsWith(
-        ".itilemap2d",
-        StringComparison.Ordinal
-    );
+    public override bool CanOpen(string assetPath)
+        => assetPath.EndsWith(".ispriteatlas2d", StringComparison.Ordinal)
+           || assetPath.EndsWith(".itilemap2d", StringComparison.Ordinal);
+
     public override void Open(EditorDocumentContext context) => openCount++;
+
     public override bool Save(EditorDocumentContext context)
     {
         saveCount++;
@@ -1281,6 +1378,7 @@ public sealed class TestDocumentProvider : EditorDocumentProvider
 public sealed class TestViewportCoordinates : IEditorViewportCoordinateConverter
 {
     public Inno.Core.Mathematics.Vector2 ScreenToWorld(Inno.Core.Mathematics.Vector2 screenPosition) => screenPosition * 2f;
+
     public Inno.Core.Mathematics.Vector2 WorldToScreen(Inno.Core.Mathematics.Vector2 worldPosition) => worldPosition / 2f;
 }
 

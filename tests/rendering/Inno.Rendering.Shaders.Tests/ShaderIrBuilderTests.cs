@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Inno.Build.Toolchains.Bgfx.Tools;
 using Xunit;
+using Inno.Build.Toolchains.Bgfx.Tools;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -17,8 +17,13 @@ public sealed class ShaderIrBuilderTests
         ShaderIrValue scaled = builder.Binary(ShaderIrOperation.Multiply, input, builder.Constant(2f));
         ShaderIrValue clamped = builder.Binary(ShaderIrOperation.Minimum, scaled, builder.Constant(1f));
         ShaderIrBlock block = builder.Build(new Dictionary<string, ShaderIrValue> { ["color"] = clamped });
-        Assert.Equal([ShaderIrOperation.Input, ShaderIrOperation.Constant, ShaderIrOperation.Multiply,
-            ShaderIrOperation.Constant, ShaderIrOperation.Minimum], block.instructions.Select(static value => value.operation));
+        Assert.Equal([
+            ShaderIrOperation.Input,
+            ShaderIrOperation.Constant,
+            ShaderIrOperation.Multiply,
+            ShaderIrOperation.Constant,
+            ShaderIrOperation.Minimum
+        ], block.instructions.Select(static value => value.operation));
         Assert.Equal("float", block.outputs["color"].type.id);
         Assert.Equal(0x40000000UL, block.instructions[1].constantBits);
         Assert.Same(input, builder.Input("brightness", ShaderSourceType.Atomic("float")));
@@ -76,8 +81,10 @@ public sealed class ShaderIrBuilderTests
     public void MatrixConstructionSpecifiesColumnMajorOrderAndExtractionReturnsAColumn()
     {
         var builder = new ShaderIrBuilder();
-        ShaderIrValue matrix = builder.Construct(ShaderSourceType.Atomic("float2x3"),
-            Enumerable.Range(1, 6).Select(value => builder.Constant((float)value)).ToArray());
+        ShaderIrValue matrix = builder.Construct(
+            ShaderSourceType.Atomic("float2x3"),
+            Enumerable.Range(1, 6).Select(value => builder.Constant((float)value)).ToArray()
+        );
         Assert.Equal("float3", builder.Extract(matrix, 1).type.id);
         Assert.Throws<ArgumentOutOfRangeException>(() => builder.Extract(matrix, 2));
     }
@@ -101,14 +108,19 @@ public sealed class ShaderIrBuilderTests
     [Fact]
     public void MixedArithmeticAndSourceCallDeriveOutAndInOutByName()
     {
-        ShaderSourceModuleAnalysis module = Module("float Shade(float gain, out float alpha, inout vec2 uv) { alpha = gain; uv *= gain; return alpha; }");
+        ShaderSourceModuleAnalysis module = Module(
+            "float Shade(float gain, out float alpha, inout vec2 uv) { alpha = gain; uv *= gain; return alpha; }"
+        );
         Assert.True(module.succeeded);
         var builder = new ShaderIrBuilder();
         ShaderIrValue gain = builder.Binary(ShaderIrOperation.Multiply, builder.Constant(0.5f), builder.Constant(2f));
         ShaderIrValue uv = builder.Construct(ShaderSourceType.Atomic("float2"), builder.Constant(0f), builder.Constant(1f));
         // Dictionary insertion order must not become native function argument order.
         IReadOnlyDictionary<string, ShaderIrValue> outputs = builder.Call(module, "test", new Dictionary<string, ShaderIrValue>
-        { ["uv"] = uv, ["gain"] = gain });
+        {
+            ["uv"] = uv,
+            ["gain"] = gain
+        });
         Assert.Equal(["return", "output.alpha", "output.uv"], outputs.Keys);
         ShaderIrBlock block = builder.Build(outputs);
         ShaderIrInstruction call = block.instructions[^1];
@@ -125,7 +137,11 @@ public sealed class ShaderIrBuilderTests
         ShaderSourceModuleAnalysis module = Module("void Shade(inout float value) { value *= value; }");
         var builder = new ShaderIrBuilder();
         ShaderIrValue input = builder.Constant(2f);
-        IReadOnlyDictionary<string, ShaderIrValue> first = builder.Call(module, "test", new Dictionary<string, ShaderIrValue> { ["value"] = input });
+        IReadOnlyDictionary<string, ShaderIrValue> first = builder.Call(
+            module,
+            "test",
+            new Dictionary<string, ShaderIrValue> { ["value"] = input }
+        );
         _ = builder.Call(module, "test", new Dictionary<string, ShaderIrValue> { ["value"] = first["output.value"] });
         ShaderSourceModuleAnalysis voidModule = Module("void Shade() { }");
         Assert.Empty(builder.Call(voidModule, "test", new Dictionary<string, ShaderIrValue>()));
@@ -142,9 +158,16 @@ public sealed class ShaderIrBuilderTests
         ShaderSourceModuleAnalysis invalid = Module("float Other(float gain) { return gain; }");
         Assert.Throws<ArgumentException>(() => builder.Call(invalid, "test", new Dictionary<string, ShaderIrValue>()));
         Assert.Throws<ArgumentException>(() => builder.Call(module, "not-registered", new Dictionary<string, ShaderIrValue>()));
-        Assert.Throws<ArgumentException>(() => builder.Call(module, "test", new Dictionary<string, ShaderIrValue> { ["renamed"] = builder.Constant(1f) }));
-        Assert.Throws<ArgumentException>(() => builder.Call(module, "test", new Dictionary<string, ShaderIrValue> { ["gain"] = builder.Constant(1) }));
-        Assert.DoesNotContain(builder.Build(new Dictionary<string, ShaderIrValue>()).instructions, value => value.operation == ShaderIrOperation.SourceCall);
+        Assert.Throws<ArgumentException>(
+            () => builder.Call(module, "test", new Dictionary<string, ShaderIrValue> { ["renamed"] = builder.Constant(1f) })
+        );
+        Assert.Throws<ArgumentException>(
+            () => builder.Call(module, "test", new Dictionary<string, ShaderIrValue> { ["gain"] = builder.Constant(1) })
+        );
+        Assert.DoesNotContain(
+            builder.Build(new Dictionary<string, ShaderIrValue>()).instructions,
+            value => value.operation == ShaderIrOperation.SourceCall
+        );
     }
 
     [Fact]
@@ -166,6 +189,9 @@ public sealed class ShaderIrBuilderTests
 
     private sealed class NoIncludes : IShaderSourceResolver
     {
-        public ShaderSourceFile ReadInclude(string includingFile, string include) => throw new FileNotFoundException(include);
+        public ShaderSourceFile ReadInclude(
+            string includingFile,
+            string include
+        ) => throw new FileNotFoundException(include);
     }
 }

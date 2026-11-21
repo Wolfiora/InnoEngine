@@ -18,9 +18,8 @@ public static class BgfxTargetCapabilities
     /// <returns>
     /// The immutable offline validation profile for the selected target.
     /// </returns>
-    public static GraphicsCapabilities Create(
-        GraphicsApi backend
-    ) {
+    public static GraphicsCapabilities Create(GraphicsApi backend)
+    {
         GraphicsCapability features = Enum.GetValues<GraphicsCapability>()
             .Aggregate(GraphicsCapability.None, static (
                 current,
@@ -39,7 +38,7 @@ public static class BgfxTargetCapabilities
             homogeneousDepth: backend == GraphicsApi.OpenGL || backend == GraphicsApi.OpenGLES,
             formats,
             formats,
-            formats);
+            formats
+        );
     }
-
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
 using Inno.Scene;
@@ -45,11 +44,14 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
             ScenePropertyHistoryData data = ScenePropertyHistoryData.Decode(change.payload.ReadBytes());
             EngineObject? target = m_workspace.Find<EngineObject>(data.targetId);
             if (target is null || target.isDestroyed)
+            {
                 return EditorHistoryAvailability.Unavailable($"Scene object '{data.targetId}' is no longer available.");
+            }
             if (target is not ISerializable serializable)
             {
                 return EditorHistoryAvailability.Unavailable(
-                    $"Scene object '{data.targetId}' is not serializable in the current generation.");
+                    $"Scene object '{data.targetId}' is not serializable in the current generation."
+                );
             }
             HashSet<string> currentProperties = ScenePropertySerialization
                 .CapturePropertySnapshots(target, m_workspace.serialization, m_workspace.assets)
@@ -57,10 +59,11 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
                 .ToHashSet(StringComparer.Ordinal);
             bool propertiesExist = data.deltas.All(delta => currentProperties.Contains(delta.propertyName));
             return propertiesExist
-                ? EditorHistoryAvailability.Available()
-                : EditorHistoryAvailability.Unavailable(
-                    $"One or more properties affected by '{data.propertyName}' no longer exist on " +
-                    $"scene object '{data.targetId}'.");
+                   ? EditorHistoryAvailability.Available()
+                   : EditorHistoryAvailability.Unavailable(
+                       $"One or more properties affected by '{data.propertyName}' no longer exist on "
+                       + $"scene object '{data.targetId}'."
+                   );
         }
         catch (Exception exception)
         {
@@ -95,7 +98,9 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
             data = ScenePropertyHistoryData.Decode(change.payload.ReadBytes());
             target = m_workspace.Find<EngineObject>(data.targetId);
             if (target is null || target.isDestroyed)
+            {
                 return EditorHistoryResult.Failure($"Scene object '{data.targetId}' is no longer available.");
+            }
         }
         catch (Exception exception)
         {
@@ -110,7 +115,8 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
                     target,
                     delta.propertyName,
                     m_workspace.serialization,
-                    m_workspace.assets))
+                    m_workspace.assets
+                ))
                 .ToArray();
         }
         catch (Exception exception)
@@ -128,12 +134,15 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
             try
             {
                 for (int index = 0; index < rollback.Length; index++)
+                {
                     RestoreOne(target, rollback[index]);
+                }
             }
             catch (Exception rollbackException)
             {
                 return StateIntegrityFailure(
-                    $"Scene property restore failed: {exception.Message} Rollback failed: {rollbackException.Message}");
+                    $"Scene property restore failed: {exception.Message} Rollback failed: {rollbackException.Message}"
+                );
             }
             return EditorHistoryResult.Failure(exception.Message);
         }
@@ -148,7 +157,9 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
         bool useAfter
     ) {
         for (int index = 0; index < deltas.Count; index++)
+        {
             RestoreOne(target, useAfter ? deltas[index].after : deltas[index].before);
+        }
     }
 
     private void RestoreOne(
@@ -159,9 +170,12 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
             target,
             data,
             m_workspace.serialization,
-            m_workspace.assets);
+            m_workspace.assets
+        );
         if (!IsComplete(result))
+        {
             throw new InvalidOperationException("The scene property restore was incomplete.");
+        }
     }
 
     /// <summary>
@@ -186,23 +200,27 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
     ) {
         merged = null;
         if (!string.Equals(older.mergeKey, newer.mergeKey, StringComparison.Ordinal) || older.mergeKey is null)
+        {
             return false;
+        }
         try
         {
             ScenePropertyHistoryData previous = ScenePropertyHistoryData.Decode(older.payload.ReadBytes());
             ScenePropertyHistoryData current = ScenePropertyHistoryData.Decode(newer.payload.ReadBytes());
-            if (previous.targetId != current.targetId ||
-                !string.Equals(previous.propertyName, current.propertyName, StringComparison.Ordinal) ||
-                Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS)
-            {
+            if (previous.targetId != current.targetId
+                || !string.Equals(previous.propertyName, current.propertyName, StringComparison.Ordinal)
+                || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > C_MERGE_WINDOW_SECONDS
+            ) {
                 return false;
             }
             IReadOnlyDictionary<string, ScenePropertyValueDelta> previousByName = previous.deltas.ToDictionary(
                 static delta => delta.propertyName,
-                StringComparer.Ordinal);
+                StringComparer.Ordinal
+            );
             IReadOnlyDictionary<string, ScenePropertyValueDelta> currentByName = current.deltas.ToDictionary(
                 static delta => delta.propertyName,
-                StringComparer.Ordinal);
+                StringComparer.Ordinal
+            );
             string[] names = previous.deltas
                 .Select(static delta => delta.propertyName)
                 .Concat(current.deltas.Select(static delta => delta.propertyName))
@@ -212,24 +230,29 @@ internal sealed class ScenePropertyHistoryHandler : EditorHistoryHandler
                 .Select(name => new ScenePropertyValueDelta(
                     name,
                     previousByName.TryGetValue(name, out ScenePropertyValueDelta? previousDelta)
-                        ? previousDelta.before
-                        : currentByName[name].before,
+                    ? previousDelta.before
+                    : currentByName[name].before,
                     currentByName.TryGetValue(name, out ScenePropertyValueDelta? currentDelta)
-                        ? currentDelta.after
-                        : previousByName[name].after))
+                    ? currentDelta.after
+                    : previousByName[name].after
+                ))
                 .Where(static delta => !delta.before.AsSpan().SequenceEqual(delta.after))
                 .ToArray();
             if (deltas.Length == 0)
+            {
                 return false;
+            }
             var data = new ScenePropertyHistoryData(
                 previous.targetId,
                 previous.propertyName,
                 deltas,
-                current.timestamp);
+                current.timestamp
+            );
             merged = new EditorHistoryChange(
                 SceneHistoryKinds.Property,
                 EditorHistoryPayload.FromBytes(data.Encode()),
-                older.mergeKey);
+                older.mergeKey
+            );
             return true;
         }
         catch

@@ -62,13 +62,17 @@ public sealed class BuildPlatformContribution
         ArgumentNullException.ThrowIfNull(supportPackSource);
         ArgumentNullException.ThrowIfNull(toolchainProvider);
         if (descriptor.id != supportPackSource.target)
+        {
             throw new ArgumentException("A platform source must match its declared target.", nameof(supportPackSource));
+        }
         string? editor = editorProject?.Replace('\\', '/');
         if (descriptor.supportsEditor != (editor is not null)
             || editor is not null && (editor.StartsWith('/') || editor.Contains(':')
-                || !editor.EndsWith(".csproj", StringComparison.Ordinal)
-                || editor.Split('/').Any(static segment => segment is "" or "." or "..")))
+                                      || !editor.EndsWith(".csproj", StringComparison.Ordinal)
+                                      || editor.Split('/').Any(static segment => segment is "" or "." or ".."))
+        ) {
             throw new ArgumentException("Editor capability requires one explicit contained product project.", nameof(editorProject));
+        }
         this.descriptor = descriptor;
         this.bindingGenerator = bindingGenerator;
         this.factory = factory;
@@ -77,13 +81,22 @@ public sealed class BuildPlatformContribution
         this.editorProject = editor;
         var products = new Dictionary<string, NativeProductContribution>(StringComparer.Ordinal);
         foreach (NativeProductContribution product in nativeProducts ?? [])
+        {
             if (product is null || !products.TryAdd(product.plan.productId, product))
-                throw new ArgumentException("Native product plans must be complete and have unique product identities.", nameof(nativeProducts));
+            {
+                throw new ArgumentException(
+                    "Native product plans must be complete and have unique product identities.",
+                    nameof(nativeProducts)
+                );
+            }
+        }
         this.nativeProducts = new ReadOnlyDictionary<string, NativeProductContribution>(products);
         ManagedDeploymentId[] deployments = (managedDeployments ?? []).ToArray();
         if (deployments.Any(static id => string.IsNullOrWhiteSpace(id.value))
-            || deployments.Distinct().Count() != deployments.Length)
+            || deployments.Distinct().Count() != deployments.Length
+        ) {
             throw new ArgumentException("Platform deployment identities must be assigned and unique.", nameof(managedDeployments));
+        }
         this.managedDeployments = Array.AsReadOnly(deployments);
     }
 
@@ -116,6 +129,7 @@ public sealed class BuildPlatformContribution
     /// Gets the frozen ordinary product-build closures explicitly contributed by this target.
     /// </summary>
     public IReadOnlyDictionary<string, NativeProductContribution> nativeProducts { get; }
+
     /// <summary>
     /// Gets the target-owned generator, or null when no binding capability is registered.
     /// </summary>
@@ -125,5 +139,4 @@ public sealed class BuildPlatformContribution
     /// Gets the deployment identities this platform authorizes for its declared managed runtime target.
     /// </summary>
     public IReadOnlyList<ManagedDeploymentId> managedDeployments { get; }
-
 }

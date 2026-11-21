@@ -31,7 +31,9 @@ public sealed class AnimationBindingProviderAttribute : Attribute
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentException.ThrowIfNullOrWhiteSpace(bindingId);
         if (!Enum.IsDefined(kind))
+        {
             throw new ArgumentException("A defined animation value kind is required.", nameof(kind));
+        }
         this.id = id;
         this.bindingId = new AnimationBindingId(bindingId);
         this.kind = kind;

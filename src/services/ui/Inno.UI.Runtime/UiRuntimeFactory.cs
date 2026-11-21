@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
 
@@ -32,7 +31,8 @@ public sealed class UiRuntimeFactory : IRuntimeSubsystemFactory
         dependencies:
         [
             new RuntimeSubsystemId("inno.runtime.input")
-        ]);
+        ]
+    );
 
     /// <summary>
     /// Creates one session-owned UI runtime.
@@ -47,6 +47,6 @@ public sealed class UiRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         return m_runtimeFactory(context)
-            ?? throw new InvalidOperationException("The UI runtime factory returned null.");
+               ?? throw new InvalidOperationException("The UI runtime factory returned null.");
     }
 }

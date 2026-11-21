@@ -7,13 +7,14 @@ using System.Numerics;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Native.ImGui;
 using Inno.Rendering.Shaders;
-using Xunit;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.Scripting.Tests;
@@ -30,7 +31,9 @@ public sealed partial class ShaderEditorWorkflowTests
         string? input = inputRoot is null ? null : Path.Combine(Path.GetFullPath(inputRoot), "shader-graph");
         const string name = "Performance.ishader";
         if (input is not null && Directory.Exists(input))
+        {
             CopyPerformanceInput(input, source);
+        }
         else
         {
             GraphDocument graph = ShaderGraphTemplates.CreateRaster(m_serialization, AssetSerializationContext.Create(m_assets));
@@ -38,32 +41,46 @@ public sealed partial class ShaderEditorWorkflowTests
             for (int index = 0; index < remaining; index++)
             {
                 bool constant = index % 2 == 0;
-                var node = new GraphNodeRecord(new("performance.node." + index.ToString("D4")),
-                    constant ? "inno.shader.constant" : "inno.shader.construct")
+                var node = new GraphNodeRecord(
+                    new("performance.node." + index.ToString("D4")),
+                    constant ? "inno.shader.constant" : "inno.shader.construct"
+                )
                 {
                     position = new(index % 20 * 310f, index / 20 * 180f)
                 };
                 if (!constant)
+                {
                     node.SetValue("type", ShaderGraphDocument.Encode("float3", m_serialization, SerializationContext.empty));
+                }
                 graph.AddNode(node);
                 if (!constant)
-                    graph.AddEdge(new(new("performance.edge." + index.ToString("D4")),
-                        new(new("performance.node." + (index - 1).ToString("D4")), new("value")),
-                        new(node.id, new("component.0"))));
+                {
+                    graph.AddEdge(
+                        new(
+                            new("performance.edge." + index.ToString("D4")),
+                            new(new("performance.node." + (index - 1).ToString("D4")), new("value")),
+                            new(node.id, new("component.0"))
+                        )
+                    );
+                }
             }
             File.WriteAllBytes(Path.Combine(source, name), GraphDocumentCodec.Encode(graph, m_serialization));
         }
         Assert.True(m_assets.Import(AssetPath.Project(name)));
         Assert.True(m_assets.TryGetFileSystemEntry(AssetPath.Project(name), out AssetFileEntry entry));
         if (input is not null && !Directory.Exists(input))
+        {
             CopyPerformanceInput(source, input);
+        }
         byte[] original = SHA256.HashData(File.ReadAllBytes(Path.Combine(source, name)));
         SelectAndDraw(entry);
         var controller = Controller(entry);
         Assert.Equal(2_000, controller.document.nodes.Count);
         Assert.True(controller.document.edges.Count >= 900);
         for (int warmup = 0; warmup < 5; warmup++)
+        {
             DrawPerformanceCanvas();
+        }
         string? requested = Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_REPETITIONS");
         int repetitions = requested is null ? 5 : int.Parse(requested, System.Globalization.CultureInfo.InvariantCulture);
         Assert.InRange(repetitions, 1, 5);
@@ -92,8 +109,13 @@ public sealed partial class ShaderEditorWorkflowTests
             double[] sorted = milliseconds.Order().ToArray();
             samples.Add(new
             {
-                repetition, milliseconds, vertices, indices, median = (sorted[4] + sorted[5]) / 2,
-                p95 = sorted[9], allocatedBytes = allocated,
+                repetition,
+                milliseconds,
+                vertices,
+                indices,
+                median = (sorted[4] + sorted[5]) / 2,
+                p95 = sorted[9],
+                allocatedBytes = allocated,
                 totalAllocatedBytes = GC.GetTotalAllocatedBytes(precise: true) - totalBytesBefore,
                 cpuMilliseconds = (process.TotalProcessorTime - cpuBefore).TotalMilliseconds,
                 gen0Collections = GC.CollectionCount(0) - gen0,
@@ -101,17 +123,27 @@ public sealed partial class ShaderEditorWorkflowTests
                 gen2Collections = GC.CollectionCount(2) - gen2
             });
         }
-        m_performanceOutput.WriteLine(JsonSerializer.Serialize(new
-        {
-            workload = "2000-shader-nodes", nodeCount = controller.document.nodes.Count,
-            edgeCount = controller.document.edges.Count,
-            configuration = typeof(ShaderEditorWorkflowTests).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration
-                ?? throw new InvalidOperationException("The benchmark assembly has no SDK configuration metadata."),
-            samples,
-            framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
-            viewport = "1200x800", warmupFrames = 5, measuredFramesPerRepetition = 10,
-            sharedInput = input, consumer = "native-command-offset-validation", supportsVertexOffsets = true
-        }));
+        m_performanceOutput.WriteLine(
+            JsonSerializer.Serialize(new
+            {
+                workload = "2000-shader-nodes",
+                nodeCount = controller.document.nodes.Count,
+                edgeCount = controller.document.edges.Count,
+                configuration = typeof(ShaderEditorWorkflowTests)
+                    .Assembly
+                    .GetCustomAttribute<AssemblyConfigurationAttribute>()
+                    ?.Configuration
+                                ?? throw new InvalidOperationException("The benchmark assembly has no SDK configuration metadata."),
+                samples,
+                framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+                viewport = "1200x800",
+                warmupFrames = 5,
+                measuredFramesPerRepetition = 10,
+                sharedInput = input,
+                consumer = "native-command-offset-validation",
+                supportsVertexOffsets = true
+            })
+        );
         Assert.Equal(original, SHA256.HashData(File.ReadAllBytes(Path.Combine(source, name))));
     }
 
@@ -127,10 +159,16 @@ public sealed partial class ShaderEditorWorkflowTests
                 ImDrawCmd command = list->CmdBuffer.Data[commandIndex];
                 ulong end = (ulong)command.IdxOffset + command.ElemCount;
                 if (end > (ulong)list->IdxBuffer.Size)
+                {
                     throw new InvalidOperationException("The shader canvas exceeded its native index buffer.");
+                }
                 for (ulong index = command.IdxOffset; index < end; index++)
+                {
                     if ((ulong)command.VtxOffset + list->IdxBuffer.Data[index] >= (ulong)list->VtxBuffer.Size)
+                    {
                         throw new InvalidOperationException("The shader canvas exceeded its native vertex buffer.");
+                    }
+                }
             }
         }
     }
@@ -141,8 +179,12 @@ public sealed partial class ShaderEditorWorkflowTests
     ) {
         Directory.CreateDirectory(destination);
         foreach (string directory in Directory.EnumerateDirectories(source, "*", SearchOption.AllDirectories))
+        {
             Directory.CreateDirectory(Path.Combine(destination, Path.GetRelativePath(source, directory)));
+        }
         foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
+        {
             File.Copy(file, Path.Combine(destination, Path.GetRelativePath(source, file)), overwrite: false);
+        }
     }
 }

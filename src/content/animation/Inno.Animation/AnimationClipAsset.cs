@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
@@ -27,7 +26,9 @@ public struct AnimationKeyframe
         AnimationValue value
     ) {
         if (!float.IsFinite(time) || time < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(time));
+        }
         this.time = time;
         this.value = value;
     }
@@ -53,9 +54,7 @@ public sealed class AnimationTrack : ISerializable
     /// <summary>
     /// Creates an empty track for structured deserialization.
     /// </summary>
-    public AnimationTrack()
-    {
-    }
+    public AnimationTrack() {}
 
     /// <summary>
     /// Creates one validated animation track.
@@ -104,16 +103,22 @@ public sealed class AnimationTrack : ISerializable
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bindingId);
         if (keyframes is null || keyframes.Length == 0)
+        {
             throw new InvalidOperationException($"Animation track '{bindingId}' requires at least one keyframe.");
+        }
         AnimationValueKind kind = keyframes[0].value.kind;
         float previous = -1f;
         for (int index = 0; index < keyframes.Length; index++)
         {
             AnimationKeyframe keyframe = keyframes[index];
             if (!float.IsFinite(keyframe.time) || keyframe.time < previous || keyframe.time > duration)
+            {
                 throw new InvalidOperationException($"Animation track '{bindingId}' contains invalid keyframe times.");
+            }
             if (keyframe.value.kind != kind)
+            {
                 throw new InvalidOperationException($"Animation track '{bindingId}' mixes incompatible value kinds.");
+            }
             previous = keyframe.time;
         }
     }
@@ -176,27 +181,37 @@ public sealed class AnimationClipAsset : AssetObject
     public void Validate()
     {
         if (!float.IsFinite(duration) || duration <= 0f)
+        {
             throw new InvalidOperationException("An animation clip requires a positive finite duration.");
+        }
         if (tracks is null || events is null)
+        {
             throw new InvalidOperationException("Animation clip collections cannot be null.");
+        }
         var bindings = new HashSet<string>(StringComparer.Ordinal);
         for (int index = 0; index < tracks.Length; index++)
         {
             AnimationTrack track = tracks[index]
-                ?? throw new InvalidOperationException("Animation clip tracks cannot contain null entries.");
+                                   ?? throw new InvalidOperationException("Animation clip tracks cannot contain null entries.");
             track.Validate(duration);
             if (!bindings.Add(track.bindingId))
+            {
                 throw new InvalidOperationException($"Animation binding '{track.bindingId}' is duplicated.");
+            }
         }
         float previous = -1f;
         for (int index = 0; index < events.Length; index++)
         {
             AnimationEventMarker marker = events[index]
-                ?? throw new InvalidOperationException("Animation clip events cannot contain null entries.");
+                                          ?? throw new InvalidOperationException("Animation clip events cannot contain null entries.");
             if (!float.IsFinite(marker.time) || marker.time < previous || marker.time > duration)
+            {
                 throw new InvalidOperationException("Animation clip event markers must be ordered within its duration.");
+            }
             if (string.IsNullOrWhiteSpace(marker.eventId))
+            {
                 throw new InvalidOperationException("Animation event markers require stable event identifiers.");
+            }
             marker.payload ??= [];
             previous = marker.time;
         }

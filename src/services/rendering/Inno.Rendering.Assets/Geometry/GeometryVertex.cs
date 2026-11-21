@@ -1,8 +1,8 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -59,4 +59,3 @@ public readonly record struct GeometryVertex
     /// </summary>
     public Vector2 textureCoordinate { get; }
 }
-

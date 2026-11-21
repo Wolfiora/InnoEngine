@@ -1,6 +1,5 @@
 using System;
 using System.Buffers.Binary;
-
 using Inno.Assets;
 using Inno.Extensibility.Types;
 
@@ -79,12 +78,15 @@ public static class FontMetadataCodec
     public static FontMetadata Decode(ReadOnlySpan<byte> payload)
     {
         if (payload.Length != C_SIZE || BinaryPrimitives.ReadUInt32LittleEndian(payload) != C_MAGIC)
+        {
             throw new InvalidOperationException("The font runtime payload is invalid.");
+        }
         try
         {
             return new FontMetadata(
                 BinaryPrimitives.ReadInt32LittleEndian(payload[4..]),
-                BinaryPrimitives.ReadInt64LittleEndian(payload[8..]));
+                BinaryPrimitives.ReadInt64LittleEndian(payload[8..])
+            );
         }
         catch (ArgumentOutOfRangeException exception)
         {

@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported tab bar flags choices at the Editor presentation boundary.
 /// </summary>
@@ -58,5 +59,5 @@ public enum ImGuiTabBarFlags : int
     /// <summary>
     /// Selects the fitting policy default presentation behavior.
     /// </summary>
-    FittingPolicyDefault = (int)Inno.Native.ImGui.ImGuiTabBarFlags.FittingPolicyDefault,
+    FittingPolicyDefault = (int)Inno.Native.ImGui.ImGuiTabBarFlags.FittingPolicyDefault
 }

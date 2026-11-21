@@ -1,18 +1,19 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
-using Inno.Editor.Annotations;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
+using Inno.Editor.Annotations;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Editor.Inspection.Tests;
+
 public sealed class ConditionalInspectionTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "inno-inspection-" + Guid.NewGuid().ToString("N"));
@@ -21,13 +22,19 @@ public sealed class ConditionalInspectionTests : IDisposable
     private readonly SerializationRegistry m_serialization;
     private readonly LogRouter m_logs = new();
     private readonly EditorInteractionRuntime m_runtime;
+
     public ConditionalInspectionTests()
     {
         Directory.CreateDirectory(m_root);
         m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConditionalInspectionTests).Assembly) });
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
-        m_runtime = new(new EditorContext(m_root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")), m_types, m_logs, [m_types, m_serialization]);
+        m_runtime = new(
+            new EditorContext(m_root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            m_types,
+            m_logs,
+            [m_types, m_serialization]
+        );
         m_runtime.Start();
     }
 
@@ -42,9 +49,13 @@ public sealed class ConditionalInspectionTests : IDisposable
         Assert.IsType<ConditionalFirst>(first);
         Assert.True(inspectors.TryResolveExact(m_runtime.context, new ConditionalTarget(2, false), renderer, out var second, out _));
         Assert.IsType<ConditionalSecond>(second);
-        InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => inspectors.TryResolve(m_runtime.context, new ConditionalTarget(2, true), renderer, out _, out _));
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(
+            () => inspectors.TryResolve(m_runtime.context, new ConditionalTarget(2, true), renderer, out _, out _)
+        );
         Assert.Contains("both accept", error.Message);
-        Assert.Throws<InvalidOperationException>(() => inspectors.TryResolveExact(m_runtime.context, new ConditionalTarget(2, true), renderer, out _, out _));
+        Assert.Throws<InvalidOperationException>(
+            () => inspectors.TryResolveExact(m_runtime.context, new ConditionalTarget(2, true), renderer, out _, out _)
+        );
         IInspectionDrawer CreateDrawer(Type type) => (IInspectionDrawer)Activator.CreateInstance(type, nonPublic: true)!;
     }
 
@@ -60,7 +71,12 @@ public sealed class ConditionalInspectionTests : IDisposable
         Assert.False(renderer.GetPropertyAvailability(target, conditional).isVisible);
         target.visible = true;
         Assert.True(renderer.GetPropertyAvailability(target, conditional).isVisible);
-        Assert.True(renderer.GetPropertyAvailability(target, values.Single(value => value.name == nameof(AvailabilityTarget.readOnlyValue))).isReadOnly);
+        Assert.True(
+            renderer.GetPropertyAvailability(
+                target,
+                values.Single(value => value.name == nameof(AvailabilityTarget.readOnlyValue))
+            ).isReadOnly
+        );
     }
 
     [StableTypeId("eeeb7c59-2af3-4cc3-81d2-c853feef3874")]
@@ -79,21 +95,23 @@ public sealed class ConditionalInspectionTests : IDisposable
         int kind,
         bool ambiguous
     );
+
     [InspectionDrawer(typeof(ConditionalTarget), conditional: true)]
     public sealed class ConditionalFirst : InspectionDrawer<ConditionalTarget>
     {
         public override string icon => "";
 
         protected override bool CanInspect(ConditionalTarget target) => target.kind == 1;
+
         protected override (string name, Action<string>? setter) BindName(
             InspectionDrawContext context,
             ConditionalTarget target
         ) => ("First", null);
+
         protected override void Draw(
             InspectionDrawContext context,
             ConditionalTarget target
-        ) {
-        }
+        ) {}
     }
 
     [InspectionDrawer(typeof(ConditionalTarget), conditional: true)]
@@ -102,15 +120,16 @@ public sealed class ConditionalInspectionTests : IDisposable
         public override string icon => "";
 
         protected override bool CanInspect(ConditionalTarget target) => target.kind == 2;
+
         protected override (string name, Action<string>? setter) BindName(
             InspectionDrawContext context,
             ConditionalTarget target
         ) => ("Second", null);
+
         protected override void Draw(
             InspectionDrawContext context,
             ConditionalTarget target
-        ) {
-        }
+        ) {}
     }
 
     [InspectionDrawer(typeof(ConditionalTarget), conditional: true)]
@@ -119,15 +138,16 @@ public sealed class ConditionalInspectionTests : IDisposable
         public override string icon => "";
 
         protected override bool CanInspect(ConditionalTarget target) => target.ambiguous;
+
         protected override (string name, Action<string>? setter) BindName(
             InspectionDrawContext context,
             ConditionalTarget target
         ) => ("Overlap", null);
+
         protected override void Draw(
             InspectionDrawContext context,
             ConditionalTarget target
-        ) {
-        }
+        ) {}
     }
 
     private sealed class ProbePropertyEdits : IInspectionPropertyEditService

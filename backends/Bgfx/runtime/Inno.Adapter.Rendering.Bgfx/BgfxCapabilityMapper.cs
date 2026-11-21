@@ -127,24 +127,24 @@ internal static class BgfxCapabilityMapper
             bgfx.TextureFormat nativeFormat = ToNativeFormat(format);
             bgfx.CapsFormatFlags formatCaps = (bgfx.CapsFormatFlags)caps->formats[(int)nativeFormat];
             bgfx.CapsFormatFlags sampledFlag = format == RenderTextureFormat.RGBA8Srgb
-                ? bgfx.CapsFormatFlags.Texture2dSrgb
-                : bgfx.CapsFormatFlags.Texture2d;
+                                               ? bgfx.CapsFormatFlags.Texture2dSrgb
+                                               : bgfx.CapsFormatFlags.Texture2d;
             if ((formatCaps & sampledFlag) != 0)
             {
                 sampled.Add(format);
             }
 
             bgfx.CapsFormatFlags sampled3DFlag = format == RenderTextureFormat.RGBA8Srgb
-                ? bgfx.CapsFormatFlags.Texture3dSrgb
-                : bgfx.CapsFormatFlags.Texture3d;
+                                                 ? bgfx.CapsFormatFlags.Texture3dSrgb
+                                                 : bgfx.CapsFormatFlags.Texture3d;
             if ((formatCaps & sampled3DFlag) != 0)
             {
                 sampled3D.Add(format);
             }
 
             bgfx.CapsFormatFlags sampledCubeFlag = format == RenderTextureFormat.RGBA8Srgb
-                ? bgfx.CapsFormatFlags.TextureCubeSrgb
-                : bgfx.CapsFormatFlags.TextureCube;
+                                                   ? bgfx.CapsFormatFlags.TextureCubeSrgb
+                                                   : bgfx.CapsFormatFlags.TextureCube;
             if ((formatCaps & sampledCubeFlag) != 0)
             {
                 sampledCube.Add(format);
@@ -178,7 +178,8 @@ internal static class BgfxCapabilityMapper
                 checked((int)caps->limits.maxViews),
                 checked((int)caps->limits.maxFBAttachments),
                 checked((int)caps->limits.maxTextureSize),
-                checked((int)caps->limits.maxComputeBindings)),
+                checked((int)caps->limits.maxComputeBindings)
+            ),
             sampled,
             renderTargets,
             storageRead,
@@ -187,7 +188,8 @@ internal static class BgfxCapabilityMapper
             caps->homogeneousDepth != 0,
             sampled3D,
             sampledCube,
-            multisampleRenderTargets);
+            multisampleRenderTargets
+        );
     }
 
     /// <summary>
@@ -202,21 +204,37 @@ internal static class BgfxCapabilityMapper
     public static bgfx.RendererType ToNativeRenderer(GraphicsApi backend)
     {
         if (backend == GraphicsApi.Noop)
+        {
             return bgfx.RendererType.Noop;
+        }
         if (backend == GraphicsApi.Direct3D11)
+        {
             return bgfx.RendererType.Direct3d11;
+        }
         if (backend == GraphicsApi.Direct3D12)
+        {
             return bgfx.RendererType.Direct3d12;
+        }
         if (backend == GraphicsApi.Metal)
+        {
             return bgfx.RendererType.Metal;
+        }
         if (backend == GraphicsApi.Vulkan)
+        {
             return bgfx.RendererType.Vulkan;
+        }
         if (backend == GraphicsApi.OpenGL)
+        {
             return bgfx.RendererType.OpenGL;
+        }
         if (backend == GraphicsApi.OpenGLES)
+        {
             return bgfx.RendererType.OpenGLES;
+        }
         if (backend == GraphicsApi.WebGPU)
+        {
             return bgfx.RendererType.WebGPU;
+        }
         throw new NotSupportedException($"BGFX does not support graphics backend '{backend}'.");
     }
 
@@ -231,17 +249,17 @@ internal static class BgfxCapabilityMapper
     /// </returns>
     public static GraphicsApi ToGraphicsApi(bgfx.RendererType backend)
         => backend switch
-        {
-            bgfx.RendererType.Noop => GraphicsApi.Noop,
-            bgfx.RendererType.Direct3d11 => GraphicsApi.Direct3D11,
-            bgfx.RendererType.Direct3d12 => GraphicsApi.Direct3D12,
-            bgfx.RendererType.Metal => GraphicsApi.Metal,
-            bgfx.RendererType.Vulkan => GraphicsApi.Vulkan,
-            bgfx.RendererType.OpenGL => GraphicsApi.OpenGL,
-            bgfx.RendererType.OpenGLES => GraphicsApi.OpenGLES,
-            bgfx.RendererType.WebGPU => GraphicsApi.WebGPU,
-            _ => throw new NotSupportedException($"BGFX renderer '{backend}' has no public Rendering.Core mapping.")
-        };
+    {
+        bgfx.RendererType.Noop => GraphicsApi.Noop,
+        bgfx.RendererType.Direct3d11 => GraphicsApi.Direct3D11,
+        bgfx.RendererType.Direct3d12 => GraphicsApi.Direct3D12,
+        bgfx.RendererType.Metal => GraphicsApi.Metal,
+        bgfx.RendererType.Vulkan => GraphicsApi.Vulkan,
+        bgfx.RendererType.OpenGL => GraphicsApi.OpenGL,
+        bgfx.RendererType.OpenGLES => GraphicsApi.OpenGLES,
+        bgfx.RendererType.WebGPU => GraphicsApi.WebGPU,
+        _ => throw new NotSupportedException($"BGFX renderer '{backend}' has no public Rendering.Core mapping.")
+    };
 
     /// <summary>
     /// Converts this value to its native format representation.
@@ -254,17 +272,17 @@ internal static class BgfxCapabilityMapper
     /// </returns>
     public static bgfx.TextureFormat ToNativeFormat(RenderTextureFormat format)
         => format switch
-        {
-            RenderTextureFormat.R8 => bgfx.TextureFormat.R8,
-            RenderTextureFormat.RG8 => bgfx.TextureFormat.RG8,
-            RenderTextureFormat.RGBA8 => bgfx.TextureFormat.RGBA8,
-            RenderTextureFormat.RGBA8Srgb => bgfx.TextureFormat.RGBA8,
-            RenderTextureFormat.RGB10A2 => bgfx.TextureFormat.RGB10A2,
-            RenderTextureFormat.RG11B10Float => bgfx.TextureFormat.RG11B10F,
-            RenderTextureFormat.RGBA16Float => bgfx.TextureFormat.RGBA16F,
-            RenderTextureFormat.R32Float => bgfx.TextureFormat.R32f,
-            RenderTextureFormat.Depth24Stencil8 => bgfx.TextureFormat.D24s8,
-            RenderTextureFormat.Depth32Float => bgfx.TextureFormat.D32f,
-            _ => throw new ArgumentOutOfRangeException(nameof(format))
-        };
+    {
+        RenderTextureFormat.R8 => bgfx.TextureFormat.R8,
+        RenderTextureFormat.RG8 => bgfx.TextureFormat.RG8,
+        RenderTextureFormat.RGBA8 => bgfx.TextureFormat.RGBA8,
+        RenderTextureFormat.RGBA8Srgb => bgfx.TextureFormat.RGBA8,
+        RenderTextureFormat.RGB10A2 => bgfx.TextureFormat.RGB10A2,
+        RenderTextureFormat.RG11B10Float => bgfx.TextureFormat.RG11B10F,
+        RenderTextureFormat.RGBA16Float => bgfx.TextureFormat.RGBA16F,
+        RenderTextureFormat.R32Float => bgfx.TextureFormat.R32f,
+        RenderTextureFormat.Depth24Stencil8 => bgfx.TextureFormat.D24s8,
+        RenderTextureFormat.Depth32Float => bgfx.TextureFormat.D32f,
+        _ => throw new ArgumentOutOfRangeException(nameof(format))
+    };
 }

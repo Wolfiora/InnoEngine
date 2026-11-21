@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Inno.Build;
 using Xunit;
+using Inno.Build;
 
 namespace Inno.Scripting.Compiler.Tests;
 
@@ -14,8 +14,10 @@ public sealed class SdkCompilationInputsTests
     public void SelectedSdkSuppliesFrameworkSymbolsAndIdeReferences()
     {
         using var fixture = new CompilerFixture();
-        string host = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string host = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         ScriptCompilationInputs inputs = new SdkScriptCompilationEnvironment(host, fixture.projectRoot).Capture();
         Assert.Contains("NET10_0", inputs.predefinedSymbols);
         Assert.Contains("NET10_0_OR_GREATER", inputs.predefinedSymbols);
@@ -37,8 +39,12 @@ public sealed class SdkCompilationInputsTests
         Assert.Contains("ValidateInnoScriptSdk", project, StringComparison.Ordinal);
         Assert.Contains("<DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>", project, StringComparison.Ordinal);
         foreach (string path in inputs.frameworkReferences)
+        {
             Assert.Contains(path.Replace("&", "&amp;", StringComparison.Ordinal), project, StringComparison.Ordinal);
-        Assert.Empty(Directory.EnumerateFiles(Path.Combine(fixture.projectRoot, "Library", "Scripting"), "*.csproj", SearchOption.AllDirectories));
+        }
+        Assert.Empty(
+            Directory.EnumerateFiles(Path.Combine(fixture.projectRoot, "Library", "Scripting"), "*.csproj", SearchOption.AllDirectories)
+        );
     }
 
     [Fact]
@@ -61,8 +67,10 @@ public sealed class SdkCompilationInputsTests
         using var fixture = new CompilerFixture();
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
-        string host = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string host = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         var provider = new SdkScriptCompilationEnvironment(host, fixture.projectRoot);
         Assert.ThrowsAny<OperationCanceledException>(() => provider.Capture(cancellation.Token));
         Assert.Empty(Directory.EnumerateFiles(Path.Combine(fixture.projectRoot, "Library"), "*.csproj", SearchOption.AllDirectories));

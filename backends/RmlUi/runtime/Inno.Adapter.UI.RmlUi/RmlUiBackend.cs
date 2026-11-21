@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 using Inno.Native.UI;
@@ -21,10 +20,14 @@ public sealed unsafe class RmlUiBackend : IUiBackend
 {
     private static readonly UiBackendCapabilities S_CAPABILITIES = new(
         [RmlUiIdentifiers.documentLanguage],
-        supportsFontCollectionFaces: false);
+        supportsFontCollectionFaces: false
+    );
+
     private static readonly Regex S_FONT_FAMILY = new(
         @"(?im)(font-family\s*:\s*)([^;}]+)",
-        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        RegexOptions.Compiled | RegexOptions.CultureInvariant
+    );
+
     private InnoUIRmlUiAdapterRuntime* m_runtime;
     private readonly Dictionary<string, string> m_fontAliases = new(StringComparer.OrdinalIgnoreCase);
     private bool m_disposed;
@@ -46,7 +49,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     {
         m_runtime = RmlUiNativeErrors.CreateSession();
         if (m_runtime == null)
+        {
             throw CreateNativeException("create UI runtime", Result.UnknownError);
+        }
     }
 
     /// <summary>
@@ -62,8 +67,17 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     {
         EnsureActive();
         ulong value = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.CreateContext(
-            m_runtime, options.name, options.width, options.height, options.density, ref value), "create UI context");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.CreateContext(
+                m_runtime,
+                options.name,
+                options.width,
+                options.height,
+                options.density,
+                ref value
+            ),
+            "create UI context"
+        );
         return new UiContextHandle(value);
     }
 
@@ -104,7 +118,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         if (!float.IsFinite(density) || density <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(density));
+        }
         ThrowIfFailed(RmlUiNativeRuntime.SetViewport(m_runtime, Require(context), width, height, density), "set UI viewport");
     }
 
@@ -128,8 +144,16 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentNullException.ThrowIfNull(source);
         EnsureRml(source.language);
         ulong document = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.LoadDocument(
-            m_runtime, Require(context), RewriteFontFamilies(source.text), source.sourceUri, ref document), "load UI document");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.LoadDocument(
+                m_runtime,
+                Require(context),
+                RewriteFontFamilies(source.text),
+                source.sourceUri,
+                ref document
+            ),
+            "load UI document"
+        );
         return new UiDocumentHandle(document);
     }
 
@@ -212,8 +236,17 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         ArgumentNullException.ThrowIfNull(text);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetInnerMarkup(
-            m_runtime, Require(context), Require(document), elementId, WebUtility.HtmlEncode(text), ref changed), "set UI text");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetInnerMarkup(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementId,
+                WebUtility.HtmlEncode(text),
+                ref changed
+            ),
+            "set UI text"
+        );
         return changed != 0;
     }
 
@@ -245,13 +278,17 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         EnsureRml(content.language);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetInnerMarkup(
-            m_runtime,
-            Require(context),
-            Require(document),
-            elementId,
-            RewriteFontFamilies(content.text),
-            ref changed), "set UI content");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetInnerMarkup(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementId,
+                RewriteFontFamilies(content.text),
+                ref changed
+            ),
+            "set UI content"
+        );
         return changed != 0;
     }
 
@@ -288,14 +325,18 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(value);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetAttribute(
-            m_runtime,
-            Require(context),
-            Require(document),
-            elementId,
-            name,
-            value,
-            ref changed), "set UI attribute");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetAttribute(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementId,
+                name,
+                value,
+                ref changed
+            ),
+            "set UI attribute"
+        );
         return changed != 0;
     }
 
@@ -331,14 +372,18 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentException.ThrowIfNullOrWhiteSpace(elementId);
         ArgumentException.ThrowIfNullOrWhiteSpace(className);
         byte changed = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.SetClass(
-            m_runtime,
-            Require(context),
-            Require(document),
-            elementId,
-            className,
-            active ? (byte)1 : (byte)0,
-            ref changed), "set UI class");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.SetClass(
+                m_runtime,
+                Require(context),
+                Require(document),
+                elementId,
+                className,
+                active ? (byte)1 : (byte)0,
+                ref changed
+            ),
+            "set UI class"
+        );
         return changed != 0;
     }
 
@@ -352,24 +397,31 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     {
         EnsureActive();
         if (registration.faceIndex != 0)
+        {
             throw new UiCapabilityUnavailableException(UiBackendCapability.FontCollectionFaceSelection);
+        }
         // All weights and styles of one declared family must share one native family.
         // Document imports give each family a private name before it reaches this backend.
-        string familyHash = Convert.ToHexString(SHA256.HashData(
-            Encoding.UTF8.GetBytes(registration.family.ToLowerInvariant()))).ToLowerInvariant();
+        string familyHash = Convert.ToHexString(
+            SHA256.HashData(Encoding.UTF8.GetBytes(registration.family.ToLowerInvariant()))
+        ).ToLowerInvariant();
         string physicalFamily = $"__inno_{familyHash[..24]}";
         ReadOnlySpan<byte> data = registration.data.Span;
         using var family = new RmlUiUtf8String(physicalFamily);
         fixed (byte* bytes = data)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.LoadFont(
-                m_runtime,
-                bytes,
-                checked((uint)data.Length),
-                family.pointer,
-                (int)registration.style,
-                registration.weight,
-                0), "register UI font");
+            ThrowIfFailed(
+                RmlUiNativeRuntime.LoadFont(
+                    m_runtime,
+                    bytes,
+                    checked((uint)data.Length),
+                    family.pointer,
+                    (int)registration.style,
+                    registration.weight,
+                    0
+                ),
+                "register UI font"
+            );
         }
         m_fontAliases[registration.family] = physicalFamily;
     }
@@ -398,14 +450,18 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         using var nativeSource = new RmlUiUtf8String(source);
         fixed (byte* pixelPointer = pixels)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.RegisterTexture(
-                m_runtime,
-                Require(context),
-                nativeSource.pointer,
-                texture.width,
-                texture.height,
-                pixelPointer,
-                checked((uint)pixels.Length)), "register UI texture");
+            ThrowIfFailed(
+                RmlUiNativeRuntime.RegisterTexture(
+                    m_runtime,
+                    Require(context),
+                    nativeSource.pointer,
+                    texture.width,
+                    texture.height,
+                    pixelPointer,
+                    checked((uint)pixels.Length)
+                ),
+                "register UI texture"
+            );
         }
     }
 
@@ -427,8 +483,16 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     ) {
         EnsureActive();
         byte hit = 0;
-        ThrowIfFailed(RmlUiNativeRuntime.HasElementAtPoint(m_runtime, Require(context),
-            (int)position.x, (int)position.y, ref hit), "query UI element hit");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.HasElementAtPoint(
+                m_runtime,
+                Require(context),
+                (int)position.x,
+                (int)position.y,
+                ref hit
+            ),
+            "query UI element hit"
+        );
         return hit != 0;
     }
 
@@ -449,21 +513,48 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ArgumentNullException.ThrowIfNull(input);
         ulong handle = Require(context);
         int modifiers = (int)input.modifiers;
-        ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseMove(
-            m_runtime, handle, (int)input.mousePosition.x, (int)input.mousePosition.y, modifiers), "process UI pointer position");
+        ThrowIfFailed(
+            RmlUiNativeRuntime.ProcessMouseMove(
+                m_runtime,
+                handle,
+                (int)input.mousePosition.x,
+                (int)input.mousePosition.y,
+                modifiers
+            ),
+            "process UI pointer position"
+        );
         if (input.scrollDelta.x != 0f || input.scrollDelta.y != 0f)
         {
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseWheel(
-                m_runtime, handle, input.scrollDelta.x, input.scrollDelta.y, modifiers), "process UI pointer wheel");
+            ThrowIfFailed(
+                RmlUiNativeRuntime.ProcessMouseWheel(
+                    m_runtime,
+                    handle,
+                    input.scrollDelta.x,
+                    input.scrollDelta.y,
+                    modifiers
+                ),
+                "process UI pointer wheel"
+            );
         }
         foreach (MouseButton button in input.buttonsPressed)
+        {
             ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 1, modifiers), "process UI pointer press");
+        }
         foreach (MouseButton button in input.buttonsReleased)
-            ThrowIfFailed(RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 0, modifiers), "process UI pointer release");
+        {
+            ThrowIfFailed(
+                RmlUiNativeRuntime.ProcessMouseButton(m_runtime, handle, (int)button, 0, modifiers),
+                "process UI pointer release"
+            );
+        }
         foreach (KeyCode key in input.keysPressed)
+        {
             ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(m_runtime, handle, (int)key, 1, modifiers), "process UI key press");
+        }
         foreach (KeyCode key in input.keysReleased)
+        {
             ThrowIfFailed(RmlUiNativeRuntime.ProcessKey(m_runtime, handle, (int)key, 0, modifiers), "process UI key release");
+        }
         foreach (string text in input.textInput)
         {
             using var nativeText = new RmlUiUtf8String(text);
@@ -508,16 +599,23 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 builder.AddMeshUpdate(new(mesh.Id), mesh.Revision, vertices, indices);
             }
             foreach (ulong mesh in CopyReleasedMeshes(handle, info.ReleasedMeshCount))
+            {
                 builder.AddReleasedMesh(new(mesh));
+            }
 
             InnoUIRmlUiAdapterDrawCommand[] nativeCommands = new InnoUIRmlUiAdapterDrawCommand[checked((int)info.CommandCount)];
             CopyCommands(handle, nativeCommands);
             foreach (InnoUIRmlUiAdapterDrawCommand value in nativeCommands)
-                builder.AddCommand(new(
-                    new(value.MeshId),
-                    new(value.TextureId),
-                    value.ScissorEnabled != 0,
-                    new(value.ScissorX, value.ScissorY, value.ScissorWidth, value.ScissorHeight)));
+            {
+                builder.AddCommand(
+                    new(
+                        new(value.MeshId),
+                        new(value.TextureId),
+                        value.ScissorEnabled != 0,
+                        new(value.ScissorX, value.ScissorY, value.ScissorWidth, value.ScissorHeight)
+                    )
+                );
+            }
 
             for (int index = 0; index < checked((int)info.TextureUpdateCount); index++)
             {
@@ -525,15 +623,18 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 ThrowIfFailed(RmlUiNativeFrames.GetTextureInfo(m_runtime, handle, checked((ulong)index), ref texture), "query UI texture");
                 byte[] pixels = new byte[checked((int)texture.ByteLength)];
                 if (pixels.Length > 0)
-                    ThrowIfFailed(RmlUiNativeFrames.CopyTexturePixels(
-                        m_runtime,
-                        handle,
-                        texture.Id,
-                        pixels.AsSpan()), "copy UI texture");
+                {
+                    ThrowIfFailed(
+                        RmlUiNativeFrames.CopyTexturePixels(m_runtime, handle, texture.Id, pixels.AsSpan()),
+                        "copy UI texture"
+                    );
+                }
                 builder.AddTextureUpdate(new(texture.Id), texture.Revision, texture.Width, texture.Height, pixels);
             }
             foreach (ulong texture in CopyReleasedTextures(handle, info.ReleasedTextureCount))
+            {
                 builder.AddReleasedTexture(new(texture));
+            }
 
             UiRenderFrame frame = builder.Build();
             ThrowIfFailed(RmlUiNativeFrames.FinishFrame(m_runtime, handle), "finish UI frame transfer");
@@ -569,15 +670,15 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 InnoUIRmlUiAdapterEventInfo info = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetEventInfo(m_runtime, handle, checked((ulong)index), ref info), "query UI event");
                 byte[] targetBytes = new byte[checked((int)info.TargetIdLength + 1)];
-                ThrowIfFailed(RmlUiNativeFrames.CopyEventTargetId(
-                    m_runtime,
-                    handle,
-                    checked((ulong)index),
-                    targetBytes.AsSpan()), "copy UI event target");
+                ThrowIfFailed(
+                    RmlUiNativeFrames.CopyEventTargetId(m_runtime, handle, checked((ulong)index), targetBytes.AsSpan()),
+                    "copy UI event target"
+                );
                 events[index] = new UiEvent(
                     (UiEventType)info.Type,
                     new UiDocumentHandle(info.Document),
-                    Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength)));
+                    Encoding.UTF8.GetString(targetBytes, 0, checked((int)info.TargetIdLength))
+                );
             }
             return events;
         }
@@ -593,7 +694,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         RmlUiNativeErrors.DestroySession(m_runtime);
         m_runtime = null;
@@ -605,7 +708,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         InnoUIRmlUiAdapterVertex[] values
     ) {
         if (values.Length == 0)
+        {
             return;
+        }
         ThrowIfFailed(RmlUiNativeFrames.CopyMeshVertices(m_runtime, context, mesh, values), "copy UI mesh vertices");
     }
 
@@ -615,12 +720,13 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         uint[] values
     ) {
         if (values.Length == 0)
+        {
             return;
-        ThrowIfFailed(RmlUiNativeFrames.CopyMeshIndices(
-            m_runtime,
-            context,
-            mesh,
-            values.AsSpan()), "copy UI mesh indices");
+        }
+        ThrowIfFailed(
+            RmlUiNativeFrames.CopyMeshIndices(m_runtime, context, mesh, values.AsSpan()),
+            "copy UI mesh indices"
+        );
     }
 
     private void CopyCommands(
@@ -628,7 +734,9 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         InnoUIRmlUiAdapterDrawCommand[] values
     ) {
         if (values.Length == 0)
+        {
             return;
+        }
         ThrowIfFailed(RmlUiNativeFrames.CopyCommands(m_runtime, context, values), "copy UI commands");
     }
 
@@ -638,10 +746,12 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     ) {
         ulong[] values = new ulong[checked((int)count)];
         if (values.Length > 0)
-            ThrowIfFailed(RmlUiNativeFrames.CopyReleasedMeshes(
-                m_runtime,
-                context,
-                values.AsSpan()), "copy released UI meshes");
+        {
+            ThrowIfFailed(
+                RmlUiNativeFrames.CopyReleasedMeshes(m_runtime, context, values.AsSpan()),
+                "copy released UI meshes"
+            );
+        }
         return values;
     }
 
@@ -651,17 +761,21 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     ) {
         ulong[] values = new ulong[checked((int)count)];
         if (values.Length > 0)
-            ThrowIfFailed(RmlUiNativeFrames.CopyReleasedTextures(
-                m_runtime,
-                context,
-                values.AsSpan()), "copy released UI textures");
+        {
+            ThrowIfFailed(
+                RmlUiNativeFrames.CopyReleasedTextures(m_runtime, context, values.AsSpan()),
+                "copy released UI textures"
+            );
+        }
         return values;
     }
 
     private static void EnsureRml(UiDocumentLanguageId language)
     {
         if (language != RmlUiIdentifiers.documentLanguage)
+        {
             throw new NotSupportedException($"RmlUi adapter cannot decode UI language '{language}'.");
+        }
     }
 
     private string RewriteFontFamilies(string source)
@@ -688,14 +802,15 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         string operation
     ) {
         if (result != Result.Success)
+        {
             throw CreateNativeException(operation, result);
+        }
     }
 
     private static InvalidOperationException CreateNativeException(
         string operation,
         Result result
     ) {
-
         string message = result switch
             {
                 Result.InvalidArgument => "invalid argument",

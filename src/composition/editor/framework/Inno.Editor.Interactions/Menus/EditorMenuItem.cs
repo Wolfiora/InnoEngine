@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Scripting.Api;
 
 namespace Inno.Editor.Interactions;

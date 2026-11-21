@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Execution;
-using Inno.Scripting.Api;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Reload;
 using Inno.References;
+using Inno.Scripting.Api;
 
 namespace Inno.Plugins.Authoring;
 
@@ -59,7 +59,9 @@ public sealed class PluginEnvironment : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_sources is not null;
+            }
         }
     }
 
@@ -128,7 +130,9 @@ public sealed class PluginEnvironment : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(libraryRoot);
         ArgumentNullException.ThrowIfNull(initialScan);
         if (!assets.isInitialized)
+        {
             throw new InvalidOperationException("PluginEnvironment requires AssetPipeline to be initialized first.");
+        }
         m_assets = assets;
         m_generations = generations ?? throw new ArgumentNullException(nameof(generations));
         m_settings = settings;
@@ -160,13 +164,17 @@ public sealed class PluginEnvironment : IDisposable
         lock (m_sync)
         {
             if (m_sources is null)
+            {
                 return;
+            }
             long now = Environment.TickCount64;
             StartReconciliationLocked(now);
             refresh = m_refreshRequested
-                && now - m_lastChangeTimestamp >= C_CHANGE_DEBOUNCE_MILLISECONDS;
+                      && now - m_lastChangeTimestamp >= C_CHANGE_DEBOUNCE_MILLISECONDS;
             if (!refresh)
+            {
                 return;
+            }
             m_refreshRequested = false;
         }
         _ = Refresh();
@@ -185,26 +193,30 @@ public sealed class PluginEnvironment : IDisposable
         ObjectDisposedException.ThrowIf(m_stopping, this);
         PluginSourceService sources;
         lock (m_sync)
+        {
             sources = m_sources ?? throw new InvalidOperationException("PluginEnvironment is not initialized.");
+        }
         PluginScanResult scan = sources.Scan();
         m_catalog.PublishDiscovery(scan);
         string activeFingerprint = ComputeActiveFingerprint(scan);
         lock (m_sync)
         {
             if (m_pending is not null)
+            {
                 return false;
+            }
             if (string.Equals(activeFingerprint, m_activeFingerprint, StringComparison.Ordinal))
+            {
                 return false;
+            }
         }
 
         PluginScanResult previous = CreateActiveScanSnapshot();
-        AssetSourceMount project = m_assets.sourceMounts.Single(
-            static mount => mount.id == AssetSourceId.project);
+        AssetSourceMount project = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceId.project);
         AssetSourceMountTransaction assets;
         try
         {
-            assets = m_assets.PrepareSourceMounts(
-                [project, .. PluginSourceService.GetActivatableMounts(scan)]);
+            assets = m_assets.PrepareSourceMounts([project, .. PluginSourceService.GetActivatableMounts(scan)]);
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -218,17 +230,23 @@ public sealed class PluginEnvironment : IDisposable
                     .. scan.diagnostics,
                     new PluginDiagnostic(
                         m_pluginRoot,
-                        $"Plugin Asset candidate validation failed; the installed Plugin generation is unavailable: " +
-                        exception.Message)
-                ]);
+                        $"Plugin Asset candidate validation failed; the installed Plugin generation is unavailable: "
+                        + exception.Message
+                    )
+                ]
+            );
             m_catalog.PublishDiscovery(scan);
             activeFingerprint = ComputeActiveFingerprint(scan);
             lock (m_sync)
             {
                 if (m_pending is not null)
+                {
                     return false;
+                }
                 if (string.Equals(activeFingerprint, m_activeFingerprint, StringComparison.Ordinal))
+                {
                     return false;
+                }
             }
             assets = m_assets.PrepareSourceMounts([project]);
         }
@@ -239,13 +257,10 @@ public sealed class PluginEnvironment : IDisposable
             lock (m_sync)
             {
                 if (m_pending is not null)
+                {
                     throw new InvalidOperationException("Another Plugin activation candidate is already pending.");
-                m_pending = new PendingActivation(
-                    previous,
-                    scan,
-                    assets,
-                    m_activeFingerprint,
-                    activeFingerprint);
+                }
+                m_pending = new PendingActivation(previous, scan, assets, m_activeFingerprint, activeFingerprint);
                 pendingAssigned = true;
             }
             if (!requiresCodeReload)
@@ -265,7 +280,9 @@ public sealed class PluginEnvironment : IDisposable
         catch (Exception candidateFailure)
         {
             if (m_generations.state == GenerationState.Faulted)
+            {
                 throw;
+            }
             try
             {
                 if (pendingAssigned)
@@ -273,7 +290,9 @@ public sealed class PluginEnvironment : IDisposable
                     RollbackPending();
                 }
                 else
+                {
                     assets.Rollback();
+                }
             }
             catch (Exception rollbackFailure)
             {
@@ -291,8 +310,11 @@ public sealed class PluginEnvironment : IDisposable
     /// </returns>
     [ScriptingApiIgnore]
     public IGenerationChange CreateReloadChange()
-        => new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [],
-            [new PluginRecoveryParticipant(this, m_assets, m_settings)]);
+        => new ReferenceRecoveryTransaction(
+            ReferenceCatalog.empty,
+            [],
+            [new PluginRecoveryParticipant(this, m_assets, m_settings)]
+        );
 
     /// <summary>
     /// Commits a non-code availability change using the same generation gate and recovery phases as script reload.
@@ -312,7 +334,9 @@ public sealed class PluginEnvironment : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_pending is not null;
+            }
         }
     }
 
@@ -325,7 +349,9 @@ public sealed class PluginEnvironment : IDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_pending?.assets;
+            }
         }
     }
 
@@ -340,8 +366,8 @@ public sealed class PluginEnvironment : IDisposable
             lock (m_sync)
             {
                 return m_pending is null
-                    ? m_catalog.activePlugins
-                    : PluginSourceService.GetActivatableCandidates(m_pending.candidateScan).ToArray();
+                       ? m_catalog.activePlugins
+                       : PluginSourceService.GetActivatableCandidates(m_pending.candidateScan).ToArray();
             }
         }
     }
@@ -392,9 +418,13 @@ public sealed class PluginEnvironment : IDisposable
     {
         PendingActivation? pending;
         lock (m_sync)
+        {
             pending = m_pending;
+        }
         if (pending is null || pending.isActivated)
+        {
             return;
+        }
         // The shared generation coordinator restores publication before participant state.
         // Retain the candidate on failure; local compensation here would violate that ordering.
         pending.assets.Activate();
@@ -414,15 +444,21 @@ public sealed class PluginEnvironment : IDisposable
         {
             pending = m_pending;
             if (pending is null)
+            {
                 return;
+            }
             if (!pending.isActivated)
+            {
                 throw new InvalidOperationException("A Plugin candidate must be activated before commit.");
+            }
         }
         pending.assets.Complete();
         lock (m_sync)
         {
             if (!ReferenceEquals(m_pending, pending))
+            {
                 throw new InvalidOperationException("The pending Plugin candidate changed during commit.");
+            }
             m_activeFingerprint = pending.candidateFingerprint;
             m_pending = null;
         }
@@ -436,9 +472,13 @@ public sealed class PluginEnvironment : IDisposable
     {
         PendingActivation? pending;
         lock (m_sync)
+        {
             pending = m_pending;
+        }
         if (pending is null)
+        {
             return;
+        }
         pending.assets.Rollback();
         if (pending.isActivated)
         {
@@ -449,7 +489,9 @@ public sealed class PluginEnvironment : IDisposable
         lock (m_sync)
         {
             if (!ReferenceEquals(m_pending, pending))
+            {
                 throw new InvalidOperationException("The pending Plugin candidate changed during rollback.");
+            }
             m_activeFingerprint = pending.previousFingerprint;
             m_pending = null;
         }
@@ -503,7 +545,9 @@ public sealed class PluginEnvironment : IDisposable
         m_catalog.Shutdown();
         GC.SuppressFinalize(this);
         if (failures.Count > 0)
+        {
             throw new AggregateException("Plugin environment shutdown failed after its work retired.", failures);
+        }
     }
 
     private FileSystemWatcher CreateWatcher(string pluginRoot)
@@ -512,9 +556,9 @@ public sealed class PluginEnvironment : IDisposable
         {
             IncludeSubdirectories = false,
             NotifyFilter = NotifyFilters.FileName
-                | NotifyFilters.DirectoryName
-                | NotifyFilters.LastWrite
-                | NotifyFilters.Size,
+                           | NotifyFilters.DirectoryName
+                           | NotifyFilters.LastWrite
+                           | NotifyFilters.Size,
             Filter = "*"
         };
         watcher.Changed += OnPluginSourceChanged;
@@ -535,7 +579,9 @@ public sealed class PluginEnvironment : IDisposable
         lock (m_sync)
         {
             if (m_sources is null || m_stopping)
+            {
                 return;
+            }
             m_refreshRequested = true;
             m_lastChangeTimestamp = Environment.TickCount64;
         }
@@ -550,7 +596,9 @@ public sealed class PluginEnvironment : IDisposable
         lock (m_sync)
         {
             if (m_sources is null || m_stopping)
+            {
                 return;
+            }
             m_refreshRequested = true;
             m_lastChangeTimestamp = Environment.TickCount64 - C_CHANGE_DEBOUNCE_MILLISECONDS;
             m_lastReconciliationTimestamp = 0;
@@ -560,8 +608,8 @@ public sealed class PluginEnvironment : IDisposable
     private void StartReconciliationLocked(long now)
     {
         if (m_reconciliation is not null
-            || now - m_lastReconciliationTimestamp < C_RECONCILIATION_INTERVAL_MILLISECONDS)
-        {
+            || now - m_lastReconciliationTimestamp < C_RECONCILIATION_INTERVAL_MILLISECONDS
+        ) {
             return;
         }
         string pluginRoot = m_pluginRoot;
@@ -587,7 +635,9 @@ public sealed class PluginEnvironment : IDisposable
         {
             reconciliation = m_reconciliation;
             if (reconciliation is null || !reconciliation.IsCompleted)
+            {
                 return;
+            }
             m_reconciliation = null;
         }
 
@@ -597,7 +647,9 @@ public sealed class PluginEnvironment : IDisposable
             lock (m_sync)
             {
                 if (m_sources is null)
+                {
                     return;
+                }
                 m_refreshRequested = true;
                 m_lastChangeTimestamp = Environment.TickCount64 - C_CHANGE_DEBOUNCE_MILLISECONDS;
             }
@@ -607,8 +659,8 @@ public sealed class PluginEnvironment : IDisposable
         lock (m_sync)
         {
             if (m_sources is null
-                || string.Equals(fingerprint, m_reconciledFingerprint, StringComparison.Ordinal))
-            {
+                || string.Equals(fingerprint, m_reconciledFingerprint, StringComparison.Ordinal)
+            ) {
                 return;
             }
             m_reconciledFingerprint = fingerprint;
@@ -624,14 +676,18 @@ public sealed class PluginEnvironment : IDisposable
                     candidate.manifest.pluginId,
                     candidate.manifest.dependencies,
                     candidate.manifest.overrides,
-                    candidate.manifest.settingContributions))
-                .ToArray());
+                    candidate.manifest.settingContributions
+                ))
+                .ToArray()
+        );
 
     private void InvokeCandidateObservers()
     {
         Action? handlers = ActivationCandidateChanged;
         if (handlers is null)
+        {
             return;
+        }
         List<Exception>? failures = null;
         foreach (Delegate handler in handlers.GetInvocationList())
         {
@@ -642,7 +698,12 @@ public sealed class PluginEnvironment : IDisposable
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
             {
                 if (failures is not null)
-                    throw new AggregateException("Plugin candidate observers reported unfinished retirement.", [.. failures, pendingRetirement]);
+                {
+                    throw new AggregateException(
+                        "Plugin candidate observers reported unfinished retirement.",
+                        [.. failures, pendingRetirement]
+                    );
+                }
                 throw;
             }
             catch (Exception exception)
@@ -655,18 +716,17 @@ public sealed class PluginEnvironment : IDisposable
         {
             throw new AggregateException(
                 "One or more Plugin candidate observers rejected the staged generation.",
-                failures);
+                failures
+            );
         }
     }
 
     private PluginScanResult ActivateInitialCandidate(PluginScanResult initialScan)
     {
-        AssetSourceMount project = m_assets.sourceMounts.Single(
-            static mount => mount.id == AssetSourceId.project);
+        AssetSourceMount project = m_assets.sourceMounts.Single(static mount => mount.id == AssetSourceId.project);
         try
         {
-            m_assets.ReplaceSourceMounts(
-                [project, .. PluginSourceService.GetActivatableMounts(initialScan)]);
+            m_assets.ReplaceSourceMounts([project, .. PluginSourceService.GetActivatableMounts(initialScan)]);
             m_catalog.Activate(initialScan);
             PublishContributors(initialScan);
             m_settings.RebuildCurrent(allowUnresolvedContributions: true);
@@ -679,15 +739,9 @@ public sealed class PluginEnvironment : IDisposable
         catch (Exception candidateFailure)
         {
             var rollbackFailures = new List<Exception> { candidateFailure };
-            TryInitialRollback(
-                () => m_assets.ReplaceSourceMounts([project]),
-                "asset mount rollback",
-                rollbackFailures);
+            TryInitialRollback(() => m_assets.ReplaceSourceMounts([project]), "asset mount rollback", rollbackFailures);
             var empty = new PluginScanResult([], []);
-            TryInitialRollback(
-                () => m_catalog.Activate(empty),
-                "Plugin catalog rollback",
-                rollbackFailures);
+            TryInitialRollback(() => m_catalog.Activate(empty), "Plugin catalog rollback", rollbackFailures);
             TryInitialRollback(
                 () =>
                 {
@@ -695,12 +749,14 @@ public sealed class PluginEnvironment : IDisposable
                     m_settings.RebuildCurrent(allowUnresolvedContributions: true);
                 },
                 "project settings rollback",
-                rollbackFailures);
+                rollbackFailures
+            );
             if (rollbackFailures.Count > 1)
             {
                 throw new AggregateException(
                     "Initial Plugin activation failed and the host-only generation could not be restored.",
-                    rollbackFailures);
+                    rollbackFailures
+                );
             }
 
             var discovery = new PluginScanResult(
@@ -709,8 +765,10 @@ public sealed class PluginEnvironment : IDisposable
                     .. initialScan.diagnostics,
                     new PluginDiagnostic(
                         m_pluginRoot,
-                        $"Initial Plugin candidate activation failed and was isolated: {candidateFailure.Message}")
-                ]);
+                        $"Initial Plugin candidate activation failed and was isolated: {candidateFailure.Message}"
+                    )
+                ]
+            );
             m_catalog.PublishDiscovery(discovery);
             return empty;
         }
@@ -748,8 +806,10 @@ public sealed class PluginEnvironment : IDisposable
             .Where(static plugin => plugin.containsCode)
             .ToDictionary(static plugin => plugin.manifest.pluginId, static plugin => plugin.contentHash, StringComparer.Ordinal);
         return oldCode.Count != newCode.Count
-            || oldCode.Any(pair => !newCode.TryGetValue(pair.Key, out string? hash)
-                || !string.Equals(pair.Value, hash, StringComparison.Ordinal));
+               || oldCode.Any(pair => (
+                   !newCode.TryGetValue(pair.Key, out string? hash)
+                   || !string.Equals(pair.Value, hash, StringComparison.Ordinal)
+               ));
     }
 
     private string ComputeActiveFingerprint(PluginScanResult scan)
@@ -767,10 +827,7 @@ public sealed class PluginEnvironment : IDisposable
     {
         Directory.CreateDirectory(pluginRoot);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        string[] paths = Directory.EnumerateFileSystemEntries(
-                pluginRoot,
-                "*",
-                SearchOption.TopDirectoryOnly)
+        string[] paths = Directory.EnumerateFileSystemEntries(pluginRoot, "*", SearchOption.TopDirectoryOnly)
             .ToArray();
         foreach (string path in paths.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase))
         {
@@ -805,24 +862,29 @@ public sealed class PluginEnvironment : IDisposable
         internal string candidateFingerprint { get; } = candidateFingerprint;
         internal bool isActivated { get; set; }
     }
+
     private sealed class AvailabilityPublication : IGenerationPublication<AvailabilityPublication>, IAssemblyUnloadProbe
     {
         /// <summary>
         /// Gets the user-facing explanation of this feature or setting.
         /// </summary>
         public string description => "Plugin content publication without assembly retirement";
+
         /// <summary>
         /// Gets whether this implementation is completed.
         /// </summary>
         public bool isCompleted => true;
+
         /// <summary>
         /// Leaves assembly publication unchanged while the content participant publishes its candidate.
         /// </summary>
-        public void Activate() { }
+        public void Activate() {}
+
         /// <summary>
         /// Restores the state that existed before candidate activation began.
         /// </summary>
-        public void Rollback() { }
+        public void Rollback() {}
+
         /// <summary>
         /// Completes the committed operation and releases temporary state.
         /// </summary>

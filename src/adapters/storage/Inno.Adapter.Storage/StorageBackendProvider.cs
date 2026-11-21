@@ -24,7 +24,9 @@ public abstract class StorageBackendProvider
     protected StorageBackendProvider(StorageBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
@@ -44,4 +46,3 @@ public abstract class StorageBackendProvider
     /// </returns>
     public abstract IApplicationStorage CreateStorage(StorageScope scope);
 }
-

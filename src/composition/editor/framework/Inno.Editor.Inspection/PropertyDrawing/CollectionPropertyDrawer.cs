@@ -1,13 +1,15 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Inno.Core.Serialization;
 using Inno.Editor.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(IEnumerable<>), useForChildren: true, priority: -20)]
 [PropertyDrawer(typeof(IDictionary<, >), useForChildren: true, priority: 20)]
 [PropertyDrawer(typeof(IReadOnlyDictionary<, >), useForChildren: true, priority: 20)]
@@ -60,12 +62,17 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
                 break;
             }
 
-            context.DrawChild($"Element {index}", elementType, () => EditorCollectionUtility.EnumerateSequence(context.GetValue())[index], value =>
-            {
-                List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
-                updated[index] = value;
-                context.SetValue(EditorCollectionUtility.BuildSequence(context.propertyType, elementType, updated));
-            });
+            context.DrawChild(
+                $"Element {index}",
+                elementType,
+                () => EditorCollectionUtility.EnumerateSequence(context.GetValue())[index],
+                value =>
+                {
+                    List<object?> updated = EditorCollectionUtility.EnumerateSequence(context.GetValue());
+                    updated[index] = value;
+                    context.SetValue(EditorCollectionUtility.BuildSequence(context.propertyType, elementType, updated));
+                }
+            );
         }
 
         Ui.TreePop();
@@ -175,8 +182,11 @@ internal sealed class CollectionPropertyDrawer : IPropertyDrawer
 
     private static List<KeyValuePair<object?, object?>> EnumerateMap(PropertyDrawContext context)
     {
-        if (EditorCollectionUtility.TryEnumerateMap(context.GetValue(), context.propertyType, out List<KeyValuePair<object?, object?>> entries))
-        {
+        if (EditorCollectionUtility.TryEnumerateMap(
+            context.GetValue(),
+            context.propertyType,
+            out List<KeyValuePair<object?, object?>> entries
+        )) {
             return entries;
         }
 

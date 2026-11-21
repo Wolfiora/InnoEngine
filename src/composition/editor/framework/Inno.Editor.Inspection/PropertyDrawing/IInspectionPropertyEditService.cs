@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.Inspection;
+
 /// <summary>
 /// Applies one root serialized-property mutation through the history mechanism owned by a feature.
 /// </summary>

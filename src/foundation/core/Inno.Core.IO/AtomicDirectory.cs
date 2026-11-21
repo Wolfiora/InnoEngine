@@ -52,13 +52,19 @@ public static class AtomicDirectory
         string candidate = Path.GetFullPath(source);
         string target = Path.GetFullPath(destination);
         if (IsContained(Path.GetRelativePath(candidate, target))
-            || IsContained(Path.GetRelativePath(target, candidate)))
+            || IsContained(Path.GetRelativePath(target, candidate))
+        ) {
             throw new ArgumentException("The candidate and destination directory trees must be disjoint.", nameof(destination));
+        }
         if (!Directory.Exists(candidate))
+        {
             throw new DirectoryNotFoundException($"Directory candidate '{candidate}' does not exist.");
+        }
         string? parent = Path.GetDirectoryName(target);
         if (string.IsNullOrEmpty(parent))
+        {
             throw new IOException($"Directory path '{target}' has no owning directory.");
+        }
         Directory.CreateDirectory(parent);
         FileSystemRename.MoveDirectory(candidate, target, cancellationToken);
     }
@@ -116,17 +122,25 @@ public static class AtomicDirectory
         string relativeTarget = Path.GetRelativePath(candidate, target);
         string relativeCandidate = Path.GetRelativePath(target, candidate);
         if (IsContained(relativeTarget) || IsContained(relativeCandidate))
+        {
             throw new ArgumentException("The candidate and destination directory trees must be disjoint.", nameof(destination));
+        }
         if (!Directory.Exists(candidate))
+        {
             throw new DirectoryNotFoundException($"Atomic directory candidate '{candidate}' does not exist.");
+        }
         string? parent = Path.GetDirectoryName(target);
         if (string.IsNullOrEmpty(parent))
+        {
             throw new IOException($"Directory path '{target}' has no owning directory.");
+        }
         Directory.CreateDirectory(parent);
 
         string backup = target + ".backup-" + Guid.NewGuid().ToString("N");
         if (Directory.Exists(target))
+        {
             FileSystemRename.MoveDirectory(target, backup, cancellationToken);
+        }
         try
         {
             FileSystemRename.MoveDirectory(candidate, target, cancellationToken);
@@ -144,14 +158,17 @@ public static class AtomicDirectory
                     throw new AggregateException(
                         $"Directory installation failed; the previous tree remains at '{backup}' and could not be restored to '{target}'.",
                         installationFailure,
-                        restorationFailure);
+                        restorationFailure
+                    );
                 }
             }
             throw;
         }
 
         if (!Directory.Exists(backup))
+        {
             return;
+        }
         try
         {
             Directory.Delete(backup, recursive: true);

@@ -25,6 +25,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         m_source = source;
         m_epoch = epoch;
     }
+
     /// <summary>
     /// Replaces the issue with the same code and target, without using its message as identity.
     /// </summary>
@@ -44,14 +45,15 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
             if (m_issues.TryGetValue(key, out Diagnostic? current)
                 && current.severity == diagnostic.severity
                 && string.Equals(current.message, diagnostic.message, StringComparison.Ordinal)
-                && Nullable.Equals(current.location, diagnostic.location))
-            {
+                && Nullable.Equals(current.location, diagnostic.location)
+            ) {
                 return;
             }
             m_issues[key] = diagnostic;
             hub.SetOwned(m_source, m_epoch, Ordered());
         }
     }
+
     /// <summary>
     /// Resolves an issue after the represented condition no longer exists.
     /// </summary>
@@ -77,10 +79,13 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         {
             DiagnosticHub hub = GetHub();
             if (!m_issues.Remove(new(code, semanticId, objectId)))
+            {
                 return;
+            }
             hub.SetOwned(m_source, m_epoch, Ordered());
         }
     }
+
     /// <summary>
     /// Atomically replaces this producer's complete current issue set.
     /// </summary>
@@ -101,7 +106,9 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
         {
             ArgumentNullException.ThrowIfNull(diagnostic);
             if (!candidate.TryAdd(new(diagnostic.code, diagnostic.semanticId, diagnostic.objectId), diagnostic))
+            {
                 throw new ArgumentException("A complete diagnostic report contains duplicate issue identities.", nameof(diagnostics));
+            }
         }
         lock (m_sync)
         {
@@ -109,7 +116,9 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
             hub.SetOwned(m_source, m_epoch, candidate.Values.ToArray());
             m_issues.Clear();
             foreach (var entry in candidate)
+            {
                 m_issues.Add(entry.Key, entry.Value);
+            }
         }
     }
 
@@ -129,10 +138,12 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
 
     private DiagnosticHub GetHub() => m_hub ?? throw new ObjectDisposedException(nameof(DiagnosticReporter));
 
-    private Diagnostic[] Ordered() => m_issues.Values
-        .OrderBy(static issue => issue.code, StringComparer.Ordinal)
-        .ThenBy(static issue => issue.semanticId, StringComparer.Ordinal)
-        .ThenBy(static issue => issue.objectId).ToArray();
+    private Diagnostic[] Ordered()
+        => m_issues.Values
+            .OrderBy(static issue => issue.code, StringComparer.Ordinal)
+            .ThenBy(static issue => issue.semanticId, StringComparer.Ordinal)
+            .ThenBy(static issue => issue.objectId)
+            .ToArray();
 
     private readonly record struct IssueKey(
         string code,

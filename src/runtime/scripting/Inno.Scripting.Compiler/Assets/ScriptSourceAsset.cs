@@ -1,6 +1,6 @@
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scripting.Compiler;
 
@@ -31,9 +31,7 @@ public sealed class ScriptSourceAsset : AssetObject
     /// <summary>
     /// Creates an empty script source asset for deserialization.
     /// </summary>
-    public ScriptSourceAsset()
-    {
-    }
+    public ScriptSourceAsset() {}
 
     internal ScriptSourceAsset(
         ScriptAssemblyScope scope,

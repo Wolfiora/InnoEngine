@@ -20,16 +20,18 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         bool collectible,
         IReadOnlyDictionary<string, Assembly> sharedAssemblies,
         IEnumerable<string> moduleAssemblyPaths
-    )
-        : base(name, collectible)
+    ) : base(name, collectible)
     {
         m_resolver = new AssemblyDependencyResolver(mainAssemblyPath);
         m_sharedAssemblies = sharedAssemblies;
         m_moduleAssemblyPaths = moduleAssemblyPaths.ToDictionary(
-            static path => AssemblyName.GetAssemblyName(path).Name
-                ?? throw new InvalidOperationException($"Assembly '{path}' has no simple name."),
+            static path => (
+                AssemblyName.GetAssemblyName(path).Name
+                ?? throw new InvalidOperationException($"Assembly '{path}' has no simple name.")
+            ),
             static path => path,
-            StringComparer.OrdinalIgnoreCase);
+            StringComparer.OrdinalIgnoreCase
+        );
         Unloading += ReleaseSharedAssemblies;
     }
 
@@ -51,7 +53,9 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
             return sharedAssembly;
         }
         if (m_moduleAssemblyPaths.TryGetValue(simpleName, out string? modulePath))
+        {
             return LoadFromAssemblyPath(modulePath);
+        }
 
         return null;
     }
@@ -73,15 +77,16 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         string sharedCulture = shared.CultureName ?? string.Empty;
         byte[] requestedToken = requested.GetPublicKeyToken() ?? [];
         byte[] sharedToken = shared.GetPublicKeyToken() ?? [];
-        if (versionMatches &&
-            string.Equals(requestedCulture, sharedCulture, StringComparison.OrdinalIgnoreCase) &&
-            requestedToken.SequenceEqual(sharedToken))
-        {
+        if (versionMatches
+            && string.Equals(requestedCulture, sharedCulture, StringComparison.OrdinalIgnoreCase)
+            && requestedToken.SequenceEqual(sharedToken)
+        ) {
             return;
         }
 
         throw new FileLoadException(
-            $"Module dependency '{requested.FullName}' is incompatible with shared engine assembly '{shared.FullName}'.");
+            $"Module dependency '{requested.FullName}' is incompatible with shared engine assembly '{shared.FullName}'."
+        );
     }
 
     /// <summary>

@@ -35,21 +35,37 @@ internal static class BindingCommand
         ProductNativeBuildPlan product = distribution.ResolveNativeProduct(target.value, productId).plan;
         if (request.nativeDependencies.Length != 0)
         {
-            using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(root,
-                request.nativeDependencies, target.value, configuration.ToLowerInvariant(), product, cancellationToken).ConfigureAwait(false);
+            using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
+                root,
+                request.nativeDependencies,
+                target.value,
+                configuration.ToLowerInvariant(),
+                product,
+                cancellationToken
+            ).ConfigureAwait(false);
             return;
         }
         NativeBuildContext bindings = new(root, configuration.ToLowerInvariant());
         bindings = bindings.WithBindingGenerator(distribution.ResolveBindingGenerator(target.value));
-        bindings = bindings.WithToolchain(await distribution.ResolveNativeToolchain(target.value)
-            .ResolveAsync(bindings, context.host, target.value, cancellationToken).ConfigureAwait(false));
-        var generation = new NativeBindingGenerationRequest(product.steps.Select(static step => step.component)
-            .Where(static owner => owner.bindingDefinition is not null).DistinctBy(static owner => owner.nativeProject),
-            target.value, NativeBindingOutputMode.TargetArtifacts, componentOptions: product.steps
+        bindings = bindings.WithToolchain(
+            await distribution.ResolveNativeToolchain(target.value)
+                .ResolveAsync(bindings, context.host, target.value, cancellationToken)
+                .ConfigureAwait(false)
+        );
+        var generation = new NativeBindingGenerationRequest(
+            product.steps.Select(static step => step.component)
+                .Where(static owner => owner.bindingDefinition is not null)
+                .DistinctBy(static owner => owner.nativeProject),
+            target.value,
+            NativeBindingOutputMode.TargetArtifacts,
+            componentOptions: product.steps
                 .Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal));
-        using NativeBindingGenerationResult completed = await distribution.ResolveBindingGenerator(target.value).GenerateAsync(bindings, generation, cancellationToken).ConfigureAwait(false);
-        
+                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
+        );
+        using NativeBindingGenerationResult completed = await distribution
+            .ResolveBindingGenerator(target.value)
+            .GenerateAsync(bindings, generation, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

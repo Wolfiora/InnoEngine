@@ -9,17 +9,14 @@ public enum EditorDropPlacement
     /// No positional placement is requested.
     /// </summary>
     None,
-
     /// <summary>
     /// Insert before the target.
     /// </summary>
     Before,
-
     /// <summary>
     /// Drop into the target.
     /// </summary>
     Into,
-
     /// <summary>
     /// Insert after the target.
     /// </summary>

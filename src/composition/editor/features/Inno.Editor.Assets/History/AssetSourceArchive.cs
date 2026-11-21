@@ -6,10 +6,12 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 
 namespace Inno.Editor.Assets;
+
 internal static class AssetSourceArchive
 {
     private const string C_SOURCE_ENTRY = "source";
     private const string C_META_ENTRY = "source.imeta";
+
     internal static byte[] Capture(
         AssetPipeline assets,
         string relativePath,
@@ -19,7 +21,9 @@ internal static class AssetSourceArchive
         string source = GetSourcePath(assets, relativePath);
         isDirectory = Directory.Exists(source);
         if (!isDirectory && !File.Exists(source))
+        {
             throw new FileNotFoundException($"Asset source '{relativePath}' does not exist.", source);
+        }
         return CapturePhysical(source, isDirectory, CancellationToken.None);
     }
 
@@ -58,7 +62,9 @@ internal static class AssetSourceArchive
 
             string meta = source + ".imeta";
             if (File.Exists(meta))
+            {
                 WriteEntry(archive, meta, C_META_ENTRY, cancellationToken);
+            }
         }
 
         return stream.ToArray();
@@ -92,10 +98,14 @@ internal static class AssetSourceArchive
         ArgumentNullException.ThrowIfNull(assets);
         string target = GetSourcePath(assets, relativePath);
         if (File.Exists(target) || Directory.Exists(target))
+        {
             throw new IOException($"Asset source '{relativePath}' already exists.");
+        }
         string? parent = Path.GetDirectoryName(target);
         if (!string.IsNullOrEmpty(parent))
+        {
             Directory.CreateDirectory(parent);
+        }
         string stagingDirectory = Path.Combine(Path.GetTempPath(), "InnoAssetHistory", Guid.NewGuid().ToString("N"));
         string stagingSource = Path.Combine(stagingDirectory, C_SOURCE_ENTRY);
         string stagingMeta = Path.Combine(stagingDirectory, C_META_ENTRY);
@@ -114,7 +124,9 @@ internal static class AssetSourceArchive
                     string destination = ResolveDestination(stagingSource, stagingMeta, isDirectory, entry.FullName);
                     string fullDestination = Path.GetFullPath(destination);
                     if (!fullDestination.StartsWith(stagingRoot, StringComparison.Ordinal))
+                    {
                         throw new InvalidDataException("Asset history archive escapes its staging directory.");
+                    }
                     if (entry.FullName.EndsWith("/", StringComparison.Ordinal))
                     {
                         Directory.CreateDirectory(fullDestination);
@@ -123,13 +135,17 @@ internal static class AssetSourceArchive
 
                     string? destinationParent = Path.GetDirectoryName(fullDestination);
                     if (!string.IsNullOrEmpty(destinationParent))
+                    {
                         Directory.CreateDirectory(destinationParent);
+                    }
                     entry.ExtractToFile(fullDestination, overwrite: false);
                 }
             }
 
             if (isDirectory ? !Directory.Exists(stagingSource) : !File.Exists(stagingSource))
+            {
                 throw new InvalidDataException("Asset history archive does not contain its source payload.");
+            }
             MoveSource(stagingSource, target, isDirectory);
             sourceCommitted = true;
             if (File.Exists(stagingMeta))
@@ -144,9 +160,13 @@ internal static class AssetSourceArchive
         catch
         {
             if (metaCommitted && File.Exists(target + ".imeta"))
+            {
                 File.Move(target + ".imeta", stagingMeta);
+            }
             if (sourceCommitted && (isDirectory ? Directory.Exists(target) : File.Exists(target)))
+            {
                 MoveSource(target, stagingSource, isDirectory);
+            }
             if (sourceCommitted)
             {
                 try
@@ -164,7 +184,9 @@ internal static class AssetSourceArchive
         finally
         {
             if (Directory.Exists(stagingDirectory))
+            {
                 Directory.Delete(stagingDirectory, recursive: true);
+            }
         }
     }
 
@@ -175,9 +197,13 @@ internal static class AssetSourceArchive
         string entryName
     ) {
         if (string.Equals(entryName, C_META_ENTRY, StringComparison.Ordinal))
+        {
             return stagingMeta;
+        }
         if (!isDirectory && string.Equals(entryName, C_SOURCE_ENTRY, StringComparison.Ordinal))
+        {
             return stagingSource;
+        }
         string prefix = C_SOURCE_ENTRY + "/";
         if (isDirectory && entryName.StartsWith(prefix, StringComparison.Ordinal))
         {
@@ -194,7 +220,9 @@ internal static class AssetSourceArchive
         string root = Path.GetFullPath(assets.assetRoot) + Path.DirectorySeparatorChar;
         string result = Path.GetFullPath(Path.Combine(assets.assetRoot, relativePath.Replace('/', Path.DirectorySeparatorChar)));
         if (!result.StartsWith(root, StringComparison.Ordinal))
+        {
             throw new InvalidDataException($"Asset history path '{relativePath}' escapes the asset root.");
+        }
         return result;
     }
 
@@ -204,8 +232,12 @@ internal static class AssetSourceArchive
         bool isDirectory
     ) {
         if (isDirectory)
+        {
             Directory.Move(source, target);
+        }
         else
+        {
             File.Move(source, target);
+        }
     }
 }

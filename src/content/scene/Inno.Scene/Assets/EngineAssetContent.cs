@@ -31,7 +31,9 @@ public sealed class EngineAssetContent
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (payload.IsEmpty)
+        {
             throw new ArgumentException("Engine asset content cannot be empty.", nameof(payload));
+        }
         m_payload = payload.ToArray();
         m_dependencies = dependencies.ToArray();
     }

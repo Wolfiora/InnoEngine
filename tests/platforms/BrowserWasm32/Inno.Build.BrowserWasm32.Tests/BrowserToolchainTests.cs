@@ -4,9 +4,9 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Inno.Build.Toolchains;
-using Inno.Build.BrowserWasm32;
 using Xunit;
+using Inno.Build.BrowserWasm32;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.BrowserWasm32.Tests;
 
@@ -17,7 +17,9 @@ public sealed class BrowserToolchainTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -31,8 +33,12 @@ public sealed class BrowserToolchainTests : IDisposable
         IReadOnlyDictionary<string, string> environment = await EmscriptenToolchainResolver.ResolveAsync("dotnet", project);
 
         Assert.Equal(Path.Combine(m_root, "selected-sdk", "bin"), environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"]);
-        Assert.True(File.Exists(Path.Combine(environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"], OperatingSystem.IsWindows() ? "clang.exe" : "clang")));
-        Assert.True(File.Exists(Path.Combine(environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"], OperatingSystem.IsWindows() ? "clang++.exe" : "clang++")));
+        Assert.True(
+            File.Exists(Path.Combine(environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"], OperatingSystem.IsWindows() ? "clang.exe" : "clang"))
+        );
+        Assert.True(
+            File.Exists(Path.Combine(environment["DOTNET_EMSCRIPTEN_LLVM_ROOT"], OperatingSystem.IsWindows() ? "clang++.exe" : "clang++"))
+        );
         Assert.Equal(Path.Combine(m_root, "selected-cache"), environment["EM_CACHE"]);
         Assert.Equal(Path.Combine(m_root, "selected-node", "bin", NodeFileName()), environment["EMSDK_NODE"]);
         Assert.False(environment.ContainsKey("EMCC_CORES"));
@@ -49,7 +55,8 @@ public sealed class BrowserToolchainTests : IDisposable
         File.Delete(Path.Combine(m_root, "selected-node", "bin", NodeFileName()));
 
         FileNotFoundException failure = await Assert.ThrowsAsync<FileNotFoundException>(
-            () => EmscriptenToolchainResolver.ResolveAsync("dotnet", project));
+            () => EmscriptenToolchainResolver.ResolveAsync("dotnet", project)
+        );
 
         Assert.EndsWith(NodeFileName(), failure.FileName);
     }
@@ -62,7 +69,8 @@ public sealed class BrowserToolchainTests : IDisposable
         new XDocument(new XElement("Project")).Save(project);
 
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => EmscriptenToolchainResolver.ResolveAsync("dotnet", project));
+            () => EmscriptenToolchainResolver.ResolveAsync("dotnet", project)
+        );
 
         Assert.Contains("EmscriptenSdkToolsPath", failure.Message, StringComparison.Ordinal);
     }
@@ -75,12 +83,17 @@ public sealed class BrowserToolchainTests : IDisposable
         string? parent = Environment.GetEnvironmentVariable(variable);
         Directory.CreateDirectory(m_root);
         string project = Path.Combine(m_root, "Environment.proj");
-        new XDocument(new XElement("Project",
-            new XElement("PropertyGroup", new XElement("Result", "$(" + variable + ")")))).Save(project);
+        new XDocument(
+            new XElement("Project", new XElement("PropertyGroup", new XElement("Result", "$(" + variable + ")")))
+        ).Save(project);
 
-        string output = await ToolchainEnvironment.CaptureOutputAsync("dotnet",
+        string output = await ToolchainEnvironment.CaptureOutputAsync(
+            "dotnet",
             ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:Result"],
-            m_root, CancellationToken.None, new Dictionary<string, string?> { [variable] = value });
+            m_root,
+            CancellationToken.None,
+            new Dictionary<string, string?> { [variable] = value }
+        );
 
         Assert.Equal(value, output.Trim());
         Assert.Equal(parent, Environment.GetEnvironmentVariable(variable));
@@ -92,7 +105,11 @@ public sealed class BrowserToolchainTests : IDisposable
         Directory.CreateDirectory(m_root);
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => ToolchainEnvironment.CaptureOutputAsync(
-            "dotnet", ["--inno-invalid-option"], m_root, CancellationToken.None));
+            "dotnet",
+            ["--inno-invalid-option"],
+            m_root,
+            CancellationToken.None
+        ));
     }
 
     [Fact]
@@ -102,7 +119,11 @@ public sealed class BrowserToolchainTests : IDisposable
         cancellation.Cancel();
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => ToolchainEnvironment.CaptureOutputAsync(
-            "inno-tool-that-does-not-exist", [], m_root, cancellation.Token));
+            "inno-tool-that-does-not-exist",
+            [],
+            m_root,
+            cancellation.Token
+        ));
     }
 
     private string CreateProject()
@@ -120,11 +141,18 @@ public sealed class BrowserToolchainTests : IDisposable
         File.WriteAllText(Path.Combine(node, "bin", NodeFileName()), string.Empty);
         File.WriteAllText(Path.Combine(python, "python.exe"), string.Empty);
         string project = Path.Combine(m_root, "SelectedWorkload.proj");
-        new XDocument(new XElement("Project", new XElement("PropertyGroup",
-            new XElement("EmscriptenSdkToolsPath", sdk),
-            new XElement("EmscriptenNodeToolsPath", node),
-            new XElement("EmscriptenPythonToolsPath", python),
-            new XElement("EmscriptenCacheSdkCacheDir", cache)))).Save(project);
+        new XDocument(
+            new XElement(
+                "Project",
+                new XElement(
+                    "PropertyGroup",
+                    new XElement("EmscriptenSdkToolsPath", sdk),
+                    new XElement("EmscriptenNodeToolsPath", node),
+                    new XElement("EmscriptenPythonToolsPath", python),
+                    new XElement("EmscriptenCacheSdkCacheDir", cache)
+                )
+            )
+        ).Save(project);
         return project;
     }
 

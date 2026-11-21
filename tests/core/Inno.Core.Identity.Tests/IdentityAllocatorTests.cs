@@ -1,6 +1,6 @@
 using System;
-using Inno.Core.Identity;
 using Xunit;
+using Inno.Core.Identity;
 
 namespace Inno.Core.Identity.Tests;
 
@@ -8,20 +8,15 @@ public sealed class IdentityAllocatorTests
 {
     private readonly IdentityAllocator m_allocator = new();
 
-    private static void AssertRuntimeIdNotNull(IdentityObject target)
-        => Assert.NotNull(target.identity.runtimeId);
+    private static void AssertRuntimeIdNotNull(IdentityObject target) => Assert.NotNull(target.identity.runtimeId);
 
-    private static void AssertRuntimeIdIsNull(IdentityObject target)
-        => Assert.Null(target.identity.runtimeId);
+    private static void AssertRuntimeIdIsNull(IdentityObject target) => Assert.Null(target.identity.runtimeId);
 
-    private static int UnpackSlot(int runtimeId)
-        => runtimeId & 0x000F_FFFF;
+    private static int UnpackSlot(int runtimeId) => runtimeId & 0x000F_FFFF;
 
-    private static int UnpackGeneration(int runtimeId)
-        => (runtimeId >> 20) & 0x0000_0FFF;
+    private static int UnpackGeneration(int runtimeId) => (runtimeId >> 20) & 0x0000_0FFF;
 
-    private static Identity GetIdentity(IdentityObject target)
-        => target.identity;
+    private static Identity GetIdentity(IdentityObject target) => target.identity;
 
     private WeakReference<Entity> CreateRegisteredEntity(out int runtimeId)
     {
@@ -31,13 +26,9 @@ public sealed class IdentityAllocatorTests
         return new WeakReference<Entity>(entity);
     }
 
-    private sealed class Entity : IdentityObject
-    {
-    }
+    private sealed class Entity : IdentityObject;
 
-    private sealed class UnrelatedEntity : IdentityObject
-    {
-    }
+    private sealed class UnrelatedEntity : IdentityObject;
 
     [Fact]
     public void GetIdentity_DoesNotAutoRegisterObject()
@@ -156,8 +147,7 @@ public sealed class IdentityAllocatorTests
         m_allocator.ObjectUnregistered += SuccessfulHandler;
         try
         {
-            AggregateException exception = Assert.Throws<AggregateException>(
-                () => m_allocator.Unregister(entity));
+            AggregateException exception = Assert.Throws<AggregateException>(() => m_allocator.Unregister(entity));
 
             Assert.Single(exception.InnerExceptions);
             Assert.Equal(1, successfulHandlers);
@@ -210,7 +200,6 @@ public sealed class IdentityAllocatorTests
     [Fact]
     public void RegisteredIdentity_DoesNotPreventGarbageCollection()
     {
-
         int runtimeId;
         WeakReference<Entity> weakEntity;
 

@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     private void RequireTextureBlit()
     {
         if (!m_device.capabilities.Supports(GraphicsCapability.TextureBlit))
@@ -26,10 +25,11 @@ internal sealed unsafe partial class BgfxCommandEncoder
             || source.depth != destination.depth
             || source.dimension != destination.dimension
             || source.mipCount != destination.mipCount
-            || source.arrayLayers != destination.arrayLayers)
-        {
+            || source.arrayLayers != destination.arrayLayers
+        ) {
             throw new ArgumentException(
-                "A complete texture copy requires equal dimensions, mip counts, and array layers.");
+                "A complete texture copy requires equal dimensions, mip counts, and array layers."
+            );
         }
     }
 
@@ -48,10 +48,9 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
 
         if ((source.usage & RenderTextureUsage.CopySource) == 0
-            || (destination.usage & RenderTextureUsage.CopyDestination) == 0)
-        {
-            throw new ArgumentException(
-                "Texture copies require CopySource and CopyDestination usage respectively.");
+            || (destination.usage & RenderTextureUsage.CopyDestination) == 0
+        ) {
+            throw new ArgumentException("Texture copies require CopySource and CopyDestination usage respectively.");
         }
     }
 
@@ -69,8 +68,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         int mipHeight = Math.Max(1, descriptor.height >> region.mip);
         if (region.x > mipWidth - region.width
             || region.y > mipHeight - region.height
-            || region.layer > descriptor.GetSubresourceLayerCount(region.mip) - region.depth)
-        {
+            || region.layer > descriptor.GetSubresourceLayerCount(region.mip) - region.depth
+        ) {
             throw new ArgumentOutOfRangeException(parameterName, "Texture region is outside the descriptor.");
         }
     }
@@ -81,12 +80,16 @@ internal sealed unsafe partial class BgfxCommandEncoder
         int commandCount
     ) {
         if (!m_device.capabilities.Supports(GraphicsCapability.Indirect))
+        {
             throw new NotSupportedException("The active graphics backend does not support indirect commands.");
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(firstCommand);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(commandCount);
         ValidateRange(firstCommand, commandCount, buffer.descriptor.elementCount, nameof(commandCount));
         if (buffer.kind != BgfxBufferKind.Indirect)
+        {
             throw new ArgumentException("The buffer was not created for indirect commands.", nameof(buffer));
+        }
     }
 
     private BgfxPipelineResource RequireGraphicsPipeline()
@@ -127,8 +130,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         {
             throw new ArgumentOutOfRangeException(
                 parameterName,
-                $"Requested range [{first}, {first + count}) exceeds buffer element count {available}.");
+                $"Requested range [{first}, {first + count}) exceeds buffer element count {available}."
+            );
         }
     }
-
 }

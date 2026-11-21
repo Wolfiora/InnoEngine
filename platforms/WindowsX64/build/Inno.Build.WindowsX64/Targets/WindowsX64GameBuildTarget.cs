@@ -27,7 +27,6 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
         m_supportPackValidator = supportPackValidator ?? throw new ArgumentNullException(nameof(supportPackValidator));
     }
 
-
     /// <summary>
     /// Validates the target closure before runtime script compilation.
     /// </summary>
@@ -55,8 +54,6 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// </summary>
     public string displayName => "Windows (x64)";
 
-
-
     /// <summary>
     /// Composes a Windows application directory in isolated staging.
     /// </summary>
@@ -75,14 +72,24 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     ) {
         ArgumentNullException.ThrowIfNull(context);
         string application = Path.Combine(context.outputDirectory, context.profile.productName + "-Windows-x64");
-        await CopyDirectoryAsync(context.managedDeployment.outputDirectory, application, cancellationToken,
-            excludeCompilerReferences: true).ConfigureAwait(false);
+        await CopyDirectoryAsync(
+            context.managedDeployment.outputDirectory,
+            application,
+            cancellationToken,
+            excludeCompilerReferences: true
+        ).ConfigureAwait(false);
         string player = Path.Combine(application, "Inno.Player.WindowsX64.exe");
         if (!File.Exists(player))
+        {
             throw new InvalidDataException("The Windows managed publication does not contain Inno.Player.WindowsX64.exe.");
+        }
         File.Move(player, Path.Combine(application, context.profile.productName + ".exe"));
-        await CopyDirectoryAsync(context.contentDirectory, Path.Combine(application, "Content"), cancellationToken,
-                excludeCompilerReferences: false)
+        await CopyDirectoryAsync(
+            context.contentDirectory,
+            Path.Combine(application, "Content"),
+            cancellationToken,
+            excludeCompilerReferences: false
+        )
             .ConfigureAwait(false);
         return application;
     }
@@ -99,7 +106,9 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
             cancellationToken.ThrowIfCancellationRequested();
             string relativePath = Path.GetRelativePath(source, directory);
             if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+            {
                 continue;
+            }
             Directory.CreateDirectory(Path.Combine(destination, relativePath));
         }
         foreach (string file in Directory.EnumerateFiles(source, "*", SearchOption.AllDirectories))
@@ -107,7 +116,9 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
             cancellationToken.ThrowIfCancellationRequested();
             string relativePath = Path.GetRelativePath(source, file);
             if (excludeCompilerReferences && IsCompilerReferencePath(relativePath))
+            {
                 continue;
+            }
             string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
             await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);

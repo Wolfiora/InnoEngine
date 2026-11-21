@@ -1,6 +1,6 @@
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets;
 
@@ -19,9 +19,7 @@ public sealed class BinaryAsset : AssetObject
     /// <summary>
     /// Creates an empty binary asset descriptor.
     /// </summary>
-    public BinaryAsset()
-    {
-    }
+    public BinaryAsset() {}
 
     /// <summary>
     /// Creates a binary asset descriptor with a byte length.

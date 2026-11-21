@@ -24,9 +24,13 @@ public readonly struct ReferenceKey : IEquatable<ReferenceKey>
         string path
     ) {
         if (ownerPersistentId == Guid.Empty)
+        {
             throw new ArgumentException("A reference key requires a non-empty owner identity.", nameof(ownerPersistentId));
+        }
         if (string.IsNullOrWhiteSpace(path))
+        {
             throw new ArgumentException("A reference key requires a non-empty stable path.", nameof(path));
+        }
         this.ownerPersistentId = ownerPersistentId;
         this.path = path;
     }

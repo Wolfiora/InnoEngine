@@ -42,11 +42,18 @@ public static class NativeBindingPreparation
         ArgumentNullException.ThrowIfNull(components);
         cancellationToken.ThrowIfCancellationRequested();
         NativeComponentDescriptor[] owners = components.Where(static owner => owner.bindingDefinition is not null)
-            .DistinctBy(static owner => owner.nativeProject).ToArray();
+            .DistinctBy(static owner => owner.nativeProject)
+            .ToArray();
         if (owners.Length == 0)
+        {
             return new(new Dictionary<string, NativeBindingGenerationDescriptor>(), []);
-        var request = new NativeBindingGenerationRequest(owners, context.RequireToolchain().targetId,
-            NativeBindingOutputMode.TargetArtifacts, componentOptions: componentOptions);
+        }
+        var request = new NativeBindingGenerationRequest(
+            owners,
+            context.RequireToolchain().targetId,
+            NativeBindingOutputMode.TargetArtifacts,
+            componentOptions: componentOptions
+        );
         return await context.RequireBindingGenerator().GenerateAsync(context, request, cancellationToken).ConfigureAwait(false);
     }
 }

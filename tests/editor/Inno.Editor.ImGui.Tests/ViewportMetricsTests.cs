@@ -1,10 +1,9 @@
-using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
-using System.Runtime.CompilerServices;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
-using System.Threading.Tasks;
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using BGCS.Runtime;
+using Xunit;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation.ImGui;
@@ -12,46 +11,63 @@ using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Native.ImGui;
 using Inno.Native.Sdl3;
 using Inno.Platform;
-using Xunit;
+
+using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace Inno.Editor.ImGui.Tests;
+
 public sealed unsafe class ViewportMetricsTests
 {
     [Fact]
     public void FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Prepared presentation frame", width = 320, height = 240, visible = false
+            title = "Prepared presentation frame",
+            width = 320,
+            height = 240,
+            visible = false
         });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
-            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new FixtureRenderer()
+        );
         context.SetIniFile(null);
         using var ui = new EditorUiSession();
         context.SetIniFile(null);
         int phase = 0;
-        context.RenderFrame(() =>
-        {
-            Assert.Equal(1, phase);
-            Assert.Equal(1, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
-            Assert.Equal(ui.widgets.style.fontScale, NativeImGui.Raw.GetStyle()->FontScaleMain);
-            phase = 2;
-        }, () =>
-        {
-            using IDisposable scope = ui.Enter();
-            Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
-            Assert.Equal(new Vector2(320f, 240f), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize));
-            Assert.True(ui.widgets.style.SetZoom(1.25f));
-            ui.widgets.SetupStyle();
-            Assert.Throws<InvalidOperationException>(() => context.RenderFrame(static () => { }));
-            Assert.Throws<InvalidOperationException>(() => context.Dispose());
-            phase = 1;
-        });
+        context.RenderFrame(
+            () =>
+            {
+                Assert.Equal(1, phase);
+                Assert.Equal(1, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+                Assert.Equal(ui.widgets.style.fontScale, NativeImGui.Raw.GetStyle()->FontScaleMain);
+                phase = 2;
+            },
+            () =>
+            {
+                using IDisposable scope = ui.Enter();
+                Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
+                Assert.Equal(new Vector2(320f, 240f), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize));
+                Assert.True(ui.widgets.style.SetZoom(1.25f));
+                ui.widgets.SetupStyle();
+                Assert.Throws<InvalidOperationException>(() => context.RenderFrame(static () => {}));
+                Assert.Throws<InvalidOperationException>(() => context.Dispose());
+                phase = 1;
+            }
+        );
         Assert.Equal(2, phase);
         Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
     }
@@ -59,16 +75,26 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void FailedPreparationDoesNotBeginOrPublishANativeFrame()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FailedPreparationDoesNotBeginOrPublishANativeFrame)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(FailedPreparationDoesNotBeginOrPublishANativeFrame)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Failed frame preparation", width = 320, height = 240, visible = false
+            title = "Failed frame preparation",
+            width = 320,
+            height = 240,
+            visible = false
         });
         var renderer = new FixtureRenderer();
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
-            new ImGuiInteractionOptions(false, 1), renderer);
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            renderer
+        );
         context.SetIniFile(null);
         bool drawn = false;
         var failure = new InvalidOperationException("Frame preparation failed.");
@@ -82,27 +108,39 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Failed presentation frame", width = 320, height = 240, visible = false
+            title = "Failed presentation frame",
+            width = 320,
+            height = 240,
+            visible = false
         });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
-            new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new FixtureRenderer()
+        );
         context.SetIniFile(null);
         var failure = new InvalidOperationException("The frame extension failed.");
         try
         {
             Assert.Same(failure, Assert.Throws<InvalidOperationException>(() => context.RenderFrame(() => throw failure)));
             Assert.Equal(0, NativeImGui.Raw.GetCurrentContext()->WithinFrameScope);
-            context.RenderFrame(static () => { });
+            context.RenderFrame(static () => {});
         }
         finally
         {
             if (NativeImGui.Raw.GetCurrentContext()->WithinFrameScope != 0)
+            {
                 NativeImGui.Raw.EndFrame();
+            }
         }
     }
 
@@ -111,18 +149,30 @@ public sealed unsafe class ViewportMetricsTests
     [InlineData(true)]
     public void ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(bool supported)
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability) + "." + supported))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability) + "." + supported
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var window = application.CreateWindow(new PlatformWindowOptions
         {
-            title = "Renderer capability", width = 320, height = 240, visible = false
+            title = "Renderer capability",
+            width = 320,
+            height = 240,
+            visible = false
         });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None,
-            new ImGuiInteractionOptions(false, 1), new FixtureRenderer { supportsVertexOffsets = supported });
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new FixtureRenderer { supportsVertexOffsets = supported }
+        );
         context.SetIniFile(null);
-        context.RenderFrame(() => Assert.Equal(supported,
-            (NativeImGui.Raw.GetIO()->BackendFlags & (int)Inno.Native.ImGui.ImGuiBackendFlags.RendererHasVtxOffset) != 0));
+        context.RenderFrame(() => Assert.Equal(
+            supported,
+            (NativeImGui.Raw.GetIO()->BackendFlags & (int)Inno.Native.ImGui.ImGuiBackendFlags.RendererHasVtxOffset) != 0
+        ));
     }
 
     [Theory]
@@ -130,11 +180,21 @@ public sealed unsafe class ViewportMetricsTests
     [InlineData(true)]
     public void FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(bool commandKeys)
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback) + "." + commandKeys))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback) + "." + commandKeys
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport metrics", width = 320, height = 240, visible = false, highPixelDensity = true });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(commandKeys, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Viewport metrics", width = 320, height = 240, visible = false, highPixelDensity = true }
+        );
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.EnableViewports,
+            new ImGuiInteractionOptions(commandKeys, 1),
+            new FixtureRenderer()
+        );
         context.SetIniFile(null);
         context.RenderFrame(() =>
         {
@@ -149,23 +209,39 @@ public sealed unsafe class ViewportMetricsTests
             Vector2 expected = new(pixelWidth / (float)logicalWidth, pixelHeight / (float)logicalHeight);
             Assert.Equal(expected, Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetMainViewport()->FramebufferScale));
             Assert.Equal(
-                SDL.Raw.GetWindowDisplayScale((SDLWindow*)window.sdlWindowHandle) / SDL.Raw.GetWindowPixelDensity((SDLWindow*)window.sdlWindowHandle),
+                SDL.Raw.GetWindowDisplayScale((SDLWindow*)window.sdlWindowHandle)
+                / SDL.Raw.GetWindowPixelDensity((SDLWindow*)window.sdlWindowHandle),
                 NativeImGui.Raw.GetMainViewport()->DpiScale
             );
-            Assert.Equal(new Vector2(logicalWidth, logicalHeight), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize));
+            Assert.Equal(
+                new Vector2(logicalWidth, logicalHeight),
+                Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize)
+            );
         });
         SDL.Raw.SetWindowSize((SDLWindow*)window.sdlWindowHandle, 450, 300);
-        context.RenderFrame(() => Assert.Equal(new Vector2(450, 300), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize)));
+        context.RenderFrame(
+            () => Assert.Equal(new Vector2(450, 300), Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetIO()->DisplaySize))
+        );
     }
 
     [Fact]
     public void MetricRefreshPreservesRequestedViewportGeometry()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(MetricRefreshPreservesRequestedViewportGeometry)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(MetricRefreshPreservesRequestedViewportGeometry)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport geometry owner", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Viewport geometry owner", width = 320, height = 240, visible = false }
+        );
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.EnableViewports,
+            new ImGuiInteractionOptions(false, 1),
+            new FixtureRenderer()
+        );
         context.SetIniFile(null);
         var viewport = new ImGuiViewport
         {
@@ -182,9 +258,7 @@ public sealed unsafe class ViewportMetricsTests
             Vector2 requestedSize = new(140, 110);
             viewport.Pos = viewport.WorkPos = Unsafe.BitCast<Vector2, NativeVector2>(requestedPosition);
             viewport.Size = viewport.WorkSize = Unsafe.BitCast<Vector2, NativeVector2>(requestedSize);
-            context.RenderFrame(() =>
-            {
-            });
+            context.RenderFrame(() => {});
             Assert.Equal(requestedPosition, Unsafe.BitCast<NativeVector2, Vector2>(viewport.Pos));
             Assert.Equal(requestedPosition, Unsafe.BitCast<NativeVector2, Vector2>(viewport.WorkPos));
             Assert.Equal(requestedSize, Unsafe.BitCast<NativeVector2, Vector2>(viewport.Size));
@@ -202,11 +276,21 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void DetachedWindowAppliesRequestsAfterPlatformEventReconciliation()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(DetachedWindowAppliesRequestsAfterPlatformEventReconciliation)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(DetachedWindowAppliesRequestsAfterPlatformEventReconciliation)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport movement", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Viewport movement", width = 320, height = 240, visible = false }
+        );
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.EnableViewports,
+            new ImGuiInteractionOptions(false, 1),
+            new FixtureRenderer()
+        );
         context.SetIniFile(null);
         var io = NativeImGui.Raw.GetIO();
         io->ConfigViewportsNoAutoMerge = (true ? (byte)1 : (byte)0);
@@ -249,18 +333,30 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Logical DPI transition", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), new FixtureRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Logical DPI transition", width = 320, height = 240, visible = false }
+        );
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.EnableViewports,
+            new ImGuiInteractionOptions(false, 1),
+            new FixtureRenderer()
+        );
         context.SetIniFile(null);
         float previous = 0f;
         context.RenderFrame(() => previous = NativeImGui.Raw.GetMainViewport()->DpiScale);
         var io = NativeImGui.Raw.GetPlatformIO();
         Assert.True(io->Monitors.Size > 0);
         for (int index = 0; index < io->Monitors.Size; index++)
+        {
             io->Monitors.Data[index].DpiScale = previous * 2f;
+        }
         Assert.Equal(previous, NativeImGui.Raw.GetMainViewport()->DpiScale);
         context.RenderFrame(() => Assert.Equal(previous * 2f, NativeImGui.Raw.GetMainViewport()->DpiScale));
     }
@@ -268,12 +364,22 @@ public sealed unsafe class ViewportMetricsTests
     [Fact]
     public void ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(ViewportMetricsTests) + "." + nameof(ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(ViewportMetricsTests) + "." + nameof(ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Viewport ownership", width = 320, height = 240, visible = false });
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Viewport ownership", width = 320, height = 240, visible = false }
+        );
         var renderer = new FixtureRenderer();
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.EnableViewports, new ImGuiInteractionOptions(false, 1), renderer);
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.EnableViewports,
+            new ImGuiInteractionOptions(false, 1),
+            renderer
+        );
         context.SetIniFile(null);
         var viewport = new ImGuiViewport
         {
@@ -308,30 +414,23 @@ public sealed unsafe class ViewportMetricsTests
         public bool supportsViewports => true;
         public bool supportsVertexOffsets { get; init; }
 
-        public void RenderMain(IntPtr drawData)
-        {
-        }
+        public void RenderMain(IntPtr drawData) {}
 
         public void SynchronizeMainOutput(
             int pixelWidth,
             int pixelHeight
-        ) {
-        }
+        ) {}
 
         public void CreateViewport(PlatformImGuiViewportTarget target) => this.target = target;
-        public void ResizeViewport(PlatformImGuiViewportTarget target)
-        {
-        }
+
+        public void ResizeViewport(PlatformImGuiViewportTarget target) {}
 
         public void RenderViewport(
             PlatformImGuiViewportTarget target,
             IntPtr drawData
-        ) {
-        }
+        ) {}
 
-        public void PresentViewport(PlatformImGuiViewportTarget target)
-        {
-        }
+        public void PresentViewport(PlatformImGuiViewportTarget target) {}
 
         public Task RetireViewport(PlatformImGuiViewportTarget target)
         {
@@ -339,12 +438,8 @@ public sealed unsafe class ViewportMetricsTests
             return Task.CompletedTask;
         }
 
-        public void DrainViewportRetirements()
-        {
-        }
+        public void DrainViewportRetirements() {}
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() {}
     }
 }

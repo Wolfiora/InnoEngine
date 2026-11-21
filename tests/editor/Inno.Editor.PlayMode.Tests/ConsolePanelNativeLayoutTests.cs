@@ -1,24 +1,25 @@
-using System.Runtime.CompilerServices;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
-using BGCS.Runtime;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using BGCS.Runtime;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
-using Inno.Editor.ImGui;
 using Inno.Editor.Diagnostics;
+using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
+
 using ImGuiApi = Inno.Native.ImGui.ImGui;
-using Xunit;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -40,7 +41,9 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
             io->IniFilename = null;
-            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly) });
+            using var modules = new ModuleHost(
+                new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly) }
+            );
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
             var diagnostics = new DiagnosticHub();
@@ -50,7 +53,8 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                 new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
                 types,
                 logs,
-                [new RejectedConsole()]);
+                [new RejectedConsole()]
+            );
             runtime.Start();
             EditorPanelExtension panel = Assert.Single(runtime.panels, value => value.id == "diagnostics.console");
             panel.isOpen = true;
@@ -101,7 +105,9 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             ImGuiApi.Raw.GetIO()->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             ImGuiApi.Raw.GetIO()->Fonts->RendererHasTextures = 1;
             ImGuiApi.Raw.ScaleAllSizes(ImGuiApi.Raw.GetStyle(), scale);
-            using var modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)});
+            using var modules = new ModuleHost(
+                new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ConsolePanelNativeLayoutTests).Assembly)}
+            );
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var logs = new LogRouter();
             var hub = new DiagnosticHub();
@@ -118,8 +124,14 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             runtime.Start();
             logs.Flush();
             console.Clear();
-            if (diagnostic) reporter.Publish(new("BGFX_IR_GENERATION", "BGFX has no position builtin for stage Compute.", DiagnosticSeverity.Error));
-            else logs.CreateLogger<ConsolePanelNativeLayoutTests>().Write(LogLevel.Error, "BGFX has no position builtin for stage Compute.");
+            if (diagnostic)
+            {
+                reporter.Publish(new("BGFX_IR_GENERATION", "BGFX has no position builtin for stage Compute.", DiagnosticSeverity.Error));
+            }
+            else
+            {
+                logs.CreateLogger<ConsolePanelNativeLayoutTests>().Write(LogLevel.Error, "BGFX has no position builtin for stage Compute.");
+            }
             logs.Flush();
             EditorPanelExtension panel = Assert.Single(runtime.panels, value => value.id == "diagnostics.console");
             panel.isOpen = true;
@@ -141,7 +153,10 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             for (int i = 0; i < context->Windows.Size; i++)
             {
                 ImGuiWindow* window = context->Windows.Data[i];
-                if (Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true) card = window;
+                if (Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true)
+                {
+                    card = window;
+                }
             }
             Assert.True(card != null);
             ImGuiTable* header = FindActiveTable(card, 3);
@@ -149,7 +164,10 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             Vector2 toggle = new(header->Columns.Data[0].WorkMinX + 6, header->RowPosY1 + ImGuiApi.GetFontSize() / 2);
             ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), toggle.X, toggle.Y);
             Draw(960);
-            Assert.True(context->HoveredId != 0, $"No toggle hovered: {toggle}; window {Marshal.PtrToStringUTF8((nint)context->HoveredWindow->Name)}");
+            Assert.True(
+                context->HoveredId != 0,
+                $"No toggle hovered: {toggle}; window {Marshal.PtrToStringUTF8((nint)context->HoveredWindow->Name)}"
+            );
             ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0)); Draw(960);
             Assert.True(context->ActiveId != 0, "Toggle did not activate.");
             ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (false ? (byte)1 : (byte)0)); Draw(960);
@@ -167,11 +185,18 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                     Assert.True(value.MinX > label.MinX + ImGuiApi.CalcTextSize("Source:").X);
                     Assert.True(label.ClipRect.Max.X >= label.WorkMinX + ImGuiApi.CalcTextSize("Source:").X);
                 }
-                if (width >= 500) Assert.True(details, $"Width {width}, details {details}, toggle {toggle}, card {card->Pos} / {card->Size}");
+                if (width >= 500)
+                {
+                    Assert.True(details, $"Width {width}, details {details}, toggle {toggle}, card {card->Pos} / {card->Size}");
+                }
                 if (width == 140) Assert.False(details);
             }
         }
-        finally { ImGuiApi.Raw.DestroyContext(context); Directory.Delete(root, true); }
+        finally
+        {
+            ImGuiApi.Raw.DestroyContext(context);
+            Directory.Delete(root, true);
+        }
     }
 
     private static ImGuiTable* FindActiveTable(
@@ -183,7 +208,9 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         {
             ImGuiTable* table = &context->Tables.Buf.Data[index];
             if (table->OuterWindow == window && table->ColumnsCount == columns && table->LastFrameActive == ImGuiApi.GetFrameCount())
+            {
                 return table;
+            }
         }
         return null;
     }
@@ -192,8 +219,10 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
     {
         public int capacity { get; set; }
         public bool clearOnPlay { get; set; }
+
         public EditorConsoleSnapshot Capture() => throw new InvalidOperationException("Snapshot source failed.");
-        public void Clear() { }
+
+        public void Clear() {}
     }
 
     private sealed class InactivePlayMode : IEditorPlayMode
@@ -203,9 +232,11 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         public string? lastFailure => null;
         public LogSessionId activeSessionId => LogSessionId.none;
         private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
+
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 
         public bool EnterPlayMode() => false;
+
         public bool ExitPlayMode() => false;
     }
 }

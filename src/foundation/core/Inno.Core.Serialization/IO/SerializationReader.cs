@@ -97,12 +97,7 @@ public sealed class SerializationReader
     ) {
         ArgumentNullException.ThrowIfNull(declaredType);
         SerializationNode node = GetRequiredNode(name);
-        return ValuePipeline.Read(
-            node,
-            declaredType,
-            m_operation,
-            AppendPath(name),
-            allowDefaultObject: false);
+        return ValuePipeline.Read(node, declaredType, m_operation, AppendPath(name), allowDefaultObject: false);
     }
 
     /// <summary>
@@ -136,7 +131,8 @@ public sealed class SerializationReader
             typeof(TValue),
             m_operation,
             AppendPath(name),
-            allowDefaultObject: false)!;
+            allowDefaultObject: false
+        )!;
         return true;
     }
 
@@ -153,7 +149,9 @@ public sealed class SerializationReader
     {
         SerializationNode node = GetRequiredNode(name);
         if (node is not ObjectSerializationNode child)
+        {
             throw new InvalidOperationException($"Serialization value '{AppendPath(name)}' must be an object.");
+        }
         return new SerializationReader(m_operation, child, AppendPath(name), typeof(object));
     }
 
@@ -170,13 +168,17 @@ public sealed class SerializationReader
     {
         SerializationNode node = GetRequiredNode(name);
         if (node is not ArraySerializationNode array)
+        {
             throw new InvalidOperationException($"Serialization value '{AppendPath(name)}' must be an array.");
+        }
 
         var readers = new SerializationReader[array.values.Count];
         for (int i = 0; i < array.values.Count; i++)
         {
             if (array.values[i] is not ObjectSerializationNode child)
+            {
                 throw new InvalidOperationException($"Serialization value '{AppendPath(name)}[{i}]' must be an object.");
+            }
             readers[i] = new SerializationReader(m_operation, child, $"{AppendPath(name)}[{i}]", typeof(object));
         }
 
@@ -218,9 +220,13 @@ public sealed class SerializationReader
     {
         m_operation.EnsureActive();
         if (string.IsNullOrWhiteSpace(name))
+        {
             throw new ArgumentException("A non-empty serialization member name is required.", nameof(name));
+        }
         if (!m_node.values.TryGetValue(name, out SerializationNode? node))
+        {
             throw new InvalidOperationException($"Required serialization value '{AppendPath(name)}' is missing.");
+        }
         return node;
     }
 

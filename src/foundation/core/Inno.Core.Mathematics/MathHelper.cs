@@ -14,7 +14,7 @@ public static class MathHelper
   /// The c tolerance value used as part of this type's public representation.
   /// </summary>
   public const float C_TOLERANCE = 1e-6f;
-  
+
   /// <summary>
   /// Determines whether two floating-point numbers are approximately equal,
   /// using a relative tolerance based on the magnitude of the numbers.
@@ -44,7 +44,7 @@ public static class MathHelper
   ) {
     return MathF.Abs(a - b) <= relTolerance * MathF.Max(MathF.Abs(a), MathF.Abs(b));
   }
-  
+
   /// <summary>
   /// Returns the Cartesian coordinate for one axis of a point that is defined by a given triangle and two normalized barycentric (areal) coordinates.
   /// </summary>
@@ -74,7 +74,9 @@ public static class MathHelper
       float amount1,
       float amount2
   ) {
-    return (float) ((double) value1 + ((double) value2 - (double) value1) * (double) amount1 + ((double) value3 - (double) value1) * (double) amount2);
+    return (float) ((double) value1
+                    + ((double) value2 - (double) value1) * (double) amount1
+                    + ((double) value3 - (double) value1) * (double) amount2);
   }
 
   /// <summary>
@@ -108,7 +110,11 @@ public static class MathHelper
   ) {
     double num1 = (double) amount * (double) amount;
     double num2 = num1 * (double) amount;
-    return (float) (0.5 * (2.0 * (double) value2 + ((double) value3 - (double) value1) * (double) amount + (2.0 * (double) value1 - 5.0 * (double) value2 + 4.0 * (double) value3 - (double) value4) * num1 + (3.0 * (double) value2 - (double) value1 - 3.0 * (double) value3 + (double) value4) * num2));
+    return (float) (0.5
+                    * (2.0 * (double) value2
+                       + ((double) value3 - (double) value1) * (double) amount
+                       + (2.0 * (double) value1 - 5.0 * (double) value2 + 4.0 * (double) value3 - (double) value4) * num1
+                       + (3.0 * (double) value2 - (double) value1 - 3.0 * (double) value3 + (double) value4) * num2));
   }
 
   /// <summary>
@@ -165,7 +171,14 @@ public static class MathHelper
     double num5 = (double) amount;
     double num6 = num5 * num5 * num5;
     double num7 = num5 * num5;
-    return (double) amount != 0.0 ? ((double) amount != 1.0 ? (float) ((2.0 * num1 - 2.0 * num2 + num4 + num3) * num6 + (3.0 * num2 - 3.0 * num1 - 2.0 * num3 - num4) * num7 + num3 * num5 + num1) : value2) : value1;
+    return (double) amount != 0.0
+           ? ((double) amount != 1.0
+              ? (float) ((2.0 * num1 - 2.0 * num2 + num4 + num3) * num6
+                         + (3.0 * num2 - 3.0 * num1 - 2.0 * num3 - num4) * num7
+                         + num3 * num5
+                         + num1)
+              : value2)
+           : value1;
   }
 
   /// <summary>
@@ -376,10 +389,14 @@ public static class MathHelper
   public static float WrapAngle(float angle)
   {
     if ((double) angle > -3.1415927410125732 && (double) angle <= 3.1415927410125732)
+    {
       return angle;
+    }
     angle %= 6.2831855f;
     if ((double) angle <= -3.1415927410125732)
+    {
       return angle + 6.2831855f;
+    }
     return (double) angle > 3.1415927410125732 ? angle - 6.2831855f : angle;
   }
 

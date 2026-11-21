@@ -4,9 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Assets.Pipeline;
 using Inno.Assets;
+using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
 using Inno.Text;
 
@@ -52,7 +51,7 @@ public sealed class UiDocumentImporter : AssetImporter<UiDocumentAsset>
         CancellationToken cancellationToken
     ) {
         var settings = context.importSettings as UiDocumentImportSettings
-            ?? throw new InvalidOperationException("UI source requires its standard import settings.");
+                       ?? throw new InvalidOperationException("UI source requires its standard import settings.");
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.languageId);
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.implementationId);
         await UiDocumentImportPipeline.ImportAsync(
@@ -60,7 +59,8 @@ public sealed class UiDocumentImporter : AssetImporter<UiDocumentAsset>
             output,
             new UiDocumentLanguageId(settings.languageId),
             settings.implementationId,
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 }
 
@@ -100,20 +100,37 @@ public static class UiDocumentImportPipeline
         ArgumentException.ThrowIfNullOrWhiteSpace(implementationId);
         string text = context.ReadUtf8Text();
         using var frontends = new UiDocumentFrontendRegistry(context.types);
-        UiDocumentAnalysis analysis = frontends.Analyze(language,
-            new(context.assetPath.ToString(), text, context.ReadSourceUtf8Text));
+        UiDocumentAnalysis analysis = frontends.Analyze(
+            language,
+            new(context.assetPath.ToString(), text, context.ReadSourceUtf8Text)
+        );
         if (!analysis.succeeded)
-            throw new InvalidDataException(string.Join("\n", analysis.diagnostics.Select(static diagnostic =>
-                $"{diagnostic.line}:{diagnostic.column}: {diagnostic.code}: {diagnostic.message}")));
+        {
+            throw new InvalidDataException(
+                string.Join(
+                    "\n",
+                    analysis.diagnostics.Select(static diagnostic =>
+                        $"{diagnostic.line}:{diagnostic.column}: {diagnostic.code}: {diagnostic.message}")
+                )
+            );
+        }
         var fonts = new List<UiDocumentFontFace>(analysis.fonts.Count);
         foreach (UiDocumentFontDeclaration declaration in analysis.fonts)
         {
             FontAsset font = context.ResolveDependency<FontAsset>(AssetPath.Parse(declaration.assetPath));
             if (font.isMissing || font.metadata is not { faceCount: > 0 })
+            {
                 throw new InvalidDataException($"UI font asset '{declaration.assetPath}' has no usable face.");
+            }
             context.DependsOnArtifact(font.identity.persistentId);
-            fonts.Add(new UiDocumentFontFace(font.identity.persistentId,
-                declaration.family, declaration.style, declaration.weight));
+            fonts.Add(
+                new UiDocumentFontFace(
+                    font.identity.persistentId,
+                    declaration.family,
+                    declaration.style,
+                    declaration.weight
+                )
+            );
         }
         string sourceUri = $"innoasset://{context.assetPath.source.value}/{context.assetPath.localPath}";
         var source = new UiDocumentSource(language, analysis.text!, sourceUri);
@@ -121,6 +138,7 @@ public static class UiDocumentImportPipeline
         await output.WriteArtifactAsync(
             "runtime",
             UiDocumentAsset.CreateRuntimePayload(implementationId, source, fonts),
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 }

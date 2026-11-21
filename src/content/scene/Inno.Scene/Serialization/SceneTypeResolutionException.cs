@@ -23,11 +23,12 @@ public sealed class SceneTypeResolutionException : Exception
     public SceneTypeResolutionException(
         Guid stableTypeId,
         string elementKind
-    )
-        : base($"Scene {elementKind} stable type id '{stableTypeId}' is not loaded.")
+    ) : base($"Scene {elementKind} stable type id '{stableTypeId}' is not loaded.")
     {
         if (stableTypeId == Guid.Empty)
+        {
             throw new ArgumentException("A stable scene type identity is required.", nameof(stableTypeId));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(elementKind);
         this.stableTypeId = stableTypeId;
         this.elementKind = elementKind;

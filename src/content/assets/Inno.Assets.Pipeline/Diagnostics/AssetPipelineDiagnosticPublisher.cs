@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Diagnostics;
 
 namespace Inno.Assets.Pipeline;
@@ -7,9 +6,11 @@ namespace Inno.Assets.Pipeline;
 internal sealed class AssetPipelineDiagnosticPublisher
 {
     private const string C_SOURCE_DATABASE_GROUP = "Asset Source Database";
+
     private static readonly DiagnosticSource S_SOURCE_DATABASE = new(
         "inno.assets.pipeline/source-database",
-        C_SOURCE_DATABASE_GROUP);
+        C_SOURCE_DATABASE_GROUP
+    );
 
     private readonly DiagnosticHub m_diagnostics;
 
@@ -30,9 +31,11 @@ internal sealed class AssetPipelineDiagnosticPublisher
             [
             Diagnostic.Error(
                 "ASSET-SOURCE",
-                $"Incremental refresh failed: {refreshException.Message} " +
-                $"Recovery rescan failed: {recoveryException.Message}")
-            ]);
+                $"Incremental refresh failed: {refreshException.Message} "
+                + $"Recovery rescan failed: {recoveryException.Message}"
+            )
+            ]
+        );
     }
 
     internal void ResolveSourceDatabase() => m_diagnostics.Clear(S_SOURCE_DATABASE);

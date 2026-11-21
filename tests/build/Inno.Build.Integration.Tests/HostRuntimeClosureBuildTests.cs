@@ -1,12 +1,12 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -25,15 +25,30 @@ public sealed class HostRuntimeClosureBuildTests
         string artifacts = Path.Combine(root, "managed");
         try
         {
-            string extension = WriteProject(root, "Inno.Fixture.Extension", string.Empty,
-                "namespace Inno.Fixture.Extension; public sealed class Marker { }");
-            string library = WriteProject(root, "Inno.Fixture.Host",
+            string extension = WriteProject(
+                root,
+                "Inno.Fixture.Extension",
+                string.Empty,
+                "namespace Inno.Fixture.Extension; public sealed class Marker { }"
+            );
+            string library = WriteProject(
+                root,
+                "Inno.Fixture.Host",
                 $"<PropertyGroup><InnoExposeRuntimeClosure>{exposeClosure.ToString().ToLowerInvariant()}</InnoExposeRuntimeClosure></PropertyGroup>"
                 + $"<ItemGroup><ProjectReference Include=\"{Escape(extension)}\" PrivateAssets=\"compile\" /></ItemGroup>",
-                "namespace Inno.Fixture.Host; public sealed class Marker { }");
-            string adapter = Path.Combine(engine, "backends", "DotNet", "runtime", "Inno.Adapter.Modules.DotNet",
-                "Inno.Adapter.Modules.DotNet.csproj");
-            string application = WriteProject(root, "Host",
+                "namespace Inno.Fixture.Host; public sealed class Marker { }"
+            );
+            string adapter = Path.Combine(
+                engine,
+                "backends",
+                "DotNet",
+                "runtime",
+                "Inno.Adapter.Modules.DotNet",
+                "Inno.Adapter.Modules.DotNet.csproj"
+            );
+            string application = WriteProject(
+                root,
+                "Host",
                 "<PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>"
                 + $"<ItemGroup><ProjectReference Include=\"{Escape(library)}\" />"
                 + $"<ProjectReference Include=\"{Escape(adapter)}\" /></ItemGroup>",
@@ -48,43 +63,90 @@ public sealed class HostRuntimeClosureBuildTests
                         return source.GetAssemblies().Any(assembly => assembly.GetName().Name == "Inno.Fixture.Extension") ? 0 : 13;
                     }
                 }
-                """);
+                """
+            );
             string[] properties = ["-p:ArtifactsPath=" + artifacts, "-p:UseSharedCompilation=false"];
-            await ToolchainEnvironment.RunAsync(dotnet,
+            await ToolchainEnvironment.RunAsync(
+                dotnet,
                 ["build", application, "-c", "Release", "--disable-build-servers", "-m:1", "-nr:false", ..properties],
-                root, CancellationToken.None, DotNetSdkEnvironment.Create(dotnet));
-            string executable = (await ToolchainEnvironment.CaptureOutputAsync(dotnet,
-                ["msbuild", application, "-nologo", "-m:1", "-nr:false", "-p:Configuration=Release",
-                    "-getProperty:TargetPath", ..properties], root, CancellationToken.None,
-                DotNetSdkEnvironment.Create(dotnet))).Trim();
+                root,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(dotnet)
+            );
+            string executable = (await ToolchainEnvironment.CaptureOutputAsync(
+                dotnet,
+                [
+                    "msbuild",
+                    application,
+                    "-nologo",
+                    "-m:1",
+                    "-nr:false",
+                    "-p:Configuration=Release",
+                    "-getProperty:TargetPath",
+                    ..properties
+                ],
+                root,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(dotnet)
+            )).Trim();
             string output = Path.GetDirectoryName(executable)!;
             Assert.Equal(exposeClosure, File.Exists(Path.Combine(output, "Inno.Fixture.Extension.dll")));
             Assert.Equal(exposeClosure, File.Exists(Path.Combine(output, "Inno.Fixture.Host.deps.json")));
             if (exposeClosure)
-                await ToolchainEnvironment.RunAsync(dotnet, [executable], root, CancellationToken.None,
-                    DotNetSdkEnvironment.Create(dotnet));
+            {
+                await ToolchainEnvironment.RunAsync(
+                    dotnet,
+                    [executable],
+                    root,
+                    CancellationToken.None,
+                    DotNetSdkEnvironment.Create(dotnet)
+                );
+            }
             else
             {
                 InvalidOperationException unavailable = await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                    ToolchainEnvironment.RunAsync(dotnet, [executable], root, CancellationToken.None,
-                        DotNetSdkEnvironment.Create(dotnet)));
+                    ToolchainEnvironment.RunAsync(
+                        dotnet,
+                        [executable],
+                        root,
+                        CancellationToken.None,
+                        DotNetSdkEnvironment.Create(dotnet)
+                    ));
                 Assert.EndsWith("exit code 13.", unavailable.Message);
             }
 
-            File.WriteAllText(Path.Combine(Path.GetDirectoryName(application)!, "ForbiddenCompile.cs"),
-                "internal sealed class ForbiddenCompile { private readonly Inno.Fixture.Extension.Marker m_value = new(); }");
+            File.WriteAllText(
+                Path.Combine(Path.GetDirectoryName(application)!, "ForbiddenCompile.cs"),
+                "internal sealed class ForbiddenCompile { private readonly Inno.Fixture.Extension.Marker m_value = new(); }"
+            );
             string compilerLog = Path.Combine(root, "negative-compile.log");
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
-                ToolchainEnvironment.RunAsync(dotnet,
-                    ["build", application, "-c", "Release", "--no-restore", "--disable-build-servers", "-m:1", "-nr:false",
-                        "-flp:logfile=" + compilerLog + ";verbosity=normal", ..properties],
-                    root, CancellationToken.None, DotNetSdkEnvironment.Create(dotnet)));
+                ToolchainEnvironment.RunAsync(
+                    dotnet,
+                    [
+                        "build",
+                        application,
+                        "-c",
+                        "Release",
+                        "--no-restore",
+                        "--disable-build-servers",
+                        "-m:1",
+                        "-nr:false",
+                        "-flp:logfile=" + compilerLog + ";verbosity=normal",
+                        ..properties
+                    ],
+                    root,
+                    CancellationToken.None,
+                    DotNetSdkEnvironment.Create(dotnet)
+                ));
             Assert.Contains("CS0234", File.ReadAllText(compilerLog));
         }
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 

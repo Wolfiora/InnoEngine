@@ -4,6 +4,7 @@ using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Assets;
+
 [EditorHistoryHandler(AssetHistoryKinds.SourceOperation)]
 internal sealed class AssetHistoryHandler(
     AssetEditingModule assets,
@@ -11,6 +12,7 @@ internal sealed class AssetHistoryHandler(
 ) : EditorHistoryHandler
 {
     private readonly Logger m_log = (logs ?? throw new ArgumentNullException(nameof(logs))).CreateLogger<AssetHistoryHandler>();
+
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
     /// </summary>
@@ -40,7 +42,8 @@ internal sealed class AssetHistoryHandler(
                 AssetHistoryOperationKind.CreateDirectory => QueryCreateDirectory(data, direction),
                 AssetHistoryOperationKind.Delete => QueryDelete(data, direction),
                 AssetHistoryOperationKind.CreateAsset => QueryCreateAsset(data, direction),
-                _ => EditorHistoryAvailability.Unavailable("Unknown asset history operation.")};
+                _ => EditorHistoryAvailability.Unavailable("Unknown asset history operation.")
+            };
         }
         catch (Exception exception)
         {
@@ -95,7 +98,9 @@ internal sealed class AssetHistoryHandler(
             }
 
             if (!result.succeeded)
+            {
                 return result;
+            }
             try
             {
                 assets.SelectPath(selectionPath);
@@ -124,15 +129,18 @@ internal sealed class AssetHistoryHandler(
         }
         catch (Exception exception)
         {
-            if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(sourcePath), out _) && assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(targetPath), out _))
-            {
+            if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(sourcePath), out _)
+                && assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(targetPath), out _)
+            ) {
                 try
                 {
                     assets.MoveFromHistory(targetPath, sourcePath);
                 }
                 catch (Exception rollbackException)
                 {
-                    return StateIntegrityFailure($"Asset move failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}");
+                    return StateIntegrityFailure(
+                        $"Asset move failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}"
+                    );
                 }
             }
 
@@ -148,12 +156,18 @@ internal sealed class AssetHistoryHandler(
         try
         {
             if (shouldExist)
+            {
                 assets.pipeline.CreateDirectory(AssetPath.Parse(data.sourcePath));
+            }
             else
+            {
                 assets.pipeline.Delete(AssetPath.Parse(data.sourcePath));
+            }
             bool exists = assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _);
             if (exists != shouldExist)
+            {
                 throw new InvalidOperationException("The folder operation did not reach its requested state.");
+            }
             return EditorHistoryResult.Success();
         }
         catch (Exception exception)
@@ -162,13 +176,19 @@ internal sealed class AssetHistoryHandler(
             {
                 bool exists = assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _);
                 if (shouldExist && exists)
+                {
                     assets.pipeline.Delete(AssetPath.Parse(data.sourcePath));
+                }
                 else if (!shouldExist && !exists)
+                {
                     assets.pipeline.CreateDirectory(AssetPath.Parse(data.sourcePath));
+                }
             }
             catch (Exception rollbackException)
             {
-                return StateIntegrityFailure($"Asset folder operation failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}");
+                return StateIntegrityFailure(
+                    $"Asset folder operation failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}"
+                );
             }
 
             return EditorHistoryResult.Failure(exception.Message);
@@ -183,12 +203,18 @@ internal sealed class AssetHistoryHandler(
         try
         {
             if (shouldExist)
+            {
                 AssetSourceArchive.Restore(assets.pipeline, data.sourcePath, data.isDirectory, data.archive);
+            }
             else
+            {
                 assets.DeleteFromHistory(data.sourcePath);
+            }
             bool exists = assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _);
             if (exists != shouldExist)
+            {
                 throw new InvalidOperationException("The Asset delete operation did not reach its requested state.");
+            }
             return EditorHistoryResult.Success();
         }
         catch (Exception exception)
@@ -197,13 +223,19 @@ internal sealed class AssetHistoryHandler(
             {
                 bool exists = assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _);
                 if (shouldExist && exists)
+                {
                     assets.pipeline.Delete(AssetPath.Parse(data.sourcePath));
+                }
                 else if (!shouldExist && !exists)
+                {
                     AssetSourceArchive.Restore(assets.pipeline, data.sourcePath, data.isDirectory, data.archive);
+                }
             }
             catch (Exception rollbackException)
             {
-                return StateIntegrityFailure($"Asset delete operation failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}");
+                return StateIntegrityFailure(
+                    $"Asset delete operation failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}"
+                );
             }
 
             return EditorHistoryResult.Failure(exception.Message);
@@ -218,12 +250,18 @@ internal sealed class AssetHistoryHandler(
         try
         {
             if (shouldExist)
+            {
                 AssetSourceArchive.Restore(assets.pipeline, data.sourcePath, data.isDirectory, data.archive);
+            }
             else
+            {
                 assets.DeleteFromHistory(data.sourcePath);
+            }
             bool exists = assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _);
             if (exists != shouldExist)
+            {
                 throw new InvalidOperationException("The created Asset did not reach its requested history state.");
+            }
             return EditorHistoryResult.Success();
         }
         catch (Exception exception)
@@ -232,13 +270,19 @@ internal sealed class AssetHistoryHandler(
             {
                 bool exists = assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(data.sourcePath), out _);
                 if (shouldExist && exists)
+                {
                     assets.DeleteFromHistory(data.sourcePath);
+                }
                 else if (!shouldExist && !exists)
+                {
                     AssetSourceArchive.Restore(assets.pipeline, data.sourcePath, data.isDirectory, data.archive);
+                }
             }
             catch (Exception rollbackException)
             {
-                return StateIntegrityFailure($"Asset creation history failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}");
+                return StateIntegrityFailure(
+                    $"Asset creation history failed: {exception.Message} " + $"Rollback failed: {rollbackException.Message}"
+                );
             }
 
             return EditorHistoryResult.Failure(exception.Message);
@@ -252,7 +296,9 @@ internal sealed class AssetHistoryHandler(
         string source = direction == EditorHistoryDirection.Undo ? data.targetPath : data.sourcePath;
         string target = direction == EditorHistoryDirection.Undo ? data.sourcePath : data.targetPath;
         if (!assets.pipeline.TryGetFileSystemEntry(AssetPath.Parse(source), out _))
+        {
             return EditorHistoryAvailability.Unavailable($"Asset '{source}' no longer exists.");
+        }
         return !assets.pipeline.TryGetFileSystemEntry(
             AssetPath.Parse(target),
             out _
@@ -262,31 +308,39 @@ internal sealed class AssetHistoryHandler(
     private EditorHistoryAvailability QueryCreateDirectory(
         AssetHistoryData data,
         EditorHistoryDirection direction
-    ) => direction == EditorHistoryDirection.Undo ? assets.pipeline.TryGetFileSystemEntry(
-        AssetPath.Parse(data.sourcePath),
-        out _
-    ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Folder '{data.sourcePath}' no longer exists.") : !assets.pipeline.TryGetFileSystemEntry(
-        AssetPath.Parse(data.sourcePath),
-        out _
-    ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Folder '{data.sourcePath}' already exists.");
+    ) => direction == EditorHistoryDirection.Undo
+         ? assets.pipeline.TryGetFileSystemEntry(
+             AssetPath.Parse(data.sourcePath),
+             out _
+         ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Folder '{data.sourcePath}' no longer exists.")
+         : !assets.pipeline.TryGetFileSystemEntry(
+             AssetPath.Parse(data.sourcePath),
+             out _
+         ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Folder '{data.sourcePath}' already exists.");
+
     private EditorHistoryAvailability QueryDelete(
         AssetHistoryData data,
         EditorHistoryDirection direction
-    ) => direction == EditorHistoryDirection.Undo ? !assets.pipeline.TryGetFileSystemEntry(
-        AssetPath.Parse(data.sourcePath),
-        out _
-    ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' already exists.") : assets.pipeline.TryGetFileSystemEntry(
-        AssetPath.Parse(data.sourcePath),
-        out _
-    ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' no longer exists.");
+    ) => direction == EditorHistoryDirection.Undo
+         ? !assets.pipeline.TryGetFileSystemEntry(
+             AssetPath.Parse(data.sourcePath),
+             out _
+         ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' already exists.")
+         : assets.pipeline.TryGetFileSystemEntry(
+             AssetPath.Parse(data.sourcePath),
+             out _
+         ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' no longer exists.");
+
     private EditorHistoryAvailability QueryCreateAsset(
         AssetHistoryData data,
         EditorHistoryDirection direction
-    ) => direction == EditorHistoryDirection.Undo ? assets.pipeline.TryGetFileSystemEntry(
-        AssetPath.Parse(data.sourcePath),
-        out _
-    ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' no longer exists.") : !assets.pipeline.TryGetFileSystemEntry(
-        AssetPath.Parse(data.sourcePath),
-        out _
-    ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' already exists.");
+    ) => direction == EditorHistoryDirection.Undo
+         ? assets.pipeline.TryGetFileSystemEntry(
+             AssetPath.Parse(data.sourcePath),
+             out _
+         ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' no longer exists.")
+         : !assets.pipeline.TryGetFileSystemEntry(
+             AssetPath.Parse(data.sourcePath),
+             out _
+         ) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable($"Asset '{data.sourcePath}' already exists.");
 }

@@ -53,6 +53,5 @@ public interface IProjectSettingsLookup
     bool TryGet<TSetting>(
         ProjectSettingId id,
         out TSetting? setting
-    )
-        where TSetting : class, ISerializable;
+    ) where TSetting : class, ISerializable;
 }

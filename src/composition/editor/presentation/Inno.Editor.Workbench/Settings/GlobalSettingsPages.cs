@@ -1,6 +1,7 @@
 using Inno.Editor.Settings;
 
 namespace Inno.Editor.Workbench;
+
 [EditorSettingPath("Editor")]
 internal sealed class GlobalSettingsPage : EditorSetting
 {

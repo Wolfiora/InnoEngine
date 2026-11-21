@@ -33,10 +33,14 @@ internal sealed class GameBehaviorLifecycleRunner
         for (int i = 0; i < behaviors.Count; i++)
         {
             if (!m_scene.canDispatch)
+            {
                 break;
+            }
             GameBehavior behavior = behaviors[i];
             if (behavior.isActiveAndEnabled)
+            {
                 behavior.DispatchFixedUpdate();
+            }
         }
     }
 
@@ -49,10 +53,14 @@ internal sealed class GameBehaviorLifecycleRunner
         for (int i = 0; i < behaviors.Count; i++)
         {
             if (!m_scene.canDispatch)
+            {
                 break;
+            }
             GameBehavior behavior = behaviors[i];
             if (!behavior.isActiveAndEnabled || !behavior.lifecycleStartCalled)
+            {
                 continue;
+            }
             behavior.DispatchUpdate();
         }
     }
@@ -65,10 +73,14 @@ internal sealed class GameBehaviorLifecycleRunner
         for (int i = 0; i < behaviors.Count; i++)
         {
             if (!m_scene.canDispatch)
+            {
                 break;
+            }
             GameBehavior behavior = behaviors[i];
             if (behavior.isActiveAndEnabled && behavior.lifecycleStartCalled)
+            {
                 behavior.DispatchLateUpdate();
+            }
         }
     }
 
@@ -77,7 +89,9 @@ internal sealed class GameBehaviorLifecycleRunner
         EnsureIndexes();
         GameBehaviorLifecyclePhase phases = GetPhases(behavior);
         if ((phases & GameBehaviorLifecyclePhase.Activation) != 0)
+        {
             SynchronizeActivation(behavior);
+        }
         UpdateStartEligibility(behavior, phases);
     }
 
@@ -85,7 +99,9 @@ internal sealed class GameBehaviorLifecycleRunner
     {
         EnsureIndexes();
         for (int index = 0; index < m_activationBehaviors.Length; index++)
+        {
             SynchronizeActivation(m_activationBehaviors[index]);
+        }
         for (int index = 0; index < m_variableFrameBehaviors.Length; index++)
         {
             GameBehavior behavior = m_variableFrameBehaviors[index];
@@ -97,7 +113,9 @@ internal sealed class GameBehaviorLifecycleRunner
     {
         GameBehaviorLifecyclePhase phases = GetPhases(behavior);
         if ((phases & GameBehaviorLifecyclePhase.Activation) != 0)
+        {
             SceneLifecycle.Destroy(behavior);
+        }
     }
 
     internal void Invalidate()
@@ -118,7 +136,9 @@ internal sealed class GameBehaviorLifecycleRunner
     private void PreparePendingActivation()
     {
         if (m_pendingActivation.Count == 0)
+        {
             return;
+        }
 
         GameBehavior[] pending = [.. m_pendingActivation];
         m_pendingActivation.Clear();
@@ -128,23 +148,31 @@ internal sealed class GameBehaviorLifecycleRunner
             if (!m_scene.canDispatch)
             {
                 for (; index < pending.Length; index++)
+                {
                     QueueActivation(pending[index]);
+                }
                 break;
             }
 
             GameBehavior behavior = pending[index];
             if (!NeedsActivationPreparation(behavior))
+            {
                 continue;
+            }
             _ = SceneLifecycle.Prepare(behavior, m_scene);
             if (NeedsActivationPreparation(behavior))
+            {
                 QueueActivation(behavior);
+            }
         }
     }
 
     private void DispatchPendingStart()
     {
         if (m_pendingStart.Count == 0)
+        {
             return;
+        }
 
         GameBehavior[] pending = [.. m_pendingStart];
         m_pendingStart.Clear();
@@ -154,13 +182,17 @@ internal sealed class GameBehaviorLifecycleRunner
             if (!m_scene.canDispatch)
             {
                 for (; index < pending.Length; index++)
+                {
                     UpdateStartEligibility(pending[index], GetPhases(pending[index]));
+                }
                 break;
             }
 
             GameBehavior behavior = pending[index];
             if (behavior.isDestroyed || behavior.lifecycleStartCalled || !behavior.isActiveAndEnabled)
+            {
                 continue;
+            }
             behavior.lifecycleStartCalled = true;
             behavior.DispatchStart();
         }
@@ -171,7 +203,9 @@ internal sealed class GameBehaviorLifecycleRunner
         long sceneRevision = m_scene.structureRevision;
         long typeGeneration = m_scene.typeCatalog.generation;
         if (m_indexedSceneRevision == sceneRevision && m_indexedTypeGeneration == typeGeneration)
+        {
             return;
+        }
 
         IReadOnlyList<GameBehavior> behaviors = m_scene.GetComponents<GameBehavior>();
         var activation = new List<GameBehavior>();
@@ -184,17 +218,29 @@ internal sealed class GameBehaviorLifecycleRunner
             GameBehavior behavior = behaviors[index];
             GameBehaviorLifecyclePhase phases = GetPhases(behavior);
             if (phases == GameBehaviorLifecyclePhase.None)
+            {
                 continue;
+            }
             if ((phases & GameBehaviorLifecyclePhase.Activation) != 0)
+            {
                 activation.Add(behavior);
+            }
             if ((phases & GameBehaviorLifecyclePhase.VariableFrame) != 0)
+            {
                 variableFrame.Add(behavior);
+            }
             if ((phases & GameBehaviorLifecyclePhase.Update) != 0)
+            {
                 update.Add(behavior);
+            }
             if ((phases & GameBehaviorLifecyclePhase.FixedUpdate) != 0)
+            {
                 fixedUpdate.Add(behavior);
+            }
             if ((phases & GameBehaviorLifecyclePhase.LateUpdate) != 0)
+            {
                 lateUpdate.Add(behavior);
+            }
         }
 
         m_pendingActivation.Clear();
@@ -210,7 +256,9 @@ internal sealed class GameBehaviorLifecycleRunner
         {
             GameBehavior behavior = m_activationBehaviors[index];
             if (NeedsActivationPreparation(behavior))
+            {
                 QueueActivation(behavior);
+            }
         }
         for (int index = 0; index < m_variableFrameBehaviors.Length; index++)
         {
@@ -231,38 +279,48 @@ internal sealed class GameBehaviorLifecycleRunner
 
         _ = SceneLifecycle.Prepare(behavior, m_scene);
         if (NeedsActivationPreparation(behavior))
+        {
             QueueActivation(behavior);
+        }
         else
+        {
             m_pendingActivationSet.Remove(behavior);
+        }
     }
 
     private void UpdateStartEligibility(
         GameBehavior behavior,
         GameBehaviorLifecyclePhase phases
     ) {
-        if ((phases & GameBehaviorLifecyclePhase.VariableFrame) == 0 ||
-            behavior.isDestroyed ||
-            behavior.lifecycleStartCalled ||
-            !behavior.isActiveAndEnabled)
-        {
+        if ((phases & GameBehaviorLifecyclePhase.VariableFrame) == 0
+            || behavior.isDestroyed
+            || behavior.lifecycleStartCalled
+            || !behavior.isActiveAndEnabled
+        ) {
             m_pendingStartSet.Remove(behavior);
             return;
         }
 
         if (m_pendingStartSet.Add(behavior))
+        {
             m_pendingStart.Add(behavior);
+        }
     }
 
     private void QueueActivation(GameBehavior behavior)
     {
         if (!behavior.isDestroyed && m_pendingActivationSet.Add(behavior))
+        {
             m_pendingActivation.Add(behavior);
+        }
     }
 
     private static bool NeedsActivationPreparation(GameBehavior behavior)
     {
         if (behavior.isDestroyed || behavior.lifecycleDestroyCalled)
+        {
             return false;
+        }
         bool active = behavior.isActiveAndEnabled;
         return (active && !behavior.lifecycleAwakeCalled) || active != behavior.lifecycleWasEnabled;
     }

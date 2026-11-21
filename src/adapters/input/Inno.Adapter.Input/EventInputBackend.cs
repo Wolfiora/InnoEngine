@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
-
 using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
@@ -39,9 +38,7 @@ public sealed class EventInputBackend : IInputBackend
     /// The translated event window identifier, or zero to accept input from every window.
     /// </param>
     public EventInputBackend(uint windowId)
-        : this(windowId, null)
-    {
-    }
+        : this(windowId, null) {}
 
     internal EventInputBackend(
         uint windowId,
@@ -68,36 +65,50 @@ public sealed class EventInputBackend : IInputBackend
         ArgumentNullException.ThrowIfNull(evnt);
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (evnt.isGlobalHandled || !Accepts(evnt))
+        {
             return;
+        }
         lock (m_sync)
         {
             ObjectDisposedException.ThrowIf(m_disposed, this);
             if (evnt is ApplicationSuspensionChangedEvent suspension)
+            {
                 m_suspended = suspension.isSuspended;
+            }
             if (m_suspended && evnt is KeyEvent or MouseEvent or TextInputEvent)
+            {
                 return;
+            }
             switch (evnt)
             {
                 case KeyPressedEvent key when !key.repeat:
                     m_modifiers = key.modifiers;
                     if (m_keysDown.Add(key.key))
+                    {
                         m_keysPressed.Add(key.key);
+                    }
                     break;
                 case KeyReleasedEvent key:
                     m_modifiers = key.modifiers;
                     if (m_keysDown.Remove(key.key))
+                    {
                         m_keysReleased.Add(key.key);
+                    }
                     break;
                 case TextInputEvent text:
                     m_textInput.Add(text.text);
                     break;
                 case MouseButtonPressedEvent button:
                     if (m_mouseButtonsDown.Add(button.button))
+                    {
                         m_mouseButtonsPressed.Add(button.button);
+                    }
                     break;
                 case MouseButtonReleasedEvent button:
                     if (m_mouseButtonsDown.Remove(button.button))
+                    {
                         m_mouseButtonsReleased.Add(button.button);
+                    }
                     break;
                 case MouseMovedEvent movement:
                     var nextPosition = new Vector2(movement.x, movement.y);
@@ -151,7 +162,8 @@ public sealed class EventInputBackend : IInputBackend
                 m_mouseDelta,
                 m_scrollDelta,
                 m_modifiers,
-                m_textInput);
+                m_textInput
+            );
             m_keysPressed.Clear();
             m_keysReleased.Clear();
             m_mouseButtonsPressed.Clear();
@@ -169,7 +181,9 @@ public sealed class EventInputBackend : IInputBackend
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         lock (m_sync)
         {
             m_disposed = true;

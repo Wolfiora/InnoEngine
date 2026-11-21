@@ -27,13 +27,23 @@ public sealed class GameCodeDeployment
         foreach (GameCodeModule module in modules)
         {
             if (module is null || !accepted.Add(module.name))
+            {
                 throw new InvalidDataException("A code deployment contains a null or duplicate module.");
+            }
             foreach (string dependency in module.dependencies)
+            {
                 if (!accepted.Contains(dependency))
+                {
                     throw new InvalidDataException($"Code module '{module.name}' precedes dependency '{dependency}'.");
+                }
+            }
             foreach (GameCodeAssembly assembly in module.assemblies)
+            {
                 if (!assemblies.Add(assembly.name))
+                {
                     throw new InvalidDataException($"Code assembly '{assembly.name}' has multiple module owners.");
+                }
+            }
         }
         this.modules = Array.AsReadOnly(modules.ToArray());
     }
@@ -58,15 +68,25 @@ public sealed class GameCodeDeployment
     public static GameCodeDeployment FromManifest(IReadOnlyList<GameRuntimeModule> modules)
     {
         ArgumentNullException.ThrowIfNull(modules);
-        return new GameCodeDeployment(modules.Select(static module =>
-        {
-            if (module is null)
-                throw new InvalidDataException("A code deployment contains a null module declaration.");
-            module.Validate();
-            return new GameCodeModule(module.name, module.domain,
-                module.assemblies.Select(static assembly => new GameCodeAssembly(
-                    assembly.name, assembly.contentFingerprint)).ToArray(), module.dependencies);
-        }).ToArray());
+        return new GameCodeDeployment(
+            modules.Select(static module =>
+            {
+                if (module is null)
+                {
+                    throw new InvalidDataException("A code deployment contains a null module declaration.");
+                }
+                module.Validate();
+                return new GameCodeModule(
+                    module.name,
+                    module.domain,
+                    module.assemblies.Select(static assembly => new GameCodeAssembly(
+                        assembly.name,
+                        assembly.contentFingerprint
+                    )).ToArray(),
+                    module.dependencies
+                );
+            }).ToArray()
+        );
     }
 
     /// <summary>
@@ -82,15 +102,19 @@ public sealed class GameCodeDeployment
     {
         ArgumentNullException.ThrowIfNull(expected);
         if (modules.Count != expected.modules.Count)
+        {
             throw new InvalidDataException("The deployed code module count differs from the linked composition.");
+        }
         for (int index = 0; index < modules.Count; index++)
         {
             GameCodeModule actual = modules[index];
             GameCodeModule linked = expected.modules[index];
             if (actual.name != linked.name || actual.domain != linked.domain
                 || !actual.dependencies.SequenceEqual(linked.dependencies, StringComparer.Ordinal)
-                || !actual.assemblies.SequenceEqual(linked.assemblies))
+                || !actual.assemblies.SequenceEqual(linked.assemblies)
+            ) {
                 throw new InvalidDataException($"Code module '{actual.name}' differs from the linked composition.");
+            }
         }
     }
 }

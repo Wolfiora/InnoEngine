@@ -60,42 +60,59 @@ public sealed class NativeBindingGenerationRequest
         ArgumentNullException.ThrowIfNull(components);
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         if (!Enum.IsDefined(outputMode) || targetId is "." or ".."
-            || targetId.Any(static character => !char.IsAsciiLetterOrDigit(character)
-                && character is not ('-' or '_' or '.')))
+            || targetId.Any(static character => (
+                !char.IsAsciiLetterOrDigit(character)
+                && character is not ('-' or '_' or '.')
+            ))
+        ) {
             throw new ArgumentException("Binding requests require a portable target and a supported output mode.");
+        }
         NativeComponentDescriptor[] owners = components.ToArray();
         if (owners.Any(static owner => owner is null || owner.bindingDefinition is null)
-            || owners.Select(static owner => owner.nativeProject).Distinct(StringComparer.Ordinal).Count() != owners.Length)
+            || owners.Select(static owner => owner.nativeProject).Distinct(StringComparer.Ordinal).Count() != owners.Length
+        ) {
             throw new ArgumentException("Binding owners must be distinct and declare their sole definition.", nameof(components));
+        }
         this.components = Array.AsReadOnly(owners);
         this.targetId = targetId;
         this.outputMode = outputMode;
         this.checkOnly = checkOnly;
         Dictionary<string, string> expected = new(expectedFingerprints ?? new Dictionary<string, string>(), StringComparer.Ordinal);
-        if (expected.Any(pair => !owners.Any(owner => owner.nativeProject == pair.Key)
-            || string.IsNullOrWhiteSpace(pair.Value)))
+        if (expected.Any(pair => (
+            !owners.Any(owner => owner.nativeProject == pair.Key)
+            || string.IsNullOrWhiteSpace(pair.Value)
+        ))) {
             throw new ArgumentException("An expected identity must belong to the requested binding closure.", nameof(expectedFingerprints));
+        }
         this.expectedFingerprints = new ReadOnlyDictionary<string, string>(expected);
         this.componentOptions = new ReadOnlyDictionary<string, NativeComponentBuildOptions>(
-            new Dictionary<string, NativeComponentBuildOptions>(componentOptions ?? new Dictionary<string, NativeComponentBuildOptions>(), StringComparer.Ordinal));
+            new Dictionary<string, NativeComponentBuildOptions>(
+                componentOptions ?? new Dictionary<string, NativeComponentBuildOptions>(),
+                StringComparer.Ordinal
+            )
+        );
     }
 
     /// <summary>
     /// Gets the immutable component closure owned by this request.
     /// </summary>
     public IReadOnlyList<NativeComponentDescriptor> components { get; }
+
     /// <summary>
     /// Gets the explicit configuration target, independent of the build execution host.
     /// </summary>
     public string targetId { get; }
+
     /// <summary>
     /// Gets the selected output ownership policy.
     /// </summary>
     public NativeBindingOutputMode outputMode { get; }
+
     /// <summary>
     /// Gets whether publication is forbidden and current output must match fresh generation.
     /// </summary>
     public bool checkOnly { get; }
+
     /// <summary>
     /// Gets the expected identities which must match before any candidate is generated.
     /// </summary>

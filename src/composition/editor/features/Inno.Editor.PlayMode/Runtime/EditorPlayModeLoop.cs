@@ -39,14 +39,18 @@ public sealed class EditorPlayModeLoop
     internal void Attach(EditorPlayModeController owner)
     {
         if (m_owner is not null && !ReferenceEquals(m_owner, owner))
+        {
             throw new InvalidOperationException("The editor host already owns an active Play Mode module.");
+        }
         m_owner = owner;
     }
 
     internal void Detach(EditorPlayModeController owner)
     {
         if (ReferenceEquals(m_owner, owner))
+        {
             m_owner = null;
+        }
     }
 
     private sealed class EmptyScope : IDisposable
@@ -54,8 +58,6 @@ public sealed class EditorPlayModeLoop
         /// <summary>
         /// Completes the inert presentation scope.
         /// </summary>
-        public void Dispose()
-        {
-        }
+        public void Dispose() {}
     }
 }

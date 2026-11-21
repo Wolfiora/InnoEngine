@@ -6,13 +6,14 @@ using System.Runtime.ExceptionServices;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
-using Inno.Editor.Core;
 using Inno.Editor.Assets;
+using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Plugins.Authoring;
 
 namespace Inno.Editor.Assets;
+
 /// <summary>
 /// Owns source mutations, asset extension dispatch and neutral shared-history records independently of presentation.
 /// </summary>
@@ -26,6 +27,7 @@ public sealed partial class AssetEditingModule : EditorModule
     private readonly Logger m_log;
     private readonly PluginEnvironment m_plugins;
     private EditorContext? m_context;
+
     /// <summary>
     /// Creates the asset editing service for one authoring generation.
     /// </summary>
@@ -75,10 +77,12 @@ public sealed partial class AssetEditingModule : EditorModule
     /// </summary>
     [Inno.Scripting.Api.ScriptingApiIgnore]
     public AssetPipeline pipeline => m_pipeline;
+
     /// <summary>
     /// Gets the current immutable creation menu declarations without retaining template instances.
     /// </summary>
-    public IReadOnlyList<AssetCreationMenuAttribute> creationTemplates => m_creations.templates.Select(static registration => registration.declaration).ToArray();
+    public IReadOnlyList<AssetCreationMenuAttribute> creationTemplates
+        => m_creations.templates.Select(static registration => registration.declaration).ToArray();
 
     /// <summary>
     /// Checks that a creation template and writable destination are available.
@@ -98,10 +102,14 @@ public sealed partial class AssetEditingModule : EditorModule
         string templateId
     ) {
         if (!m_pipeline.isInitialized || !m_creations.TryGet(templateId, out _))
+        {
             return false;
+        }
         AssetPath path = AssetPath.Parse(directory);
         AssetSourceMount? mount = m_pipeline.sourceMounts.FirstOrDefault(source => source.id == path.source);
-        return mount is { isReadOnly: false } && (string.IsNullOrEmpty(path.localPath) || m_pipeline.TryGetFileSystemEntry(path, out AssetFileEntry entry) && entry.isDirectory);
+        return mount is { isReadOnly: false }
+               && (string.IsNullOrEmpty(path.localPath)
+                   || m_pipeline.TryGetFileSystemEntry(path, out AssetFileEntry entry) && entry.isDirectory);
     }
 
     /// <summary>
@@ -127,13 +135,17 @@ public sealed partial class AssetEditingModule : EditorModule
         }
 
         if (!CanCreateAsset(directory, templateId))
+        {
             throw new InvalidOperationException("The selected Asset directory is not writable.");
+        }
         AssetCreationMenuAttribute declaration = registration.declaration;
         AssetPath parent = AssetPath.Parse(directory);
         AssetSourceMount mount = m_pipeline.sourceMounts.Single(source => source.id == parent.source);
         string prefix = parent.localPath.TrimEnd('/');
         if (prefix.Length != 0)
+        {
             prefix += "/";
+        }
         int suffix = 1;
         AssetPath path;
         do
@@ -143,10 +155,13 @@ public sealed partial class AssetEditingModule : EditorModule
             suffix++;
         }
         while (File.Exists(mount.Resolve(path.localPath)) || File.Exists(mount.Resolve(path.localPath) + ".imeta"));
-        AssetObject candidate = registration.template.Create() ?? throw new InvalidOperationException($"Asset creation template '{templateId}' returned no asset.");
+        AssetObject candidate = registration.template.Create()
+                                ?? throw new InvalidOperationException($"Asset creation template '{templateId}' returned no asset.");
         if (candidate.GetType() != registration.template.assetType)
         {
-            throw new InvalidOperationException($"Asset creation template '{templateId}' returned '{candidate.GetType().FullName}' " + $"instead of '{registration.template.assetType.FullName}'.");
+            throw new InvalidOperationException(
+                $"Asset creation template '{templateId}' returned '{candidate.GetType().FullName}' " + $"instead of '{registration.template.assetType.FullName}'."
+            );
         }
 
         AssetSourceStore sources = m_pipeline.CreateSourceStore();
@@ -168,6 +183,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// </returns>
     [Inno.Scripting.Api.ScriptingApiIgnore]
     public bool IsPluginSource(AssetSourceId source) => m_plugins.TryGet(source, out _);
+
     /// <summary>
     /// Determines whether an indexed entry is the root of an installed Plugin.
     /// </summary>
@@ -213,7 +229,16 @@ public sealed partial class AssetEditingModule : EditorModule
 
         _ = m_pipeline.TryGetInfo(AssetPath.Parse(relativePath), out AssetInfo? info);
         _ = m_pipeline.TryGetAssetType(AssetPath.Parse(relativePath), out Type? assetType);
-        context = new AssetEditorContext(editor, m_interactions, entry.assetPath.ToString(), entry.name, entry.isDirectory, info, assetType, () => CreateDefaultDragData(entry));
+        context = new AssetEditorContext(
+            editor,
+            m_interactions,
+            entry.assetPath.ToString(),
+            entry.name,
+            entry.isDirectory,
+            info,
+            assetType,
+            () => CreateDefaultDragData(entry)
+        );
         return true;
     }
 
@@ -231,7 +256,9 @@ public sealed partial class AssetEditingModule : EditorModule
     {
         AssetEditor editor = m_editors.Resolve(context.assetType);
         if (!editor.CanOpen(context))
+        {
             return false;
+        }
         try
         {
             editor.Open(context);
@@ -280,17 +307,37 @@ public sealed partial class AssetEditingModule : EditorModule
         string newName
     ) {
         AssetEditor editor = m_editors.Resolve(context.assetType);
-        AssetOperationValidation validation = ValidateRename(editor, context, Normalize(context.relativePath), newName, validateEditor: false, out string targetPath);
+        AssetOperationValidation validation = ValidateRename(
+            editor,
+            context,
+            Normalize(context.relativePath),
+            newName,
+            validateEditor: false,
+            out string targetPath
+        );
         if (!validation.isValid)
+        {
             throw new InvalidOperationException(validation.message);
+        }
         string sourcePath = Normalize(context.relativePath);
         EditorHistoryResult result = MoveAsset(editor, context, sourcePath, targetPath);
         if (!result.succeeded)
+        {
             throw new InvalidOperationException(result.message);
-        var data = new AssetHistoryData(AssetHistoryOperationKind.Move, sourcePath, targetPath, isDirectory: context.isDirectory, archive: []);
+        }
+        var data = new AssetHistoryData(
+            AssetHistoryOperationKind.Move,
+            sourcePath,
+            targetPath,
+            isDirectory: context.isDirectory,
+            archive: []
+        );
         try
         {
-            m_interactions.history.RecordApplied("Rename Asset", new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode())));
+            m_interactions.history.RecordApplied(
+                "Rename Asset",
+                new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()))
+            );
         }
         catch (Exception exception)
         {
@@ -315,6 +362,7 @@ public sealed partial class AssetEditingModule : EditorModule
         string sourcePath,
         string targetDirectory
     ) => TryPrepareMove(sourcePath, targetDirectory, validateEditor: true, out _, out _, out _);
+
     /// <summary>
     /// Moves a source and records the committed mutation in the supplied history.
     /// </summary>
@@ -346,19 +394,24 @@ public sealed partial class AssetEditingModule : EditorModule
             out string targetPath
         )
             || context is null
-            || editor is null)
-        {
+            || editor is null
+        ) {
             throw new InvalidOperationException($"Asset '{sourcePath}' cannot be moved to '{targetDirectory}'.");
         }
 
         string normalizedSource = Normalize(sourcePath);
         EditorHistoryResult result = MoveAsset(editor, context, normalizedSource, targetPath);
         if (!result.succeeded)
+        {
             throw new InvalidOperationException(result.message);
+        }
         var data = new AssetHistoryData(AssetHistoryOperationKind.Move, normalizedSource, targetPath, context.isDirectory, archive: []);
         try
         {
-            history.RecordApplied("Move Asset", new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode())));
+            history.RecordApplied(
+                "Move Asset",
+                new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()))
+            );
         }
         catch (Exception exception)
         {
@@ -416,15 +469,29 @@ public sealed partial class AssetEditingModule : EditorModule
         ArgumentNullException.ThrowIfNull(asset);
         byte[] archive = AssetSourceArchive.Capture(m_pipeline, asset.relativePath, out bool isDirectory);
         if (!Delete(asset))
+        {
             return false;
-        var data = new AssetHistoryData(AssetHistoryOperationKind.Delete, Normalize(asset.relativePath), string.Empty, isDirectory, archive);
+        }
+        var data = new AssetHistoryData(
+            AssetHistoryOperationKind.Delete,
+            Normalize(asset.relativePath),
+            string.Empty,
+            isDirectory,
+            archive
+        );
         try
         {
-            history.RecordApplied("Delete Asset", new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode())));
+            history.RecordApplied(
+                "Delete Asset",
+                new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()))
+            );
         }
         catch (Exception exception)
         {
-            RollbackAndRethrow(exception, () => AssetSourceArchive.Restore(m_pipeline, Normalize(asset.relativePath), isDirectory, archive));
+            RollbackAndRethrow(
+                exception,
+                () => AssetSourceArchive.Restore(m_pipeline, Normalize(asset.relativePath), isDirectory, archive)
+            );
         }
 
         return true;
@@ -436,20 +503,28 @@ public sealed partial class AssetEditingModule : EditorModule
     ) {
         EditorContext editorContext = m_context ?? throw new InvalidOperationException("Asset editor module is not attached.");
         if (!TryCreateContext(editorContext, sourcePath, out AssetEditorContext? context) || context is null)
+        {
             throw new InvalidOperationException($"Asset '{sourcePath}' is no longer available.");
+        }
         AssetEditor editor = m_editors.Resolve(context.assetType);
         EditorHistoryResult result = MoveAsset(editor, context, sourcePath, targetPath);
         if (!result.succeeded)
+        {
             throw new InvalidOperationException(result.message);
+        }
     }
 
     internal void DeleteFromHistory(string relativePath)
     {
         EditorContext editorContext = m_context ?? throw new InvalidOperationException("Asset editor module is not attached.");
         if (!TryCreateContext(editorContext, relativePath, out AssetEditorContext? context) || context is null)
+        {
             throw new InvalidOperationException($"Asset '{relativePath}' is no longer available.");
+        }
         if (!Delete(context))
+        {
             throw new InvalidOperationException($"Asset '{relativePath}' could not be deleted.");
+        }
     }
 
     /// <summary>
@@ -535,7 +610,9 @@ public sealed partial class AssetEditingModule : EditorModule
         newName = newName.Trim();
         targetPath = string.Empty;
         if (string.IsNullOrEmpty(newName))
+        {
             return AssetOperationValidation.Invalid("An asset name is required.");
+        }
         if (newName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || newName.Contains('/') || newName.Contains('\\'))
         {
             return AssetOperationValidation.Invalid("Asset names cannot contain path separators or invalid file-name characters.");
@@ -544,8 +621,9 @@ public sealed partial class AssetEditingModule : EditorModule
         string renamedEntry = context.isDirectory ? newName : newName + Path.GetExtension(sourcePath);
         string parent = Normalize(Path.GetDirectoryName(sourcePath));
         targetPath = string.IsNullOrEmpty(parent) ? renamedEntry : $"{parent}/{renamedEntry}";
-        if (!string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase) && m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(targetPath), out _))
-        {
+        if (!string.Equals(sourcePath, targetPath, StringComparison.OrdinalIgnoreCase)
+            && m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(targetPath), out _)
+        ) {
             return AssetOperationValidation.Invalid($"Asset '{targetPath}' already exists.");
         }
 
@@ -573,28 +651,38 @@ public sealed partial class AssetEditingModule : EditorModule
         }
 
         EditorContext? editorContext = m_context;
-        if (editorContext is null || string.IsNullOrEmpty(source) || !TryCreateContext(editorContext, source, out context) || context is null)
-        {
+        if (editorContext is null
+            || string.IsNullOrEmpty(source)
+            || !TryCreateContext(editorContext, source, out context)
+            || context is null
+        ) {
             return false;
         }
 
-        if (!string.IsNullOrEmpty(directory) && (!m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(directory), out AssetFileEntry destination) || !destination.isDirectory))
-        {
+        if (!string.IsNullOrEmpty(directory)
+            && (!m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(directory), out AssetFileEntry destination) || !destination.isDirectory)
+        ) {
             return false;
         }
 
         string parent = Normalize(Path.GetDirectoryName(source));
         if (string.Equals(parent, directory, StringComparison.OrdinalIgnoreCase))
-            return false;
-        if (context.isDirectory && (string.Equals(source, directory, StringComparison.OrdinalIgnoreCase) || directory.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase)))
         {
+            return false;
+        }
+        if (context.isDirectory
+            && (string.Equals(source, directory, StringComparison.OrdinalIgnoreCase)
+                || directory.StartsWith(source + "/", StringComparison.OrdinalIgnoreCase))
+        ) {
             return false;
         }
 
         string name = Path.GetFileName(source);
         targetPath = string.IsNullOrEmpty(directory) ? name : $"{directory}/{name}";
         if (m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(targetPath), out _))
+        {
             return false;
+        }
         editor = m_editors.Resolve(context.assetType);
         return !validateEditor || editor.ValidateRename(context, targetPath).isValid;
     }
@@ -626,7 +714,9 @@ public sealed partial class AssetEditingModule : EditorModule
     ) {
         EditorHistoryResult result = MoveAsset(editor, context, sourcePath, targetPath);
         if (!result.succeeded)
+        {
             throw new InvalidOperationException(result.message);
+        }
     }
 
     private static void RollbackAndRethrow(
@@ -639,13 +729,20 @@ public sealed partial class AssetEditingModule : EditorModule
         }
         catch (Exception rollbackException)
         {
-            throw new AggregateException("An Asset mutation could not be recorded and its compensation also failed.", failure, rollbackException);
+            throw new AggregateException(
+                "An Asset mutation could not be recorded and its compensation also failed.",
+                failure,
+                rollbackException
+            );
         }
 
         ExceptionDispatchInfo.Capture(failure).Throw();
     }
 
-    private static EditorValidationResult ToEditorValidation(AssetOperationValidation validation) => new(validation.isValid, validation.message);
+    private static EditorValidationResult ToEditorValidation(AssetOperationValidation validation)
+        => new(validation.isValid, validation.message);
+
     private static string Normalize(string? path) => string.IsNullOrWhiteSpace(path) ? string.Empty : path.Replace('\\', '/').Trim('/');
+
     private static EditorDragData CreateDefaultDragData(AssetFileEntry entry) => new(entry, entry.name);
 }

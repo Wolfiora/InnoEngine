@@ -34,7 +34,8 @@ public static class AssemblyExtensions
         ArgumentNullException.ThrowIfNull(assembly);
         AssemblyClassification classification = GetClassification(assembly);
         return classification.domain ?? throw new InvalidOperationException(
-            $"Assembly '{assembly.GetName().Name}' has no valid {C_ASSEMBLY_DOMAIN_KEY} metadata.");
+            $"Assembly '{assembly.GetName().Name}' has no valid {C_ASSEMBLY_DOMAIN_KEY} metadata."
+        );
     }
 
     /// <summary>
@@ -57,7 +58,8 @@ public static class AssemblyExtensions
         ArgumentNullException.ThrowIfNull(assembly);
         AssemblyClassification classification = GetClassification(assembly);
         return classification.scope ?? throw new InvalidOperationException(
-            $"Assembly '{assembly.GetName().Name}' has no valid {C_ASSEMBLY_SCOPE_KEY} metadata.");
+            $"Assembly '{assembly.GetName().Name}' has no valid {C_ASSEMBLY_SCOPE_KEY} metadata."
+        );
     }
 
     /// <summary>
@@ -108,12 +110,14 @@ public static class AssemblyExtensions
             if (string.Equals(metadata.Key, C_ASSEMBLY_DOMAIN_KEY, StringComparison.Ordinal))
             {
                 if (Enum.TryParse(metadata.Value, ignoreCase: false, out AssemblyDomain parsedDomain))
+                {
                     domain = parsedDomain;
+                }
                 continue;
             }
-            if (string.Equals(metadata.Key, C_ASSEMBLY_SCOPE_KEY, StringComparison.Ordinal) &&
-                Enum.TryParse(metadata.Value, ignoreCase: false, out AssemblyScope parsedScope))
-            {
+            if (string.Equals(metadata.Key, C_ASSEMBLY_SCOPE_KEY, StringComparison.Ordinal)
+                && Enum.TryParse(metadata.Value, ignoreCase: false, out AssemblyScope parsedScope)
+            ) {
                 scope = parsedScope;
             }
         }

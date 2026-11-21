@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-
 using Inno.Core.Jobs;
-
 
 namespace Inno.Core.JobsSystem.Tests;
 
@@ -22,11 +20,17 @@ public sealed class JobSystemBehaviorTests
         for (int frame = 0; frame < 256; frame++)
         {
             jobs.BeginFrame();
-            Assert.Throws<ArgumentException>(() => jobs.Schedule(_ => { }, null, new JobHandle[] { default }));
+            Assert.Throws<ArgumentException>(() => jobs.Schedule(_ => {}, null, new JobHandle[] { default }));
             Assert.Equal(0, jobs.statistics.frameJobs);
-            Assert.Throws<InvalidOperationException>(() => jobs.ParallelFor(8, 1, (_, _) => Interlocked.Increment(ref completed)));
+            Assert.Throws<InvalidOperationException>(() => jobs.ParallelFor(8, 1, (
+                _,
+                _
+            ) => Interlocked.Increment(ref completed)));
             Assert.Equal(0, jobs.statistics.frameJobs);
-            for (int index = 0; index < 4; index++) jobs.Schedule(() => Interlocked.Increment(ref completed));
+            for (int index = 0; index < 4; index++)
+            {
+                jobs.Schedule(() => Interlocked.Increment(ref completed));
+            }
             jobs.EndFrame();
             Assert.Equal(0, jobs.statistics.frameJobs);
         }
@@ -42,7 +46,10 @@ public sealed class JobSystemBehaviorTests
     {
         using var jobs = new JobScheduler(mode, new JobSchedulerOptions { workerCount = 1, mainThreadDrainBudget = 1 });
         int attempts = 0;
-        jobs.EnqueueMainThread(() => { if (++attempts == 1) throw new Inno.Core.Execution.RetirementPendingException("pending"); });
+        jobs.EnqueueMainThread(() =>
+        {
+            if (++attempts == 1) throw new Inno.Core.Execution.RetirementPendingException("pending");
+        });
         Assert.Throws<Inno.Core.Execution.RetirementPendingException>(jobs.DrainMainThreadQueue);
         Assert.Equal(1, jobs.statistics.mainThreadPending);
         jobs.DrainMainThreadQueue();
@@ -64,18 +71,22 @@ public sealed class JobSystemBehaviorTests
         });
         int executions = 0;
         Action? repeat = null;
-        repeat = () => { executions++; jobs.EnqueueMainThread(repeat!); };
+        repeat = () =>
+        {
+            executions++;
+            jobs.EnqueueMainThread(repeat!);
+        };
         jobs.EnqueueMainThread(repeat);
         jobs.EnqueueMainThread(() => executions++);
-        Assert.Throws<InvalidOperationException>(() => jobs.EnqueueMainThread(() => { }));
+        Assert.Throws<InvalidOperationException>(() => jobs.EnqueueMainThread(() => {}));
         jobs.DrainMainThreadQueue();
         Assert.Equal(1, executions);
         jobs.DrainMainThreadQueue();
         Assert.Equal(2, executions);
         jobs.BeginFrame();
-        jobs.Schedule(() => { });
-        jobs.Schedule(() => { });
-        Assert.Throws<InvalidOperationException>(() => jobs.Schedule(() => { }));
+        jobs.Schedule(() => {});
+        jobs.Schedule(() => {});
+        Assert.Throws<InvalidOperationException>(() => jobs.Schedule(() => {}));
         jobs.EndFrame();
     }
 
@@ -109,7 +120,7 @@ public sealed class JobSystemBehaviorTests
         {
             try
             {
-                _ = jobs.Schedule(() => { });
+                _ = jobs.Schedule(() => {});
             }
             catch (Exception ex)
             {
@@ -178,7 +189,10 @@ public sealed class JobSystemBehaviorTests
 
         const int length = 1024;
         var values = new int[length];
-        var handle = jobs.ParallelFor(length, 32, (start, end) =>
+        var handle = jobs.ParallelFor(length, 32, (
+            start,
+            end
+        ) =>
         {
             for (var i = start; i < end; i++)
             {
@@ -257,7 +271,7 @@ public sealed class JobSystemBehaviorTests
         using var jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        var handle = jobs.Schedule(() => { });
+        var handle = jobs.Schedule(() => {});
         jobs.EndFrame();
 
         jobs.BeginFrame();
@@ -331,9 +345,7 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_AutoWorkerCount_IsInValidRange()
     {
-        using var jobs = new JobScheduler(
-            JobExecutionMode.WorkerPool,
-            new JobSchedulerOptions { workerCount = 0 });
+        using var jobs = new JobScheduler(JobExecutionMode.WorkerPool, new JobSchedulerOptions { workerCount = 0 });
         Assert.InRange(jobs.workerCount, 1, 64);
     }
 
@@ -380,8 +392,14 @@ public sealed class JobSystemBehaviorTests
         using var jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => jobs.ParallelFor(-1, 8, (_, _) => { }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => jobs.ParallelFor(1, 0, (_, _) => { }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => jobs.ParallelFor(-1, 8, (
+            _,
+            _
+        ) => {}));
+        Assert.Throws<ArgumentOutOfRangeException>(() => jobs.ParallelFor(1, 0, (
+            _,
+            _
+        ) => {}));
 
         jobs.EndFrame();
     }
@@ -393,7 +411,7 @@ public sealed class JobSystemBehaviorTests
         jobs.Dispose();
 
         Assert.Throws<ObjectDisposedException>(() => jobs.BeginFrame());
-        Assert.Throws<ObjectDisposedException>(() => jobs.EnqueueMainThread(() => { }));
+        Assert.Throws<ObjectDisposedException>(() => jobs.EnqueueMainThread(() => {}));
     }
 
     private static JobScheduler CreateWorkStealing(int workerCount = 2)

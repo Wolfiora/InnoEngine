@@ -1,6 +1,7 @@
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
+
 [EditorAction(GlobalInteractionIds.C_CLEAR_SELECTION)]
 internal sealed class ClearEditorSelectionAction : EditorAction
 {

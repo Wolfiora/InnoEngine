@@ -45,12 +45,10 @@ internal sealed record ScenePropertyHistoryData(
         ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
         ArgumentNullException.ThrowIfNull(deltas);
         if (deltas.Count == 0)
+        {
             throw new ArgumentException("A scene property history change requires at least one delta.", nameof(deltas));
-        return new ScenePropertyHistoryData(
-            targetId,
-            propertyName,
-            [.. deltas],
-            Stopwatch.GetTimestamp());
+        }
+        return new ScenePropertyHistoryData(targetId, propertyName, [.. deltas], Stopwatch.GetTimestamp());
     }
 
     internal static ScenePropertyHistoryData Decode(ReadOnlySpan<byte> bytes)
@@ -61,22 +59,29 @@ internal sealed record ScenePropertyHistoryData(
         string propertyName = reader.ReadString();
         int count = reader.ReadInt32();
         if (count <= 0)
+        {
             throw new InvalidDataException("Scene property history delta count must be positive.");
+        }
         var deltas = new ScenePropertyValueDelta[count];
         var names = new HashSet<string>(StringComparer.Ordinal);
         for (int index = 0; index < count; index++)
         {
             string affectedProperty = reader.ReadString();
             if (string.IsNullOrWhiteSpace(affectedProperty) || !names.Add(affectedProperty))
+            {
                 throw new InvalidDataException("Scene property history contains an invalid or duplicate property name.");
+            }
             deltas[index] = new ScenePropertyValueDelta(
                 affectedProperty,
                 ReadBytes(reader, $"{affectedProperty} before"),
-                ReadBytes(reader, $"{affectedProperty} after"));
+                ReadBytes(reader, $"{affectedProperty} after")
+            );
         }
         long timestamp = reader.ReadInt64();
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Scene property history payload contains trailing data.");
+        }
         return new ScenePropertyHistoryData(targetId, propertyName, deltas, timestamp);
     }
 
@@ -94,10 +99,14 @@ internal sealed record ScenePropertyHistoryData(
     ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
+        {
             throw new InvalidDataException($"Scene property history {name} value length is invalid.");
+        }
         byte[] bytes = reader.ReadBytes(length);
         if (bytes.Length != length)
+        {
             throw new EndOfStreamException($"Scene property history {name} value is truncated.");
+        }
         return bytes;
     }
 }

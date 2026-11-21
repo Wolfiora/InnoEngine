@@ -23,8 +23,7 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
     public void Initialize(
         TestLoggerEvents events,
         string testRunDirectory
-    ) =>
-        throw new ArgumentException("Discovery requires an explicit receipt path.");
+    ) => throw new ArgumentException("Discovery requires an explicit receipt path.");
 
     /// <inheritdoc/>
     /// <exception cref="ArgumentException">
@@ -35,7 +34,9 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
         Dictionary<string, string?> parameters
     ) {
         if (!parameters.TryGetValue("Receipt", out string? receipt) || !Path.IsPathFullyQualified(receipt ?? string.Empty))
+        {
             throw new ArgumentException("Discovery requires an absolute receipt path.");
+        }
 
         var owners = new Dictionary<string, Owner>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var errors = new List<string>();
@@ -45,7 +46,9 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
         ) =>
         {
             if (message.Level == TestMessageLevel.Error)
+            {
                 errors.Add(message.Message ?? "Discovery emitted an unspecified error.");
+            }
         };
         events.DiscoveredTests += (
             _,
@@ -56,10 +59,14 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
             {
                 string source = Path.GetFullPath(test.Source);
                 if (!owners.TryGetValue(source, out Owner? owner))
+                {
                     owners.Add(source, owner = new Owner());
+                }
                 owner.Count++;
                 if (test.Traits.Any(trait => trait.Name == "ProcessIsolation" && trait.Value == "Required"))
+                {
                     owner.Contracts.Add(test.FullyQualifiedName);
+                }
             }
         };
         events.DiscoveryComplete += (
@@ -71,9 +78,9 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
             JsonSerializer.Serialize(output, new
             {
                 completed = !completion.IsAborted && errors.Count == 0
-                    && completion.PartiallyDiscoveredSources?.Count is null or 0
-                    && completion.NotDiscoveredSources?.Count is null or 0
-                    && completion.SkippedDiscoveredSources?.Count is null or 0,
+                            && completion.PartiallyDiscoveredSources?.Count is null or 0
+                            && completion.NotDiscoveredSources?.Count is null or 0
+                            && completion.SkippedDiscoveredSources?.Count is null or 0,
                 errors,
                 discovered = completion.TotalCount,
                 owners = owners.Select(pair => new { source = pair.Key, count = pair.Value.Count, contracts = pair.Value.Contracts })

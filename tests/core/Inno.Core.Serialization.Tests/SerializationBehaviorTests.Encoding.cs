@@ -12,15 +12,42 @@ public sealed partial class SerializationBehaviorTests
     {
         object?[] values =
         [
-            null, false, true, byte.MaxValue, sbyte.MinValue, short.MinValue, ushort.MaxValue,
-            int.MinValue, uint.MaxValue, long.MinValue, ulong.MaxValue,
-            float.NegativeInfinity, float.PositiveInfinity, float.NaN, -0f, float.Epsilon,
-            double.NegativeInfinity, double.PositiveInfinity, double.NaN, -0d, double.Epsilon,
-            decimal.MinValue, decimal.MaxValue, new decimal(0, 0, 0, true, 28),
-            string.Empty, "English / 中文 / 🧪", Guid.Empty, Guid.Parse("62ce926a-e339-493d-bb74-743ed44ef37a")
+            null,
+            false,
+            true,
+            byte.MaxValue,
+            sbyte.MinValue,
+            short.MinValue,
+            ushort.MaxValue,
+            int.MinValue,
+            uint.MaxValue,
+            long.MinValue,
+            ulong.MaxValue,
+            float.NegativeInfinity,
+            float.PositiveInfinity,
+            float.NaN,
+            -0f,
+            float.Epsilon,
+            double.NegativeInfinity,
+            double.PositiveInfinity,
+            double.NaN,
+            -0d,
+            double.Epsilon,
+            decimal.MinValue,
+            decimal.MaxValue,
+            new decimal(0, 0, 0, true, 28),
+            string.Empty,
+            "English / 中文 / 🧪",
+            Guid.Empty,
+            Guid.Parse("62ce926a-e339-493d-bb74-743ed44ef37a")
         ];
         foreach (object? value in values)
-            Assert.Equal(EncodeWithBinaryWriter(value), m_serialization.Encode(writer => writer.Write("value", value, value?.GetType() ?? typeof(string))));
+        {
+            Assert.Equal(
+                EncodeWithBinaryWriter(value),
+                m_serialization.Encode(writer => writer.Write("value", value, value?.GetType() ?? typeof(string)))
+            );
+        }
     }
 
     [Theory]
@@ -35,11 +62,15 @@ public sealed partial class SerializationBehaviorTests
     {
         string[] values =
         [
-            new string('a', length), new string('中', length),
-            new string((char)0xD800, length), "🧪" + new string('a', length)
+            new string('a', length),
+            new string('中', length),
+            new string((char)0xD800, length),
+            "🧪" + new string('a', length)
         ];
         foreach (string value in values)
+        {
             Assert.Equal(EncodeWithBinaryWriter(value), m_serialization.Encode(writer => writer.Write("value", value)));
+        }
     }
 
     [Fact]
@@ -49,12 +80,16 @@ public sealed partial class SerializationBehaviorTests
         source[0] = 73;
         source[^1] = 19;
         for (int index = 0; index < 4; index++)
+        {
             _ = m_serialization.Encode(writer => writer.Write("value", source));
+        }
         long before = GC.GetAllocatedBytesForCurrentThread();
         byte[] data = [];
         const int repetitions = 16;
         for (int index = 0; index < repetitions; index++)
+        {
             data = m_serialization.Encode(writer => writer.Write("value", source));
+        }
         long allocated = (GC.GetAllocatedBytesForCurrentThread() - before) / repetitions;
         // Retain the per-call bound while amortizing one-time runtime/catalog admission during the suite.
         Assert.InRange(allocated, source.Length * 2, source.Length * 2 + 8192);

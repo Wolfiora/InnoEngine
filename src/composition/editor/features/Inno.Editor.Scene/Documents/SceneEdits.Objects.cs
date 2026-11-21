@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Linq;
-
-using Inno.Extensibility.Types;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
@@ -40,18 +39,23 @@ sealed partial class SceneEdits
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(scene);
         if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
+        {
             throw new ArgumentException("The parent belongs to another scene.", nameof(parent));
+        }
         Guid? selectedBefore = GetSelectionId();
         GameObject gameObject = scene.CreateObject();
         RecordWithRollback(
             () =>
             {
                 if (parent is not null)
+                {
                     gameObject.transform.SetParent(parent);
+                }
                 byte[] subtree = SceneSubtreeSerialization.Capture(
                     gameObject,
                     m_workspace.serialization,
-                    m_workspace.assets);
+                    m_workspace.assets
+                );
                 RecordSubtree(
                     historyName,
                     gameObject,
@@ -60,13 +64,17 @@ sealed partial class SceneEdits
                     subtree,
                     [],
                     selectedBefore,
-                    gameObject.identity.persistentId);
+                    gameObject.identity.persistentId
+                );
             },
             () =>
             {
                 if (gameObject.isRuntimeValid && !scene.DestroyObject(gameObject))
+                {
                     throw new InvalidOperationException("The unrecorded GameObject could not be removed.");
-            });
+                }
+            }
+        );
         return gameObject;
     }
 
@@ -100,23 +108,24 @@ sealed partial class SceneEdits
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(scene);
         if (!scene.isLoaded)
+        {
             throw new InvalidOperationException("A prefab can only be instantiated into a loaded scene.");
+        }
         if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
+        {
             throw new ArgumentException("The parent belongs to another scene.", nameof(parent));
+        }
 
         Guid? selectedBefore = GetSelectionId();
-        GameObject instance = prefab.Instantiate(
-            scene,
-            m_workspace.serialization,
-            m_workspace.assets,
-            parent);
+        GameObject instance = prefab.Instantiate(scene, m_workspace.serialization, m_workspace.assets, parent);
         RecordWithRollback(
             () =>
             {
                 byte[] subtree = SceneSubtreeSerialization.Capture(
                     instance,
                     m_workspace.serialization,
-                    m_workspace.assets);
+                    m_workspace.assets
+                );
                 RecordSubtree(
                     historyName,
                     instance,
@@ -125,13 +134,17 @@ sealed partial class SceneEdits
                     subtree,
                     [],
                     selectedBefore,
-                    instance.identity.persistentId);
+                    instance.identity.persistentId
+                );
             },
             () =>
             {
                 if (instance.isRuntimeValid && !scene.DestroyObject(instance))
+                {
                     throw new InvalidOperationException("The unrecorded prefab instance could not be removed.");
-            });
+                }
+            }
+        );
         return instance;
     }
 
@@ -156,15 +169,12 @@ sealed partial class SceneEdits
         using IDisposable presentationScope = m_workspace.EnterPresentationScope();
         m_workspace.EnsureEditable(gameObject.scene);
         if (!gameObject.isRuntimeValid)
+        {
             return false;
+        }
         GameScene scene = gameObject.scene;
-        byte[] subtree = SceneSubtreeSerialization.Capture(
-            gameObject,
-            m_workspace.serialization,
-            m_workspace.assets);
-        SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(
-            gameObject,
-            m_workspace);
+        byte[] subtree = SceneSubtreeSerialization.Capture(gameObject, m_workspace.serialization, m_workspace.assets);
+        SceneIncomingReferenceState[] incoming = SceneReferenceIndex.CaptureIncoming(gameObject, m_workspace);
         Guid? parentId = gameObject.transform.parent?.gameObject.identity.persistentId;
         int siblingIndex = gameObject.transform.siblingIndex;
         Guid rootId = gameObject.identity.persistentId;
@@ -172,7 +182,9 @@ sealed partial class SceneEdits
         try
         {
             if (!scene.DestroyObject(gameObject))
+            {
                 return false;
+            }
             var data = new SceneSubtreeHistoryData(
                 scene.identity.persistentId,
                 rootId,
@@ -183,7 +195,8 @@ sealed partial class SceneEdits
                 subtree,
                 incoming,
                 selectedBefore,
-                selectedAfter: null);
+                selectedAfter: null
+            );
             Record(historyName, SceneHistoryKinds.Subtree, data.Encode());
         }
         catch (Exception exception)
@@ -195,19 +208,19 @@ sealed partial class SceneEdits
             RollbackAndRethrow(exception, () =>
             {
                 Transform? parent = parentId is Guid id
-                    ? m_workspace.Find<GameObject>(id)?.transform
-                    : null;
+                                    ? m_workspace.Find<GameObject>(id)?.transform
+                                    : null;
                 _ = SceneSubtreeSerialization.Restore(
                     scene,
                     subtree,
                     m_workspace.serialization,
                     m_workspace.assets,
                     parent,
-                    siblingIndex);
+                    siblingIndex
+                );
                 RequireReferenceRestore(SceneReferenceIndex.RestoreIncoming(incoming, m_workspace));
             });
         }
         return true;
     }
-
 }

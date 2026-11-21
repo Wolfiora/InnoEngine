@@ -7,9 +7,9 @@ using BGCS.Configuration;
 using BGCS.Core;
 using BGCS.Core.Targets;
 using BGCS.Extension.BrowserWasm;
+using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
-using Xunit;
 
 namespace Inno.Build.Bindings.Tests;
 
@@ -31,11 +31,15 @@ public sealed class NativeBindingProfileTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_root, "Source"));
         File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), string.Empty);
         File.WriteAllText(Path.Combine(m_root, "Fixture.csproj"), "<Project />");
-        File.WriteAllText(Path.Combine(m_root, "Source", "api.h"),
-            "typedef struct Pair { int first; int second; } Pair; Pair swap_pair(Pair value);");
-        File.WriteAllText(Path.Combine(m_root, "bindings.props"),
-            "<Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId>" +
-            "<InnoBindingConfig>bindgen.json</InnoBindingConfig></PropertyGroup></Project>");
+        File.WriteAllText(
+            Path.Combine(m_root, "Source", "api.h"),
+            "typedef struct Pair { int first; int second; } Pair; Pair swap_pair(Pair value);"
+        );
+        File.WriteAllText(
+            Path.Combine(m_root, "bindings.props"),
+            "<Project><PropertyGroup><InnoNativeComponentId>fixture</InnoNativeComponentId>"
+            + "<InnoBindingConfig>bindgen.json</InnoBindingConfig></PropertyGroup></Project>"
+        );
         File.WriteAllText(Path.Combine(m_root, "bindgen.json"), """
             {"schemaVersion":2,"library":{"id":"fixture","nativeName":"fixture"},
              "source":{"language":"c","headers":["Source/api.h"]},
@@ -46,18 +50,28 @@ public sealed class NativeBindingProfileTests : IDisposable
         var request = new NativeBindingGenerationRequest([component], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
         var target = new TargetConfiguration { id = "emscripten-wasm32-emscripten" };
         var runtime = new ManagedRuntimeId("dotnet.mono-wasm");
-        var missing = new NativeBindingGenerator(new NativeBindingProfile("fixture-target", target, runtime,
-            importMode: BindingImportMode.LibraryImport));
+        var missing = new NativeBindingGenerator(
+            new NativeBindingProfile("fixture-target", target, runtime, importMode: BindingImportMode.LibraryImport)
+        );
         await Assert.ThrowsAsync<InvalidDataException>(async () =>
         {
             using NativeBindingGenerationResult rejected = await missing.GenerateAsync(
-                new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+                new NativeBuildContext(m_root, "release"),
+                request,
+                CancellationToken.None
+            );
         });
         Assert.False(Directory.Exists(Path.Combine(m_root, "artifacts", "bindings")));
 
-        var generator = new NativeBindingGenerator(new NativeBindingProfile("fixture-target", target, runtime,
-            configureGenerator: static builder => builder.AddPlugin<BrowserWasmPlugin>(),
-            importMode: BindingImportMode.LibraryImport));
+        var generator = new NativeBindingGenerator(
+            new NativeBindingProfile(
+                "fixture-target",
+                target,
+                runtime,
+                configureGenerator: static builder => builder.AddPlugin<BrowserWasmPlugin>(),
+                importMode: BindingImportMode.LibraryImport
+            )
+        );
         NativeBuildContext cold = new(m_root, "release");
         using NativeBindingGenerationResult first = await generator.GenerateAsync(cold, request, CancellationToken.None);
         NativeBindingGenerationDescriptor generation = first[component.nativeProject];
@@ -66,17 +80,29 @@ public sealed class NativeBindingProfileTests : IDisposable
         Assert.True(generation.usesRuntimeImports);
         Assert.NotEmpty(compilation.requiredExports);
         Assert.Empty(compilation.staticExportSymbols);
-        Assert.All(compilation.roots.Where(static root => root.frozen), static root => Assert.False(Path.IsPathFullyQualified(root.directory)));
+        Assert.All(
+            compilation.roots.Where(static root => root.frozen),
+            static root => Assert.False(Path.IsPathFullyQualified(root.directory))
+        );
         Assert.Equal(1, cold.statistics.bindingGenerations);
 
         byte[] published = File.ReadAllBytes(generation.bindingsPath);
-        var unsupported = new NativeBindingGenerator(new NativeBindingProfile("fixture-target", target, runtime,
-            configureGenerator: static builder => builder.AddPlugin<BrowserWasmPlugin>(),
-            importMode: BindingImportMode.FunctionTable));
+        var unsupported = new NativeBindingGenerator(
+            new NativeBindingProfile(
+                "fixture-target",
+                target,
+                runtime,
+                configureGenerator: static builder => builder.AddPlugin<BrowserWasmPlugin>(),
+                importMode: BindingImportMode.FunctionTable
+            )
+        );
         InvalidDataException importFailure = await Assert.ThrowsAsync<InvalidDataException>(async () =>
         {
             using NativeBindingGenerationResult rejected = await unsupported.GenerateAsync(
-                new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+                new NativeBuildContext(m_root, "release"),
+                request,
+                CancellationToken.None
+            );
         });
         Assert.Contains("FunctionTable", importFailure.Message, StringComparison.Ordinal);
         Assert.Equal(published, File.ReadAllBytes(generation.bindingsPath));
@@ -93,6 +119,8 @@ public sealed class NativeBindingProfileTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, true);
+        }
     }
 }

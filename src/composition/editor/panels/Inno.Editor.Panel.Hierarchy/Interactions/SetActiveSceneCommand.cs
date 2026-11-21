@@ -19,8 +19,8 @@ internal sealed class SetActiveSceneCommand(IEditorSceneWorkspace workspace) : E
     /// </returns>
     protected override EditorActionState Query(EditorActionContext<GameScene> context)
         => context.target.isLoaded
-            ? new EditorActionState(true, !ReferenceEquals(context.target, workspace.activeScene))
-            : EditorActionState.hidden;
+           ? new EditorActionState(true, !ReferenceEquals(context.target, workspace.activeScene))
+           : EditorActionState.hidden;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.

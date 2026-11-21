@@ -56,22 +56,37 @@ public sealed class PlayerSupportPackClosureValidator : IPlayerSupportPackValida
         ArgumentException.ThrowIfNullOrWhiteSpace(directory);
         m_platform.Validate(directory);
         foreach (string relative in m_requirements.requiredFiles)
+        {
             if (!File.Exists(PathBoundary.Resolve(directory, relative)))
+            {
                 throw new InvalidDataException($"Support Pack '{m_requirements.target}' lacks selected input '{relative}'.");
+            }
+        }
         string root = PathBoundary.Resolve(directory, m_requirements.nativeRoot);
         if (!Directory.Exists(root))
+        {
             throw new InvalidDataException($"Support Pack '{m_requirements.target}' has no selected native deployment.");
+        }
         string[] libraries = PathBoundary.EnumerateFiles(root)
             .Where(path => Path.GetExtension(path).Equals(m_requirements.nativeExtension, StringComparison.OrdinalIgnoreCase))
-            .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/')).ToArray();
+            .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
+            .ToArray();
         foreach (string group in m_requirements.nativeDirectories)
+        {
             if (!libraries.Any(path => path.StartsWith(group + "/", StringComparison.Ordinal)))
+            {
                 throw new InvalidDataException($"Support Pack '{m_requirements.target}' lacks native component group '{group}'.");
+            }
+        }
         if (libraries.Any(path => !m_requirements.nativeDirectories.Any(group => path.StartsWith(group + "/", StringComparison.Ordinal))))
+        {
             throw new InvalidDataException($"Support Pack '{m_requirements.target}' contains an undeclared native component group.");
+        }
         if (m_requirements.nativeFiles is { } selected
-            && !libraries.ToHashSet(StringComparer.Ordinal).SetEquals(selected))
+            && !libraries.ToHashSet(StringComparer.Ordinal).SetEquals(selected)
+        ) {
             throw new InvalidDataException($"Support Pack '{m_requirements.target}' does not match its selected native file closure.");
+        }
         m_deployment?.Validate(directory);
     }
 }

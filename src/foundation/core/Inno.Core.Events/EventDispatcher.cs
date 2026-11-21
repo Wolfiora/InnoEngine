@@ -46,9 +46,13 @@ public sealed class EventDispatcher
         int flushBudget = 4096
     ) {
         if (queueCapacity <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(queueCapacity));
+        }
         if (flushBudget <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(flushBudget));
+        }
         m_queueCapacity = queueCapacity;
         m_flushBudget = flushBudget;
     }
@@ -91,7 +95,9 @@ public sealed class EventDispatcher
     public void Enqueue(Event e)
     {
         if (!TryEnqueue(e))
+        {
             throw new InvalidOperationException("The event queue is full; the producer must defer or reject this operation explicitly.");
+        }
     }
 
     /// <summary>
@@ -168,11 +174,15 @@ public sealed class EventDispatcher
             {
                 EventHub hub = hubs[i];
                 if (!hub.isValid)
+                {
                     continue;
+                }
 
                 hub.Dispatch(e);
                 if (e.isGlobalHandled)
+                {
                     break;
+                }
             }
         }
         dispatched?.Invoke(e);

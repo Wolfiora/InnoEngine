@@ -28,9 +28,10 @@ public sealed class ProductNativeCostTests
     {
         m_output = output;
         m_host = new WindowsBuildHostProvider().TryCapture()
-            ?? throw new PlatformNotSupportedException("Native cost acceptance requires its declared Windows host.");
-        m_distribution = StandardBuildDistribution.Create(new BuildCompositionContext(
-            "explicit-sdk", Path.GetTempPath(), m_host, new BuildTargetId("windows-x64"))).build;
+                 ?? throw new PlatformNotSupportedException("Native cost acceptance requires its declared Windows host.");
+        m_distribution = StandardBuildDistribution.Create(
+            new BuildCompositionContext("explicit-sdk", Path.GetTempPath(), m_host, new BuildTargetId("windows-x64"))
+        ).build;
     }
 
     [Fact]
@@ -38,12 +39,17 @@ public sealed class ProductNativeCostTests
     {
         string root = TestRepository.GetRoot(typeof(ProductNativeCostTests).Assembly);
         ProductNativeBuildStep[] steps = m_distribution.ResolveNativeProduct("windows-x64", "editor").plan.steps
-            .Where(static step => step.id is "cimgui" or "cimguizmo").ToArray();
+            .Where(static step => step.id is "cimgui" or "cimguizmo")
+            .ToArray();
         var plan = new ProductNativeBuildPlan("presentation-acceptance", steps);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
         var context = new NativeBuildContext(root, "debug").WithBindingGenerator(m_distribution.ResolveBindingGenerator("windows-x64"));
-        NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
-            m_host, "windows-x64", cancellation.Token);
+        NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(
+            context,
+            m_host,
+            "windows-x64",
+            cancellation.Token
+        );
         context = context.WithToolchain(sdk);
         using ProductNativeBuildResult result = await new ComponentNativeProductExecutor().BuildAsync(context, plan, cancellation.Token);
         Assert.Equal(2, result.Count);
@@ -64,18 +70,24 @@ public sealed class ProductNativeCostTests
         async Task<NativeBuildContext> Context()
         {
             var context = new NativeBuildContext(root, "debug").WithBindingGenerator(m_distribution.ResolveBindingGenerator("windows-x64"));
-            NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(context,
-                m_host, "windows-x64", cancellation.Token);
+            NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(
+                context,
+                m_host,
+                "windows-x64",
+                cancellation.Token
+            );
             return context.WithToolchain(sdk);
         }
         NativeBuildContext serial = await Context();
         Stopwatch elapsed = Stopwatch.StartNew();
-        using (NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(serial,
-            plan.steps.Select(static step => step.component).ToArray(), cancellation.Token,
+        using (NativeBindingGenerationResult bindings = await NativeBindingPreparation.PrepareAsync(
+            serial,
+            plan.steps.Select(static step => step.component).ToArray(),
+            cancellation.Token,
             plan.steps.Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)))
-        {
+                .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal)
+        )) {
             serial = serial.WithBindings(bindings);
             var products = new Dictionary<string, NativeBuildProduct>(StringComparer.Ordinal);
             try
@@ -83,14 +95,17 @@ public sealed class ProductNativeCostTests
                 foreach (ProductNativeBuildStep step in plan.steps)
                 {
                     NativeBuildContext selected = (step.configuration is string configuration
-                        ? serial.WithConfiguration(configuration) : serial).WithComponentOptions(step.component, step.options);
+                                                   ? serial.WithConfiguration(configuration)
+                                                   : serial).WithComponentOptions(step.component, step.options);
                     products.Add(step.id, await step.build!(selected, products, cancellation.Token));
                 }
             }
             finally
             {
                 foreach (NativeBuildProduct product in products.Values.Reverse())
+                {
                     product.Dispose();
+                }
             }
         }
         double serialSeconds = elapsed.Elapsed.TotalSeconds;

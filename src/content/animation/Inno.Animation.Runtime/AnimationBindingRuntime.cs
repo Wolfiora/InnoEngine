@@ -59,22 +59,30 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (Environment.CurrentManagedThreadId != m_ownerThread)
+        {
             throw new InvalidOperationException("Animation bindings must run on their owner thread.");
+        }
         Snapshot snapshot = m_registry.snapshot;
         var issues = new Dictionary<(string, Guid), Diagnostic>();
         foreach (AnimationSample sample in samples)
         {
             if (sample.target.isSamplingOnly)
+            {
                 continue;
+            }
             string? message = null;
             if (!snapshot.providers.TryGetValue((sample.binding, sample.value.kind), out AnimationBindingProvider? provider))
+            {
                 message = "The animation binding provider is missing; the playback remains available.";
+            }
             else
             {
                 try
                 {
                     if (!provider.TryApply(sample.target, sample.value))
+                    {
                         message = "The animation destination is missing or incompatible.";
+                    }
                 }
                 catch (Exception exception)
                 {
@@ -82,9 +90,15 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
                 }
             }
             if (message is not null)
+            {
                 issues[(sample.binding.value, sample.target.persistentId)] = new Diagnostic(
-                    "animation.binding.unavailable", message, DiagnosticSeverity.Warning,
-                    sample.binding.value, sample.target.persistentId);
+                    "animation.binding.unavailable",
+                    message,
+                    DiagnosticSeverity.Warning,
+                    sample.binding.value,
+                    sample.target.persistentId
+                );
+            }
         }
         m_diagnostics.Replace(issues.Values);
     }
@@ -95,7 +109,9 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_registry.Dispose();
         m_diagnostics.Replace([]);
@@ -123,13 +139,24 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
                 foreach (TypeRef reference in types.GetTypesWithAttribute<AnimationBindingProviderAttribute>())
                 {
                     Type type = reference.Resolve(types);
-                    AnimationBindingProviderAttribute declaration = types.GetAttribute<AnimationBindingProviderAttribute>(reference, false)!;
+                    AnimationBindingProviderAttribute declaration = types.GetAttribute<AnimationBindingProviderAttribute>(
+                        reference,
+                        false
+                    )!;
                     if (type.IsAbstract || type.ContainsGenericParameters || !typeof(AnimationBindingProvider).IsAssignableFrom(type)
-                        || !types.CanCreateInstance(reference))
-                        throw new InvalidOperationException($"Animation provider '{declaration.id}' requires a concrete public parameterless implementation.");
+                        || !types.CanCreateInstance(reference)
+                    ) {
+                        throw new InvalidOperationException(
+                            $"Animation provider '{declaration.id}' requires a concrete public parameterless implementation."
+                        );
+                    }
                     var key = (declaration.bindingId, declaration.kind);
                     if (!ids.Add(declaration.id) || result.providers.ContainsKey(key))
-                        throw new InvalidOperationException($"Animation provider '{declaration.id}' duplicates an extension ID or binding protocol.");
+                    {
+                        throw new InvalidOperationException(
+                            $"Animation provider '{declaration.id}' duplicates an extension ID or binding protocol."
+                        );
+                    }
                     result.providers.Add(key, CreateExtension<AnimationBindingProvider>(type));
                 }
                 return result;
@@ -173,7 +200,9 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
             }
             providers.Clear();
             if (failures is not null)
+            {
                 throw new AggregateException("Animation provider retirement failed.", failures);
+            }
         }
     }
 }

@@ -14,13 +14,15 @@ internal sealed partial class ShaderEditorDocuments
         // A preview remains presentation-only until this atomic domain edit succeeds.
         // Preserve a released intent when History rejects the operation so it can be retried.
         draft.pendingMove ??= draft.pointer.previewPositions.Count == 0
-            ? null
-            : new Dictionary<GraphNodeId, GraphPosition>(draft.pointer.previewPositions);
+                              ? null
+                              : new Dictionary<GraphNodeId, GraphPosition>(draft.pointer.previewPositions);
         if (draft.pendingMove is { } positions)
         {
             bool changed = false;
             foreach (var entry in positions)
+            {
                 changed |= controller.document.FindNode(entry.Key) is not { } current || current.position != entry.Value;
+            }
             if (changed)
             {
                 controller.MoveNodes(positions);
@@ -29,10 +31,12 @@ internal sealed partial class ShaderEditorDocuments
             draft.pendingMove = null;
         }
         if (draft.resizingNode is GraphNodeId resizing
-            && controller.document.FindNode(resizing) is { } node)
-        {
+            && controller.document.FindNode(resizing) is { } node
+        ) {
             GraphDocument replacement = controller.document.Clone();
-            replacement.FindNode(node.id)!.SetValue("editor.width", ShaderGraphDocument.Encode(draft.resizePreviewWidth, serialization, context));
+            replacement
+                .FindNode(node.id)!
+                .SetValue("editor.width", ShaderGraphDocument.Encode(draft.resizePreviewWidth, serialization, context));
             controller.ReplaceDocument(replacement, "Resize Shader Node");
             Changed(draft);
         }
@@ -42,7 +46,9 @@ internal sealed partial class ShaderEditorDocuments
     private void CompleteCanvasEdits()
     {
         foreach (Draft draft in m_drafts.Values)
+        {
             CompleteCanvasEdit(draft);
+        }
     }
 
     internal static void CancelCanvasEdit(Draft draft)

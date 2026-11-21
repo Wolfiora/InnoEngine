@@ -14,6 +14,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// The horizontal or first component.
     /// </summary>
     [DataMember] public int x;
+
     /// <summary>
     /// The vertical or second component.
     /// </summary>
@@ -35,24 +36,29 @@ public struct Vector2Int : IEquatable<Vector2Int>
         this.x = x;
         this.y = y;
     }
+
     /// <summary>
     /// A value whose components are all zero.
     /// </summary>
 
     // Common constants
     public static readonly Vector2Int ZERO = new(0, 0);
+
     /// <summary>
     /// A value whose components are all one.
     /// </summary>
     public static readonly Vector2Int ONE  = new(1, 1);
+
     /// <summary>
     /// A unit value aligned with the x axis.
     /// </summary>
     public static readonly Vector2Int UNIT_X  = new(1, 0);
+
     /// <summary>
     /// A unit value aligned with the y axis.
     /// </summary>
     public static readonly Vector2Int UNIT_Y  = new(0, 1);
+
     /// <summary>
     /// Adds the supplied values component by component.
     /// </summary>
@@ -192,6 +198,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
         Vector2Int a,
         Vector2Int b
     ) => !(a == b);
+
     /// <summary>
     /// Converts the supplied value to <see cref="Vector2"/>.
     /// </summary>
@@ -217,6 +224,7 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Vector2Int(Vector2 v) => new((int)v.x, (int)v.y);
+
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>

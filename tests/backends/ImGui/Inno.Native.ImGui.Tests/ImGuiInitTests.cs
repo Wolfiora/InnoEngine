@@ -1,5 +1,5 @@
-using System.Numerics;
 using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using Xunit;
 using Xunit.Abstractions;
@@ -47,7 +47,9 @@ public sealed unsafe class ImGuiInitTests
             _ = ImGui.Begin("Native Text Test", ref open);
             ReadOnlySpan<byte> text = "Plugin status\0"u8;
             fixed (byte* bytes = text)
+            {
                 ImGui.Raw.TextDisabled((sbyte*)bytes);
+            }
             ImGui.End();
             ImGui.Render();
         }
@@ -56,5 +58,4 @@ public sealed unsafe class ImGuiInitTests
             ImGui.Raw.DestroyContext(context);
         }
     }
-
 }

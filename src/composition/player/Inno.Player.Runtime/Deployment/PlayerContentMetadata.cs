@@ -24,7 +24,9 @@ public sealed class PlayerContentMetadata
         ReadOnlySpan<byte> catalog
     ) {
         if (manifest.IsEmpty || catalog.IsEmpty)
+        {
             throw new ArgumentException("A Player deployment requires nonempty manifest and catalog documents.");
+        }
         this.manifest = manifest.ToArray();
         this.catalog = catalog.ToArray();
     }

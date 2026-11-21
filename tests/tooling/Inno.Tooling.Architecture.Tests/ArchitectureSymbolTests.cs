@@ -27,10 +27,16 @@ public sealed class ArchitectureSymbolTests
             """;
         fixture.Compile(project, "Inno.Core.Probe", source);
         fixture.WriteSource(project, source);
-        Assert.DoesNotContain("inheritdoc requires a documented overridden or implemented contract",
-            fixture.Run("--source-only"), StringComparison.Ordinal);
-        Assert.Contains("inheritdoc requires a documented overridden or implemented contract",
-            fixture.Run("--metadata-only", "--api-project", project + "/Inno.Core.Probe.csproj"), StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "inheritdoc requires a documented overridden or implemented contract",
+            fixture.Run("--source-only"),
+            StringComparison.Ordinal
+        );
+        Assert.Contains(
+            "inheritdoc requires a documented overridden or implemented contract",
+            fixture.Run("--metadata-only", "--api-project", project + "/Inno.Core.Probe.csproj"),
+            StringComparison.Ordinal
+        );
     }
 
     [Fact]
@@ -66,8 +72,11 @@ public sealed class ArchitectureSymbolTests
         File.Copy(contract, copied);
         File.WriteAllText(Path.ChangeExtension(copied, ".xml"), "<doc><members /></doc>");
 
-        Assert.DoesNotContain("inheritdoc requires a documented overridden or implemented contract",
-            fixture.Run(), StringComparison.Ordinal);
+        Assert.DoesNotContain(
+            "inheritdoc requires a documented overridden or implemented contract",
+            fixture.Run(),
+            StringComparison.Ordinal
+        );
     }
 
     [Theory]
@@ -122,30 +131,35 @@ public sealed class ArchitectureSymbolTests
         if (scenario is "override" or "chain")
         {
             source = "namespace Inno.Editor.Probe; public class Base {\n" + contract
-                + "public virtual int Combine(int left, int right) => left + right; }\n";
+                     + "public virtual int Combine(int left, int right) => left + right; }\n";
             if (scenario == "chain")
             {
                 source += "public class Middle : Base {\n/// <inheritdoc />\n"
-                    + "public override int Combine(int left, int right) => base.Combine(left, right); }\n";
+                          + "public override int Combine(int left, int right) => base.Combine(left, right); }\n";
             }
             source += "public class Probe : " + (scenario == "chain" ? "Middle" : "Base")
-                + " {\n/// <inheritdoc />\npublic override int Combine(int left, int right) => left + right; }";
+                      + " {\n/// <inheritdoc />\npublic override int Combine(int left, int right) => left + right; }";
         }
         else
         {
             source = "namespace Inno.Editor.Probe; public interface IContract {\n" + contract
-                + "int Combine(int left, int right); }\npublic class Probe"
-                + (scenario == "standalone" ? "" : " : IContract") + " {\n"
-                + (scenario == "wrong-cref" ? "/// <inheritdoc cref=\"string.ToString()\" />\n" : "/// <inheritdoc />\n")
-                + "public int Combine(int left, int right) => left + right; }";
+                     + "int Combine(int left, int right); }\npublic class Probe"
+                     + (scenario == "standalone" ? "" : " : IContract") + " {\n"
+                     + (scenario == "wrong-cref" ? "/// <inheritdoc cref=\"string.ToString()\" />\n" : "/// <inheritdoc />\n")
+                     + "public int Combine(int left, int right) => left + right; }";
         }
         string relative = "src/composition/editor/framework/Inno.Editor.Probe";
         fixture.Compile(relative, "Inno.Editor.Probe", source);
         fixture.WriteSource(relative, source);
 
         string output = fixture.Run();
-        Assert.Equal(!accepted, output.Contains(
-            "inheritdoc requires a documented overridden or implemented contract", StringComparison.Ordinal));
+        Assert.Equal(
+            !accepted,
+            output.Contains(
+                "inheritdoc requires a documented overridden or implemented contract",
+                StringComparison.Ordinal
+            )
+        );
     }
 
     [Theory]
@@ -156,8 +170,11 @@ public sealed class ArchitectureSymbolTests
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
-        fixture.Compile("src/adapters/input/Inno.Adapter.Input", "Inno.Adapter.Input",
-            "namespace Inno.Adapter.Input; " + declaration);
+        fixture.Compile(
+            "src/adapters/input/Inno.Adapter.Input",
+            "Inno.Adapter.Input",
+            "namespace Inno.Adapter.Input; " + declaration
+        );
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("replaceable backend selections require open IDs", StringComparison.Ordinal));
     }
@@ -197,13 +214,18 @@ public sealed class ArchitectureSymbolTests
             public class MaBase { }
             public interface IMaBackend { }
             """);
-        fixture.Compile("src/services/audio/Inno.Audio", "Inno.Audio", """
+        fixture.Compile(
+            "src/services/audio/Inno.Audio",
+            "Inno.Audio",
+            """
             using System;
             using System.Collections.Generic;
             using System.Threading.Tasks;
             using Raw = Inno.Native.MiniAudio.MaEngine;
             namespace Inno.Audio;
-            """ + declaration, native);
+            """ + declaration,
+            native
+        );
 
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("exposes native symbol", StringComparison.Ordinal));
@@ -217,10 +239,17 @@ public sealed class ArchitectureSymbolTests
     public void NativePolicyUsesAssemblyIdentityRatherThanSourceTypeNames(string assemblyName)
     {
         using var fixture = new SymbolFixture();
-        string native = fixture.Compile("backends/" + assemblyName["Inno.Native.".Length..] + "/native/" + assemblyName, assemblyName,
-            "namespace Renamed; public struct NeutralLookingName { public int value; }");
-        fixture.Compile("src/services/audio/Inno.Audio", "Inno.Audio",
-            "namespace Inno.Audio; public class Probe { public Renamed.NeutralLookingName value; }", native);
+        string native = fixture.Compile(
+            "backends/" + assemblyName["Inno.Native.".Length..] + "/native/" + assemblyName,
+            assemblyName,
+            "namespace Renamed; public struct NeutralLookingName { public int value; }"
+        );
+        fixture.Compile(
+            "src/services/audio/Inno.Audio",
+            "Inno.Audio",
+            "namespace Inno.Audio; public class Probe { public Renamed.NeutralLookingName value; }",
+            native
+        );
         Assert.Contains("exposes native symbol Renamed.NeutralLookingName", fixture.Run(), StringComparison.Ordinal);
     }
 
@@ -235,10 +264,17 @@ public sealed class ArchitectureSymbolTests
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
-        string implementation = fixture.Compile("src/adapters/audio/" + adapter, adapter,
-            "namespace Backend; public class Device { }");
-        fixture.Compile("src/composition/" + owner, owner,
-            "namespace Product; public class Probe { public Backend.Device device; }", implementation);
+        string implementation = fixture.Compile(
+            "src/adapters/audio/" + adapter,
+            adapter,
+            "namespace Backend; public class Device { }"
+        );
+        fixture.Compile(
+            "src/composition/" + owner,
+            owner,
+            "namespace Product; public class Probe { public Backend.Device device; }",
+            implementation
+        );
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("exposes concrete adapter", StringComparison.Ordinal));
     }
@@ -254,12 +290,22 @@ public sealed class ArchitectureSymbolTests
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
-        string dependency = fixture.Compile("src/foundation/core/Inno.Core.Values", "Inno.Core.Values",
-            "namespace Values; public class Value { }");
-        fixture.Compile("src/composition/editor/framework/Inno.Editor.Probe", "Inno.Editor.Probe",
-            "using Values; namespace Inno.Editor.Probe; " + declaration, dependency);
-        fixture.AddReference("src/composition/editor/framework/Inno.Editor.Probe/Inno.Editor.Probe.csproj",
-            "src/foundation/core/Inno.Core.Values/Inno.Core.Values.csproj", privateReference);
+        string dependency = fixture.Compile(
+            "src/foundation/core/Inno.Core.Values",
+            "Inno.Core.Values",
+            "namespace Values; public class Value { }"
+        );
+        fixture.Compile(
+            "src/composition/editor/framework/Inno.Editor.Probe",
+            "Inno.Editor.Probe",
+            "using Values; namespace Inno.Editor.Probe; " + declaration,
+            dependency
+        );
+        fixture.AddReference(
+            "src/composition/editor/framework/Inno.Editor.Probe/Inno.Editor.Probe.csproj",
+            "src/foundation/core/Inno.Core.Values/Inno.Core.Values.csproj",
+            privateReference
+        );
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("declare a direct public ProjectReference", StringComparison.Ordinal));
     }
@@ -277,7 +323,11 @@ public sealed class ArchitectureSymbolTests
         string native = fixture.Compile("backends/Sdl3/native/Inno.Native.Sdl3", "Inno.Native.Sdl3", "public struct Raw { }");
         string projectName = Path.GetFileName(relative);
         fixture.Compile(relative, projectName, "internal class Probe { private Raw value; }", native);
-        fixture.AddReference(relative + "/" + projectName + ".csproj", "backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj", true);
+        fixture.AddReference(
+            relative + "/" + projectName + ".csproj",
+            "backends/Sdl3/native/Inno.Native.Sdl3/Inno.Native.Sdl3.csproj",
+            true
+        );
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("SDL3 native code is restricted", StringComparison.Ordinal));
     }
@@ -290,13 +340,23 @@ public sealed class ArchitectureSymbolTests
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
-        string dependency = fixture.Compile("src/foundation/core/Inno.Core.Values", "Inno.Core.Values",
-            "namespace Values; public class Value { }");
+        string dependency = fixture.Compile(
+            "src/foundation/core/Inno.Core.Values",
+            "Inno.Core.Values",
+            "namespace Values; public class Value { }"
+        );
         string relative = "src/composition/editor/framework/Inno.Editor.Probe";
-        fixture.Compile(relative, "Inno.Editor.Probe",
-            "using Values; namespace Inno.Editor.Probe; public class Probe { private Value value; }", dependency);
-        fixture.AddReference(relative + "/Inno.Editor.Probe.csproj",
-            "src/foundation/core/Inno.Core.Values/Inno.Core.Values.csproj", privateReference);
+        fixture.Compile(
+            relative,
+            "Inno.Editor.Probe",
+            "using Values; namespace Inno.Editor.Probe; public class Probe { private Value value; }",
+            dependency
+        );
+        fixture.AddReference(
+            relative + "/Inno.Editor.Probe.csproj",
+            "src/foundation/core/Inno.Core.Values/Inno.Core.Values.csproj",
+            privateReference
+        );
         string output = fixture.Run();
         Assert.Equal(rejected, output.Contains("is an implementation dependency", StringComparison.Ordinal));
     }
@@ -310,14 +370,24 @@ public sealed class ArchitectureSymbolTests
         bool rejected
     ) {
         using var fixture = new SymbolFixture();
-        string hidden = fixture.Compile("src/foundation/core/Inno.Core.Hidden", "Inno.Core.Hidden",
-            "namespace Hidden; public class Value { }");
-        string visible = fixture.Compile("src/foundation/core/Inno.Core.Visible", "Inno.Core.Visible",
-            "namespace Visible; public class Value { }");
+        string hidden = fixture.Compile(
+            "src/foundation/core/Inno.Core.Hidden",
+            "Inno.Core.Hidden",
+            "namespace Hidden; public class Value { }"
+        );
+        string visible = fixture.Compile(
+            "src/foundation/core/Inno.Core.Visible",
+            "Inno.Core.Visible",
+            "namespace Visible; public class Value { }"
+        );
         string relative = "src/composition/editor/framework/Inno.Editor.Probe";
-        fixture.Compile(relative, "Inno.Editor.Probe",
+        fixture.Compile(
+            relative,
+            "Inno.Editor.Probe",
             "namespace Inno.Editor.Probe; public class Probe { private Hidden.Value hidden; public Visible.Value visible; }",
-            hidden, visible);
+            hidden,
+            visible
+        );
         string owner = relative + "/Inno.Editor.Probe.csproj";
         if (layout == 1)
         {
@@ -368,7 +438,9 @@ public sealed class ArchitectureSymbolTests
         internal SymbolFixture()
         {
             foreach (string folder in new[] { "src", "native", "build", "tools", "tests" })
+            {
                 Directory.CreateDirectory(Path.Combine(m_root, folder));
+            }
             File.WriteAllText(Path.Combine(m_root, "InnoEngine.sln"), """
                 Microsoft Visual Studio Solution File, Format Version 12.00
                 Global
@@ -385,15 +457,25 @@ public sealed class ArchitectureSymbolTests
             string directory = Path.Combine(m_root, relative);
             string output = Path.Combine(directory, "bin", "Debug", "net10.0", assemblyName + ".dll");
             Directory.CreateDirectory(Path.GetDirectoryName(output)!);
-            new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-                new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"))))
+            new XDocument(
+                new XElement(
+                    "Project",
+                    new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+                    new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"))
+                )
+            )
                 .Save(Path.Combine(directory, assemblyName + ".csproj"));
             string[] platform = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
-            MetadataReference[] references = platform.Concat(dependencies).Distinct(StringComparer.OrdinalIgnoreCase)
-                .Select(path => MetadataReference.CreateFromFile(path)).ToArray();
-            CSharpCompilation compilation = CSharpCompilation.Create(assemblyName,
-                [CSharpSyntaxTree.ParseText(source)], references,
-                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true));
+            MetadataReference[] references = platform.Concat(dependencies)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(path => MetadataReference.CreateFromFile(path))
+                .ToArray();
+            CSharpCompilation compilation = CSharpCompilation.Create(
+                assemblyName,
+                [CSharpSyntaxTree.ParseText(source)],
+                references,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true)
+            );
             var result = compilation.Emit(output, xmlDocumentationPath: Path.ChangeExtension(output, ".xml"));
             Assert.True(result.Success, string.Join(Environment.NewLine, result.Diagnostics));
             return output;
@@ -406,10 +488,17 @@ public sealed class ArchitectureSymbolTests
         ) {
             string path = Path.Combine(m_root, owner);
             XDocument document = XDocument.Load(path);
-            var reference = new XElement("ProjectReference", new XAttribute("Include",
-                Path.GetRelativePath(Path.GetDirectoryName(path)!, Path.Combine(m_root, target))));
+            var reference = new XElement(
+                "ProjectReference",
+                new XAttribute(
+                    "Include",
+                    Path.GetRelativePath(Path.GetDirectoryName(path)!, Path.Combine(m_root, target))
+                )
+            );
             if (privateReference)
+            {
                 reference.Add(new XAttribute("PrivateAssets", "compile"));
+            }
             document.Root!.Add(new XElement("ItemGroup", reference));
             document.Save(path);
         }
@@ -432,7 +521,9 @@ public sealed class ArchitectureSymbolTests
         public void Dispose()
         {
             if (Directory.Exists(m_root))
+            {
                 Directory.Delete(m_root, recursive: true);
+            }
         }
     }
 }

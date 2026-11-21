@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-
-using Inno.Core.Events;
 using Xunit;
+using Inno.Core.Events;
 
 namespace Inno.Core.Events.Tests;
 
@@ -64,7 +63,9 @@ public sealed class EventDispatchObservationTests
         {
             observed.Add(evnt);
             if (ReferenceEquals(evnt, first))
+            {
                 dispatcher.Enqueue(second);
+            }
         };
         dispatcher.Enqueue(first);
 

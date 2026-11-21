@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Core.Settings;
 using Inno.Assets.Pipeline;
+using Inno.Core.Settings;
 using Inno.Plugins;
 
 namespace Inno.Plugins.Authoring;
@@ -16,7 +16,6 @@ public enum PluginSourceKind
     /// The Plugin is installed as one top-level <c>.iplugin</c> package.
     /// </summary>
     Package,
-
     /// <summary>
     /// The Plugin is embedded as one complete <c>.iplugin</c> dependency package.
     /// </summary>
@@ -70,6 +69,7 @@ public sealed class PluginSourceLimits
 public sealed class PluginCandidate
 {
     private readonly PluginManifest m_manifest;
+
     internal PluginCandidate(
         string sourcePath,
         PluginSourceKind sourceKind,
@@ -116,15 +116,21 @@ public sealed class PluginCandidate
     /// </summary>
     public bool containsCode { get; }
 
-    private static PluginManifest CloneManifest(PluginManifest value) => new()
+    private static PluginManifest CloneManifest(PluginManifest value)
+        => new()
     {
-        pluginId = value.pluginId, displayName = value.displayName,
-        dependencies = value.dependencies.ToArray(), overrides = value.overrides.ToArray(),
-        contentRoots = value.contentRoots.ToArray(), assemblyDefinitions = value.assemblyDefinitions.ToArray(),
+        pluginId = value.pluginId,
+        displayName = value.displayName,
+        dependencies = value.dependencies.ToArray(),
+        overrides = value.overrides.ToArray(),
+        contentRoots = value.contentRoots.ToArray(),
+        assemblyDefinitions = value.assemblyDefinitions.ToArray(),
         settingContributions = value.settingContributions.Select(static record => new ProjectSettingRecord(
-            record.id, record.stableTypeId, record.propertyData)).ToArray()
+            record.id,
+            record.stableTypeId,
+            record.propertyData
+        )).ToArray()
     };
-
 }
 
 /// <summary>

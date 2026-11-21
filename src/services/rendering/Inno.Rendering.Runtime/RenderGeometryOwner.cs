@@ -62,8 +62,14 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         string source = asset.assetPath.ToString();
         if (id == Guid.Empty)
         {
-            m_diagnostics.Publish(new Diagnostic("RENDER_GEOMETRY_ID_MISSING",
-                "Geometry must have a persistent asset identity.", DiagnosticSeverity.Error, source));
+            m_diagnostics.Publish(
+                new Diagnostic(
+                    "RENDER_GEOMETRY_ID_MISSING",
+                    "Geometry must have a persistent asset identity.",
+                    DiagnosticSeverity.Error,
+                    source
+                )
+            );
             return false;
         }
         m_diagnostics.Resolve("RENDER_GEOMETRY_ID_MISSING", source);
@@ -82,11 +88,18 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
             }
             catch (Exception failure)
             {
-                m_diagnostics.Publish(new Diagnostic("RENDER_GEOMETRY_RESOLVE_FAILED",
-                    $"Geometry '{source}' kept its complete last-good buffer pair: {failure.Message}",
-                    DiagnosticSeverity.Error, source));
+                m_diagnostics.Publish(
+                    new Diagnostic(
+                        "RENDER_GEOMETRY_RESOLVE_FAILED",
+                        $"Geometry '{source}' kept its complete last-good buffer pair: {failure.Message}",
+                        DiagnosticSeverity.Error,
+                        source
+                    )
+                );
                 if (entry is null)
+                {
                     return false;
+                }
                 entry.lastUsedFrame = m_frameIndex;
                 geometry = entry.geometry;
                 return true;
@@ -110,7 +123,9 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         {
             m_retirement = new RenderRetirementQueue();
             if (m_allocation is not null)
+            {
                 m_retirement.Add(m_allocation.Dispose);
+            }
             m_retirement.Add(m_entries.Dispose);
         }
         m_retirement.Dispose();
@@ -123,21 +138,37 @@ internal sealed class RenderGeometryOwner : RenderResourceProvider, IDisposable
         RenderVertexLayout layout = CanonicalGeometryLayout();
         byte[] vertices = PackVertices(data.vertices);
         byte[] indices = MemoryMarshal.AsBytes(data.indices.ToArray().AsSpan()).ToArray();
-        IReadOnlyList<RenderGeometrySection> sections = Array.AsReadOnly(data.sections.Select(static section =>
-            new RenderGeometrySection(section.firstIndex, section.indexCount)).ToArray());
+        IReadOnlyList<RenderGeometrySection> sections = Array.AsReadOnly(
+            data.sections.Select(static section =>
+                new RenderGeometrySection(section.firstIndex, section.indexCount)).ToArray()
+        );
         m_allocation = new RenderRetirementQueue();
         try
         {
-            PersistentBufferHandle vertex = m_device.CreateBuffer(new PersistentBufferDescriptor(
-                new RenderBufferDescriptor(data.vertices.Count, layout.stride, RenderBufferUsage.Vertex), layout),
-                vertices, $"{asset.name}/Vertices");
+            PersistentBufferHandle vertex = m_device.CreateBuffer(
+                new PersistentBufferDescriptor(
+                    new RenderBufferDescriptor(data.vertices.Count, layout.stride, RenderBufferUsage.Vertex),
+                    layout
+                ),
+                vertices,
+                $"{asset.name}/Vertices"
+            );
             m_allocation.Add(() => m_device.DestroyBuffer(vertex));
-            PersistentBufferHandle index = m_device.CreateBuffer(new PersistentBufferDescriptor(
-                new RenderBufferDescriptor(data.indices.Count, sizeof(uint), RenderBufferUsage.Index),
-                indexFormat: RenderIndexFormat.UInt32), indices, $"{asset.name}/Indices");
+            PersistentBufferHandle index = m_device.CreateBuffer(
+                new PersistentBufferDescriptor(
+                    new RenderBufferDescriptor(data.indices.Count, sizeof(uint), RenderBufferUsage.Index),
+                    indexFormat: RenderIndexFormat.UInt32
+                ),
+                indices,
+                $"{asset.name}/Indices"
+            );
             m_allocation.Add(() => m_device.DestroyBuffer(index));
-            var entry = new Entry(CreateGeometry(vertex, index, layout, data.vertices.Count,
-                data.indices.Count, sections), asset.contentVersion, m_frameIndex, m_allocation);
+            var entry = new Entry(
+                CreateGeometry(vertex, index, layout, data.vertices.Count, data.indices.Count, sections),
+                asset.contentVersion,
+                m_frameIndex,
+                m_allocation
+            );
             m_allocation = null;
             return entry;
         }

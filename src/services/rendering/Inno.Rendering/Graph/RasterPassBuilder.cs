@@ -11,8 +11,7 @@ public sealed class RasterPassBuilder : RenderPassBuilder
     internal RasterPassBuilder(
         RenderGraphBuilder graph,
         RenderPassRecord pass
-    )
-        : base(graph, pass) { }
+    ) : base(graph, pass) {}
 
     /// <summary>
     /// Sets backend-ready column-major transform matrices for this raster view.
@@ -115,17 +114,10 @@ public sealed class RasterPassBuilder : RenderPassBuilder
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
-        graph.AddAttachment(pass, new RenderAttachment(
-            texture,
-            slot,
-            false,
-            mipLevel,
-            arrayLayer,
-            loadAction,
-            storeAction,
-            clearColor,
-            1f,
-            0));
+        graph.AddAttachment(
+            pass,
+            new RenderAttachment(texture, slot, false, mipLevel, arrayLayer, loadAction, storeAction, clearColor, 1f, 0)
+        );
         return this;
     }
 
@@ -167,18 +159,21 @@ public sealed class RasterPassBuilder : RenderPassBuilder
     ) {
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         ArgumentOutOfRangeException.ThrowIfNegative(arrayLayer);
-        graph.AddAttachment(pass, new RenderAttachment(
-            texture,
-            0,
-            true,
-            mipLevel,
-            arrayLayer,
-            loadAction,
-            storeAction,
-            default,
-            clearDepth,
-            clearStencil));
+        graph.AddAttachment(
+            pass,
+            new RenderAttachment(
+                texture,
+                0,
+                true,
+                mipLevel,
+                arrayLayer,
+                loadAction,
+                storeAction,
+                default,
+                clearDepth,
+                clearStencil
+            )
+        );
         return this;
     }
 }
-

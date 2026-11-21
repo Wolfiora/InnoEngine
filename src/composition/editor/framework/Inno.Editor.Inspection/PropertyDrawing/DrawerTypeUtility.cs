@@ -16,9 +16,9 @@ internal static class DrawerTypeUtility
 
         if (normalizedRegistered.IsGenericTypeDefinition)
         {
-            if (normalizedConcrete.IsGenericType &&
-                normalizedConcrete.GetGenericTypeDefinition() == normalizedRegistered)
-            {
+            if (normalizedConcrete.IsGenericType
+                && normalizedConcrete.GetGenericTypeDefinition() == normalizedRegistered
+            ) {
                 distance = 1;
                 return true;
             }

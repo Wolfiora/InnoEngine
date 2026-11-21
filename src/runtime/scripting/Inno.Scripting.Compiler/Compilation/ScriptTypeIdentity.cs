@@ -12,7 +12,9 @@ internal static class ScriptTypeIdentity
     internal static Guid CreateCanonical(Guid sourcePersistentId)
     {
         if (sourcePersistentId == Guid.Empty)
+        {
             throw new ArgumentException("A script source identity is required.", nameof(sourcePersistentId));
+        }
         return CreateGuidV5(C_SCRIPT_SOURCE_NAMESPACE, sourcePersistentId.ToString("D"));
     }
 

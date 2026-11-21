@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Inno.Native.LibraryLoading;
 using Xunit;
+using Inno.Native.LibraryLoading;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -38,15 +38,19 @@ public sealed class NativeDeploymentIndexTests : IDisposable
     [InlineData("C:/outside.bin")]
     [InlineData("part\\wrong.bin")]
     public void InvalidDeploymentPathsFailBeforeResolution(string path)
-        => Assert.Throws<ArgumentException>(() => new NativeDeploymentIndex("fixture",
-            new Dictionary<string, string> { ["library"] = path }, new Dictionary<string, string>()));
+        => Assert.Throws<ArgumentException>(() => new NativeDeploymentIndex(
+            "fixture",
+            new Dictionary<string, string> { ["library"] = path },
+            new Dictionary<string, string>()
+        ));
 
     [Fact]
     public void MissingAndUnknownIndexFieldsAreRejected()
     {
         Assert.Throws<InvalidDataException>(() => NativeDeploymentIndex.Decode("{}"u8));
         Assert.Throws<InvalidDataException>(() => NativeDeploymentIndex.Decode(
-            "{\"targetId\":\"fixture\",\"libraries\":{},\"files\":{},\"oldLayout\":true}"u8));
+            "{\"targetId\":\"fixture\",\"libraries\":{},\"files\":{},\"oldLayout\":true}"u8
+        ));
     }
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);

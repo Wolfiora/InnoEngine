@@ -1,12 +1,12 @@
-using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -28,16 +28,27 @@ public sealed class GeneratorRestoreScopeTests
     {
         string root = TestRepository.GetRoot(typeof(GeneratorRestoreScopeTests).Assembly);
         string project = Path.Combine(root, relative);
-        using Process process = new() { StartInfo = new ProcessStartInfo("dotnet")
+        using Process process = new()
         {
-            UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true
-        } };
+            StartInfo = new ProcessStartInfo("dotnet")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            }
+        };
         foreach (string argument in new[]
         {
-            "msbuild", project, "-getProperty:BaseIntermediateOutputPath,IsRoslynComponent,RuntimeIdentifier",
-            "-p:InnoNativeTarget=windows-x64", "-p:RuntimeIdentifier=win-x64", "-nodeReuse:false"
-        })
+            "msbuild",
+            project,
+            "-getProperty:BaseIntermediateOutputPath,IsRoslynComponent,RuntimeIdentifier",
+            "-p:InnoNativeTarget=windows-x64",
+            "-p:RuntimeIdentifier=win-x64",
+            "-nodeReuse:false"
+        }) {
             process.StartInfo.ArgumentList.Add(argument);
+        }
         Assert.True(process.Start());
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> error = process.StandardError.ReadToEndAsync();

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
-
 using Inno.Core.Events;
 using Inno.Core.Execution;
 
@@ -110,7 +109,9 @@ public sealed class LayerStack : IDisposable
         ArgumentNullException.ThrowIfNull(layer);
         int index = Find(layer);
         if (index < 0 || index >= m_baseLayerCount)
+        {
             return false;
+        }
         Remove(index);
         return true;
     }
@@ -136,7 +137,9 @@ public sealed class LayerStack : IDisposable
         ArgumentNullException.ThrowIfNull(overlay);
         int index = Find(overlay);
         if (index < m_baseLayerCount)
+        {
             return false;
+        }
         Remove(index);
         return true;
     }
@@ -154,7 +157,9 @@ public sealed class LayerStack : IDisposable
     {
         EnsureActive();
         for (int index = 0; index < m_layers.Count; index++)
+        {
             m_layers[index].layer.OnFixedUpdate(fixedDeltaTime);
+        }
     }
 
     /// <summary>
@@ -170,7 +175,9 @@ public sealed class LayerStack : IDisposable
     {
         EnsureActive();
         for (int index = 0; index < m_layers.Count; index++)
+        {
             m_layers[index].layer.OnUpdate(deltaTime);
+        }
     }
 
     /// <summary>
@@ -186,7 +193,9 @@ public sealed class LayerStack : IDisposable
     {
         EnsureActive();
         for (int index = 0; index < m_layers.Count; index++)
+        {
             m_layers[index].layer.OnLateUpdate(deltaTime);
+        }
     }
 
     /// <summary>
@@ -209,9 +218,13 @@ public sealed class LayerStack : IDisposable
         try
         {
             for (; preparedCount < m_layers.Count; preparedCount++)
+            {
                 m_layers[preparedCount].layer.OnBeforeRender(deltaTime);
+            }
             for (int index = 0; index < preparedCount; index++)
+            {
                 m_layers[index].layer.OnRender(deltaTime);
+            }
         }
         catch (Exception exception)
         {
@@ -268,7 +281,9 @@ public sealed class LayerStack : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         List<Exception>? failures = DetachAll();
         m_disposed = true;
         ThrowFailures(failures, "One or more layers failed to detach while disposing the stack.");
@@ -282,13 +297,17 @@ public sealed class LayerStack : IDisposable
         EnsureActive();
         ArgumentNullException.ThrowIfNull(layer);
         if (layer.isAttached || Find(layer) >= 0)
+        {
             throw new InvalidOperationException($"Layer '{layer.name}' is already attached to this stack.");
+        }
 
         EventHub events = m_eventHubFactory()
-            ?? throw new InvalidOperationException("The layer event hub factory returned null.");
+                          ?? throw new InvalidOperationException("The layer event hub factory returned null.");
         m_layers.Insert(index, new Entry(layer, events));
         if (isBaseLayer)
+        {
             m_baseLayerCount++;
+        }
         try
         {
             UpdateEventOrder();
@@ -321,7 +340,9 @@ public sealed class LayerStack : IDisposable
         try
         {
             if (entry.layer.isAttached)
+            {
                 entry.layer.Detach();
+            }
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -342,7 +363,9 @@ public sealed class LayerStack : IDisposable
         }
         m_layers.RemoveAt(index);
         if (index < m_baseLayerCount)
+        {
             m_baseLayerCount--;
+        }
         UpdateEventOrder();
         ThrowFailures(failures, "Layer detachment and event-scope retirement failed.");
     }
@@ -375,7 +398,9 @@ public sealed class LayerStack : IDisposable
         for (int index = 0; index < m_layers.Count; index++)
         {
             if (ReferenceEquals(m_layers[index].layer, layer))
+            {
                 return index;
+            }
         }
         return -1;
     }
@@ -383,14 +408,18 @@ public sealed class LayerStack : IDisposable
     private void UpdateEventOrder()
     {
         for (int index = 0; index < m_layers.Count; index++)
+        {
             m_layers[index].events.order = index;
+        }
     }
 
     private void EnsureActive()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_stopping)
+        {
             throw new InvalidOperationException("Layer retirement is pending; resume Clear or Dispose before using this stack.");
+        }
     }
 
     private static void ThrowFailures(
@@ -398,9 +427,13 @@ public sealed class LayerStack : IDisposable
         string message
     ) {
         if (failures is null)
+        {
             return;
+        }
         if (failures.Count == 1)
+        {
             ExceptionDispatchInfo.Capture(failures[0]).Throw();
+        }
         throw new AggregateException(message, failures);
     }
 

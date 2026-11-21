@@ -4,8 +4,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
 
 namespace Inno.Tooling.Architecture.Tests;
 
@@ -16,8 +16,15 @@ public sealed class ArchitectureOutputOwnerTests
     public async Task PublicContractsUseTheEvaluatedOutputOwnerInsteadOfStaleDefaultAssemblies()
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoArchitectureOutputTests", Guid.NewGuid().ToString("N"));
-        string host = Path.GetFullPath(Path.Combine(RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..",
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        string host = Path.GetFullPath(
+            Path.Combine(
+                RuntimeEnvironment.GetRuntimeDirectory(),
+                "..",
+                "..",
+                "..",
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+            )
+        );
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         try
         {
@@ -43,56 +50,140 @@ public sealed class ArchitectureOutputOwnerTests
             string source = Path.Combine(editor, "Probe.cs");
             File.WriteAllText(source, "namespace Inno.Editor.Probe; public sealed class Probe { }");
             await Build([]);
-            File.WriteAllText(source, "namespace Inno.Editor.Probe; public sealed class Probe { public Inno.Core.Contract.Contract value { get; } = new(); }");
+            File.WriteAllText(
+                source,
+                "namespace Inno.Editor.Probe; public sealed class Probe { public Inno.Core.Contract.Contract value { get; } = new(); }"
+            );
             string artifacts = Path.Combine(root, "owned-output");
             await Build(["-p:ArtifactsPath=" + artifacts]);
             string graph = Path.Combine(root, "graph.json");
 
-            string correct = ArchitectureCommandFixture.Run(root, "--dotnet", host,
-                "--artifacts-path", artifacts, "--project-graph", graph).output;
+            string correct = ArchitectureCommandFixture.Run(
+                root,
+                "--dotnet",
+                host,
+                "--artifacts-path",
+                artifacts,
+                "--project-graph",
+                graph
+            ).output;
             Assert.DoesNotContain("Inno.Core.Contract is an implementation dependency", correct, StringComparison.Ordinal);
-            Assert.Contains(artifacts.Replace('\\', '/'), File.ReadAllText(graph).Replace('\\', '/').Replace("//", "/"), StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(
+                artifacts.Replace('\\', '/'),
+                File.ReadAllText(graph).Replace('\\', '/').Replace("//", "/"),
+                StringComparison.OrdinalIgnoreCase
+            );
 
             string selectedOwner = Path.GetRelativePath(root, project).Replace('\\', '/');
-            string selected = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
-                "--artifacts-path", artifacts, "--api-project", selectedOwner).output;
+            string selected = ArchitectureCommandFixture.Run(
+                root,
+                "--metadata-only",
+                "--dotnet",
+                host,
+                "--artifacts-path",
+                artifacts,
+                "--api-project",
+                selectedOwner
+            ).output;
             Assert.DoesNotContain("unresolved public signature type", selected, StringComparison.Ordinal);
             Assert.DoesNotContain("output is missing", selected, StringComparison.Ordinal);
 
             string snapshot = Path.Combine(root, "sdk-graph.json");
-            File.WriteAllText(snapshot, await ManagedProjectGraphCapture.CaptureAsync(root, host,
-                [project, Path.Combine(contract, "Inno.Core.Contract.csproj")], new Dictionary<string, string>
-                {
-                    ["Configuration"] = "Debug", ["ArtifactsPath"] = artifacts,
-                    ["DesignTimeBuild"] = "true", ["BuildProjectReferences"] = "false", ["InnoProductRestore"] = "false"
-                }, cancellation.Token));
-            string captured = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
-                "--artifacts-path", artifacts, "--api-project", selectedOwner, "--sdk-snapshot", snapshot).output;
+            File.WriteAllText(
+                snapshot,
+                await ManagedProjectGraphCapture.CaptureAsync(
+                    root,
+                    host,
+                    [project, Path.Combine(contract, "Inno.Core.Contract.csproj")],
+                    new Dictionary<string, string>
+                    {
+                        ["Configuration"] = "Debug",
+                        ["ArtifactsPath"] = artifacts,
+                        ["DesignTimeBuild"] = "true",
+                        ["BuildProjectReferences"] = "false",
+                        ["InnoProductRestore"] = "false"
+                    },
+                    cancellation.Token
+                )
+            );
+            string captured = ArchitectureCommandFixture.Run(
+                root,
+                "--metadata-only",
+                "--dotnet",
+                host,
+                "--artifacts-path",
+                artifacts,
+                "--api-project",
+                selectedOwner,
+                "--sdk-snapshot",
+                snapshot
+            ).output;
             Assert.DoesNotContain("unresolved public signature type", captured, StringComparison.Ordinal);
             Assert.DoesNotContain("output is missing", captured, StringComparison.Ordinal);
 
             string reference = Path.Combine(root, "api-reference.json");
-            Assert.Equal(0, DocumentationReferences.ExportApi(["--engine-root", root, "--dotnet", host,
-                "--project", selectedOwner, "--output", reference]));
-            Assert.Equal(0, await DocumentationReferences.ValidateApiAsync(["--engine-root", root,
-                "--dotnet", host, "--artifacts-path", artifacts, "--reference", reference,
-                "--output", Path.Combine(root, "api-validation.json")], cancellation.Token));
+            Assert.Equal(
+                0,
+                DocumentationReferences.ExportApi([
+                    "--engine-root",
+                    root,
+                    "--dotnet",
+                    host,
+                    "--project",
+                    selectedOwner,
+                    "--output",
+                    reference
+                ])
+            );
+            Assert.Equal(
+                0,
+                await DocumentationReferences.ValidateApiAsync([
+                    "--engine-root",
+                    root,
+                    "--dotnet",
+                    host,
+                    "--artifacts-path",
+                    artifacts,
+                    "--reference",
+                    reference,
+                    "--output",
+                    Path.Combine(root, "api-validation.json")
+                ], cancellation.Token)
+            );
 
-            File.WriteAllText(project, File.ReadAllText(project).Replace("Include=", "PrivateAssets=\"compile\" Include=", StringComparison.Ordinal));
-            string rejected = ArchitectureCommandFixture.Run(root, "--metadata-only", "--dotnet", host,
-                "--artifacts-path", artifacts, "--api-project", selectedOwner).output;
+            File.WriteAllText(
+                project,
+                File.ReadAllText(project).Replace("Include=", "PrivateAssets=\"compile\" Include=", StringComparison.Ordinal)
+            );
+            string rejected = ArchitectureCommandFixture.Run(
+                root,
+                "--metadata-only",
+                "--dotnet",
+                host,
+                "--artifacts-path",
+                artifacts,
+                "--api-project",
+                selectedOwner
+            ).output;
             Assert.Contains("public/protected API exposes Inno.Core.Contract", rejected, StringComparison.Ordinal);
 
             async Task Build(string[] properties)
             {
-                await ToolchainEnvironment.RunAsync(host, ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet", .. properties],
-                    root, cancellation.Token, DotNetSdkEnvironment.Create(host));
+                await ToolchainEnvironment.RunAsync(
+                    host,
+                    ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet", .. properties],
+                    root,
+                    cancellation.Token,
+                    DotNetSdkEnvironment.Create(host)
+                );
             }
         }
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 }

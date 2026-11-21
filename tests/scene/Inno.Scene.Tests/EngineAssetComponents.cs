@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 
 namespace Inno.Scene.Tests;
@@ -33,6 +32,8 @@ internal sealed class PrefabInstantiationBehavior : GameBehavior
     protected override void Update()
     {
         if (prefab is not null && instances.Count < 2)
+        {
             instances.Add(gameObject.scene.InstantiatePrefab(prefab, gameObject.transform));
+        }
     }
 }

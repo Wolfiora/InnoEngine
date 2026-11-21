@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 using Inno.Scene;
 
@@ -25,7 +24,9 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         string state = $"{code}:{message}";
         if (string.Equals(m_restoreState, state, StringComparison.Ordinal))
+        {
             return false;
+        }
         Diagnostics.Set(C_RESTORE_GROUP, Diagnostic.Error(code, message));
         m_restoreState = state;
         return true;
@@ -34,7 +35,9 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     internal void ResolveRestore()
     {
         if (string.IsNullOrEmpty(m_restoreState))
+        {
             return;
+        }
         Diagnostics.Clear(C_RESTORE_GROUP);
         m_restoreState = string.Empty;
     }
@@ -47,16 +50,17 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         ArgumentNullException.ThrowIfNull(exception);
         Guid targetId = scene.identity.persistentId;
         string state = exception.ToString();
-        if (m_synchronizationStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
-        {
+        if (m_synchronizationStates.TryGetValue(targetId, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return false;
         }
         Diagnostics.Set(
             targetId,
             C_SYNCHRONIZATION_GROUP,
             Diagnostic.Error("SCENE-SYNCHRONIZATION", exception.Message),
-            scene.name);
+            scene.name
+        );
         m_synchronizationStates[targetId] = state;
         return true;
     }
@@ -67,18 +71,29 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     ) {
         Guid sceneId = scene.identity.persistentId;
         string state = "SCENE-SOURCE-MISSING:" + sourcePath;
-        if (m_synchronizationStates.TryGetValue(sceneId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
+        if (m_synchronizationStates.TryGetValue(sceneId, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return;
-        Diagnostics.Set(sceneId, C_SYNCHRONIZATION_GROUP,
-            Diagnostic.Warning("SCENE-SOURCE-MISSING", $"Scene source '{sourcePath}' is unavailable; its assignment and current edits are preserved."), scene.name);
+        }
+        Diagnostics.Set(
+            sceneId,
+            C_SYNCHRONIZATION_GROUP,
+            Diagnostic.Warning(
+                "SCENE-SOURCE-MISSING",
+                $"Scene source '{sourcePath}' is unavailable; its assignment and current edits are preserved."
+            ),
+            scene.name
+        );
         m_synchronizationStates[sceneId] = state;
     }
 
     internal void ResolveSynchronization(Guid sceneId)
     {
         if (!m_synchronizationStates.Remove(sceneId))
+        {
             return;
+        }
         Diagnostics.Clear(sceneId, C_SYNCHRONIZATION_GROUP);
     }
 
@@ -90,11 +105,17 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
         ArgumentNullException.ThrowIfNull(exception);
         Guid targetId = scene.identity.persistentId;
         string state = exception.ToString();
-        if (m_dirtyCheckStates.TryGetValue(targetId, out string? previous) &&
-            string.Equals(previous, state, StringComparison.Ordinal))
+        if (m_dirtyCheckStates.TryGetValue(targetId, out string? previous)
+            && string.Equals(previous, state, StringComparison.Ordinal)
+        ) {
             return false;
-        Diagnostics.Set(targetId, C_DIRTY_CHECK_GROUP,
-            Diagnostic.Error("SCENE-DIRTY-CHECK", exception.Message), scene.name);
+        }
+        Diagnostics.Set(
+            targetId,
+            C_DIRTY_CHECK_GROUP,
+            Diagnostic.Error("SCENE-DIRTY-CHECK", exception.Message),
+            scene.name
+        );
         m_dirtyCheckStates[targetId] = state;
         return true;
     }
@@ -102,7 +123,9 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     internal void ResolveDirtyCheck(Guid sceneId)
     {
         if (!m_dirtyCheckStates.Remove(sceneId))
+        {
             return;
+        }
         Diagnostics.Clear(sceneId, C_DIRTY_CHECK_GROUP);
     }
 
@@ -113,12 +136,16 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
             .Where(id => !sceneIds.Contains(id))
             .ToArray();
         for (int i = 0; i < removed.Length; i++)
+        {
             ResolveSynchronization(removed[i]);
+        }
         Guid[] removedDirtyChecks = m_dirtyCheckStates.Keys
             .Where(id => !sceneIds.Contains(id))
             .ToArray();
         for (int i = 0; i < removedDirtyChecks.Length; i++)
+        {
             ResolveDirtyCheck(removedDirtyChecks[i]);
+        }
     }
 
     /// <summary>
@@ -128,8 +155,12 @@ internal sealed class EditorSceneDiagnosticPublisher : IDisposable
     {
         ResolveRestore();
         foreach (Guid sceneId in m_synchronizationStates.Keys.ToArray())
+        {
             ResolveSynchronization(sceneId);
+        }
         foreach (Guid sceneId in m_dirtyCheckStates.Keys.ToArray())
+        {
             ResolveDirtyCheck(sceneId);
+        }
     }
 }

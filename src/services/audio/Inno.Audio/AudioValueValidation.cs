@@ -10,6 +10,8 @@ internal static class AudioValueValidation
         string parameterName
     ) {
         if (!float.IsFinite(value.x) || !float.IsFinite(value.y) || !float.IsFinite(value.z))
+        {
             throw new ArgumentOutOfRangeException(parameterName, "Audio vectors must contain finite components.");
+        }
     }
 }

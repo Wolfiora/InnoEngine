@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Rendering.Shaders;
@@ -19,7 +18,8 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// <param name="types">
     /// The owner type catalog; it must outlive this registry.
     /// </param>
-    public ShaderSourceFrontendRegistry(TypeCatalog types) : base(types) => m_types = types;
+    public ShaderSourceFrontendRegistry(TypeCatalog types)
+        : base(types) => m_types = types;
 
     /// <summary>
     /// Gets immutable language identities available in the current generation.
@@ -87,9 +87,11 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     {
         var providers = new List<IShaderSourceFrontend>();
         foreach (Type type in types.GetTypesImplementing<IShaderSourceFrontend>()
-                     .Select(reference => reference.Resolve(types))
-                     .OrderBy(static type => type.FullName, StringComparer.Ordinal))
+            .Select(reference => reference.Resolve(types))
+            .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+        ) {
             providers.Add(CreateExtension<IShaderSourceFrontend>(type));
+        }
         return new ShaderSourceFrontendCatalog(providers);
     }
 

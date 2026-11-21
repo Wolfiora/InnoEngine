@@ -64,22 +64,30 @@ public static class MacOSArm64EditorComposition
                 using var picker = new Sdl3PlatformApplication(new MacOSArm64Sdl3HostIntegration());
                 string? selected = Sdl3FolderDialog.SelectFolder(picker);
                 if (selected is null)
+                {
                     return 0;
+                }
                 arguments = [selected];
             }
             EditorCommandLineOptions command = EditorCommandLineOptions.Parse(arguments);
             _ = MacOSArm64ApplicationLocations.userDataRoot;
             string project = Path.GetFullPath(command.projectDirectory);
             string persistentRoot = Path.Combine(project, "Library", "PersistentData");
-            var adapters = new DefaultAuthoringAdapterCatalog(new DefaultAdapterCatalogOptions
-            {
-                platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new MacOSArm64Sdl3HostIntegration())]),
-                rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new MacOSArm64BgfxSurfaceIntegration())]),
-                storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
-            }, [new BgfxAuthoringProvider(MacOSArm64BgfxIntegration.shaderProfile)],
-                [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]);
-            var buildContext = StandardBuildEnvironment.Capture(Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!,
-                Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id, nativeDependencies: command.nativeDependencies);
+            var adapters = new DefaultAuthoringAdapterCatalog(
+                new DefaultAdapterCatalogOptions
+                {
+                    platform = new PlatformBackendCatalog([new Sdl3PlatformBackendProvider(new MacOSArm64Sdl3HostIntegration())]),
+                    rendering = new RenderingBackendCatalog([new BgfxRenderingBackendProvider(new MacOSArm64BgfxSurfaceIntegration())]),
+                    storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(persistentRoot)])
+                },
+                [new BgfxAuthoringProvider(MacOSArm64BgfxIntegration.shaderProfile)],
+                [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]
+            );
+            var buildContext = StandardBuildEnvironment.Capture(
+                Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!,
+                Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id,
+                nativeDependencies: command.nativeDependencies
+            );
             var launch = new EditorLaunchOptions
             {
                 defaultBuildTarget = Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id,
@@ -105,14 +113,23 @@ public static class MacOSArm64EditorComposition
                 frameDriver = new PollingShellFrameDriver(),
                 distribution = StandardBuildDistribution.Create(buildContext).build,
                 buildContext = buildContext,
-                supportPackRoot = Path.Combine(Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!, "SupportPacks"),
+                supportPackRoot = Path.Combine(
+                    Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!,
+                    "SupportPacks"
+                ),
                 createEngineHost = CreateEngineHost,
                 createScriptModuleSource = deployment => CreateScriptModuleSource(project, deployment),
                 createSessionLogSink = (
                     kind,
                     session
-                ) => new FileLogSink(Path.Combine(persistentRoot,
-                    kind == RuntimeSessionKind.Play ? "inno.editor.play" : "inno.editor", "Logs", session.ToString())),
+                ) => new FileLogSink(
+                    Path.Combine(
+                        persistentRoot,
+                        kind == RuntimeSessionKind.Play ? "inno.editor.play" : "inno.editor",
+                        "Logs",
+                        session.ToString()
+                    )
+                ),
                 createHostLogSink = () => new ConsoleLogSink(useColors: true),
                 smokeFrameLimit = command.smokeFrameLimit
             };
@@ -138,7 +155,8 @@ public static class MacOSArm64EditorComposition
         => new EngineHostBuilder().UseMetadataSources(
             new DotNetAssemblyCatalogSource(typeof(MacOSArm64EditorComposition).Assembly),
             new ReflectionTypeCatalogSource(),
-            new ReflectionSerializationMetadataSource()).Build();
+            new ReflectionSerializationMetadataSource()
+        ).Build();
 
     private static IModuleSource CreateScriptModuleSource(
         string project,

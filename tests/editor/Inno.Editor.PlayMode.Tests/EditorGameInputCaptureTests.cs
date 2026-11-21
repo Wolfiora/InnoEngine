@@ -1,11 +1,10 @@
 using System.Numerics;
-
+using Xunit;
 using Inno.Adapter.Input;
 using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Editor.ImGui;
 using Inno.Input;
-using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -23,8 +22,8 @@ public sealed class EditorGameInputCaptureTests
 
         Assert.Null(capture.Route(moved));
         Event pointer = pressed
-            ? new MouseButtonPressedEvent(42, MouseButton.Left)
-            : new MouseScrolledEvent(42, 0f, 1f);
+                        ? new MouseButtonPressedEvent(42, MouseButton.Left)
+                        : new MouseScrolledEvent(42, 0f, 1f);
         Assert.Null(capture.Route(pointer));
         Assert.NotNull(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
     }
@@ -60,7 +59,9 @@ public sealed class EditorGameInputCaptureTests
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
         Event exit = close ? new WindowCloseEvent(42) : new WindowFocusChangedEvent(42, false);
         if (consumed)
+        {
             exit.HandleInGlobal();
+        }
 
         Assert.Null(capture.Route(exit));
         Assert.Null(capture.Route(new KeyPressedEvent(42, KeyCode.A)));
@@ -78,9 +79,13 @@ public sealed class EditorGameInputCaptureTests
         using System.IDisposable subscription = ui.Listen<KeyPressedEvent>(evnt =>
         {
             if (globalConsumption)
+            {
                 evnt.HandleInGlobal();
+            }
             else
+            {
                 evnt.HandleInHub();
+            }
         });
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
@@ -94,9 +99,13 @@ public sealed class EditorGameInputCaptureTests
         dispatcher.Flush();
 
         if (globalConsumption)
+        {
             Assert.Null(routed);
+        }
         else
+        {
             Assert.Same(pressed, routed);
+        }
     }
 
     [Fact]
@@ -114,7 +123,9 @@ public sealed class EditorGameInputCaptureTests
         {
             Event? routed = capture.Route(evnt);
             if (routed is not null)
+            {
                 source.ProcessEvent(routed);
+            }
         };
         dispatcher.Enqueue(new KeyPressedEvent(42, KeyCode.A));
         dispatcher.Flush();

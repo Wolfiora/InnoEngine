@@ -37,7 +37,9 @@ public sealed class ByteDocumentStoreTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, true);
+            }
         }
     }
 
@@ -52,18 +54,22 @@ public sealed class ByteDocumentStoreTests
         {
             File.WriteAllBytes(path, expected);
             using (var renameHandle = new FileStream(
-                       path,
-                       FileMode.Open,
-                       FileAccess.Read,
-                       FileShare.Read | FileShare.Delete,
-                       4096,
-                       FileOptions.DeleteOnClose))
-            {
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read | FileShare.Delete,
+                4096,
+                FileOptions.DeleteOnClose
+            )) {
                 if (OperatingSystem.IsWindows())
+                {
                     Assert.ThrowsAny<IOException>(() => File.ReadAllBytes(path));
+                }
                 var store = new FileByteDocumentStore(path);
                 for (int read = 0; read < 16; read++)
+                {
                     Assert.Equal(expected, store.Read());
+                }
                 Assert.True(File.Exists(path));
             }
             Assert.False(File.Exists(path));

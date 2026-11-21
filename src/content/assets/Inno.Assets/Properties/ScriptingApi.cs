@@ -1,10 +1,7 @@
 using Inno.Assets;
 using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Assets",
-    "Inno.Assets",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Assets", "Inno.Assets", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(AssetDependency), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AssetPropertySnapshot), ScriptingApiScope.Runtime)]

@@ -1,11 +1,11 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Scripting.Compiler.Tests;
 
@@ -38,9 +38,13 @@ public sealed class IdeProjectIsolationTests
                 """);
         }
         DotNetSdkDescriptor sdk = await ResolveSdk(Path.Combine(fixture.projectRoot, "Inno.GameScripts.csproj"));
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "build", "InnoProject.sln", "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet"],
-            fixture.projectRoot, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+            fixture.projectRoot,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
     }
 
     /// <summary>
@@ -54,7 +58,8 @@ public sealed class IdeProjectIsolationTests
     {
         string repository = TestRepository.GetRoot(typeof(IdeProjectIsolationTests).Assembly);
         using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(
-            Path.Combine(repository, "artifacts", "acceptance", "nested-solution-tests"));
+            Path.Combine(repository, "artifacts", "acceptance", "nested-solution-tests")
+        );
         string project = Path.Combine(owner.directory, "Nested.csproj");
         File.WriteAllText(project, """
             <Project>
@@ -72,15 +77,27 @@ public sealed class IdeProjectIsolationTests
             </Project>
             """);
         DotNetSdkDescriptor sdk = await ResolveSdk(project);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "new", "sln", "--format", "sln", "--name", "Nested"],
-            owner.directory, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            owner.directory,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "sln", "Nested.sln", "add", "Nested.csproj"],
-            owner.directory, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+            owner.directory,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "restore", "Nested.sln", "--disable-build-servers", "-m:1", "-nr:false"],
-            owner.directory, CancellationToken.None, DotNetSdkEnvironment.Create(sdk.hostPath));
+            owner.directory,
+            CancellationToken.None,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        );
         Assert.True(File.Exists(Path.Combine(owner.directory, "obj", "project.assets.json")));
     }
 

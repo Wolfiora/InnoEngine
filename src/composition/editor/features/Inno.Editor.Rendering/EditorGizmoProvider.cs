@@ -42,14 +42,17 @@ public sealed class EditorGizmoContext
     /// Gets the scene roots visible in this Editor viewport.
     /// </summary>
     public ContentReadScope content { get; }
+
     /// <summary>
     /// Gets the transient selected identity.
     /// </summary>
     public RuntimeIdentity? selected { get; }
+
     /// <summary>
     /// Gets the viewport width in physical pixels.
     /// </summary>
     public int pixelWidth { get; }
+
     /// <summary>
     /// Gets the viewport height in physical pixels.
     /// </summary>
@@ -182,6 +185,7 @@ public sealed class EditorGizmoFrame : IEditorGizmoSink
     /// Gets the ordered selectable icons.
     /// </summary>
     public IReadOnlyList<EditorGizmoIcon> icons => m_icons;
+
     /// <summary>
     /// Gets the ordered non-interactive lines.
     /// </summary>

@@ -10,6 +10,7 @@ using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -81,7 +82,9 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
         {
             m_cancellation = cancellation;
             if (m_canceled)
+            {
                 cancellation.Cancel();
+            }
         }
         try
         {
@@ -92,40 +95,62 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
             ProductNativeBuildPlan plan = contribution.plan;
             if (NativeDependencyManifestPath.Length != 0)
             {
-                using ProductNativeBuildResult imported = NativeDependencyManifest.AcquireAsync(EngineRoot,
-                    NativeDependencyManifestPath, TargetId, Configuration.ToLowerInvariant(), plan, cancellation.Token)
-                    .GetAwaiter().GetResult();
+                using ProductNativeBuildResult imported = NativeDependencyManifest
+                    .AcquireAsync(
+                        EngineRoot,
+                        NativeDependencyManifestPath,
+                        TargetId,
+                        Configuration.ToLowerInvariant(),
+                        plan,
+                        cancellation.Token
+                    )
+                    .GetAwaiter()
+                    .GetResult();
                 Deploy(imported, plan, cancellation.Token);
-                Log.LogMessage(MessageImportance.High,
-                    $"INNO-NATIVE-CONSUME products={imported.Count} processes=0 bindingGenerations=0 elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1}");
+                Log.LogMessage(
+                    MessageImportance.High,
+                    $"INNO-NATIVE-CONSUME products={imported.Count} processes=0 bindingGenerations=0 elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1}"
+                );
                 return true;
             }
             var context = new NativeBuildContext(EngineRoot, Configuration.ToLowerInvariant())
                 .WithBindingGenerator(distribution.ResolveBindingGenerator(TargetId));
             NativeToolchainSelection toolchain = distribution.ResolveNativeToolchain(TargetId)
-                .ResolveAsync(context, execution.host, TargetId, cancellation.Token).AsTask().GetAwaiter().GetResult();
+                .ResolveAsync(context, execution.host, TargetId, cancellation.Token)
+                .AsTask()
+                .GetAwaiter()
+                .GetResult();
             context = context.WithToolchain(toolchain);
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
             IBuildEngine4 engine = BuildEngine as IBuildEngine4
-                ?? throw new InvalidOperationException("Native preparation requires MSBuild build-lifetime ownership.");
+                                   ?? throw new InvalidOperationException("Native preparation requires MSBuild build-lifetime ownership.");
             string scope = NativeBuildFingerprint.Create([context.engineRoot, context.configuration, TargetId, plan.productId], []);
             string cacheKey = "Inno.Build.NativePreparation/" + scope;
-            using FileLease preparation = AcquirePreparation(engine,
-                Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks", "native", scope + ".lock"), cancellation.Token);
+            using FileLease preparation = AcquirePreparation(
+                engine,
+                Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks", "native", scope + ".lock"),
+                cancellation.Token
+            );
             string[][][] candidates = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[][][] ?? [];
             ProductNativeBuildResult? prepared = null;
             string requestIdentity = string.Empty;
             foreach (string[][] candidate in candidates)
             {
                 string identity = candidate[0][1];
-                prepared = ProductNativePreparation.TryAcquireAsync(context, plan, candidate, identity, cancellation.Token).GetAwaiter().GetResult();
+                prepared = ProductNativePreparation.TryAcquireAsync(context, plan, candidate, identity, cancellation.Token)
+                    .GetAwaiter()
+                    .GetResult();
                 if (prepared is null)
+                {
                     continue;
+                }
                 requestIdentity = identity;
                 break;
             }
             if (prepared is null)
+            {
                 requestIdentity = ProductNativePreparation.FreezeAsync(context, plan, cancellation.Token).GetAwaiter().GetResult();
+            }
             bool reused = prepared is not null;
             using var products = prepared ?? contribution.BuildAsync(context, cancellation.Token).GetAwaiter().GetResult();
             cancellation.Token.ThrowIfCancellationRequested();
@@ -141,17 +166,23 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
                 engine.RegisterTaskObject(cacheKey, retained, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
             }
             NativeBuildStatistics statistics = context.statistics;
-            Log.LogMessage(MessageImportance.High,
+            Log.LogMessage(
+                MessageImportance.High,
                 $"INNO-NATIVE-PREPARE request={requestIdentity} elapsedMs={Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} "
                 + $"hashedFiles={statistics.hashedFiles} hashedBytes={statistics.hashedBytes} "
                 + $"processes={statistics.nativeProcesses} products={products.Count} "
                 + $"reusedPreparation={(reused ? 1 : 0)} "
                 + $"bindingBatches={statistics.bindingBatches} bindingGenerations={statistics.bindingGenerations} "
                 + $"outputFiles={statistics.outputFiles} outputBytes={statistics.outputBytes} "
-                + $"materializedBytes={statistics.materializedBytes} managedProcesses={statistics.managedProcesses}");
+                + $"materializedBytes={statistics.materializedBytes} managedProcesses={statistics.managedProcesses}"
+            );
             foreach (NativeBuildPhaseStatistics phase in statistics.phases)
-                Log.LogMessage(MessageImportance.High,
-                    $"INNO-NATIVE-PHASE name={phase.phase} files={phase.files} bytes={phase.bytes} reusedReads={phase.reusedReads}");
+            {
+                Log.LogMessage(
+                    MessageImportance.High,
+                    $"INNO-NATIVE-PHASE name={phase.phase} files={phase.files} bytes={phase.bytes} reusedReads={phase.reusedReads}"
+                );
+            }
             return true;
         }
         catch (Exception failure)
@@ -162,7 +193,9 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
         finally
         {
             lock (m_gate)
+            {
                 m_cancellation = null;
+            }
         }
     }
 
@@ -186,13 +219,20 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
         var generations = products.bindingGenerations;
         var linkage = plan.steps.Where(step => generations.ContainsKey(step.component.nativeProject))
             .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
-            .ToDictionary(static group => group.Key,
-                static group => group.Select(step => step.options.libraryKind).Distinct().Single(), StringComparer.Ordinal);
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(step => step.options.libraryKind).Distinct().Single(),
+                StringComparer.Ordinal
+            );
         if (BindingSelectionInputPath.Length != 0)
+        {
             NativeBindingGenerationDescriptor.ValidateSelection(BindingSelectionInputPath, generations, linkage);
+        }
         ProductNativeDeployment.InstallAsync(products, plan, OutputDirectory, cancellationToken).GetAwaiter().GetResult();
         if (BindingSelectionOutputPath.Length != 0)
+        {
             NativeBindingGenerationDescriptor.WriteSelection(BindingSelectionOutputPath, generations, linkage);
+        }
     }
 
     private static FileLease AcquirePreparation(
@@ -202,7 +242,9 @@ public sealed class PrepareProductNativeTask : BuildTask, ICancelableTask
     ) {
         System.Threading.Tasks.Task<FileLease> pending = FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation).AsTask();
         if (pending.IsCompleted)
+        {
             return pending.GetAwaiter().GetResult();
+        }
         engine.Yield();
         try
         {

@@ -78,11 +78,15 @@ public sealed class ShaderTargetRegistry : IDisposable
         cancellationToken.ThrowIfCancellationRequested();
         string id = ShaderGraphDocument.ReadTarget(document, serialization, context);
         if (id.Length == 0)
+        {
             return document.Clone();
+        }
         if (!m_registry.snapshot.TryGetValue(id, out ShaderTarget? target))
+        {
             throw new ShaderTargetUnavailableException(id);
+        }
         GraphDocument expanded = target.Expand(new(document.Clone(), serialization, context), cancellationToken)
-            ?? throw new InvalidOperationException($"Shader target '{id}' returned no program.");
+                                 ?? throw new InvalidOperationException($"Shader target '{id}' returned no program.");
         cancellationToken.ThrowIfCancellationRequested();
         return expanded.Clone();
     }
@@ -115,7 +119,8 @@ protected override IReadOnlyDictionary<string, ShaderTarget> Build(TypeCacheSnap
                     if (type.IsAbstract || !typeof(ShaderTarget).IsAssignableFrom(type))
                     {
                         throw new InvalidOperationException(
-                            $"Shader target '{type.FullName}' must be a concrete {nameof(ShaderTarget)}.");
+                            $"Shader target '{type.FullName}' must be a concrete {nameof(ShaderTarget)}."
+                        );
                     }
                     return (type, type.GetCustomAttribute<ShaderTargetAttribute>(inherit: false)!.id);
                 })
@@ -124,7 +129,9 @@ protected override IReadOnlyDictionary<string, ShaderTarget> Build(TypeCacheSnap
                 .GroupBy(static registration => registration.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1)?.Key;
             if (duplicateId is not null)
+            {
                 throw new InvalidOperationException($"Duplicate shader target '{duplicateId}'.");
+            }
 
             var targets = new Dictionary<string, ShaderTarget>(StringComparer.Ordinal);
             foreach ((Type type, string id) in registrations)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
+
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
@@ -22,12 +23,16 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     private bool m_dependencies;
     private long m_operation;
     private float m_wrapWidth;
+
     /// <inheritdoc />
     public override bool isVisible => window.isPluginVisible;
+
     /// <inheritdoc />
     public override bool canMove => true;
+
     /// <inheritdoc />
     public override Vector2 initialSize => new(680f, 0f);
+
     /// <inheritdoc />
     protected override Vector2? OnPrepare(
         EditorContext context,
@@ -43,8 +48,8 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         m_outcome = string.IsNullOrEmpty(progress.error) ? progress.status : progress.error;
         float width = availableContentSize.X;
         float scrollbar = Ui.GetLayout().scrollbarSize;
-        float checkboxWidth = Ui.GetFrameHeight() + Ui.GetLayout().itemInnerSpacing.X +
-            Ui.MeasureText("Include dependency Plugin packages").X;
+        float checkboxWidth = Ui.GetFrameHeight() + Ui.GetLayout().itemInnerSpacing.X
+                              + Ui.MeasureText("Include dependency Plugin packages").X;
         float height = Present(false, width);
         float availableHeight = availableContentSize.Y - (checkboxWidth > width ? scrollbar : 0f);
         if (height > availableHeight)
@@ -55,6 +60,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         m_wrapWidth = width;
         return new Vector2(MathF.Max(width, checkboxWidth), height);
     }
+
     /// <inheritdoc />
     protected override void OnDraw(EditorContext context) => Present(true, m_wrapWidth);
 
@@ -66,7 +72,9 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         int row = 0;
         Vector2 origin = draw ? Ui.GetCursorPosition() : Vector2.Zero;
         if (!draw)
+        {
             m_rows.Clear();
+        }
         var layout = Ui.GetLayout();
         float gap = layout.itemSpacing.Y;
         float frame = Ui.MeasureText("M").Y + layout.framePadding.Y * 2f;
@@ -82,7 +90,9 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
             try
             {
                 if (Ui.Checkbox("Include dependency Plugin packages", ref m_dependencies))
+                {
                     window.includePluginDependencies = m_dependencies;
+                }
             }
             finally
             {
@@ -91,7 +101,9 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         }
         Text(C_HINT, true);
         if (m_outcome.Length != 0)
+        {
             Text(m_outcome, true);
+        }
         Row(frame);
         if (draw)
         {
@@ -102,7 +114,9 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
             try
             {
                 if (Ui.Button("Close"))
+                {
                     window.ClosePlugin();
+                }
             }
             finally
             {
@@ -112,9 +126,13 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
             if (Ui.Button(m_busy ? "Cancel" : "Export"))
             {
                 if (m_busy)
+                {
                     window.CancelPluginExport(m_operation);
+                }
                 else
+                {
                     window.BeginPluginExport();
+                }
             }
         }
         return MathF.Ceiling(height);
@@ -122,11 +140,15 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         void Row(float extent)
         {
             if (draw)
+            {
                 Ui.SetCursorPosition(origin + new Vector2(0f, m_rows[row++]));
+            }
             else
             {
                 if (m_rows.Count != 0)
+                {
                     height += gap;
+                }
                 m_rows.Add(height);
                 height += extent;
             }
@@ -137,11 +159,17 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         ) {
             Row(draw ? 0f : (wrapped ? Ui.MeasureWrappedText(text, width) : Ui.MeasureText(text)).Y);
             if (!draw)
+            {
                 return;
+            }
             if (wrapped)
+            {
                 EditorUiSession.current.widgets.WrappedText(text, width);
+            }
             else
+            {
                 Ui.Text(text);
+            }
         }
         void Field(
             string label,
@@ -151,7 +179,9 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
             Text(label);
             Row(frame);
             if (!draw)
+            {
                 return;
+            }
             Ui.BeginDisabled(m_busy);
             try
             {
@@ -159,9 +189,13 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
                 if (Ui.InputText(id, ref value, C_TEXT_CAPACITY))
                 {
                     if (id == "##plugin_name")
+                    {
                         window.pluginDisplayName = value;
+                    }
                     else
+                    {
                         window.pluginOutputPath = value;
+                    }
                 }
             }
             finally

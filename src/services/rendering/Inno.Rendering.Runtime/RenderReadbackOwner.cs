@@ -31,7 +31,9 @@ internal sealed class RenderReadbackOwner(
         ObjectDisposedException.ThrowIf(m_disposed || m_retirement is not null, this);
         cancellation.ThrowIfCancellationRequested();
         if (!device.capabilities.Supports(GraphicsCapability.TextureReadback))
+        {
             throw new NotSupportedException("The active backend does not support texture readback.");
+        }
         if (m_pending.Count >= capacity)
         {
             m_rejected++;
@@ -54,7 +56,9 @@ internal sealed class RenderReadbackOwner(
                 try
                 {
                     if (!device.TryGetTextureReadback(handle, out RenderTextureReadbackResult? result))
+                    {
                         continue;
+                    }
                     m_pending.Remove(handle);
                     pending.completion.TrySetResult(result!);
                     continue;
@@ -72,7 +76,9 @@ internal sealed class RenderReadbackOwner(
             try
             {
                 if (!pending.retirement.TryComplete(() => device.CancelTextureReadback(handle)))
+                {
                     throw new RetirementPendingException("Texture readback cancellation is still pending.");
+                }
             }
             catch (Exception unfinished) when (RetirementPendingException.Find(unfinished) is not null)
             {
@@ -84,9 +90,13 @@ internal sealed class RenderReadbackOwner(
             }
             m_pending.Remove(handle);
             if (pending.failure is not null)
+            {
                 pending.completion.TrySetException(pending.failure);
+            }
             else
+            {
                 pending.completion.TrySetCanceled(pending.cancellation);
+            }
         }
     }
 
@@ -96,7 +106,9 @@ internal sealed class RenderReadbackOwner(
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_retirement is null)
         {
             m_retirement = new RenderRetirementQueue();
@@ -129,6 +141,9 @@ internal sealed class RenderReadbackOwner(
         internal Exception? failure { get; set; }
         internal RetirementBarrier? retirement { get; set; }
         internal CancellationToken cancellation { get; } = cancellation;
-        internal TaskCompletionSource<RenderTextureReadbackResult> completion { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        internal TaskCompletionSource<RenderTextureReadbackResult> completion { get; } = new(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
     }
 }

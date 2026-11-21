@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Content;
 using Inno.Content.Testing;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
-using Xunit;
 
 namespace Inno.Runtime.Tests;
 
@@ -45,9 +45,13 @@ public sealed partial class PlayerWithoutFileSystemTests
             createLogSink = _ => secondLog
         });
         using (first.EnterExecutionScope())
+        {
             Log.Info(typeof(PlayerWithoutFileSystemTests), "first");
+        }
         using (second.EnterExecutionScope())
+        {
             Log.Info(typeof(PlayerWithoutFileSystemTests), "second");
+        }
         first.Tick(0.01f);
         second.Tick(0.02f);
         Assert.Equal("first", Assert.Single(firstLog.messages));
@@ -82,11 +86,15 @@ public sealed partial class PlayerWithoutFileSystemTests
         valid.Tick(0.01f);
     }
 
-    private static EngineHost CreateHost() => new EngineHostBuilder()
-        .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(PlayerWithoutFileSystemTests).Assembly),
-            new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-        .UseLogDelivery(LogDeliveryMode.Inline)
-        .Build();
+    private static EngineHost CreateHost()
+        => new EngineHostBuilder()
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(PlayerWithoutFileSystemTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .UseLogDelivery(LogDeliveryMode.Inline)
+            .Build();
 
     private sealed class MemoryLog : ILogSink, IDisposable
     {
@@ -94,6 +102,7 @@ public sealed partial class PlayerWithoutFileSystemTests
         internal int disposals;
 
         public void Receive(LogEntry entry) => messages.Add(entry.message);
+
         public void Dispose() => disposals++;
     }
 }

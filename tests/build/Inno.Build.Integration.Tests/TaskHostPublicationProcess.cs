@@ -48,15 +48,27 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
         string ready = Path.Combine(worker, "ready");
         string release = Path.Combine(worker, "release");
         string source = Path.Combine(root, "input", "Inno.Build.Tasks.dll");
-        var project = new XDocument(new XElement("Project",
-            new XElement("UsingTask", new XAttribute("TaskName", "Inno.Build.TaskHosting.PublishTaskHostTask"),
-                new XAttribute("AssemblyFile", typeof(PublishTaskHostTask).Assembly.Location)),
-            new XElement("UsingTask", new XAttribute("TaskName", "HoldPublication"),
-                new XAttribute("TaskFactory", "RoslynCodeTaskFactory"),
-                new XAttribute("AssemblyFile", "$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll"),
-                new XElement("ParameterGroup", new XElement("ReleaseFile", new XAttribute("Required", "true"))),
-                new XElement("Task", new XElement("Code", new XAttribute("Type", "Fragment"),
-                    new XAttribute("Language", "cs"), new XCData("""
+        var project = new XDocument(
+            new XElement(
+                "Project",
+                new XElement(
+                    "UsingTask",
+                    new XAttribute("TaskName", "Inno.Build.TaskHosting.PublishTaskHostTask"),
+                    new XAttribute("AssemblyFile", typeof(PublishTaskHostTask).Assembly.Location)
+                ),
+                new XElement(
+                    "UsingTask",
+                    new XAttribute("TaskName", "HoldPublication"),
+                    new XAttribute("TaskFactory", "RoslynCodeTaskFactory"),
+                    new XAttribute("AssemblyFile", "$(MSBuildToolsPath)/Microsoft.Build.Tasks.Core.dll"),
+                    new XElement("ParameterGroup", new XElement("ReleaseFile", new XAttribute("Required", "true"))),
+                    new XElement(
+                        "Task",
+                        new XElement(
+                            "Code",
+                            new XAttribute("Type", "Fragment"),
+                            new XAttribute("Language", "cs"),
+                            new XCData("""
                         var elapsed = System.Diagnostics.Stopwatch.StartNew();
                         while (!System.IO.File.Exists(ReleaseFile))
                         {
@@ -64,26 +76,55 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
                                 throw new System.TimeoutException("The publication fixture was not released.");
                             System.Threading.Thread.Sleep(10);
                         }
-                        """)))),
-            new XElement("Target", new XAttribute("Name", "Publish"),
-                new XElement("ItemGroup", new XElement("RuntimeFile", new XAttribute("Include", source),
-                    new XElement("RelativePath", "Inno.Build.Tasks.dll"),
-                    new XElement("FileHash", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source)))))),
-                new XElement("Inno.Build.TaskHosting.PublishTaskHostTask",
-                    new XAttribute("InputFiles", "@(RuntimeFile)"),
-                    new XAttribute("CacheDirectory", Path.Combine(root, "hosts")),
-                    new XAttribute("LoadDirectory", load), new XAttribute("PublisherDirectory", publisher),
-                    new XElement("Output", new XAttribute("TaskParameter", "PublishedAssembly"),
-                        new XAttribute("PropertyName", "PublishedRuntime"))),
-                new XElement("WriteLinesToFile", new XAttribute("File", ready),
-                    new XAttribute("Lines", "$(PublishedRuntime)"), new XAttribute("Overwrite", "true")),
-                new XElement("HoldPublication", new XAttribute("ReleaseFile", release)))));
+                        """)
+                        )
+                    )
+                ),
+                new XElement(
+                    "Target",
+                    new XAttribute("Name", "Publish"),
+                    new XElement(
+                        "ItemGroup",
+                        new XElement(
+                            "RuntimeFile",
+                            new XAttribute("Include", source),
+                            new XElement("RelativePath", "Inno.Build.Tasks.dll"),
+                            new XElement("FileHash", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))))
+                        )
+                    ),
+                    new XElement(
+                        "Inno.Build.TaskHosting.PublishTaskHostTask",
+                        new XAttribute("InputFiles", "@(RuntimeFile)"),
+                        new XAttribute("CacheDirectory", Path.Combine(root, "hosts")),
+                        new XAttribute("LoadDirectory", load),
+                        new XAttribute("PublisherDirectory", publisher),
+                        new XElement(
+                            "Output",
+                            new XAttribute("TaskParameter", "PublishedAssembly"),
+                            new XAttribute("PropertyName", "PublishedRuntime")
+                        )
+                    ),
+                    new XElement(
+                        "WriteLinesToFile",
+                        new XAttribute("File", ready),
+                        new XAttribute("Lines", "$(PublishedRuntime)"),
+                        new XAttribute("Overwrite", "true")
+                    ),
+                    new XElement("HoldPublication", new XAttribute("ReleaseFile", release))
+                )
+            )
+        );
         string path = Path.Combine(worker, "Publication.proj");
         project.Save(path);
         string dotnet = ToolchainEnvironment.ResolveExecutable(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet");
         var budget = new CancellationTokenSource(TimeSpan.FromMinutes(2));
-        Task running = ToolchainEnvironment.RunAsync(dotnet, ["msbuild", path, "-t:Publish", "-nologo", "-m:1", "-nr:false"],
-            worker, budget.Token, DotNetSdkEnvironment.Create(dotnet));
+        Task running = ToolchainEnvironment.RunAsync(
+            dotnet,
+            ["msbuild", path, "-t:Publish", "-nologo", "-m:1", "-nr:false"],
+            worker,
+            budget.Token,
+            DotNetSdkEnvironment.Create(dotnet)
+        );
         var result = new TaskHostPublicationProcess(load, publisher, ready, release, running, budget);
         try
         {
@@ -101,7 +142,10 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
         catch
         {
             budget.Cancel();
-            try { await running; }
+            try
+            {
+                await running;
+            }
             catch (Exception) { }
             budget.Dispose();
             throw;
@@ -112,9 +156,17 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref m_disposed, 1) != 0)
+        {
             return;
+        }
         File.WriteAllText(m_release, "release");
-        try { await m_running; }
-        finally { m_budget.Dispose(); }
+        try
+        {
+            await m_running;
+        }
+        finally
+        {
+            m_budget.Dispose();
+        }
     }
 }

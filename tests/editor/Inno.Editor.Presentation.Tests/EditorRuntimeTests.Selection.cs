@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Core.Identity;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
-using Xunit;
 
 namespace Inno.Editor.Presentation.Tests;
+
 public sealed partial class EditorRuntimeTests
 {
     [Fact]
@@ -21,7 +22,9 @@ public sealed partial class EditorRuntimeTests
         RuntimeIdentity firstId = first.identity.runtimeIdentity!.Value;
         RuntimeIdentity missing = new(firstId.domainId, int.MaxValue);
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SelectRange(
-            [firstId, missing, last.identity.runtimeIdentity!.Value], last));
+            [firstId, missing, last.identity.runtimeIdentity!.Value],
+            last
+        ));
         Assert.Same(original, m_runtime.interactions.selection.Capture());
         Assert.Same(first, m_runtime.interactions.selection.selectedTarget);
     }
@@ -42,7 +45,9 @@ public sealed partial class EditorRuntimeTests
         Assert.Equal(targets.Length, m_runtime.interactions.selection.count);
         Assert.Same(targets[^1], m_runtime.interactions.selection.selectedTarget);
         foreach (SelectionQueueTarget target in targets)
+        {
             Assert.True(m_runtime.interactions.selection.Contains(target));
+        }
         m_runtime.interactions.SetSelection(targets[0]);
         Assert.False(m_runtime.interactions.selection.Contains(targets[^1]));
     }
@@ -145,13 +150,14 @@ public sealed partial class EditorRuntimeTests
         {
             Assert.Same(first, m_runtime.interactions.selection.selectedTarget);
             gesture.Commit();
-        }))
-        {
+        })) {
             m_runtime.interactions.SetSelection(second);
         }
         Assert.False(gesture.isActive);
         ulong revision = m_runtime.interactions.selection.version;
-        using var rejecting = hub.Listen<EditorOperationPreparingEvent>(_ => throw new InvalidOperationException("Pending edit cannot finish."));
+        using var rejecting = hub.Listen<EditorOperationPreparingEvent>(
+            _ => throw new InvalidOperationException("Pending edit cannot finish.")
+        );
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SetSelection(first));
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SetSelection([first], first));
         Assert.Same(second, m_runtime.interactions.selection.selectedTarget);
@@ -188,13 +194,19 @@ public sealed partial class EditorRuntimeTests
         Assert.True(m_identities.Register(second));
         Assert.True(m_identities.Register(third));
         m_runtime.interactions.SetSelection(first);
-        m_runtime.interactions.SelectRange([first.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, third.identity.runtimeIdentity!.Value], third);
+        m_runtime.interactions.SelectRange(
+            [first.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, third.identity.runtimeIdentity!.Value],
+            third
+        );
         Assert.Equal(3, m_runtime.interactions.selection.count);
         m_runtime.interactions.ToggleSelection(second);
         Assert.False(m_runtime.interactions.selection.Contains(second));
         Assert.Same(first, m_runtime.interactions.selection.anchor);
         Assert.Same(third, m_runtime.interactions.selection.selectedTarget);
-        m_runtime.interactions.SelectRange([third.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, first.identity.runtimeIdentity!.Value], second);
+        m_runtime.interactions.SelectRange(
+            [third.identity.runtimeIdentity!.Value, second.identity.runtimeIdentity!.Value, first.identity.runtimeIdentity!.Value],
+            second
+        );
         var targets = new List<SelectionQueueTarget>();
         Assert.Equal(2, m_runtime.interactions.selection.CopyTargets(targets));
         Assert.Equal([first, second], targets);

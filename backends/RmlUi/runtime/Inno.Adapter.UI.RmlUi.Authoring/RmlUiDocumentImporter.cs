@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets.Pipeline;
 using Inno.UI;
 using Inno.UI.Assets;
@@ -38,11 +37,11 @@ public sealed class RmlUiDocumentImporter : AssetImporter<UiDocumentAsset>
         AssetImportContext context,
         AssetImportWriter<UiDocumentAsset> output,
         CancellationToken cancellationToken
-    )
-        => UiDocumentImportPipeline.ImportAsync(
-            context,
-            output,
-            RmlUiIdentifiers.documentLanguage,
-            RmlUiIdentifiers.backend.value,
-            cancellationToken);
+    ) => UiDocumentImportPipeline.ImportAsync(
+        context,
+        output,
+        RmlUiIdentifiers.documentLanguage,
+        RmlUiIdentifiers.backend.value,
+        cancellationToken
+    );
 }

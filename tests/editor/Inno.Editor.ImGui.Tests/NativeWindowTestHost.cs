@@ -8,37 +8,71 @@ internal static class NativeWindowTestHost
 {
     private static readonly IReadOnlyDictionary<string, Action> S_CONTRACTS = new Dictionary<string, Action>
     {
-        ["ViewportMetricsTests.FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations"] = () => new ViewportMetricsTests().FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations(),
-        ["ViewportMetricsTests.FailedPreparationDoesNotBeginOrPublishANativeFrame"] = () => new ViewportMetricsTests().FailedPreparationDoesNotBeginOrPublishANativeFrame(),
-        ["ViewportMetricsTests.AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest"] = () => new ViewportMetricsTests().AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest(),
-        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.False"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(false),
-        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.True"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(true),
-        ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.False"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(false),
-        ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.True"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(true),
-        ["ViewportMetricsTests.MetricRefreshPreservesRequestedViewportGeometry"] = () => new ViewportMetricsTests().MetricRefreshPreservesRequestedViewportGeometry(),
-        ["ViewportMetricsTests.DetachedWindowAppliesRequestsAfterPlatformEventReconciliation"] = () => new ViewportMetricsTests().DetachedWindowAppliesRequestsAfterPlatformEventReconciliation(),
-        ["ViewportMetricsTests.LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame"] = () => new ViewportMetricsTests().LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame(),
-        ["ViewportMetricsTests.ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction"] = () => new ViewportMetricsTests().ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction(),
-        ["ViewportRetirementTests.FaultedRetirementRetainsWindowRendererAndApplicationOwners"] = () => new ViewportRetirementTests().FaultedRetirementRetainsWindowRendererAndApplicationOwners(),
-        ["ViewportRetirementTests.DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement"] = () => new ViewportRetirementTests().DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement(),
-        ["ViewportRetirementTests.IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint"] = () => new ViewportRetirementTests().IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint(),
-        ["ViewportRetirementTests.CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup"] = () => new ViewportRetirementTests().CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup(),
-        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.0.75"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(0.75f),
-        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.1"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(1f),
-        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.1.5"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(1.5f),
-        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.2"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(2f),
-        ["FontCoverageTests.CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons"] = () => new FontCoverageTests().CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons(),
-        ["FontCoverageTests.RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext"] = () => new FontCoverageTests().RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext(),
-        ["FontCoverageTests.SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow"] = () => new FontCoverageTests().SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow(),
-        ["FontCoverageTests.ApplicationShutdownRetiresBothRegisteredContexts"] = () => new FontCoverageTests().ApplicationShutdownRetiresBothRegisteredContexts(),
+        ["ViewportMetricsTests.FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations"] = () => new ViewportMetricsTests()
+            .FramePreparationRunsBeforeNativeCreationAndRejectsReentrantOperations(),
+        ["ViewportMetricsTests.FailedPreparationDoesNotBeginOrPublishANativeFrame"] = () => new ViewportMetricsTests()
+            .FailedPreparationDoesNotBeginOrPublishANativeFrame(),
+        ["ViewportMetricsTests.AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest"] = () => new ViewportMetricsTests()
+            .AFailedDrawRetiresItsNativeFrameBeforeTheNextRequest(),
+        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.False"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(
+            false
+        ),
+        ["ViewportMetricsTests.ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability.True"] = () => new ViewportMetricsTests().ContextAdvertisesOnlyTheSelectedRenderersVertexOffsetCapability(
+            true
+        ),
+        ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.False"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(
+            false
+        ),
+        ["ViewportMetricsTests.FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback.True"] = () => new ViewportMetricsTests().FrameRefreshesDrawableMetricsWithoutAPlatformScaleCallback(
+            true
+        ),
+        ["ViewportMetricsTests.MetricRefreshPreservesRequestedViewportGeometry"] = () => new ViewportMetricsTests()
+            .MetricRefreshPreservesRequestedViewportGeometry(),
+        ["ViewportMetricsTests.DetachedWindowAppliesRequestsAfterPlatformEventReconciliation"] = () => new ViewportMetricsTests()
+            .DetachedWindowAppliesRequestsAfterPlatformEventReconciliation(),
+        ["ViewportMetricsTests.LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame"] = () => new ViewportMetricsTests()
+            .LogicalDpiTransitionRetainsThePreviousScaleUntilImGuiStartsItsFrame(),
+        ["ViewportMetricsTests.ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction"] = () => new ViewportMetricsTests()
+            .ViewportCallbacksRegisterOneSurfaceAndReleaseItBeforeNativeDestruction(),
+        ["ViewportRetirementTests.FaultedRetirementRetainsWindowRendererAndApplicationOwners"] = () => new ViewportRetirementTests()
+            .FaultedRetirementRetainsWindowRendererAndApplicationOwners(),
+        ["ViewportRetirementTests.DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement"] = () => new ViewportRetirementTests()
+            .DetachedWindowRemainsAliveUntilRenderingAcknowledgesRetirement(),
+        ["ViewportRetirementTests.IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint"] = () => new ViewportRetirementTests()
+            .IncompleteDrainRetainsContextOwnershipAndCanFinishAtTheNextSafetyPoint(),
+        ["ViewportRetirementTests.CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup"] = () => new ViewportRetirementTests()
+            .CreationFailureIsReportedAtAManagedSafetyPointAfterCleanup(),
+        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.0.75"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(
+            0.75f
+        ),
+        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.1"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(
+            1f
+        ),
+        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.1.5"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(
+            1.5f
+        ),
+        ["FontCoverageTests.EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback.2"] = () => new FontCoverageTests().EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(
+            2f
+        ),
+        ["FontCoverageTests.CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons"] = () => new FontCoverageTests()
+            .CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons(),
+        ["FontCoverageTests.RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext"] = () => new FontCoverageTests()
+            .RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext(),
+        ["FontCoverageTests.SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow"] = () => new FontCoverageTests()
+            .SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow(),
+        ["FontCoverageTests.ApplicationShutdownRetiresBothRegisteredContexts"] = () => new FontCoverageTests()
+            .ApplicationShutdownRetiresBothRegisteredContexts()
     };
+
     private static bool m_executingContract;
 
     internal static bool RunIfRequired(string contract)
     {
         if (m_executingContract || !OperatingSystem.IsMacOS()
-            && Environment.GetEnvironmentVariable("INNO_TEST_MAIN_THREAD_HOST") != "1")
+                                   && Environment.GetEnvironmentVariable("INNO_TEST_MAIN_THREAD_HOST") != "1"
+        ) {
             return false;
+        }
         NativeProcessTestHost.Run(typeof(NativeWindowTestHost).Assembly.Location, contract);
         return true;
     }
@@ -48,7 +82,9 @@ internal static class NativeWindowTestHost
         try
         {
             if (arguments.Length != 1 || !S_CONTRACTS.TryGetValue(arguments[0], out Action? contract))
+            {
                 throw new ArgumentException("The native test host requires one declared contract.");
+            }
             // Cocoa requires the process main thread, rather than an xUnit worker or a new managed thread.
             m_executingContract = true;
             Console.Error.WriteLine($"Native contract started: {arguments[0]}; thread={Environment.CurrentManagedThreadId}.");

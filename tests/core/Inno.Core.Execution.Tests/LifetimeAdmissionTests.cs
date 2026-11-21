@@ -16,7 +16,16 @@ public sealed class LifetimeAdmissionTests
             var ready = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             Task<int> operation = owner.RunAsync(_ => new ValueTask<int>(ready.Task));
             bool invoked = false;
-            Assert.Throws<InvalidOperationException>(() => { _ = owner.RunAsync(_ => { invoked = true; return ValueTask.FromResult(0); }); });
+            Assert.Throws<InvalidOperationException>(
+                () =>
+                {
+                    _ = owner.RunAsync(_ =>
+                    {
+                        invoked = true;
+                        return ValueTask.FromResult(0);
+                    });
+                }
+            );
             Assert.False(invoked);
             ready.SetResult(iteration);
             Assert.Equal(iteration, await operation);

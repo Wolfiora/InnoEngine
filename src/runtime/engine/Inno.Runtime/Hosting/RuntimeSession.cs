@@ -1,4 +1,3 @@
-using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +11,7 @@ using Inno.Core.Jobs;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.References;
+using Inno.Runtime.Contracts;
 using Inno.Scene;
 
 namespace Inno.Runtime;
@@ -59,17 +59,19 @@ public sealed class RuntimeSession : IDisposable
                 _ => throw new ArgumentOutOfRangeException(
                     nameof(options),
                     options.jobExecutionMode,
-                    "Unknown runtime job execution mode.")
+                    "Unknown runtime job execution mode."
+                )
             },
             new JobSchedulerOptions
             {
                 workerCount = options.jobWorkerCount
-            });
+            }
+        );
         scenes = new SceneWorld(m_identities, m_host.types);
         if (options.createLogSink is not null)
         {
             ILogSink sink = options.createLogSink(sessionId)
-                ?? throw new InvalidOperationException("The session log factory returned no sink.");
+                            ?? throw new InvalidOperationException("The session log factory returned no sink.");
             m_sessionLog = new SessionLogSink(sessionId, sink);
             m_host.logs.RegisterSink(m_sessionLog);
         }
@@ -83,21 +85,31 @@ public sealed class RuntimeSession : IDisposable
                 m_host.types.current,
                 m_identities,
                 options.assetResidencyBudgetBytes,
-                options.assetPreparationBudgetBytes);
+                options.assetPreparationBudgetBytes
+            );
         }
         IReferenceResolver[] referenceResolvers = m_assets is IReferenceResolver assetResolver
-            ? [.. options.referenceResolvers, assetResolver]
-            : [.. options.referenceResolvers];
+                                                  ? [.. options.referenceResolvers, assetResolver]
+                                                  : [.. options.referenceResolvers];
         IAssetReferenceResolver? prefabAssets = m_assets
-            ?? options.referenceResolvers.OfType<IAssetReferenceResolver>().SingleOrDefault();
+                                                ?? options.referenceResolvers.OfType<IAssetReferenceResolver>().SingleOrDefault();
         if (prefabAssets is not null)
+        {
             scenes.ConfigurePrefabInstantiation(m_host.serialization, prefabAssets);
+        }
         m_references = referenceResolvers.Length == 0
-            ? ReferenceCatalog.empty
-            : ReferenceCatalog.Create(1, referenceResolvers);
-        var context = new RuntimeSubsystemContext(events, m_host.diagnostics, m_identities, m_host.types,
-            new LifetimeScope(), RuntimeSubsystemLifetime.Session,
-            options.kind == RuntimeSessionKind.Edit, options.capabilities);
+                       ? ReferenceCatalog.empty
+                       : ReferenceCatalog.Create(1, referenceResolvers);
+        var context = new RuntimeSubsystemContext(
+            events,
+            m_host.diagnostics,
+            m_identities,
+            m_host.types,
+            new LifetimeScope(),
+            RuntimeSubsystemLifetime.Session,
+            options.kind == RuntimeSessionKind.Edit,
+            options.capabilities
+        );
         m_subsystems = new RuntimeSubsystemPipeline(context, m_host.retirementTimeout, m_host.generations);
         m_subsystems.Start([new SceneRuntimeSubsystemFactory(scenes, options.kind), .. options.createSubsystems(this)]);
     }
@@ -167,7 +179,8 @@ public sealed class RuntimeSession : IDisposable
     /// </exception>
     public AssetDatabase assets
         => m_assets ?? throw new InvalidOperationException(
-            "This runtime session was created without a deployed asset database.");
+            "This runtime session was created without a deployed asset database."
+        );
 
     /// <summary>
     /// Binds this session's script façades to the current asynchronous execution context.
@@ -190,13 +203,17 @@ public sealed class RuntimeSession : IDisposable
             scopes.Add(scenes.EnterScope());
             scopes.Add(m_clock.EnterScope());
             if (m_assets is not null)
+            {
                 scopes.Add(AssetExecutionContext.EnterScope(m_assets));
+            }
             return new ExecutionScope(scopes);
         }
         catch
         {
             for (int index = scopes.Count - 1; index >= 0; index--)
+            {
                 scopes[index].Dispose();
+            }
             throw;
         }
     }
@@ -233,16 +250,16 @@ public sealed class RuntimeSession : IDisposable
                 m_fixedAccumulator += frame.deltaTime;
                 int steps = 0;
                 while (m_fixedAccumulator >= options.fixedDeltaTime
-                       && steps < options.maxFixedStepsPerFrame)
-                {
+                       && steps < options.maxFixedStepsPerFrame
+                ) {
                     RuntimeFixedFrame fixedFrame = m_clock.BeginFixedStep(options.fixedDeltaTime);
                     subsystems.FixedUpdate(fixedFrame);
                     m_fixedAccumulator -= options.fixedDeltaTime;
                     steps++;
                 }
                 if (steps == options.maxFixedStepsPerFrame
-                    && m_fixedAccumulator >= options.fixedDeltaTime)
-                {
+                    && m_fixedAccumulator >= options.fixedDeltaTime
+                ) {
                     m_fixedAccumulator = 0f;
                 }
             }
@@ -255,7 +272,9 @@ public sealed class RuntimeSession : IDisposable
             try
             {
                 if (subsystemFrameActive)
+                {
                     subsystems.EndFrame(frame);
+                }
             }
             finally
             {
@@ -305,7 +324,9 @@ public sealed class RuntimeSession : IDisposable
         finally
         {
             if (m_disposed)
+            {
                 m_host.Release(this);
+            }
         }
     }
 
@@ -314,12 +335,16 @@ public sealed class RuntimeSession : IDisposable
     private void Retire()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_host.generations.EnsureRetirementSafe();
         try
         {
             if (!m_retirement.TryComplete(DisposeCore))
+            {
                 throw new RetirementPendingException($"Runtime session {sessionId} is still draining owned work.");
+            }
         }
         catch (Exception failure) when (RetirementPendingException.Find(failure) is RetirementTimeoutException)
         {
@@ -340,16 +365,24 @@ public sealed class RuntimeSession : IDisposable
     private void DisposeCore()
     {
         if (m_disposed)
+        {
             return;
+        }
         try
         {
             using IDisposable? scope = scenes is null ? null : EnterExecutionScope();
             if (m_subsystems is not null)
+            {
                 DisposeStage(m_subsystems, ref m_retirementFailures);
+            }
             if (m_assets is not null)
+            {
                 DisposeStage(m_assets, ref m_retirementFailures);
+            }
             if (scenes is not null)
+            {
                 DisposeStage(scenes, ref m_retirementFailures);
+            }
         }
         catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)
         {
@@ -363,9 +396,13 @@ public sealed class RuntimeSession : IDisposable
         m_disposed = true;
         DisposeStage(m_coroutines, ref m_retirementFailures);
         if (m_jobs is not null)
+        {
             DisposeStage(m_jobs, ref m_retirementFailures);
+        }
         if (m_serialization is not null)
+        {
             DisposeStage(m_serialization, ref m_retirementFailures);
+        }
         if (m_sessionLog is not null)
         {
             m_host.logs.UnregisterSink(m_sessionLog);
@@ -384,15 +421,25 @@ public sealed class RuntimeSession : IDisposable
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(options.applicationId);
         if (!float.IsFinite(options.fixedDeltaTime) || options.fixedDeltaTime <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Fixed delta time must be positive.");
+        }
         if (options.assetResidencyBudgetBytes < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Asset residency budget cannot be negative.");
+        }
         if (options.assetPreparationBudgetBytes <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Asset preparation budget must be positive.");
+        }
         if (!float.IsFinite(options.maxFrameDeltaTime) || options.maxFrameDeltaTime <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum frame delta time must be positive.");
+        }
         if (options.maxFixedStepsPerFrame <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "Maximum fixed steps must be positive.");
+        }
         if (options.kind == RuntimeSessionKind.Player && options.contentStore is null)
         {
             throw new ArgumentException("A Player session requires an immutable content store.", nameof(options));
@@ -411,11 +458,13 @@ public sealed class RuntimeSession : IDisposable
             jobExecutionMode = options.jobExecutionMode,
             jobWorkerCount = options.jobWorkerCount,
             createSubsystems = options.createSubsystems
-                ?? throw new ArgumentException("Runtime subsystem factories cannot be null.", nameof(options)),
-            capabilities = Array.AsReadOnly(options.capabilities?.ToArray()
-                ?? throw new ArgumentException("Runtime capabilities cannot be null.", nameof(options))),
+                               ?? throw new ArgumentException("Runtime subsystem factories cannot be null.", nameof(options)),
+            capabilities = Array.AsReadOnly(
+                options.capabilities?.ToArray()
+                ?? throw new ArgumentException("Runtime capabilities cannot be null.", nameof(options))
+            ),
             referenceResolvers = options.referenceResolvers?.ToArray()
-                ?? throw new ArgumentException("Runtime reference resolvers cannot be null.", nameof(options))
+                                 ?? throw new ArgumentException("Runtime reference resolvers cannot be null.", nameof(options))
         };
     }
 
@@ -448,11 +497,14 @@ public sealed class RuntimeSession : IDisposable
         public void Dispose()
         {
             if (m_disposed)
+            {
                 return;
+            }
             m_disposed = true;
             for (int index = scopes.Count - 1; index >= 0; index--)
+            {
                 scopes[index].Dispose();
+            }
         }
     }
-
 }

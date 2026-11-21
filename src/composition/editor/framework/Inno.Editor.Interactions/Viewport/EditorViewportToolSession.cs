@@ -47,7 +47,9 @@ public sealed class EditorViewportToolSession : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (ReferenceEquals(m_tool, tool))
+        {
             return;
+        }
         m_context.Cancel();
         m_tool = tool;
     }
@@ -66,7 +68,9 @@ public sealed class EditorViewportToolSession : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         EditorViewportTool? current = m_tool;
         if (current is null || !m_context.Accepts(pointer.pointerId))
+        {
             return false;
+        }
         switch (pointer.phase)
         {
             case EditorViewportPointerPhase.Down:
@@ -115,7 +119,9 @@ public sealed class EditorViewportToolSession : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_context.Cancel();
         m_tool = null;
         m_disposed = true;

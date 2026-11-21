@@ -32,7 +32,9 @@ public readonly record struct BgfxSurfaceDescriptor
         bool supportsSrgbReset
     ) {
         if (windowHandle == 0)
+        {
             throw new ArgumentException("A live borrowed window value is required.", nameof(windowHandle));
+        }
         this.windowHandle = windowHandle;
         this.displayHandle = displayHandle;
         this.supportsSrgbReset = supportsSrgbReset;

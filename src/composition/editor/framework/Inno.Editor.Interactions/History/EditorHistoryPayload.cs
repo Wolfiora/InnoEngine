@@ -67,7 +67,9 @@ public sealed class EditorHistoryPayload : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_inlineBytes is not null)
+        {
             return (byte[])m_inlineBytes.Clone();
+        }
         return File.ReadAllBytes(m_path!);
     }
 
@@ -79,7 +81,9 @@ public sealed class EditorHistoryPayload : IDisposable
         ObjectDisposedException.ThrowIf(m_disposed, this);
         byte[] bytes = ReadBytes();
         if (!canStoreOnDisk || bytes.Length < inlinePayloadThreshold)
+        {
             return new EditorHistoryPayload(bytes);
+        }
         string path = store.Retain(bytes);
         return new EditorHistoryPayload(store, path, bytes.LongLength);
     }
@@ -90,10 +94,14 @@ public sealed class EditorHistoryPayload : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         if (m_store is not null && m_path is not null)
+        {
             m_store.Release(m_path);
+        }
         m_inlineBytes = null;
         m_store = null;
         m_path = null;

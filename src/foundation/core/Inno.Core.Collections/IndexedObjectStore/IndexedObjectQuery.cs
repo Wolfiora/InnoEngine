@@ -9,7 +9,8 @@ namespace Inno.Core.Collections;
 /// <typeparam name="T">
 /// The stored reference type.
 /// </typeparam>
-public sealed class IndexedObjectQuery<T> where T : class
+public sealed class IndexedObjectQuery<T>
+    where T : class
 {
     private readonly IndexedObjectStore<T> m_store;
     private readonly List<IIndexedObjectQueryCondition<T>> m_conditions = new();
@@ -34,7 +35,9 @@ public sealed class IndexedObjectQuery<T> where T : class
     public IndexedObjectQuery<T> Where(IIndexedObjectQueryCondition<T> condition)
     {
         if (condition == null)
+        {
             throw new ArgumentNullException(nameof(condition));
+        }
 
         m_conditions.Add(condition);
         return this;
@@ -50,7 +53,7 @@ public sealed class IndexedObjectQuery<T> where T : class
     /// The same query instance.
     /// </returns>
     public IndexedObjectQuery<T> Where(Func<T, bool> predicate) => Where(new IndexedObjectPredicateCondition<T>(predicate));
-    
+
     /// <summary>
     /// Adds a key equality condition.
     /// </summary>
@@ -83,10 +86,13 @@ public sealed class IndexedObjectQuery<T> where T : class
     /// <returns>
     /// The same query instance.
     /// </returns>
-    public IndexedObjectQuery<T> OrderBy<TKey>(IndexedObjectKey<TKey> key) where TKey : notnull
+    public IndexedObjectQuery<T> OrderBy<TKey>(IndexedObjectKey<TKey> key)
+        where TKey : notnull
     {
         if (!m_store.IsOrderedKey(key))
+        {
             throw new InvalidOperationException($"Key '{key.name}' is not ordered.");
+        }
 
         m_orderedFastExec = () => m_store.ExecuteOrderedQueryFast(key, m_conditions);
         m_orderedSnapshotExec = () => m_store.ExecuteOrderedQuerySnapshot(key, m_conditions);

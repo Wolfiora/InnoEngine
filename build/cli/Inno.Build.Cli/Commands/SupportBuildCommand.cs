@@ -17,23 +17,34 @@ internal static class SupportBuildCommand
     ) {
         string productId = options.Read("product", "editor");
         if (productId is not ("editor" or "player"))
+        {
             throw new ArgumentException("Support preparation requires product 'editor' or 'player'.");
+        }
         NativeProductContribution product = request.distribution.ResolveNativeProduct(request.target.value, productId);
         if (request.nativeDependencies.Length != 0)
         {
-            using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(request.root,
-                request.nativeDependencies, request.target.value, request.configuration.ToLowerInvariant(), product.plan, cancellationToken).ConfigureAwait(false);
+            using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
+                request.root,
+                request.nativeDependencies,
+                request.target.value,
+                request.configuration.ToLowerInvariant(),
+                product.plan,
+                cancellationToken
+            ).ConfigureAwait(false);
             Console.WriteLine($"Consumed {productId} support for {request.target}: {imported.Count} artifacts; native processes: 0.");
             return;
         }
         var context = new NativeBuildContext(request.root, request.configuration.ToLowerInvariant());
         context = context.WithBindingGenerator(request.distribution.ResolveBindingGenerator(request.target.value));
         NativeToolchainSelection toolchain = await request.distribution.ResolveNativeToolchain(request.target.value)
-            .ResolveAsync(context, request.composition.host, request.target.value, cancellationToken).ConfigureAwait(false);
+            .ResolveAsync(context, request.composition.host, request.target.value, cancellationToken)
+            .ConfigureAwait(false);
         context = context.WithToolchain(toolchain);
         StandardBuildCaches.CreateOwners(context.engineRoot, product.plan.steps.Select(static step => step.component).ToArray());
         using ProductNativeBuildResult products = await product.BuildAsync(context, cancellationToken).ConfigureAwait(false);
         Console.WriteLine($"Prepared {productId} support for {request.target}: {products.Count} artifacts.");
-        Console.WriteLine($"Native processes: {context.statistics.nativeProcesses}; binding generations: {context.statistics.bindingGenerations}.");
+        Console.WriteLine(
+            $"Native processes: {context.statistics.nativeProcesses}; binding generations: {context.statistics.bindingGenerations}."
+        );
     }
 }

@@ -1,14 +1,14 @@
-using Inno.Runtime.Contracts;
-using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Assets;
 using Inno.Audio;
 using Inno.Audio.Runtime;
+using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Extensibility.Types;
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 using Inno.Scene;
 
 namespace Inno.Editor.Audio;
@@ -80,42 +80,54 @@ public sealed class EditorAudioHost : IEditorAudioHost
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(session);
         if (m_sessions.ContainsKey(session))
-            throw new InvalidOperationException("The runtime session already owns an Editor audio generation.");
-        if (session.options.kind == RuntimeSessionKind.Play &&
-            m_sessions.Keys.Any(static active => active.options.kind == RuntimeSessionKind.Play))
         {
+            throw new InvalidOperationException("The runtime session already owns an Editor audio generation.");
+        }
+        if (session.options.kind == RuntimeSessionKind.Play
+            && m_sessions.Keys.Any(static active => active.options.kind == RuntimeSessionKind.Play)
+        ) {
             throw new InvalidOperationException("Only one isolated Play Mode audio generation may be active.");
         }
 
         AudioProjectSettings settings = m_settingsProvider()
-            ?? throw new InvalidOperationException("The audio settings provider returned null.");
-        DiagnosticReporter diagnostics = context.resources.Own(m_diagnostics.CreateReporter(
-            new DiagnosticSource($"inno.editor.audio.{session.sessionId}", $"Audio ({session.options.kind})")));
+                                        ?? throw new InvalidOperationException("The audio settings provider returned null.");
+        DiagnosticReporter diagnostics = context.resources.Own(
+            m_diagnostics.CreateReporter(
+                new DiagnosticSource($"inno.editor.audio.{session.sessionId}", $"Audio ({session.options.kind})")
+            )
+        );
         IAudioDevice device = CreateDevice(diagnostics);
         AudioRuntime? runtime = null;
         try
         {
             runtime = new AudioRuntime(
-            m_types,
-            device,
-            m_artifacts,
-            session.events,
-            diagnostics,
-            new AudioRuntimeOptions
-            {
-                maxVoices = settings.maxVoices,
-                decodedCacheBudgetBytes = settings.decodedCacheBudgetBytes,
-                automaticStreamingThresholdBytes = settings.automaticStreamingThresholdBytes
-            },
-            contentScopeProvider: () => SceneContentSource.CreateScope(session.scenes),
-            deviceRecoveryFactory: m_deviceFactory);
+                m_types,
+                device,
+                m_artifacts,
+                session.events,
+                diagnostics,
+                new AudioRuntimeOptions
+                {
+                    maxVoices = settings.maxVoices,
+                    decodedCacheBudgetBytes = settings.decodedCacheBudgetBytes,
+                    automaticStreamingThresholdBytes = settings.automaticStreamingThresholdBytes
+                },
+                contentScopeProvider: () => SceneContentSource.CreateScope(session.scenes),
+                deviceRecoveryFactory: m_deviceFactory
+            );
             if (settings.defaultMixer is not null && !runtime.ApplyMixer(settings.defaultMixer))
+            {
                 throw new InvalidOperationException("The configured default Editor audio mixer could not be activated.");
+            }
             if (!runtime.SetBusVolume(AudioBusId.master, settings.masterVolume))
+            {
                 throw new InvalidOperationException("The configured Editor master audio volume could not be applied.");
+            }
             m_sessions.Add(session, runtime);
             if (session.options.kind == RuntimeSessionKind.Play)
+            {
                 SetEditModePaused(true);
+            }
             return runtime;
         }
         catch (Exception failure)
@@ -123,9 +135,13 @@ public sealed class EditorAudioHost : IEditorAudioHost
             try
             {
                 if (runtime is not null)
+                {
                     runtime.Dispose();
+                }
                 else
+                {
                     device.Dispose();
+                }
             }
             catch (Exception cleanup)
             {
@@ -169,7 +185,9 @@ public sealed class EditorAudioHost : IEditorAudioHost
         ArgumentNullException.ThrowIfNull(session);
         ArgumentNullException.ThrowIfNull(clip);
         if (session.options.kind != RuntimeSessionKind.Edit)
+        {
             throw new ArgumentException("Audio previews require an Edit Mode runtime session.", nameof(session));
+        }
         return GetRuntime(session).Play(clip, options ?? AudioPlayOptions.defaultValue);
     }
 
@@ -191,7 +209,9 @@ public sealed class EditorAudioHost : IEditorAudioHost
     ) {
         ArgumentNullException.ThrowIfNull(session);
         if (session.options.kind != RuntimeSessionKind.Edit)
+        {
             return false;
+        }
         return GetRuntime(session).Stop(voice);
     }
 
@@ -201,7 +221,9 @@ public sealed class EditorAudioHost : IEditorAudioHost
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         List<Exception>? failures = null;
         foreach (AudioRuntime runtime in m_sessions.Values.Reverse().ToArray())
@@ -218,7 +240,9 @@ public sealed class EditorAudioHost : IEditorAudioHost
         }
         m_sessions.Clear();
         if (failures is not null)
+        {
             throw new AggregateException("One or more Editor audio generations could not be released.", failures);
+        }
     }
 
     private IAudioDevice CreateDevice(IDiagnosticReporter diagnostics)
@@ -229,11 +253,14 @@ public sealed class EditorAudioHost : IEditorAudioHost
         }
         catch (Exception exception)
         {
-            diagnostics.Publish(new Diagnostic(
-                "AUDIO_DEVICE_INIT_FAILED",
-                $"The Editor audio output could not start; this audio generation is explicitly muted: {exception.Message}",
-                DiagnosticSeverity.Warning,
-                "AudioAdapter"));
+            diagnostics.Publish(
+                new Diagnostic(
+                    "AUDIO_DEVICE_INIT_FAILED",
+                    $"The Editor audio output could not start; this audio generation is explicitly muted: {exception.Message}",
+                    DiagnosticSeverity.Warning,
+                    "AudioAdapter"
+                )
+            );
             return new MutedAudioDevice();
         }
     }
@@ -243,23 +270,25 @@ public sealed class EditorAudioHost : IEditorAudioHost
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(session);
         return m_sessions.TryGetValue(session, out AudioRuntime? runtime)
-            ? runtime
-            : throw new InvalidOperationException("The runtime session has no active Editor audio lease.");
+               ? runtime
+               : throw new InvalidOperationException("The runtime session has no active Editor audio lease.");
     }
 
     private void ReleaseRuntime(
         RuntimeSession session,
         AudioRuntime runtime
     ) {
-        if (!m_sessions.TryGetValue(session, out AudioRuntime? active) ||
-            !ReferenceEquals(active, runtime))
-        {
+        if (!m_sessions.TryGetValue(session, out AudioRuntime? active)
+            || !ReferenceEquals(active, runtime)
+        ) {
             return;
         }
         m_sessions.Remove(session);
         bool wasPlayMode = session.options.kind == RuntimeSessionKind.Play;
         if (wasPlayMode)
+        {
             SetEditModePaused(false);
+        }
     }
 
     private void SetEditModePaused(bool paused)
@@ -267,15 +296,16 @@ public sealed class EditorAudioHost : IEditorAudioHost
         foreach ((RuntimeSession session, AudioRuntime runtime) in m_sessions)
         {
             if (session.options.kind == RuntimeSessionKind.Edit)
+            {
                 _ = runtime.SetBusPaused(AudioBusId.master, paused);
+            }
         }
     }
 
     private sealed class EditorAudioRuntimeFactory(
         EditorAudioHost owner,
         RuntimeSession session
-    )
-        : IRuntimeSubsystemFactory
+    ) : IRuntimeSubsystemFactory
     {
         /// <summary>
         /// Gets the stable audio feature descriptor shared by every Editor session.
@@ -283,7 +313,8 @@ public sealed class EditorAudioHost : IEditorAudioHost
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
             new RuntimeSubsystemId("inno.runtime.audio"),
             order: 500,
-            dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]);
+            dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]
+        );
 
         /// <summary>
         /// Creates one Editor-owned audio generation for the supplied runtime session.
@@ -302,9 +333,6 @@ public sealed class EditorAudioHost : IEditorAudioHost
             return runtime;
         }
     }
-
-
-
 
     private sealed class SessionAudioRegistration(
         EditorAudioHost owner,

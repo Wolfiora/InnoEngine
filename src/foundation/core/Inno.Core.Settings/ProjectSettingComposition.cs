@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Serialization;
 
 namespace Inno.Core.Settings;
@@ -39,7 +38,6 @@ public enum ProjectSettingContributionSource
     /// The contribution is a default supplied by an activated Plugin.
     /// </summary>
     Plugin,
-
     /// <summary>
     /// The contribution is the project-authored delta with highest precedence.
     /// </summary>
@@ -218,11 +216,11 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
         if (baseline is not TSetting typedBaseline || value is not TSetting typedValue)
         {
             throw new ArgumentException(
-                $"Composer '{GetType().FullName}' requires setting type '{typeof(TSetting).FullName}'.");
+                $"Composer '{GetType().FullName}' requires setting type '{typeof(TSetting).FullName}'."
+            );
         }
         TContribution contribution = CaptureContribution(typedBaseline, typedValue)
-            ?? throw new InvalidOperationException(
-                $"Composer '{GetType().FullName}' returned a null contribution.");
+            ?? throw new InvalidOperationException($"Composer '{GetType().FullName}' returned a null contribution.");
         if (IsEmpty(contribution))
         {
             contributionData = [];
@@ -242,7 +240,8 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
         {
             throw new ArgumentException(
                 $"Composer '{GetType().FullName}' requires setting type '{typeof(TSetting).FullName}'.",
-                nameof(hostDefault));
+                nameof(hostDefault)
+            );
         }
         var decoded = new List<ProjectSettingContribution<TContribution>>(contributions.Count);
         foreach (ProjectSettingCompositionEntry contribution in contributions)
@@ -251,12 +250,11 @@ public abstract class ProjectSettingComposer<TSetting, TContribution> : ProjectS
             if (IsEmpty(value))
             {
                 throw new InvalidOperationException(
-                    $"Composer '{GetType().FullName}' received an empty persisted contribution from " +
-                    $"'{contribution.context.contributorId}'.");
+                    $"Composer '{GetType().FullName}' received an empty persisted contribution from "
+                    + $"'{contribution.context.contributorId}'."
+                );
             }
-            decoded.Add(new ProjectSettingContribution<TContribution>(
-                contribution.context,
-                value));
+            decoded.Add(new ProjectSettingContribution<TContribution>(contribution.context, value));
         }
         Compose(target, decoded);
         return target;

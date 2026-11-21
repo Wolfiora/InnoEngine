@@ -1,23 +1,23 @@
-using Inno.Adapter.Rendering;
-using Inno.Adapter.Rendering.Bgfx;
-using Inno.Integration.MacOSArm64.Bgfx.Runtime;
-using Inno.Adapter.Platform;
-using Inno.Adapter.Platform.Sdl3;
-using Inno.Integration.MacOSArm64.Sdl3;
 using System;
+using System.IO;
 using Inno.Adapter;
 using Inno.Adapter.Default;
-using Inno.Rendering;
-using System.IO;
-using Inno.Player.Runtime;
-using Inno.Shell;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Platform.Sdl3;
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
-using Inno.Core.Logging;
 using Inno.Core.Execution;
-using Inno.Runtime;
-using Inno.Storage;
+using Inno.Core.Logging;
+using Inno.Integration.MacOSArm64.Bgfx.Runtime;
+using Inno.Integration.MacOSArm64.Sdl3;
 using Inno.Platform.MacOSArm64;
+using Inno.Player.Runtime;
+using Inno.Rendering;
+using Inno.Runtime;
+using Inno.Shell;
+using Inno.Storage;
 
 namespace Inno.Player.MacOSArm64;
 
@@ -49,12 +49,12 @@ internal static class MacOSArm64PlayerComposition
                 adapterSelection = StandardAdapterSelection.Create(StorageBackendId.fileSystem),
                 contentSource = new MacOSArm64PlayerContentSource(AppContext.BaseDirectory, dataRoot),
                 createStorage = manifest => new FileSystemApplicationStorage(
-                    Path.Combine(ResolveDataRoot(dataRoot, manifest), "Storage")),
+                    Path.Combine(ResolveDataRoot(dataRoot, manifest), "Storage")
+                ),
                 createLogSink = (
                     manifest,
                     sessionId
-                ) => new FileLogSink(
-                    Path.Combine(ResolveDataRoot(dataRoot, manifest), "Logs", sessionId.ToString())),
+                ) => new FileLogSink(Path.Combine(ResolveDataRoot(dataRoot, manifest), "Logs", sessionId.ToString())),
                 moduleActivator = Generated.PlayerMetadataComposition.CreateActivator(),
                 frameDriver = new PollingShellFrameDriver(),
                 consoleColors = true,
@@ -74,5 +74,4 @@ internal static class MacOSArm64PlayerComposition
         string root,
         GameRuntimeManifest manifest
     ) => Path.Combine(root, manifest.persistentDataPath.Length == 0 ? manifest.applicationId : manifest.persistentDataPath);
-
 }

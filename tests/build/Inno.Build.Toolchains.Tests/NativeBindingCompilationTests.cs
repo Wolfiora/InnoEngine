@@ -4,8 +4,8 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -77,8 +77,11 @@ public sealed class NativeBindingCompilationTests : IDisposable
         Directory.CreateDirectory(m_root);
         string json = JsonSerializer.Serialize(Create());
         string path = Path.Combine(m_root, "compilation.json");
-        File.WriteAllText(path, json.Replace("\"frozen\":true,", string.Empty, StringComparison.Ordinal)
-            .Replace(",\"frozen\":true", string.Empty, StringComparison.Ordinal));
+        File.WriteAllText(
+            path,
+            json.Replace("\"frozen\":true,", string.Empty, StringComparison.Ordinal)
+                .Replace(",\"frozen\":true", string.Empty, StringComparison.Ordinal)
+        );
         Assert.Throws<JsonException>(() => NativeBindingCompilation.Load(m_root));
         File.WriteAllText(path, json.Insert(1, "\"unrecognized\":true,"));
         Assert.Throws<JsonException>(() => NativeBindingCompilation.Load(m_root));
@@ -87,7 +90,9 @@ public sealed class NativeBindingCompilationTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, true);
+        }
     }
 
     private static NativeBindingCompilation Create()
@@ -98,8 +103,14 @@ public sealed class NativeBindingCompilationTests : IDisposable
             roots = [new("user", "source", false, true), new("nested", "source/nested", false, true), new("generated", "", true, true)],
             files = [new("user", "nested/api.hpp", 8, hash, false), new("nested", "api.hpp", 8, hash, true)],
             includeDirectories = [new("user", "", false, false), new("nested", "", false, false)],
-            defines = ["first", "second"], compilerDefines = ["__COMPILER_FACT=1"], cxxStandard = 20, cStandard = 0,
-            requiredExports = ["exported"], staticExportSymbols = [], staticExportAbi = "", staticExportNames = []
+            defines = ["first", "second"],
+            compilerDefines = ["__COMPILER_FACT=1"],
+            cxxStandard = 20,
+            cStandard = 0,
+            requiredExports = ["exported"],
+            staticExportSymbols = [],
+            staticExportAbi = "",
+            staticExportNames = []
         };
     }
 }

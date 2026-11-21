@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Tests;
 
@@ -21,21 +21,27 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         using (graph.BeginNameScope("Request[0] First"))
         {
-            graph.AddRasterPass("Visible", C_GEOMETRY, 0, static (_, _) => { })
+            graph
+                .AddRasterPass("Visible", C_GEOMETRY, 0, static (
+                    _,
+                    _
+                ) => {})
                 .HasSideEffect();
         }
         using (graph.BeginNameScope("Request[1] Second"))
         {
-            graph.AddRasterPass("Visible", C_GEOMETRY, 0, static (_, _) => { })
+            graph
+                .AddRasterPass("Visible", C_GEOMETRY, 0, static (
+                    _,
+                    _
+                ) => {})
                 .HasSideEffect();
         }
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.True(result.succeeded);
-        Assert.Equal(
-            ["Request[0] First/Visible", "Request[1] Second/Visible"],
-            PassNames(result.graph!));
+        Assert.Equal(["Request[0] First/Visible", "Request[1] Second/Visible"], PassNames(result.graph!));
     }
 
     [Fact]
@@ -45,12 +51,20 @@ public sealed class RenderGraphCompilerTests
         using (graph.BeginMutationScope())
         {
             RenderTextureHandle temporary = graph.CreateTexture("Temporary", ColorDescriptor());
-            graph.AddRasterPass("Failed Feature", C_GEOMETRY, 0, static (_, _) => { })
+            graph
+                .AddRasterPass("Failed Feature", C_GEOMETRY, 0, static (
+                    _,
+                    _
+                ) => {})
                 .UseColorAttachment(temporary, 0, RenderLoadAction.Clear);
             graph.MarkOutput(temporary);
         }
 
-        graph.AddRasterPass("Survivor", C_FINAL, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("Survivor", C_FINAL, 0, static (
+                _,
+                _
+            ) => {})
             .HasSideEffect();
 
         RenderGraphCompileResult result = graph.Compile();
@@ -59,15 +73,24 @@ public sealed class RenderGraphCompilerTests
         Assert.Equal(["Survivor"], PassNames(result.graph!));
         Assert.Empty(result.graph!.textures);
     }
+
     [Fact]
     public void Compile_SchedulesProducerBeforeConsumer()
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle intermediate = graph.CreateTexture("Intermediate", ColorDescriptor());
         RenderTextureHandle output = graph.CreateTexture("Output", ColorDescriptor());
-        graph.AddRasterPass("Producer", C_GEOMETRY, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("Producer", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(intermediate, 0, RenderLoadAction.Clear);
-        graph.AddRasterPass("Consumer", C_POST, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("Consumer", C_POST, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(output, 0, RenderLoadAction.Clear)
             .ReadTexture(intermediate);
         graph.MarkOutput(output);
@@ -84,9 +107,17 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle unused = graph.CreateTexture("Unused", ColorDescriptor());
         RenderTextureHandle output = graph.CreateTexture("Output", ColorDescriptor());
-        graph.AddRasterPass("Unused Pass", C_GEOMETRY, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("Unused Pass", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(unused, 0, RenderLoadAction.Clear);
-        graph.AddRasterPass("Output Pass", C_GEOMETRY, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("Output Pass", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(output, 0, RenderLoadAction.Clear);
         graph.MarkOutput(output);
 
@@ -102,7 +133,11 @@ public sealed class RenderGraphCompilerTests
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle input = graph.CreateTexture("Input", SampledDescriptor());
-        graph.AddRasterPass("Reader", C_GEOMETRY, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("Reader", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .ReadTexture(input)
             .HasSideEffect();
 
@@ -122,14 +157,24 @@ public sealed class RenderGraphCompilerTests
                 64,
                 64,
                 RenderTextureFormat.RGBA16Float,
-                RenderTextureUsage.Storage | RenderTextureUsage.Sampled));
-        graph.AddComputePass("Hazard", C_PROCESS, 0, static (_, _) => { })
+                RenderTextureUsage.Storage | RenderTextureUsage.Sampled
+            )
+        );
+        graph
+            .AddComputePass("Hazard", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .ReadTexture(texture);
         ComputePassBuilder writer = graph.AddComputePass(
             "Writer",
             C_PROCESS,
             0,
-            static (_, _) => { });
+            static (
+                _,
+                _
+            ) => {}
+        );
         writer.WriteStorageTexture(texture);
         writer.ReadTexture(texture);
         writer.HasSideEffect();
@@ -149,15 +194,31 @@ public sealed class RenderGraphCompilerTests
         RenderTextureHandle second = graph.CreateTexture("Second", ColorDescriptor());
         RenderTextureHandle output = graph.CreateTexture("Output", ColorDescriptor());
 
-        graph.AddRasterPass("A", C_GEOMETRY, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("A", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(first, 0, RenderLoadAction.Clear);
-        graph.AddRasterPass("B", C_PROCESS, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("B", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(middle, 0, RenderLoadAction.Clear)
             .ReadTexture(first);
-        graph.AddRasterPass("C", C_TRANSPARENT, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("C", C_TRANSPARENT, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(second, 0, RenderLoadAction.Clear)
             .ReadTexture(middle);
-        graph.AddRasterPass("D", C_POST, 0, static (_, _) => { })
+        graph
+            .AddRasterPass("D", C_POST, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(output, 0, RenderLoadAction.Clear)
             .ReadTexture(second);
         graph.MarkOutput(output);
@@ -171,8 +232,14 @@ public sealed class RenderGraphCompilerTests
     public void Compile_WhenViewLimitExceeded_FailsClearly()
     {
         RenderGraphBuilder graph = new(1, CreateCapabilities(maxViews: 1));
-        graph.AddRasterPass("A", C_GEOMETRY, 0, static (_, _) => { }).HasSideEffect();
-        graph.AddRasterPass("B", C_TRANSPARENT, 0, static (_, _) => { }).HasSideEffect();
+        graph.AddRasterPass("A", C_GEOMETRY, 0, static (
+            _,
+            _
+        ) => {}).HasSideEffect();
+        graph.AddRasterPass("B", C_TRANSPARENT, 0, static (
+            _,
+            _
+        ) => {}).HasSideEffect();
 
         RenderGraphCompileResult result = graph.Compile();
 
@@ -186,9 +253,15 @@ public sealed class RenderGraphCompilerTests
         RenderPhaseId left = new("tests.left");
         RenderPhaseId right = new("tests.right");
         RenderGraphBuilder graph = CreateGraph();
-        RenderPassBuilder leftPass = graph.AddRasterPass("Left", left, 0, static (_, _) => { });
+        RenderPassBuilder leftPass = graph.AddRasterPass("Left", left, 0, static (
+            _,
+            _
+        ) => {});
         leftPass.Before(right).HasSideEffect();
-        RenderPassBuilder rightPass = graph.AddRasterPass("Right", right, 0, static (_, _) => { });
+        RenderPassBuilder rightPass = graph.AddRasterPass("Right", right, 0, static (
+            _,
+            _
+        ) => {});
         rightPass.Before(left).HasSideEffect();
 
         RenderGraphCompileResult result = graph.Compile();
@@ -209,14 +282,15 @@ public sealed class RenderGraphCompilerTests
                 RenderTextureFormat.RGBA16Float,
                 RenderTextureUsage.ColorAttachment,
                 mipCount: 2,
-                arrayLayers: 2));
-        graph.AddRasterPass("Invalid Layer", C_GEOMETRY, 0, static (_, _) => { })
-            .UseColorAttachment(
-                texture,
-                0,
-                RenderLoadAction.Clear,
-                mipLevel: 1,
-                arrayLayer: 2);
+                arrayLayers: 2
+            )
+        );
+        graph
+            .AddRasterPass("Invalid Layer", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
+            .UseColorAttachment(texture, 0, RenderLoadAction.Clear, mipLevel: 1, arrayLayer: 2);
         graph.MarkOutput(texture);
 
         RenderGraphCompileResult result = graph.Compile();
@@ -231,12 +305,13 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle texture = graph.CreateTexture(
             "Not Storage",
-            new RenderTextureDescriptor(
-                64,
-                64,
-                RenderTextureFormat.RGBA8,
-                RenderTextureUsage.Sampled));
-        graph.AddComputePass("Storage Writer", C_PROCESS, 0, static (_, _) => { })
+            new RenderTextureDescriptor(64, 64, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled)
+        );
+        graph
+            .AddComputePass("Storage Writer", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .WriteStorageTexture(texture)
             .HasSideEffect();
 
@@ -251,12 +326,12 @@ public sealed class RenderGraphCompilerTests
     {
         RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle output = graph.CreateTexture("Discarded", ColorDescriptor());
-        graph.AddRasterPass("Discard", C_FINAL, 0, static (_, _) => { })
-            .UseColorAttachment(
-                output,
-                0,
-                RenderLoadAction.Clear,
-                RenderStoreAction.Discard);
+        graph
+            .AddRasterPass("Discard", C_FINAL, 0, static (
+                _,
+                _
+            ) => {})
+            .UseColorAttachment(output, 0, RenderLoadAction.Clear, RenderStoreAction.Discard);
         graph.MarkOutput(output);
 
         RenderGraphCompileResult result = graph.Compile();
@@ -271,20 +346,24 @@ public sealed class RenderGraphCompilerTests
         RenderGraphBuilder graph = CreateGraph();
         RenderBufferHandle source = graph.CreateBuffer(
             "Source",
-            new RenderBufferDescriptor(16, 4, RenderBufferUsage.CopySource));
+            new RenderBufferDescriptor(16, 4, RenderBufferUsage.CopySource)
+        );
         RenderBufferHandle destination = graph.CreateBuffer(
             "Destination",
-            new RenderBufferDescriptor(16, 4, RenderBufferUsage.CopyDestination));
-        graph.AddCopyPass("Copy", C_PROCESS, 0, static (_, _) => { })
+            new RenderBufferDescriptor(16, 4, RenderBufferUsage.CopyDestination)
+        );
+        graph
+            .AddCopyPass("Copy", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .CopyBuffer(source, destination)
             .HasSideEffect();
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.False(result.succeeded);
-        Assert.Contains(
-            result.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_CAPABILITY_UNSUPPORTED");
+        Assert.Contains(result.diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_CAPABILITY_UNSUPPORTED");
     }
 
     [Fact]
@@ -292,23 +371,17 @@ public sealed class RenderGraphCompilerTests
     {
         RenderGraphBuilder graph = new(
             1,
-            CreateCapabilities(
-                maxViews: 64,
-                sampledFormats: [RenderTextureFormat.RGBA8]));
+            CreateCapabilities(maxViews: 64, sampledFormats: [RenderTextureFormat.RGBA8])
+        );
         _ = graph.CreateTexture(
             "Unsupported Sampled Format",
-            new RenderTextureDescriptor(
-                8,
-                8,
-                RenderTextureFormat.RGBA16Float,
-                RenderTextureUsage.Sampled));
+            new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA16Float, RenderTextureUsage.Sampled)
+        );
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.False(result.succeeded);
-        Assert.Contains(
-            result.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_FORMAT_SAMPLED_UNSUPPORTED");
+        Assert.Contains(result.diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_FORMAT_SAMPLED_UNSUPPORTED");
     }
 
     [Fact]
@@ -319,24 +392,20 @@ public sealed class RenderGraphCompilerTests
             CreateCapabilities(
                 maxViews: 64,
                 features: GraphicsCapability.Compute
-                    | GraphicsCapability.StorageBuffer
-                    | GraphicsCapability.StorageTexture
-                    | GraphicsCapability.TextureBlit));
+                          | GraphicsCapability.StorageBuffer
+                          | GraphicsCapability.StorageTexture
+                          | GraphicsCapability.TextureBlit
+            )
+        );
         _ = graph.CreateTexture(
             "Unsupported Array",
-            new RenderTextureDescriptor(
-                8,
-                8,
-                RenderTextureFormat.RGBA8,
-                RenderTextureUsage.Sampled,
-                arrayLayers: 2));
+            new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled, arrayLayers: 2)
+        );
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.False(result.succeeded);
-        Assert.Contains(
-            result.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_TEXTURE_ARRAY_UNSUPPORTED");
+        Assert.Contains(result.diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_TEXTURE_ARRAY_UNSUPPORTED");
     }
 
     [Fact]
@@ -347,18 +416,19 @@ public sealed class RenderGraphCompilerTests
             CreateCapabilities(
                 maxViews: 64,
                 features: GraphicsCapability.Compute
-                    | GraphicsCapability.StorageBuffer
-                    | GraphicsCapability.TextureBlit));
+                          | GraphicsCapability.StorageBuffer
+                          | GraphicsCapability.TextureBlit
+            )
+        );
         _ = graph.CreateBuffer(
             "Unsupported Indices",
-            new RenderBufferDescriptor(3, sizeof(uint), RenderBufferUsage.Index));
+            new RenderBufferDescriptor(3, sizeof(uint), RenderBufferUsage.Index)
+        );
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.False(result.succeeded);
-        Assert.Contains(
-            result.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_INDEX32_UNSUPPORTED");
+        Assert.Contains(result.diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_INDEX32_UNSUPPORTED");
     }
 
     [Fact]
@@ -373,14 +443,14 @@ public sealed class RenderGraphCompilerTests
                 RenderTextureFormat.RGBA8,
                 RenderTextureUsage.Sampled,
                 dimension: RenderTextureDimension.Texture3D,
-                depth: 8));
+                depth: 8
+            )
+        );
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.False(result.succeeded);
-        Assert.Contains(
-            result.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_TEXTURE_3D_UNSUPPORTED");
+        Assert.Contains(result.diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_TEXTURE_3D_UNSUPPORTED");
     }
 
     [Fact]
@@ -392,7 +462,9 @@ public sealed class RenderGraphCompilerTests
                 maxViews: 64,
                 features: GraphicsCapability.Texture3D | GraphicsCapability.TextureCubeArray,
                 sampled3DFormats: [RenderTextureFormat.RGBA8],
-                sampledCubeFormats: [RenderTextureFormat.RGBA8]));
+                sampledCubeFormats: [RenderTextureFormat.RGBA8]
+            )
+        );
         _ = graph.CreateTexture(
             "Volume",
             new RenderTextureDescriptor(
@@ -401,7 +473,9 @@ public sealed class RenderGraphCompilerTests
                 RenderTextureFormat.RGBA8,
                 RenderTextureUsage.Sampled,
                 dimension: RenderTextureDimension.Texture3D,
-                depth: 8));
+                depth: 8
+            )
+        );
         _ = graph.CreateTexture(
             "Cubemap Array",
             new RenderTextureDescriptor(
@@ -410,7 +484,9 @@ public sealed class RenderGraphCompilerTests
                 RenderTextureFormat.RGBA8,
                 RenderTextureUsage.Sampled,
                 arrayLayers: 2,
-                dimension: RenderTextureDimension.Cube));
+                dimension: RenderTextureDimension.Cube
+            )
+        );
 
         Assert.True(graph.Compile().succeeded);
     }
@@ -426,17 +502,21 @@ public sealed class RenderGraphCompilerTests
                 8,
                 RenderTextureFormat.RGBA8,
                 RenderTextureUsage.ColorAttachment,
-                sampleCount: 4));
-        graph.AddRasterPass("MSAA", C_GEOMETRY, 0, static (_, _) => { })
+                sampleCount: 4
+            )
+        );
+        graph
+            .AddRasterPass("MSAA", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(target, 0, RenderLoadAction.Clear);
         graph.MarkOutput(target);
 
         RenderGraphCompileResult result = graph.Compile();
 
         Assert.False(result.succeeded);
-        Assert.Contains(
-            result.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_FORMAT_MSAA_UNSUPPORTED");
+        Assert.Contains(result.diagnostics, diagnostic => diagnostic.code == "RENDER_GRAPH_FORMAT_MSAA_UNSUPPORTED");
     }
 
     [Fact]
@@ -444,20 +524,28 @@ public sealed class RenderGraphCompilerTests
     {
         RenderGraphBuilder readGraph = new(
             1,
-            CreateCapabilities(
-                maxViews: 64,
-                storageReadFormats: [RenderTextureFormat.RGBA8],
-                storageWriteFormats: []));
+            CreateCapabilities(maxViews: 64, storageReadFormats: [RenderTextureFormat.RGBA8], storageWriteFormats: [])
+        );
         RenderTextureHandle readTexture = readGraph.CreateTexture(
             "Read Only",
             new RenderTextureDescriptor(
                 8,
                 8,
                 RenderTextureFormat.RGBA8,
-                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Storage));
-        readGraph.AddRasterPass("Initialize", C_GEOMETRY, 0, static (_, _) => { })
+                RenderTextureUsage.ColorAttachment | RenderTextureUsage.Storage
+            )
+        );
+        readGraph
+            .AddRasterPass("Initialize", C_GEOMETRY, 0, static (
+                _,
+                _
+            ) => {})
             .UseColorAttachment(readTexture, 0, RenderLoadAction.Clear);
-        readGraph.AddComputePass("Read", C_PROCESS, 0, static (_, _) => { })
+        readGraph
+            .AddComputePass("Read", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .ReadStorageTexture(readTexture)
             .HasSideEffect();
 
@@ -467,18 +555,17 @@ public sealed class RenderGraphCompilerTests
 
         RenderGraphBuilder writeGraph = new(
             2,
-            CreateCapabilities(
-                maxViews: 64,
-                storageReadFormats: [],
-                storageWriteFormats: [RenderTextureFormat.RGBA8]));
+            CreateCapabilities(maxViews: 64, storageReadFormats: [], storageWriteFormats: [RenderTextureFormat.RGBA8])
+        );
         RenderTextureHandle writeTexture = writeGraph.CreateTexture(
             "Write Only",
-            new RenderTextureDescriptor(
-                8,
-                8,
-                RenderTextureFormat.RGBA8,
-                RenderTextureUsage.Storage));
-        writeGraph.AddComputePass("Write", C_PROCESS, 0, static (_, _) => { })
+            new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Storage)
+        );
+        writeGraph
+            .AddComputePass("Write", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .WriteStorageTexture(writeTexture)
             .HasSideEffect();
 
@@ -488,18 +575,17 @@ public sealed class RenderGraphCompilerTests
 
         RenderGraphBuilder readWriteGraph = new(
             3,
-            CreateCapabilities(
-                maxViews: 64,
-                storageReadFormats: [],
-                storageWriteFormats: [RenderTextureFormat.RGBA8]));
+            CreateCapabilities(maxViews: 64, storageReadFormats: [], storageWriteFormats: [RenderTextureFormat.RGBA8])
+        );
         RenderTextureHandle readWriteTexture = readWriteGraph.CreateTexture(
             "Read Write",
-            new RenderTextureDescriptor(
-                8,
-                8,
-                RenderTextureFormat.RGBA8,
-                RenderTextureUsage.Storage));
-        readWriteGraph.AddComputePass("Read Write", C_PROCESS, 0, static (_, _) => { })
+            new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Storage)
+        );
+        readWriteGraph
+            .AddComputePass("Read Write", C_PROCESS, 0, static (
+                _,
+                _
+            ) => {})
             .ReadWriteStorageTexture(readWriteTexture)
             .HasSideEffect();
 
@@ -508,18 +594,24 @@ public sealed class RenderGraphCompilerTests
         Assert.False(readWriteResult.succeeded);
         Assert.Contains(
             readWriteResult.diagnostics,
-            diagnostic => diagnostic.code == "RENDER_GRAPH_STORAGE_TEXTURE_ACCESS_UNSUPPORTED");
+            diagnostic => diagnostic.code == "RENDER_GRAPH_STORAGE_TEXTURE_ACCESS_UNSUPPORTED"
+        );
     }
 
     [Fact]
     public void Execute_WhenPassFails_StillEndsPassAndGraph()
     {
         RenderGraphBuilder graph = CreateGraph();
-        graph.AddRasterPass(
+        graph
+            .AddRasterPass(
                 "Failure",
                 C_GEOMETRY,
                 0,
-                static (_, _) => throw new InvalidOperationException("failure"))
+                static (
+                    _,
+                    _
+                ) => throw new InvalidOperationException("failure")
+            )
             .HasSideEffect();
         CompiledRenderGraph compiled = graph.Compile().graph!;
         RecordingBackend backend = new();
@@ -543,12 +635,16 @@ public sealed class RenderGraphCompilerTests
             int active = Interlocked.Increment(ref activeRecorders);
             int observed;
             while (active > (observed = Volatile.Read(ref maximumRecorders)))
+            {
                 _ = Interlocked.CompareExchange(ref maximumRecorders, active, observed);
+            }
             if (drawCount <= 2 && Environment.ProcessorCount > 1)
             {
                 parallelEntered.Signal();
-                Assert.True(parallelEntered.Wait(TimeSpan.FromSeconds(30)),
-                    "Both eligible callbacks must enter before either completes recording.");
+                Assert.True(
+                    parallelEntered.Wait(TimeSpan.FromSeconds(30)),
+                    "Both eligible callbacks must enter before either completes recording."
+                );
             }
             context.commands.Draw(drawCount);
             _ = Interlocked.Decrement(ref activeRecorders);
@@ -575,12 +671,16 @@ public sealed class RenderGraphCompilerTests
                 "Begin:Serial", "Draw:Serial:3", "End:Serial",
                 "EndGraph"
             ],
-            backend.calls);
+            backend.calls
+        );
         Assert.Equal(
             [RenderPassRecordingMode.Parallel, RenderPassRecordingMode.Parallel, RenderPassRecordingMode.Serial],
-            compiled.passes.Select(static pass => pass.recordingMode));
+            compiled.passes.Select(static pass => pass.recordingMode)
+        );
         if (Environment.ProcessorCount > 1)
+        {
             Assert.True(maximumRecorders > 1, "Parallel pass callbacks did not overlap.");
+        }
     }
 
     private static RenderGraphBuilder CreateGraph() => new(1, CreateCapabilities(64));
@@ -592,34 +692,36 @@ public sealed class RenderGraphCompilerTests
         IReadOnlyList<RenderTextureFormat>? sampled3DFormats = null,
         IReadOnlyList<RenderTextureFormat>? sampledCubeFormats = null,
         IReadOnlyList<RenderTextureFormat>? storageReadFormats = null,
-        IReadOnlyList<RenderTextureFormat>? storageWriteFormats = null)
-        => new(
-            GraphicsApi.Noop,
-            features
-                ?? (GraphicsCapability.Compute
-                    | GraphicsCapability.StorageBuffer
-                    | GraphicsCapability.StorageTexture
-                    | GraphicsCapability.TextureBlit
-                    | GraphicsCapability.Texture2DArray
-                    | GraphicsCapability.Index32),
-            new GraphicsLimits(maxViews, 8, 16384, 16),
-            sampledFormats ?? Enum.GetValues<RenderTextureFormat>(),
-            Enum.GetValues<RenderTextureFormat>(),
-            storageReadFormats ??
-                [RenderTextureFormat.RGBA8, RenderTextureFormat.RGBA16Float, RenderTextureFormat.R32Float],
-            storageWriteFormats ??
-                [RenderTextureFormat.RGBA8, RenderTextureFormat.RGBA16Float, RenderTextureFormat.R32Float],
-            false,
-            false,
-            sampled3DFormats,
-            sampledCubeFormats);
+        IReadOnlyList<RenderTextureFormat>? storageWriteFormats = null
+    ) => new(
+        GraphicsApi.Noop,
+        features
+        ?? (GraphicsCapability.Compute
+            | GraphicsCapability.StorageBuffer
+            | GraphicsCapability.StorageTexture
+            | GraphicsCapability.TextureBlit
+            | GraphicsCapability.Texture2DArray
+            | GraphicsCapability.Index32),
+        new GraphicsLimits(maxViews, 8, 16384, 16),
+        sampledFormats ?? Enum.GetValues<RenderTextureFormat>(),
+        Enum.GetValues<RenderTextureFormat>(),
+        storageReadFormats
+        ?? [RenderTextureFormat.RGBA8, RenderTextureFormat.RGBA16Float, RenderTextureFormat.R32Float],
+        storageWriteFormats
+        ?? [RenderTextureFormat.RGBA8, RenderTextureFormat.RGBA16Float, RenderTextureFormat.R32Float],
+        false,
+        false,
+        sampled3DFormats,
+        sampledCubeFormats
+    );
 
     private static RenderTextureDescriptor ColorDescriptor()
         => new(
             128,
             128,
             RenderTextureFormat.RGBA16Float,
-            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled);
+            RenderTextureUsage.ColorAttachment | RenderTextureUsage.Sampled
+        );
 
     private static RenderTextureDescriptor SampledDescriptor()
         => new(128, 128, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
@@ -661,70 +763,161 @@ public sealed class RenderGraphCompilerTests
             m_onDraw = onDraw;
         }
 
-        public override void BindGraphicsPipeline(GraphicsPipelineHandle pipeline) { }
-        public override void BindComputePipeline(ComputePipelineHandle pipeline) { }
+        public override void BindGraphicsPipeline(GraphicsPipelineHandle pipeline) {}
+
+        public override void BindComputePipeline(ComputePipelineHandle pipeline) {}
+
         public override void BindTexture(
             RenderBindingId binding,
             RenderTextureHandle texture,
-            RenderSamplerState sampler) { }
+            RenderSamplerState sampler
+        ) {}
+
         public override void BindTexture(
             RenderBindingId binding,
             PersistentTextureHandle texture,
-            RenderSamplerState sampler) { }
+            RenderSamplerState sampler
+        ) {}
+
         public override void BindStorageTexture(
             RenderBindingId binding,
             RenderTextureHandle texture,
-            int mipLevel = 0) { }
+            int mipLevel = 0
+        ) {}
+
         public override void BindStorageTexture(
             RenderBindingId binding,
             PersistentTextureHandle texture,
-            int mipLevel = 0) { }
-        public override void BindBuffer(RenderBindingId binding, RenderBufferHandle buffer) { }
-        public override void BindBuffer(RenderBindingId binding, PersistentBufferHandle buffer) { }
-        public override void SetUniform(RenderBindingId binding, ReadOnlySpan<byte> value) { }
-        public override void SetTransform(ReadOnlySpan<float> columnMajorMatrix) { }
-        public override void SetRasterState(RenderRasterState state) { }
-        public override void SetStencil(RenderStencilState state) { }
-        public override void SetViewport(int x, int y, int width, int height) { }
-        public override void SetScissor(int x, int y, int width, int height) { }
-        public override void BindVertexBuffer(RenderBufferHandle buffer, int firstVertex = 0) { }
-        public override void BindVertexBuffer(PersistentBufferHandle buffer, int firstVertex = 0) { }
-        public override void BindIndexBuffer(RenderBufferHandle buffer, int firstIndex = 0) { }
-        public override void BindIndexBuffer(PersistentBufferHandle buffer, int firstIndex = 0) { }
+            int mipLevel = 0
+        ) {}
+
+        public override void BindBuffer(
+            RenderBindingId binding,
+            RenderBufferHandle buffer
+        ) {}
+
+        public override void BindBuffer(
+            RenderBindingId binding,
+            PersistentBufferHandle buffer
+        ) {}
+
+        public override void SetUniform(
+            RenderBindingId binding,
+            ReadOnlySpan<byte> value
+        ) {}
+
+        public override void SetTransform(ReadOnlySpan<float> columnMajorMatrix) {}
+
+        public override void SetRasterState(RenderRasterState state) {}
+
+        public override void SetStencil(RenderStencilState state) {}
+
+        public override void SetViewport(
+            int x,
+            int y,
+            int width,
+            int height
+        ) {}
+
+        public override void SetScissor(
+            int x,
+            int y,
+            int width,
+            int height
+        ) {}
+
+        public override void BindVertexBuffer(
+            RenderBufferHandle buffer,
+            int firstVertex = 0
+        ) {}
+
+        public override void BindVertexBuffer(
+            PersistentBufferHandle buffer,
+            int firstVertex = 0
+        ) {}
+
+        public override void BindIndexBuffer(
+            RenderBufferHandle buffer,
+            int firstIndex = 0
+        ) {}
+
+        public override void BindIndexBuffer(
+            PersistentBufferHandle buffer,
+            int firstIndex = 0
+        ) {}
+
         public override void BindInstanceBuffer(
             RenderBufferHandle buffer,
             int firstInstance,
-            int instanceCount) { }
+            int instanceCount
+        ) {}
+
         public override void BindInstanceBuffer(
             PersistentBufferHandle buffer,
             int firstInstance,
-            int instanceCount) { }
-        public override void Draw(int vertexCount, int instanceCount = 1) => m_onDraw?.Invoke(vertexCount);
-        public override void DrawProcedural(int vertexCount, int instanceCount = 1) { }
-        public override void DrawIndexed(int indexCount, int instanceCount = 1) { }
+            int instanceCount
+        ) {}
+
+        public override void Draw(
+            int vertexCount,
+            int instanceCount = 1
+        ) => m_onDraw?.Invoke(vertexCount);
+
+        public override void DrawProcedural(
+            int vertexCount,
+            int instanceCount = 1
+        ) {}
+
+        public override void DrawIndexed(
+            int indexCount,
+            int instanceCount = 1
+        ) {}
+
         public override void DrawIndirect(
             RenderBufferHandle buffer,
             int firstCommand = 0,
-            int commandCount = 1) { }
+            int commandCount = 1
+        ) {}
+
         public override void DrawIndirect(
             PersistentBufferHandle buffer,
             int firstCommand = 0,
-            int commandCount = 1) { }
-        public override void Dispatch(int groupCountX, int groupCountY = 1, int groupCountZ = 1) { }
+            int commandCount = 1
+        ) {}
+
+        public override void Dispatch(
+            int groupCountX,
+            int groupCountY = 1,
+            int groupCountZ = 1
+        ) {}
+
         public override void DispatchIndirect(
             RenderBufferHandle buffer,
             int firstCommand = 0,
-            int commandCount = 1) { }
+            int commandCount = 1
+        ) {}
+
         public override void DispatchIndirect(
             PersistentBufferHandle buffer,
             int firstCommand = 0,
-            int commandCount = 1) { }
-        public override void CopyTexture(RenderTextureHandle source, RenderTextureHandle destination) { }
+            int commandCount = 1
+        ) {}
+
+        public override void CopyTexture(
+            RenderTextureHandle source,
+            RenderTextureHandle destination
+        ) {}
+
         public override void BlitTexture(
             RenderTextureHandle source,
             RenderTextureRegion sourceRegion,
             RenderTextureHandle destination,
-            RenderTextureRegion destinationRegion) { }
-        public override void CopyBuffer(RenderBufferHandle source, RenderBufferHandle destination) { }
+            RenderTextureRegion destinationRegion
+        ) {}
+
+        public override void CopyBuffer(
+            RenderBufferHandle source,
+            RenderBufferHandle destination
+        ) {}
     }
 }

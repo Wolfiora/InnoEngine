@@ -3,14 +3,14 @@ using System.IO;
 using System.Text;
 
 namespace Inno.Editor.Assets;
+
 internal sealed record AssetHistoryData(
     AssetHistoryOperationKind operationKind,
     string sourcePath,
     string targetPath,
     bool isDirectory,
     byte[] archive
-)
-{
+) {
     internal byte[] Encode()
     {
         using var stream = new MemoryStream();
@@ -31,18 +31,26 @@ internal sealed record AssetHistoryData(
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
         var kind = (AssetHistoryOperationKind)reader.ReadByte();
         if (!Enum.IsDefined(kind))
+        {
             throw new InvalidDataException($"Unknown asset history operation kind '{kind}'.");
+        }
         string sourcePath = reader.ReadString();
         string targetPath = reader.ReadString();
         bool isDirectory = reader.ReadBoolean();
         int archiveLength = reader.ReadInt32();
         if (archiveLength < 0 || archiveLength > stream.Length - stream.Position)
+        {
             throw new InvalidDataException("Asset history archive length is invalid.");
+        }
         byte[] archive = reader.ReadBytes(archiveLength);
         if (archive.Length != archiveLength)
+        {
             throw new EndOfStreamException("Asset history archive is truncated.");
+        }
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Asset history payload contains trailing data.");
+        }
         return new AssetHistoryData(kind, sourcePath, targetPath, isDirectory, archive);
     }
 }

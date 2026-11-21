@@ -1,12 +1,14 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using Inno.Core.Input;
+using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
-using Inno.Editor.ImGui.ImGuiWidget;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 
 namespace Inno.Editor.Panel.Hierarchy;
+
 [EditorAction(HierarchyInteractionIds.C_RENAME, priority: 100)]
 [EditorMenu(HierarchyInteractionIds.C_AREA, "Rename", order: 200)]
 [EditorShortcut(HierarchyInteractionIds.C_AREA, KeyCode.F2)]
@@ -15,6 +17,7 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
     private string m_buffer = string.Empty;
     private bool m_requestFocus;
     private string m_originalName = string.Empty;
+
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
     /// </summary>
@@ -24,7 +27,11 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<EngineObject> context) => IsAvailable(context.target) ? edits.CanEdit(context.target) ? EditorActionState.enabled : EditorActionState.disabled : EditorActionState.hidden;
+    protected override EditorActionState Query(EditorActionContext<EngineObject> context)
+        => IsAvailable(context.target)
+           ? edits.CanEdit(context.target) ? EditorActionState.enabled : EditorActionState.disabled
+           : EditorActionState.hidden;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -34,7 +41,9 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
     protected override void Execute(EditorActionContext<EngineObject> context)
     {
         if (!TryGetName(context.target, out string name))
+        {
             return;
+        }
         Activate(context);
         m_buffer = name;
         m_originalName = name;
@@ -53,7 +62,9 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
     protected override bool Present(EditorActionContext<EngineObject, InlineRenamePresentation> context)
     {
         if (activeTarget is not EngineObject target)
+        {
             return false;
+        }
         InlineRenamePresentation presentation = context.argument;
         InlineRenameResult result = EditorUI.current.widgets.InlineRename(
             presentation.id,
@@ -70,7 +81,9 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
         }
 
         if (result is InlineRenameResult.FocusLost or InlineRenameResult.Commit)
+        {
             CommitName();
+        }
         return true;
     }
 
@@ -78,10 +91,12 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
     /// Commits the interaction after editing completes successfully.
     /// </summary>
     protected override void OnCompleted() => ClearState();
+
     /// <summary>
     /// Cancels the interaction without committing its pending value.
     /// </summary>
     protected override void OnCancelled() => ClearState();
+
     /// <summary>
     /// Cancels pending presentation state when its editor surface disappears.
     /// </summary>
@@ -99,7 +114,9 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
     private void CommitName()
     {
         if (activeTarget is not EngineObject target)
+        {
             return;
+        }
         string fallback = target is GameScene ? "Scene" : "GameObject";
         string name = string.IsNullOrWhiteSpace(m_buffer) ? fallback : m_buffer.Trim();
         if (!string.Equals(m_originalName, name, StringComparison.Ordinal))
@@ -125,12 +142,14 @@ internal sealed class RenameHierarchyTargetCommand(SceneEdits edits) : EditorPre
         m_originalName = string.Empty;
     }
 
-    private static bool IsAvailable(EngineObject target) => target switch
+    private static bool IsAvailable(EngineObject target)
+        => target switch
     {
         GameScene scene => scene.isLoaded && !scene.isDestroyed,
         GameObject gameObject => gameObject.isRuntimeValid,
         _ => false
     };
+
     private static bool TryGetName(
         EngineObject target,
         out string name

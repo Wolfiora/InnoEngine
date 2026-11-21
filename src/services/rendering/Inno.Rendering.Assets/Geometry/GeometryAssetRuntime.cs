@@ -1,8 +1,8 @@
-using Inno.Core.Mathematics;
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Inno.Core.Mathematics;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -30,4 +30,3 @@ public static class GeometryAssetRuntime
         return GeometryArtifact.Decode(geometry.runtimePayload.Span);
     }
 }
-

@@ -7,5 +7,6 @@ internal sealed class LeaseAudioTestSource(ArtifactLease artifact) : IAudioClipS
 {
     public string contentHash => artifact.info.contentHash;
     public long length => artifact.info.length;
+
     public Stream OpenRead() => artifact.OpenRead();
 }

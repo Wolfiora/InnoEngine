@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Inno.References;
 using Xunit;
+using Inno.References;
 
 namespace Inno.Audio.Tests;
 
@@ -39,9 +39,13 @@ public sealed class AudioContentContractTests
         using ContentReadScope content = ContentReadScope.empty;
         using var context = new AudioContentProviderContext(content, 0);
         if (emitter)
+        {
             Assert.Throws<ArgumentException>(() => context.Submit(default(AudioEmitterSnapshot)));
+        }
         else
+        {
             Assert.Throws<ArgumentException>(() => context.Submit(default(AudioListenerSnapshot)));
+        }
         Assert.Throws<InvalidOperationException>(() => _ = context.listeners);
     }
 

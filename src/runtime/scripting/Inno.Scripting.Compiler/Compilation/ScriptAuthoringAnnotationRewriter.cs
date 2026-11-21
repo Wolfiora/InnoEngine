@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Inno.Scripting.Api;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Inno.Scripting.Api;
 
 namespace Inno.Scripting.Compiler;
 
@@ -32,11 +32,14 @@ internal sealed class ScriptAuthoringAnnotationRewriter(
         ScriptApiProfile api,
         CancellationToken cancellationToken
     ) {
-        Type[] types = api.exports.SelectMany(export => export.assembly
+        Type[] types = api.exports
+            .SelectMany(export => export.assembly
                 .GetCustomAttributes(typeof(ScriptingApiExportAttribute), false)
                 .Cast<ScriptingApiExportAttribute>())
             .Where(export => export.scope == ScriptingApiScope.Authoring)
-            .Select(export => export.type).Distinct().ToArray();
+            .Select(export => export.type)
+            .Distinct()
+            .ToArray();
         var names = types.Select(type => type.FullName!).ToHashSet(StringComparer.Ordinal);
         var namespaces = types.Select(type => type.Namespace!).ToHashSet(StringComparer.Ordinal);
         return compilation.SyntaxTrees.Select(tree =>
@@ -88,14 +91,19 @@ internal sealed class ScriptAuthoringAnnotationRewriter(
         ISymbol? symbol = node.Name is null ? null : semanticModel.GetSymbolInfo(node.Name).Symbol;
         return symbol is INamedTypeSymbol type && IsAnnotation(type)
                || symbol is INamespaceSymbol ns && annotationNamespaces.Contains(ns.ToDisplayString())
-            ? null : base.VisitUsingDirective(node);
+               ? null
+               : base.VisitUsingDirective(node);
     }
 
     private bool IsAnnotation(INamedTypeSymbol? type)
     {
         for (INamedTypeSymbol? current = type; current is not null; current = current.BaseType)
+        {
             if (annotationTypes.Contains(current.ToDisplayString()))
+            {
                 return true;
+            }
+        }
         return false;
     }
 }

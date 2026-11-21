@@ -22,7 +22,8 @@ public static class StandardAdapterSelection
     /// <returns>
     /// A fully assigned standard selection; its catalog must still be validated before creating resources.
     /// </returns>
-    public static AdapterSelection Create(StorageBackendId storage) => new()
+    public static AdapterSelection Create(StorageBackendId storage)
+        => new()
     {
         platform = PlatformBackendId.sdl3,
         input = InputBackendId.events,

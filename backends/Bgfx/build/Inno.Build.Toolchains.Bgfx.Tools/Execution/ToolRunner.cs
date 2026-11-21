@@ -26,7 +26,8 @@ public sealed class ToolRunner
     /// <param name="workspaces">
     /// Explicit execution path policy, or null for physical execution.
     /// </param>
-    public ToolRunner(IToolchainWorkspaceProvider? workspaces = null) => m_workspaces = workspaces ?? new PhysicalToolchainWorkspaceProvider();
+    public ToolRunner(IToolchainWorkspaceProvider? workspaces = null)
+        => m_workspaces = workspaces ?? new PhysicalToolchainWorkspaceProvider();
 
     /// <summary>
     /// Freezes executables selected and validated by the host's toolchain operation.
@@ -55,14 +56,23 @@ public sealed class ToolRunner
         ArgumentNullException.ThrowIfNull(executables);
         ArgumentException.ThrowIfNullOrWhiteSpace(includesDirectory);
         if (!Path.IsPathFullyQualified(includesDirectory) || !Directory.Exists(includesDirectory))
+        {
             throw new ArgumentException("The selected shader include directory must exist at an absolute path.", nameof(includesDirectory));
+        }
         Dictionary<BgfxTool, string> snapshot = [];
         foreach ((BgfxTool tool, string path) in executables)
         {
             if (!Enum.IsDefined(tool) || !Path.IsPathFullyQualified(path))
-                throw new ArgumentException("A tool runner requires supported identities and absolute executable paths.", nameof(executables));
+            {
+                throw new ArgumentException(
+                    "A tool runner requires supported identities and absolute executable paths.",
+                    nameof(executables)
+                );
+            }
             if (!File.Exists(path))
+            {
                 throw new FileNotFoundException("A selected BGFX executable is unavailable.", path);
+            }
             snapshot.Add(tool, Path.GetFullPath(path));
         }
         m_executables = new ReadOnlyDictionary<BgfxTool, string>(snapshot);
@@ -88,8 +98,7 @@ public sealed class ToolRunner
         BgfxTool tool,
         IReadOnlyList<string> arguments,
         string? workingDirectory = null
-    )
-        => RunAsync(tool, arguments, workingDirectory).AsTask().GetAwaiter().GetResult();
+    ) => RunAsync(tool, arguments, workingDirectory).AsTask().GetAwaiter().GetResult();
 
     /// <summary>
     /// Runs the external tool asynchronously and captures its complete process outcome.
@@ -128,7 +137,9 @@ public sealed class ToolRunner
         cancellationToken.ThrowIfCancellationRequested();
         string toolPath = ResolveToolPath(tool);
         using ToolchainWorkingDirectory execution = await m_workspaces.OpenAsync(
-            Path.GetDirectoryName(toolPath)!, cancellationToken).ConfigureAwait(false);
+            Path.GetDirectoryName(toolPath)!,
+            cancellationToken
+        ).ConfigureAwait(false);
         var startInfo = new ProcessStartInfo
         {
             FileName = Path.Combine(execution.toolPath, Path.GetFileName(toolPath)),
@@ -145,7 +156,7 @@ public sealed class ToolRunner
         }
 
         using Process process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException($"Failed to start tool: {toolPath}");
+                                ?? throw new InvalidOperationException($"Failed to start tool: {toolPath}");
         Task<string> standardOutput = process.StandardOutput.ReadToEndAsync();
         Task<string> standardError = process.StandardError.ReadToEndAsync();
         try
@@ -154,14 +165,17 @@ public sealed class ToolRunner
             return new ToolRunResult(
                 process.ExitCode,
                 await standardOutput.ConfigureAwait(false),
-                await standardError.ConfigureAwait(false));
+                await standardError.ConfigureAwait(false)
+            );
         }
         catch
         {
             try
             {
                 if (!process.HasExited)
+                {
                     process.Kill(entireProcessTree: true);
+                }
             }
             catch (InvalidOperationException) when (process.HasExited)
             {
@@ -183,7 +197,9 @@ public sealed class ToolRunner
     internal string ResolveShaderInclude(string name)
     {
         if (name is not ("bgfx_shader.sh" or "bgfx_compute.sh"))
+        {
             throw new ArgumentException("The shader include is not part of this backend's declared tool product.", nameof(name));
+        }
         string path = m_includesDirectory is null ? NativeDllLoader.FindNativeFile(name) : Path.Combine(m_includesDirectory, name);
         return File.Exists(path) ? path : throw new FileNotFoundException("A selected shader include is unavailable.", path);
     }
@@ -191,10 +207,12 @@ public sealed class ToolRunner
     private string ResolveToolPath(BgfxTool tool)
     {
         if (m_executables is not null)
+        {
             return m_executables.TryGetValue(tool, out string? executable)
-                ? executable : throw new FileNotFoundException($"The selected distribution has no '{tool}' executable.");
+                   ? executable
+                   : throw new FileNotFoundException($"The selected distribution has no '{tool}' executable.");
+        }
         string name = tool.ToString().ToLowerInvariant();
         return NativeDllLoader.FindNativeFile(name);
     }
-
 }

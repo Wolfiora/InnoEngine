@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Extensibility.Catalogs;
 
 namespace Inno.Extensibility.Types;
@@ -88,8 +87,9 @@ public sealed class TypeCacheSnapshot
     /// <returns>
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
-    public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttribute>() where TAttribute : Attribute
-        => m_queryRegistry.GetTypesWithAttribute<TAttribute>(m_identityRegistry);
+    public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttribute>()
+        where TAttribute : Attribute
+            => m_queryRegistry.GetTypesWithAttribute<TAttribute>(m_identityRegistry);
 
     /// <summary>
     /// Gets the reference for a CLR type in this snapshot.
@@ -154,7 +154,9 @@ public sealed class TypeCacheSnapshot
         ArgumentNullException.ThrowIfNull(type);
         Type declaration = type.IsConstructedGenericType ? type.GetGenericTypeDefinition() : type;
         if (!m_identityRegistry.TryGetTypeRef(declaration, out _))
+        {
             throw new InvalidOperationException($"Type '{type}' does not belong to this generation.");
+        }
         return m_source!.CreateInstance(type);
     }
 
@@ -183,7 +185,9 @@ public sealed class TypeCacheSnapshot
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(arguments);
         if (!m_identityRegistry.TryGetTypeRef(definition, out _))
+        {
             throw new InvalidOperationException($"Type '{definition}' does not belong to this generation.");
+        }
         return m_source!.ConstructGenericType(definition, arguments);
     }
 
@@ -220,7 +224,8 @@ public sealed class TypeCacheSnapshot
     {
         TypeCatalogMetadata metadata = GetMetadata(type);
         return (inherit ? metadata.inheritedAttributes : metadata.declaredAttributes)
-            .OfType<TAttribute>().SingleOrDefault();
+            .OfType<TAttribute>()
+            .SingleOrDefault();
     }
 
     internal IReadOnlyList<Type> runtimeTypes => m_types;
@@ -244,7 +249,9 @@ public sealed class TypeCacheSnapshot
         foreach (Assembly assembly in assemblies.Where(static value => !value.IsDynamic))
         {
             if (typesByAssembly.ContainsKey(assembly))
+            {
                 continue;
+            }
             if (previous is not null && previous.m_typesByAssembly.TryGetValue(assembly, out Type[]? cachedTypes))
             {
                 typesByAssembly.Add(assembly, cachedTypes);
@@ -275,7 +282,8 @@ public sealed class TypeCacheSnapshot
         {
             throw new TypeCacheBuildException(
                 $"Type discovery failed with {loaderExceptions.Count} loader error(s).",
-                loaderExceptions);
+                loaderExceptions
+            );
         }
 
         Type[] types = discoveredTypes
@@ -284,9 +292,14 @@ public sealed class TypeCacheSnapshot
             .ThenBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
         var identities = new TypeIdentityRegistry();
-        Dictionary<Type, TypeCatalogMetadata> metadata = types.ToDictionary(static type => type,
-            type => previous is not null && previous.m_metadata.TryGetValue(type, out TypeCatalogMetadata? existing)
-                ? existing : source.GetMetadata(type));
+        Dictionary<Type, TypeCatalogMetadata> metadata = types.ToDictionary(
+            static type => type,
+            type => (
+                previous is not null && previous.m_metadata.TryGetValue(type, out TypeCatalogMetadata? existing)
+                ? existing
+                : source.GetMetadata(type)
+            )
+        );
         identities.Rebuild(metadata.Values, previous?.m_identityRegistry);
         var queries = new TypeQueryRegistry();
         queries.Rebuild(metadata.Values, identities);

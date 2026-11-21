@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
-using Inno.Content;
 using Xunit;
+using Inno.Content;
 
 namespace Inno.Adapter.Content.FileSystem.Tests;
 

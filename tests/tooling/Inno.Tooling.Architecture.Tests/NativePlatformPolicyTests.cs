@@ -39,17 +39,21 @@ public sealed class NativePlatformPolicyTests
             File.WriteAllText(Path.Combine(bindings, "bindings.props"), "<Project />");
             File.WriteAllText(Path.Combine(bindings, "bindgen.json"), configuration);
             if (targetPreset)
+            {
                 File.WriteAllText(Path.Combine(bindings, "bindgen.probe-target.json"), "{}");
+            }
             (_, string output) = ArchitectureCommandFixture.Run(root);
             bool violation = output.Contains("belongs to a platform Profile", StringComparison.Ordinal)
-                || output.Contains("must be supplied by the platform provider", StringComparison.Ordinal)
-                || output.Contains("platform binding presets belong", StringComparison.Ordinal);
+                             || output.Contains("must be supplied by the platform provider", StringComparison.Ordinal)
+                             || output.Contains("platform binding presets belong", StringComparison.Ordinal);
             Assert.Equal(rejected, violation);
         }
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 }

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Assets;
 using Xunit;
+using Inno.Assets;
 
 namespace Inno.Assets.Tests;
 
@@ -15,8 +14,7 @@ public sealed class AssetResidencyTests
     public async Task AssetLeaseRetainsCanonicalAssetAndReleasesExactlyOnce()
     {
         var provider = new FakeResidencyProvider();
-        AssetLease<TextAsset> lease = await provider.AcquireAsync<TextAsset>(
-            AssetPath.Project("Text/readme.txt"));
+        AssetLease<TextAsset> lease = await provider.AcquireAsync<TextAsset>(AssetPath.Project("Text/readme.txt"));
 
         Assert.Same(provider.asset, lease.asset);
         lease.Dispose();
@@ -49,7 +47,9 @@ public sealed class AssetResidencyTests
             var provider = new FakeResidencyProvider(path);
             ArtifactLease lease = provider.AcquireArtifact(Guid.NewGuid(), "runtime");
             using (Stream stream = lease.OpenRead())
+            {
                 Assert.Equal(3, stream.Length);
+            }
 
             lease.Dispose();
 
@@ -79,30 +79,27 @@ public sealed class AssetResidencyTests
 
         public ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
             AssetPath path,
-            CancellationToken cancellationToken = default)
-            where TAsset : AssetObject
+            CancellationToken cancellationToken = default
+        ) where TAsset : AssetObject
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return ValueTask.FromResult(CreateAssetLease(
-                (TAsset)(AssetObject)asset,
-                () => assetReleaseCount++));
+            return ValueTask.FromResult(CreateAssetLease((TAsset)(AssetObject)asset, () => assetReleaseCount++));
         }
 
         public ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
             Guid persistentId,
-            CancellationToken cancellationToken = default)
-            where TAsset : AssetObject
+            CancellationToken cancellationToken = default
+        ) where TAsset : AssetObject
             => AcquireAsync<TAsset>(AssetPath.Project("Text/readme.txt"), cancellationToken);
 
-        public ArtifactLease AcquireArtifact(Guid persistentId, string outputName)
-            => CreateArtifactLease(
-                new AssetArtifactInfo(
-                    new AssetArtifactKey(new string('A', 64)),
-                    outputName,
-                    "HASH",
-                    3),
-                () => File.OpenRead(m_artifactPath),
-                () => artifactReleaseCount++);
+        public ArtifactLease AcquireArtifact(
+            Guid persistentId,
+            string outputName
+        ) => CreateArtifactLease(
+            new AssetArtifactInfo(new AssetArtifactKey(new string('A', 64)), outputName, "HASH", 3),
+            () => File.OpenRead(m_artifactPath),
+            () => artifactReleaseCount++
+        );
     }
 
     private sealed class CallbackLease(Action callback) : IDisposable

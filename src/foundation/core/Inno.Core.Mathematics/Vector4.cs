@@ -1,9 +1,9 @@
 using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.Serialization;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
+using System.Runtime.Serialization;
 
 namespace Inno.Core.Mathematics;
 
@@ -17,14 +17,17 @@ public struct Vector4 : IEquatable<Vector4>
     /// The horizontal or first component.
     /// </summary>
     [DataMember] public float x;
+
     /// <summary>
     /// The vertical or second component.
     /// </summary>
     [DataMember] public float y;
+
     /// <summary>
     /// The depth or third component.
     /// </summary>
     [DataMember] public float z;
+
     /// <summary>
     /// The homogeneous or fourth component.
     /// </summary>
@@ -56,32 +59,39 @@ public struct Vector4 : IEquatable<Vector4>
         this.z = z;
         this.w = w;
     }
+
     /// <summary>
     /// A value whose components are all zero.
     /// </summary>
 
     // Common vectors
     public static readonly Vector4 ZERO = new(0, 0, 0, 0);
+
     /// <summary>
     /// A value whose components are all one.
     /// </summary>
     public static readonly Vector4 ONE = new(1, 1, 1, 1);
+
     /// <summary>
     /// A unit value aligned with the x axis.
     /// </summary>
     public static readonly Vector4 UNIT_X = new(1, 0, 0, 0);
+
     /// <summary>
     /// A unit value aligned with the y axis.
     /// </summary>
     public static readonly Vector4 UNIT_Y = new(0, 1, 0, 0);
+
     /// <summary>
     /// A unit value aligned with the z axis.
     /// </summary>
     public static readonly Vector4 UNIT_Z = new(0, 0, 1, 0);
+
     /// <summary>
     /// A unit value aligned with the w axis.
     /// </summary>
     public static readonly Vector4 UNIT_W = new(0, 0, 0, 1);
+
     /// <summary>
     /// Calculates the Euclidean magnitude of this value.
     /// </summary>
@@ -113,6 +123,7 @@ public struct Vector4 : IEquatable<Vector4>
             return len > 0 ? this / len : ZERO;
         }
     }
+
     /// <summary>
     /// Calculates the scalar dot product of two values.
     /// </summary>
@@ -131,8 +142,8 @@ public struct Vector4 : IEquatable<Vector4>
     public static float Dot(
         Vector4 a,
         Vector4 b
-    ) =>
-        SimdMath.Dot4(a.x, a.y, a.z, a.w, b.x, b.y, b.z, b.w);
+    ) => SimdMath.Dot4(a.x, a.y, a.z, a.w, b.x, b.y, b.z, b.w);
+
     /// <summary>
     /// Interpolates linearly after clamping the interpolation factor to [0, 1].
     /// </summary>
@@ -155,8 +166,8 @@ public struct Vector4 : IEquatable<Vector4>
         Vector4 a,
         Vector4 b,
         float t
-    ) =>
-        a + (b - a) * Math.Clamp(t, 0f, 1f);
+    ) => a + (b - a) * Math.Clamp(t, 0f, 1f);
+
     /// <summary>
     /// Reflects an incident value across the supplied normal.
     /// </summary>
@@ -175,8 +186,8 @@ public struct Vector4 : IEquatable<Vector4>
     public static Vector4 Reflect(
         Vector4 vec,
         Vector4 normal
-    ) =>
-        vec - 2f * Dot(vec, normal) * normal;
+    ) => vec - 2f * Dot(vec, normal) * normal;
+
     /// <summary>
     /// Transforms the supplied value by the requested transformation.
     /// </summary>
@@ -217,6 +228,7 @@ public struct Vector4 : IEquatable<Vector4>
         float sw = m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44 * v.w;
         return new Vector4(sx, sy, sz, sw);
     }
+
     /// <summary>
     /// Projects the supplied value onto the requested dimensional space.
     /// </summary>
@@ -229,9 +241,12 @@ public struct Vector4 : IEquatable<Vector4>
     public Vector3 ProjectToVector3()
     {
         if (w == 0f)
+        {
             return new Vector3(x, y, z); // Avoid division by zero
+        }
         return new Vector3(x / w, y / w, z / w);
     }
+
     /// <summary>
     /// Adds the supplied values component by component.
     /// </summary>
@@ -250,8 +265,7 @@ public struct Vector4 : IEquatable<Vector4>
     public static Vector4 operator +(
         Vector4 a,
         Vector4 b
-    ) =>
-        new(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    ) => new(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -269,8 +283,7 @@ public struct Vector4 : IEquatable<Vector4>
     public static Vector4 operator -(
         Vector4 a,
         Vector4 b
-    ) =>
-        new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    ) => new(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
@@ -282,8 +295,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Vector4 operator -(Vector4 v) =>
-        new(-v.x, -v.y, -v.z, -v.w);
+    public static Vector4 operator -(Vector4 v) => new(-v.x, -v.y, -v.z, -v.w);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -301,8 +313,7 @@ public struct Vector4 : IEquatable<Vector4>
     public static Vector4 operator *(
         Vector4 v,
         float s
-    ) =>
-        new(v.x * s, v.y * s, v.z * s, v.w * s);
+    ) => new(v.x * s, v.y * s, v.z * s, v.w * s);
 
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
@@ -321,7 +332,7 @@ public struct Vector4 : IEquatable<Vector4>
         float s,
         Vector4 v
     ) => v * s;
-    
+
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -363,8 +374,7 @@ public struct Vector4 : IEquatable<Vector4>
     public static Vector4 operator /(
         Vector4 v,
         float s
-    ) =>
-        new(v.x / s, v.y / s, v.z / s, v.w / s);
+    ) => new(v.x / s, v.y / s, v.z / s, v.w / s);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -382,11 +392,10 @@ public struct Vector4 : IEquatable<Vector4>
     public static bool operator ==(
         Vector4 a,
         Vector4 b
-    ) =>
-        MathHelper.AlmostEquals(a.x, b.x) &&
-        MathHelper.AlmostEquals(a.y, b.y) &&
-        MathHelper.AlmostEquals(a.z, b.z) &&
-        MathHelper.AlmostEquals(a.w, b.w);
+    ) => MathHelper.AlmostEquals(a.x, b.x)
+         && MathHelper.AlmostEquals(a.y, b.y)
+         && MathHelper.AlmostEquals(a.z, b.z)
+         && MathHelper.AlmostEquals(a.w, b.w);
 
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
@@ -405,7 +414,7 @@ public struct Vector4 : IEquatable<Vector4>
         Vector4 a,
         Vector4 b
     ) => !(a == b);
-    
+
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Vector4"/>.
     /// </summary>
@@ -416,6 +425,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// The validated system.numerics.vector4 that represents the completed operation.
     /// </returns>
     public static implicit operator System.Numerics.Vector4(Vector4 v) => new(v.x, v.y, v.z, v.w);
+
     /// <summary>
     /// Converts the supplied value to <see cref="Vector4"/>.
     /// </summary>
@@ -437,6 +447,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool Equals(object? obj) => obj is Vector4 other && this == other;
+
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -447,6 +458,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Equals(Vector4 other) => this == other;
+
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
     /// </summary>
@@ -454,6 +466,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     public override int GetHashCode() => HashCode.Combine(x, y, z, w);
+
     /// <summary>
     /// Formats this value as a human-readable component list.
     /// </summary>

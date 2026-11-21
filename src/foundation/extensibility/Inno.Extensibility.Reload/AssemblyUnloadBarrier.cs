@@ -43,21 +43,27 @@ public sealed class AssemblyUnloadBarrier
         ArgumentNullException.ThrowIfNull(probes);
         m_probes = probes.ToArray();
         if (m_probes.Any(static probe => probe is null))
+        {
             throw new ArgumentNullException(nameof(probes), "Unload probe collections cannot contain null values.");
+        }
         options ??= new AssemblyUnloadBarrierOptions();
         if (options.collectionInterval < TimeSpan.Zero)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "The collection interval cannot be negative.");
+        }
         if (options.retentionTimeout <= TimeSpan.Zero && options.retentionTimeout != Timeout.InfiniteTimeSpan)
+        {
             throw new ArgumentOutOfRangeException(nameof(options), "The retention timeout must be positive or infinite.");
+        }
         m_collectionIntervalMilliseconds = checked((long)options.collectionInterval.TotalMilliseconds);
         m_retentionTimeoutMilliseconds = options.retentionTimeout == Timeout.InfiniteTimeSpan
-            ? long.MaxValue
-            : checked((long)options.retentionTimeout.TotalMilliseconds);
+                                         ? long.MaxValue
+                                         : checked((long)options.retentionTimeout.TotalMilliseconds);
         m_startedTimestamp = Environment.TickCount64;
         m_nextCollectionTimestamp = m_startedTimestamp;
         m_state = m_probes.All(static probe => probe.isCompleted)
-            ? AssemblyUnloadBarrierState.Completed
-            : AssemblyUnloadBarrierState.AwaitingCollection;
+                  ? AssemblyUnloadBarrierState.Completed
+                  : AssemblyUnloadBarrierState.AwaitingCollection;
     }
 
     /// <summary>
@@ -68,7 +74,9 @@ public sealed class AssemblyUnloadBarrier
         get
         {
             lock (m_sync)
+            {
                 return m_state;
+            }
         }
     }
 
@@ -80,7 +88,9 @@ public sealed class AssemblyUnloadBarrier
         get
         {
             lock (m_sync)
+            {
                 return m_collectionAttempts;
+            }
         }
     }
 
@@ -92,7 +102,9 @@ public sealed class AssemblyUnloadBarrier
         get
         {
             lock (m_sync)
+            {
                 return m_failure;
+            }
         }
     }
 
@@ -112,9 +124,13 @@ public sealed class AssemblyUnloadBarrier
         lock (m_sync)
         {
             if (m_state == AssemblyUnloadBarrierState.Completed)
+            {
                 return true;
+            }
             if (m_failure is not null)
+            {
                 throw m_failure;
+            }
             now = Environment.TickCount64;
             collect = now >= m_nextCollectionTimestamp;
             if (collect)
@@ -125,7 +141,9 @@ public sealed class AssemblyUnloadBarrier
         }
 
         if (collect)
+        {
             ForceFullCollection();
+        }
 
         lock (m_sync)
         {
@@ -136,7 +154,9 @@ public sealed class AssemblyUnloadBarrier
             }
             TimeSpan elapsed = TimeSpan.FromMilliseconds(Math.Max(0, now - m_startedTimestamp));
             if (elapsed.TotalMilliseconds < m_retentionTimeoutMilliseconds)
+            {
                 return false;
+            }
             string[] retained = m_probes
                 .Where(static probe => !probe.isCompleted)
                 .Select(static probe => probe.description)

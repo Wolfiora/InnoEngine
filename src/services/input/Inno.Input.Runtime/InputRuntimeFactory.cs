@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Input.Runtime;
 
@@ -28,7 +27,8 @@ public sealed class InputRuntimeFactory : IRuntimeSubsystemFactory
     /// </summary>
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
         new RuntimeSubsystemId("inno.runtime.input"),
-        order: -1000);
+        order: -1000
+    );
 
     /// <summary>
     /// Creates an input feature over a newly allocated session backend.
@@ -43,7 +43,7 @@ public sealed class InputRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         IInputBackend backend = m_backendFactory(context)
-            ?? throw new InvalidOperationException("The input backend factory returned null.");
+                                ?? throw new InvalidOperationException("The input backend factory returned null.");
         return new InputRuntime(backend);
     }
 }

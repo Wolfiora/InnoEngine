@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Ui = Inno.Editor.ImGui.ImGui;
+
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Logging;
 
@@ -60,8 +61,12 @@ internal sealed partial class ConsolePanel
     {
         m_retiredCardKeys.Clear();
         foreach (var entry in m_cardSlots)
+        {
             if (entry.Value.lastFrame != m_cardFrame)
+            {
                 m_retiredCardKeys.Add(entry.Key);
+            }
+        }
         foreach (string key in m_retiredCardKeys)
         {
             m_freeCardWindows.Push(m_cardSlots[key].index);
@@ -73,7 +78,9 @@ internal sealed partial class ConsolePanel
     private void ToggleEntry(string key)
     {
         if (!m_openEntries.Remove(key))
+        {
             m_openEntries.Add(key);
+        }
         m_openRevision++;
     }
 
@@ -89,7 +96,9 @@ internal sealed partial class ConsolePanel
         m_cardSlots.Clear();
         m_freeCardWindows.Clear();
         for (int index = m_cardWindowNames.Count - 1; index >= 0; index--)
+        {
             m_freeCardWindows.Push(index);
+        }
     }
 
     private void RefreshLayout()
@@ -98,7 +107,9 @@ internal sealed partial class ConsolePanel
         var shape = (width: Ui.GetContentRegionAvailable().X, frameHeight: Ui.GetFrameHeight(), padding: layout.framePadding.Y,
             spacing: layout.itemSpacing.Y, zoom: EditorUI.current.widgets.style.zoom);
         if (ReferenceEquals(m_layoutRows, m_view.rows) && m_layoutShape == shape && m_layoutOpenRevision == m_openRevision)
+        {
             return;
+        }
         bool sameShape = m_layoutShape == shape;
         float collapsedHeight = MathF.Truncate(shape.frameHeight + shape.padding * 2f);
         var measurements = new Dictionary<string, EntryMeasurement>(m_view.rows.Count, StringComparer.Ordinal);
@@ -108,8 +119,9 @@ internal sealed partial class ConsolePanel
             ConsoleView.Row row = m_view.rows[index];
             bool open = m_openEntries.Contains(row.key);
             EntryMeasurement measurement = sameShape && m_measurements.TryGetValue(row.key, out EntryMeasurement? previous)
-                && ReferenceEquals(previous.row, row) && previous.open == open
-                ? previous : new(row, open, collapsedHeight);
+                                           && ReferenceEquals(previous.row, row) && previous.open == open
+                                           ? previous
+                                           : new(row, open, collapsedHeight);
             entries[index] = measurement;
             measurements.Add(row.key, measurement);
         }
@@ -117,8 +129,12 @@ internal sealed partial class ConsolePanel
         m_layout = entries;
         m_pendingMeasurements.Clear();
         for (int index = 0; index < entries.Length; index++)
+        {
             if (entries[index].remainingMeasurements > 0)
+            {
                 m_pendingMeasurements.Add(index);
+            }
+        }
         m_offsets = new float[entries.Length + 1];
         m_layoutRows = m_view.rows;
         m_layoutShape = shape;
@@ -130,14 +146,18 @@ internal sealed partial class ConsolePanel
     {
         float spacing = Ui.GetLayout().itemSpacing.Y;
         for (int index = start; index < m_layout.Length; index++)
+        {
             m_offsets[index + 1] = m_offsets[index] + m_layout[index].height + spacing;
+        }
     }
 
     private void DrawVisibleEntries()
     {
         var clip = Ui.GetClipBounds();
         if (clip.maximum.Y <= clip.minimum.Y || clip.maximum.X <= clip.minimum.X)
+        {
             return;
+        }
         RefreshLayout();
         m_cardFrame++;
         Vector2 origin = Ui.GetCursorScreenPosition();
@@ -151,24 +171,38 @@ internal sealed partial class ConsolePanel
         bool focusPending = focused >= 0;
         while (visibleIndex <= last || pendingIndex < m_pendingMeasurements.Count || focusPending)
         {
-            int index = Math.Min(visibleIndex <= last ? visibleIndex : int.MaxValue,
-                pendingIndex < m_pendingMeasurements.Count ? m_pendingMeasurements[pendingIndex] : int.MaxValue);
+            int index = Math.Min(
+                visibleIndex <= last ? visibleIndex : int.MaxValue,
+                pendingIndex < m_pendingMeasurements.Count ? m_pendingMeasurements[pendingIndex] : int.MaxValue
+            );
             if (focusPending)
+            {
                 index = Math.Min(index, focused);
+            }
             if (index == visibleIndex)
+            {
                 visibleIndex++;
+            }
             if (pendingIndex < m_pendingMeasurements.Count && index == m_pendingMeasurements[pendingIndex])
+            {
                 pendingIndex++;
+            }
             if (index == focused)
+            {
                 focusPending = false;
+            }
             EntryMeasurement entry = m_layout[index];
             bool measure = entry.remainingMeasurements > 0;
             Ui.SetCursorScreenPosition(origin + new Vector2(0f, m_offsets[index] + adjustment));
             float height = DrawConsoleEntry(entry.row, measure);
             if (!float.IsFinite(height) || height <= 0f)
+            {
                 throw new InvalidOperationException("Console row measurement did not produce a finite positive height.");
+            }
             if (measure)
+            {
                 entry.remainingMeasurements--;
+            }
             if (height != entry.height)
             {
                 adjustment += height - entry.height;
@@ -179,16 +213,26 @@ internal sealed partial class ConsolePanel
             {
                 float top = origin.Y + m_offsets[index] + adjustment;
                 if (top < clip.minimum.Y)
+                {
                     Ui.SetScrollHereY(0f);
+                }
                 else if (top + height > clip.maximum.Y)
+                {
                     Ui.SetScrollHereY(1f);
+                }
             }
         }
         for (int index = m_pendingMeasurements.Count - 1; index >= 0; index--)
+        {
             if (m_layout[m_pendingMeasurements[index]].remainingMeasurements == 0)
+            {
                 m_pendingMeasurements.RemoveAt(index);
+            }
+        }
         if (changedFrom < m_layout.Length)
+        {
             RefreshOffsets(changedFrom);
+        }
         m_scrollFocusedRow = false;
         // A slot is reusable only after all rows have finished submitting this frame.
         RetireCardWindows();

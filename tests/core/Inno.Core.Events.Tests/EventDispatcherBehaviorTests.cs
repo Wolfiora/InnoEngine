@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Threading;
-
-using Inno.Core.Events;
-
+using System.Threading.Tasks;
 using Xunit;
+using Inno.Core.Events;
 
 namespace Inno.Core.Events.Tests;
 
@@ -81,7 +79,7 @@ public sealed class EventDispatcherBehaviorTests
         hub.Dispose();
 
         Assert.False(hub.isValid);
-        Assert.Throws<InvalidOperationException>(() => hub.Listen<ProbeEvent>(_ => { }));
+        Assert.Throws<InvalidOperationException>(() => hub.Listen<ProbeEvent>(_ => {}));
     }
 
     [Fact]
@@ -137,7 +135,10 @@ public sealed class EventDispatcherBehaviorTests
         var count = 0;
 
         hub.ListenOnce<ProbeEvent>(_ => Interlocked.Increment(ref count));
-        Parallel.For(0, iterations, i => { dispatcher.Emit(new ProbeEvent(i)); });
+        Parallel.For(0, iterations, i =>
+        {
+            dispatcher.Emit(new ProbeEvent(i));
+        });
 
         Assert.Equal(1, count);
     }
@@ -284,7 +285,10 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countA));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countB));
 
-        Parallel.For(0, iterations, i => { dispatcher.Emit(new ProbeEvent(i)); });
+        Parallel.For(0, iterations, i =>
+        {
+            dispatcher.Emit(new ProbeEvent(i));
+        });
 
         Assert.Equal(iterations, countA);
         Assert.Equal(iterations, countB);
@@ -312,7 +316,10 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubASecond));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubBCount));
 
-        Parallel.For(0, iterations, i => { dispatcher.Emit(new ProbeEvent(i)); });
+        Parallel.For(0, iterations, i =>
+        {
+            dispatcher.Emit(new ProbeEvent(i));
+        });
 
         Assert.Equal(iterations, hubAFirst);
         Assert.Equal(iterations / 2, hubASecond);
@@ -341,7 +348,10 @@ public sealed class EventDispatcherBehaviorTests
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubASecond));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref hubBCount));
 
-        Parallel.For(0, iterations, i => { dispatcher.Emit(new ProbeEvent(i)); });
+        Parallel.For(0, iterations, i =>
+        {
+            dispatcher.Emit(new ProbeEvent(i));
+        });
 
         Assert.Equal(iterations, hubAFirst);
         Assert.Equal(iterations / 2, hubASecond);

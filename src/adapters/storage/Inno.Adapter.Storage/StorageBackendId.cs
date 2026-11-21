@@ -20,8 +20,12 @@ public readonly record struct StorageBackendId
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         foreach (char character in value)
+        {
             if (char.IsWhiteSpace(character))
+            {
                 throw new ArgumentException("A backend identifier cannot contain whitespace.", nameof(value));
+            }
+        }
         this.value = value;
     }
 
@@ -53,4 +57,3 @@ public readonly record struct StorageBackendId
     /// </returns>
     public override string ToString() => value ?? string.Empty;
 }
-

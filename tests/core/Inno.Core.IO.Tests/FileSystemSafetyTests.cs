@@ -1,12 +1,11 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.ExceptionServices;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Threading;
-
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,10 +13,7 @@ namespace Inno.Core.IO.Tests;
 
 public sealed class FileSystemSafetyTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(
-        Path.GetTempPath(),
-        "InnoCoreIoTests",
-        Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoCoreIoTests", Guid.NewGuid().ToString("N"));
 
     private readonly ITestOutputHelper m_output;
 
@@ -74,9 +70,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     {
         Assert.Throws<ArgumentException>(() => PathBoundary.Resolve(m_root, Path.Combine(m_root, "absolute")));
         Assert.Throws<IOException>(() => PathBoundary.Resolve(m_root, "../escape"));
-        Assert.Equal(
-            Path.Combine(m_root, "Assets", "item.inno"),
-            PathBoundary.Resolve(m_root, "Assets/item.inno"));
+        Assert.Equal(Path.Combine(m_root, "Assets", "item.inno"), PathBoundary.Resolve(m_root, "Assets/item.inno"));
     }
 
     [Fact]
@@ -156,9 +150,13 @@ public sealed class FileSystemSafetyTests : IDisposable
 
         Assert.Equal("current", File.ReadAllText(Path.Combine(candidate, "current.txt")));
         if (existing)
+        {
             Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
+        }
         else
+        {
             Assert.False(Directory.Exists(Path.GetDirectoryName(destination)));
+        }
         Assert.Empty(Directory.EnumerateDirectories(m_root, "*.backup-*", SearchOption.AllDirectories));
     }
 
@@ -168,7 +166,9 @@ public sealed class FileSystemSafetyTests : IDisposable
     public void DirectoryInstallCancellationRestoresThePreviousTreeDuringABlockedRename()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
         string destination = Directory.CreateDirectory(Path.Combine(m_root, "destination")).FullName;
         string file = Path.Combine(candidate, "value.txt");
@@ -177,13 +177,20 @@ public sealed class FileSystemSafetyTests : IDisposable
         using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var cancellation = new CancellationTokenSource();
         bool evacuated = false;
-        ObserveBlockedRename(() => {
-            evacuated = !Directory.Exists(destination);
-            cancellation.Cancel();
-        }, () => {
-            var failure = Assert.ThrowsAny<OperationCanceledException>(() => AtomicDirectory.Install(candidate, destination, cancellation.Token));
-            Assert.Equal(cancellation.Token, failure.CancellationToken);
-        });
+        ObserveBlockedRename(
+            () =>
+            {
+                evacuated = !Directory.Exists(destination);
+                cancellation.Cancel();
+            },
+            () =>
+            {
+                var failure = Assert.ThrowsAny<OperationCanceledException>(
+                    () => AtomicDirectory.Install(candidate, destination, cancellation.Token)
+                );
+                Assert.Equal(cancellation.Token, failure.CancellationToken);
+            }
+        );
         Assert.True(evacuated);
         Assert.Equal("previous", File.ReadAllText(Path.Combine(destination, "previous.txt")));
         Assert.Equal("current", File.ReadAllText(file));
@@ -204,21 +211,32 @@ public sealed class FileSystemSafetyTests : IDisposable
     private void VerifyBlockedCancellation(bool expireWindow)
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
         string destination = Path.Combine(m_root, "published");
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "complete");
         using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var cancellation = new CancellationTokenSource();
-        ObserveBlockedRename(() => {
-            cancellation.Cancel();
-            if (expireWindow)
-                Thread.Sleep(TimeSpan.FromMilliseconds(2100));
-        }, () => {
-            var failure = Assert.ThrowsAny<OperationCanceledException>(() => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
-            Assert.Equal(cancellation.Token, failure.CancellationToken);
-        });
+        ObserveBlockedRename(
+            () =>
+            {
+                cancellation.Cancel();
+                if (expireWindow)
+                {
+                    Thread.Sleep(TimeSpan.FromMilliseconds(2100));
+                }
+            },
+            () =>
+            {
+                var failure = Assert.ThrowsAny<OperationCanceledException>(
+                    () => AtomicDirectory.Publish(candidate, destination, cancellation.Token)
+                );
+                Assert.Equal(cancellation.Token, failure.CancellationToken);
+            }
+        );
         Assert.Equal("complete", File.ReadAllText(file));
         Assert.False(Directory.Exists(destination));
     }
@@ -229,7 +247,9 @@ public sealed class FileSystemSafetyTests : IDisposable
     public void DirectoryPublicationToleratesATemporaryWindowsReaderWithoutDeleteSharing()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
         string destination = Path.Combine(m_root, "published");
         string file = Path.Combine(candidate, "value.txt");
@@ -247,7 +267,9 @@ public sealed class FileSystemSafetyTests : IDisposable
     public void PersistentReaderPreservesCandidateAndReturnsWindowsError()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         string candidate = Directory.CreateDirectory(Path.Combine(m_root, "candidate")).FullName;
         string destination = Path.Combine(m_root, "published");
         string file = Path.Combine(candidate, "value.txt");
@@ -289,7 +311,9 @@ public sealed class FileSystemSafetyTests : IDisposable
             FirstChanceExceptionEventArgs args
         ) {
             if (Environment.CurrentManagedThreadId != thread || blocked >= 0 || !IsSharingError(args.Exception))
+            {
                 return;
+            }
             blocked = clock.ElapsedMilliseconds;
             hresult = args.Exception.HResult;
             onBlocked();
@@ -303,7 +327,9 @@ public sealed class FileSystemSafetyTests : IDisposable
         finally
         {
             AppDomain.CurrentDomain.FirstChanceException -= Observe;
-            m_output.WriteLine($"Rename worker started at 0 ms, denied at {blocked} ms, intervention completed at {resumed} ms, exited at {clock.ElapsedMilliseconds} ms, HRESULT 0x{hresult:X8}.");
+            m_output.WriteLine(
+                $"Rename worker started at 0 ms, denied at {blocked} ms, intervention completed at {resumed} ms, exited at {clock.ElapsedMilliseconds} ms, HRESULT 0x{hresult:X8}."
+            );
         }
         Assert.True(blocked >= 0, "Expected an actual Windows sharing failure on the publishing thread.");
     }
@@ -313,7 +339,9 @@ public sealed class FileSystemSafetyTests : IDisposable
     public void DirectoryCleanupFailurePreservesTheCompleteCommittedCandidate()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
 
         string candidate = Path.Combine(m_root, "candidate");
         string destination = Path.Combine(m_root, "destination");
@@ -325,7 +353,9 @@ public sealed class FileSystemSafetyTests : IDisposable
         File.SetAttributes(lockedFile, FileAttributes.ReadOnly);
         try
         {
-            DirectoryCleanupException failure = Assert.Throws<DirectoryCleanupException>(() => AtomicDirectory.Install(candidate, destination));
+            DirectoryCleanupException failure = Assert.Throws<DirectoryCleanupException>(
+                () => AtomicDirectory.Install(candidate, destination)
+            );
 
             Assert.Contains("installed", failure.Message, StringComparison.OrdinalIgnoreCase);
             Assert.Equal("current", File.ReadAllText(Path.Combine(destination, "current.txt")));
@@ -338,7 +368,9 @@ public sealed class FileSystemSafetyTests : IDisposable
         finally
         {
             foreach (string retained in Directory.EnumerateFiles(m_root, "locked.txt", SearchOption.AllDirectories))
+            {
                 File.SetAttributes(retained, FileAttributes.Normal);
+            }
         }
     }
 
@@ -365,7 +397,9 @@ public sealed class FileSystemSafetyTests : IDisposable
     public void DirectoryInstallRestoresThePreviousTreeWhenTheCandidateCannotMove()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
 
         string candidate = Path.Combine(m_root, "candidate");
         string destination = Path.Combine(m_root, "destination");
@@ -398,6 +432,8 @@ public sealed class FileSystemSafetyTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

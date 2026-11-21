@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -11,7 +10,8 @@ namespace Inno.Assets.Pipeline;
 /// <typeparam name="TDefinition">
 /// The build definition asset type.
 /// </typeparam>
-public sealed class AssetBuildContext<TDefinition> where TDefinition : AssetObject
+public sealed class AssetBuildContext<TDefinition>
+    where TDefinition : AssetObject
 {
     /// <summary>
     /// Creates a build context.

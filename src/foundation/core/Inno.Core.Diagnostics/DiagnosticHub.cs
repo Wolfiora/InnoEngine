@@ -1,8 +1,8 @@
-using Inno.Core.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Core.Diagnostics;
 
@@ -65,7 +65,9 @@ public sealed class DiagnosticHub
         lock (m_sync)
         {
             if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
+            {
                 throw new ObjectDisposedException(nameof(DiagnosticReporter), "The diagnostic producer generation has retired.");
+            }
             Set(source, diagnostics);
         }
     }
@@ -77,7 +79,9 @@ public sealed class DiagnosticHub
         lock (m_sync)
         {
             if (!m_producerEpochs.TryGetValue(source.id, out long current) || current != epoch)
+            {
                 return;
+            }
             m_producerEpochs.Remove(source.id);
             Clear(source);
         }
@@ -112,17 +116,22 @@ public sealed class DiagnosticHub
         lock (m_sync)
         {
             if (m_sinks.Contains(sink))
+            {
                 return;
+            }
             try
             {
                 foreach (DiagnosticReport report in m_reports.Values)
+                {
                     sink.Replace(report);
+                }
             }
             catch (Exception exception)
             {
                 throw new InvalidOperationException(
                     "The diagnostic sink rejected the active snapshot and was not registered.",
-                    exception);
+                    exception
+                );
             }
             m_sinks.Add(sink);
         }
@@ -141,7 +150,9 @@ public sealed class DiagnosticHub
     {
         ArgumentNullException.ThrowIfNull(sink);
         lock (m_sync)
+        {
             m_sinks.Remove(sink);
+        }
     }
 
     /// <summary>
@@ -172,7 +183,9 @@ public sealed class DiagnosticHub
             return;
         }
         if (entries.Any(static diagnostic => diagnostic is null))
+        {
             throw new ArgumentException("A diagnostic collection cannot contain null entries.", nameof(diagnostics));
+        }
         var report = new DiagnosticReport(source, Array.AsReadOnly(entries), DateTime.Now);
         lock (m_sync)
         {
@@ -199,7 +212,9 @@ public sealed class DiagnosticHub
         lock (m_sync)
         {
             if (!m_reports.Remove(source.id, out DiagnosticReport? report))
+            {
                 return;
+            }
             NotifySinks(static (
                 sink,
                 value
@@ -223,7 +238,9 @@ public sealed class DiagnosticHub
                 m_sinks.Remove(sinks[index]);
                 Action<Exception>? observer = sinkFailed;
                 if (observer is null)
+                {
                     Console.Error.WriteLine($"Diagnostic sink failed and was quarantined: {exception}");
+                }
                 else
                 {
                     foreach (Action<Exception> handler in observer.GetInvocationList())
@@ -245,7 +262,8 @@ public sealed class DiagnosticHub
     private static void ValidateSource(DiagnosticSource source)
     {
         if (string.IsNullOrWhiteSpace(source.id))
+        {
             throw new ArgumentException("A valid diagnostic source is required.", nameof(source));
+        }
     }
-
 }

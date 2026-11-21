@@ -32,11 +32,17 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
         ArgumentNullException.ThrowIfNull(runtime);
         ArgumentNullException.ThrowIfNull(providers);
         foreach (RenderingAuthoringBackendProvider provider in providers)
+        {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Authoring providers require unique, assigned backend IDs.", nameof(providers));
+            }
+        }
         var runtimeIds = new HashSet<RenderingBackendId>(runtime.supportedBackends);
         if (!runtimeIds.SetEquals(m_providers.Keys))
+        {
             throw new ArgumentException("Runtime and authoring rendering providers must register the same backend IDs.", nameof(providers));
+        }
         supportedBackends = new ReadOnlyCollection<RenderingBackendId>(new List<RenderingBackendId>(m_providers.Keys));
     }
 
@@ -73,6 +79,6 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
 
     private RenderingAuthoringBackendProvider GetProvider(RenderingBackendId backend)
         => m_providers.TryGetValue(backend, out RenderingAuthoringBackendProvider? provider)
-            ? provider
-            : throw new NotSupportedException($"Rendering authoring backend '{backend}' is not registered.");
+           ? provider
+           : throw new NotSupportedException($"Rendering authoring backend '{backend}' is not registered.");
 }

@@ -28,19 +28,30 @@ public sealed class DevelopmentBuildProvenanceTests
         string parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "InnoDevelopmentBuildTests"));
         string root = Path.Combine(parent, Guid.NewGuid().ToString("N"));
         string dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-            ?? Path.Combine(Environment.GetEnvironmentVariable("DOTNET_ROOT") ?? throw new InvalidOperationException("An explicit SDK host is required."),
-                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+                        ?? Path.Combine(
+                            Environment.GetEnvironmentVariable("DOTNET_ROOT")
+                            ?? throw new InvalidOperationException("An explicit SDK host is required."),
+                            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+                        );
         DirectoryInfo? repository = new(Directory.GetCurrentDirectory());
         while (repository is not null && !File.Exists(Path.Combine(repository.FullName, "InnoEngine.sln")))
+        {
             repository = repository.Parent;
+        }
         Assert.NotNull(repository);
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "build", "msbuild"));
             File.Copy(Path.Combine(repository.FullName, "Directory.Build.props"), Path.Combine(root, "Directory.Build.props"));
             File.Copy(Path.Combine(repository.FullName, "Directory.Build.targets"), Path.Combine(root, "Directory.Build.targets"));
-            File.Copy(Path.Combine(repository.FullName, "build", "msbuild", "Inno.Packages.props"), Path.Combine(root, "build", "msbuild", "Inno.Packages.props"));
-            File.Copy(Path.Combine(repository.FullName, "build", "msbuild", "Inno.Build.Tasks.targets"), Path.Combine(root, "build", "msbuild", "Inno.Build.Tasks.targets"));
+            File.Copy(
+                Path.Combine(repository.FullName, "build", "msbuild", "Inno.Packages.props"),
+                Path.Combine(root, "build", "msbuild", "Inno.Packages.props")
+            );
+            File.Copy(
+                Path.Combine(repository.FullName, "build", "msbuild", "Inno.Build.Tasks.targets"),
+                Path.Combine(root, "build", "msbuild", "Inno.Build.Tasks.targets")
+            );
             File.Copy(Path.Combine(repository.FullName, "global.json"), Path.Combine(root, "global.json"));
             await File.WriteAllTextAsync(Path.Combine(root, ".gitignore"), "bin/\nobj/\n");
             await File.WriteAllTextAsync(Path.Combine(root, "Fixture.csproj"), """
@@ -72,13 +83,21 @@ public sealed class DevelopmentBuildProvenanceTests
                 Assert.Equal(beforeSymbols, afterSymbols);
                 Assert.Equal(beforeTimestamp, File.GetLastWriteTimeUtc(assembly));
                 Assert.Equal(C_SOURCE, ReadEmbeddedSource(symbols, "Contract.cs"));
-                Assert.DoesNotContain(commit, await File.ReadAllTextAsync(Path.Combine(root, "obj", effectiveConfiguration, "net10.0", "Fixture.AssemblyInfo.cs")), StringComparison.Ordinal);
+                Assert.DoesNotContain(
+                    commit,
+                    await File.ReadAllTextAsync(Path.Combine(root, "obj", effectiveConfiguration, "net10.0", "Fixture.AssemblyInfo.cs")),
+                    StringComparison.Ordinal
+                );
             }
             else
             {
                 Assert.False(beforeAssembly.SequenceEqual(afterAssembly));
                 Assert.False(beforeSymbols.SequenceEqual(afterSymbols));
-                Assert.Contains(commit, await File.ReadAllTextAsync(Path.Combine(root, "obj", effectiveConfiguration, "net10.0", "Fixture.AssemblyInfo.cs")), StringComparison.Ordinal);
+                Assert.Contains(
+                    commit,
+                    await File.ReadAllTextAsync(Path.Combine(root, "obj", effectiveConfiguration, "net10.0", "Fixture.AssemblyInfo.cs")),
+                    StringComparison.Ordinal
+                );
                 Assert.Contains(commit, ReadSourceLink(symbols), StringComparison.Ordinal);
             }
 
@@ -88,9 +107,16 @@ public sealed class DevelopmentBuildProvenanceTests
                 await RunAsync("git", "-c", "user.name=Aaron Liao", "-c", "user.email=hsuankailiao@gmail.com", "commit", "-m", message);
             }
 
-            Task<string> BuildAsync() => RunAsync(dotnet, ["build", "Fixture.csproj",
-                ..configuration.Length == 0 ? Array.Empty<string>() : ["-c", configuration],
-                "-p:ContinuousIntegrationBuild=" + continuousIntegration, "-m:1", "-nr:false", "--disable-build-servers"]);
+            Task<string> BuildAsync()
+                => RunAsync(dotnet, [
+                    "build",
+                    "Fixture.csproj",
+                    ..configuration.Length == 0 ? Array.Empty<string>() : ["-c", configuration],
+                    "-p:ContinuousIntegrationBuild=" + continuousIntegration,
+                    "-m:1",
+                    "-nr:false",
+                    "--disable-build-servers"
+                ]);
 
             async Task<string> RunAsync(
                 string executable,
@@ -98,11 +124,16 @@ public sealed class DevelopmentBuildProvenanceTests
             ) {
                 var start = new ProcessStartInfo(executable)
                 {
-                    WorkingDirectory = root, UseShellExecute = false, CreateNoWindow = true,
-                    RedirectStandardOutput = true, RedirectStandardError = true
+                    WorkingDirectory = root,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
                 };
                 foreach (string argument in arguments)
+                {
                     start.ArgumentList.Add(argument);
+                }
                 using Process process = Process.Start(start)!;
                 Task<string> output = process.StandardOutput.ReadToEndAsync();
                 Task<string> errors = process.StandardError.ReadToEndAsync();
@@ -115,11 +146,15 @@ public sealed class DevelopmentBuildProvenanceTests
         finally
         {
             if (!Path.GetFullPath(root).StartsWith(parent + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
                 throw new InvalidOperationException("The development-build fixture escaped its temporary owner.");
+            }
             if (Directory.Exists(root))
             {
                 foreach (string file in Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories))
+                {
                     File.SetAttributes(file, FileAttributes.Normal);
+                }
                 Directory.Delete(root, recursive: true);
             }
         }
@@ -132,12 +167,19 @@ public sealed class DevelopmentBuildProvenanceTests
         using var stream = File.OpenRead(symbols);
         using MetadataReaderProvider provider = MetadataReaderProvider.FromPortablePdbStream(stream);
         MetadataReader reader = provider.GetMetadataReader();
-        DocumentHandle document = Assert.Single(reader.Documents.Where(handle => reader.GetString(reader.GetDocument(handle).Name).EndsWith(fileName, StringComparison.Ordinal)));
-        CustomDebugInformation source = Assert.Single(reader.GetCustomDebugInformation(document).Select(reader.GetCustomDebugInformation)
-            .Where(info => reader.GetGuid(info.Kind) == new Guid("0E8A571B-6926-466E-B4AD-8AB04611F5FE")));
+        DocumentHandle document = Assert.Single(
+            reader.Documents.Where(handle => reader.GetString(reader.GetDocument(handle).Name).EndsWith(fileName, StringComparison.Ordinal))
+        );
+        CustomDebugInformation source = Assert.Single(
+            reader.GetCustomDebugInformation(document)
+                .Select(reader.GetCustomDebugInformation)
+                .Where(info => reader.GetGuid(info.Kind) == new Guid("0E8A571B-6926-466E-B4AD-8AB04611F5FE"))
+        );
         byte[] data = reader.GetBlobBytes(source.Value);
         if (BitConverter.ToInt32(data, 0) == 0)
+        {
             return Encoding.UTF8.GetString(data, 4, data.Length - 4);
+        }
         using var compressed = new MemoryStream(data, 4, data.Length - 4, writable: false);
         using var decoder = new DeflateStream(compressed, CompressionMode.Decompress);
         using var decoded = new MemoryStream();
@@ -151,8 +193,10 @@ public sealed class DevelopmentBuildProvenanceTests
         using var stream = File.OpenRead(symbols);
         using MetadataReaderProvider provider = MetadataReaderProvider.FromPortablePdbStream(stream);
         MetadataReader reader = provider.GetMetadataReader();
-        CustomDebugInformation source = Assert.Single(reader.CustomDebugInformation.Select(reader.GetCustomDebugInformation)
-            .Where(info => reader.GetGuid(info.Kind) == new Guid("CC110556-A091-4D38-9FEC-25AB9A351A6A")));
+        CustomDebugInformation source = Assert.Single(
+            reader.CustomDebugInformation.Select(reader.GetCustomDebugInformation)
+                .Where(info => reader.GetGuid(info.Kind) == new Guid("CC110556-A091-4D38-9FEC-25AB9A351A6A"))
+        );
         return Encoding.UTF8.GetString(reader.GetBlobBytes(source.Value));
     }
 }

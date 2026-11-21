@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Execution;
 
 namespace Inno.UI;
@@ -48,6 +47,7 @@ public static class UI
     /// The validated ui context handle that represents the completed operation.
     /// </returns>
     public static UiContextHandle CreateContext(UiContextOptions options) => UiExecutionContext.current.CreateContext(options);
+
     /// <summary>
     /// Destroys one UI context and all owned documents.
     /// </summary>
@@ -55,6 +55,7 @@ public static class UI
     /// The context that supplies state and services for this operation.
     /// </param>
     public static void DestroyContext(UiContextHandle context) => UiExecutionContext.current.DestroyContext(context);
+
     /// <summary>
     /// Changes one context's pixel dimensions and density.
     /// </summary>
@@ -75,8 +76,8 @@ public static class UI
         int width,
         int height,
         float density = 1f
-    )
-        => UiExecutionContext.current.SetViewport(context, width, height, density);
+    ) => UiExecutionContext.current.SetViewport(context, width, height, density);
+
     /// <summary>
     /// Loads one explicitly tagged in-memory document.
     /// </summary>
@@ -92,8 +93,8 @@ public static class UI
     public static UiDocumentHandle LoadDocument(
         UiContextHandle context,
         UiDocumentSource source
-    )
-        => UiExecutionContext.current.LoadDocument(context, source);
+    ) => UiExecutionContext.current.LoadDocument(context, source);
+
     /// <summary>
     /// Loads one imported document compatible with the selected backend.
     /// </summary>
@@ -109,8 +110,8 @@ public static class UI
     public static UiDocumentHandle LoadDocument(
         UiContextHandle context,
         UiDocumentAsset document
-    )
-        => UiExecutionContext.current.LoadDocument(context, document);
+    ) => UiExecutionContext.current.LoadDocument(context, document);
+
     /// <summary>
     /// Shows one document.
     /// </summary>
@@ -123,8 +124,8 @@ public static class UI
     public static void ShowDocument(
         UiContextHandle context,
         UiDocumentHandle document
-    )
-        => UiExecutionContext.current.ShowDocument(context, document);
+    ) => UiExecutionContext.current.ShowDocument(context, document);
+
     /// <summary>
     /// Hides one document.
     /// </summary>
@@ -137,8 +138,8 @@ public static class UI
     public static void HideDocument(
         UiContextHandle context,
         UiDocumentHandle document
-    )
-        => UiExecutionContext.current.HideDocument(context, document);
+    ) => UiExecutionContext.current.HideDocument(context, document);
+
     /// <summary>
     /// Closes one document.
     /// </summary>
@@ -151,8 +152,8 @@ public static class UI
     public static void CloseDocument(
         UiContextHandle context,
         UiDocumentHandle document
-    )
-        => UiExecutionContext.current.CloseDocument(context, document);
+    ) => UiExecutionContext.current.CloseDocument(context, document);
+
     /// <summary>
     /// Replaces an element's children with plain Unicode text.
     /// </summary>
@@ -176,8 +177,8 @@ public static class UI
         UiDocumentHandle document,
         string elementId,
         string text
-    )
-        => UiExecutionContext.current.SetText(context, document, elementId, text);
+    ) => UiExecutionContext.current.SetText(context, document, elementId, text);
+
     /// <summary>
     /// Replaces an element's children with an explicitly tagged source-language fragment.
     /// </summary>
@@ -201,8 +202,8 @@ public static class UI
         UiDocumentHandle document,
         string elementId,
         UiDocumentFragment fragment
-    )
-        => UiExecutionContext.current.SetContent(context, document, elementId, fragment);
+    ) => UiExecutionContext.current.SetContent(context, document, elementId, fragment);
+
     /// <summary>
     /// Sets one element attribute.
     /// </summary>
@@ -230,8 +231,8 @@ public static class UI
         string elementId,
         string name,
         string value
-    )
-        => UiExecutionContext.current.SetAttribute(context, document, elementId, name, value);
+    ) => UiExecutionContext.current.SetAttribute(context, document, elementId, name, value);
+
     /// <summary>
     /// Activates or deactivates one element class.
     /// </summary>
@@ -259,8 +260,8 @@ public static class UI
         string elementId,
         string className,
         bool active
-    )
-        => UiExecutionContext.current.SetClass(context, document, elementId, className, active);
+    ) => UiExecutionContext.current.SetClass(context, document, elementId, className, active);
+
     /// <summary>
     /// Registers one named RGBA8 texture source.
     /// </summary>
@@ -277,8 +278,8 @@ public static class UI
         UiContextHandle context,
         string source,
         UiTextureData texture
-    )
-        => UiExecutionContext.current.RegisterTexture(context, source, texture);
+    ) => UiExecutionContext.current.RegisterTexture(context, source, texture);
+
     /// <summary>
     /// Processes current-frame input and advances one context.
     /// </summary>
@@ -286,6 +287,7 @@ public static class UI
     /// The context that supplies state and services for this operation.
     /// </param>
     public static void Update(UiContextHandle context) => UiExecutionContext.current.Update(context);
+
     /// <summary>
     /// Advances one context with explicitly routed viewport-local input.
     /// </summary>
@@ -299,6 +301,7 @@ public static class UI
         UiContextHandle context,
         UiInputSnapshot input
     ) => UiExecutionContext.current.Update(context, input);
+
     /// <summary>
     /// Builds an immutable frame of incremental resources and ordered draws.
     /// </summary>
@@ -309,6 +312,7 @@ public static class UI
     /// The validated ui render frame that represents the completed operation.
     /// </returns>
     public static UiRenderFrame Render(UiContextHandle context) => UiExecutionContext.current.Render(context);
+
     /// <summary>
     /// Drains document events queued by preceding updates.
     /// </summary>

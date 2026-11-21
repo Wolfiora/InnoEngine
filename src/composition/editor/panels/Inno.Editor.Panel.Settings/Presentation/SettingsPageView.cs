@@ -1,13 +1,15 @@
-using System.Numerics;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Settings;
+
 internal sealed class SettingsPageView(SettingsEditSession session)
 {
     private static SettingsStyle settingsStyle => new(EditorUI.current.widgets.style);
@@ -31,15 +33,21 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         if (!page.hasSettings)
         {
             if (page.children.Count == 0)
+            {
                 DrawOverview(page.children, navigate);
+            }
             return;
         }
 
         int fieldIndex = 0;
-        foreach (IGrouping<string, SettingsField> group in page.settings.GroupBy(static setting => setting.section ?? string.Empty, StringComparer.OrdinalIgnoreCase))
-        {
+        foreach (IGrouping<string, SettingsField> group in page.settings.GroupBy(
+            static setting => setting.section ?? string.Empty,
+            StringComparer.OrdinalIgnoreCase
+        )) {
             if (!string.IsNullOrEmpty(group.Key))
+            {
                 Ui.SeparatorText(group.Key);
+            }
             DrawSection(group, ref fieldIndex);
             Ui.Spacing();
         }
@@ -49,7 +57,9 @@ internal sealed class SettingsPageView(SettingsEditSession session)
     {
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
         if (!Ui.BeginTable("##settings_page_header", 2, flags, default(System.Numerics.Vector2), 0f))
+        {
             return;
+        }
         try
         {
             Ui.TableSetupColumn("##settings_page_title", ImGuiTableColumnFlags.WidthStretch, 1f);
@@ -64,7 +74,9 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             {
                 bool canReset = session.CanReset(page);
                 if (DrawResetButton(canReset))
+                {
                     session.Reset(page);
+                }
             }
             finally
             {
@@ -94,7 +106,9 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             SettingsPage child = children[i];
             bool clicked = EditorUI.current.widgets.HoverText($"settings_overview_{child.path}", child.label);
             if (clicked)
+            {
                 navigate(child);
+            }
             EditorUI.current.widgets.DrawItemTooltip(child.description);
             Ui.Spacing();
         }
@@ -112,16 +126,22 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         {
             tableStarted = Ui.BeginTable("##settings_section", 3, flags, new System.Numerics.Vector2(tableWidth, 0f));
             if (!tableStarted)
+            {
                 return;
+            }
             EditorUI.current.widgets.SetupPropertyColumns();
             Ui.TableSetupColumn("##settings_reset", ImGuiTableColumnFlags.WidthFixed, GetResetColumnWidth());
             foreach (SettingsField setting in settings)
+            {
                 DrawFieldRow(setting, fieldIndex++);
+            }
         }
         finally
         {
             if (tableStarted)
+            {
                 Ui.EndTable();
+            }
             Ui.PopStyleVar();
         }
     }
@@ -152,12 +172,16 @@ internal sealed class SettingsPageView(SettingsEditSession session)
                 _ = Ui.TableSetColumnIndex(2);
                 bool canReset = session.CanReset(setting);
                 if (DrawResetButton(canReset))
+                {
                     session.Reset(setting);
+                }
             }
             finally
             {
                 if (groupStarted)
+                {
                     Ui.EndGroup();
+                }
             }
         }
         finally
@@ -179,19 +203,31 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         float windowMinimumX = window.minimumX;
         float windowMaximumX = window.maximumX;
         if (rowMaximumY <= rowMinimumY)
+        {
             return;
+        }
         EditorDrawList drawList = Ui.GetDrawList();
         drawList.PushClip(new Vector2(windowMinimumX, rowMinimumY), new Vector2(windowMaximumX, rowMaximumY), false);
         try
         {
             if (tableMinimumX > windowMinimumX)
             {
-                Ui.DrawFilledRectangle(new System.Numerics.Vector2(windowMinimumX, rowMinimumY), new System.Numerics.Vector2(tableMinimumX, rowMaximumY), background, 0);
+                Ui.DrawFilledRectangle(
+                    new System.Numerics.Vector2(windowMinimumX, rowMinimumY),
+                    new System.Numerics.Vector2(tableMinimumX, rowMaximumY),
+                    background,
+                    0
+                );
             }
 
             if (tableMaximumX < windowMaximumX)
             {
-                Ui.DrawFilledRectangle(new System.Numerics.Vector2(tableMaximumX, rowMinimumY), new System.Numerics.Vector2(windowMaximumX, rowMaximumY), background, 0);
+                Ui.DrawFilledRectangle(
+                    new System.Numerics.Vector2(tableMaximumX, rowMinimumY),
+                    new System.Numerics.Vector2(windowMaximumX, rowMaximumY),
+                    background,
+                    0
+                );
             }
         }
         finally

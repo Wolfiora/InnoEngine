@@ -14,6 +14,7 @@ public static class ShaderGraphDocument
     /// Identifies the graph metadata containing the source-free material and pass contract.
     /// </summary>
     public const string definitionKey = "inno.shader.definition";
+
     /// <summary>
     /// Identifies the optional domain target; absent means explicitly authored generic stages.
     /// </summary>
@@ -38,8 +39,7 @@ public static class ShaderGraphDocument
         GraphDocument graph,
         SerializationRegistry serialization,
         SerializationContext context
-    )
-        => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value) ? Decode<string>(value, serialization, context) : "";
+    ) => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value) ? Decode<string>(value, serialization, context) : "";
 
     /// <summary>
     /// Assigns a domain target by stable identity without retaining its current provider.
@@ -64,22 +64,30 @@ public static class ShaderGraphDocument
     ) {
         ArgumentNullException.ThrowIfNull(targetId);
         if (targetId.Length == 0)
+        {
             graph.RemoveMetadata(targetKey);
+        }
         else
+        {
             graph.SetMetadata(targetKey, Encode(targetId, serialization, context));
+        }
     }
+
     /// <summary>
     /// Identifies a stage output node; its incoming edges name the stage's GPU outputs.
     /// </summary>
     public const string outputDefinitionId = "inno.shader.stage-output";
+
     /// <summary>
     /// Identifies a node property containing its owning stage output node identity.
     /// </summary>
     public const string stageKey = "stage";
+
     /// <summary>
     /// Identifies the structured settings stored on a stage output node.
     /// </summary>
     public const string settingsKey = "settings";
+
     /// <summary>
     /// Prefixes stable port IDs storing explicit typed defaults for unconnected inputs.
     /// </summary>
@@ -134,7 +142,9 @@ public static class ShaderGraphDocument
     ) {
         ArgumentNullException.ThrowIfNull(graph);
         if (!graph.metadata.TryGetValue(definitionKey, out GraphSerializedValue? value))
+        {
             throw new InvalidOperationException("The shader graph has no program definition.");
+        }
         return serialization.Deserialize<ShaderDefinition>(Decode<byte[]>(value, serialization, context), context);
     }
 
@@ -225,8 +235,7 @@ public static class ShaderGraphDocument
         T defaultValue,
         SerializationRegistry serialization,
         SerializationContext context
-    )
-        => node.TryGetValue(key, out GraphSerializedValue? value) ? Decode<T>(value!, serialization, context) : defaultValue;
+    ) => node.TryGetValue(key, out GraphSerializedValue? value) ? Decode<T>(value!, serialization, context) : defaultValue;
 }
 
 /// <summary>
@@ -238,18 +247,22 @@ public sealed class ShaderGraphStageSettings : ISerializable
     /// Gets or sets the programmable stage.
     /// </summary>
     [SerializableProperty] public ShaderStage stage { get; set; } = ShaderStage.Fragment;
+
     /// <summary>
     /// Gets or sets output ports and their GPU destinations.
     /// </summary>
     [SerializableProperty] public ShaderGraphOutput[] outputs { get; set; } = [];
+
     /// <summary>
     /// Gets or sets compute workgroup width.
     /// </summary>
     [SerializableProperty] public int threadsX { get; set; } = 1;
+
     /// <summary>
     /// Gets or sets compute workgroup height.
     /// </summary>
     [SerializableProperty] public int threadsY { get; set; } = 1;
+
     /// <summary>
     /// Gets or sets compute workgroup depth.
     /// </summary>
@@ -265,14 +278,17 @@ public struct ShaderGraphOutput
     /// Gets or sets the stable input port identity on the stage output node.
     /// </summary>
     public string id { get; set; }
+
     /// <summary>
     /// Gets or sets the GPU destination category.
     /// </summary>
     public ShaderIrOutputKind kind { get; set; }
+
     /// <summary>
     /// Gets or sets the varying semantic; empty for fixed position, color or depth outputs.
     /// </summary>
     public string semantic { get; set; }
+
     /// <summary>
     /// Gets or sets the varying or attachment index.
     /// </summary>
@@ -288,18 +304,22 @@ public sealed class ShaderGraphInputSettings : ISerializable
     /// Gets or sets the stable logical binding identity.
     /// </summary>
     [SerializableProperty] public string id { get; set; } = "input";
+
     /// <summary>
     /// Gets or sets the complete neutral type descriptor.
     /// </summary>
     [SerializableProperty] public ShaderGraphType type { get; set; } = new();
+
     /// <summary>
     /// Gets or sets the stage input category.
     /// </summary>
     [SerializableProperty] public ShaderIrInputKind kind { get; set; }
+
     /// <summary>
     /// Gets or sets the target semantic, not a native expression.
     /// </summary>
     [SerializableProperty] public string semantic { get; set; } = "position";
+
     /// <summary>
     /// Gets or sets the interface index.
     /// </summary>

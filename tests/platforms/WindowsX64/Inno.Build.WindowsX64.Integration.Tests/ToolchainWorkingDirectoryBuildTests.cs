@@ -25,9 +25,14 @@ public sealed class ToolchainWorkingDirectoryBuildTests
             string dotnet = ToolchainEnvironment.ResolveExecutable("dotnet");
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             string cmake = OperatingSystem.IsWindows()
-                ? (await new WindowsX64NativeToolchainProvider(dotnet).ResolveAsync(new(repository, "debug"),
-                    (new WindowsBuildHostProvider().TryCapture() ?? throw new PlatformNotSupportedException("A Windows build host is required.")), "windows-x64", timeout.Token)).ResolveExecutable("cmake")
-                : ToolchainEnvironment.ResolveExecutable("cmake");
+                           ? (await new WindowsX64NativeToolchainProvider(dotnet).ResolveAsync(
+                               new(repository, "debug"),
+                               (new WindowsBuildHostProvider().TryCapture()
+                                ?? throw new PlatformNotSupportedException("A Windows build host is required.")),
+                               "windows-x64",
+                               timeout.Token
+                           )).ResolveExecutable("cmake")
+                           : ToolchainEnvironment.ResolveExecutable("cmake");
             string project = Path.Combine(root, "Runner.csproj");
             await File.WriteAllTextAsync(project, $$"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -92,9 +97,13 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                 return 0;
                 """);
             var environment = DotNetSdkEnvironment.Create(dotnet);
-            await ToolchainEnvironment.RunAsync(dotnet,
+            await ToolchainEnvironment.RunAsync(
+                dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],
-                repository, timeout.Token, environment);
+                repository,
+                timeout.Token,
+                environment
+            );
             string physical = Path.Combine(root, "Workspace with spaces", new string('x', 70), new string('y', 70), new string('z', 70));
             string? firstExecution = null;
             (string value, string temporary, bool hit)[] calls =
@@ -115,18 +124,30 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                     ["TMPDIR"] = temporary
                 };
                 string report = Path.Combine(root, call.value + (call.hit ? "-hit" : string.Empty) + ".txt");
-                await ToolchainEnvironment.RunAsync(dotnet,
+                await ToolchainEnvironment.RunAsync(
+                    dotnet,
                     [Path.Combine(root, "bin/Debug/net10.0/Runner.dll"), physical, cmake, report, call.value, call.hit ? "hit" : "build"],
-                    repository, timeout.Token, processEnvironment);
+                    repository,
+                    timeout.Token,
+                    processEnvironment
+                );
                 string current = await File.ReadAllTextAsync(report);
                 if (call.hit)
+                {
                     Assert.Equal("cache", current);
+                }
                 else if (call.value == "first")
+                {
                     firstExecution = current;
+                }
                 else if (call.value == "second" && OperatingSystem.IsWindows())
+                {
                     Assert.NotEqual(firstExecution, current);
+                }
                 else
+                {
                     Assert.Equal(firstExecution, current);
+                }
             }
         }
         finally

@@ -24,8 +24,14 @@ internal static class ProjectBuildWorkflow
         {
             try
             {
-                await BuildMaintenanceApplication.CleanAsync(engineRoot, new BuildCachePolicy(),
-                    false, false, null, cancellationToken).ConfigureAwait(false);
+                await BuildMaintenanceApplication.CleanAsync(
+                    engineRoot,
+                    new BuildCachePolicy(),
+                    false,
+                    false,
+                    null,
+                    cancellationToken
+                ).ConfigureAwait(false);
             }
             catch (Exception failure)
             {
@@ -44,19 +50,32 @@ internal static class ProjectBuildWorkflow
         {
             string dotnet = StandardBuildEnvironment.ResolveManagedHost(command.dotnetHost);
             using BuildWorkspace authoring = BuildWorkspace.Open(command.projectDirectory, dotnet, cancellationToken);
-            Console.WriteLine(command.kind == BuildCommandKind.Scripts
+            Console.WriteLine(
+                command.kind == BuildCommandKind.Scripts
                 ? authoring.ExportProjectScripts(command.outputDirectory, command.generateIdeProjects, cancellationToken)
-                : authoring.ImportSample(command.sampleSource, cancellationToken).ToString());
+                : authoring.ImportSample(command.sampleSource, cancellationToken).ToString()
+            );
             return 0;
         }
         string application = Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!;
-        BuildCompositionContext context = StandardBuildEnvironment.Capture(application, command.toolsTarget, command.dotnetHost,
-            string.IsNullOrWhiteSpace(command.nativeDependencies) ? null : Path.GetFullPath(command.nativeDependencies, engineRoot));
-        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(context, engineRoot, cancellationToken, command.nativeDependencies).ConfigureAwait(false);
+        BuildCompositionContext context = StandardBuildEnvironment.Capture(
+            application,
+            command.toolsTarget,
+            command.dotnetHost,
+            string.IsNullOrWhiteSpace(command.nativeDependencies) ? null : Path.GetFullPath(command.nativeDependencies, engineRoot)
+        );
+        using ProductNativeBuildResult products = await BuildComposition.PrepareNativeAsync(
+            context,
+            engineRoot,
+            cancellationToken,
+            command.nativeDependencies
+        ).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
         string extension = context.host.services.executableExtension;
-        var executables = Enum.GetValues<BgfxTool>().ToDictionary(static tool => tool,
-            tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant() + extension));
+        var executables = Enum.GetValues<BgfxTool>().ToDictionary(
+            static tool => tool,
+            tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant() + extension)
+        );
         string includes = Path.GetDirectoryName(product.files.Single(file => Path.GetFileName(file) == "bgfx_shader.sh"))!;
         var tools = new ToolRunner(executables, includes, context.host.services.workspaces);
         using BuildWorkspace workspace = BuildWorkspace.Open(command.projectDirectory, context.dotnetHost, cancellationToken);
@@ -68,24 +87,36 @@ internal static class ProjectBuildWorkflow
             GameBuildRequest request = command.CreateGameRequest(workspace.LoadGameProfile(command.profilePath, command.gameTarget));
             // The command-line host has no UI scheduler. Keep the authoring owner on this thread
             // while preparing external tools, then capture its build snapshot before the first await.
-            using PlayerSupportPackLease prepared = pipeline.EnsurePlayerSupportPackAsync(
-                    request.profile.target, request.profile.managedDeployment, cancellationToken)
-                .GetAwaiter().GetResult();
+            using PlayerSupportPackLease prepared = pipeline
+                .EnsurePlayerSupportPackAsync(
+                    request.profile.target,
+                    request.profile.managedDeployment,
+                    cancellationToken
+                )
+                .GetAwaiter()
+                .GetResult();
             result = await pipeline.BuildGameAsync(request, progress, cancellationToken);
         }
         else if (command.kind == BuildCommandKind.Plugin)
         {
             result = await pipeline.BuildPluginAsync(
-                command.CreatePluginRequest(workspace.projectId), progress, cancellationToken);
+                command.CreatePluginRequest(workspace.projectId),
+                progress,
+                cancellationToken
+            );
         }
         else
         {
             throw new InvalidOperationException("Unknown project build kind.");
         }
         foreach (BuildDiagnostic diagnostic in result.diagnostics)
+        {
             Console.Error.WriteLine($"{diagnostic.severity} {diagnostic.code}: {diagnostic.message}");
+        }
         if (!result.succeeded)
+        {
             return 1;
+        }
         Console.WriteLine(result.outputPath);
         return 0;
     }

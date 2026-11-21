@@ -51,10 +51,18 @@ public sealed class TaskRuntimeBootstrapOwner : Microsoft.Build.Utilities.Task
             // The IDE build host must not keep the normal SDK output file locked between builds.
             Assembly foundation = Assembly.Load(File.ReadAllBytes(FoundationAssembly));
             Type owner = foundation.GetType("Inno.Core.IO.ProcessOwnedDirectory", throwOnError: true)!;
-            MethodInfo create = owner.GetMethod("CreateForProcessAsync", BindingFlags.Public | BindingFlags.Static,
-                null, [typeof(string), typeof(string), typeof(CancellationToken)], null)!;
+            MethodInfo create = owner.GetMethod(
+                "CreateForProcessAsync",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                [typeof(string), typeof(string), typeof(CancellationToken)],
+                null
+            )!;
             object pending = create.Invoke(null, [Root, Identity, CancellationToken.None])!;
-            var operation = (Task<string>)pending.GetType().GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance)!.Invoke(pending, null)!;
+            var operation = (Task<string>)pending
+                .GetType()
+                .GetMethod("AsTask", BindingFlags.Public | BindingFlags.Instance)!
+                .Invoke(pending, null)!;
             Directory = operation.GetAwaiter().GetResult();
             return true;
         }

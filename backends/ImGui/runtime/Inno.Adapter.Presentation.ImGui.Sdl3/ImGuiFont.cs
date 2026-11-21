@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -28,12 +28,14 @@ public static unsafe class ImGuiFont
         ValidateStyle(style);
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
         if (context == null)
+        {
             return false;
+        }
 
         lock (s_sync)
         {
-            return s_fontsByContext.TryGetValue(GetContextKey(context), out Dictionary<ImGuiFontStyle, nint>? fonts) &&
-                   fonts.ContainsKey(style);
+            return s_fontsByContext.TryGetValue(GetContextKey(context), out Dictionary<ImGuiFontStyle, nint>? fonts)
+                   && fonts.ContainsKey(style);
         }
     }
 
@@ -51,15 +53,17 @@ public static unsafe class ImGuiFont
         ValidateStyle(style);
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
         if (context == null)
+        {
             return default;
+        }
 
         nuint contextKey = GetContextKey(context);
         nint font;
         lock (s_sync)
         {
-            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts) ||
-                !TryResolve(fonts, style, out font))
-            {
+            if (!s_fontsByContext.TryGetValue(contextKey, out Dictionary<ImGuiFontStyle, nint>? fonts)
+                || !TryResolve(fonts, style, out font)
+            ) {
                 return default;
             }
         }
@@ -73,7 +77,9 @@ public static unsafe class ImGuiFont
         IReadOnlyDictionary<ImGuiFontStyle, nint> fonts
     ) {
         if (context == null)
+        {
             throw new ArgumentException("An ImGui context is required.", nameof(context));
+        }
         ArgumentNullException.ThrowIfNull(fonts);
 
         var registered = new Dictionary<ImGuiFontStyle, nint>();
@@ -81,11 +87,15 @@ public static unsafe class ImGuiFont
         {
             ValidateStyle(style);
             if (font != 0)
+            {
                 registered[style] = font;
+            }
         }
 
         lock (s_sync)
+        {
             s_fontsByContext[GetContextKey(context)] = registered;
+        }
     }
 
     internal static void RegisterStyle(
@@ -94,10 +104,14 @@ public static unsafe class ImGuiFont
         nint font
     ) {
         if (context == null)
+        {
             throw new ArgumentException("An ImGui context is required.", nameof(context));
+        }
         ValidateStyle(style);
         if (font == 0)
+        {
             throw new ArgumentException("A loaded font is required.", nameof(font));
+        }
 
         lock (s_sync)
         {
@@ -114,23 +128,31 @@ public static unsafe class ImGuiFont
     internal static void UnregisterContext(ImGuiNativeContext* context)
     {
         if (context == null)
+        {
             return;
+        }
         lock (s_sync)
+        {
             s_fontsByContext.Remove(GetContextKey(context));
+        }
     }
 
     internal static void ValidateStyle(ImGuiFontStyle style)
     {
         const ImGuiFontStyle supported = ImGuiFontStyle.Bold | ImGuiFontStyle.Italic;
         if ((style & ~supported) != 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(style), style, "The font style contains unsupported flags.");
+        }
     }
 
     internal static void PopStyle(nuint contextKey)
     {
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
         if (context == null || GetContextKey(context) != contextKey)
+        {
             throw new InvalidOperationException("The font style scope must be disposed in the context where it was created.");
+        }
         NativeImGui.PopFont();
     }
 
@@ -142,11 +164,17 @@ public static unsafe class ImGuiFont
         out nint font
     ) {
         if (fonts.TryGetValue(style, out font))
+        {
             return true;
+        }
         if ((style & ImGuiFontStyle.Bold) != 0 && fonts.TryGetValue(ImGuiFontStyle.Bold, out font))
+        {
             return true;
+        }
         if ((style & ImGuiFontStyle.Italic) != 0 && fonts.TryGetValue(ImGuiFontStyle.Italic, out font))
+        {
             return true;
+        }
         return fonts.TryGetValue(ImGuiFontStyle.Regular, out font);
     }
 }
@@ -173,7 +201,9 @@ public ref struct ImGuiFontScope
     public void Dispose()
     {
         if (!m_isPushed)
+        {
             return;
+        }
         ImGuiFont.PopStyle(m_contextKey);
         m_isPushed = false;
     }

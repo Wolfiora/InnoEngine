@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-
 using Inno.Extensibility.Catalogs;
 
 namespace Inno.Extensibility.Types;
@@ -88,16 +87,18 @@ internal sealed class TypeIdentityRegistry
                 if (!Guid.TryParse(attr.id, out stableId))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{type.FullName}' has invalid StableTypeId '{attr.id}'.");
+                        $"Type '{type.FullName}' has invalid StableTypeId '{attr.id}'."
+                    );
                 }
             }
-            else if (mappings.TryGetValue(type.Assembly, out IReadOnlyDictionary<string, GeneratedStableTypeMapping>? assemblyMappings) &&
-                     assemblyMappings.TryGetValue(type.FullName ?? type.Name, out mapping))
-            {
+            else if (mappings.TryGetValue(type.Assembly, out IReadOnlyDictionary<string, GeneratedStableTypeMapping>? assemblyMappings)
+                     && assemblyMappings.TryGetValue(type.FullName ?? type.Name, out mapping)
+            ) {
                 if (!Guid.TryParse(mapping.id, out stableId))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{type.FullName}' has invalid generated StableTypeId '{mapping.id}'.");
+                        $"Type '{type.FullName}' has invalid generated StableTypeId '{mapping.id}'."
+                    );
                 }
             }
             else
@@ -109,7 +110,8 @@ internal sealed class TypeIdentityRegistry
             {
                 Type existing = typeByStable[stableId];
                 throw new InvalidOperationException(
-                    $"StableTypeId '{stableId}' conflicts between '{existing.FullName}' and '{type.FullName}'.");
+                    $"StableTypeId '{stableId}' conflicts between '{existing.FullName}' and '{type.FullName}'."
+                );
             }
 
             stableByType[type] = stableId;
@@ -124,7 +126,9 @@ internal sealed class TypeIdentityRegistry
         if (previous is not null)
         {
             lock (previous.m_sync)
+            {
                 previousRuntimeByType = new Dictionary<Type, int>(previous.m_runtimeByType);
+            }
         }
 
         var runtimeByType = new Dictionary<Type, int>(orderedTypes.Length);
@@ -134,7 +138,9 @@ internal sealed class TypeIdentityRegistry
             Type type = orderedTypes[i];
             int runtimeId;
             if (!previousRuntimeByType.TryGetValue(type, out runtimeId))
+            {
                 runtimeId = AllocateRuntimeTypeId();
+            }
 
             runtimeByType[type] = runtimeId;
             typeByRuntime[runtimeId] = type;
@@ -194,9 +200,9 @@ internal sealed class TypeIdentityRegistry
 
         lock (m_sync)
         {
-            if (m_stableByType.TryGetValue(type, out Guid stableId) &&
-                m_runtimeByType.TryGetValue(type, out int runtimeId))
-            {
+            if (m_stableByType.TryGetValue(type, out Guid stableId)
+                && m_runtimeByType.TryGetValue(type, out int runtimeId)
+            ) {
                 typeRef = new TypeRef(stableId, runtimeId);
                 return true;
             }
@@ -218,7 +224,9 @@ internal sealed class TypeIdentityRegistry
     public TypeRef GetTypeRef(Type type)
     {
         if (TryGetTypeRef(type, out TypeRef typeRef))
+        {
             return typeRef;
+        }
         throw new InvalidOperationException($"Type '{type.FullName}' does not belong to this type-cache snapshot.");
     }
 
@@ -354,11 +362,11 @@ internal sealed class TypeIdentityRegistry
                 type = null;
                 return false;
             }
-            if (typeRef.runtimeId > 0 &&
-                m_typeByRuntime.TryGetValue(typeRef.runtimeId, out Type? runtimeType) &&
-                m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableId) &&
-                runtimeStableId == typeRef.stableId)
-            {
+            if (typeRef.runtimeId > 0
+                && m_typeByRuntime.TryGetValue(typeRef.runtimeId, out Type? runtimeType)
+                && m_stableByType.TryGetValue(runtimeType, out Guid runtimeStableId)
+                && runtimeStableId == typeRef.stableId
+            ) {
                 type = runtimeType;
                 return true;
             }
@@ -377,7 +385,9 @@ internal sealed class TypeIdentityRegistry
     {
         int runtimeId = Interlocked.Increment(ref S_NEXT_RUNTIME_TYPE_ID);
         if (runtimeId <= 0)
+        {
             throw new InvalidOperationException("The process-wide runtime type identity space is exhausted.");
+        }
         return runtimeId;
     }
 
@@ -435,32 +445,38 @@ internal sealed class TypeIdentityRegistry
                 .Where(static attribute => string.Equals(
                     attribute.Key,
                     C_GENERATED_STABLE_TYPE_METADATA_KEY,
-                    StringComparison.Ordinal))
+                    StringComparison.Ordinal
+                ))
                 .ToArray();
             if (attributes.Length == 0)
+            {
                 continue;
+            }
 
-            var availableTypes = group.ToDictionary(
-                static type => type.FullName ?? type.Name,
-                StringComparer.Ordinal);
+            var availableTypes = group.ToDictionary(static type => type.FullName ?? type.Name, StringComparer.Ordinal);
             var mappings = new Dictionary<string, GeneratedStableTypeMapping>(StringComparer.Ordinal);
             foreach (AssemblyMetadataAttribute attribute in attributes)
             {
                 GeneratedStableTypeMapping mapping = ParseGeneratedMapping(
                     group.Key.GetName().Name ?? string.Empty,
-                    attribute.Value);
+                    attribute.Value
+                );
                 if (string.IsNullOrWhiteSpace(mapping.typeName))
+                {
                     throw new InvalidOperationException("A generated StableTypeId mapping requires a type name.");
+                }
                 if (!availableTypes.ContainsKey(mapping.typeName))
                 {
                     throw new InvalidOperationException(
-                        $"Generated StableTypeId mapping refers to missing type '{mapping.typeName}' " +
-                        $"in assembly '{group.Key.GetName().Name}'.");
+                        $"Generated StableTypeId mapping refers to missing type '{mapping.typeName}' "
+                        + $"in assembly '{group.Key.GetName().Name}'."
+                    );
                 }
                 if (!mappings.TryAdd(mapping.typeName, mapping))
                 {
                     throw new InvalidOperationException(
-                        $"Type '{mapping.typeName}' has more than one generated StableTypeId mapping.");
+                        $"Type '{mapping.typeName}' has more than one generated StableTypeId mapping."
+                    );
                 }
             }
             result.Add(group.Key, mappings);
@@ -476,7 +492,8 @@ internal sealed class TypeIdentityRegistry
         if (parts.Length != 2)
         {
             throw new InvalidOperationException(
-                $"Assembly '{assemblyName}' has invalid generated StableTypeId metadata '{value}'.");
+                $"Assembly '{assemblyName}' has invalid generated StableTypeId metadata '{value}'."
+            );
         }
         return new GeneratedStableTypeMapping(parts[1], parts[0]);
     }

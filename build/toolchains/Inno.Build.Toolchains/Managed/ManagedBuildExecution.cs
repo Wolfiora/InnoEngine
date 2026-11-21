@@ -78,7 +78,9 @@ public sealed class ManagedBuildExecution : IDisposable
             cancellationToken.ThrowIfCancellationRequested();
             using FileStream stream = File.OpenRead(input.physicalPath);
             if (!SHA256.HashData(stream).AsSpan().SequenceEqual(input.hash))
+            {
                 throw new InvalidOperationException($"Fixed managed input '{input.logicalPath}' changed during execution.");
+            }
         }
         return ValueTask.CompletedTask;
     }
@@ -115,34 +117,69 @@ public sealed class ManagedBuildExecution : IDisposable
     ) {
         string entry = Path.GetRelativePath(context.engineRoot, project);
         if (Path.IsPathRooted(entry) || entry == ".." || entry.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
             throw new ArgumentException("A managed execution entry must belong to its declared source root.", nameof(project));
-        string identity = NativeBuildFingerprint.Create(new[] { "managed-workspace", context.engineRoot, project,
-            sdk.hostPath, sdk.sdkIdentity, sdk.cliPath }.Concat(properties.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-                .Select(static pair => pair.Key + "=" + pair.Value)), []);
+        }
+        string identity = NativeBuildFingerprint.Create(
+            new[]
+            {
+                "managed-workspace",
+                context.engineRoot,
+                project,
+                sdk.hostPath,
+                sdk.sdkIdentity,
+                sdk.cliPath
+            }.Concat(
+                properties.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    .Select(static pair => pair.Key + "=" + pair.Value)
+            ),
+            []
+        );
         string workspace = Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces", identity);
-        var cache = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces"), BuildCacheArtifactRole.ReusableWorkspace);
-        BuildCacheOwnerCatalog.Register(context.engineRoot, Path.GetDirectoryName(workspace)!, "managed-workspaces", cache.role, cancellation);
+        var cache = new BuildCachePublisher(
+            Path.Combine(context.engineRoot, "artifacts", "managed", "workspaces"),
+            BuildCacheArtifactRole.ReusableWorkspace
+        );
+        BuildCacheOwnerCatalog.Register(
+            context.engineRoot,
+            Path.GetDirectoryName(workspace)!,
+            "managed-workspaces",
+            cache.role,
+            cancellation
+        );
         using FileLease cacheUse = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
-        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"), workspace + ".lock", Timeout.InfiniteTimeSpan, cancellationToken: cancellation).ConfigureAwait(false);
+        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(
+            Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"),
+            workspace + ".lock",
+            Timeout.InfiniteTimeSpan,
+            cancellationToken: cancellation
+        ).ConfigureAwait(false);
         try
         {
-            cache.BeginWorkingDirectory(workspace, workspace + ".lock",
-                properties.TryGetValue("InnoNativeTarget", out string? selectedTarget) ? selectedTarget : context.toolchain?.targetId, cancellation);
+            cache.BeginWorkingDirectory(
+                workspace,
+                workspace + ".lock",
+                properties.TryGetValue("InnoNativeTarget", out string? selectedTarget) ? selectedTarget : context.toolchain?.targetId,
+                cancellation
+            );
             string sourceRoot = Path.Combine(workspace, "Sources");
             string metadata = Path.Combine(workspace, "inputs.json");
             NativeInputSnapshot captured = context.inputState.CaptureRecordedInputs(context.engineRoot);
             var selected = captured.entries.Where(static input => input.logicalPath.StartsWith("engine/", StringComparison.Ordinal))
-                .Where(input => IsSource(context.engineRoot, input.logicalPath["engine/".Length..])).ToArray();
+                .Where(input => IsSource(context.engineRoot, input.logicalPath["engine/".Length..]))
+                .ToArray();
             var paths = new HashSet<string>(selected.Select(static input => input.logicalPath["engine/".Length..]), StringComparer.Ordinal);
             if (File.Exists(metadata))
             {
                 string[] previous = JsonSerializer.Deserialize<string[]>(File.ReadAllText(metadata))
-                    ?? throw new InvalidDataException("A managed workspace has no owned input inventory.");
+                                    ?? throw new InvalidDataException("A managed workspace has no owned input inventory.");
                 foreach (string removed in previous.Where(path => !paths.Contains(path)))
                 {
                     string file = PathBoundary.RequireUnlinkedPath(sourceRoot, PathBoundary.Resolve(sourceRoot, removed));
                     if (File.Exists(file))
+                    {
                         File.Delete(file);
+                    }
                 }
             }
             var fixedInputs = new List<NativeInputSnapshot.Entry>();
@@ -155,11 +192,20 @@ public sealed class ManagedBuildExecution : IDisposable
             }
             string marker = Path.Combine(sourceRoot, "InnoEngine.sln");
             if (!File.Exists(marker))
+            {
                 File.WriteAllText(marker, "Managed execution source owner.", new UTF8Encoding(false));
+            }
             AtomicFile.WriteAllBytes(metadata, JsonSerializer.SerializeToUtf8Bytes(paths.Order(StringComparer.Ordinal).ToArray()));
-            return new(ownership, sourceRoot, PathBoundary.Resolve(sourceRoot, entry), fixedInputs.AsReadOnly(),
-                cache, workspace, project + "/" + context.configuration,
-                properties.TryGetValue("InnoNativeTarget", out string? targetId) ? targetId : context.toolchain?.targetId);
+            return new(
+                ownership,
+                sourceRoot,
+                PathBoundary.Resolve(sourceRoot, entry),
+                fixedInputs.AsReadOnly(),
+                cache,
+                workspace,
+                project + "/" + context.configuration,
+                properties.TryGetValue("InnoNativeTarget", out string? targetId) ? targetId : context.toolchain?.targetId
+            );
         }
         catch
         {
@@ -176,9 +222,13 @@ public sealed class ManagedBuildExecution : IDisposable
         foreach (string segment in relative.Split('/'))
         {
             if (segment == ".git" || segment == "artifacts" && directory == root)
+            {
                 return false;
+            }
             if (segment is "bin" or "obj" && Directory.EnumerateFiles(directory, "*.csproj").Any())
+            {
                 return false;
+            }
             directory = Path.Combine(directory, segment);
         }
         return true;

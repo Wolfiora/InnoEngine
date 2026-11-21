@@ -19,20 +19,27 @@ internal sealed class EditorToolbarCatalog(
             {
                 EditorToolbarItemAttribute placement = registration.toolbars[toolbarIndex];
                 if (!string.Equals(placement.area, context.area, StringComparison.Ordinal))
+                {
                     continue;
+                }
 
                 EditorActionState status = actions.Query(registration.id, context);
                 if (!status.isVisible)
+                {
                     continue;
+                }
                 EditorToolbarIcon icon = status.isChecked && placement.activeIcon != EditorToolbarIcon.None
-                    ? placement.activeIcon
-                    : placement.icon;
-                items.Add((new EditorToolbarItem(
-                    registration.id,
-                    icon,
-                    status.displayName ?? placement.tooltip,
-                    placement.order,
-                    status), registration.type.FullName ?? registration.type.Name));
+                                         ? placement.activeIcon
+                                         : placement.icon;
+                items.Add(
+                    (new EditorToolbarItem(
+                        registration.id,
+                        icon,
+                        status.displayName ?? placement.tooltip,
+                        placement.order,
+                        status
+                    ), registration.type.FullName ?? registration.type.Name)
+                );
             }
         }
 
@@ -43,11 +50,13 @@ internal sealed class EditorToolbarCatalog(
         {
             int order = left.Item.order.CompareTo(right.Item.order);
             if (order != 0)
+            {
                 return order;
+            }
             int action = string.Compare(left.Item.actionId, right.Item.actionId, StringComparison.Ordinal);
             return action != 0
-                ? action
-                : string.Compare(left.TypeName, right.TypeName, StringComparison.Ordinal);
+                   ? action
+                   : string.Compare(left.TypeName, right.TypeName, StringComparison.Ordinal);
         });
         return new EditorToolbarModel(items.ConvertAll(static value => value.Item));
     }

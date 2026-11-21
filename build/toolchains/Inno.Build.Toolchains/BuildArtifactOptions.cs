@@ -61,7 +61,9 @@ public static class BuildArtifactCopier
     ) {
         var buildDir = Path.Combine(buildRoot, options.buildDirName);
         if (!Directory.Exists(buildDir))
+        {
             throw new DirectoryNotFoundException($"Native artifact directory not found: {buildDir}");
+        }
 
         var candidates = Directory.EnumerateFiles(buildDir, "*", SearchOption.AllDirectories)
             .Where(path =>
@@ -79,8 +81,8 @@ public static class BuildArtifactCopier
 
                 var fileName = Path.GetFileName(path);
                 if (!ToolchainEnvironment.ContainsAny(fileName, options.libraryTokens.ToArray())
-                    || !MatchesConfiguration(Path.GetRelativePath(buildDir, path), config))
-                {
+                    || !MatchesConfiguration(Path.GetRelativePath(buildDir, path), config)
+                ) {
                     return false;
                 }
 
@@ -96,7 +98,9 @@ public static class BuildArtifactCopier
             .ToList();
 
         if (candidates.Count == 0)
+        {
             throw new FileNotFoundException($"No {config} native artifacts found under {buildDir}.");
+        }
 
         var artifacts = candidates.Select(source => (
             source,
@@ -104,11 +108,15 @@ public static class BuildArtifactCopier
         var duplicate = artifacts.GroupBy(static artifact => artifact.name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
+        {
             throw new InvalidOperationException($"Multiple native artifacts produce '{duplicate.Key}'.");
+        }
 
         Directory.CreateDirectory(outputDir);
         foreach (var artifact in artifacts)
+        {
             File.Copy(artifact.source, Path.Combine(outputDir, artifact.name), overwrite: true);
+        }
     }
 
     private static bool MatchesConfiguration(
@@ -117,19 +125,29 @@ public static class BuildArtifactCopier
     ) {
         string name = Path.GetFileNameWithoutExtension(path);
         if (name.EndsWith("Debug", StringComparison.OrdinalIgnoreCase))
+        {
             return config.Equals("debug", StringComparison.OrdinalIgnoreCase);
+        }
         if (name.EndsWith("Release", StringComparison.OrdinalIgnoreCase))
+        {
             return config.Equals("release", StringComparison.OrdinalIgnoreCase);
+        }
         string? directory = Path.GetDirectoryName(path);
         if (string.IsNullOrEmpty(directory))
+        {
             return true;
+        }
         string[] segments = directory.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
         for (int index = segments.Length - 1; index >= 0; index--)
         {
             if (segments[index].Equals("Debug", StringComparison.OrdinalIgnoreCase))
+            {
                 return config.Equals("debug", StringComparison.OrdinalIgnoreCase);
+            }
             if (segments[index].Equals("Release", StringComparison.OrdinalIgnoreCase))
+            {
                 return config.Equals("release", StringComparison.OrdinalIgnoreCase);
+            }
         }
         return true;
     }

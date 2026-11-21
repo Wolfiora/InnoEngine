@@ -12,8 +12,19 @@ internal static class ProductCleanExecutor
     internal static ValueTask<FileLease> AcquireAsync(
         BuildCommandContext context,
         CancellationToken cancellationToken
-    ) => FileLease.AcquireAsync(Path.Combine(context.root, "artifacts", "products", "editor", context.target.value,
-        context.configuration, "product.lock"), TimeSpan.FromSeconds(10), cancellationToken);
+    ) => FileLease.AcquireAsync(
+        Path.Combine(
+            context.root,
+            "artifacts",
+            "products",
+            "editor",
+            context.target.value,
+            context.configuration,
+            "product.lock"
+        ),
+        TimeSpan.FromSeconds(10),
+        cancellationToken
+    );
 
     internal static void Execute(
         ProductCleanPlan plan,
@@ -22,13 +33,17 @@ internal static class ProductCleanExecutor
     ) {
         cancellationToken.ThrowIfCancellationRequested();
         foreach (string directory in plan.directories)
+        {
             PathBoundary.RequireUnlinkedPath(plan.root, directory);
+        }
         foreach (string directory in plan.directories)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Console.WriteLine($"{(dryRun ? "Would clean" : "Cleaning")} {directory}");
             if (!dryRun)
+            {
                 ToolchainEnvironment.DeleteDirectory(directory);
+            }
         }
     }
 }

@@ -30,7 +30,12 @@ internal static unsafe class TextNativeOperations
         BgcsInnoTextError* error = null;
         fixed (byte* bytes = data)
         fixed (ulong* destination = &handle)
-            CheckBridge(TextNative.Raw.LoadFont(runtime, bytes, checked((uint)data.Length), faceIndex, destination, &result, &error), error);
+        {
+            CheckBridge(
+                TextNative.Raw.LoadFont(runtime, bytes, checked((uint)data.Length), faceIndex, destination, &result, &error),
+                error
+            );
+        }
         return result;
     }
 
@@ -60,8 +65,24 @@ internal static unsafe class TextNativeOperations
         Result result = default;
         BgcsInnoTextError* error = null;
         // BGCS verifies every DTO field, offset, size and alignment in the native bridge.
-        CheckBridge(TextNative.Raw.ShapeUtf8(runtime, handle, (sbyte*)text, textLength, fontSize, direction,
-            (sbyte*)language, (sbyte*)script, (InnoTextFontAdapterGlyphNative*)glyphs, capacity, count, &result, &error), error);
+        CheckBridge(
+            TextNative.Raw.ShapeUtf8(
+                runtime,
+                handle,
+                (sbyte*)text,
+                textLength,
+                fontSize,
+                direction,
+                (sbyte*)language,
+                (sbyte*)script,
+                (InnoTextFontAdapterGlyphNative*)glyphs,
+                capacity,
+                count,
+                &result,
+                &error
+            ),
+            error
+        );
         return result;
     }
 
@@ -74,8 +95,19 @@ internal static unsafe class TextNativeOperations
         Result result = default;
         BgcsInnoTextError* error = null;
         fixed (InnoTextFontAdapterMetrics* destination = &metrics)
-            CheckBridge(TextNative.Raw.GetMetrics(runtime, handle, fontSize,
-                (InnoTextFontAdapterMetricsNative*)destination, &result, &error), error);
+        {
+            CheckBridge(
+                TextNative.Raw.GetMetrics(
+                    runtime,
+                    handle,
+                    fontSize,
+                    (InnoTextFontAdapterMetricsNative*)destination,
+                    &result,
+                    &error
+                ),
+                error
+            );
+        }
         return result;
     }
 
@@ -90,8 +122,20 @@ internal static unsafe class TextNativeOperations
     ) {
         Result result = default;
         BgcsInnoTextError* error = null;
-        CheckBridge(TextNative.Raw.RasterizeGlyph(runtime, handle, glyphId, fontSize, pixels, capacity,
-            (InnoTextFontAdapterBitmapNative*)bitmap, &result, &error), error);
+        CheckBridge(
+            TextNative.Raw.RasterizeGlyph(
+                runtime,
+                handle,
+                glyphId,
+                fontSize,
+                pixels,
+                capacity,
+                (InnoTextFontAdapterBitmapNative*)bitmap,
+                &result,
+                &error
+            ),
+            error
+        );
         return result;
     }
 
@@ -108,16 +152,22 @@ internal static unsafe class TextNativeOperations
         BgcsInnoTextError* error
     ) {
         if (status == 0 && error == null)
+        {
             return;
+        }
         try
         {
             string? message = error == null ? null : Marshal.PtrToStringUTF8((nint)TextNative.Raw.BgcsInnoTextErrorMessage(error));
-            throw new InvalidOperationException($"The text bridge failed with status {status}: {message ?? "No native error text is available."}");
+            throw new InvalidOperationException(
+                $"The text bridge failed with status {status}: {message ?? "No native error text is available."}"
+            );
         }
         finally
         {
             if (error != null)
+            {
                 TextNative.Raw.BgcsInnoTextErrorRelease(error);
+            }
         }
     }
 }

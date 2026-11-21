@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Serialization;
 
 namespace Inno.Core.Settings;
@@ -65,7 +64,7 @@ public static class Settings
     /// </exception>
     public static TSetting Get<TSetting>(ProjectSettingId id)
         where TSetting : class, ISerializable
-        => ProjectSettingsExecutionContext.current.Get<TSetting>(id);
+            => ProjectSettingsExecutionContext.current.Get<TSetting>(id);
 
     /// <summary>
     /// Tries to get an isolated effective setting from the current extension generation.
@@ -89,7 +88,6 @@ public static class Settings
     public static bool TryGet<TSetting>(
         ProjectSettingId id,
         out TSetting? setting
-    )
-        where TSetting : class, ISerializable
+    ) where TSetting : class, ISerializable
         => ProjectSettingsExecutionContext.current.TryGet(id, out setting);
 }

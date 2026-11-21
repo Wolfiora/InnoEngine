@@ -30,14 +30,20 @@ public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
     public unsafe PlatformNativeHandles ResolveNativeSurface(nint windowHandle)
     {
         if (windowHandle == 0)
+        {
             throw new ArgumentException("A live SDL window is required.", nameof(windowHandle));
+        }
         uint properties = SDL.Raw.GetWindowProperties((SDLWindow*)windowHandle);
         ReadOnlySpan<byte> propertyName = "SDL.window.cocoa.window\0"u8;
         nint surface;
         fixed (byte* name = propertyName)
+        {
             surface = (nint)SDL.Raw.GetPointerProperty(properties, (sbyte*)name, null);
+        }
         if (surface == 0)
+        {
             throw new InvalidOperationException("SDL did not provide the required MacOS surface.");
+        }
         return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.cocoa);
     }
 

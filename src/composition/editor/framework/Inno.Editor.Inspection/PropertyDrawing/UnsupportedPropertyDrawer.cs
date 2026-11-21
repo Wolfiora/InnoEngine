@@ -1,7 +1,9 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Editor.ImGui;
 
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+
 namespace Inno.Editor.Inspection;
+
 internal sealed class UnsupportedPropertyDrawer : IPropertyDrawer
 {
     internal static UnsupportedPropertyDrawer instance { get; } = new();

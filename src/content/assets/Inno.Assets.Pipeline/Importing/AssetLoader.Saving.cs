@@ -7,18 +7,17 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
@@ -39,7 +38,9 @@ sealed partial class AssetLoader
     {
         ArgumentNullException.ThrowIfNull(asset);
         if (string.IsNullOrWhiteSpace(asset.assetPath.ToString()))
+        {
             throw new InvalidOperationException("An unsaved asset requires an explicit source-relative path.");
+        }
         return Save(asset.assetPath, asset);
     }
 
@@ -69,40 +70,47 @@ sealed partial class AssetLoader
         AssetObject asset
     ) {
         if (GetMount(relativePath).isReadOnly)
-            throw new InvalidOperationException($"Asset source '{relativePath}' is read-only.");
-        if (!string.IsNullOrWhiteSpace(asset.assetPath.ToString()) &&
-            !string.Equals(NormalizeRelativePath(asset.assetPath.ToString()), relativePath, StringComparison.OrdinalIgnoreCase))
         {
+            throw new InvalidOperationException($"Asset source '{relativePath}' is read-only.");
+        }
+        if (!string.IsNullOrWhiteSpace(asset.assetPath.ToString())
+            && !string.Equals(NormalizeRelativePath(asset.assetPath.ToString()), relativePath, StringComparison.OrdinalIgnoreCase)
+        ) {
             throw new InvalidOperationException(
-                $"Asset '{asset.assetPath.ToString()}' cannot be saved to unrelated path '{relativePath}' without creating a new asset.");
+                $"Asset '{asset.assetPath.ToString()}' cannot be saved to unrelated path '{relativePath}' without creating a new asset."
+            );
         }
         AssetImporter? importer = m_importers.FindByPath(relativePath);
         if (importer is null || !importer.targetAssetType.IsInstanceOfType(asset))
+        {
             return false;
+        }
         ReadOnlyMemory<byte>? exported = importer
-            .ExportInternalAsync(
-                new AssetExportContext(m_types, m_serialization, this),
-                asset,
-                CancellationToken.None)
+            .ExportInternalAsync(new AssetExportContext(m_types, m_serialization, this), asset, CancellationToken.None)
             .AsTask()
             .GetAwaiter()
             .GetResult();
         if (exported is null)
+        {
             return false;
+        }
         byte[] sourceBytes = exported.Value.ToArray();
         AssetRecord? destinationRecord = FindRecordLocked(relativePath);
         bool destinationOwnsIdentity = destinationRecord is not null
-            && destinationRecord.persistentId != Guid.Empty;
+                                       && destinationRecord.persistentId != Guid.Empty;
         Guid persistentId = destinationOwnsIdentity
-            ? destinationRecord!.persistentId
-            : asset.identity.persistentId;
+                            ? destinationRecord!.persistentId
+                            : asset.identity.persistentId;
         if (persistentId == Guid.Empty)
+        {
             persistentId = Guid.NewGuid();
+        }
         if (asset.identity.runtimeId is not null && asset.identity.persistentId != persistentId)
         {
             throw new InvalidOperationException(
-                $"Registered asset '{asset.identity.persistentId:D}' cannot replace destination identity " +
-                $"'{persistentId:D}' at '{relativePath}'.");
+                $"Registered asset '{asset.identity.persistentId:D}' cannot replace destination identity "
+                + $"'{persistentId:D}' at '{relativePath}'."
+            );
         }
         ImportBuild build = BuildImportLocked(relativePath, sourceBytes, importer, persistentId);
         AssetRecord? provisionalRecord = null;
@@ -136,26 +144,35 @@ sealed partial class AssetLoader
         catch
         {
             if (provisionalRecord is not null)
+            {
                 RemoveRecordLocked(provisionalRecord, removeGeneratedFiles: false);
+            }
             if (registeredHere)
+            {
                 m_identities.Unregister(asset);
+            }
             throw;
         }
         AssetRecord committed = m_recordsByPath[relativePath];
         if (committed.asset is null)
         {
             if (asset.identity.persistentId != persistentId)
+            {
                 m_identities.InitializePersistentIdentity(asset, persistentId);
+            }
             committed.asset = asset;
             if (m_identitiesActive && asset.identity.runtimeId is null)
+            {
                 m_identities.Register(asset, persistentId);
+            }
             m_runtimeOwner.Initialize(
                 asset,
                 AssetPath.Parse(relativePath),
                 build.meta.sourceHash,
                 build.payload,
                 false,
-                1);
+                1
+            );
             AttachDependenciesLocked(committed);
         }
         return true;
@@ -171,19 +188,11 @@ sealed partial class AssetLoader
         long version
     ) {
         RestoreAssetState(canonical, state);
-        m_runtimeOwner.Initialize(
-            canonical,
-            AssetPath.Parse(sourcePath),
-            sourceHash,
-            payload,
-            isMissing,
-            version);
+        m_runtimeOwner.Initialize(canonical, AssetPath.Parse(sourcePath), sourceHash, payload, isMissing, version);
     }
 
     private byte[] CaptureAssetState(AssetObject asset)
-        => m_serialization.Encode(
-            writer => writer.WriteProperties(asset),
-            m_serializationContext);
+        => m_serialization.Encode(writer => writer.WriteProperties(asset), m_serializationContext);
 
     private void RestoreAssetState(
         AssetObject asset,
@@ -195,5 +204,4 @@ sealed partial class AssetLoader
             return true;
         }, m_serializationContext);
     }
-
 }

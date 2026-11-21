@@ -18,6 +18,8 @@ internal sealed class NativeInputVerificationScope
         CancellationToken cancellationToken
     ) {
         lock (m_gate)
+        {
             return NativeInputSnapshot.Capture(inputs, m_inputs, cancellationToken);
+        }
     }
 }

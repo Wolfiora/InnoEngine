@@ -22,8 +22,7 @@ public sealed class AssetImportExtensionUnavailableException : InvalidOperationE
     public AssetImportExtensionUnavailableException(
         string extensionKind,
         string extensionId
-    )
-        : base($"Required authoring extension '{extensionKind}/{extensionId}' is unavailable. Source and last-good artifacts are retained.")
+    ) : base($"Required authoring extension '{extensionKind}/{extensionId}' is unavailable. Source and last-good artifacts are retained.")
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(extensionKind);
         ArgumentException.ThrowIfNullOrWhiteSpace(extensionId);

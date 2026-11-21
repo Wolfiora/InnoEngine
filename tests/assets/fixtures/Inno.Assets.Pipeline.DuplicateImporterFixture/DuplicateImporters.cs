@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Extensibility.Types;
@@ -35,8 +34,8 @@ public sealed class DuplicateImporterA : AssetImporter<DuplicateImporterAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DuplicateImporterAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DuplicateImporterAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }
@@ -63,8 +62,8 @@ public sealed class DuplicateImporterB : AssetImporter<DuplicateImporterAsset>
     protected override ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<DuplicateImporterAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         output.SetAsset(new DuplicateImporterAsset());
         return output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
     }

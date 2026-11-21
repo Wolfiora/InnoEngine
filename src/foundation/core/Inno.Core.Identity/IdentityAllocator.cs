@@ -1,7 +1,7 @@
-using Inno.Core.Execution;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Core.Identity;
 
@@ -25,7 +25,9 @@ public sealed class IdentityAllocator
     {
         int nextDomainId = Interlocked.Increment(ref S_NEXT_DOMAIN_ID);
         if (nextDomainId <= 0)
+        {
             throw new InvalidOperationException("The process exhausted available identity domains.");
+        }
         domainId = new IdentityDomainId(nextDomainId);
         m_registry = new IdentityRegistry(domainId);
     }
@@ -128,9 +130,13 @@ public sealed class IdentityAllocator
     ) {
         ArgumentNullException.ThrowIfNull(obj);
         if (persistentId == Guid.Empty)
+        {
             throw new ArgumentException("A detached persistent identity cannot be empty.", nameof(persistentId));
+        }
         if (obj.identity.runtimeId is not null)
+        {
             throw new InvalidOperationException("A registered identity object cannot be reinitialized.");
+        }
         obj.SetIdentity(new Identity(persistentId));
     }
 
@@ -153,10 +159,14 @@ public sealed class IdentityAllocator
     {
         ArgumentNullException.ThrowIfNull(obj);
         if (!m_registry.Unregister(obj))
+        {
             return false;
+        }
         Action<IdentityObject>? handlers = ObjectUnregistered;
         if (handlers is null)
+        {
             return true;
+        }
         List<Exception>? failures = null;
         foreach (Delegate handler in handlers.GetInvocationList())
         {
@@ -171,7 +181,9 @@ public sealed class IdentityAllocator
             }
         }
         if (failures is not null)
+        {
             throw new AggregateException("One or more identity unregistration observers failed.", failures);
+        }
         return true;
     }
 
@@ -189,7 +201,7 @@ public sealed class IdentityAllocator
     /// </returns>
     public TIdentity? Get<TIdentity>(int runtimeId)
         where TIdentity : IdentityObject
-        => m_registry.Get<TIdentity>(runtimeId);
+            => m_registry.Get<TIdentity>(runtimeId);
 
     /// <summary>
     /// Resolves a domain-qualified runtime identity without allowing cross-session aliasing.
@@ -205,9 +217,9 @@ public sealed class IdentityAllocator
     /// </returns>
     public TIdentity? Get<TIdentity>(RuntimeIdentity identity)
         where TIdentity : IdentityObject
-        => identity.domainId == domainId
-            ? m_registry.Get<TIdentity>(identity.runtimeId)
-            : null;
+            => identity.domainId == domainId
+               ? m_registry.Get<TIdentity>(identity.runtimeId)
+               : null;
 
     /// <summary>
     /// Resolves a registered object by its persistent identity.
@@ -223,6 +235,5 @@ public sealed class IdentityAllocator
     /// </returns>
     public TIdentity? Get<TIdentity>(Guid persistentId)
         where TIdentity : IdentityObject
-        => m_registry.Get<TIdentity>(persistentId);
-
+            => m_registry.Get<TIdentity>(persistentId);
 }

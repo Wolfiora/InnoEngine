@@ -58,24 +58,35 @@ public sealed class BuildCacheArtifactDescriptor
         ArgumentException.ThrowIfNullOrWhiteSpace(leasePath);
         ArgumentNullException.ThrowIfNull(dependencies);
         if (!Path.IsPathFullyQualified(directory) || !Path.IsPathFullyQualified(leasePath)
-            || dependencies.Any(static path => !Path.IsPathFullyQualified(path)))
+            || dependencies.Any(static path => !Path.IsPathFullyQualified(path))
+        ) {
             throw new ArgumentException("Cache artifact paths must be absolute.");
+        }
         if (bytes < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(bytes));
+        }
         if (targetId is not null && string.IsNullOrWhiteSpace(targetId))
+        {
             throw new ArgumentException("A declared cache target cannot be blank.", nameof(targetId));
+        }
         if (lastUseUtc.Kind != DateTimeKind.Utc)
+        {
             throw new ArgumentException("Cache use timestamps must be UTC.", nameof(lastUseUtc));
+        }
         this.directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
         this.leasePath = Path.GetFullPath(leasePath);
         this.targetId = targetId;
         this.bytes = bytes;
         this.lastUseUtc = lastUseUtc;
         if (!Enum.IsDefined(role))
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         this.role = role;
-        this.dependencies = new ReadOnlyCollection<string>(dependencies.Select(static path =>
-            Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))).ToArray());
+        this.dependencies = new ReadOnlyCollection<string>(
+            dependencies.Select(static path => Path.TrimEndingDirectorySeparator(Path.GetFullPath(path))).ToArray()
+        );
     }
 
     /// <summary>

@@ -9,22 +9,18 @@ public enum LogLevel
     /// Diagnostic logs intended for local debugging.
     /// </summary>
     Debug,
-
     /// <summary>
     /// Informational logs for normal runtime flow.
     /// </summary>
     Info,
-
     /// <summary>
     /// Warning logs for recoverable problems.
     /// </summary>
     Warn,
-
     /// <summary>
     /// Error logs for failures that should be investigated.
     /// </summary>
     Error,
-
     /// <summary>
     /// Fatal logs for unrecoverable failures.
     /// </summary>

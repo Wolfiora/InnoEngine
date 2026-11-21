@@ -1,10 +1,11 @@
 using System;
+using Xunit;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
-using Xunit;
 using Inno.Testing.Bgfx;
+
 using static Inno.Testing.Bgfx.ShaderProfileFixture;
 
 namespace Inno.Build.Toolchains.Bgfx.Tests;
@@ -14,9 +15,7 @@ public sealed class BgfxShaderTargetTests
     [Fact]
     public void MetalProfileIsOwnedByMacBgfxToolchain()
     {
-        GraphicsCapabilities capabilities = CreateCapabilities(
-            GraphicsApi.Metal,
-            GraphicsCapability.Compute);
+        GraphicsCapabilities capabilities = CreateCapabilities(GraphicsApi.Metal, GraphicsCapability.Compute);
         var toolchain = new BgfxShadercToolchain(ShaderProfileFixture.mac);
 
         ShaderCompileTarget target = toolchain.CreateTarget(capabilities);
@@ -45,12 +44,15 @@ public sealed class BgfxShaderTargetTests
         var toolchain = new BgfxShadercToolchain(ShaderProfileFixture.browser);
 
         ShaderCompileTarget target = toolchain.CreateTarget(
-            CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.None));
+            CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.None)
+        );
 
         Assert.Contains("bgfx-shaderc:fixture-browser:", target.profileKey, StringComparison.Ordinal);
         Assert.Throws<NotSupportedException>(() => toolchain.CreateTarget(
-            CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.Compute)));
+            CreateCapabilities(GraphicsApi.OpenGLES, GraphicsCapability.Compute)
+        ));
         Assert.Throws<NotSupportedException>(() => toolchain.CreateTarget(
-            CreateCapabilities(GraphicsApi.OpenGL, GraphicsCapability.None)));
+            CreateCapabilities(GraphicsApi.OpenGL, GraphicsCapability.None)
+        ));
     }
 }

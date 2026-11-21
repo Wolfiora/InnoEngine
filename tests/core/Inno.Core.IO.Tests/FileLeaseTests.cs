@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.IO;
 using Xunit;
+using Inno.Core.IO;
 
 namespace Inno.Core.IO.Tests;
 
@@ -60,13 +60,17 @@ public sealed class FileLeaseTests : IDisposable
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FileLease.AcquireAsync(path, TimeSpan.FromSeconds(-2)).AsTask());
         using CancellationTokenSource cancellation = new();
         cancellation.Cancel();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => FileLease.AcquireAsync(path, TimeSpan.Zero, cancellation.Token).AsTask());
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            () => FileLease.AcquireAsync(path, TimeSpan.Zero, cancellation.Token).AsTask()
+        );
         Assert.False(Directory.Exists(m_root));
     }
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

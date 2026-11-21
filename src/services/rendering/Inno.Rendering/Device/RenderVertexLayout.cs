@@ -173,7 +173,9 @@ public readonly record struct RenderVertexAttribute
         int byteOffset = -1
     ) {
         if (byteOffset < -1)
+        {
             throw new ArgumentOutOfRangeException(nameof(byteOffset));
+        }
         this.semantic = semantic;
         this.format = format;
         this.byteOffset = byteOffset;
@@ -197,7 +199,8 @@ public readonly record struct RenderVertexAttribute
     /// <summary>
     /// Gets the packed byte size.
     /// </summary>
-    public int byteSize => format switch
+    public int byteSize
+        => format switch
     {
         RenderVertexFormat.Float1 => 4,
         RenderVertexFormat.Float2 => 8,
@@ -261,7 +264,8 @@ public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
             {
                 throw new ArgumentException(
                     $"Vertex attribute '{attribute.semantic}' overlaps a preceding attribute.",
-                    nameof(attributes));
+                    nameof(attributes)
+                );
             }
 
             resolved[index] = new RenderVertexAttribute(attribute.semantic, attribute.format, offset);
@@ -270,9 +274,7 @@ public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
 
         if (stride != 0 && stride < occupiedEnd)
         {
-            throw new ArgumentException(
-                "Vertex stride cannot end before the final attribute.",
-                nameof(stride));
+            throw new ArgumentException("Vertex stride cannot end before the final attribute.", nameof(stride));
         }
 
         m_attributes = Array.AsReadOnly(resolved);
@@ -300,8 +302,8 @@ public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
     /// </returns>
     public bool Equals(RenderVertexLayout? other)
         => other is not null
-            && stride == other.stride
-            && m_attributes.SequenceEqual(other.m_attributes);
+           && stride == other.stride
+           && m_attributes.SequenceEqual(other.m_attributes);
 
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
@@ -375,4 +377,3 @@ public enum RenderPrimitiveTopology
     /// </summary>
     PointList
 }
-

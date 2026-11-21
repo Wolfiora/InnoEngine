@@ -29,9 +29,13 @@ public sealed class EditorModalAttribute : Attribute
         int order = 0
     ) {
         if (string.IsNullOrWhiteSpace(id))
+        {
             throw new ArgumentException("An editor modal identifier is required.", nameof(id));
+        }
         if (string.IsNullOrWhiteSpace(title))
+        {
             throw new ArgumentException("An editor modal title is required.", nameof(title));
+        }
         this.id = id;
         this.title = title;
         this.order = order;

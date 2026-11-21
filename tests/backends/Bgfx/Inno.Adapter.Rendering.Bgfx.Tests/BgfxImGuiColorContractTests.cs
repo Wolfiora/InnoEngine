@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
-using Inno.Adapter.Rendering.Bgfx;
-using Inno.Adapter.Presentation.ImGui;
-using Inno.Rendering;
 using Xunit;
+using Inno.Adapter.Presentation.ImGui;
+using Inno.Adapter.Rendering.Bgfx;
+using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
@@ -34,13 +34,15 @@ public sealed class BgfxImGuiColorContractTests
         Assert.False(pipeline.vertexShader.IsEmpty);
         Assert.False(pipeline.fragmentShader.IsEmpty);
         Assert.Equal(2, pipeline.bindings.Count);
-        RenderShaderBindingDescriptor texture = Assert.Single(pipeline.bindings.Where(
-            binding => binding.id.value == "s_tex"));
+        RenderShaderBindingDescriptor texture = Assert.Single(
+            pipeline.bindings.Where(binding => binding.id.value == "s_tex")
+        );
         Assert.Equal(RenderShaderBindingKind.Texture, texture.kind);
         Assert.Equal(0, texture.slot);
         Assert.InRange(texture.nativeName.Length, 1, 63);
-        RenderShaderBindingDescriptor output = Assert.Single(pipeline.bindings.Where(
-            binding => binding.id.value == "outputEncoding"));
+        RenderShaderBindingDescriptor output = Assert.Single(
+            pipeline.bindings.Where(binding => binding.id.value == "outputEncoding")
+        );
         Assert.Equal(RenderShaderBindingKind.Uniform, output.kind);
         Assert.InRange(output.nativeName.Length, 1, 63);
     }

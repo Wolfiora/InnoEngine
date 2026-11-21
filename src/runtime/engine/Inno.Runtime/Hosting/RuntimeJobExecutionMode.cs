@@ -9,7 +9,6 @@ public enum RuntimeJobExecutionMode
     /// Executes jobs deterministically on the session owner thread.
     /// </summary>
     SingleThread,
-
     /// <summary>
     /// Executes ready jobs on a bounded worker pool owned by the session.
     /// </summary>

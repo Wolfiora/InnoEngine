@@ -22,10 +22,13 @@ internal readonly record struct SceneOrderHistoryData(
     internal static SceneOrderHistoryData Decode(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length != 24)
+        {
             throw new InvalidDataException("Scene order history payload must contain exactly 24 bytes.");
+        }
         return new SceneOrderHistoryData(
             new Guid(bytes[..16]),
             BitConverter.ToInt32(bytes[16..20]),
-            BitConverter.ToInt32(bytes[20..24]));
+            BitConverter.ToInt32(bytes[20..24])
+        );
     }
 }

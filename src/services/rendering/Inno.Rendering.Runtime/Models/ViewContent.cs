@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Identity;
 using Inno.Core.Mathematics;
 using Inno.References;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
@@ -150,14 +150,17 @@ public sealed class ViewContentContext
     /// Gets elapsed time in seconds.
     /// </summary>
     public float deltaTime { get; }
+
     /// <summary>
     /// Gets frame-local input for this output.
     /// </summary>
     public RenderOutputInput input { get; }
+
     /// <summary>
     /// Gets every view in the same model output.
     /// </summary>
     public IReadOnlyList<RenderView> views { get; }
+
     /// <summary>
     /// Gets the exclusive source allowlist; null collects every active source.
     /// </summary>
@@ -339,6 +342,7 @@ public sealed class ViewContentItem
     /// Gets the drawable encoded by the selected rendering model.
     /// </summary>
     public IViewDrawable drawable { get; }
+
     /// <summary>
     /// Gets the optional pointer target associated with this draw item.
     /// </summary>
@@ -477,9 +481,17 @@ public sealed class SelectedViewContentCollector : IViewContentCollector
     public IReadOnlyList<ViewContentItem> Collect(ViewContentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return m_inner.Collect(new ViewContentContext(context.content, context.sessionId,
-            context.view, context.frameIndex, context.deltaTime, context.input,
-            context.views, m_sourceIds));
+        return m_inner.Collect(
+            new ViewContentContext(
+                context.content,
+                context.sessionId,
+                context.view,
+                context.frameIndex,
+                context.deltaTime,
+                context.input,
+                context.views,
+                m_sourceIds
+            )
+        );
     }
 }
-

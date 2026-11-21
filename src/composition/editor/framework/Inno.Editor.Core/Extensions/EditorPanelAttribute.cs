@@ -42,9 +42,13 @@ public sealed class EditorPanelAttribute : Attribute
         bool separatorBefore = false
     ) {
         if (string.IsNullOrWhiteSpace(id))
+        {
             throw new ArgumentException("An editor panel identifier is required.", nameof(id));
+        }
         if (string.IsNullOrWhiteSpace(title))
+        {
             throw new ArgumentException("An editor panel title is required.", nameof(title));
+        }
         this.id = id;
         this.title = title;
         this.order = order;
@@ -86,16 +90,16 @@ public sealed class EditorPanelAttribute : Attribute
     private static string NormalizeMenuPath(string path)
     {
         if (string.IsNullOrWhiteSpace(path))
+        {
             return string.Empty;
+        }
         string[] segments = path.Split('/');
         for (int i = 0; i < segments.Length; i++)
         {
             segments[i] = segments[i].Trim();
             if (segments[i].Length == 0)
             {
-                throw new ArgumentException(
-                    "An editor panel menu path cannot contain an empty segment.",
-                    nameof(path));
+                throw new ArgumentException("An editor panel menu path cannot contain an empty segment.", nameof(path));
             }
         }
         return string.Join('/', segments);

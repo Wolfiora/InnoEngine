@@ -29,7 +29,9 @@ public sealed class EditorMenuBuilder
         bool separatorBefore = false
     ) {
         if (string.IsNullOrWhiteSpace(path))
+        {
             throw new ArgumentException("A menu group path is required.", nameof(path));
+        }
         m_groups.Add(new EditorMenuGroupPlacement(path, order, separatorBefore));
     }
 
@@ -62,7 +64,9 @@ public sealed class EditorMenuBuilder
         object? argument = null
     ) {
         if (string.IsNullOrWhiteSpace(path))
+        {
             throw new ArgumentException("A menu path is required.", nameof(path));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(actionId);
         m_items.Add(new EditorMenuPlacement(path, actionId, order, separatorBefore, argument));
     }

@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Serialization;
 using Inno.Scene.Components;
 
@@ -20,8 +19,8 @@ public abstract class GameComponent : EngineObject, ISerializable
     /// </exception>
     public GameObject gameObject
         => m_gameObject is not null && !isDestroyed
-            ? m_gameObject
-            : throw new InvalidOperationException($"GameComponent '{GetType().FullName}' is detached or destroyed.");
+           ? m_gameObject
+           : throw new InvalidOperationException($"GameComponent '{GetType().FullName}' is detached or destroyed.");
 
     /// <summary>
     /// Gets the owning game object's transform.
@@ -34,9 +33,7 @@ public abstract class GameComponent : EngineObject, ISerializable
     /// <summary>
     /// Restores this component to its default state when it is added or explicitly reset.
     /// </summary>
-    protected virtual void Reset()
-    {
-    }
+    protected virtual void Reset() {}
 
     internal GameObject? ownerOrNull => m_gameObject;
 
@@ -44,7 +41,9 @@ public abstract class GameComponent : EngineObject, ISerializable
     {
         ArgumentNullException.ThrowIfNull(owner);
         if (m_gameObject is not null)
+        {
             throw new InvalidOperationException($"GameComponent '{GetType().FullName}' is already attached.");
+        }
         m_gameObject = owner;
     }
 

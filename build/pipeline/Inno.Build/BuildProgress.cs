@@ -29,13 +29,14 @@ public readonly record struct BuildProgress
         string stage,
         double fraction,
         string message
-    )
-        : this()
+    ) : this()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(stage);
         ArgumentException.ThrowIfNullOrWhiteSpace(message);
         if (fraction is < 0d or > 1d || double.IsNaN(fraction))
+        {
             throw new ArgumentOutOfRangeException(nameof(fraction));
+        }
         this.stage = stage;
         this.fraction = fraction;
         this.message = message;

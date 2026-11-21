@@ -39,10 +39,12 @@ public sealed class AudioDeviceLimits
     /// Gets the maximum retained clip count.
     /// </summary>
     public int clips { get; }
+
     /// <summary>
     /// Gets the combined voice and undelivered completion capacity.
     /// </summary>
     public int voices { get; }
+
     /// <summary>
     /// Gets the maximum retained bus count.
     /// </summary>

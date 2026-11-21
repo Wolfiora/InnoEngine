@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
@@ -44,12 +43,15 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
         CancellationToken cancellationToken
     ) {
         EngineResourceEnvelope envelope = context.serialization.Deserialize<EngineResourceEnvelope>(
-            context.sourceBytes.ToArray());
+            context.sourceBytes.ToArray()
+        );
         envelope.Validate(EngineResourceEnvelope.C_SCENE_KIND);
         AssetDependency[] dependencies = envelope.dependencies;
         SceneAsset asset = SceneAsset.CreateImported(envelope.payload, dependencies);
         for (int i = 0; i < dependencies.Length; i++)
+        {
             output.DependsOnAsset(dependencies[i]);
+        }
         output.SetAsset(asset);
         await output.WriteArtifactAsync("runtime", envelope.payload, cancellationToken).ConfigureAwait(false);
     }
@@ -75,12 +77,15 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
         CancellationToken cancellationToken
     ) {
         EngineAssetContent content = asset.CaptureContent();
-        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(context.serialization.Serialize(
-            new EngineResourceEnvelope
-            {
-                resourceKind = EngineResourceEnvelope.C_SCENE_KIND,
-                payload = content.GetPayload(),
-                dependencies = content.GetDependencies()
-            }));
+        return ValueTask.FromResult<ReadOnlyMemory<byte>?>(
+            context.serialization.Serialize(
+                new EngineResourceEnvelope
+                {
+                    resourceKind = EngineResourceEnvelope.C_SCENE_KIND,
+                    payload = content.GetPayload(),
+                    dependencies = content.GetDependencies()
+                }
+            )
+        );
     }
 }

@@ -1,10 +1,10 @@
+using System;
+using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Collections.Generic;
 
 namespace Inno.Rendering.Runtime;
 
@@ -50,7 +50,9 @@ public abstract class RenderPipeline : IDisposable
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         try
         {
             Dispose(true);
@@ -80,7 +82,7 @@ public abstract class RenderPipeline : IDisposable
     protected virtual void OnConfigure(
         SerializedRenderExtensionState state,
         RenderExtensionStateContext settings
-    ) { }
+    ) {}
 
     /// <summary>
     /// Releases managed generation-scoped state.
@@ -91,6 +93,5 @@ public abstract class RenderPipeline : IDisposable
     /// <exception cref="RetirementPendingException">
     /// Retirement cannot complete yet; subsequent calls resume this hook with its remaining owned resources.
     /// </exception>
-    protected virtual void Dispose(bool disposing) { }
+    protected virtual void Dispose(bool disposing) {}
 }
-

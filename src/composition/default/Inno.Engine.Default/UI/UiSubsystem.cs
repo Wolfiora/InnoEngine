@@ -9,5 +9,6 @@ internal static class UiSubsystem
     internal static IRuntimeSubsystemFactory Create(EngineSessionComposition context)
         => new UiRuntimeFactory(_ => new UiRuntime(
             context.adapters.ui.CreateBackend(context.selection.ui),
-            context.artifacts));
+            context.artifacts
+        ));
 }

@@ -1,15 +1,13 @@
-using Inno.Scripting.Api;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Serialization",
-    "Inno.Core.Serialization",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Serialization", "Inno.Core.Serialization", ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiNamespace(
     "InnoEngine.Serialization",
     "Inno.Core.Serialization.Converters",
-    ScriptingApiScope.Runtime)]
+    ScriptingApiScope.Runtime
+)]
 
 [assembly: ScriptingApiExport(typeof(ISerializable), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(OnSerializableRestored), ScriptingApiScope.Runtime)]

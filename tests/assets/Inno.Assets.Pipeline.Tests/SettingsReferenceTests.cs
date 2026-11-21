@@ -1,23 +1,23 @@
-using Inno.Content.Testing;
-using Inno.Content;
-using Inno.Core.IO;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Content;
+using Inno.Content.Testing;
 using Inno.Core.Diagnostics;
+using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Modules;
-using Inno.Extensibility.Types;
 using Inno.Extensibility.Reload;
-using Xunit;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets.Pipeline.Tests;
 
@@ -86,8 +86,13 @@ public sealed class SettingsReferenceTests
         using Stream settingsInput = settingsLease.OpenRead();
         byte[] settingsBytes = new byte[checked((int)settingsLease.entry.length)];
         settingsInput.ReadExactly(settingsBytes);
-        using var settings = new ProjectSettingsStore(new ReadOnlyByteDocumentStore("Settings.Project.inno", settingsBytes), fixture.types, fixture.serialization,
-            new ProjectId("tests.deployed.settings"), AssetSerializationContext.Create(database));
+        using var settings = new ProjectSettingsStore(
+            new ReadOnlyByteDocumentStore("Settings.Project.inno", settingsBytes),
+            fixture.types,
+            fixture.serialization,
+            new ProjectId("tests.deployed.settings"),
+            AssetSerializationContext.Create(database)
+        );
 
         TextAsset runtime = Assert.IsType<TextAsset>(settings.Get<ClipSettingsBase>(id).clip);
         Assert.Equal("deployed", runtime.content);
@@ -106,12 +111,16 @@ public sealed class SettingsReferenceTests
         using var fixture = new Fixture();
         byte[] first = fixture.serialization.CapturePropertiesData(new ClipSettings { labels = ["previous"] }, fixture.context);
         byte[] next = fixture.serialization.CapturePropertiesData(new ClipSettings { labels = ["candidate"] }, fixture.context);
-        fixture.settings.Rebuild([new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, first)])]);
+        fixture.settings.Rebuild(
+            [new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, first)])]
+        );
         byte[] document = fixture.settings.CaptureDocument();
         long revision = fixture.settings.revision;
         IGenerationChange change = fixture.settings.CreateReloadChange();
         change.PrepareForActivation();
-        fixture.settings.SetContributors([new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, next)])]);
+        fixture.settings.SetContributors(
+            [new ProjectSettingsContributor("source", [], [], [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, next)])]
+        );
         change.Apply();
         Assert.Equal("candidate", Assert.Single(fixture.settings.Get<ClipSettings>(ClipSettings.id).labels));
         change.RollbackStructure();
@@ -143,8 +152,12 @@ public sealed class SettingsReferenceTests
 
         long revision = fixture.settings.revision;
         Assert.ThrowsAny<Exception>(() => fixture.settings.Rebuild([
-            new ProjectSettingsContributor("broken", [], [],
-                [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, [1, 2, 3])])]));
+            new ProjectSettingsContributor(
+                "broken",
+                [],
+                [],
+                [new ProjectSettingRecord(ClipSettings.id, ClipSettings.typeId, [1, 2, 3])]
+            )]));
         Assert.Equal(revision, fixture.settings.revision);
         Assert.Equal("stable", Assert.Single(fixture.settings.Get<ClipSettings>(ClipSettings.id).labels));
     }
@@ -167,8 +180,12 @@ public sealed class SettingsReferenceTests
     {
         using var fixture = new Fixture();
         Assert.Throws<ArgumentNullException>(() => new ProjectSettingsStore(
-            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(fixture.root, "Rejected.inno"))), fixture.types, fixture.serialization,
-            new ProjectId("tests.rejected"), null!));
+            new FileByteDocumentStore(Path.GetFullPath(Path.Combine(fixture.root, "Rejected.inno"))),
+            fixture.types,
+            fixture.serialization,
+            new ProjectId("tests.rejected"),
+            null!
+        ));
     }
 
     private sealed class Fixture : IDisposable
@@ -185,14 +202,28 @@ public sealed class SettingsReferenceTests
             assetRoot = Path.Combine(root, "Assets");
             Directory.CreateDirectory(assetRoot);
             m_identityScope = m_identities.EnterScope();
-            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(SettingsReferenceTests).Assembly)});
+            m_modules = new ModuleHost(
+                new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(SettingsReferenceTests).Assembly)}
+            );
             types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
             serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-            assets = new AssetPipeline(m_modules, types, serialization, m_identities, m_diagnostics, m_logs,
-                AssetPipelineOptions.Create(assetRoot, Path.Combine(root, "Library")) with { enableFileSystemWatcher = false });
+            assets = new AssetPipeline(
+                m_modules,
+                types,
+                serialization,
+                m_identities,
+                m_diagnostics,
+                m_logs,
+                AssetPipelineOptions.Create(assetRoot, Path.Combine(root, "Library")) with { enableFileSystemWatcher = false }
+            );
             context = AssetSerializationContext.Create(assets);
-            settings = new ProjectSettingsStore(new FileByteDocumentStore(Path.GetFullPath(Path.Combine(root, "Settings.Project.inno"))), types,
-                serialization, new ProjectId("tests.settings.references"), context);
+            settings = new ProjectSettingsStore(
+                new FileByteDocumentStore(Path.GetFullPath(Path.Combine(root, "Settings.Project.inno"))),
+                types,
+                serialization,
+                new ProjectId("tests.settings.references"),
+                context
+            );
         }
 
         internal string root { get; }
@@ -246,14 +277,20 @@ internal sealed class ClipContribution : ISerializable
 [ProjectSettingComposer("tests.settings.composed-clip")]
 internal sealed class ClipSettingsComposer : ProjectSettingComposer<ComposedClipSettings, ClipContribution>
 {
-    protected override ClipContribution CaptureContribution(ComposedClipSettings baseline, ComposedClipSettings value)
-        => new() { clip = value.clip };
+    protected override ClipContribution CaptureContribution(
+        ComposedClipSettings baseline,
+        ComposedClipSettings value
+    ) => new() { clip = value.clip };
 
     protected override bool IsEmpty(ClipContribution contribution) => contribution.clip is null;
 
-    protected override void Compose(ComposedClipSettings target, IReadOnlyList<ProjectSettingContribution<ClipContribution>> contributions)
-    {
+    protected override void Compose(
+        ComposedClipSettings target,
+        IReadOnlyList<ProjectSettingContribution<ClipContribution>> contributions
+    ) {
         foreach (ProjectSettingContribution<ClipContribution> contribution in contributions)
+        {
             target.clip = contribution.value.clip;
+        }
     }
 }

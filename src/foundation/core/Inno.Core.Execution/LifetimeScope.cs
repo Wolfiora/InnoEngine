@@ -48,9 +48,12 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_tasks.Count(static task => !task.IsCompletedSuccessfully && !task.IsCanceled);
+            }
         }
     }
+
     /// <summary>
     /// Gets the largest simultaneous retained work count.
     /// </summary>
@@ -59,9 +62,12 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_peakTrackedWork;
+            }
         }
     }
+
     /// <summary>
     /// Gets work registrations rejected before ownership transfer by finite capacity.
     /// </summary>
@@ -70,7 +76,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
+            {
                 return m_rejectedWork;
+            }
         }
     }
 
@@ -87,8 +95,11 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         get
         {
             lock (m_sync)
-                return !m_canceling && !m_disposing && m_blockedWorkFailure is null && m_tasks.All(static task =>
-                    task.IsCompleted && (task.Exception is not Exception failure || RetirementPendingException.Find(failure) is null));
+            {
+                return !m_canceling && !m_disposing && m_blockedWorkFailure is null && m_tasks.All(static task => (
+                    task.IsCompleted && (task.Exception is not Exception failure || RetirementPendingException.Find(failure) is null)
+                ));
+            }
         }
     }
 
@@ -110,7 +121,8 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// <exception cref="InvalidOperationException">
     /// Retirement has already started.
     /// </exception>
-    public TResource Own<TResource>(TResource resource) where TResource : IDisposable
+    public TResource Own<TResource>(TResource resource)
+        where TResource : IDisposable
     {
         ArgumentNullException.ThrowIfNull(resource);
         lock (m_sync)
@@ -179,9 +191,13 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         lock (m_sync)
         {
             if (m_blockedWorkFailure is not null)
+            {
                 throw m_blockedWorkFailure;
+            }
             if (m_disposed || m_stopping)
+            {
                 return;
+            }
             m_stopping = true;
             m_canceling = true;
         }
@@ -192,19 +208,25 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         catch (Exception exception) when (RetirementPendingException.Find(exception) is not null)
         {
             lock (m_sync)
+            {
                 m_blockedWorkFailure = exception;
+            }
             throw;
         }
         catch (Exception exception)
         {
             lock (m_sync)
+            {
                 RetirementPendingException.CollectCompletedFailures(exception, m_retirementFailures);
+            }
             throw;
         }
         finally
         {
             lock (m_sync)
+            {
                 m_canceling = false;
+            }
         }
     }
 
@@ -226,11 +248,17 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         lock (m_sync)
         {
             if (m_blockedWorkFailure is not null)
+            {
                 throw m_blockedWorkFailure;
+            }
             if (m_disposed)
+            {
                 return;
+            }
             if (m_disposing)
+            {
                 throw new RetirementPendingException("Another retirement attempt still owns this lifetime's resources.");
+            }
             m_disposing = true;
         }
         try
@@ -249,7 +277,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         finally
         {
             lock (m_sync)
+            {
                 m_disposing = false;
+            }
         }
     }
 
@@ -279,7 +309,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         catch (Exception) { /* Cancel retained ordinary callback failures for the final report. */ }
         Task[] pending;
         lock (m_sync)
+        {
             pending = m_tasks.ToArray();
+        }
         try
         {
             await Task.WhenAll(pending).ConfigureAwait(false);
@@ -293,9 +325,13 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         lock (m_sync)
         {
             if (m_disposed)
+            {
                 return;
+            }
             if (m_canceling || m_tasks.Any(static task => !task.IsCompleted))
+            {
                 throw new RetirementPendingException("Lifetime work is still active. Drain it before releasing its resources.");
+            }
             foreach (Task task in m_tasks)
             {
                 if (task.Exception is not null)
@@ -316,7 +352,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             lock (m_sync)
             {
                 if (m_resources.Count == 0)
+                {
                     break;
+                }
                 resource = m_resources[^1];
             }
             try
@@ -333,10 +371,14 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
                 m_retirementFailures.Add(exception);
             }
             lock (m_sync)
+            {
                 m_resources.RemoveAt(m_resources.Count - 1);
+            }
         }
         lock (m_sync)
+        {
             m_disposed = true;
+        }
         m_cancellation.Dispose();
         if (m_retirementFailures.Count > 0)
         {
@@ -356,18 +398,26 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             EnsureAccepting();
             m_tasks.RemoveAll(static completed => completed.IsCompletedSuccessfully || completed.IsCanceled);
             if (m_tasks.Contains(task))
+            {
                 return;
+            }
             if (m_tasks.Count >= m_maxTrackedWork)
             {
                 m_rejectedWork++;
-                throw new InvalidOperationException("The lifetime's asynchronous work capacity has been reached; ownership was not transferred.");
+                throw new InvalidOperationException(
+                    "The lifetime's asynchronous work capacity has been reached; ownership was not transferred."
+                );
             }
             m_tasks.Add(task);
             m_peakTrackedWork = Math.Max(m_peakTrackedWork, m_tasks.Count);
             if (!observeCompletion)
+            {
                 return;
+            }
             if (ExecutionContext.IsFlowSuppressed())
+            {
                 ObserveCompletion(task);
+            }
             else
             {
                 using AsyncFlowControl flow = ExecutionContext.SuppressFlow();
@@ -383,16 +433,22 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         ) =>
         {
             if (!completed.IsCompletedSuccessfully && !completed.IsCanceled)
+            {
                 return;
+            }
             var owner = (LifetimeScope)state!;
             lock (owner.m_sync)
+            {
                 owner.m_tasks.Remove(completed);
+            }
         }, this, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
     private void EnsureAccepting()
     {
         if (m_stopping || m_disposed)
+        {
             throw new InvalidOperationException("A retiring lifetime cannot accept resources or work.");
+        }
     }
 
     private async Task CompleteOperationAsync<TResult>(
@@ -404,7 +460,9 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         {
             TResult result;
             using (var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, m_cancellation.Token))
+            {
                 result = await operation(linked.Token).ConfigureAwait(false);
+            }
             lock (m_sync)
             {
                 completion.SetResult(result);

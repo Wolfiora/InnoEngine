@@ -1,6 +1,6 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Assets;
 
@@ -40,5 +40,4 @@ public static class AssetExecutionContext
         ArgumentNullException.ThrowIfNull(assets);
         return S_CURRENT_SCOPE.Enter(assets);
     }
-
 }

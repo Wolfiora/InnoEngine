@@ -1,14 +1,14 @@
 using System;
 using System.Security.Cryptography;
 using System.Threading;
+using Xunit;
 using Inno.Assets;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
-using Inno.Core.Mathematics;
 using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
-using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -31,8 +31,14 @@ public sealed class SceneDirtyCaptureTests
         Check(true);
         Assert.True(host.runtime.interactions.history.Undo().succeeded);
         Check(false);
-        Assert.True(host.edits.ChangeProperty(value.transform, "localPosition",
-            () => value.transform.localPosition = new Vector3(3, 4, 5), "Move"));
+        Assert.True(
+            host.edits.ChangeProperty(
+                value.transform,
+                "localPosition",
+                () => value.transform.localPosition = new Vector3(3, 4, 5),
+                "Move"
+            )
+        );
         Check(true);
         Assert.True(host.runtime.interactions.history.Undo().succeeded);
         Check(false);
@@ -58,7 +64,10 @@ public sealed class SceneDirtyCaptureTests
         GameObject target = scene.CreateObject("Target");
         DirtyCaptureComponent component = owner.AddComponent<DirtyCaptureComponent>();
         component.target = target;
-        SerializationContext context = AssetSerializationContext.Create(host.assets, new AssetDependencyCollection(includeLastKnownPaths: false));
+        SerializationContext context = AssetSerializationContext.Create(
+            host.assets,
+            new AssetDependencyCollection(includeLastKnownPaths: false)
+        );
         SerializationSnapshot before = host.serialization.CaptureSnapshot(scene, context);
         Assert.Equal(host.serialization.Serialize(scene, context), before.ToArray());
         Assert.Same(before, host.serialization.CaptureSnapshot(scene, context, before));
@@ -168,8 +177,12 @@ public sealed class SceneDirtyCaptureTests
     private static byte[] Hash(
         NativeProjectPanelHost host,
         GameScene scene
-    ) => SHA256.HashData(host.serialization.Serialize(scene,
-        AssetSerializationContext.Create(host.assets, new AssetDependencyCollection(includeLastKnownPaths: false))));
+    ) => SHA256.HashData(
+        host.serialization.Serialize(
+            scene,
+            AssetSerializationContext.Create(host.assets, new AssetDependencyCollection(includeLastKnownPaths: false))
+        )
+    );
 }
 
 [StableTypeId("942e794b-1c53-45a6-80e6-a641d76fdd09")]
@@ -197,7 +210,9 @@ internal sealed class DirtyCaptureValueConverter : SerializationConverter<DirtyC
         value.reads++;
         writer.Write("value", value.value);
         if (value.reject)
+        {
             throw new InvalidOperationException("The test-owned converter rejected capture.");
+        }
     }
 
     public override DirtyCaptureValue Read(SerializationReader reader) => new() { value = reader.Read<int>("value") };

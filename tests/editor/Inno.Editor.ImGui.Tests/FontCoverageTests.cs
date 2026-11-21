@@ -1,18 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation.ImGui;
 using Inno.Native.ImGui;
 using Inno.Platform;
-using Xunit;
-using NativeImGui = Inno.Native.ImGui.ImGui;
+
 using BackendFont = Inno.Adapter.Presentation.ImGui.ImGuiFont;
 using BackendFontScope = Inno.Adapter.Presentation.ImGui.ImGuiFontScope;
 using BackendFontStyle = Inno.Adapter.Presentation.ImGui.ImGuiFontStyle;
+using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
 
@@ -26,12 +27,25 @@ public sealed unsafe class FontCoverageTests
     [Trait("Acceptance", "Visual")]
     public void EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback(float zoom)
     {
-        string contract = nameof(FontCoverageTests) + "." + nameof(EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback) + "." + zoom.ToString(CultureInfo.InvariantCulture);
+        string contract = nameof(FontCoverageTests)
+                          + "."
+                          + nameof(EveryDefaultTextFaceHasEnglishAndIconsWithoutLanguageFallback)
+                          + "."
+                          + zoom.ToString(CultureInfo.InvariantCulture);
         if (NativeWindowTestHost.RunIfRequired(contract))
+        {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Glyph coverage", width = 640, height = 480, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Glyph coverage", width = 640, height = 480, visible = false }
+        );
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         context.SetIniFile(null);
         context.RenderFrame(() =>
         {
@@ -40,8 +54,13 @@ public sealed unsafe class FontCoverageTests
             _ = NativeImGui.Begin("Glyph coverage", ref open, 0);
             try
             {
-                foreach (BackendFontStyle style in new[] { BackendFontStyle.Regular, BackendFontStyle.Bold, BackendFontStyle.Italic, BackendFontStyle.Bold | BackendFontStyle.Italic })
+                foreach (BackendFontStyle style in new[]
                 {
+                    BackendFontStyle.Regular,
+                    BackendFontStyle.Bold,
+                    BackendFontStyle.Italic,
+                    BackendFontStyle.Bold | BackendFontStyle.Italic
+                }) {
                     Assert.True(BackendFont.IsAvailable(style));
                     using BackendFontScope scope = BackendFont.PushStyle(style);
                     ImFont* font = NativeImGui.Raw.GetFont();
@@ -77,18 +96,33 @@ public sealed unsafe class FontCoverageTests
     [Trait("Acceptance", "Lifecycle")]
     public void SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(FontCoverageTests) + "." + nameof(SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(FontCoverageTests) + "." + nameof(SuccessfulDisposalPermitsReplacementOnTheSameLiveWindow)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Replacement context", width = 320, height = 240, visible = false });
-        var original = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Replacement context", width = 320, height = 240, visible = false }
+        );
+        var original = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         original.SetIniFile(null);
         _ = CaptureSource(original);
         original.Dispose();
-        using var replacement = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var replacement = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         replacement.SetIniFile(null);
         _ = CaptureSource(replacement);
-        Assert.Throws<ObjectDisposedException>(() => original.RenderFrame(static () => { }));
+        Assert.Throws<ObjectDisposedException>(() => original.RenderFrame(static () => {}));
     }
 
     [Fact]
@@ -96,30 +130,56 @@ public sealed unsafe class FontCoverageTests
     public void ApplicationShutdownRetiresBothRegisteredContexts()
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(FontCoverageTests) + "." + nameof(ApplicationShutdownRetiresBothRegisteredContexts)))
+        {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var firstWindow = application.CreateWindow(new PlatformWindowOptions { title = "First context", width = 320, height = 240, visible = false });
-        using var secondWindow = application.CreateWindow(new PlatformWindowOptions { title = "Second context", width = 320, height = 240, visible = false });
-        var first = application.CreateImGuiContext(firstWindow, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var firstWindow = application.CreateWindow(
+            new PlatformWindowOptions { title = "First context", width = 320, height = 240, visible = false }
+        );
+        using var secondWindow = application.CreateWindow(
+            new PlatformWindowOptions { title = "Second context", width = 320, height = 240, visible = false }
+        );
+        var first = application.CreateImGuiContext(
+            firstWindow,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         first.SetIniFile(null);
-        var second = application.CreateImGuiContext(secondWindow, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        var second = application.CreateImGuiContext(
+            secondWindow,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         second.SetIniFile(null);
         _ = CaptureSource(first);
         _ = CaptureSource(second);
         application.Dispose();
-        Assert.Throws<ObjectDisposedException>(() => first.RenderFrame(static () => { }));
-        Assert.Throws<ObjectDisposedException>(() => second.RenderFrame(static () => { }));
+        Assert.Throws<ObjectDisposedException>(() => first.RenderFrame(static () => {}));
+        Assert.Throws<ObjectDisposedException>(() => second.RenderFrame(static () => {}));
     }
 
     [Fact]
     [Trait("Acceptance", "Lifecycle")]
     public void RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext()
     {
-        if (NativeWindowTestHost.RunIfRequired(nameof(FontCoverageTests) + "." + nameof(RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext)))
+        if (NativeWindowTestHost.RunIfRequired(
+            nameof(FontCoverageTests) + "." + nameof(RetiringTenContextsReleasesTheirSourcesAndPreservesAnotherContext)
+        )) {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Retained font context", width = 320, height = 240, visible = false });
-        using var retained = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Retained font context", width = 320, height = 240, visible = false }
+        );
+        using var retained = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         retained.SetIniFile(null);
         nint source = CaptureSource(retained);
         long baseline = CollectLiveManagedBytes();
@@ -139,10 +199,19 @@ public sealed unsafe class FontCoverageTests
     public void CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons()
     {
         if (NativeWindowTestHost.RunIfRequired(nameof(FontCoverageTests) + "." + nameof(CustomFontStyleUsesOnlyItsOwnTextSourceAndIcons)))
+        {
             return;
+        }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Custom font", width = 320, height = 240, visible = false });
-        using var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Custom font", width = 320, height = 240, visible = false }
+        );
+        using var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         context.SetIniFile(null);
         string fontPath = Path.Combine(AppContext.BaseDirectory, "BuiltIn", "Fonts", "JetBrainsMono-Bold.ttf");
         Assert.Throws<FileNotFoundException>(() => context.RegisterFontStyle(BackendFontStyle.Regular, fontPath + ".missing"));
@@ -183,8 +252,15 @@ public sealed unsafe class FontCoverageTests
         Sdl3PlatformApplication application,
         nint retainedSource
     ) {
-        using var window = application.CreateWindow(new PlatformWindowOptions { title = "Retired font context", width = 320, height = 240, visible = false });
-        var context = application.CreateImGuiContext(window, ImGuiContextFlags.None, new ImGuiInteractionOptions(false, 1), new NoOutputRenderer());
+        using var window = application.CreateWindow(
+            new PlatformWindowOptions { title = "Retired font context", width = 320, height = 240, visible = false }
+        );
+        var context = application.CreateImGuiContext(
+            window,
+            ImGuiContextFlags.None,
+            new ImGuiInteractionOptions(false, 1),
+            new NoOutputRenderer()
+        );
         context.SetIniFile(null);
         Assert.NotEqual(retainedSource, CaptureSource(context));
         context.Dispose();
@@ -208,20 +284,29 @@ public sealed unsafe class FontCoverageTests
     {
         public bool supportsViewports => false;
         public bool supportsVertexOffsets => false;
-        public void RenderMain(IntPtr drawData) { }
+
+        public void RenderMain(IntPtr drawData) {}
+
         public void SynchronizeMainOutput(
             int pixelWidth,
             int pixelHeight
-        ) { }
+        ) {}
+
         public void CreateViewport(PlatformImGuiViewportTarget target) => throw new NotSupportedException();
+
         public void ResizeViewport(PlatformImGuiViewportTarget target) => throw new NotSupportedException();
+
         public void RenderViewport(
             PlatformImGuiViewportTarget target,
             IntPtr drawData
         ) => throw new NotSupportedException();
+
         public void PresentViewport(PlatformImGuiViewportTarget target) => throw new NotSupportedException();
+
         public Task RetireViewport(PlatformImGuiViewportTarget target) => Task.CompletedTask;
-        public void DrainViewportRetirements() { }
-        public void Dispose() { }
+
+        public void DrainViewportRetirements() {}
+
+        public void Dispose() {}
     }
 }

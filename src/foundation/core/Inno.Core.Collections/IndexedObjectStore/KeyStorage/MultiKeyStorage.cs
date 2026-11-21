@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace Inno.Core.Collections;
 
-internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : class where TKey : notnull
+internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
+    where T : class
+    where TKey : notnull
 {
     private readonly Dictionary<TKey, HashSet<T>> m_map = new(EqualityComparer<TKey>.Default);
     private static readonly HashSet<T> EMPTY_SET = new(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
@@ -48,11 +50,15 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
         T item
     ) {
         if (!m_map.TryGetValue(key, out var set))
+        {
             return;
+        }
 
         set.Remove(item);
         if (set.Count == 0)
+        {
             m_map.Remove(key);
+        }
     }
 
     /// <summary>
@@ -73,11 +79,15 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T> where T : 
     ) {
         item = null;
         if (!m_map.TryGetValue(key, out var set) || set.Count == 0)
+        {
             return false;
+        }
 
         using var e = set.GetEnumerator();
         if (!e.MoveNext())
+        {
             return false;
+        }
 
         item = e.Current;
         return true;

@@ -21,6 +21,7 @@ internal sealed class ShaderGraphLiteralConverter : SerializationConverter<Shade
         writer.Write("type", value.type);
         writer.Write("scalarBits", value.scalarBits);
     }
+
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
     /// </summary>
@@ -55,6 +56,7 @@ internal sealed class ShaderGraphStageSettingsConverter : SerializationConverter
         writer.Write("threadsY", value.threadsY);
         writer.Write("threadsZ", value.threadsZ);
     }
+
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
     /// </summary>
@@ -64,13 +66,14 @@ internal sealed class ShaderGraphStageSettingsConverter : SerializationConverter
     /// <returns>
     /// The validated shader graph stage settings that represents the completed operation.
     /// </returns>
-    public override ShaderGraphStageSettings Read(SerializationReader reader) => new()
+    public override ShaderGraphStageSettings Read(SerializationReader reader)
+        => new()
     {
         stage = reader.Read<ShaderStage>("stage"),
         outputs = reader.Read<ShaderGraphOutput[]>("outputs"),
         threadsX = reader.Read<int>("threadsX"),
         threadsY = reader.Read<int>("threadsY"),
-        threadsZ = reader.Read<int>("threadsZ"),
+        threadsZ = reader.Read<int>("threadsZ")
     };
 }
 
@@ -95,6 +98,7 @@ internal sealed class ShaderGraphInputSettingsConverter : SerializationConverter
         writer.Write("semantic", value.semantic);
         writer.Write("location", value.location);
     }
+
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
     /// </summary>
@@ -104,13 +108,14 @@ internal sealed class ShaderGraphInputSettingsConverter : SerializationConverter
     /// <returns>
     /// The validated shader graph input settings that represents the completed operation.
     /// </returns>
-    public override ShaderGraphInputSettings Read(SerializationReader reader) => new()
+    public override ShaderGraphInputSettings Read(SerializationReader reader)
+        => new()
     {
         id = reader.Read<string>("id"),
         type = reader.Read<ShaderGraphType>("type"),
         kind = reader.Read<ShaderIrInputKind>("kind"),
         semantic = reader.Read<string>("semantic"),
-        location = reader.Read<int>("location"),
+        location = reader.Read<int>("location")
     };
 }
 
@@ -143,7 +148,8 @@ internal sealed class ShaderGraphNodePortDefinitionConverter : SerializationConv
     /// <returns>
     /// The validated shader graph node port definition that represents the completed operation.
     /// </returns>
-    public override ShaderGraphNodePortDefinition Read(SerializationReader reader) => new()
+    public override ShaderGraphNodePortDefinition Read(SerializationReader reader)
+        => new()
     {
         id = reader.Read<string>("id"),
         type = reader.Read<ShaderGraphType>("type"),
@@ -183,7 +189,8 @@ internal sealed class ShaderGraphNodeSettingsConverter : SerializationConverter<
     /// <returns>
     /// The validated shader graph node settings that represents the completed operation.
     /// </returns>
-    public override ShaderGraphNodeSettings Read(SerializationReader reader) => new()
+    public override ShaderGraphNodeSettings Read(SerializationReader reader)
+        => new()
     {
         displayName = reader.Read<string>("displayName"),
         createPath = reader.Read<string>("createPath"),
@@ -219,7 +226,8 @@ internal sealed class ShaderGraphNodeInputSettingsConverter : SerializationConve
     /// <returns>
     /// The validated shader graph node input settings that represents the completed operation.
     /// </returns>
-    public override ShaderGraphNodeInputSettings Read(SerializationReader reader) => new()
+    public override ShaderGraphNodeInputSettings Read(SerializationReader reader)
+        => new()
     {
         ports = reader.Read<ShaderGraphNodePortDefinition[]>("ports")
     };
@@ -288,7 +296,8 @@ internal sealed class ShaderGraphNodeInterfaceConverter : SerializationConverter
     /// <returns>
     /// The validated shader graph node interface that represents the completed operation.
     /// </returns>
-    public override ShaderGraphNodeInterface Read(SerializationReader reader) => new()
+    public override ShaderGraphNodeInterface Read(SerializationReader reader)
+        => new()
     {
         displayName = reader.Read<string>("displayName"),
         createPath = reader.Read<string>("createPath"),
@@ -329,6 +338,7 @@ internal sealed class ShaderGraphTypeConverter : SerializationConverter<ShaderGr
         writer.Write("dimension", value.dimension);
         writer.Write("isArray", value.isArray);
     }
+
     /// <summary>
     /// Reconstructs a complete value through the configured serialization contract.
     /// </summary>
@@ -338,7 +348,8 @@ internal sealed class ShaderGraphTypeConverter : SerializationConverter<ShaderGr
     /// <returns>
     /// The validated shader graph type that represents the completed operation.
     /// </returns>
-    public override ShaderGraphType Read(SerializationReader reader) => new()
+    public override ShaderGraphType Read(SerializationReader reader)
+        => new()
     {
         id = reader.Read<string>("id"),
         element = reader.Read<ShaderGraphType?>("element"),
@@ -351,6 +362,6 @@ internal sealed class ShaderGraphTypeConverter : SerializationConverter<ShaderGr
         access = reader.Read<RenderStorageAccess>("access"),
         format = reader.Read<RenderTextureFormat>("format"),
         dimension = reader.Read<RenderTextureDimension>("dimension"),
-        isArray = reader.Read<bool>("isArray"),
+        isArray = reader.Read<bool>("isArray")
     };
 }

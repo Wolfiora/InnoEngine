@@ -9,7 +9,6 @@ public enum KeyCode
     /// No recognized physical key.
     /// </summary>
     Unknown = 0,
-    
     /// <summary>
     /// The A letter key.
     /// </summary>
@@ -114,7 +113,6 @@ public enum KeyCode
     /// The Z letter key.
     /// </summary>
     Z = 90,
-
     /// <summary>
     /// The 0 key on the primary keyboard row.
     /// </summary>
@@ -155,7 +153,6 @@ public enum KeyCode
     /// The 9 key on the primary keyboard row.
     /// </summary>
     D9 = 57,
-
     /// <summary>
     /// The escape key.
     /// </summary>
@@ -176,7 +173,6 @@ public enum KeyCode
     /// The backspace key.
     /// </summary>
     Backspace = 8,
-
     /// <summary>
     /// The left arrow key.
     /// </summary>
@@ -193,11 +189,10 @@ public enum KeyCode
     /// The down arrow key.
     /// </summary>
     DownArrow = 40,
-
     /// <summary>
     /// The left super key.
     /// </summary>
-    LeftSuper = 91, 
+    LeftSuper = 91,
     /// <summary>
     /// The right super key.
     /// </summary>
@@ -226,7 +221,6 @@ public enum KeyCode
     /// The right alt key.
     /// </summary>
     RightAlt = 165,
-
     /// <summary>
     /// The caps lock key.
     /// </summary>
@@ -255,7 +249,6 @@ public enum KeyCode
     /// The page down key.
     /// </summary>
     PageDown = 34,
-
     /// <summary>
     /// The 0 key on the numeric keypad.
     /// </summary>
@@ -296,7 +289,6 @@ public enum KeyCode
     /// The 9 key on the numeric keypad.
     /// </summary>
     NumPad9 = 105,
-
     /// <summary>
     /// The num lock key.
     /// </summary>
@@ -305,7 +297,6 @@ public enum KeyCode
     /// The scroll lock key.
     /// </summary>
     ScrollLock = 145,
-
     /// <summary>
     /// The F1 function key.
     /// </summary>
@@ -354,7 +345,6 @@ public enum KeyCode
     /// The F12 function key.
     /// </summary>
     F12 = 123,
-
     /// <summary>
     /// The plus key.
     /// </summary>

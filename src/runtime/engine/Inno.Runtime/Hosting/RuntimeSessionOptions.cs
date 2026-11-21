@@ -1,10 +1,9 @@
-using Inno.Runtime.Contracts;
 using System;
 using System.Collections.Generic;
-
-using Inno.References;
 using Inno.Content;
 using Inno.Core.Logging;
+using Inno.References;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Runtime;
 

@@ -51,7 +51,9 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
         ArgumentNullException.ThrowIfNull(layers);
         uint bits = 0u;
         foreach (GameLayer layer in layers)
+        {
             bits |= 1u << layer.index;
+        }
         return new GameLayerMask(bits);
     }
 

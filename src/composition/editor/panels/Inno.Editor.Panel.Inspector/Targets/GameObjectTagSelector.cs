@@ -1,15 +1,17 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 /// <summary>
 /// Draws the project-defined tag picker used by GameObject target headers.
 /// </summary>
@@ -17,6 +19,7 @@ internal sealed class GameObjectTagSelector
 {
     private readonly SceneProjectSettingsModule m_settings;
     private readonly SceneEdits m_edits;
+
     /// <summary>
     /// Creates a tag selector backed by the effective Project Settings snapshot.
     /// </summary>
@@ -56,18 +59,26 @@ internal sealed class GameObjectTagSelector
     ) {
         ArgumentNullException.ThrowIfNull(targets);
         if (targets.Count == 0)
+        {
             return;
+        }
         GameObject target = targets[0];
         bool mixed = targets.Any(value => value.tag != target.tag);
         IReadOnlyList<string> tags = m_settings.tagCatalog.GetTags();
         string preview = m_settings.tagCatalog.IsDefined(target.tag) ? target.tag : $"{target.tag} (Undefined)";
         if (mixed)
+        {
             preview = "Mixed values";
+        }
         EditorUI.current.widgets.LabelChip("Tag", InspectorTargetStyle.tagLabel);
         Ui.SameLine(0f, 0f);
         float selectorWidth = MathF.Max(1f, width);
-        if (!EditorUI.current.widgets.BeginMenuSelector($"game_object_tag_{target.identity.persistentId:N}", preview, selectorWidth, selectorWidth))
-        {
+        if (!EditorUI.current.widgets.BeginMenuSelector(
+            $"game_object_tag_{target.identity.persistentId:N}",
+            preview,
+            selectorWidth,
+            selectorWidth
+        )) {
             return;
         }
 
@@ -80,7 +91,9 @@ internal sealed class GameObjectTagSelector
                 {
                     using EditorHistoryTransaction transaction = interactions.history.BeginTransaction("Set Selection Tag");
                     foreach (GameObject selected in targets)
+                    {
                         m_edits.SetGameObjectTag(selected, tag);
+                    }
                     transaction.Commit();
                 }
             }

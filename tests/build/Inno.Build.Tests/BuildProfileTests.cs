@@ -16,8 +16,11 @@ public sealed class BuildProfileTests : IDisposable
     public BuildProfileTests()
     {
         Directory.CreateDirectory(m_projectRoot);
-        m_engine = new EngineHostBuilder().UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildProfile).Assembly),
-            new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
+        m_engine = new EngineHostBuilder().UseMetadataSources(
+            new DotNetAssemblyCatalogSource(typeof(BuildProfile).Assembly),
+            new ReflectionTypeCatalogSource(),
+            new ReflectionSerializationMetadataSource()
+        ).Build();
     }
 
     public void Dispose()
@@ -31,9 +34,11 @@ public sealed class BuildProfileTests : IDisposable
         string productName = "Test Game"
     ) => new()
     {
-        applicationId = "tests.game", productName = productName, startupScene = "Scenes/Startup.iscene", target = target
+        applicationId = "tests.game",
+        productName = productName,
+        startupScene = "Scenes/Startup.iscene",
+        target = target
     };
-
 
     [Theory]
     [InlineData("../other-game")]
@@ -45,8 +50,6 @@ public sealed class BuildProfileTests : IDisposable
         profile.persistentDataPath = path;
         Assert.Throws<InvalidDataException>(profile.Validate);
     }
-
-
 
     [Theory]
     [InlineData("CON")]
@@ -60,8 +63,6 @@ public sealed class BuildProfileTests : IDisposable
 
         Assert.Throws<InvalidDataException>(profile.Validate);
     }
-
-
 
     [Fact]
     public void BuildProfileStoreRoundTripsGeneratedCurrentFormat()
@@ -84,8 +85,6 @@ public sealed class BuildProfileTests : IDisposable
         Assert.Equal(1080, restored.windowHeight);
     }
 
-
-
     [Fact]
     public void BuildProfileStorePreservesCommittedDocumentWhenCandidateIsInvalid()
     {
@@ -102,8 +101,6 @@ public sealed class BuildProfileTests : IDisposable
         Assert.Empty(Directory.EnumerateFiles(m_projectRoot, "BuildProfile.inno.staging-*"));
     }
 
-
-
     [Fact]
     public void BuildProfileStoreRejectsCorruptCurrentFormatWithoutFallback()
     {
@@ -115,5 +112,4 @@ public sealed class BuildProfileTests : IDisposable
 
         Assert.Contains("current-format", failure.Message, StringComparison.Ordinal);
     }
-
 }

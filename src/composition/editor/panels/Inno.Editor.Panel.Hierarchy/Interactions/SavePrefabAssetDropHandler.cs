@@ -1,6 +1,5 @@
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -9,8 +8,7 @@ using Inno.Scene;
 namespace Inno.Editor.Panel.Hierarchy;
 
 [EditorDrop(HierarchyInteractionIds.C_FILE_BROWSER_AREA)]
-internal sealed class SavePrefabAssetDropHandler
-    : EditorDrop<GameObject, string>
+internal sealed class SavePrefabAssetDropHandler : EditorDrop<GameObject, string>
 {
     private readonly IEditorSceneWorkspace m_workspace;
     private readonly AssetPipeline m_assets;
@@ -34,8 +32,8 @@ internal sealed class SavePrefabAssetDropHandler
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<GameObject, string> context)
         => m_workspace.canPersist && context.source.isRuntimeValid
-            ? EditorDropStatus.Accept()
-            : EditorDropStatus.rejected;
+           ? EditorDropStatus.Accept()
+           : EditorDropStatus.rejected;
 
     /// <summary>
     /// Validates and applies the current editor drag-and-drop interaction atomically.
@@ -50,7 +48,9 @@ internal sealed class SavePrefabAssetDropHandler
     {
         string path = m_workspace.SavePrefab(context.source, context.target);
         if (!m_assets.TryGetFileSystemEntry(AssetPath.Parse(path), out AssetFileEntry selection))
+        {
             return EditorDropResult.rejected;
+        }
         _ = context.interactions.For(context.area, selection).Select();
         return EditorDropResult.Accepted(selection);
     }

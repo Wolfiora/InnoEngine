@@ -52,7 +52,9 @@ public sealed class EditorPlanarNavigation
         bool allowAltPrimary = true
     ) {
         if (isPanning && !(m_primary ? primaryDown : middleDown))
+        {
             Cancel();
+        }
         if (!isPanning && hovered && (middlePressed || allowAltPrimary && alt && primaryPressed))
         {
             m_primary = !middlePressed;
@@ -86,9 +88,13 @@ public sealed class EditorPlanarNavigation
         float sensitivity = 0.16f
     ) {
         if (!float.IsFinite(wheel))
+        {
             throw new ArgumentOutOfRangeException(nameof(wheel));
+        }
         if (!float.IsFinite(sensitivity) || sensitivity <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(sensitivity));
+        }
         return MathF.Exp(Math.Clamp(wheel * sensitivity, -20f, 20f));
     }
 
@@ -120,13 +126,21 @@ public sealed class EditorPlanarNavigation
         float nextScale
     ) {
         if (!float.IsFinite(origin.X) || !float.IsFinite(origin.Y))
+        {
             throw new ArgumentOutOfRangeException(nameof(origin));
+        }
         if (!float.IsFinite(pivot.X) || !float.IsFinite(pivot.Y))
+        {
             throw new ArgumentOutOfRangeException(nameof(pivot));
+        }
         if (!float.IsFinite(previousScale) || previousScale <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(previousScale));
+        }
         if (!float.IsFinite(nextScale) || nextScale <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(nextScale));
+        }
         return pivot - (pivot - origin) * (nextScale / previousScale);
     }
 }

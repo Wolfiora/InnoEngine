@@ -83,7 +83,9 @@ public static class NativeBuildFingerprint
     ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string declaration in declarations)
+        {
             Append(hash, declaration);
+        }
         foreach (NativeInputSnapshot.Entry entry in snapshot.entries)
         {
             Append(hash, entry.logicalPath);

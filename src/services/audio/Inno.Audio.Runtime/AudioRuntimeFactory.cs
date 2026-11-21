@@ -1,7 +1,6 @@
-using Inno.Runtime.Contracts;
 using System;
-
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Audio.Runtime;
 
@@ -29,7 +28,8 @@ public sealed class AudioRuntimeFactory : IRuntimeSubsystemFactory
     public RuntimeSubsystemDescriptor descriptor { get; } = new(
         new RuntimeSubsystemId("inno.runtime.audio"),
         order: 500,
-        dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]);
+        dependencies: [new RuntimeSubsystemId("inno.runtime.scene")]
+    );
 
     /// <summary>
     /// Creates an audio feature over a newly allocated runtime layer.
@@ -44,7 +44,7 @@ public sealed class AudioRuntimeFactory : IRuntimeSubsystemFactory
     {
         ArgumentNullException.ThrowIfNull(context);
         AudioRuntime runtime = m_runtimeFactory(context)
-            ?? throw new InvalidOperationException("The audio runtime factory returned null.");
+                               ?? throw new InvalidOperationException("The audio runtime factory returned null.");
         return runtime;
     }
 }

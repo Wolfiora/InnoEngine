@@ -41,12 +41,13 @@ public sealed class Diagnostic
         string? semanticId = null,
         Guid? objectId = null,
         DiagnosticLocation? location = null
-    )
-        : this(severity, code, message, location)
+    ) : this(severity, code, message, location)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         if (objectId == Guid.Empty)
+        {
             throw new ArgumentException("A diagnostic object identity cannot be empty.", nameof(objectId));
+        }
         this.semanticId = semanticId;
         this.objectId = objectId;
     }
@@ -83,8 +84,7 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticLocation? location = null
-    )
-        => new(DiagnosticSeverity.Info, code, message, location);
+    ) => new(DiagnosticSeverity.Info, code, message, location);
 
     /// <summary>
     /// Creates a warning diagnostic value without publishing it.
@@ -108,8 +108,7 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticLocation? location = null
-    )
-        => new(DiagnosticSeverity.Warning, code, message, location);
+    ) => new(DiagnosticSeverity.Warning, code, message, location);
 
     /// <summary>
     /// Creates an error diagnostic value without publishing it.
@@ -133,8 +132,7 @@ public sealed class Diagnostic
         string code,
         string message,
         DiagnosticLocation? location = null
-    )
-        => new(DiagnosticSeverity.Error, code, message, location);
+    ) => new(DiagnosticSeverity.Error, code, message, location);
 
     private Diagnostic(
         DiagnosticSeverity severity,

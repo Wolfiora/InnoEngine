@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
+using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Core.IO;
 
 namespace Inno.Editor.Settings;
 
@@ -26,7 +25,8 @@ internal sealed class EditorSettingsStore
             new FileByteDocumentStore(path),
             serialization,
             static () => new EditorSettingsDocument(),
-            ValidateDocumentValue);
+            ValidateDocumentValue
+        );
         m_values = ValidateAndCopy(m_documents.Load().values);
     }
 
@@ -75,13 +75,14 @@ internal sealed class EditorSettingsStore
             return ValidateAndCopy(parsed.values);
         }
         catch (Exception exception) when (exception is ArgumentException
-            or InvalidDataException
-            or InvalidOperationException
-            or NotSupportedException)
+                                          or InvalidDataException
+                                          or InvalidOperationException
+                                          or NotSupportedException)
         {
             throw new InvalidDataException(
                 "The editor Settings document is not a valid current-format document.",
-                exception);
+                exception
+            );
         }
     }
 
@@ -104,9 +105,13 @@ internal sealed class EditorSettingsStore
                 throw new InvalidDataException("The editor Settings document contains an invalid path.", exception);
             }
             if (!string.Equals(path, normalized, StringComparison.Ordinal))
+            {
                 throw new InvalidDataException($"Settings path '{path}' is not normalized.");
+            }
             if (value is null)
+            {
                 throw new InvalidDataException($"Settings path '{path}' has a null object.");
+            }
             value.Validate(path);
             result.Add(path, value.Copy());
         }
@@ -117,7 +122,9 @@ internal sealed class EditorSettingsStore
     {
         var result = new Dictionary<string, EditorSettingObject>(values.Count, StringComparer.Ordinal);
         foreach ((string path, EditorSettingObject value) in values)
+        {
             result.Add(path, value.Copy());
+        }
         return result;
     }
 

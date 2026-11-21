@@ -22,10 +22,18 @@ public static class MacOSArm64ApplicationLocations
         get
         {
             if (!OperatingSystem.IsMacOS())
+            {
                 throw new PlatformNotSupportedException("This product requires MacOS.");
-            string location = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Application Support");
+            }
+            string location = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                "Library",
+                "Application Support"
+            );
             if (string.IsNullOrWhiteSpace(location) || !Path.IsPathFullyQualified(location))
+            {
                 throw new InvalidOperationException("The system did not provide a usable application data root.");
+            }
             return location;
         }
     }
@@ -46,7 +54,9 @@ public static class MacOSArm64ApplicationLocations
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationDirectory);
         if (!Path.IsPathFullyQualified(applicationDirectory))
+        {
             throw new ArgumentException("An application directory must be absolute.", nameof(applicationDirectory));
+        }
         return Path.GetFullPath(Path.Combine(applicationDirectory, "..", "Resources", "Content"));
     }
 }

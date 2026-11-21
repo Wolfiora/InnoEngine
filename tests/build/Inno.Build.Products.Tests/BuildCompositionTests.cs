@@ -26,11 +26,17 @@ public sealed class BuildCompositionTests
     [InlineData("macos-arm64")]
     public void EditorAndStandaloneShaderToolsShareTheSameBindingFreeReleaseProducer(string target)
     {
-        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()),
-            new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
+        var context = new BuildCompositionContext(
+            "explicit-sdk",
+            Path.GetFullPath(Path.GetTempPath()),
+            new BuildHostDescriptor("Windows", "x64"),
+            new BuildTargetId("windows-x64")
+        );
         BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
-        ProductNativeBuildStep editor = Assert.Single(distribution.ResolveNativeProduct(target, "editor").plan.steps,
-            static step => step.id == "bgfx-tools");
+        ProductNativeBuildStep editor = Assert.Single(
+            distribution.ResolveNativeProduct(target, "editor").plan.steps,
+            static step => step.id == "bgfx-tools"
+        );
         ProductNativeBuildStep standalone = Assert.Single(distribution.ResolveNativeProduct(target, "shader-tools").plan.steps);
         Assert.Equal("release", editor.configuration);
         Assert.Equal(editor.configuration, standalone.configuration);
@@ -43,7 +49,12 @@ public sealed class BuildCompositionTests
     [Fact]
     public void EveryHostObtainsTheSameFrozenBuiltInDistribution()
     {
-        var context = new BuildCompositionContext("explicit-sdk", Path.GetFullPath(Path.GetTempPath()), new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64"));
+        var context = new BuildCompositionContext(
+            "explicit-sdk",
+            Path.GetFullPath(Path.GetTempPath()),
+            new BuildHostDescriptor("Windows", "x64"),
+            new BuildTargetId("windows-x64")
+        );
         BuildDistribution editor = StandardBuildDistribution.Create(context).build;
         BuildDistribution cli = StandardBuildDistribution.Create(context).build;
         BuildDistribution msbuild = StandardBuildDistribution.Create(context).build;
@@ -52,10 +63,19 @@ public sealed class BuildCompositionTests
         Assert.Equal(3, editor.availableTargets.Count);
         Assert.Equal(editor.managedDeployments.availableDeployments, msbuild.managedDeployments.availableDeployments);
         Assert.Equal(4, editor.managedDeployments.availableDeployments.Count);
-        Assert.Equal(editor.ResolveNativeProduct("windows-x64", "editor").plan.steps.Select(static step => step.id),
-            msbuild.ResolveNativeProduct("windows-x64", "editor").plan.steps.Select(static step => step.id));
+        Assert.Equal(
+            editor.ResolveNativeProduct("windows-x64", "editor").plan.steps.Select(static step => step.id),
+            msbuild.ResolveNativeProduct("windows-x64", "editor").plan.steps.Select(static step => step.id)
+        );
         Assert.Throws<NotSupportedException>(() => editor.ResolveNativeProduct("browser-wasm", "editor"));
-        Assert.Throws<ArgumentException>(() => new BuildCompositionContext("sdk", "relative", new BuildHostDescriptor("Windows", "x64"), new BuildTargetId("windows-x64")));
+        Assert.Throws<ArgumentException>(
+            () => new BuildCompositionContext(
+                "sdk",
+                "relative",
+                new BuildHostDescriptor("Windows", "x64"),
+                new BuildTargetId("windows-x64")
+            )
+        );
     }
 
     [Fact]
@@ -66,15 +86,38 @@ public sealed class BuildCompositionTests
         ProductNativeBuildPlan complete = BuildTestProducts.Player();
         var reduced = new ProductNativeBuildPlan("player", [complete.steps[0]]);
         NativeProductContribution[] products = [new(complete, new ComponentNativeProductExecutor())];
-        var firstContribution = new BuildPlatformContribution(Descriptor(first), () => first, first, new FixtureToolchain(), nativeProducts: products);
-        var secondContribution = new BuildPlatformContribution(Descriptor(second), () => second, second, new FixtureToolchain(), nativeProducts: [new(reduced, new ComponentNativeProductExecutor())]);
-        var distribution = new BuildDistribution([Game(firstContribution, first), Game(secondContribution, second)], [new FixtureCompiler()]);
+        var firstContribution = new BuildPlatformContribution(
+            Descriptor(first),
+            () => first,
+            first,
+            new FixtureToolchain(),
+            nativeProducts: products
+        );
+        var secondContribution = new BuildPlatformContribution(
+            Descriptor(second),
+            () => second,
+            second,
+            new FixtureToolchain(),
+            nativeProducts: [new(reduced, new ComponentNativeProductExecutor())]
+        );
+        var distribution = new BuildDistribution(
+            [Game(firstContribution, first), Game(secondContribution, second)],
+            [new FixtureCompiler()]
+        );
         products[0] = null!;
         Assert.Same(complete, distribution.ResolveNativeProduct("fixture-a", "player").plan);
         Assert.Same(reduced, distribution.ResolveNativeProduct("fixture-b", "player").plan);
         Assert.Throws<NotSupportedException>(() => distribution.ResolveNativeProduct("fixture-a", "editor"));
         Assert.Throws<NotSupportedException>(() => distribution.ResolveNativeProduct("absent-target", "player"));
-        Assert.Throws<ArgumentException>(() => new BuildPlatformContribution(Descriptor(first), () => first, first, new FixtureToolchain(), nativeProducts: [new(complete, new ComponentNativeProductExecutor()), new(reduced, new ComponentNativeProductExecutor())]));
+        Assert.Throws<ArgumentException>(
+            () => new BuildPlatformContribution(
+                Descriptor(first),
+                () => first,
+                first,
+                new FixtureToolchain(),
+                nativeProducts: [new(complete, new ComponentNativeProductExecutor()), new(reduced, new ComponentNativeProductExecutor())]
+            )
+        );
     }
 
     [Fact]
@@ -87,12 +130,22 @@ public sealed class BuildCompositionTests
             using EngineHost engine = new EngineHostBuilder()
                 .UseMetadataSources(
                     new DotNetAssemblyCatalogSource(typeof(BuildCompositionTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+                    new ReflectionTypeCatalogSource(),
+                    new ReflectionSerializationMetadataSource()
+                )
                 .Build();
             using var assets = new AssetPipeline(
-                engine.modules, engine.types, engine.serialization, new IdentityAllocator(), engine.diagnostics, engine.logs,
+                engine.modules,
+                engine.types,
+                engine.serialization,
+                new IdentityAllocator(),
+                engine.diagnostics,
+                engine.logs,
                 AssetPipelineOptions.Create(Path.Combine(root, "Assets"), Path.Combine(root, "Library")) with
-                { enableFileSystemWatcher = false });
+                {
+                    enableFileSystemWatcher = false
+                }
+            );
             var target = new FixtureTarget();
             BuildTargetFactory factory = () => target;
             GameBuildContribution[] platforms = [Contribution(target, factory)];
@@ -102,7 +155,11 @@ public sealed class BuildCompositionTests
             distribution.ValidateDeployment(target, target.defaultManagedDeployment);
             Assert.Throws<InvalidOperationException>(() => distribution.ValidateDeployment(target, ManagedDeploymentId.coreClr));
             Assert.Throws<ArgumentException>(() => new BuildPlatformContribution(
-                Descriptor(target), factory, new FixtureTarget(new BuildTargetId("different")), new FixtureToolchain()));
+                Descriptor(target),
+                factory,
+                new FixtureTarget(new BuildTargetId("different")),
+                new FixtureToolchain()
+            ));
             var invalid = new BuildDistribution([Contribution(target, () =>
                 new FixtureTarget(new BuildTargetId("different")))], [new FixtureCompiler()]);
             Assert.Throws<InvalidOperationException>(() => invalid.CreateBindings(assets, engine.serialization, engine.types));
@@ -121,12 +178,14 @@ public sealed class BuildCompositionTests
         var target = new FixtureTarget();
         BuildTargetFactory factory = () => target;
         Assert.Throws<ArgumentException>(() => new BuildDistribution([], [new FixtureCompiler()]));
-        Assert.Throws<ArgumentException>(() => new BuildDistribution([Contribution(target, factory), Contribution(target, factory)], [new FixtureCompiler()]));
+        Assert.Throws<ArgumentException>(
+            () => new BuildDistribution([Contribution(target, factory), Contribution(target, factory)], [new FixtureCompiler()])
+        );
         Assert.Throws<ArgumentException>(() => new BuildDistribution([Contribution(target, factory), null!], [new FixtureCompiler()]));
     }
 
-    private static PlatformTargetDescriptor Descriptor(FixtureTarget target) =>
-        new(target.id, "Fixture", "fixture-cpu", "fixture-abi", target.runtimeIdentifier, supportsEditor: false);
+    private static PlatformTargetDescriptor Descriptor(FixtureTarget target)
+        => new(target.id, "Fixture", "fixture-cpu", "fixture-abi", target.runtimeIdentifier, supportsEditor: false);
 
     private static GameBuildContribution Contribution(
         FixtureTarget target,
@@ -155,8 +214,13 @@ public sealed class BuildCompositionTests
     private sealed class FixtureCompiler(string runtimeIdentifier = "fixture-rid") : IManagedDeploymentCompiler
     {
         public ManagedDeploymentId id => new("fixture-managed");
+
         public ManagedDeploymentCapabilities capabilities { get; } = new(
-            [runtimeIdentifier], dynamicCode: false, aheadOfTime: true, nativeStaticLinking: true);
+            [runtimeIdentifier],
+            dynamicCode: false,
+            aheadOfTime: true,
+            nativeStaticLinking: true
+        );
 
         public ValueTask<ManagedDeploymentResult> CompileAsync(
             ManagedDeploymentRequest request,
@@ -171,15 +235,19 @@ public sealed class BuildCompositionTests
         public ManagedDeploymentId defaultManagedDeployment => new("fixture-managed");
         public string runtimeIdentifier => "fixture-rid";
         public string displayName => "Fixture";
+
         public void Validate(string directory) => throw new InvalidOperationException("Composition must not read a pack.");
+
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,
             CancellationToken cancellationToken
         ) => throw new InvalidOperationException("Composition must not prepare a pack.");
+
         public ValueTask CompileAsync(
             GameBuildContentContext context,
             CancellationToken cancellationToken = default
         ) => throw new InvalidOperationException("Composition must not compile content.");
+
         public ValueTask<string> PackageAsync(
             GameBuildPackageContext context,
             CancellationToken cancellationToken = default

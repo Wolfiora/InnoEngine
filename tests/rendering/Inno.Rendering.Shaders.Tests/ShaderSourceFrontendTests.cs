@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xunit;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering.Shaders;
-using Xunit;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -25,7 +25,9 @@ public sealed class ShaderSourceFrontendTests
     [Fact]
     public void ExplicitParametersAndStructureMembersDoNotBecomeImplicitBindings()
     {
-        ShaderSourceAnalysis result = Analyze("struct Data { vec4 a_position; }; vec4 Shade(Data value, mat4 u_viewProj) { return mul(u_viewProj, value.a_position); }");
+        ShaderSourceAnalysis result = Analyze(
+            "struct Data { vec4 a_position; }; vec4 Shade(Data value, mat4 u_viewProj) { return mul(u_viewProj, value.a_position); }"
+        );
         Assert.True(result.succeeded, Errors(result));
     }
 
@@ -36,8 +38,10 @@ public sealed class ShaderSourceFrontendTests
         Assert.True(result.succeeded, Errors(result));
         Assert.Equal("float3", result.function!.returnType.id);
         Assert.Equal(["uv", "alpha", "color"], result.function.parameters.Select(static parameter => parameter.name));
-        Assert.Equal([ShaderSourceParameterDirection.Input, ShaderSourceParameterDirection.Output, ShaderSourceParameterDirection.InputOutput],
-            result.function.parameters.Select(static parameter => parameter.direction));
+        Assert.Equal(
+            [ShaderSourceParameterDirection.Input, ShaderSourceParameterDirection.Output, ShaderSourceParameterDirection.InputOutput],
+            result.function.parameters.Select(static parameter => parameter.direction)
+        );
     }
 
     [Fact]
@@ -163,10 +167,13 @@ public sealed class ShaderSourceFrontendTests
     [InlineData("#else\nfloat Shade(float v) {}", "Shade")]
     [InlineData("uniform vec4 global;\nfloat Shade(float v) {}", "Shade")]
     [InlineData("#define F(a,) a\nfloat Shade(float value) {}", "Shade")]
-    public void InvalidSourceReturnsLocatedDiagnosticInsteadOfGuessingPorts(string source, string entry)
-    {
+    public void InvalidSourceReturnsLocatedDiagnosticInsteadOfGuessingPorts(
+        string source,
+        string entry
+    ) {
         ShaderSourceAnalysis result = new BgfxShaderSourceFrontend().Analyze(
-            new(new("bad.ishadersource", source), entry, new Includes([])));
+            new(new("bad.ishadersource", source), entry, new Includes([]))
+        );
         Assert.False(result.succeeded);
         Assert.NotEmpty(result.diagnostics);
         Assert.Equal("bad.ishadersource", result.diagnostics[0].location.assetPath);
@@ -176,8 +183,10 @@ public sealed class ShaderSourceFrontendTests
     [Fact]
     public void IncludedFailureReportsOriginalFileAndKeepsDependency()
     {
-        ShaderSourceAnalysis result = Analyze("#include \"bad.inc\"\nfloat Shade(float v) {}",
-            new Dictionary<string, string> { ["bad.inc"] = "struct Broken { Undefined x; };" });
+        ShaderSourceAnalysis result = Analyze(
+            "#include \"bad.inc\"\nfloat Shade(float v) {}",
+            new Dictionary<string, string> { ["bad.inc"] = "struct Broken { Undefined x; };" }
+        );
         Assert.False(result.succeeded);
         Assert.Equal("bad.inc", result.diagnostics[0].location.assetPath);
         Assert.Equal("bad.inc", Assert.Single(result.dependencies));
@@ -186,8 +195,10 @@ public sealed class ShaderSourceFrontendTests
     [Fact]
     public void PragmaOnceBreaksGuardedIncludeCycles()
     {
-        ShaderSourceAnalysis result = Analyze("#include \"a.inc\"\nfloat Shade(Data value) { return value.x; }",
-            new Dictionary<string, string> { ["a.inc"] = "#pragma once\n#include \"a.inc\"\nstruct Data { float x; };" });
+        ShaderSourceAnalysis result = Analyze(
+            "#include \"a.inc\"\nfloat Shade(Data value) { return value.x; }",
+            new Dictionary<string, string> { ["a.inc"] = "#pragma once\n#include \"a.inc\"\nstruct Data { float x; };" }
+        );
         Assert.True(result.succeeded, Errors(result));
     }
 
@@ -214,21 +225,26 @@ public sealed class ShaderSourceFrontendTests
         Assert.Throws<ArgumentException>(() => new ShaderSourceFrontendCatalog([new IndependentFrontend(), new IndependentFrontend()]));
     }
 
-    private static ShaderSourceAnalysis Analyze(string source, Dictionary<string, string>? includes = null,
-        IReadOnlyDictionary<string, string>? defines = null)
-        => new BgfxShaderSourceFrontend().Analyze(new(new("module.ishadersource", source), "Shade", new Includes(includes ?? []), defines));
+    private static ShaderSourceAnalysis Analyze(
+        string source,
+        Dictionary<string, string>? includes = null,
+        IReadOnlyDictionary<string, string>? defines = null
+    ) => new BgfxShaderSourceFrontend().Analyze(new(new("module.ishadersource", source), "Shade", new Includes(includes ?? []), defines));
 
     private static string Errors(ShaderSourceAnalysis result) => string.Join("; ", result.diagnostics.Select(static item => item.message));
 
     private sealed class Includes(Dictionary<string, string> sources) : IShaderSourceResolver
     {
-        public ShaderSourceFile ReadInclude(string includingFile, string include)
-            => sources.TryGetValue(include, out string? source) ? new(include, source) : throw new FileNotFoundException(include);
+        public ShaderSourceFile ReadInclude(
+            string includingFile,
+            string include
+        ) => sources.TryGetValue(include, out string? source) ? new(include, source) : throw new FileNotFoundException(include);
     }
 
     private sealed class IndependentFrontend : IShaderSourceFrontend
     {
         public string languageId => "tests.language";
+
         public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
             => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);
     }

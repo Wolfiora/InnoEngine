@@ -34,6 +34,8 @@ public sealed class ReloadableSceneComponent : GameComponent
     private void ValidateRestoredState()
     {
         if (rejectRestore)
+        {
             throw new InvalidOperationException("Component state rejected restoration.");
+        }
     }
 }

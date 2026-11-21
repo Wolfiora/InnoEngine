@@ -56,12 +56,16 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         foreach (SerializedMissingState state in m_states)
         {
             ArgumentNullException.ThrowIfNull(state);
-            if (state.key.ownerPersistentId == Guid.Empty || string.IsNullOrWhiteSpace(state.key.path) ||
-                !keys.Add(state.key))
+            if (state.key.ownerPersistentId == Guid.Empty || string.IsNullOrWhiteSpace(state.key.path)
+                || !keys.Add(state.key)
+            ) {
                 throw new ArgumentException($"Invalid or duplicate recovery slot '{state.key}'.", nameof(missingStates));
+            }
         }
         foreach (IReferenceRecoveryParticipant participant in m_participants)
+        {
             ArgumentNullException.ThrowIfNull(participant);
+        }
         m_catalog = catalog;
     }
 
@@ -99,11 +103,16 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         RequirePhase(Phase.Prepared);
         m_phase = Phase.Applying;
         foreach (IReferenceRecoveryParticipant participant in m_participants)
+        {
             Invoke(participant.Apply);
-        Invoke(() => m_changes = Array.AsReadOnly(m_states.Select(state =>
-            new ReferenceRecoveryChange(state, m_catalog!.Resolve(state.descriptor))).ToArray()));
+        }
+        Invoke(() => m_changes = Array.AsReadOnly(
+            m_states.Select(state => new ReferenceRecoveryChange(state, m_catalog!.Resolve(state.descriptor))).ToArray()
+        ));
         foreach (IReferenceRecoveryParticipant participant in m_participants)
+        {
             Invoke(() => participant.Validate(m_changes));
+        }
         m_phase = Phase.Applied;
     }
 
@@ -142,13 +151,19 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
     {
         EnsureOwner();
         if (m_phase == Phase.RolledBack)
+        {
             return;
+        }
         if (m_phase is Phase.Finished or Phase.Finalizing or Phase.RollingBack)
+        {
             throw new InvalidOperationException("A completed recovery transaction cannot be rolled back.");
+        }
         m_phase = Phase.RollingBack;
         List<Exception> failures = [];
         for (int index = m_preparedCount - 1; index >= 0; index--)
+        {
             Attempt(m_participants[index].RollbackStructure, failures);
+        }
         m_phase = Phase.RolledBack;
         m_changes = Array.Empty<ReferenceRecoveryChange>();
         ThrowFailures(failures, "Reference recovery structure rollback failed.");
@@ -179,12 +194,16 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         if (restore)
         {
             for (int index = m_preparedCount - 1; index >= 0; index--)
+            {
                 Attempt(m_participants[index].RestorePreviousState, failures);
+            }
         }
         else
         {
             foreach (IReferenceRecoveryParticipant participant in m_participants)
+            {
                 Attempt(participant.Complete, failures);
+            }
         }
         m_phase = Phase.Finished;
         m_catalog = null;
@@ -218,7 +237,10 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         {
             if (failures.Count > 0)
             {
-                m_retirementFailure = new AggregateException("Reference recovery remains pending after earlier cleanup failures.", [.. failures, pendingRetirement]);
+                m_retirementFailure = new AggregateException(
+                    "Reference recovery remains pending after earlier cleanup failures.",
+                    [.. failures, pendingRetirement]
+                );
                 throw m_retirementFailure;
             }
             throw;
@@ -234,22 +256,30 @@ public sealed class ReferenceRecoveryTransaction : IGenerationChange
         string message
     ) {
         if (failures.Count > 0)
+        {
             throw new AggregateException(message, failures);
+        }
     }
 
     private void RequirePhase(Phase phase)
     {
         EnsureOwner();
         if (m_phase != phase)
+        {
             throw new InvalidOperationException($"Recovery phase is '{m_phase}', expected '{phase}'.");
+        }
     }
 
     private void EnsureOwner()
     {
         if (Environment.CurrentManagedThreadId != m_ownerThread)
+        {
             throw new InvalidOperationException("Reference recovery must run on its capture thread.");
+        }
         if (m_retirementFailure is not null)
+        {
             throw m_retirementFailure;
+        }
     }
 
     private enum Phase { Captured, Preparing, Prepared, Applying, Applied, RollingBack, RolledBack, Finalizing, Finished }

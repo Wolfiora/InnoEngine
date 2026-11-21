@@ -16,7 +16,9 @@ public readonly record struct PresentationTextureHandle
     public PresentationTextureHandle(ulong value)
     {
         if (value == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(value));
+        }
         this.value = value;
     }
 

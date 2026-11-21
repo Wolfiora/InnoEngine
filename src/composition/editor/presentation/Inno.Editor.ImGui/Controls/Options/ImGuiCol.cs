@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported col choices at the Editor presentation boundary.
 /// </summary>
@@ -257,5 +258,5 @@ public enum ImGuiCol : int
     /// <summary>
     /// Marks the exclusive end of the valid option range.
     /// </summary>
-    Count = (int)Inno.Native.ImGui.ImGuiCol.Count,
+    Count = (int)Inno.Native.ImGui.ImGuiCol.Count
 }

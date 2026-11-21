@@ -26,9 +26,10 @@ public sealed class RenderGraphNameScope : IDisposable
     {
         RenderGraphBuilder? graph = m_graph;
         if (graph is null)
+        {
             return;
+        }
         graph.EndNameScope(m_id);
         m_graph = null;
     }
 }
-

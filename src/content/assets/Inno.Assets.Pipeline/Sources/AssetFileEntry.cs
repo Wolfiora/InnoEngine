@@ -1,5 +1,4 @@
 using System.IO;
-
 using Inno.Assets;
 using Inno.Core.Identity;
 
@@ -13,11 +12,12 @@ public sealed class AssetFileEntry : IdentityObject
     /// <summary>
     /// Gets the final source path segment, or the semantic mount-root label when this entry is a source root.
     /// </summary>
-    public string name => string.IsNullOrEmpty(assetPath.localPath)
-        ? assetPath.source == AssetSourceId.project
-            ? "Assets"
-            : assetPath.source.value
-        : Path.GetFileName(assetPath.localPath);
+    public string name
+        => string.IsNullOrEmpty(assetPath.localPath)
+           ? assetPath.source == AssetSourceId.project
+             ? "Assets"
+             : assetPath.source.value
+           : Path.GetFileName(assetPath.localPath);
 
     /// <summary>
     /// Gets the final source path segment without its last extension.
@@ -58,6 +58,7 @@ public sealed class AssetFileEntry : IdentityObject
     /// Gets whether the entry represents a directory.
     /// </summary>
     public bool isDirectory { get; internal set; }
+
     /// <summary>
     /// Gets the normalized lower-case file extension.
     /// </summary>

@@ -9,7 +9,6 @@ public enum ScriptAssemblyScope
     /// The assembly can use runtime scripting APIs only.
     /// </summary>
     Runtime,
-
     /// <summary>
     /// The assembly can use runtime and editor scripting APIs.
     /// </summary>

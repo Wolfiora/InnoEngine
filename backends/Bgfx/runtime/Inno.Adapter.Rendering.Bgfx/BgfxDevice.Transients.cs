@@ -1,10 +1,10 @@
-using Inno.Adapter.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using Inno.Adapter.Platform;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -22,7 +22,9 @@ sealed unsafe partial class BgfxDevice
         {
             PooledTransientTexture pooled = m_transientTexturePool[index];
             if (pooled.physicalSlot != physicalSlot || !pooled.descriptor.Equals(descriptor))
+            {
                 continue;
+            }
             m_transientTexturePool.RemoveAt(index);
             return pooled.handle;
         }
@@ -31,17 +33,22 @@ sealed unsafe partial class BgfxDevice
         {
             PooledTransientTexture pooled = m_transientTexturePool[index];
             if (!pooled.descriptor.Equals(descriptor))
+            {
                 continue;
+            }
             m_transientTexturePool.RemoveAt(index);
             return pooled.handle;
         }
 
         bgfx.TextureHandle texture = CreateNativeTexture(descriptor);
         if (!texture.Valid)
+        {
             throw new InvalidOperationException($"BGFX could not allocate transient texture '{name}'.");
+        }
         int textureNameLength = Encoding.UTF8.GetByteCount(name);
         Span<byte> textureNameBytes = textureNameLength < 256
-            ? stackalloc byte[256] : new byte[checked(textureNameLength + 1)];
+                                      ? stackalloc byte[256]
+                                      : new byte[checked(textureNameLength + 1)];
         Encoding.UTF8.GetBytes(name, textureNameBytes);
         textureNameBytes[textureNameLength] = 0;
         fixed (byte* textureNamePointer = textureNameBytes)
@@ -56,15 +63,15 @@ sealed unsafe partial class BgfxDevice
     {
         foreach ((int slot, bgfx.TextureHandle texture) in m_transientTextureSlots)
         {
-            m_transientTexturePool.Add(new PooledTransientTexture(
-                m_transientTextureSlotDescriptors[slot],
-                texture,
-                m_submissionSequence,
-                slot));
+            m_transientTexturePool.Add(
+                new PooledTransientTexture(m_transientTextureSlotDescriptors[slot], texture, m_submissionSequence, slot)
+            );
         }
 
         foreach ((int slot, BgfxBufferResource buffer) in m_transientBufferSlots)
+        {
             m_transientBufferPool.Add(new PooledTransientBuffer(buffer, m_submissionSequence, slot));
+        }
 
         m_transientTextureSlots.Clear();
         m_transientTextureSlotDescriptors.Clear();
@@ -77,7 +84,9 @@ sealed unsafe partial class BgfxDevice
         {
             CachedGraphFrameBuffer cached = m_graphFrameBufferCache[index];
             if (!CacheEntryExpired(cached.lastUsedSubmission))
+            {
                 continue;
+            }
             EnqueueDestroy(DeferredResource.ForFrameBuffer(cached.handle));
             m_graphFrameBufferCache.RemoveAt(index);
         }
@@ -86,7 +95,9 @@ sealed unsafe partial class BgfxDevice
         {
             PooledTransientTexture pooled = m_transientTexturePool[index];
             if (!CacheEntryExpired(pooled.lastUsedSubmission))
+            {
                 continue;
+            }
             RemoveCachedFrameBuffersReferencing(pooled.handle.idx);
             EnqueueDestroy(DeferredResource.ForTexture(pooled.handle));
             m_transientTexturePool.RemoveAt(index);
@@ -96,13 +107,16 @@ sealed unsafe partial class BgfxDevice
         {
             PooledTransientBuffer pooled = m_transientBufferPool[index];
             if (!CacheEntryExpired(pooled.lastUsedSubmission))
+            {
                 continue;
+            }
             EnqueueDestroy(DeferredResource.ForBuffer(pooled.resource));
             m_transientBufferPool.RemoveAt(index);
         }
     }
 
-    private bool CacheEntryExpired(ulong lastUsedSubmission) => m_submissionSequence - lastUsedSubmission > C_TRANSIENT_CACHE_RETENTION_FRAMES;
+    private bool CacheEntryExpired(ulong lastUsedSubmission)
+        => m_submissionSequence - lastUsedSubmission > C_TRANSIENT_CACHE_RETENTION_FRAMES;
 
     private readonly record struct PooledTransientTexture(
         RenderTextureDescriptor descriptor,
@@ -116,5 +130,4 @@ sealed unsafe partial class BgfxDevice
         ulong lastUsedSubmission,
         int physicalSlot
     );
-
 }

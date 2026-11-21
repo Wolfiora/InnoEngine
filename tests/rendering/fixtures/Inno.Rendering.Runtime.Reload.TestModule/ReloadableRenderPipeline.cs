@@ -32,7 +32,11 @@ internal sealed class ReloadableRenderPipeline : RenderPipeline
                 "Reloadable Plugin Pass",
                 new RenderPhaseId("tests.runtime.reloadable-plugin.visible"),
                 0,
-                static (_, _) => { })
+                static (
+                    _,
+                    _
+                ) => {}
+            )
             .HasSideEffect();
     }
 }
@@ -55,7 +59,11 @@ internal sealed class ReloadableRenderFeature : RenderPipelineFeature
                 "Reloadable Plugin Feature Pass",
                 new RenderPhaseId("tests.runtime.reloadable-plugin-feature.visible"),
                 1,
-                static (_, _) => { })
+                static (
+                    _,
+                    _
+                ) => {}
+            )
             .HasSideEffect();
     }
 }

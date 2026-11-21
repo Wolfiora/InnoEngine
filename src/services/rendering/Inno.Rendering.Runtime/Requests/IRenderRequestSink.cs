@@ -1,5 +1,5 @@
-using Inno.Rendering;
 using System;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
 
@@ -17,4 +17,3 @@ public interface IRenderRequestSink
     /// </param>
     void Submit(RenderRequest request);
 }
-

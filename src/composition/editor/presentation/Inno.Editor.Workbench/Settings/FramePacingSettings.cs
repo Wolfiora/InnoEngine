@@ -1,11 +1,13 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using Inno.Editor.Core;
 using Inno.Editor.Settings;
 using Inno.Platform;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
+
 [EditorSettingPath("Editor/Rendering")]
 internal sealed class EditorRenderingSettingsPage : EditorSetting
 {
@@ -35,6 +37,7 @@ internal sealed class VerticalSyncSetting : EditorSetting
     /// Gets the presentation section that groups this setting.
     /// </summary>
     public override string section => "Frame Rate";
+
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
@@ -50,7 +53,9 @@ internal sealed class VerticalSyncSetting : EditorSetting
     {
         bool enabled = setting.GetAsBoolean("enabled", false);
         if (Ui.Checkbox("##vsync", ref enabled))
+        {
             setting.SetAsBoolean("enabled", enabled);
+        }
     }
 }
 
@@ -74,6 +79,7 @@ internal sealed class MaximumFrameRateSetting : EditorSetting
     /// Gets the presentation section that groups this setting.
     /// </summary>
     public override string section => "Frame Rate";
+
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
@@ -89,9 +95,13 @@ internal sealed class MaximumFrameRateSetting : EditorSetting
     {
         int rate = setting.GetAsInt32("value", 0);
         if (Ui.InputInt("##maximum_fps", ref rate, 1, 100, 0))
+        {
             setting.SetAsInt32("value", Math.Clamp(rate, 0, 1000));
+        }
         if (rate == 0)
+        {
             EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Unlimited");
+        }
     }
 }
 
@@ -102,6 +112,7 @@ internal sealed class EditorFramePacingModule(
 ) : EditorModule
 {
     private IDisposable? m_settingsSubscription;
+
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -121,6 +132,7 @@ internal sealed class EditorFramePacingModule(
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStop(EditorContext context) => m_settingsSubscription?.Dispose();
+
     private void Apply(EditorSettings current)
     {
         pacing.verticalSync = current.Get("Editor/Rendering/Vertical Sync").GetAsBoolean("enabled", false);

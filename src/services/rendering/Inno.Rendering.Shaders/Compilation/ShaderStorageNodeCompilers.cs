@@ -7,9 +7,18 @@ namespace Inno.Rendering.Shaders;
 internal static class StorageNodePorts
 {
     internal static ShaderSourceType Resource(ShaderNodeDescriptionContext context)
-        => context.Read("resource", new ShaderGraphType { isStorage = true, storageElement = new() { id = "float4" }, access = RenderStorageAccess.ReadWrite }).CreateType();
+        => context
+            .Read(
+                "resource",
+                new ShaderGraphType { isStorage = true, storageElement = new() { id = "float4" }, access = RenderStorageAccess.ReadWrite }
+            )
+            .CreateType();
+
     internal static ShaderSourceType Coordinate(ShaderStorageType storage)
-        => ShaderSourceType.Atomic(!storage.isImage ? "uint" : storage.array || storage.dimension == RenderTextureDimension.Texture3D ? "int3" : "int2");
+        => ShaderSourceType.Atomic(
+            !storage.isImage ? "uint" : storage.array || storage.dimension == RenderTextureDimension.Texture3D ? "int3" : "int2"
+        );
+
     internal static IReadOnlyList<ShaderNodePort> Describe(
         ShaderNodeDescriptionContext context,
         bool write,
@@ -25,9 +34,13 @@ internal static class StorageNodePorts
             new("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
         };
         if (write)
+        {
             ports.Add(new("value", storage.valueType, GraphPortDirection.Input));
+        }
         if (!write || atomic)
+        {
             ports.Add(new(atomic ? "previous" : "value", storage.valueType, GraphPortDirection.Output));
+        }
         return ports;
     }
 }
@@ -38,6 +51,7 @@ internal sealed class ShaderStorageLoadNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
 public string definitionId => "inno.shader.storage-load";
+
     /// <summary>
     /// Retrieves the current ports from authoritative state.
     /// </summary>
@@ -48,6 +62,7 @@ public string definitionId => "inno.shader.storage-load";
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
 public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context) => StorageNodePorts.Describe(context, false, false);
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -58,11 +73,11 @@ public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext conte
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
 public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)
-        => new Dictionary<string, ShaderIrValue>
-        {
-            ["value"] = context.builder.LoadStorage(context.Input("resource"), context.Input("coordinate")),
-            ["then"] = context.builder.Constant(true)
-        };
+    => new Dictionary<string, ShaderIrValue>
+{
+    ["value"] = context.builder.LoadStorage(context.Input("resource"), context.Input("coordinate")),
+    ["then"] = context.builder.Constant(true)
+};
 }
 
 internal sealed class ShaderStorageStoreNodeCompiler : IShaderNodeCompiler
@@ -71,6 +86,7 @@ internal sealed class ShaderStorageStoreNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
 public string definitionId => "inno.shader.storage-store";
+
     /// <summary>
     /// Retrieves the current ports from authoritative state.
     /// </summary>
@@ -81,6 +97,7 @@ public string definitionId => "inno.shader.storage-store";
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
 public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context) => StorageNodePorts.Describe(context, true, false);
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -103,6 +120,7 @@ internal sealed class ShaderStorageAtomicAddNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
 public string definitionId => "inno.shader.storage-atomic-add";
+
     /// <summary>
     /// Retrieves the current ports from authoritative state.
     /// </summary>
@@ -113,6 +131,7 @@ public string definitionId => "inno.shader.storage-atomic-add";
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
 public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context) => StorageNodePorts.Describe(context, true, true);
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>
@@ -123,11 +142,11 @@ public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext conte
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
 public IReadOnlyDictionary<string, ShaderIrValue> Lower(ShaderNodeLoweringContext context)
-        => new Dictionary<string, ShaderIrValue>
-        {
-            ["previous"] = context.builder.AtomicAddStorage(context.Input("resource"), context.Input("coordinate"), context.Input("value")),
-            ["then"] = context.builder.Constant(true)
-        };
+    => new Dictionary<string, ShaderIrValue>
+{
+    ["previous"] = context.builder.AtomicAddStorage(context.Input("resource"), context.Input("coordinate"), context.Input("value")),
+    ["then"] = context.builder.Constant(true)
+};
 }
 
 internal sealed class ShaderDiscardNodeCompiler : IShaderNodeCompiler
@@ -136,6 +155,7 @@ internal sealed class ShaderDiscardNodeCompiler : IShaderNodeCompiler
     /// Gets the definition id text used by the current instance.
     /// </summary>
 public string definitionId => "inno.shader.discard";
+
     /// <summary>
     /// Retrieves the current ports from authoritative state.
     /// </summary>
@@ -146,9 +166,12 @@ public string definitionId => "inno.shader.discard";
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
 public IReadOnlyList<ShaderNodePort> GetPorts(ShaderNodeDescriptionContext context)
-        => [new("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
-            new("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
-            new("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)];
+    => [
+        new("condition", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input),
+        new("after", ShaderSourceType.Atomic("bool"), GraphPortDirection.Input, false),
+        new("then", ShaderSourceType.Atomic("bool"), GraphPortDirection.Output)
+    ];
+
     /// <summary>
     /// Lowers this graph node to typed shader IR after validating its inputs.
     /// </summary>

@@ -4,9 +4,9 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -31,9 +31,15 @@ public sealed class BuildCacheWorkspaceLinkTests
             File.CreateSymbolicLink(Path.Combine(workspace, "libsample.1.dylib"), "libsample.1.0.dylib");
             File.CreateSymbolicLink(Path.Combine(workspace, "libsample.dylib"), "libsample.1.dylib");
             long bytes = Directory.EnumerateFiles(workspace, "*", SearchOption.AllDirectories)
-                .Where(path => new FileInfo(path).LinkTarget is null).Sum(path => new FileInfo(path).Length);
+                .Where(path => new FileInfo(path).LinkTarget is null)
+                .Sum(path => new FileInfo(path).Length);
             publisher.Record(workspace, producer, [], null, "macos-arm64");
-            BuildCacheCleanupPlan measured = BuildCacheCleanupPlan.Create(root, [publisher.Describe("fixture")], new(0, 0), retireAll: true);
+            BuildCacheCleanupPlan measured = BuildCacheCleanupPlan.Create(
+                root,
+                [publisher.Describe("fixture")],
+                new(0, 0),
+                retireAll: true
+            );
             Assert.Equal(bytes, measured.totalBytes);
         }
         BuildCacheCleanupPlan plan = BuildCacheCleanupPlan.Create(root, [publisher.Describe("fixture")], new(0, 0), retireAll: true);
@@ -50,7 +56,9 @@ public sealed class BuildCacheWorkspaceLinkTests
     [SupportedOSPlatform("linux")]
     public async Task FileAliasesCannotEscapeCycleDangleOrEnterImmutableArtifacts()
     {
-        using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(Path.GetTempPath(), "InnoCacheLinkBoundary"));
+        using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(
+            Path.Combine(Path.GetTempPath(), "InnoCacheLinkBoundary")
+        );
         string root = owner.directory;
         string cache = Path.Combine(root, "cache");
         string workspace = Path.Combine(cache, "workspace");
@@ -75,7 +83,9 @@ public sealed class BuildCacheWorkspaceLinkTests
     [Fact]
     public async Task WorkspacesRejectDirectoryLinksEvenWhenTheTargetIsOwned()
     {
-        using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(Path.Combine(Path.GetTempPath(), "InnoCacheDirectoryLinks"));
+        using ProcessOwnedDirectory owner = await ProcessOwnedDirectory.CreateAsync(
+            Path.Combine(Path.GetTempPath(), "InnoCacheDirectoryLinks")
+        );
         string root = owner.directory;
         string cache = Path.Combine(root, "cache");
         string workspace = Path.Combine(cache, "workspace");
@@ -86,12 +96,22 @@ public sealed class BuildCacheWorkspaceLinkTests
         {
             string escapedLink = link.Replace("'", "''", StringComparison.Ordinal);
             string escapedTarget = target.Replace("'", "''", StringComparison.Ordinal);
-            await ToolchainEnvironment.RunAsync("powershell.exe",
-                ["-NoProfile", "-NonInteractive", "-Command", "New-Item -ItemType Junction -Path '" + escapedLink + "' -Target '" + escapedTarget + "' | Out-Null"],
-                root, CancellationToken.None);
+            await ToolchainEnvironment.RunAsync(
+                "powershell.exe",
+                [
+                    "-NoProfile",
+                    "-NonInteractive",
+                    "-Command",
+                    "New-Item -ItemType Junction -Path '" + escapedLink + "' -Target '" + escapedTarget + "' | Out-Null"
+                ],
+                root,
+                CancellationToken.None
+            );
         }
         else
+        {
             Directory.CreateSymbolicLink(link, target);
+        }
         try
         {
             var publisher = new BuildCachePublisher(cache, BuildCacheArtifactRole.ReusableWorkspace);

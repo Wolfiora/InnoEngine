@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     /// <summary>
     /// Dispatches compute work using the supplied thread-group dimensions.
     /// </summary>
@@ -36,7 +35,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             checked((uint)groupCountX),
             checked((uint)groupCountY),
             checked((uint)groupCountZ),
-            checked((byte)bgfx.DiscardFlags.All));
+            checked((byte)bgfx.DiscardFlags.All)
+        );
         m_device.RecordDispatch();
     }
 
@@ -56,8 +56,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBufferHandle buffer,
         int firstCommand = 0,
         int commandCount = 1
-    )
-        => DispatchIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
+    ) => DispatchIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     /// <summary>
     /// Dispatches compute work using dimensions read from the supplied indirect buffer.
@@ -75,8 +74,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         PersistentBufferHandle buffer,
         int firstCommand = 0,
         int commandCount = 1
-    )
-        => DispatchIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
+    ) => DispatchIndirect(m_device.ResolveBuffer(buffer), firstCommand, commandCount);
 
     private void DispatchIndirect(
         BgfxBufferResource buffer,
@@ -92,8 +90,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             new bgfx.IndirectBufferHandle { idx = buffer.nativeIndex },
             checked((uint)firstCommand),
             checked((uint)commandCount),
-            checked((byte)bgfx.DiscardFlags.All));
+            checked((byte)bgfx.DiscardFlags.All)
+        );
         m_device.RecordDispatch(commandCount);
     }
-
 }

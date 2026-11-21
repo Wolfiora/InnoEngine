@@ -91,8 +91,7 @@ public sealed class EventHub : IDisposable
     public IDisposable Listen<TEvent>(
         Action<TEvent> handler,
         int priority = 0
-    )
-        where TEvent : Event
+    ) where TEvent : Event
     {
         ThrowIfInvalid();
         ArgumentNullException.ThrowIfNull(handler);
@@ -136,8 +135,7 @@ public sealed class EventHub : IDisposable
     public IDisposable ListenOnce<TEvent>(
         Action<TEvent> handler,
         int priority = 0
-    )
-        where TEvent : Event
+    ) where TEvent : Event
     {
         ThrowIfInvalid();
         ArgumentNullException.ThrowIfNull(handler);
@@ -311,6 +309,7 @@ public sealed class EventHub : IDisposable
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
         public int priority { get; } = priority;
+
         /// <summary>
         /// Gets the scalar measurement or identity associated with the current state.
         /// </summary>
@@ -505,6 +504,7 @@ public sealed class EventHub : IDisposable
         /// The empty value used as part of this type's public representation.
         /// </summary>
         public static readonly HubState Empty = new(new Dictionary<Type, Listener[]>());
+
         /// <summary>
         /// Gets the immutable listener buckets captured for one dispatch operation.
         /// </summary>

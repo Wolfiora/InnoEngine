@@ -20,7 +20,9 @@ public sealed class AnimationPlaybackAllocator
     {
         int next = Interlocked.Increment(ref S_NEXT_GENERATION);
         if (next <= 0)
+        {
             throw new InvalidOperationException("Animation owner generations are exhausted.");
+        }
         generation = (uint)next;
     }
 
@@ -50,7 +52,9 @@ public sealed class AnimationPlaybackAllocator
     ) {
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         if (slotGeneration == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(slotGeneration));
+        }
         return new AnimationPlaybackHandle(((ulong)slotGeneration << 32) | ((uint)slot + 1U), generation);
     }
 
@@ -66,7 +70,9 @@ public sealed class AnimationPlaybackAllocator
     public (int slot, uint generation) Decode(AnimationPlaybackHandle handle)
     {
         if (!handle.isValid || handle.runtimeGeneration != generation)
+        {
             return (-1, 0);
+        }
         uint encodedSlot = (uint)(handle.value & uint.MaxValue);
         return (checked((int)(encodedSlot - 1U)), (uint)(handle.value >> 32));
     }

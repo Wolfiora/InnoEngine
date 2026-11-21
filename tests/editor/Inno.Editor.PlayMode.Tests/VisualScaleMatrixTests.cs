@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Editor.ImGui;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
 
@@ -16,9 +17,15 @@ public sealed unsafe class VisualScaleMatrixTests
     public static IEnumerable<object[]> Metrics()
     {
         foreach (float zoom in new[] { 0.75f, 0.85f, 0.90f, 1f, 1.10f, 1.25f, 1.50f })
+        {
             foreach (float density in new[] { 1f, 1.25f, 1.50f, 2f })
+            {
                 foreach (Vector2 size in new[] { new Vector2(1280f, 720f), new Vector2(1920f, 1080f) })
+                {
                     yield return [zoom, density, size.X, size.Y];
+                }
+            }
+        }
     }
 
     [Theory]
@@ -48,16 +55,20 @@ public sealed unsafe class VisualScaleMatrixTests
                 try
                 {
                     var widgets = host.ui.widgets;
-                    widgets.PropertyRow("reference", () =>
-                    {
-                        labelWidth = NativeGui.GetContentRegionAvail().X;
-                        widgets.PropertyLabel("Resource reference / 资源引用 / Missing");
-                    }, () =>
-                    {
-                        valueWidth = NativeGui.GetContentRegionAvail().X;
-                        string value = "Unassigned / 未指定";
-                        widgets.Disabled(true, () => NativeGui.TextUnformatted(value));
-                    });
+                    widgets.PropertyRow(
+                        "reference",
+                        () =>
+                        {
+                            labelWidth = NativeGui.GetContentRegionAvail().X;
+                            widgets.PropertyLabel("Resource reference / 资源引用 / Missing");
+                        },
+                        () =>
+                        {
+                            valueWidth = NativeGui.GetContentRegionAvail().X;
+                            string value = "Unassigned / 未指定";
+                            widgets.Disabled(true, () => NativeGui.TextUnformatted(value));
+                        }
+                    );
                     widgets.MixedValue(true, () => Assert.True(widgets.isMixedValue));
                     Assert.False(widgets.isMixedValue);
                     Assert.Equal(zoom, widgets.style.zoom);

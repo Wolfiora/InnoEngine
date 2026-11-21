@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using System.Numerics;
+using System.Text.Json;
 using System.Threading;
+using Xunit;
+using Xunit.Abstractions;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Input;
 using Inno.Core.Logging;
@@ -10,9 +13,7 @@ using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
-using Xunit;
-using Xunit.Abstractions;
-using System.Text.Json;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.Tests;
@@ -20,7 +21,9 @@ namespace Inno.Editor.ImGui.Tests;
 public sealed unsafe class DynamicModalTests
 {
     private readonly ITestOutputHelper m_output;
+
     public DynamicModalTests(ITestOutputHelper output) => m_output = output;
+
     [Fact]
     [Trait("Acceptance", "Visual")]
     public void ChangedContentFitsOnTheTransitionFrameThroughTheActualRenderer()
@@ -49,6 +52,7 @@ public sealed unsafe class DynamicModalTests
         int height
     ) {
         foreach (float zoom in new[] { 0.75f, 0.85f, 0.9f, 1f, 1.1f, 1.25f, 1.5f })
+        {
         foreach (float dpi in new[] { 1f, 1.25f, 1.5f, 2f })
         {
             using var host = new ModalHost(width, height);
@@ -56,29 +60,50 @@ public sealed unsafe class DynamicModalTests
             NativeGui.Raw.GetStyle()->FontScaleDpi = dpi;
             host.Frame();
             host.Frame();
-            string[] messages = ["Short", "First\nSecond", new string('W', 600), "中文状态 / café / Ελληνικά\n" + new string('x', 4000), "", "Short"];
+            string[] messages =
+            [
+                "Short",
+                "First\nSecond",
+                new string('W', 600),
+                "中文状态 / café / Ελληνικά\n" + new string('x', 4000),
+                "",
+                "Short"
+            ];
             foreach (string text in messages)
             {
                 host.state.message = text;
                 host.Frame();
-                m_output.WriteLine(JsonSerializer.Serialize(new
-                {
-                    width, height, zoom, dpi, messageLength = text.Length,
-                    wrapWidth = host.state.wrapWidth, bodyHeight = host.state.bodyHeight,
-                    bodyContentHeight = host.state.bodyContentHeight,
-                    windowWidth = host.state.windowSize.X, windowHeight = host.state.windowSize.Y,
-                    actionMinimumX = host.state.actionMin.X, actionMinimumY = host.state.actionMin.Y,
-                    actionMaximumX = host.state.actionMax.X, actionMaximumY = host.state.actionMax.Y,
-                    scrollMaxX = host.state.scrollMaxX
-                }));
+                m_output.WriteLine(
+                    JsonSerializer.Serialize(new
+                    {
+                        width,
+                        height,
+                        zoom,
+                        dpi,
+                        messageLength = text.Length,
+                        wrapWidth = host.state.wrapWidth,
+                        bodyHeight = host.state.bodyHeight,
+                        bodyContentHeight = host.state.bodyContentHeight,
+                        windowWidth = host.state.windowSize.X,
+                        windowHeight = host.state.windowSize.Y,
+                        actionMinimumX = host.state.actionMin.X,
+                        actionMinimumY = host.state.actionMin.Y,
+                        actionMaximumX = host.state.actionMax.X,
+                        actionMaximumY = host.state.actionMax.Y,
+                        scrollMaxX = host.state.scrollMaxX
+                    })
+                );
                 Assert.True(host.state.windowSize.X <= width && host.state.windowSize.Y <= height);
-                Assert.True(host.state.actionMax.Y <= host.state.windowMax.Y + 1f,
-                    $"Action exceeded the window: zoom={zoom}, dpi={dpi}, message length={text.Length}.");
+                Assert.True(
+                    host.state.actionMax.Y <= host.state.windowMax.Y + 1f,
+                    $"Action exceeded the window: zoom={zoom}, dpi={dpi}, message length={text.Length}."
+                );
                 Assert.InRange(host.state.scrollMaxX, 0f, 0.01f);
                 Vector2 first = host.state.windowSize;
                 host.Frame();
                 Assert.Equal(first, host.state.windowSize);
             }
+        }
         }
     }
 
@@ -315,10 +340,16 @@ public sealed unsafe class DynamicModalTests
             io->IniFilename = null;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
-            m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(DynamicModalTests).Assembly) });
+            m_modules = new ModuleHost(
+                new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(DynamicModalTests).Assembly) }
+            );
             m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
-            m_runtime = new ImGuiEditorRuntime(new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
-                m_types, m_logs, [state]);
+            m_runtime = new ImGuiEditorRuntime(
+                new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
+                m_types,
+                m_logs,
+                [state]
+            );
             m_runtime.Start();
         }
 
@@ -384,6 +415,7 @@ public sealed unsafe class DynamicTestModal(DynamicModalState state) : EditorMod
     public override bool allowScrolling => false;
     public override Vector2 initialSize => state.initialSize;
     public override bool canResize => state.resizable;
+
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
@@ -391,8 +423,15 @@ public sealed unsafe class DynamicTestModal(DynamicModalState state) : EditorMod
         state.preparations++;
         if (state.rejectPreparation) throw new InvalidOperationException("Rejected modal measurement.");
         EditorUiSession.current.widgets.style.SetZoom(state.zoom);
-        state.content = new(state.message, state.showProgress ? 0.5f : null, state.indeterminate,
-            actionLabel: state.showAction ? "Cancel" : null, actionEnabled: !state.canceled, details: state.details, cancelOnEscape: true);
+        state.content = new(
+            state.message,
+            state.showProgress ? 0.5f : null,
+            state.indeterminate,
+            actionLabel: state.showAction ? "Cancel" : null,
+            actionEnabled: !state.canceled,
+            details: state.details,
+            cancelOnEscape: true
+        );
         state.layout = EditorUiSession.current.widgets.MeasureDialog(state.content, availableContentSize);
         return state.layout.size;
     }

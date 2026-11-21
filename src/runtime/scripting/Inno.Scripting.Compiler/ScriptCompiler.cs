@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Plugins.Authoring;
@@ -19,6 +18,7 @@ public sealed class ScriptCompiler
     private readonly ScriptArtifactCache m_artifacts;
     private readonly ScriptCompilerOptions m_options;
     private readonly PluginEnvironment m_plugins;
+
     /// <summary>
     /// Creates a compiler over explicit authoring services owned by one host.
     /// </summary>
@@ -65,10 +65,7 @@ public sealed class ScriptCompiler
     /// </exception>
     public void GenerateProjectFiles()
     {
-        ScriptProjectGenerator.Generate(
-            m_options,
-            m_assets,
-            m_plugins);
+        ScriptProjectGenerator.Generate(m_options, m_assets, m_plugins);
     }
 
     /// <summary>
@@ -110,21 +107,21 @@ public sealed class ScriptCompiler
         IProgress<ScriptCompilationProgress>? progress = null,
         CancellationToken cancellationToken = default,
         IAssetSourceSnapshot? sourceSnapshot = null
-    )
-        => ScriptCompilerEngine.CompileAsync(
-            m_options,
-            m_assets,
-            m_plugins,
-            includeEditor: true,
-            targetRuntimeDirectory: null,
-            progress is null
-                ? null
-                : (
-                    fraction,
-                    stage
-                ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
-            cancellationToken,
-            sourceSnapshot);
+    ) => ScriptCompilerEngine.CompileAsync(
+        m_options,
+        m_assets,
+        m_plugins,
+        includeEditor: true,
+        targetRuntimeDirectory: null,
+        progress is null
+        ? null
+        : (
+            fraction,
+            stage
+        ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
+        cancellationToken,
+        sourceSnapshot
+    );
 
     /// <summary>
     /// Compiles only the runtime assembly closure required by a deployed Player and binds it to that Player runtime.
@@ -180,12 +177,13 @@ public sealed class ScriptCompiler
             includeEditor: false,
             targetRuntimeDirectory: targetRuntimeDirectory,
             progress is null
-                ? null
-                : (
-                    fraction,
-                    stage
-                ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
-            cancellationToken);
+            ? null
+            : (
+                fraction,
+                stage
+            ) => progress.Report(new ScriptCompilationProgress(fraction, stage)),
+            cancellationToken
+        );
     }
 
     /// <summary>

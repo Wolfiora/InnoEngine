@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Assets;
 
 namespace Inno.Assets.Pipeline;
@@ -28,7 +27,9 @@ public static class AssetSample
     public static bool HasSampleDirectoryName(AssetPath path)
     {
         if (!path.isValid || string.IsNullOrEmpty(path.localPath))
+        {
             return false;
+        }
         return Path.GetFileName(path.localPath).StartsWith('~');
     }
 
@@ -84,10 +85,14 @@ public static class AssetSample
     public static string GetImportName(AssetPath path)
     {
         if (!IsRoot(path))
+        {
             throw new ArgumentException("The path must identify an installed Plugin sample directory.", nameof(path));
+        }
         string name = Path.GetFileName(path.localPath);
         if (string.IsNullOrWhiteSpace(name.TrimStart('~')))
+        {
             throw new ArgumentException("A sample directory requires a name after its '~' prefix.", nameof(path));
+        }
         return name;
     }
 
@@ -115,13 +120,17 @@ public static class AssetSample
         bool isDirectory
     ) {
         if (!path.isValid || string.IsNullOrEmpty(path.localPath))
+        {
             return false;
+        }
         string[] segments = path.localPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
         int directoryCount = isDirectory ? segments.Length : segments.Length - 1;
         for (int index = 0; index < directoryCount; index++)
         {
             if (segments[index].StartsWith('~'))
+            {
                 return true;
+            }
         }
         return false;
     }

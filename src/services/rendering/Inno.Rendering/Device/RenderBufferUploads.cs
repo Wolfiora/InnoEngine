@@ -30,26 +30,30 @@ public sealed class RenderBufferUploadDescriptor
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(elementStride);
         RenderBufferUsage allowed = RenderBufferUsage.Vertex
-            | RenderBufferUsage.Index
-            | RenderBufferUsage.Storage;
+                                    | RenderBufferUsage.Index
+                                    | RenderBufferUsage.Storage;
         if (usage == 0 || (usage & ~allowed) != 0)
         {
-            throw new ArgumentException(
-                "Frame uploads support vertex, index, and storage usage only.",
-                nameof(usage));
+            throw new ArgumentException("Frame uploads support vertex, index, and storage usage only.", nameof(usage));
         }
         if ((usage & (RenderBufferUsage.Vertex | RenderBufferUsage.Index))
-            == (RenderBufferUsage.Vertex | RenderBufferUsage.Index))
-        {
+            == (RenderBufferUsage.Vertex | RenderBufferUsage.Index)
+        ) {
             throw new ArgumentException("An upload cannot be both vertex and index input.", nameof(usage));
         }
         if ((usage & RenderBufferUsage.Vertex) != 0 && vertexLayout is null)
+        {
             throw new ArgumentException("Vertex uploads require an interleaved layout.", nameof(vertexLayout));
+        }
         if (vertexLayout is not null && vertexLayout.stride != elementStride)
+        {
             throw new ArgumentException("Vertex layout stride must match element stride.", nameof(vertexLayout));
+        }
         int indexStride = indexFormat == RenderIndexFormat.UInt16 ? 2 : 4;
         if ((usage & RenderBufferUsage.Index) != 0 && indexStride != elementStride)
+        {
             throw new ArgumentException("Index format must match element stride.", nameof(indexFormat));
+        }
 
         this.elementStride = elementStride;
         this.usage = usage;
@@ -153,6 +157,5 @@ public abstract class RenderFrameUploadProvider
         int elementCount,
         RenderBufferUsage usage,
         ulong frameIndex
-    )
-        => new(buffer, firstElement, elementCount, usage, frameIndex);
+    ) => new(buffer, firstElement, elementCount, usage, frameIndex);
 }

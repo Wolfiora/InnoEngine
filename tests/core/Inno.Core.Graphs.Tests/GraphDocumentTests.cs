@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Inno.Core.Graphs;
 using Xunit;
+using Inno.Core.Graphs;
 
 namespace Inno.Core.Graphs.Tests;
 
@@ -42,11 +42,15 @@ public sealed class GraphDocumentTests
     {
         var document = new GraphDocument();
         for (int index = 0; index < 2_000; index++)
+        {
             document.AddNode(new(new("node-" + index), "test.node"));
+        }
         GraphNodeRecord node = document.nodes[^1];
         GraphNodeId id = node.id;
         for (int index = 0; index < 1_000; index++)
+        {
             _ = document.FindNode(id);
+        }
 
         long before = GC.GetAllocatedBytesForCurrentThread();
         for (int index = 0; index < 10_000; index++)

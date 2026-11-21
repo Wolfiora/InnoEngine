@@ -1,10 +1,10 @@
-using Inno.References;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.References;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -25,11 +25,15 @@ public sealed class RenderOutputRoute
         ArgumentNullException.ThrowIfNull(layers);
         RenderOutputLayer[] values = layers.ToArray();
         if (values.Length == 0 || values.Any(static layer => layer is null)
-            || values.Select(static layer => layer.modelId).Distinct(StringComparer.Ordinal).Count() != values.Length)
+            || values.Select(static layer => layer.modelId).Distinct(StringComparer.Ordinal).Count() != values.Length
+        ) {
             throw new ArgumentException("A route requires distinct model layers.", nameof(layers));
+        }
         string[] sourceIds = values.SelectMany(static layer => layer.sourceIds).ToArray();
         if (sourceIds.Distinct(StringComparer.Ordinal).Count() != sourceIds.Length)
+        {
             throw new ArgumentException("Each world-content source may be assigned to only one model layer.", nameof(layers));
+        }
         this.layers = new ReadOnlyCollection<RenderOutputLayer>(values);
     }
 
@@ -38,4 +42,3 @@ public sealed class RenderOutputRoute
     /// </summary>
     public IReadOnlyList<RenderOutputLayer> layers { get; }
 }
-

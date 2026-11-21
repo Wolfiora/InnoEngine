@@ -27,13 +27,38 @@ public static class MacOSArm64BuildIntegration
     {
         ArgumentNullException.ThrowIfNull(context);
         var generator = new NativeBindingGenerator(MacOSArm64BindingProfile.Create());
-        ProductNativeBuildPlan player = StandardNativeComponents.CreatePlayer(MacOSArm64BgfxIntegration.nativeProfile, MacOSArm64NativeProducts.Options, MacOSArm64NativeLayout.Map);
+        ProductNativeBuildPlan player = StandardNativeComponents.CreatePlayer(
+            MacOSArm64BgfxIntegration.nativeProfile,
+            MacOSArm64NativeProducts.Options,
+            MacOSArm64NativeLayout.Map
+        );
         var validator = new PlayerSupportPackClosureValidator(
             StandardSupportPackRequirements.CreateDynamic(player, MacOSArm64BuildModule.target.id, ".dylib"),
-            new MacOSArm64SupportPackValidator(), StandardNativeDeployment.CreateValidator(MacOSArm64BuildModule.target.id, ".dylib"));
+            new MacOSArm64SupportPackValidator(),
+            StandardNativeDeployment.CreateValidator(MacOSArm64BuildModule.target.id, ".dylib")
+        );
         var executor = new ComponentNativeProductExecutor();
-        return MacOSArm64BuildModule.CreateContribution(context, new NativeProductContribution(player, executor),
-            new NativeProductContribution(StandardNativeComponents.CreateEditor(MacOSArm64BgfxIntegration.nativeProfile, MacOSArm64NativeProducts.Options, MacOSArm64NativeLayout.Map), executor),
-            new NativeProductContribution(StandardNativeComponents.CreateShaderTools(MacOSArm64BgfxIntegration.nativeProfile, MacOSArm64NativeProducts.Options, MacOSArm64NativeLayout.Map), executor), validator, generator);
+        return MacOSArm64BuildModule.CreateContribution(
+            context,
+            new NativeProductContribution(player, executor),
+            new NativeProductContribution(
+                StandardNativeComponents.CreateEditor(
+                    MacOSArm64BgfxIntegration.nativeProfile,
+                    MacOSArm64NativeProducts.Options,
+                    MacOSArm64NativeLayout.Map
+                ),
+                executor
+            ),
+            new NativeProductContribution(
+                StandardNativeComponents.CreateShaderTools(
+                    MacOSArm64BgfxIntegration.nativeProfile,
+                    MacOSArm64NativeProducts.Options,
+                    MacOSArm64NativeLayout.Map
+                ),
+                executor
+            ),
+            validator,
+            generator
+        );
     }
 }

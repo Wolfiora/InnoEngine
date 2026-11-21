@@ -12,6 +12,7 @@ using Inno.Build.Toolchains.Bgfx.Shaders;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.IO;
 using Inno.Rendering;
+
 using BuildTask = Microsoft.Build.Utilities.Task;
 
 namespace Inno.Build.Tasks;
@@ -87,14 +88,18 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         {
             m_cancellation = cancellation;
             if (m_canceled)
+            {
                 cancellation.Cancel();
+            }
         }
         try
         {
             var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
             BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(execution).ResolveShaderTarget(new BuildTargetId(Target));
             if (!GraphicsApi.TryParse(Renderer, out GraphicsApi renderer))
+            {
                 throw new ArgumentException("The shader platform or rendering API is invalid.");
+            }
             ToolRunner tools = PrepareTools(cancellation.Token, out string compilerFingerprint, out BuildArtifactReadLease toolLease);
             using BuildArtifactReadLease toolOwnership = toolLease;
             CompileProduct(tools, compilerFingerprint, platform, renderer, cancellation.Token);
@@ -108,7 +113,9 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         finally
         {
             lock (m_gate)
+            {
                 m_cancellation = null;
+            }
         }
     }
 
@@ -137,49 +144,102 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         NativeBuildContext context = new(EngineRoot, "release");
         var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
         context = context.WithBindingGenerator(StandardBuildDistribution.Create(execution).build.ResolveBindingGenerator(ToolTarget));
-        string cacheKey = "Inno.Build.ShaderTools|" + context.engineRoot + "|" + context.configuration + "|" + ToolTarget + "|" + NativeDependencyManifestPath;
+        string cacheKey = "Inno.Build.ShaderTools|"
+                          + context.engineRoot
+                          + "|"
+                          + context.configuration
+                          + "|"
+                          + ToolTarget
+                          + "|"
+                          + NativeDependencyManifestPath;
         IBuildEngine4 engine = BuildEngine as IBuildEngine4
             ?? throw new InvalidOperationException("Offline tool preparation requires MSBuild's build-lifetime task ownership.");
-        string leasePath = Path.Combine(context.engineRoot, "artifacts", "build-tools", "tasks",
-            "native", ToolTarget + "-" + context.configuration + ".lock");
+        string leasePath = Path.Combine(
+            context.engineRoot,
+            "artifacts",
+            "build-tools",
+            "tasks",
+            "native",
+            ToolTarget + "-" + context.configuration + ".lock"
+        );
         using FileLease lease = FileLease.AcquireAsync(leasePath, Timeout.InfiniteTimeSpan, cancellationToken)
-            .GetAwaiter().GetResult();
-        using FileLease publicationUse = new BuildCachePublisher(Path.Combine(context.engineRoot, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact)
-            .AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
+            .GetAwaiter()
+            .GetResult();
+        using FileLease publicationUse = new BuildCachePublisher(
+            Path.Combine(context.engineRoot, "artifacts", "native"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        )
+            .AcquireUseAsync(cancellationToken)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
         if (NativeDependencyManifestPath.Length != 0)
         {
-            var selected = NativeDependencyManifest.SelectAsync(EngineRoot, NativeDependencyManifestPath, ToolTarget,
-                context.configuration, StandardBuildDistribution.Create(execution).build.ResolveNativeProduct(ToolTarget, "shader-tools").plan,
-                cancellationToken).GetAwaiter().GetResult();
+            var selected = NativeDependencyManifest.SelectAsync(
+                EngineRoot,
+                NativeDependencyManifestPath,
+                ToolTarget,
+                context.configuration,
+                StandardBuildDistribution.Create(execution).build.ResolveNativeProduct(ToolTarget, "shader-tools").plan,
+                cancellationToken
+            ).GetAwaiter().GetResult();
             cacheKey += "|" + string.Join("|", selected.Select(static asset => asset.sha256).Order(StringComparer.Ordinal));
         }
         // Only neutral file names cross task load contexts. MSBuild releases the record when this build ends.
         string[]? record = engine.GetRegisteredTaskObject(cacheKey, RegisteredTaskObjectLifetime.Build) as string[];
         if (record is not null && (record.Length < 3 || !BuildArtifactManifest.IsComplete(record[0], record[1], ["Outputs", "Metadata"])))
+        {
             throw new InvalidDataException("The build-owned offline tool product changed after preparation.");
+        }
         if (record is null)
         {
             var distribution = StandardBuildDistribution.Create(execution).build;
             if (NativeDependencyManifestPath.Length == 0)
-                context = context.WithToolchain(distribution.ResolveNativeToolchain(ToolTarget)
-                    .ResolveAsync(context, execution.host, ToolTarget, cancellationToken).AsTask().GetAwaiter().GetResult());
+            {
+                context = context.WithToolchain(
+                    distribution.ResolveNativeToolchain(ToolTarget)
+                        .ResolveAsync(context, execution.host, ToolTarget, cancellationToken)
+                        .AsTask()
+                        .GetAwaiter()
+                        .GetResult()
+                );
+            }
             NativeProductContribution contribution = distribution.ResolveNativeProduct(ToolTarget, "shader-tools");
             ProductNativeBuildPlan plan = contribution.plan;
             StandardBuildCaches.CreateOwners(context.engineRoot, plan.steps.Select(static step => step.component).ToArray());
             using ProductNativeBuildResult products = NativeDependencyManifestPath.Length == 0
-                ? contribution.BuildAsync(context, cancellationToken).GetAwaiter().GetResult()
-                : NativeDependencyManifest.AcquireAsync(EngineRoot, NativeDependencyManifestPath, ToolTarget,
-                    context.configuration, plan, cancellationToken).GetAwaiter().GetResult();
+                                                      ? contribution.BuildAsync(context, cancellationToken).GetAwaiter().GetResult()
+                                                      : NativeDependencyManifest.AcquireAsync(
+                                                          EngineRoot,
+                                                          NativeDependencyManifestPath,
+                                                          ToolTarget,
+                                                          context.configuration,
+                                                          plan,
+                                                          cancellationToken
+                                                      ).GetAwaiter().GetResult();
             NativeBuildProduct product = products.Single();
             record = [product.directory, product.fingerprint, .. product.files];
             engine.RegisterTaskObject(cacheKey, record, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: false);
-            Log.LogMessage(MessageImportance.High,
+            Log.LogMessage(
+                MessageImportance.High,
                 "INNO-SHADER-TOOLS prepared {0}; hashedFiles={1}; hashedBytes={2}; nativeProcesses={3}",
-                product.fingerprint, context.statistics.hashedFiles, context.statistics.hashedBytes,
-                context.statistics.nativeProcesses);
+                product.fingerprint,
+                context.statistics.hashedFiles,
+                context.statistics.hashedBytes,
+                context.statistics.nativeProcesses
+            );
         }
-        reading = BuildArtifactReadLease.AcquireAsync(record[0], Path.Combine(EngineRoot, "artifacts", "native"), record[1], ["Outputs", "Metadata"], cancellationToken)
-            .AsTask().GetAwaiter().GetResult();
+        reading = BuildArtifactReadLease
+            .AcquireAsync(
+                record[0],
+                Path.Combine(EngineRoot, "artifacts", "native"),
+                record[1],
+                ["Outputs", "Metadata"],
+                cancellationToken
+            )
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
         try
         {
             string extension = execution.host.services.executableExtension;
@@ -210,16 +270,30 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         string output = Path.GetFullPath(OutputFile);
         string outputs = Path.GetDirectoryName(output)!;
         if (Path.GetFileName(outputs) != "Outputs")
+        {
             throw new ArgumentException("A shader product must be published inside its owned Outputs directory.", nameof(OutputFile));
+        }
         string directory = Path.GetDirectoryName(outputs)!;
         string runtime = Path.GetDirectoryName(typeof(CompileShaderTask).Assembly.Location)!;
         using FileLease lease = FileLease.AcquireAsync(directory + ".lock", Timeout.InfiniteTimeSpan, cancellationToken)
-            .GetAwaiter().GetResult();
+            .GetAwaiter()
+            .GetResult();
         ShaderBuildInputs source = ShaderBuildInputs.Capture(AssetRoot, cancellationToken);
-        string[] declarations = [source.fingerprint, compilerFingerprint, platform.id, platform.Resolve(renderer).key,
-            Renderer, Configuration, ShaderPath, Path.GetFileName(output)];
-        NativeBuildInput[] inputs = Directory.EnumerateFiles(runtime, "*.dll").Order(StringComparer.Ordinal)
-            .Select(path => new NativeBuildInput("compiler-runtime/" + Path.GetFileName(path), path)).ToArray();
+        string[] declarations =
+        [
+            source.fingerprint,
+            compilerFingerprint,
+            platform.id,
+            platform.Resolve(renderer).key,
+            Renderer,
+            Configuration,
+            ShaderPath,
+            Path.GetFileName(output)
+        ];
+        NativeBuildInput[] inputs = Directory.EnumerateFiles(runtime, "*.dll")
+            .Order(StringComparer.Ordinal)
+            .Select(path => new NativeBuildInput("compiler-runtime/" + Path.GetFileName(path), path))
+            .ToArray();
         string fingerprint = NativeBuildFingerprint.Create(declarations, inputs, cancellationToken);
         if (BuildArtifactManifest.IsComplete(directory, fingerprint, ["Outputs", "Metadata"]))
         {
@@ -227,21 +301,35 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             return;
         }
         using ProcessOwnedDirectory candidateOwner = ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(directory)!, cancellationToken)
-            .AsTask().GetAwaiter().GetResult();
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
         string candidate = candidateOwner.directory;
         string candidateOutputs = Path.Combine(candidate, "Outputs");
         Directory.CreateDirectory(candidateOutputs);
         try
         {
             using (ProcessOwnedDirectory compilation = StandardBuildCaches.CreateShaderWorkspaceAsync(EngineRoot, cancellationToken)
-                       .AsTask().GetAwaiter().GetResult())
-            {
-                ShaderArtifactBuilder.CompileGraphicsProgram(source, compilation, ShaderPath, platform, renderer,
-                    Path.Combine(candidateOutputs, Path.GetFileName(output)), tools, cancellationToken);
+                .AsTask()
+                .GetAwaiter()
+                .GetResult()
+            ) {
+                ShaderArtifactBuilder.CompileGraphicsProgram(
+                    source,
+                    compilation,
+                    ShaderPath,
+                    platform,
+                    renderer,
+                    Path.Combine(candidateOutputs, Path.GetFileName(output)),
+                    tools,
+                    cancellationToken
+                );
             }
             source.VerifyUnchanged(cancellationToken);
             if (NativeBuildFingerprint.Create(declarations, inputs, cancellationToken) != fingerprint)
+            {
                 throw new InvalidDataException("Shader inputs changed during compilation; the candidate was not published.");
+            }
             BuildArtifactManifest.Write(candidate, fingerprint, ["Outputs", "Metadata"]);
             cancellationToken.ThrowIfCancellationRequested();
             try

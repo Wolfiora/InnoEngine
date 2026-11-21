@@ -36,42 +36,78 @@ internal static partial class NativeBindingsVerification
         {
             NativeVerificationOptions options = NativeVerificationOptions.Parse(args);
             string repositoryRoot = options.engineRoot;
-            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory,
-                new BuildTargetId(options.target), options.dotnet);
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(
+                AppContext.BaseDirectory,
+                new BuildTargetId(options.target),
+                options.dotnet
+            );
             BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
-            BuildPlatformContribution platform = distribution.platforms.SingleOrDefault(platform => platform.descriptor.id.value == options.target)
+            BuildPlatformContribution platform = distribution.platforms.SingleOrDefault(
+                platform => platform.descriptor.id.value == options.target
+            )
                 ?? throw new NotSupportedException($"No publication target is registered for '{options.target}'.");
             if (platform.editorProject is null)
-                throw new NotSupportedException($"Native verification requires a registered Editor test host; '{options.target}' contributes no such runner.");
+            {
+                throw new NotSupportedException(
+                    $"Native verification requires a registered Editor test host; '{options.target}' contributes no such runner."
+                );
+            }
             NativeProductContribution contribution = distribution.ResolveNativeProduct(options.target, "editor");
             var nativeContext = new NativeBuildContext(repositoryRoot, options.configuration.ToLowerInvariant())
                 .WithBindingGenerator(distribution.ResolveBindingGenerator(options.target));
             NativeToolchainSelection sdk = await distribution.ResolveNativeToolchain(options.target)
-                .ResolveAsync(nativeContext, execution.host, options.target, cancellationToken).ConfigureAwait(false);
+                .ResolveAsync(nativeContext, execution.host, options.target, cancellationToken)
+                .ConfigureAwait(false);
             nativeContext = nativeContext.WithToolchain(sdk);
             string testHost = ToolchainEnvironment.ResolveExecutable("pwsh");
             string testEntry = Path.Combine(repositoryRoot, "tests", "Invoke-IsolatedTests.ps1");
             if (!File.Exists(testEntry))
+            {
                 throw new FileNotFoundException("The common test execution entry is unavailable.", testEntry);
+            }
             IReadOnlyList<string> bindingProjects = DiscoverBindingProjects(repositoryRoot, contribution.plan);
             ValidateInputs(bindingProjects);
 
             string target = options.target;
             string operationRoot = Path.Combine(repositoryRoot, "artifacts", "build-tools", "verification");
-            BuildCacheOwnerCatalog.Register(repositoryRoot, operationRoot, "native-verification", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);
-            using ProcessOwnedDirectory operation = await ProcessOwnedDirectory.CreateAsync(operationRoot, cancellationToken).ConfigureAwait(false);
+            BuildCacheOwnerCatalog.Register(
+                repositoryRoot,
+                operationRoot,
+                "native-verification",
+                BuildCacheArtifactRole.ProcessWorkingDirectory,
+                cancellationToken
+            );
+            using ProcessOwnedDirectory operation = await ProcessOwnedDirectory.CreateAsync(
+                operationRoot,
+                cancellationToken
+            ).ConfigureAwait(false);
             string artifactsPath = Path.Combine(operation.directory, "managed");
             Console.WriteLine("[inno-bindings] Verify deterministic generation against the checked-in host sources.");
             foreach (string project in bindingProjects)
             {
-                await ToolchainEnvironment.RunAsync(options.dotnet,
-                    ["build", project,
-                        "--configuration", options.configuration, "-t:CheckBindings",
+                await ToolchainEnvironment.RunAsync(
+                    options.dotnet,
+                    [
+                        "build",
+                        project,
+                        "--configuration",
+                        options.configuration,
+                        "-t:CheckBindings",
                         $"-p:InnoBindingDotnetHost={options.dotnet}",
-                        "-p:InnoBindingTargetId=" + target, "-p:InnoBindingOutputMode=HostSource",
-                        $"-p:InnoNativeTarget={target}", $"-p:InnoToolTarget={target}",
-                        "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false", "--nologo"],
-                    repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet));
+                        "-p:InnoBindingTargetId=" + target,
+                        "-p:InnoBindingOutputMode=HostSource",
+                        $"-p:InnoNativeTarget={target}",
+                        $"-p:InnoToolTarget={target}",
+                        "--disable-build-servers",
+                        "-m:1",
+                        "-nr:false",
+                        "-p:UseSharedCompilation=false",
+                        "--nologo"
+                    ],
+                    repositoryRoot,
+                    cancellationToken,
+                    DotNetSdkEnvironment.Create(options.dotnet)
+                );
             }
 
             AuditNativeImports(repositoryRoot);
@@ -80,7 +116,8 @@ internal static partial class NativeBindingsVerification
             await ToolchainEnvironment.RunAsync(
                 options.dotnet,
                 [
-                    "restore", Path.Combine(repositoryRoot, "InnoEngine.sln"),
+                    "restore",
+                    Path.Combine(repositoryRoot, "InnoEngine.sln"),
                     "-p:Configuration=Source" + options.configuration,
                     $"-p:InnoToolTarget={target}",
                     $"-p:ArtifactsPath={artifactsPath}",
@@ -89,7 +126,10 @@ internal static partial class NativeBindingsVerification
                     "/nodeReuse:false",
                     "--nologo"
                 ],
-                repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet));
+                repositoryRoot,
+                cancellationToken,
+                DotNetSdkEnvironment.Create(options.dotnet)
+            );
 
             var native = await BuildNativeDependenciesAsync(nativeContext, contribution, cancellationToken);
             using ProductNativeBuildResult nativeOwnership = native.products;
@@ -98,20 +138,36 @@ internal static partial class NativeBindingsVerification
             await ToolchainEnvironment.RunAsync(
                 options.dotnet,
                 [
-                    "build", Path.Combine(repositoryRoot, "InnoEngine.sln"),
-                    "--configuration", "Source" + options.configuration,
+                    "build",
+                    Path.Combine(repositoryRoot, "InnoEngine.sln"),
+                    "--configuration",
+                    "Source" + options.configuration,
                     "--no-restore",
-                    "-m:1", "-nodeReuse:false", "--disable-build-servers",
+                    "-m:1",
+                    "-nodeReuse:false",
+                    "--disable-build-servers",
                     $"-p:InnoToolTarget={target}",
                     $"-p:ArtifactsPath={artifactsPath}",
                     "-p:TreatWarningsAsErrors=true",
                     "--nologo"
                 ],
-                repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet));
+                repositoryRoot,
+                cancellationToken,
+                DotNetSdkEnvironment.Create(options.dotnet)
+            );
 
             IReadOnlyList<string> testProjects = DiscoverTestProjects(repositoryRoot);
-            string testResults = await RunTestsAsync(repositoryRoot, options, testProjects,
-                native.products, native.plan, testHost, testEntry, artifactsPath, cancellationToken);
+            string testResults = await RunTestsAsync(
+                repositoryRoot,
+                options,
+                testProjects,
+                native.products,
+                native.plan,
+                testHost,
+                testEntry,
+                artifactsPath,
+                cancellationToken
+            );
             string reportPath = await WriteReportAsync(
                 repositoryRoot,
                 target,
@@ -119,10 +175,12 @@ internal static partial class NativeBindingsVerification
                 testProjects.Count,
                 native.plan,
                 testResults,
-                cancellationToken);
+                cancellationToken
+            );
             Console.WriteLine(
                 $"[inno-bindings] Project binding diffs, native builds, solution build, import audit, "
-                + $"and {testProjects.Count} test projects passed.");
+                + $"and {testProjects.Count} test projects passed."
+            );
             Console.WriteLine($"[inno-bindings] Acceptance report: {reportPath}");
             successfulRoot = repositoryRoot;
             return 0;
@@ -138,8 +196,14 @@ internal static partial class NativeBindingsVerification
             {
                 try
                 {
-                    await BuildMaintenanceApplication.CleanAsync(successfulRoot, new BuildCachePolicy(),
-                        false, false, null, CancellationToken.None).ConfigureAwait(false);
+                    await BuildMaintenanceApplication.CleanAsync(
+                        successfulRoot,
+                        new BuildCachePolicy(),
+                        false,
+                        false,
+                        null,
+                        CancellationToken.None
+                    ).ConfigureAwait(false);
                 }
                 catch (Exception failure)
                 {
@@ -155,7 +219,9 @@ internal static partial class NativeBindingsVerification
         {
             string definition = Path.Combine(Path.GetDirectoryName(project)!, "Bindings", "bindings.props");
             if (!File.Exists(definition))
+            {
                 throw new FileNotFoundException("The sole component binding definition was not found.", definition);
+            }
         }
     }
 
@@ -165,12 +231,17 @@ internal static partial class NativeBindingsVerification
     ) {
         string[] projects = plan.steps
             .Select(step => Path.GetFullPath(step.component.nativeProject, repositoryRoot))
-            .Distinct(StringComparer.Ordinal).Where(File.Exists)
-            .Where(project => XDocument.Load(project).Descendants("BindGenGeneratedBindings")
+            .Distinct(StringComparer.Ordinal)
+            .Where(File.Exists)
+            .Where(project => XDocument.Load(project)
+                .Descendants("BindGenGeneratedBindings")
                 .Any(static property => property.Value.Trim() == "true"))
-            .Order(StringComparer.Ordinal).ToArray();
+            .Order(StringComparer.Ordinal)
+            .ToArray();
         if (projects.Length == 0)
+        {
             throw new InvalidOperationException("No Native projects declare BindGenGeneratedBindings=true.");
+        }
         return projects;
     }
 
@@ -184,8 +255,8 @@ internal static partial class NativeBindingsVerification
             string relativePath = Path.GetRelativePath(repositoryRoot, path).Replace('\\', '/');
             if (relativePath.Contains("/Generated/", StringComparison.OrdinalIgnoreCase)
                 || relativePath.Contains("/bin/", StringComparison.OrdinalIgnoreCase)
-                || relativePath.Contains("/obj/", StringComparison.OrdinalIgnoreCase))
-            {
+                || relativePath.Contains("/obj/", StringComparison.OrdinalIgnoreCase)
+            ) {
                 continue;
             }
 
@@ -194,7 +265,9 @@ internal static partial class NativeBindingsVerification
             {
                 lineNumber++;
                 if (NativeImportPattern().IsMatch(line))
+                {
                     violations.Add($"{relativePath}:{lineNumber}:{line.Trim()}");
+                }
             }
         }
 
@@ -202,13 +275,14 @@ internal static partial class NativeBindingsVerification
         {
             string[] reported = violations.Take(C_MAX_REPORTED_VIOLATIONS).ToArray();
             string remainder = violations.Count > reported.Length
-                ? $"{Environment.NewLine}... and {violations.Count - reported.Length} more violation(s)."
-                : string.Empty;
+                               ? $"{Environment.NewLine}... and {violations.Count - reported.Length} more violation(s)."
+                               : string.Empty;
             throw new InvalidOperationException(
                 "Hand-authored native imports remain outside generated binding roots:"
                 + Environment.NewLine
                 + string.Join(Environment.NewLine, reported)
-                + remainder);
+                + remainder
+            );
         }
 
         Console.WriteLine("[inno-bindings] No hand-authored native imports exist outside generated binding roots.");
@@ -227,19 +301,25 @@ internal static partial class NativeBindingsVerification
     {
         string nativeTestsRoot = Path.Combine(repositoryRoot, "backends");
         var projects = Directory.EnumerateFiles(nativeTestsRoot, "*.csproj", SearchOption.AllDirectories)
-            .Where(static path => Path.GetFileNameWithoutExtension(path).StartsWith("Inno.Native.", StringComparison.Ordinal)
+            .Where(static path => (
+                Path.GetFileNameWithoutExtension(path).StartsWith("Inno.Native.", StringComparison.Ordinal)
                 && path.Contains(Path.DirectorySeparatorChar + "tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                && !path.Split(Path.DirectorySeparatorChar).Any(static part => part is "bin" or "obj"))
-            .Order(StringComparer.Ordinal).ToList();
+                && !path.Split(Path.DirectorySeparatorChar).Any(static part => part is "bin" or "obj")
+            ))
+            .Order(StringComparer.Ordinal)
+            .ToList();
         projects.Add(Path.Combine(repositoryRoot, "tests", "text", "Inno.Text.Tests", "Inno.Text.Tests.csproj"));
         projects.Add(Path.Combine(repositoryRoot, "tests", "ui", "Inno.UI.Tests", "Inno.UI.Tests.csproj"));
         if (projects.Count == 0)
+        {
             throw new InvalidOperationException("No native binding test projects were discovered.");
+        }
         if (projects.Any(static project => !File.Exists(project)))
         {
             throw new FileNotFoundException(
                 "A required native binding test project is missing.",
-                projects.First(static project => !File.Exists(project)));
+                projects.First(static project => !File.Exists(project))
+            );
         }
         return projects;
     }
@@ -258,33 +338,71 @@ internal static partial class NativeBindingsVerification
         Console.WriteLine("[inno-bindings] Run every native binding, Text, and UI test project.");
         foreach (string project in testProjects)
         {
-            string output = (await ToolchainEnvironment.CaptureOutputAsync(options.dotnet,
-                ["msbuild", project, "-getProperty:TargetDir", $"-p:Configuration={options.configuration}",
-                    $"-p:InnoToolTarget={options.target}", $"-p:ArtifactsPath={artifactsPath}"],
-                repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet))).Trim();
+            string output = (await ToolchainEnvironment.CaptureOutputAsync(
+                options.dotnet,
+                [
+                    "msbuild",
+                    project,
+                    "-getProperty:TargetDir",
+                    $"-p:Configuration={options.configuration}",
+                    $"-p:InnoToolTarget={options.target}",
+                    $"-p:ArtifactsPath={artifactsPath}"
+                ],
+                repositoryRoot,
+                cancellationToken,
+                DotNetSdkEnvironment.Create(options.dotnet)
+            )).Trim();
             if (!Path.IsPathFullyQualified(output))
+            {
                 throw new InvalidDataException("The test project did not declare an absolute target output directory.");
-            await ProductNativeDeployment.InstallAsync(nativeProducts, nativePlan,
-                output, cancellationToken)
+            }
+            await ProductNativeDeployment.InstallAsync(nativeProducts, nativePlan, output, cancellationToken)
                 .ConfigureAwait(false);
         }
-        string results = Path.Combine(repositoryRoot, "artifacts", "acceptance", "native-bindings",
-            options.target, Guid.NewGuid().ToString("N"));
+        string results = Path.Combine(
+            repositoryRoot,
+            "artifacts",
+            "acceptance",
+            "native-bindings",
+            options.target,
+            Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(results);
         string selection = Path.Combine(results, "Native.slnf");
-        File.WriteAllText(selection, JsonSerializer.Serialize(new
-        {
-            solution = new
+        File.WriteAllText(
+            selection,
+            JsonSerializer.Serialize(new
             {
-                path = Path.Combine(repositoryRoot, "InnoEngine.sln"),
-                projects = testProjects.Select(project => Path.GetRelativePath(repositoryRoot, project)).ToArray()
-            }
-        }));
-        await ToolchainEnvironment.RunAsync(testHost,
-            ["-NoLogo", "-NoProfile", "-NonInteractive", "-File", testEntry,
-                "-Configuration", "Source" + options.configuration, "-Dotnet", options.dotnet,
-                "-Solution", selection, "-ResultsDirectory", results, "-ArtifactsPath", artifactsPath],
-            repositoryRoot, cancellationToken, DotNetSdkEnvironment.Create(options.dotnet));
+                solution = new
+                {
+                    path = Path.Combine(repositoryRoot, "InnoEngine.sln"),
+                    projects = testProjects.Select(project => Path.GetRelativePath(repositoryRoot, project)).ToArray()
+                }
+            })
+        );
+        await ToolchainEnvironment.RunAsync(
+            testHost,
+            [
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-File",
+                testEntry,
+                "-Configuration",
+                "Source" + options.configuration,
+                "-Dotnet",
+                options.dotnet,
+                "-Solution",
+                selection,
+                "-ResultsDirectory",
+                results,
+                "-ArtifactsPath",
+                artifactsPath
+            ],
+            repositoryRoot,
+            cancellationToken,
+            DotNetSdkEnvironment.Create(options.dotnet)
+        );
         return Path.GetRelativePath(repositoryRoot, results).Replace('\\', '/');
     }
 
@@ -298,17 +416,26 @@ internal static partial class NativeBindingsVerification
         CancellationToken cancellationToken
     ) {
         string innoRevision = (await ToolchainEnvironment.CaptureOutputAsync(
-            "git", ["-C", repositoryRoot, "rev-parse", "HEAD"], repositoryRoot, cancellationToken)).Trim();
+            "git",
+            ["-C", repositoryRoot, "rev-parse", "HEAD"],
+            repositoryRoot,
+            cancellationToken
+        )).Trim();
         Assembly bindingImplementation = typeof(NativeBindingGenerator).Assembly;
         string packageVersion = bindingImplementation.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(static metadata => metadata.Key == "Inno.BindingPackageVersion").Value
-            ?? throw new InvalidDataException("The binding implementation has no frozen package version.");
+                                ?? throw new InvalidDataException("The binding implementation has no frozen package version.");
         string implementationHash = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(bindingImplementation.Location)));
-        bool innoDirty = !string.IsNullOrWhiteSpace(await ToolchainEnvironment.CaptureOutputAsync(
-            "git", ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"], repositoryRoot, cancellationToken));
+        bool innoDirty = !string.IsNullOrWhiteSpace(
+            await ToolchainEnvironment.CaptureOutputAsync(
+                "git",
+                ["-C", repositoryRoot, "status", "--porcelain", "--untracked-files=all"],
+                repositoryRoot,
+                cancellationToken
+            )
+        );
         DateTimeOffset generatedAt = DateTimeOffset.UtcNow;
-        string reportDirectory = Path.Combine(
-            repositoryRoot, "artifacts", "bindings", "acceptance", target);
+        string reportDirectory = Path.Combine(repositoryRoot, "artifacts", "bindings", "acceptance", target);
         Directory.CreateDirectory(reportDirectory);
 
         var report = new
@@ -339,7 +466,8 @@ internal static partial class NativeBindingsVerification
         File.WriteAllText(
             jsonPath,
             JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }) + Environment.NewLine,
-            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+        );
 
         string markdown = $"""
             # InnoEngine generated-native-binding acceptance
@@ -360,11 +488,11 @@ internal static partial class NativeBindingsVerification
         File.WriteAllText(
             Path.Combine(reportDirectory, "report.md"),
             markdown + Environment.NewLine,
-            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+        );
         return jsonPath;
     }
 
     [GeneratedRegex(@"\[(DllImport|LibraryImport)\b|partial\s+.*\bextern\b|static\s+extern\b")]
     private static partial Regex NativeImportPattern();
-
 }

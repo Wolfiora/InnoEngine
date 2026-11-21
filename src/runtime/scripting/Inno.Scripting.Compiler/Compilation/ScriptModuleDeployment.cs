@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-
 using Inno.Extensibility.Modules;
 
 namespace Inno.Scripting.Compiler;
@@ -30,8 +29,9 @@ public sealed class ScriptModuleDeployment
         this.upstreamModuleNames = Array.AsReadOnly(upstreamModuleNames.ToArray());
         this.assemblyScopes = new ReadOnlyDictionary<string, AssemblyScope>(
             assemblyScopes is null
-                ? new Dictionary<string, AssemblyScope>(StringComparer.OrdinalIgnoreCase)
-                : new Dictionary<string, AssemblyScope>(assemblyScopes, StringComparer.OrdinalIgnoreCase));
+            ? new Dictionary<string, AssemblyScope>(StringComparer.OrdinalIgnoreCase)
+            : new Dictionary<string, AssemblyScope>(assemblyScopes, StringComparer.OrdinalIgnoreCase)
+        );
     }
 
     /// <summary>

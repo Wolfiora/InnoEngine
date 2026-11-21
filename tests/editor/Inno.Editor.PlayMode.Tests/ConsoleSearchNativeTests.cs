@@ -3,12 +3,13 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using BGCS.Runtime;
+using Xunit;
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
@@ -30,13 +31,17 @@ public sealed unsafe class ConsoleSearchNativeTests
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)
+        {
             logger.Write(LogLevel.Info, "Needle message");
+        }
         logger.Write(LogLevel.Warn, "Unrelated message");
         string longMessage = new('x', 300);
         logger.Write(LogLevel.Info, longMessage);
         host.logs.Flush();
         using var reporter = host.diagnostics.CreateReporter(new("search-source", "SOURCE-NAME"));
-        reporter.Publish(new("SEARCH_CODE", "A diagnostic", DiagnosticSeverity.Error, location: new DiagnosticLocation("Assets/漢字.shader", 42, 3)));
+        reporter.Publish(
+            new("SEARCH_CODE", "A diagnostic", DiagnosticSeverity.Error, location: new DiagnosticLocation("Assets/漢字.shader", 42, 3))
+        );
         host.DrawPanel(panel);
         host.DrawPanel(panel);
         Assert.Equal(5, host.console.Capture().occurrences.Count);
@@ -67,7 +72,9 @@ public sealed unsafe class ConsoleSearchNativeTests
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)
+        {
             logger.Write(LogLevel.Info, "Needle message");
+        }
         logger.Write(LogLevel.Warn, "Other entry");
         host.logs.Flush();
         host.DrawPanel(panel);
@@ -145,8 +152,11 @@ public sealed unsafe class ConsoleSearchNativeTests
         for (int index = 0; index < context->Windows.Size; index++)
         {
             ImGuiWindow* window = context->Windows.Data[index];
-            if (window->Active != 0 && Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true)
+            if (window->Active != 0
+                && Marshal.PtrToStringUTF8((nint)window->Name)?.Contains("##ConsoleEntryCard", StringComparison.Ordinal) == true
+            ) {
                 count++;
+            }
         }
         return count;
     }
@@ -161,8 +171,10 @@ public sealed unsafe class ConsoleSearchNativeTests
             ImGuiWindow* window = context->Windows.Data[index];
             string name = Marshal.PtrToStringUTF8((nint)window->Name) ?? string.Empty;
             if (window->Active != 0 && name.Contains(containing, StringComparison.Ordinal)
-                && (excluding is null || !name.Contains(excluding, StringComparison.Ordinal)))
+                && (excluding is null || !name.Contains(excluding, StringComparison.Ordinal))
+            ) {
                 return window;
+            }
         }
         throw new InvalidOperationException("The actual control window was not submitted: " + containing);
     }

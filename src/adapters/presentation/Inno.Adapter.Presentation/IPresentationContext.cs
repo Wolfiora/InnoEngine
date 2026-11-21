@@ -115,5 +115,4 @@ public interface IPresentationContext : IRenderFrameGraphContributor, IDisposabl
         PresentationTextureHandle texture,
         Vector2 size
     );
-
 }

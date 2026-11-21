@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Cli;
 using Xunit;
+using Inno.Build.Cli;
 
 namespace Inno.Build.Cli.Tests;
 
@@ -22,9 +22,17 @@ public sealed class ProjectCommandSourceTests
         {
             Console.SetError(errors);
             int result = await BuildApplication.Run(
-                ["scripts", "--engine-root", owner,
-                    "--project", project, "--output", output],
-                CancellationToken.None);
+                [
+                    "scripts",
+                    "--engine-root",
+                    owner,
+                    "--project",
+                    project,
+                    "--output",
+                    output
+                ],
+                CancellationToken.None
+            );
 
             Assert.Equal(1, result);
             Assert.Contains("Engine checkout is unavailable", errors.ToString());

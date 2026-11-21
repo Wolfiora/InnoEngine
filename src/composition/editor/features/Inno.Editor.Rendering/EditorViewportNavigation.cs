@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Mathematics;
 
 namespace Inno.Editor.Rendering;
@@ -13,7 +12,6 @@ public enum EditorViewportProjection
     /// Uses a parallel projection controlled by an orthographic half-height.
     /// </summary>
     Orthographic,
-
     /// <summary>
     /// Uses a perspective projection controlled by a vertical field of view.
     /// </summary>
@@ -29,12 +27,10 @@ public enum EditorViewportNavigationMode
     /// Pans and zooms over a provider-defined plane.
     /// </summary>
     Planar,
-
     /// <summary>
     /// Rotates around a focus pivot and dollies along the view direction.
     /// </summary>
     Orbit,
-
     /// <summary>
     /// Moves and looks freely from the current view position.
     /// </summary>
@@ -51,32 +47,26 @@ public enum EditorViewportNavigationCapabilities
     /// Disables host-owned navigation.
     /// </summary>
     None = 0,
-
     /// <summary>
     /// Allows translating the view parallel to its image plane.
     /// </summary>
     Pan = 1 << 0,
-
     /// <summary>
     /// Allows changing orthographic size or perspective focus distance.
     /// </summary>
     Zoom = 1 << 1,
-
     /// <summary>
     /// Allows the complete plane-oriented pan and zoom interaction model.
     /// </summary>
     Planar = Pan | Zoom,
-
     /// <summary>
     /// Allows pivot-oriented orbit and dolly.
     /// </summary>
     Orbit = 1 << 2,
-
     /// <summary>
     /// Allows free-look movement.
     /// </summary>
     Fly = 1 << 3,
-
     /// <summary>
     /// Allows framing a provider-supplied or host-derived selection bound.
     /// </summary>
@@ -144,9 +134,13 @@ public readonly record struct EditorViewportFocusBounds
         float radius
     ) {
         if (!IsFinite(center))
+        {
             throw new ArgumentException("Focus center components must be finite.", nameof(center));
+        }
         if (!float.IsFinite(radius) || radius < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(radius));
+        }
         this.center = center;
         this.radius = radius;
     }
@@ -187,21 +181,26 @@ public sealed class EditorViewportNavigationProfile
         EditorViewportNavigationMode defaultMode
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A valid navigation profile ID is required.", nameof(id));
+        }
         const EditorViewportNavigationCapabilities validCapabilities
             = EditorViewportNavigationCapabilities.Pan
-            | EditorViewportNavigationCapabilities.Zoom
-            | EditorViewportNavigationCapabilities.Orbit
-            | EditorViewportNavigationCapabilities.Fly
-            | EditorViewportNavigationCapabilities.FrameSelection;
+              | EditorViewportNavigationCapabilities.Zoom
+              | EditorViewportNavigationCapabilities.Orbit
+              | EditorViewportNavigationCapabilities.Fly
+              | EditorViewportNavigationCapabilities.FrameSelection;
         if ((capabilities & ~validCapabilities) != 0)
-            throw new ArgumentOutOfRangeException(nameof(capabilities));
-        if (capabilities != EditorViewportNavigationCapabilities.None
-            && !SupportsMode(capabilities, defaultMode))
         {
+            throw new ArgumentOutOfRangeException(nameof(capabilities));
+        }
+        if (capabilities != EditorViewportNavigationCapabilities.None
+            && !SupportsMode(capabilities, defaultMode)
+        ) {
             throw new ArgumentException(
                 "The default navigation mode must be enabled by the profile capabilities.",
-                nameof(defaultMode));
+                nameof(defaultMode)
+            );
         }
         this.id = id;
         this.capabilities = capabilities;
@@ -279,22 +278,22 @@ public sealed class EditorViewportNavigationProfile
     public static EditorViewportNavigationProfile disabled { get; } = new(
         new EditorViewportNavigationProfileId("inno.editor.navigation.disabled"),
         EditorViewportNavigationCapabilities.None,
-        EditorViewportNavigationMode.Planar);
+        EditorViewportNavigationMode.Planar
+    );
 
     private static bool SupportsMode(
         EditorViewportNavigationCapabilities capabilities,
         EditorViewportNavigationMode mode
-    )
-        => mode switch
-        {
-            EditorViewportNavigationMode.Planar =>
-                (capabilities & EditorViewportNavigationCapabilities.Planar) != 0,
-            EditorViewportNavigationMode.Orbit =>
-                capabilities.HasFlag(EditorViewportNavigationCapabilities.Orbit),
-            EditorViewportNavigationMode.Fly =>
-                capabilities.HasFlag(EditorViewportNavigationCapabilities.Fly),
-            _ => false
-        };
+    ) => mode switch
+    {
+        EditorViewportNavigationMode.Planar =>
+            (capabilities & EditorViewportNavigationCapabilities.Planar) != 0,
+        EditorViewportNavigationMode.Orbit =>
+            capabilities.HasFlag(EditorViewportNavigationCapabilities.Orbit),
+        EditorViewportNavigationMode.Fly =>
+            capabilities.HasFlag(EditorViewportNavigationCapabilities.Fly),
+        _ => false
+    };
 }
 
 /// <summary>
@@ -332,7 +331,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!Enum.IsDefined(value))
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_projection = value;
             isInitialized = true;
         }
@@ -347,7 +348,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!Enum.IsDefined(value))
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_mode = value;
             isInitialized = true;
         }
@@ -377,7 +380,9 @@ public sealed class EditorViewportNavigationState
         {
             ValidateFinite(value, nameof(value));
             if (value.LengthSquared() < 0.000001f)
+            {
                 throw new ArgumentException("Navigation rotation must have a usable magnitude.", nameof(value));
+            }
             m_rotation = value.normalized;
             isInitialized = true;
         }
@@ -406,7 +411,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!float.IsFinite(value) || value < C_MINIMUM_ORTHOGRAPHIC_SIZE)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_orthographicSize = value;
             isInitialized = true;
         }
@@ -421,7 +428,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!float.IsFinite(value) || value < C_MINIMUM_FIELD_OF_VIEW || value > C_MAXIMUM_FIELD_OF_VIEW)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_fieldOfView = value;
             isInitialized = true;
         }
@@ -436,7 +445,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!float.IsFinite(value) || value <= 0f || value >= m_farClip)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_nearClip = value;
             isInitialized = true;
         }
@@ -451,7 +462,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!float.IsFinite(value) || value <= m_nearClip)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_farClip = value;
             isInitialized = true;
         }
@@ -466,7 +479,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!float.IsFinite(value) || value <= 0f)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_focusDistance = value;
             isInitialized = true;
         }
@@ -481,7 +496,9 @@ public sealed class EditorViewportNavigationState
         set
         {
             if (!float.IsFinite(value) || value <= 0f)
+            {
                 throw new ArgumentOutOfRangeException(nameof(value));
+            }
             m_movementSpeed = value;
         }
     }
@@ -506,8 +523,8 @@ public sealed class EditorViewportNavigationState
         ValidateFinite(position, nameof(position));
         ValidateRotation(rotation, nameof(rotation));
         if (!float.IsFinite(orthographicSize)
-            || orthographicSize < C_MINIMUM_ORTHOGRAPHIC_SIZE)
-        {
+            || orthographicSize < C_MINIMUM_ORTHOGRAPHIC_SIZE
+        ) {
             throw new ArgumentOutOfRangeException(nameof(orthographicSize));
         }
         m_position = position;
@@ -546,14 +563,18 @@ public sealed class EditorViewportNavigationState
         ValidateRotation(rotation, nameof(rotation));
         if (!float.IsFinite(fieldOfView)
             || fieldOfView < C_MINIMUM_FIELD_OF_VIEW
-            || fieldOfView > C_MAXIMUM_FIELD_OF_VIEW)
-        {
+            || fieldOfView > C_MAXIMUM_FIELD_OF_VIEW
+        ) {
             throw new ArgumentOutOfRangeException(nameof(fieldOfView));
         }
         if (!float.IsFinite(nearClip) || nearClip <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(nearClip));
+        }
         if (!float.IsFinite(farClip) || farClip <= nearClip)
+        {
             throw new ArgumentOutOfRangeException(nameof(farClip));
+        }
         m_position = position;
         m_rotation = rotation.normalized;
         m_fieldOfView = fieldOfView;
@@ -568,7 +589,9 @@ public sealed class EditorViewportNavigationState
         string parameterName
     ) {
         if (!float.IsFinite(value.x) || !float.IsFinite(value.y) || !float.IsFinite(value.z))
+        {
             throw new ArgumentException("Navigation position components must be finite.", parameterName);
+        }
     }
 
     private static void ValidateFinite(
@@ -578,8 +601,8 @@ public sealed class EditorViewportNavigationState
         if (!float.IsFinite(value.x)
             || !float.IsFinite(value.y)
             || !float.IsFinite(value.z)
-            || !float.IsFinite(value.w))
-        {
+            || !float.IsFinite(value.w)
+        ) {
             throw new ArgumentException("Navigation rotation components must be finite.", parameterName);
         }
     }
@@ -590,6 +613,8 @@ public sealed class EditorViewportNavigationState
     ) {
         ValidateFinite(value, parameterName);
         if (value.LengthSquared() < 0.000001f)
+        {
             throw new ArgumentException("Navigation rotation must have a usable magnitude.", parameterName);
+        }
     }
 }

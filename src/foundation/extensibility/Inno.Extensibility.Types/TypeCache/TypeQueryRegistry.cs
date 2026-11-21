@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Extensibility.Catalogs;
 
 namespace Inno.Extensibility.Types;
@@ -78,10 +77,10 @@ internal sealed class TypeQueryRegistry
     /// </returns>
     public IReadOnlyList<TypeRef> GetSubTypesOf<T>(TypeIdentityRegistry typeIdentityRegistry)
     {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(T), out int keyId) &&
-               m_subclassCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-            ? set
-            : [];
+        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(T), out int keyId)
+               && m_subclassCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+               ? set
+               : [];
     }
 
     /// <summary>
@@ -98,10 +97,10 @@ internal sealed class TypeQueryRegistry
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesImplementing<TInterface>(TypeIdentityRegistry typeIdentityRegistry)
     {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TInterface), out int keyId) &&
-               m_interfaceCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-            ? set
-            : [];
+        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TInterface), out int keyId)
+               && m_interfaceCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+               ? set
+               : [];
     }
 
     /// <summary>
@@ -119,10 +118,10 @@ internal sealed class TypeQueryRegistry
     public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttr>(TypeIdentityRegistry typeIdentityRegistry)
         where TAttr : Attribute
     {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TAttr), out int keyId) &&
-               m_attributeCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-            ? set
-            : [];
+        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TAttr), out int keyId)
+               && m_attributeCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+               ? set
+               : [];
     }
 
     private static void AddToIndex(
@@ -148,9 +147,7 @@ internal sealed class TypeQueryRegistry
         var frozen = new Dictionary<int, IReadOnlyList<TypeRef>>(index.Count);
         foreach ((int key, HashSet<Type> value) in index)
         {
-            frozen[key] = Array.AsReadOnly(value
-                .Select(typeIdentityRegistry.GetTypeRef)
-                .ToArray());
+            frozen[key] = Array.AsReadOnly(value.Select(typeIdentityRegistry.GetTypeRef).ToArray());
         }
 
         return frozen;

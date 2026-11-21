@@ -31,16 +31,23 @@ public sealed class ScriptCachePublicationTests
         Dictionary<string, byte[]> expected = Directory.EnumerateFiles(previous, "*.dll")
             .ToDictionary(static path => Path.GetFileName(path)!, File.ReadAllBytes, StringComparer.Ordinal);
         string root = Path.GetDirectoryName(previous)!;
-        Assert.StartsWith(Path.GetFullPath(fixture.projectRoot) + Path.DirectorySeparatorChar,
-            Path.GetFullPath(previous), StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(
+            Path.GetFullPath(fixture.projectRoot) + Path.DirectorySeparatorChar,
+            Path.GetFullPath(previous),
+            StringComparison.OrdinalIgnoreCase
+        );
         Directory.Delete(previous, recursive: true);
         HashSet<string> existing = Directory.EnumerateFiles(root, "*.dll", SearchOption.AllDirectories)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        using var observer = new StagingReader(root, existing,
-            $"Reused cached {baseline.compiledAssemblyNames[^1]} assembly artifact.");
+        using var observer = new StagingReader(
+            root,
+            existing,
+            $"Reused cached {baseline.compiledAssemblyNames[^1]} assembly artifact."
+        );
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         Task<ScriptCompilationResult> compilation = fixture.compiler
-            .CompileAuthoringGenerationAsync(observer, cancellation.Token).AsTask();
+            .CompileAuthoringGenerationAsync(observer, cancellation.Token)
+            .AsTask();
         Exception? compilationFailure = null;
         bool captured = false;
         try
@@ -48,15 +55,22 @@ public sealed class ScriptCachePublicationTests
             await observer.captured.WaitAsync(TimeSpan.FromSeconds(20));
             captured = true;
             await Task.Delay(150);
-            Assert.False(compilation.IsCompleted,
-                compilation.Exception?.ToString() ?? "A staged assembly borrow must delay publication.");
+            Assert.False(
+                compilation.IsCompleted,
+                compilation.Exception?.ToString() ?? "A staged assembly borrow must delay publication."
+            );
         }
         finally
         {
             if (!captured)
+            {
                 cancellation.Cancel();
+            }
             observer.Dispose();
-            compilationFailure = await Record.ExceptionAsync(async () => { _ = await compilation; });
+            compilationFailure = await Record.ExceptionAsync(async () =>
+            {
+                _ = await compilation;
+            });
         }
         Assert.Null(compilationFailure);
         ScriptCompilationResult result = await compilation;
@@ -65,7 +79,9 @@ public sealed class ScriptCachePublicationTests
         Assert.Empty(result.compiledAssemblyNames);
         Assert.Equal(baseline.compiledAssemblyNames, result.reusedAssemblyNames);
         foreach ((string name, byte[] bytes) in expected)
+        {
             Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(result.outputDirectory!, name)));
+        }
     }
 
     /// <summary>
@@ -99,8 +115,11 @@ public sealed class ScriptCachePublicationTests
         ScriptCompilationResult baseline = fixture.Compile();
         Assert.True(baseline.success, string.Join(Environment.NewLine, baseline.diagnostics));
         string publication = Assert.IsType<string>(baseline.outputDirectory);
-        Assert.StartsWith(Path.GetFullPath(fixture.projectRoot) + Path.DirectorySeparatorChar,
-            Path.GetFullPath(publication), StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(
+            Path.GetFullPath(fixture.projectRoot) + Path.DirectorySeparatorChar,
+            Path.GetFullPath(publication),
+            StringComparison.OrdinalIgnoreCase
+        );
         Dictionary<string, byte[]> original = Directory.EnumerateFiles(publication, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(publication, path), File.ReadAllBytes, StringComparer.Ordinal);
         string assembly = Directory.EnumerateFiles(publication, "*.dll").First();
@@ -111,22 +130,32 @@ public sealed class ScriptCachePublicationTests
         {
             Exception? failure = Record.Exception(() => fixture.Compile());
             Assert.True(failure is IOException or UnauthorizedAccessException, failure?.ToString());
-            Assert.Equal(rejected.Keys.Order(StringComparer.Ordinal),
+            Assert.Equal(
+                rejected.Keys.Order(StringComparer.Ordinal),
                 Directory.EnumerateFiles(publication, "*", SearchOption.AllDirectories)
-                    .Select(path => Path.GetRelativePath(publication, path)).Order(StringComparer.Ordinal));
+                    .Select(path => Path.GetRelativePath(publication, path))
+                    .Order(StringComparer.Ordinal)
+            );
             foreach ((string path, byte[] bytes) in rejected)
+            {
                 Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(publication, path)));
+            }
         }
 
         ScriptCompilationResult repaired = fixture.Compile();
         Assert.True(repaired.success, string.Join(Environment.NewLine, repaired.diagnostics));
         Assert.Equal(publication, repaired.outputDirectory);
         Assert.Empty(repaired.compiledAssemblyNames);
-        Assert.Equal(original.Keys.Order(StringComparer.Ordinal),
+        Assert.Equal(
+            original.Keys.Order(StringComparer.Ordinal),
             Directory.EnumerateFiles(publication, "*", SearchOption.AllDirectories)
-                .Select(path => Path.GetRelativePath(publication, path)).Order(StringComparer.Ordinal));
+                .Select(path => Path.GetRelativePath(publication, path))
+                .Order(StringComparer.Ordinal)
+        );
         foreach ((string path, byte[] bytes) in original)
+        {
             Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(publication, path)));
+        }
     }
 
     private static void VerifyRejectedPublication(bool cancel)
@@ -144,27 +173,40 @@ public sealed class ScriptCachePublicationTests
         string publication = Assert.IsType<string>(candidate.outputDirectory);
         Assert.NotEqual(lastGood, publication);
         Assert.NotEmpty(candidate.compiledAssemblyNames);
-        Assert.StartsWith(Path.GetFullPath(fixture.projectRoot) + Path.DirectorySeparatorChar,
-            Path.GetFullPath(publication), StringComparison.OrdinalIgnoreCase);
+        Assert.StartsWith(
+            Path.GetFullPath(fixture.projectRoot) + Path.DirectorySeparatorChar,
+            Path.GetFullPath(publication),
+            StringComparison.OrdinalIgnoreCase
+        );
         string root = Path.GetDirectoryName(publication)!;
         Directory.Delete(publication, recursive: true);
         HashSet<string> existing = Directory.EnumerateFiles(root, "*.dll", SearchOption.AllDirectories)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        using var observer = new StagingReader(root, existing,
-            $"Reused cached {candidate.compiledAssemblyNames[^1]} assembly artifact.");
+        using var observer = new StagingReader(
+            root,
+            existing,
+            $"Reused cached {candidate.compiledAssemblyNames[^1]} assembly artifact."
+        );
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         Task<ScriptCompilationResult> compilation = fixture.compiler
-            .CompileAuthoringGenerationAsync(observer, cancellation.Token).AsTask();
+            .CompileAuthoringGenerationAsync(observer, cancellation.Token)
+            .AsTask();
         try
         {
             observer.captured.WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult();
             if (cancel)
+            {
                 cancellation.Cancel();
+            }
             Exception? failure = Record.Exception(() => compilation.WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult());
             if (cancel)
+            {
                 Assert.IsAssignableFrom<OperationCanceledException>(failure);
+            }
             else
+            {
                 Assert.True(failure is IOException or UnauthorizedAccessException, failure?.ToString());
+            }
         }
         finally
         {
@@ -175,13 +217,17 @@ public sealed class ScriptCachePublicationTests
 
         Assert.False(Directory.Exists(publication));
         foreach ((string path, byte[] bytes) in saved)
+        {
             Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(lastGood, path)));
+        }
         ScriptCompilationResult recovered = fixture.Compile();
         Assert.True(recovered.success, string.Join(Environment.NewLine, recovered.diagnostics));
         Assert.Equal(publication, recovered.outputDirectory);
         Assert.Empty(recovered.compiledAssemblyNames);
         foreach ((string path, byte[] bytes) in saved)
+        {
             Assert.Equal(bytes, File.ReadAllBytes(Path.Combine(lastGood, path)));
+        }
     }
 
     private sealed class StagingReader : IProgress<ScriptCompilationProgress>, IDisposable
@@ -210,11 +256,14 @@ public sealed class ScriptCachePublicationTests
             lock (m_sync)
             {
                 if (m_retired || m_reader is not null || value.stage != m_stage)
+                {
                     return;
+                }
                 try
                 {
                     string[] candidates = Directory.EnumerateFiles(m_root, "*.dll", SearchOption.AllDirectories)
-                        .Where(path => !m_existing.Contains(path)).ToArray();
+                        .Where(path => !m_existing.Contains(path))
+                        .ToArray();
                     Assert.NotEmpty(candidates);
                     m_reader = new FileStream(candidates[0], FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
                     m_captured.TrySetResult(true);
@@ -247,7 +296,9 @@ public sealed class ScriptCachePublicationTests
         public WindowsDirectorySharingFactAttribute()
         {
             if (!OperatingSystem.IsWindows())
+            {
                 Skip = "This fixture requires Windows directory rename sharing semantics.";
+            }
         }
     }
 }

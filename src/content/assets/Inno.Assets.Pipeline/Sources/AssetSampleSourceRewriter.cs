@@ -104,9 +104,13 @@ public sealed class AssetSampleTransformContext
         Guid newId
     ) {
         if (oldId == Guid.Empty || newId == Guid.Empty)
+        {
             throw new ArgumentException("Sample type identities must be non-empty.");
+        }
         if (m_identityMap.TryGetValue(oldId, out Guid existing) && existing != newId)
+        {
             throw new InvalidDataException($"Sample type identity '{oldId:D}' has conflicting clone mappings.");
+        }
         m_identityMap[oldId] = newId;
     }
 }

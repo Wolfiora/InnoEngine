@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Adapter.Platform.Sdl3;
 using Inno.Native.Sdl3;
 

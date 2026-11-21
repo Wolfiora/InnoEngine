@@ -1,12 +1,11 @@
 using System;
-using System.IO;
-using System.Text;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Inno.Text;
-
+using System.IO;
+using System.Text;
 using Inno.Assets;
 using Inno.Extensibility.Types;
+using Inno.Text;
 
 namespace Inno.UI;
 
@@ -25,6 +24,7 @@ public sealed class UiDocumentAsset : AssetObject
     /// Gets the frozen source, or null before runtime content is loaded.
     /// </summary>
     public UiDocumentSource? source => m_source;
+
     /// <summary>
     /// Gets font dependencies declared by this document.
     /// </summary>
@@ -67,6 +67,7 @@ public sealed class UiDocumentAsset : AssetObject
             writer.Write(source.text);
             writer.Write(fonts?.Count ?? 0);
             if (fonts is not null)
+            {
                 foreach (UiDocumentFontFace face in fonts)
                 {
                     writer.Write(face.assetId.ToByteArray());
@@ -74,6 +75,7 @@ public sealed class UiDocumentAsset : AssetObject
                     writer.Write((int)face.style);
                     writer.Write(face.weight);
                 }
+            }
         }
         return stream.ToArray();
     }
@@ -101,20 +103,34 @@ public sealed class UiDocumentAsset : AssetObject
         using var stream = new MemoryStream(currentPayload.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, new UTF8Encoding(false, true), leaveOpen: false);
         if (reader.ReadUInt32() != C_PAYLOAD_MAGIC)
+        {
             throw new InvalidDataException("The UI document runtime payload has an invalid header.");
+        }
         string implementation = reader.ReadString();
         string language = reader.ReadString();
         string sourceUri = reader.ReadString();
         string text = reader.ReadString();
         int count = reader.ReadInt32();
         if (count is < 0 or > 256)
+        {
             throw new InvalidDataException("The UI document declares an invalid number of font faces.");
+        }
         var fonts = new List<UiDocumentFontFace>(count);
         for (int index = 0; index < count; index++)
-            fonts.Add(new UiDocumentFontFace(new Guid(reader.ReadBytes(16)), reader.ReadString(),
-                (TextFontStyle)reader.ReadInt32(), reader.ReadInt32()));
+        {
+            fonts.Add(
+                new UiDocumentFontFace(
+                    new Guid(reader.ReadBytes(16)),
+                    reader.ReadString(),
+                    (TextFontStyle)reader.ReadInt32(),
+                    reader.ReadInt32()
+                )
+            );
+        }
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("The UI document runtime payload contains trailing data.");
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(implementation);
         m_implementationId = implementation;
         m_source = new UiDocumentSource(new UiDocumentLanguageId(language), text, sourceUri);

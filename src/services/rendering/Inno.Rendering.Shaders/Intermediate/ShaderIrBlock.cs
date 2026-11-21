@@ -24,10 +24,12 @@ public sealed class ShaderIrValue
     /// Gets the deterministic block-local value index, not a GPU register or resource slot.
     /// </summary>
     public int index { get; }
+
     /// <summary>
     /// Gets the complete language-independent value type.
     /// </summary>
     public ShaderSourceType type { get; }
+
     internal object owner { get; }
 }
 
@@ -159,40 +161,49 @@ public sealed class ShaderIrInstruction
     /// Gets the semantic operation independent of any source language.
     /// </summary>
     public ShaderIrOperation operation { get; }
+
     /// <summary>
     /// Gets immutable operands in operation or function-declaration order.
     /// </summary>
     public IReadOnlyList<ShaderIrValue> inputs { get; }
+
     /// <summary>
     /// Gets produced values; a call orders its return value first, then out/inout parameters.
     /// </summary>
     public IReadOnlyList<ShaderIrValue> outputs { get; }
+
     /// <summary>
     /// Gets the stable interface or region-parameter identity, only for Input or RegionInput.
     /// </summary>
     public string? inputName { get; }
+
     /// <summary>
     /// Gets exact scalar bits for a Constant instruction; the result type determines interpretation.
     /// </summary>
     public ulong constantBits { get; }
+
     /// <summary>
     /// Gets the zero-based component/member/element ordinal for an Extract instruction.
     /// </summary>
     public int memberIndex { get; }
+
     /// <summary>
     /// Gets a frozen, analyzed function implementation only for a SourceCall instruction.
     /// </summary>
     public ShaderSourceImplementationAnalysis? source { get; }
+
     /// <summary>
     /// Gets immutable nested regions: true/false for Branch, or one body for Loop.
     /// </summary>
     public IReadOnlyList<ShaderIrBlock> regions { get; }
+
     /// <summary>
     /// Gets whether removing or reordering this instruction may change observable behavior.
     /// </summary>
-    public bool hasSideEffects => operation is ShaderIrOperation.SourceCall or ShaderIrOperation.StorageLoad
-        or ShaderIrOperation.StorageStore or ShaderIrOperation.StorageAtomicAdd or ShaderIrOperation.Discard
-        or ShaderIrOperation.Branch or ShaderIrOperation.Loop;
+    public bool hasSideEffects
+        => operation is ShaderIrOperation.SourceCall or ShaderIrOperation.StorageLoad
+           or ShaderIrOperation.StorageStore or ShaderIrOperation.StorageAtomicAdd or ShaderIrOperation.Discard
+           or ShaderIrOperation.Branch or ShaderIrOperation.Loop;
 }
 
 /// <summary>
@@ -205,13 +216,16 @@ public sealed class ShaderIrBlock
         IReadOnlyDictionary<string, ShaderIrValue> outputs
     ) {
         this.instructions = Array.AsReadOnly(instructions.ToArray());
-        this.outputs = new ReadOnlyDictionary<string, ShaderIrValue>(new Dictionary<string, ShaderIrValue>(outputs, StringComparer.Ordinal));
+        this.outputs = new ReadOnlyDictionary<string, ShaderIrValue>(
+            new Dictionary<string, ShaderIrValue>(outputs, StringComparer.Ordinal)
+        );
     }
 
     /// <summary>
     /// Gets instructions in evaluation order, including source calls whose outputs are unused.
     /// </summary>
     public IReadOnlyList<ShaderIrInstruction> instructions { get; }
+
     /// <summary>
     /// Gets named values returned to the enclosing stage or region.
     /// </summary>

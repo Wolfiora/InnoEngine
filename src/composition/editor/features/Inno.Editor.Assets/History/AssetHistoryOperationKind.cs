@@ -1,4 +1,5 @@
 namespace Inno.Editor.Assets;
+
 internal enum AssetHistoryOperationKind : byte
 {
     Move = 1,

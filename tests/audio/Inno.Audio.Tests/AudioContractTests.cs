@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Audio;
 using Xunit;
+using Inno.Audio;
 
 namespace Inno.Audio.Tests;
 
@@ -37,12 +37,16 @@ public sealed class AudioContractTests
             music,
             new AudioProcessorConfiguration(
                 AudioProcessorId.lowPass,
-                [new AudioProcessorParameter(new AudioParameterId("frequency"), 12000f)]));
+                [new AudioProcessorParameter(new AudioParameterId("frequency"), 12000f)]
+            )
+        );
 
         AudioMixer mixer = builder.Build();
 
-        Assert.Equal([AudioBusId.master, music, ambience],
-            System.Linq.Enumerable.Select(mixer.buses, static bus => bus.id));
+        Assert.Equal(
+            [AudioBusId.master, music, ambience],
+            System.Linq.Enumerable.Select(mixer.buses, static bus => bus.id)
+        );
         Assert.Single(mixer.buses[1].processors);
     }
 
@@ -110,14 +114,16 @@ public sealed class AudioContractTests
             return CreateTestVoice();
         }
 
-        public AudioVoiceHandle Play(AudioClipAsset clip, AudioPlayOptions options)
-            => Play(clip);
+        public AudioVoiceHandle Play(
+            AudioClipAsset clip,
+            AudioPlayOptions options
+        ) => Play(clip);
 
         public AudioVoiceHandle PlayScheduled(
             AudioClipAsset clip,
             double scheduledDspTime,
-            AudioPlayOptions options)
-            => Play(clip);
+            AudioPlayOptions options
+        ) => Play(clip);
 
         public bool Stop(AudioVoiceHandle voice) => Owns(voice);
 
@@ -125,27 +131,44 @@ public sealed class AudioContractTests
 
         public bool Resume(AudioVoiceHandle voice) => Owns(voice);
 
-        public bool Seek(AudioVoiceHandle voice, TimeSpan position) => Owns(voice) && position >= TimeSpan.Zero;
+        public bool Seek(
+            AudioVoiceHandle voice,
+            TimeSpan position
+        ) => Owns(voice) && position >= TimeSpan.Zero;
 
-        public bool SetVoiceParameters(AudioVoiceHandle voice, AudioVoiceParameters parameters) => Owns(voice);
+        public bool SetVoiceParameters(
+            AudioVoiceHandle voice,
+            AudioVoiceParameters parameters
+        ) => Owns(voice);
 
-        public bool TryGetVoiceState(AudioVoiceHandle voice, out AudioPlaybackState playbackState)
-        {
+        public bool TryGetVoiceState(
+            AudioVoiceHandle voice,
+            out AudioPlaybackState playbackState
+        ) {
             playbackState = Owns(voice) ? AudioPlaybackState.Playing : AudioPlaybackState.Invalid;
             return playbackState != AudioPlaybackState.Invalid;
         }
 
-        public bool SetBusVolume(AudioBusId bus, float volume) => bus.isValid && volume >= 0f;
+        public bool SetBusVolume(
+            AudioBusId bus,
+            float volume
+        ) => bus.isValid && volume >= 0f;
 
-        public bool SetBusMuted(AudioBusId bus, bool muted) => bus.isValid;
+        public bool SetBusMuted(
+            AudioBusId bus,
+            bool muted
+        ) => bus.isValid;
 
-        public bool SetBusPaused(AudioBusId bus, bool paused) => bus.isValid;
+        public bool SetBusPaused(
+            AudioBusId bus,
+            bool paused
+        ) => bus.isValid;
 
         public ValueTask PreloadAsync(
             AudioClipAsset clip,
             AudioClipLoadMode loadMode = AudioClipLoadMode.Automatic,
-            CancellationToken cancellationToken = default)
-        {
+            CancellationToken cancellationToken = default
+        ) {
             ArgumentNullException.ThrowIfNull(clip);
             cancellationToken.ThrowIfCancellationRequested();
             return ValueTask.CompletedTask;

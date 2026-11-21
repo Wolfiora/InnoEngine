@@ -5,14 +5,19 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Inno.Core.IO;
 using Xunit;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains.Tests;
 
 public sealed class BackendPrebuiltArchiveTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoBackendPackages", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(
+        new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+        "InnoBackendPackages",
+        Guid.NewGuid().ToString("N")
+    );
+
     private string Inventory => Path.Combine(m_root, "inventory.json");
     private string Archive => Path.Combine(m_root, "platform.zip");
 
@@ -56,16 +61,27 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
         string output = Path.Combine(m_root, "consumer");
         await Assert.ThrowsAsync<InvalidDataException>(() => BackendPrebuiltArchive.ExtractAsync(Archive, digest, "other-target", output));
         using (ZipArchive zip = ZipFile.Open(Archive, ZipArchiveMode.Update))
+        {
             zip.CreateEntry("undeclared");
-        await Assert.ThrowsAsync<InvalidDataException>(() => BackendPrebuiltArchive.ExtractAsync(Archive, digest, "fixture-target", output));
-        await Assert.ThrowsAsync<InvalidDataException>(() => BackendPrebuiltArchive.ExtractAsync(Archive, Digest(Archive), "fixture-target", output));
+        }
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => BackendPrebuiltArchive.ExtractAsync(Archive, digest, "fixture-target", output)
+        );
+        await Assert.ThrowsAsync<InvalidDataException>(
+            () => BackendPrebuiltArchive.ExtractAsync(Archive, Digest(Archive), "fixture-target", output)
+        );
         Assert.False(Directory.Exists(output));
     }
 
     private void Select(string path)
     {
         string digest = Digest(Path.Combine(m_root, path));
-        var inventory = new { version = 1, target = "fixture-target", files = new[] { new { owner = "Fixture", configuration = "Debug", input = digest, path, sha256 = digest } } };
+        var inventory = new
+        {
+            version = 1,
+            target = "fixture-target",
+            files = new[] { new { owner = "Fixture", configuration = "Debug", input = digest, path, sha256 = digest } }
+        };
         File.WriteAllBytes(Inventory, JsonSerializer.SerializeToUtf8Bytes(inventory));
     }
 

@@ -1,9 +1,7 @@
 using System;
-
+using Xunit;
 using Inno.Core.Mathematics;
 using Inno.Editor.Rendering;
-
-using Xunit;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -15,12 +13,14 @@ public sealed class EditorViewportNavigationTests
         Assert.Throws<ArgumentException>(() => new EditorViewportNavigationProfile(
             new EditorViewportNavigationProfileId("tests.navigation.invalid-default"),
             EditorViewportNavigationCapabilities.Pan,
-            EditorViewportNavigationMode.Fly));
+            EditorViewportNavigationMode.Fly
+        ));
 
         _ = new EditorViewportNavigationProfile(
             new EditorViewportNavigationProfileId("tests.navigation.pan-only"),
             EditorViewportNavigationCapabilities.Pan,
-            EditorViewportNavigationMode.Planar);
+            EditorViewportNavigationMode.Planar
+        );
     }
 
     [Fact]
@@ -34,7 +34,8 @@ public sealed class EditorViewportNavigationTests
             Quaternion.FromEulerAnglesXYZDegrees(new Vector3(10f, 20f, 30f)),
             200f,
             0.1f,
-            1000f));
+            1000f
+        ));
 
         Assert.Equal(EditorViewportProjection.Orthographic, state.projection);
         Assert.Equal(new Vector3(2f, 3f, 4f), state.position);
@@ -47,9 +48,7 @@ public sealed class EditorViewportNavigationTests
     {
         var state = new EditorViewportNavigationState();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            state.projection = (EditorViewportProjection)100);
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
-            state.mode = (EditorViewportNavigationMode)100);
+        Assert.Throws<ArgumentOutOfRangeException>(() => state.projection = (EditorViewportProjection)100);
+        Assert.Throws<ArgumentOutOfRangeException>(() => state.mode = (EditorViewportNavigationMode)100);
     }
 }

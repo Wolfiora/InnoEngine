@@ -12,7 +12,8 @@ internal static class BrowserWasm32NativeProducts
     internal static NativeComponentBuildOptions Options(string component)
     {
         NativeComponentBuildOptions graphics = BrowserWasm32BgfxIntegration.nativeOptions;
-        return new(NativeLibraryKind.Static,
+        return new(
+            NativeLibraryKind.Static,
             component == "bgfx" ? graphics.cmakeArguments : [],
             [C_INPUT, ..(component == "bgfx" ? graphics.inputPaths : [])],
             bindingLibraryName: component switch
@@ -23,6 +24,7 @@ internal static class BrowserWasm32NativeProducts
                 "text" => "libinno-text",
                 "ui" => "libinno-ui",
                 _ => throw new ArgumentException("This component is outside the Browser product closure.", nameof(component))
-            });
+            }
+        );
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-
 using Inno.Assets;
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
@@ -112,7 +111,9 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     ) {
         ArgumentNullException.ThrowIfNull(font);
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(fontSize));
+        }
         ObjectDisposedException.ThrowIf(m_disposed, this);
         return m_backend.Rasterize(GetOrLoad(font, faceIndex).handle, glyphId, fontSize);
     }
@@ -123,7 +124,9 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
     protected override void OnStop()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         List<Exception> failures = [];
         foreach (LoadedFont font in m_fonts.Values)
@@ -155,7 +158,9 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
             failures.Add(exception);
         }
         if (failures.Count > 0)
+        {
             throw new AggregateException("Text runtime retirement failed.", failures);
+        }
     }
 
     private LoadedFont GetOrLoad(
@@ -163,14 +168,20 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
         int faceIndex
     ) {
         FontMetadata metadata = font.metadata
-            ?? throw new InvalidOperationException("The font has no imported runtime metadata.");
+                                ?? throw new InvalidOperationException("The font has no imported runtime metadata.");
         if (font.isMissing)
+        {
             throw new InvalidOperationException("The font asset is missing.");
+        }
         if ((uint)faceIndex >= (uint)metadata.faceCount)
+        {
             throw new ArgumentOutOfRangeException(nameof(faceIndex));
+        }
         var key = new FontKey(font.identity.persistentId, font.contentVersion, faceIndex);
         if (m_fonts.TryGetValue(key, out LoadedFont? loaded))
+        {
             return loaded;
+        }
 
         ArtifactLease artifact = m_artifacts.AcquireArtifact(font.identity.persistentId, "font-data");
         try
@@ -178,7 +189,9 @@ public sealed class TextRuntime : RuntimeSubsystem, ITextService
             byte[] bytes = artifact.ReadAllBytes();
             TextFontHandle handle = m_backend.LoadFont(bytes, faceIndex);
             if (!handle.isValid)
+            {
                 throw new InvalidOperationException("The text backend rejected the imported font face.");
+            }
             loaded = new LoadedFont(handle, artifact);
             m_fonts.Add(key, loaded);
             return loaded;

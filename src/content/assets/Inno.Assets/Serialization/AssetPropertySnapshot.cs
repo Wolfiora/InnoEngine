@@ -10,6 +10,7 @@ namespace Inno.Assets;
 public sealed class AssetPropertySnapshot
 {
     private readonly byte[] m_data;
+
     /// <summary>
     /// Freezes a complete owner-produced property value.
     /// </summary>
@@ -28,20 +29,25 @@ public sealed class AssetPropertySnapshot
         IEnumerable<AssetDependency> dependencies
     ) {
         if (stableTypeId == Guid.Empty)
+        {
             throw new ArgumentException("A property snapshot requires a stable type identity.", nameof(stableTypeId));
+        }
         ArgumentNullException.ThrowIfNull(dependencies);
         this.stableTypeId = stableTypeId;
         m_data = data.ToArray();
         this.dependencies = Array.AsReadOnly(dependencies.ToArray());
     }
+
     /// <summary>
     /// Gets the persistent settings type identity.
     /// </summary>
     public Guid stableTypeId { get; }
+
     /// <summary>
     /// Gets the frozen native property bytes.
     /// </summary>
     public ReadOnlyMemory<byte> data => m_data;
+
     /// <summary>
     /// Gets the frozen direct dependency declarations.
     /// </summary>

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Toolchains.Tests;
 
@@ -36,14 +36,28 @@ public sealed class NativeArtifactIdentityTests : IDisposable
         string project = Write("platforms/Fixture/Inno.Build.Fixture.csproj", "<Project />");
         string builder = Write("platforms/Fixture/NativeBuilder.cs", "builder");
         string packaging = Write("platforms/Fixture/Packaging.cs", "packaging");
-        var owner = new NativeComponentDescriptor("fixture",
-            Path.GetRelativePath(m_root, project), Path.GetRelativePath(m_root, project));
+        var owner = new NativeComponentDescriptor(
+            "fixture",
+            Path.GetRelativePath(m_root, project),
+            Path.GetRelativePath(m_root, project)
+        );
         var context = new NativeBuildContext(m_root, "release").WithComponentOptions(owner, new(NativeLibraryKind.Shared));
         NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
-            context, owner, "fixture", "fixture-target", [], [], [builder]);
+            context,
+            owner,
+            "fixture",
+            "fixture-target",
+            [],
+            [],
+            [builder]
+        );
         foreach (NativeBuildInput input in recipe.inputs)
+        {
             if (!File.Exists(input.physicalPath) && !Directory.Exists(input.physicalPath))
+            {
                 Write(Path.GetRelativePath(m_root, input.physicalPath), "common executor");
+            }
+        }
         string identity = NativeBuildFingerprint.Create(recipe.declarations, recipe.inputs);
         File.WriteAllText(packaging, "unrelated packaging changed");
         Assert.Equal(identity, NativeBuildFingerprint.Create(recipe.declarations, recipe.inputs));
@@ -56,12 +70,43 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     {
         string header = Write("include/api.h", "int sample(void);");
         string compiler = Write("tools/clang", "compiler");
-        string first = NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]);
-        Assert.Equal(first, NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [new NativeBuildInput("tools/clang", compiler), new NativeBuildInput("include/api.h", header), new NativeBuildInput("include/api.h", header)]));
-        Assert.NotEqual(first, NativeBuildFingerprint.Create(["sdk-b", "wasm32"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]));
-        Assert.NotEqual(first, NativeBuildFingerprint.Create(["wasm32", "sdk-a"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]));
+        string first = NativeBuildFingerprint.Create(
+            ["sdk-a", "wasm32"],
+            [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]
+        );
+        Assert.Equal(
+            first,
+            NativeBuildFingerprint.Create(
+                ["sdk-a", "wasm32"],
+                [
+                    new NativeBuildInput("tools/clang", compiler),
+                    new NativeBuildInput("include/api.h", header),
+                    new NativeBuildInput("include/api.h", header)
+                ]
+            )
+        );
+        Assert.NotEqual(
+            first,
+            NativeBuildFingerprint.Create(
+                ["sdk-b", "wasm32"],
+                [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]
+            )
+        );
+        Assert.NotEqual(
+            first,
+            NativeBuildFingerprint.Create(
+                ["wasm32", "sdk-a"],
+                [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]
+            )
+        );
         File.WriteAllText(header, "long sample(void);");
-        Assert.NotEqual(first, NativeBuildFingerprint.Create(["sdk-a", "wasm32"], [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]));
+        Assert.NotEqual(
+            first,
+            NativeBuildFingerprint.Create(
+                ["sdk-a", "wasm32"],
+                [new NativeBuildInput("include/api.h", header), new NativeBuildInput("tools/clang", compiler)]
+            )
+        );
         Assert.Throws<ArgumentException>(() => new NativeBuildInput("include/api.h", "relative.h"));
     }
 
@@ -71,15 +116,19 @@ public sealed class NativeArtifactIdentityTests : IDisposable
         string first = Write("checkout-a/include/api.h", "int one(void);");
         string relocated = Write("checkout-b/include/api.h", "int one(void);");
         string fingerprint = NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", first)]);
-        Assert.Equal(fingerprint,
-            NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", relocated)]));
+        Assert.Equal(
+            fingerprint,
+            NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", relocated)])
+        );
         DateTime timestamp = File.GetLastWriteTimeUtc(relocated);
         long length = new FileInfo(relocated).Length;
         File.WriteAllText(relocated, "int two(void);");
         File.SetLastWriteTimeUtc(relocated, timestamp);
         Assert.Equal(length, new FileInfo(relocated).Length);
-        Assert.NotEqual(fingerprint,
-            NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", relocated)]));
+        Assert.NotEqual(
+            fingerprint,
+            NativeBuildFingerprint.Create(["target"], [new NativeBuildInput("include/api.h", relocated)])
+        );
     }
 
     [Fact]
@@ -115,10 +164,14 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     {
         string bindings = Write("Generated/Bindings.cs", "generated");
         string descriptor = Path.Combine(m_root, "request.json");
-        new NativeBindingGenerationDescriptor {
-            fingerprint = "identity", bindingsPath = bindings, nativeDirectory = string.Empty,
+        new NativeBindingGenerationDescriptor
+        {
+            fingerprint = "identity",
+            bindingsPath = bindings,
+            nativeDirectory = string.Empty,
             usesRuntimeImports = false,
-            artifactDirectory = string.Empty, artifactOwnerDirectory = string.Empty
+            artifactDirectory = string.Empty,
+            artifactOwnerDirectory = string.Empty
         }.Write(descriptor);
         Assert.Equal(bindings, NativeBindingGenerationDescriptor.Load(descriptor).bindingsPath);
         File.Delete(bindings);
@@ -128,7 +181,9 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private string Write(

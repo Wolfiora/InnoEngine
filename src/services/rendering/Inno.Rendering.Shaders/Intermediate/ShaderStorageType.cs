@@ -16,7 +16,9 @@ public sealed class ShaderStorageType
         bool array
     ) {
         if (!Enum.IsDefined(access))
+        {
             throw new ArgumentOutOfRangeException(nameof(access));
+        }
         this.valueType = valueType;
         this.access = access;
         this.format = format;
@@ -28,22 +30,27 @@ public sealed class ShaderStorageType
     /// Gets the buffer element or image load/store value type; image operations use float4.
     /// </summary>
     public ShaderSourceType valueType { get; }
+
     /// <summary>
     /// Gets the permitted memory access, independent of Render Graph scheduling.
     /// </summary>
     public RenderStorageAccess access { get; }
+
     /// <summary>
     /// Gets the exact storage image format, or null for a structured buffer.
     /// </summary>
     public RenderTextureFormat? format { get; }
+
     /// <summary>
     /// Gets the image dimension; ignored for buffers.
     /// </summary>
     public RenderTextureDimension dimension { get; }
+
     /// <summary>
     /// Gets whether a two-dimensional storage image has array layers.
     /// </summary>
     public bool array { get; }
+
     /// <summary>
     /// Gets whether this descriptor denotes an image rather than a structured buffer.
     /// </summary>
@@ -100,10 +107,16 @@ public sealed class ShaderStorageType
         RenderTextureDimension dimension = RenderTextureDimension.Texture2D,
         bool array = false
     ) {
-        if (!Enum.IsDefined(format) || format is RenderTextureFormat.RGBA8Srgb or RenderTextureFormat.Depth24Stencil8 or RenderTextureFormat.Depth32Float)
+        if (!Enum.IsDefined(format)
+            || format is RenderTextureFormat.RGBA8Srgb or RenderTextureFormat.Depth24Stencil8 or RenderTextureFormat.Depth32Float
+        ) {
             throw new ArgumentException("A storage image requires a linear color format.", nameof(format));
-        if (dimension is not (RenderTextureDimension.Texture2D or RenderTextureDimension.Texture3D) || (array && dimension != RenderTextureDimension.Texture2D))
+        }
+        if (dimension is not (RenderTextureDimension.Texture2D or RenderTextureDimension.Texture3D)
+            || (array && dimension != RenderTextureDimension.Texture2D)
+        ) {
             throw new ArgumentException("Storage images support 2D, 2D array or 3D shapes.", nameof(dimension));
+        }
         return new(ShaderSourceType.Atomic("float4"), access, format, dimension, array);
     }
 
@@ -118,15 +131,21 @@ public sealed class ShaderStorageType
     /// </returns>
     public bool IsEquivalentTo(ShaderStorageType? other)
         => other is not null && access == other.access && format == other.format && dimension == other.dimension
-            && array == other.array && valueType.IsEquivalentTo(other.valueType);
+           && array == other.array && valueType.IsEquivalentTo(other.valueType);
 
     private static void ValidateElement(ShaderSourceType type)
     {
         if (type.id == "void" || type.storage is not null || type.id.StartsWith("sampled-texture", StringComparison.Ordinal))
+        {
             throw new ArgumentException("Storage elements cannot contain void or resource handles.");
+        }
         if (type.elementType is not null)
+        {
             ValidateElement(type.elementType);
+        }
         foreach (ShaderSourceField field in type.fields)
+        {
             ValidateElement(field.type);
+        }
     }
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 using Inno.Scene;
 
@@ -22,18 +21,14 @@ internal static class SceneStateDiagnosticPublisher
             {
                 foreach (MissingGameComponent missing in gameObject.GetComponents().OfType<MissingGameComponent>())
                 {
-                    diagnostics.Add(CreateMissingDiagnostic(
-                        scene,
-                        missing.identity.persistentId,
-                        missing.missingTypeName));
+                    diagnostics.Add(
+                        CreateMissingDiagnostic(scene, missing.identity.persistentId, missing.missingTypeName)
+                    );
                 }
             }
             foreach (MissingGameSystem missing in scene.GetSystems().OfType<MissingGameSystem>())
             {
-                diagnostics.Add(CreateMissingDiagnostic(
-                    scene,
-                    missing.identity.persistentId,
-                    missing.missingTypeName));
+                diagnostics.Add(CreateMissingDiagnostic(scene, missing.identity.persistentId, missing.missingTypeName));
             }
         }
         Diagnostics.Set(C_MISSING_ELEMENTS, diagnostics);
@@ -46,11 +41,10 @@ internal static class SceneStateDiagnosticPublisher
             C_RELOAD,
             diagnostics.Select(static diagnostic => diagnostic.severity switch
             {
-                DiagnosticSeverity.Warning => Diagnostic.Warning(
-                    diagnostic.code,
-                    diagnostic.message),
+                DiagnosticSeverity.Warning => Diagnostic.Warning(diagnostic.code, diagnostic.message),
                 _ => Diagnostic.Error(diagnostic.code, diagnostic.message)
-            }));
+            })
+        );
     }
 
     internal static void ClearAll()
@@ -63,9 +57,9 @@ internal static class SceneStateDiagnosticPublisher
         GameScene scene,
         Guid elementId,
         string missingTypeName
-    )
-        => Diagnostic.Warning(
-            "INNOHR0002",
-            $"'{missingTypeName}' is unavailable in scene '{scene.name}' " +
-            $"({scene.identity.persistentId:D}), element {elementId:D}. Its identity and serialized state are preserved.");
+    ) => Diagnostic.Warning(
+        "INNOHR0002",
+        $"'{missingTypeName}' is unavailable in scene '{scene.name}' "
+        + $"({scene.identity.persistentId:D}), element {elementId:D}. Its identity and serialized state are preserved."
+    );
 }

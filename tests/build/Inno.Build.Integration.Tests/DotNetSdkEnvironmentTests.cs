@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -32,19 +32,29 @@ public sealed class DotNetSdkEnvironmentTests
         try
         {
             string project = Path.Combine(root, "Sdk.csproj");
-            await File.WriteAllTextAsync(project,
-                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>");
-            string output = await ToolchainEnvironment.CaptureOutputAsync(host,
+            await File.WriteAllTextAsync(
+                project,
+                "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>"
+            );
+            string output = await ToolchainEnvironment.CaptureOutputAsync(
+                host,
                 ["msbuild", project, "-nologo", "-nodeReuse:false", "-getProperty:TargetFramework"],
-                root, CancellationToken.None, selected);
+                root,
+                CancellationToken.None,
+                selected
+            );
             Assert.Equal("net10.0", output.Trim());
             string resolvedHost = ToolchainEnvironment.ResolveExecutable(host);
             string relativeHost = Path.GetRelativePath(Environment.CurrentDirectory, resolvedHost);
             DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(relativeHost, project);
             Assert.Equal(resolvedHost, sdk.hostPath);
-            string sdkVersion = await ToolchainEnvironment.CaptureOutputAsync(sdk.hostPath,
-                [sdk.cliPath, "--version"], root, CancellationToken.None,
-                DotNetSdkEnvironment.Create(sdk.hostPath));
+            string sdkVersion = await ToolchainEnvironment.CaptureOutputAsync(
+                sdk.hostPath,
+                [sdk.cliPath, "--version"],
+                root,
+                CancellationToken.None,
+                DotNetSdkEnvironment.Create(sdk.hostPath)
+            );
             Assert.Equal(sdk.sdkIdentity, sdkVersion.Trim());
             Assert.Equal(parent, Environment.GetEnvironmentVariable("MSBuildSDKsPath"));
         }

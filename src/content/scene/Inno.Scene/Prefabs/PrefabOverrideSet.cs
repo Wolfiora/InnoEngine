@@ -8,6 +8,7 @@ internal sealed class PrefabOverrideSet
 {
     private readonly Dictionary<(Guid sourceComponentId, string propertyName), PrefabPropertyOverride>
         m_properties = [];
+
     private readonly Dictionary<Guid, PrefabStructureOverride> m_structures = [];
     private readonly HashSet<Guid> m_removedObjects = [];
     private readonly HashSet<Guid> m_removedComponents = [];
@@ -20,24 +21,25 @@ internal sealed class PrefabOverrideSet
     internal IReadOnlyCollection<Guid> removedComponents => m_removedComponents;
     internal IReadOnlyCollection<Guid> addedObjects => m_addedObjects;
     internal IReadOnlyCollection<Guid> addedComponents => m_addedComponents;
-    internal int count =>
-        m_properties.Count + m_structures.Count +
-        m_removedObjects.Count + m_removedComponents.Count +
-        m_addedObjects.Count + m_addedComponents.Count;
-    internal int orphanedCount =>
-        m_properties.Values.Count(static item => item.isOrphaned) +
-        m_structures.Values.Count(static item => item.isOrphaned);
+
+    internal int count
+        => m_properties.Count + m_structures.Count
+           + m_removedObjects.Count + m_removedComponents.Count
+           + m_addedObjects.Count + m_addedComponents.Count;
+
+    internal int orphanedCount
+        => m_properties.Values.Count(static item => item.isOrphaned)
+           + m_structures.Values.Count(static item => item.isOrphaned);
 
     internal bool IsPropertyOverridden(
         Guid sourceComponentId,
         string propertyName
-    )
-        => m_properties.ContainsKey((sourceComponentId, propertyName));
+    ) => m_properties.ContainsKey((sourceComponentId, propertyName));
 
     internal PrefabObjectOverrideKind GetStructureOverride(Guid sourceObjectId)
         => m_structures.TryGetValue(sourceObjectId, out PrefabStructureOverride? value)
-            ? value.kind
-            : PrefabObjectOverrideKind.None;
+           ? value.kind
+           : PrefabObjectOverrideKind.None;
 
     internal void SetProperty(PrefabPropertyOverride value)
     {
@@ -59,10 +61,14 @@ internal sealed class PrefabOverrideSet
     }
 
     internal void MarkObjectRemoved(Guid sourceObjectId) => m_removedObjects.Add(sourceObjectId);
+
     internal void MarkComponentRemoved(Guid sourceComponentId) => m_removedComponents.Add(sourceComponentId);
+
     internal void MarkObjectAdded(Guid instanceObjectId) => m_addedObjects.Add(instanceObjectId);
+
     internal void MarkComponentAdded(Guid instanceComponentId) => m_addedComponents.Add(instanceComponentId);
 
     internal bool IsObjectRemoved(Guid sourceObjectId) => m_removedObjects.Contains(sourceObjectId);
+
     internal bool IsComponentRemoved(Guid sourceComponentId) => m_removedComponents.Contains(sourceComponentId);
 }

@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
 
@@ -32,7 +31,9 @@ public readonly struct AssetDependency : IEquatable<AssetDependency>
         string lastKnownPath
     ) {
         if (persistentId == Guid.Empty)
+        {
             throw new ArgumentException("An asset dependency requires a persistent identity.", nameof(persistentId));
+        }
         this.persistentId = persistentId;
         this.type = type;
         this.lastKnownPath = lastKnownPath ?? string.Empty;

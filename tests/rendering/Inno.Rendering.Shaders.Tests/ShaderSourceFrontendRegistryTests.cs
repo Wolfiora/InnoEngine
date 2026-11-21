@@ -1,10 +1,10 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
 
 namespace Inno.Rendering.Shaders.Tests;
 
@@ -38,15 +38,24 @@ public sealed class ShaderSourceFrontendRegistryTests
         using var registry = new ShaderSourceFrontendRegistry(fixture.types);
         Assert.Contains("tests.registry.language", registry.languageIds);
         RegistryFrontendProbe.conflict = true;
-        try { Assert.ThrowsAny<ArgumentException>(fixture.modules.Rebuild); }
-        finally { RegistryFrontendProbe.conflict = false; }
+        try
+        {
+            Assert.ThrowsAny<ArgumentException>(fixture.modules.Rebuild);
+        }
+        finally
+        {
+            RegistryFrontendProbe.conflict = false;
+        }
         Assert.Contains("tests.registry.language", registry.languageIds);
         Assert.Equal(1, RegistryFrontendProbe.created - RegistryFrontendProbe.disposed);
     }
 
     private sealed class NoIncludes : IShaderSourceResolver
     {
-        public ShaderSourceFile ReadInclude(string includingFile, string include) => throw new FileNotFoundException(include);
+        public ShaderSourceFile ReadInclude(
+            string includingFile,
+            string include
+        ) => throw new FileNotFoundException(include);
     }
 
     private sealed class Fixture : IDisposable
@@ -54,14 +63,18 @@ public sealed class ShaderSourceFrontendRegistryTests
         private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoShaderRegistry", Guid.NewGuid().ToString("N"));
         internal ModuleHost modules { get; }
         internal TypeCatalog types { get; }
+
         internal Fixture()
         {
             RegistryFrontendProbe.created = 0;
             RegistryFrontendProbe.disposed = 0;
             RegistryFrontendProbe.conflict = false;
-            modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderSourceFrontendRegistryTests).Assembly)});
+            modules = new ModuleHost(
+                new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderSourceFrontendRegistryTests).Assembly)}
+            );
             types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
         }
+
         public void Dispose()
         {
             types.Dispose();
@@ -77,13 +90,17 @@ internal sealed class RegistryFrontendProbe : IShaderSourceFrontend, IDisposable
     internal static int disposed;
     internal static bool conflict;
     private readonly string m_languageId;
+
     public RegistryFrontendProbe()
     {
         created++;
         m_languageId = conflict ? "inno.shader-language.bgfx-sc" : "tests.registry.language";
     }
+
     public string languageId => m_languageId;
+
     public ShaderSourceAnalysis Analyze(ShaderSourceRequest request)
         => new(new(request.entryPoint, ShaderSourceType.Atomic("float"), [], new(request.source.assetPath, 1, 1)), [], []);
+
     public void Dispose() => disposed++;
 }

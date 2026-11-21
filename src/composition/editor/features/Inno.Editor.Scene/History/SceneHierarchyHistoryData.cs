@@ -34,7 +34,9 @@ internal sealed record SceneHierarchyHistoryData(
         SceneObjectPlacement[] before = ReadPlacements(reader);
         SceneObjectPlacement[] after = ReadPlacements(reader);
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Scene hierarchy history payload contains trailing data.");
+        }
         return new SceneHierarchyHistoryData(before, after, selectedId);
     }
 
@@ -50,7 +52,9 @@ internal sealed record SceneHierarchyHistoryData(
             writer.Write(placement.objectId.ToByteArray());
             writer.Write(placement.parentId.HasValue);
             if (placement.parentId.HasValue)
+            {
                 writer.Write(placement.parentId.Value.ToByteArray());
+            }
             writer.Write(placement.siblingIndex);
         }
     }
@@ -59,7 +63,9 @@ internal sealed record SceneHierarchyHistoryData(
     {
         int count = reader.ReadInt32();
         if (count < 0)
+        {
             throw new InvalidDataException("Scene hierarchy placement count cannot be negative.");
+        }
         var placements = new SceneObjectPlacement[count];
         for (int i = 0; i < placements.Length; i++)
         {

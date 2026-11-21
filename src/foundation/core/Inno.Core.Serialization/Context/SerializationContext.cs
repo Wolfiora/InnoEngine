@@ -35,16 +35,21 @@ public sealed class SerializationContext
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="value"/> is null.
     /// </exception>
-    public SerializationContext With<TContext>(TContext value) where TContext : class
+    public SerializationContext With<TContext>(TContext value)
+        where TContext : class
     {
         ArgumentNullException.ThrowIfNull(value);
         Type key = typeof(TContext);
         for (int index = 0; index < m_values.Length; index++)
         {
             if (m_values[index].Key != key)
+            {
                 continue;
+            }
             if (ReferenceEquals(m_values[index].Value, value))
+            {
                 return new SerializationContext(m_values);
+            }
             var updated = (KeyValuePair<Type, object>[])m_values.Clone();
             updated[index] = new(key, value);
             return new SerializationContext(updated);
@@ -67,7 +72,8 @@ public sealed class SerializationContext
     /// <returns>
     /// <see langword="true"/> when a value is registered; otherwise, <see langword="false"/>.
     /// </returns>
-    public bool TryGet<TContext>(out TContext? value) where TContext : class
+    public bool TryGet<TContext>(out TContext? value)
+        where TContext : class
     {
         foreach (KeyValuePair<Type, object> pair in m_values)
         {
@@ -94,9 +100,11 @@ public sealed class SerializationContext
     /// <exception cref="InvalidOperationException">
     /// Thrown when the requested context was not registered.
     /// </exception>
-    public TContext GetRequired<TContext>() where TContext : class
-        => TryGet<TContext>(out TContext? value) && value is not null
-            ? value
-            : throw new InvalidOperationException(
-                $"Serialization context '{typeof(TContext).FullName}' is not registered.");
+    public TContext GetRequired<TContext>()
+        where TContext : class
+            => TryGet<TContext>(out TContext? value) && value is not null
+               ? value
+               : throw new InvalidOperationException(
+                   $"Serialization context '{typeof(TContext).FullName}' is not registered."
+               );
 }

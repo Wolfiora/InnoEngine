@@ -1,15 +1,13 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-
 using ExternalNamespace;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
-
-using Xunit;
 
 namespace Inno.Extensibility.Types.Tests;
 
@@ -19,13 +17,17 @@ public sealed class TypeCacheTests : IDisposable
     private readonly string m_cacheDirectory = Path.Combine(
         Path.GetTempPath(),
         "InnoTypeCacheTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
 
     public TypeCacheTests()
     {
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(TypeCacheTests).Assembly)});
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(TypeCacheTests).Assembly)}
+        );
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 
@@ -34,7 +36,9 @@ public sealed class TypeCacheTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         if (Directory.Exists(m_cacheDirectory))
+        {
             Directory.Delete(m_cacheDirectory, recursive: true);
+        }
     }
 
     [Fact]
@@ -61,7 +65,10 @@ public sealed class TypeCacheTests : IDisposable
             Assert.Equal(new[] { 4, 3 }, registry.released);
             Assert.Equal(GenerationState.Faulted, m_modules.generations.state);
         }
-        finally { registry.failCleanup = false; }
+        finally
+        {
+            registry.failCleanup = false;
+        }
     }
 
     private sealed class CandidateOwnershipRegistry(TypeCatalog types) : TypeRegistry<object[]>(types)
@@ -76,19 +83,26 @@ public sealed class TypeCacheTests : IDisposable
             var first = OwnCandidateExtension(new Resource(this, ++m_nextId));
             var second = OwnCandidateExtension(new Resource(this, ++m_nextId));
             if (failBuild)
+            {
                 throw new InvalidOperationException("Expected candidate validation failure.");
+            }
             return [first, second, first];
         }
 
         protected override void DisposeSnapshot(object[] snapshot) => DisposeExtensions(snapshot);
 
-        private sealed class Resource(CandidateOwnershipRegistry owner, int id) : IDisposable
+        private sealed class Resource(
+            CandidateOwnershipRegistry owner,
+            int id
+        ) : IDisposable
         {
             public void Dispose()
             {
                 owner.released.Add(id);
                 if (owner.failCleanup)
+                {
                     throw new InvalidOperationException("Expected extension cleanup failure.");
+                }
             }
         }
     }
@@ -97,21 +111,20 @@ public sealed class TypeCacheTests : IDisposable
     public void QueriesReturnOnlyConcreteMatchingTypes()
     {
         Assert.Contains(m_types.GetTypeRef(typeof(TestDerived)), m_types.GetSubTypesOf<TestBase>());
-        Assert.DoesNotContain(
-            m_types.GetTypeRef(typeof(TestAbstractDerived)),
-            m_types.GetSubTypesOf<TestBase>());
-        Assert.Contains(
-            m_types.GetTypeRef(typeof(TestContractImpl)),
-            m_types.GetTypesImplementing<ITestContract>());
+        Assert.DoesNotContain(m_types.GetTypeRef(typeof(TestAbstractDerived)), m_types.GetSubTypesOf<TestBase>());
+        Assert.Contains(m_types.GetTypeRef(typeof(TestContractImpl)), m_types.GetTypesImplementing<ITestContract>());
         Assert.DoesNotContain(
             m_types.GetTypeRef(typeof(TestAbstractContractImpl)),
-            m_types.GetTypesImplementing<ITestContract>());
+            m_types.GetTypesImplementing<ITestContract>()
+        );
         Assert.Contains(
             m_types.GetTypeRef(typeof(AttributedType)),
-            m_types.GetTypesWithAttribute<TestMarkerAttribute>());
+            m_types.GetTypesWithAttribute<TestMarkerAttribute>()
+        );
         Assert.DoesNotContain(
             m_types.GetTypeRef(typeof(AbstractAttributedType)),
-            m_types.GetTypesWithAttribute<TestMarkerAttribute>());
+            m_types.GetTypesWithAttribute<TestMarkerAttribute>()
+        );
     }
 
     [Fact]
@@ -134,10 +147,12 @@ public sealed class TypeCacheTests : IDisposable
     {
         Assert.Equal(
             Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            m_types.GetTypeRef(typeof(StableAnnotatedTypeA)).stableId);
+            m_types.GetTypeRef(typeof(StableAnnotatedTypeA)).stableId
+        );
         Assert.Equal(
             Guid.Parse("44444444-4444-4444-4444-444444444444"),
-            m_types.GetTypeRef(typeof(GeneratedMappedType)).stableId);
+            m_types.GetTypeRef(typeof(GeneratedMappedType)).stableId
+        );
 
         Guid first = m_types.GetTypeRef(typeof(DeterministicStableType)).stableId;
         m_types.Rebuild();
@@ -150,7 +165,8 @@ public sealed class TypeCacheTests : IDisposable
         Assert.True(m_types.GetTypeRef(typeof(OutsideNamespaceType)).runtimeId > 0);
         Assert.Equal(
             Guid.Parse("33333333-3333-3333-3333-333333333333"),
-            m_types.GetTypeRef(typeof(OutsideStableAnnotatedType)).stableId);
+            m_types.GetTypeRef(typeof(OutsideStableAnnotatedType)).stableId
+        );
     }
 
     [Fact]
@@ -159,7 +175,8 @@ public sealed class TypeCacheTests : IDisposable
         Assembly assembly = Assembly.Load("Inno.Extensibility.Types.TestAssemblyA");
         Type marked = assembly.GetType(
             "Inno.Extensibility.Types.TestAssets.A.AssemblyAMarkedType",
-            throwOnError: true)!;
+            throwOnError: true
+        )!;
 
         m_types.Rebuild();
 
@@ -246,8 +263,7 @@ public sealed class TypeCacheTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => m_types.GetSubTypesOf<TestBase>());
     }
 
-    private sealed class TransactionalTestRegistry(TypeCatalog types)
-        : TypeRegistry<TransactionalTestRegistry.Snapshot>(types)
+    private sealed class TransactionalTestRegistry(TypeCatalog types) : TypeRegistry<TransactionalTestRegistry.Snapshot>(types)
     {
         private int m_nextSnapshotId;
 
@@ -261,17 +277,23 @@ public sealed class TypeCacheTests : IDisposable
 
         protected override Snapshot Build(TypeCacheSnapshot types) => new(++m_nextSnapshotId);
 
-        protected override void OnActivating(Snapshot? previous, Snapshot candidate)
-        {
+        protected override void OnActivating(
+            Snapshot? previous,
+            Snapshot candidate
+        ) {
             snapshotId = candidate.id;
             disposeOnActivation?.Dispose();
             disposeOnActivation = null;
             if (failActivation)
+            {
                 throw new InvalidOperationException("Injected registry activation failure.");
+            }
         }
 
-        protected override void OnActivationRolledBack(Snapshot? previous, Snapshot candidate)
-        {
+        protected override void OnActivationRolledBack(
+            Snapshot? previous,
+            Snapshot candidate
+        ) {
             snapshotId = previous?.id ?? 0;
             rollbackCount++;
         }
@@ -280,22 +302,30 @@ public sealed class TypeCacheTests : IDisposable
         {
             disposedSnapshotIds.Add(snapshot.id);
             if (failSnapshotCleanup)
+            {
                 throw new InvalidOperationException("Injected snapshot cleanup failure.");
+            }
         }
 
-        protected override void OnCleanupFailed(string phase, Exception exception)
-            => cleanupFailureCount++;
+        protected override void OnCleanupFailed(
+            string phase,
+            Exception exception
+        ) => cleanupFailureCount++;
 
         internal sealed record Snapshot(int id);
     }
 }
 
 public class TestBase;
+
 public sealed class TestDerived : TestBase;
+
 public abstract class TestAbstractDerived : TestBase;
 
 public interface ITestContract;
+
 public sealed class TestContractImpl : ITestContract;
+
 public abstract class TestAbstractContractImpl : ITestContract;
 
 [AttributeUsage(AttributeTargets.Class)]
@@ -314,4 +344,5 @@ public sealed class StableAnnotatedTypeA;
 public struct StableAnnotatedTypeB;
 
 public sealed class DeterministicStableType;
+
 public sealed class GeneratedMappedType;

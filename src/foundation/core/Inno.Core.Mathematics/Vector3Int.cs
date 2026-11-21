@@ -14,10 +14,12 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// The horizontal or first component.
     /// </summary>
     [DataMember] public int x;
+
     /// <summary>
     /// The vertical or second component.
     /// </summary>
     [DataMember] public int y;
+
     /// <summary>
     /// The depth or third component.
     /// </summary>
@@ -49,30 +51,37 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// A value whose components are all zero.
     /// </summary>
     public static readonly Vector3Int ZERO = new(0, 0, 0);
+
     /// <summary>
     /// A value whose components are all one.
     /// </summary>
     public static readonly Vector3Int ONE  = new(1, 1, 1);
+
     /// <summary>
     /// The up value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3Int UP = new(0, 1, 0);
+
     /// <summary>
     /// The down value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3Int DOWN = new(0, -1, 0);
+
     /// <summary>
     /// The left value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3Int LEFT = new(-1, 0, 0);
+
     /// <summary>
     /// The right value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3Int RIGHT = new(1, 0, 0);
+
     /// <summary>
     /// The forward value used as part of this type's public representation.
     /// </summary>
     public static readonly Vector3Int FORWARD = new(0, 0, 1);
+
     /// <summary>
     /// The back value used as part of this type's public representation.
     /// </summary>

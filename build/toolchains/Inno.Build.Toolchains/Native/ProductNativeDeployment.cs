@@ -104,24 +104,36 @@ public static class ProductNativeDeployment
         NativeBuildProduct[] closure = products.ToArray();
         if (closure.Length == 0 || closure.Any(static product => product is null)
             || closure.Select(static product => product.targetId).Distinct().Count() != 1
-            || closure.Select(static product => product.component).Distinct().Count() != closure.Length)
-            throw new ArgumentException("Native deployment requires a nonempty closure of unique components for one target.", nameof(products));
+            || closure.Select(static product => product.component).Distinct().Count() != closure.Length
+        ) {
+            throw new ArgumentException(
+                "Native deployment requires a nonempty closure of unique components for one target.",
+                nameof(products)
+            );
+        }
         string destination = Path.Combine(Path.GetFullPath(applicationDirectory), "native");
         if (ownedCandidate)
         {
             if (!Directory.Exists(applicationDirectory))
+            {
                 throw new DirectoryNotFoundException("Native staging requires an existing caller-owned candidate.");
+            }
             PathBoundary.RequireUnlinkedPath(Path.GetFullPath(applicationDirectory), destination);
             if (Directory.Exists(destination) || File.Exists(destination))
+            {
                 throw new IOException("Native staging requires a candidate without a native subtree.");
+            }
         }
-        using FileLease? ownership = ownedCandidate ? null : await FileLease.AcquireAsync(destination + ".lock",
-            Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
+        using FileLease? ownership = ownedCandidate ? null : await FileLease.AcquireAsync(
+            destination + ".lock",
+            Timeout.InfiniteTimeSpan,
+            cancellationToken
+        ).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         ValidateProducts(closure, cancellationToken);
         IReadOnlyDictionary<string, string> files = plan.CreateDeploymentFiles(closure);
         IReadOnlyDictionary<string, byte[]> contributed = plan.deploymentMetadata?.Invoke(closure, files)
-            ?? new Dictionary<string, byte[]>();
+                                                          ?? new Dictionary<string, byte[]>();
         var metadata = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
         var payloadPaths = files.Keys.Select(relative => PathBoundary.Resolve(destination, relative)).ToHashSet(paths);
@@ -129,10 +141,14 @@ public static class ProductNativeDeployment
         foreach ((string relative, byte[] content) in contributed)
         {
             if (string.IsNullOrWhiteSpace(relative) || relative.Replace('\\', '/').Split('/').Any(static part => part is "" or "." or ".."))
+            {
                 throw new InvalidDataException("Native deployment metadata must use literal relative file paths.");
+            }
             string path = PathBoundary.Resolve(destination, relative);
             if (payloadPaths.Contains(path) || !metadataPaths.Add(path))
+            {
                 throw new InvalidDataException("Native deployment metadata cannot replace a payload file.");
+            }
             metadata.Add(relative, content?.ToArray() ?? throw new InvalidDataException("Native deployment metadata has no bytes."));
         }
         if (!ownedCandidate && HasSameFiles(destination, files, metadata, cancellationToken))
@@ -141,11 +157,14 @@ public static class ProductNativeDeployment
             cancellationToken.ThrowIfCancellationRequested();
             return;
         }
-        using ProcessOwnedDirectory? stagingOwner = ownedCandidate ? null
+        using ProcessOwnedDirectory? stagingOwner = ownedCandidate
+            ? null
             : await ProcessOwnedDirectory.CreateAsync(Path.GetDirectoryName(destination)!, cancellationToken).ConfigureAwait(false);
         string staging = stagingOwner?.directory ?? destination;
         if (ownedCandidate)
+        {
             Directory.CreateDirectory(staging);
+        }
         try
         {
             foreach ((string relative, string file) in files)
@@ -155,9 +174,13 @@ public static class ProductNativeDeployment
                 Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                 await using (FileStream source = File.OpenRead(file))
                 await using (FileStream target = new(output, FileMode.CreateNew))
+                {
                     await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
+                }
                 if (!OperatingSystem.IsWindows())
+                {
                     File.SetUnixFileMode(output, File.GetUnixFileMode(file));
+                }
             }
             foreach ((string relative, byte[] bytes) in metadata)
             {
@@ -170,7 +193,9 @@ public static class ProductNativeDeployment
             try
             {
                 if (!ownedCandidate)
+                {
                     AtomicDirectory.Install(staging, destination);
+                }
             }
             catch (DirectoryCleanupException cleanupFailure)
             {
@@ -191,7 +216,9 @@ public static class ProductNativeDeployment
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!BuildArtifactManifest.IsComplete(product.directory, product.fingerprint, ["Outputs", "Metadata"]))
+            {
                 throw new InvalidDataException($"Native product '{product.component}' changed after publication.");
+            }
         }
     }
 
@@ -202,7 +229,9 @@ public static class ProductNativeDeployment
         CancellationToken cancellationToken
     ) {
         if (!Directory.Exists(directory))
+        {
             return false;
+        }
         int count = 0;
         foreach (string deployed in PathBoundary.EnumerateFiles(directory))
         {
@@ -211,19 +240,27 @@ public static class ProductNativeDeployment
             if (metadata.TryGetValue(relative, out byte[]? bytes))
             {
                 if (!File.ReadAllBytes(deployed).AsSpan().SequenceEqual(bytes))
+                {
                     return false;
+                }
                 count++;
                 continue;
             }
             if (!files.TryGetValue(relative, out string? source)
-                || new FileInfo(deployed).Length != new FileInfo(source).Length)
+                || new FileInfo(deployed).Length != new FileInfo(source).Length
+            ) {
                 return false;
+            }
             using FileStream deployedStream = File.OpenRead(deployed);
             using FileStream sourceStream = File.OpenRead(source);
             if (!SHA256.HashData(deployedStream).AsSpan().SequenceEqual(SHA256.HashData(sourceStream)))
+            {
                 return false;
+            }
             if (!OperatingSystem.IsWindows() && File.GetUnixFileMode(deployed) != File.GetUnixFileMode(source))
+            {
                 return false;
+            }
             count++;
         }
         cancellationToken.ThrowIfCancellationRequested();

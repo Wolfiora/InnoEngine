@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Xunit;
 using Inno.Animation.Runtime;
 using Inno.Core.Events;
 using Inno.Core.Identity;
-using Xunit;
 
 namespace Inno.Animation.Tests;
 
@@ -114,9 +113,7 @@ public sealed class AnimationRuntimeTests
         Assert.Throws<InvalidOperationException>(clip.Validate);
 
         clip = CreateClip();
-        clip.tracks[0].keyframes[1] = new AnimationKeyframe(2f, new AnimationValue(
-            AnimationValueKind.Scalar,
-            1f));
+        clip.tracks[0].keyframes[1] = new AnimationKeyframe(2f, new AnimationValue(AnimationValueKind.Scalar, 1f));
         Assert.Throws<InvalidOperationException>(clip.Validate);
     }
 
@@ -150,41 +147,43 @@ public sealed class AnimationRuntimeTests
 
     private static AnimationClipAsset CreateClip()
         => new()
-        {
-            duration = 1f,
-            tracks =
-            [
-                new AnimationTrack(
-                    "visual.opacity",
-                    AnimationInterpolation.Linear,
-                    [
-                        new AnimationKeyframe(0f, new AnimationValue(AnimationValueKind.Scalar, 0f)),
-                        new AnimationKeyframe(1f, new AnimationValue(AnimationValueKind.Scalar, 1f))
-                    ])
-            ],
-            events =
-            [
-                new AnimationEventMarker
-                {
-                    time = 0.5f,
-                    eventId = "midpoint",
-                    payload = [1, 2, 3]
-                }
-            ]
-        };
+    {
+        duration = 1f,
+        tracks =
+        [
+            new AnimationTrack(
+                "visual.opacity",
+                AnimationInterpolation.Linear,
+                [
+                    new AnimationKeyframe(0f, new AnimationValue(AnimationValueKind.Scalar, 0f)),
+                    new AnimationKeyframe(1f, new AnimationValue(AnimationValueKind.Scalar, 1f))
+                ]
+            )
+        ],
+        events =
+        [
+            new AnimationEventMarker
+            {
+                time = 0.5f,
+                eventId = "midpoint",
+                payload = [1, 2, 3]
+            }
+        ]
+    };
 
     private static AnimationClipAsset CreateConstantClip(float value)
         => new()
-        {
-            duration = 1f,
-            tracks =
-            [
-                new AnimationTrack(
-                    "visual.opacity",
-                    AnimationInterpolation.Step,
-                    [new AnimationKeyframe(0f, new AnimationValue(AnimationValueKind.Scalar, value))])
-            ]
-        };
+    {
+        duration = 1f,
+        tracks =
+        [
+            new AnimationTrack(
+                "visual.opacity",
+                AnimationInterpolation.Step,
+                [new AnimationKeyframe(0f, new AnimationValue(AnimationValueKind.Scalar, value))]
+            )
+        ]
+    };
 
     private sealed class RecordingSink : IAnimationBindingSink
     {

@@ -88,7 +88,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
             io->ConfigFlags |= (int)ImGuiConfigFlags.ViewportsEnable;
             io->ConfigViewportsNoAutoMerge = 1;
             io->BackendFlags |= (int)(ImGuiBackendFlags.PlatformHasViewports
-                | ImGuiBackendFlags.RendererHasViewports | ImGuiBackendFlags.RendererHasTextures);
+                                      | ImGuiBackendFlags.RendererHasViewports | ImGuiBackendFlags.RendererHasTextures);
             io->Fonts->RendererHasTextures = 1;
             io->BackendRendererUserData = &state;
             ImGui.Raw.GetMainViewport()->PlatformHandle = (void*)1;
@@ -147,7 +147,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         var state = (CallbackState*)viewport->PlatformUserData;
         state->positions++;
         state->invalid |= x != viewport->Pos.X || y != viewport->Pos.Y
-            || ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(state->registration) != 0;
+                          || ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(state->registration) != 0;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
@@ -159,7 +159,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         var state = (CallbackState*)viewport->PlatformUserData;
         state->sizes++;
         state->invalid |= width != viewport->Size.X || height != viewport->Size.Y
-            || ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(state->registration) != 0;
+                          || ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(state->registration) != 0;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
@@ -177,13 +177,13 @@ public sealed unsafe class ImGuiPlatformCallbackTests
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void NoOp(ImGuiViewport* viewport) { }
+    private static void NoOp(ImGuiViewport* viewport) {}
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void SetTitle(
         ImGuiViewport* viewport,
         sbyte* title
-    ) { }
+    ) {}
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void GetPosition(

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-
 using Inno.Scene.Components;
 
 namespace Inno.Scene;
@@ -14,7 +13,9 @@ internal sealed class ActivationService
         bool active
     ) {
         if (gameObject.activeSelf == active)
+        {
             return;
+        }
         gameObject.SetActiveSelfDirect(active);
         RecomputeSubtree(gameObject);
     }
@@ -33,6 +34,8 @@ internal sealed class ActivationService
         gameObject.SetActiveInHierarchyDirect(active);
         IReadOnlyList<Transform> children = gameObject.transform.children;
         for (int i = 0; i < children.Count; i++)
+        {
             Recompute(children[i].gameObject, active);
+        }
     }
 }

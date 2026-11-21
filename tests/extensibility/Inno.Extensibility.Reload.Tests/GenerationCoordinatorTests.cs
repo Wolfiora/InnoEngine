@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using Xunit;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
-using Xunit;
 
 namespace Inno.Extensibility.Reload.Tests;
 
@@ -30,9 +30,11 @@ public sealed class GenerationCoordinatorTests
     {
         var owner = new GenerationCoordinator();
         var events = new List<string>();
-        Assert.Throws<InvalidOperationException>(() => owner.Execute("reload",
+        Assert.Throws<InvalidOperationException>(() => owner.Execute(
+            "reload",
             new Publication(new Probe { isCompleted = true }, events),
-            [new Change("first", events), new Change("second", events, failApply: true)]));
+            [new Change("first", events), new Change("second", events, failApply: true)]
+        ));
         Assert.Equal(["prepare:first", "prepare:second", "activate", "apply:first", "apply:second",
             "structure:second", "structure:first", "rollback", "restore:second", "restore:first"], events);
         Assert.Equal(GenerationState.Ready, owner.state);
@@ -43,9 +45,11 @@ public sealed class GenerationCoordinatorTests
     {
         var owner = new GenerationCoordinator();
         var events = new List<string>();
-        Assert.Throws<AggregateException>(() => owner.Execute("reload",
+        Assert.Throws<AggregateException>(() => owner.Execute(
+            "reload",
             new Publication(new Probe { isCompleted = true }, events),
-            [new Change("first", events, failComplete: true), new Change("second", events)]));
+            [new Change("first", events, failComplete: true), new Change("second", events)]
+        ));
         Assert.Contains("complete:second", events);
         Assert.DoesNotContain("rollback", events);
         Assert.Equal(GenerationState.Faulted, owner.state);
@@ -68,9 +72,11 @@ public sealed class GenerationCoordinatorTests
     {
         var owner = new GenerationCoordinator();
         var events = new List<string>();
-        Assert.Throws<AggregateException>(() => owner.Execute("reload",
+        Assert.Throws<AggregateException>(() => owner.Execute(
+            "reload",
             new Publication(new Probe { isCompleted = true }, events),
-            [new Change("scene", events, failApply: true, failRestore: true)]));
+            [new Change("scene", events, failApply: true, failRestore: true)]
+        ));
         Assert.Equal(GenerationState.Faulted, owner.state);
         Assert.Throws<InvalidOperationException>(() => owner.Advance());
     }
@@ -104,13 +110,23 @@ public sealed class GenerationCoordinatorTests
         var events = new List<string>();
         var failure = new RetirementTimeoutException("Pending generation-owned work exceeded its deadline.");
         var change = new PendingChange(phase, events, failure);
-        Exception reported = Assert.ThrowsAny<Exception>(() => owner.Execute("reload",
-            new Publication(new Probe { isCompleted = true }, events), [change]));
+        Exception reported = Assert.ThrowsAny<Exception>(() => owner.Execute(
+            "reload",
+            new Publication(new Probe { isCompleted = true }, events),
+            [change]
+        ));
         Assert.Same(failure, RetirementPendingException.Find(reported));
         if (phase == "rollback")
-            Assert.Contains(Assert.IsType<AggregateException>(reported).InnerExceptions,
-                item => item.Message == "Candidate publication failed.");
-        else Assert.Same(failure, reported);
+        {
+            Assert.Contains(
+                Assert.IsType<AggregateException>(reported).InnerExceptions,
+                item => item.Message == "Candidate publication failed."
+            );
+        }
+        else
+        {
+            Assert.Same(failure, reported);
+        }
         Assert.DoesNotContain("rollback", events);
         Assert.DoesNotContain("restore", events);
         Assert.Equal(GenerationState.Faulted, owner.state);
@@ -140,7 +156,9 @@ public sealed class GenerationCoordinatorTests
         var owner = new GenerationCoordinator();
         Assert.True(owner.TryAcquireChange("refresh", out IDisposable? publication));
         using (owner.AcquireOperation("validate candidate"))
+        {
             Assert.Throws<InvalidOperationException>(() => owner.AcquireRead("Build"));
+        }
         Assert.Equal(GenerationState.Transitioning, owner.state);
         Exception? failure = null;
         var thread = new Thread(() =>
@@ -185,8 +203,11 @@ public sealed class GenerationCoordinatorTests
     {
         var owner = new GenerationCoordinator();
         var events = new List<string>();
-        owner.Execute("reload", new Publication(new Probe { isCompleted = true }, events),
-            [new OperationChange(owner, events)]);
+        owner.Execute(
+            "reload",
+            new Publication(new Probe { isCompleted = true }, events),
+            [new OperationChange(owner, events)]
+        );
         Assert.Equal(["prepare", "activate", "apply", "commit", "complete"], events);
         owner.EnsureReady("Play");
         owner.Fault(new InvalidOperationException("Terminal cleanup failure."));
@@ -217,17 +238,25 @@ public sealed class GenerationCoordinatorTests
         var owner = new GenerationCoordinator();
         var events = new List<string>();
         var pending = new RetirementTimeoutException("unfinished native callback");
-        var failure = new AggregateException(new InvalidOperationException("completed sibling"),
-            new InvalidOperationException("scope context", pending));
+        var failure = new AggregateException(
+            new InvalidOperationException("completed sibling"),
+            new InvalidOperationException("scope context", pending)
+        );
         var change = new WrappedChange(phase, failure, events);
-        AggregateException reported = Assert.Throws<AggregateException>(() => owner.Execute("reload",
-            new Publication(new Probe { isCompleted = true }, events), [change]));
+        AggregateException reported = Assert.Throws<AggregateException>(() => owner.Execute(
+            "reload",
+            new Publication(new Probe { isCompleted = true }, events),
+            [change]
+        ));
         if (phase is "rollback" or "restore")
         {
             Assert.Contains(failure, reported.InnerExceptions);
             Assert.Contains(reported.InnerExceptions, item => item.Message == "activation rejected");
         }
-        else Assert.Same(failure, reported);
+        else
+        {
+            Assert.Same(failure, reported);
+        }
         Assert.Equal(GenerationState.Faulted, owner.state);
         Assert.Same(reported, owner.failure);
         Assert.Same(pending, Assert.Throws<RetirementTimeoutException>(owner.EnsureRetirementSafe));
@@ -241,10 +270,15 @@ public sealed class GenerationCoordinatorTests
         var owner = new GenerationCoordinator();
         var events = new List<string>();
         var pending = new RetirementPendingException("unfinished callback");
-        AggregateException failure = Assert.Throws<AggregateException>(() => owner.Execute("reload",
+        AggregateException failure = Assert.Throws<AggregateException>(() => owner.Execute(
+            "reload",
             new Publication(new Probe { isCompleted = true }, events),
-            [new Change("ordinary", events, failComplete: true), new WrappedChange("complete", pending, events),
-                new Change("dependency", events)]));
+            [
+                new Change("ordinary", events, failComplete: true),
+                new WrappedChange("complete", pending, events),
+                new Change("dependency", events)
+            ]
+        ));
         Assert.Same(failure, owner.failure);
         Assert.Contains(failure.InnerExceptions, item => item.Message == "complete");
         Assert.Contains(pending, failure.InnerExceptions);
@@ -252,20 +286,27 @@ public sealed class GenerationCoordinatorTests
         Assert.Same(pending, Assert.Throws<RetirementPendingException>(owner.EnsureRetirementSafe));
     }
 
-    private sealed class PendingChange(string phase, List<string> events, RetirementTimeoutException failure)
-        : IGenerationChange
+    private sealed class PendingChange(
+        string phase,
+        List<string> events,
+        RetirementTimeoutException failure
+    ) : IGenerationChange
     {
         public void PrepareForActivation()
         {
             events.Add("prepare");
             if (phase == "prepare")
+            {
                 throw failure;
+            }
         }
 
         public void Apply()
         {
             if (phase == "rollback")
+            {
                 throw new InvalidOperationException("Candidate publication failed.");
+            }
         }
 
         public void Complete() => throw failure;
@@ -275,17 +316,26 @@ public sealed class GenerationCoordinatorTests
         public void RestorePreviousState() => events.Add("restore");
     }
 
-    private sealed class WrappedChange(string phase, Exception failure, List<string> events) : IGenerationChange
+    private sealed class WrappedChange(
+        string phase,
+        Exception failure,
+        List<string> events
+    ) : IGenerationChange
     {
         public void PrepareForActivation() => Visit("prepare");
+
         public void Apply()
         {
             Visit("apply");
             if (phase is "rollback" or "restore") throw new InvalidOperationException("activation rejected");
         }
+
         public void Complete() => Visit("complete");
+
         public void RollbackStructure() => Visit("rollback");
+
         public void RestorePreviousState() => Visit("restore");
+
         private void Visit(string current)
         {
             events.Add(current);
@@ -299,12 +349,19 @@ public sealed class GenerationCoordinatorTests
         public bool isCompleted { get; set; }
     }
 
-    private sealed class OperationChange(GenerationCoordinator owner, List<string> events) : IGenerationChange
+    private sealed class OperationChange(
+        GenerationCoordinator owner,
+        List<string> events
+    ) : IGenerationChange
     {
         public void PrepareForActivation() => Visit("prepare");
+
         public void Apply() => Visit("apply");
+
         public void Complete() => Visit("complete");
+
         public void RollbackStructure() => Visit("rollback");
+
         public void RestorePreviousState() => Visit("restore");
 
         private void Visit(string phase)
@@ -316,20 +373,50 @@ public sealed class GenerationCoordinatorTests
         }
     }
 
-    private sealed class Publication(Probe probe, List<string> events) : IGenerationPublication<Probe>
+    private sealed class Publication(
+        Probe probe,
+        List<string> events
+    ) : IGenerationPublication<Probe>
     {
         public void Activate() => events.Add("activate");
+
         public void Rollback() => events.Add("rollback");
-        public Probe Complete() { events.Add("commit"); return probe; }
+
+        public Probe Complete()
+        {
+            events.Add("commit");
+            return probe;
+        }
     }
 
-    private sealed class Change(string name, List<string> events,
-        bool failApply = false, bool failComplete = false, bool failRestore = false) : IGenerationChange
+    private sealed class Change(
+        string name,
+        List<string> events,
+        bool failApply = false,
+        bool failComplete = false,
+        bool failRestore = false
+    ) : IGenerationChange
     {
         public void PrepareForActivation() => events.Add($"prepare:{name}");
-        public void Apply() { events.Add($"apply:{name}"); if (failApply) throw new InvalidOperationException("apply"); }
-        public void Complete() { events.Add($"complete:{name}"); if (failComplete) throw new InvalidOperationException("complete"); }
+
+        public void Apply()
+        {
+            events.Add($"apply:{name}");
+            if (failApply) throw new InvalidOperationException("apply");
+        }
+
+        public void Complete()
+        {
+            events.Add($"complete:{name}");
+            if (failComplete) throw new InvalidOperationException("complete");
+        }
+
         public void RollbackStructure() => events.Add($"structure:{name}");
-        public void RestorePreviousState() { events.Add($"restore:{name}"); if (failRestore) throw new InvalidOperationException("restore"); }
+
+        public void RestorePreviousState()
+        {
+            events.Add($"restore:{name}");
+            if (failRestore) throw new InvalidOperationException("restore");
+        }
     }
 }

@@ -1,7 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Core.Identity;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,13 +5,20 @@ using System.Linq;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed partial class FileBrowserPanel
 {
     private void DrawBrowser(EditorContext context)
@@ -24,12 +27,20 @@ internal sealed partial class FileBrowserPanel
         EditorUiLayout style = Ui.GetLayout();
         float breadcrumbBarHeight = GetBreadcrumbBarHeight(m_assets.browser.root, m_assets.browser.currentDirectory);
         Vector2 bodySize = new(0f, -(breadcrumbBarHeight + style.itemSpacing.Y));
-        bool mainVisible = Ui.BeginChild("##FileBrowserMain", bodySize, ImGuiChildFlags.None, (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
+        bool mainVisible = Ui.BeginChild(
+            "##FileBrowserMain",
+            bodySize,
+            ImGuiChildFlags.None,
+            (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+        );
         try
         {
             if (mainVisible)
             {
-                ImGuiTableFlags splitFlags = ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoKeepColumnsVisible | ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoSavedSettings;
+                ImGuiTableFlags splitFlags = ImGuiTableFlags.NoPadOuterX
+                                             | ImGuiTableFlags.NoKeepColumnsVisible
+                                             | ImGuiTableFlags.SizingFixedFit
+                                             | ImGuiTableFlags.NoSavedSettings;
                 float splitterWidth = GetTreeSplitterWidth(style);
                 float availableWidth = MathF.Max(0f, Ui.GetContentRegionAvailable().X);
                 float treeWidth = ResolveTreeWidth(m_treePaneRatio, availableWidth, splitterWidth);
@@ -42,7 +53,11 @@ internal sealed partial class FileBrowserPanel
                         if (splitStarted)
                         {
                             Ui.TableSetupColumn("##Tree", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), treeWidth);
-                            Ui.TableSetupColumn("##Splitter", (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize), splitterWidth);
+                            Ui.TableSetupColumn(
+                                "##Splitter",
+                                (ImGuiTableColumnFlags.WidthFixed | ImGuiTableColumnFlags.NoResize),
+                                splitterWidth
+                            );
                             Ui.TableSetupColumn("##Content", ImGuiTableColumnFlags.WidthStretch);
                             Ui.TableNextRow();
                             _ = Ui.TableSetColumnIndex(0);
@@ -56,7 +71,9 @@ internal sealed partial class FileBrowserPanel
                     finally
                     {
                         if (splitStarted)
+                        {
                             Ui.EndTable();
+                        }
                     }
                 }
                 finally
@@ -88,7 +105,9 @@ internal sealed partial class FileBrowserPanel
         bool hovered = Ui.IsItemHovered();
         bool active = Ui.IsItemActive();
         if (hovered || active)
+        {
             Ui.SetMouseCursor(ImGuiMouseCursor.ResizeEw);
+        }
         if (active)
         {
             Vector2 delta = Ui.GetMouseDragDelta(ImGuiMouseButton.Left);
@@ -142,13 +161,23 @@ internal sealed partial class FileBrowserPanel
         {
             EditorUiLayout style = Ui.GetLayout();
             Vector2 treePaneSize = new(-style.windowPadding.X, 0f);
-            bool treeVisible = Ui.BeginChild("##TreePane", treePaneSize, ImGuiChildFlags.None, (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
+            bool treeVisible = Ui.BeginChild(
+                "##TreePane",
+                treePaneSize,
+                ImGuiChildFlags.None,
+                (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+            );
             try
             {
                 if (treeVisible)
                 {
                     float footerHeight = Ui.GetFrameHeight() + style.windowPadding.Y * 2f + style.itemSpacing.Y;
-                    bool treeScrollVisible = Ui.BeginChild("##TreeScroll", new Vector2(0f, -footerHeight), ImGuiChildFlags.None, ImGuiWindowFlags.HorizontalScrollbar);
+                    bool treeScrollVisible = Ui.BeginChild(
+                        "##TreeScroll",
+                        new Vector2(0f, -footerHeight),
+                        ImGuiChildFlags.None,
+                        ImGuiWindowFlags.HorizontalScrollbar
+                    );
                     try
                     {
                         if (treeScrollVisible)
@@ -182,7 +211,9 @@ internal sealed partial class FileBrowserPanel
             }
 
             if (!IsReadOnlyLocation(m_assets.edits.pipeline, m_assets.browser))
+            {
                 m_dragDrop.DrawDirectoryTarget(context, m_assets.browser.currentDirectory);
+            }
         }
         finally
         {
@@ -214,7 +245,12 @@ internal sealed partial class FileBrowserPanel
         Ui.PushStyleColor(ImGuiCol.ChildBg, EditorPalette.collectionHeader);
         try
         {
-            bool contentVisible = Ui.BeginChild("##ContentPane", Vector2.Zero, ImGuiChildFlags.None, (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse));
+            bool contentVisible = Ui.BeginChild(
+                "##ContentPane",
+                Vector2.Zero,
+                ImGuiChildFlags.None,
+                (ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+            );
             try
             {
                 if (contentVisible)
@@ -229,7 +265,9 @@ internal sealed partial class FileBrowserPanel
             }
 
             if (!IsReadOnlyLocation(m_assets.edits.pipeline, m_assets.browser))
+            {
                 m_dragDrop.DrawDirectoryTarget(context, m_assets.browser.currentDirectory);
+            }
         }
         finally
         {
@@ -248,9 +286,13 @@ internal sealed partial class FileBrowserPanel
         try
         {
             if (m_viewMode == ViewMode.List)
+            {
                 DrawListRegion(context, entries);
+            }
             else
+            {
                 DrawGridRegion(context, entries);
+            }
         }
         finally
         {
@@ -261,8 +303,10 @@ internal sealed partial class FileBrowserPanel
         m_pendingActivation = null;
         if (activation is RuntimeIdentity identity
             && m_assets.edits.interactions.TryResolveIdentity(identity, out Inno.Core.Identity.IdentityObject? target)
-            && target is AssetFileEntry entry)
+            && target is AssetFileEntry entry
+        ) {
             m_navigation.OpenEntry(context, entry, m_tree);
+        }
     }
 
     private static void DrawFooterTopSplitter()

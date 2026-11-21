@@ -1,16 +1,14 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
-using Inno.Runtime.Contracts;
 using System;
-using System.IO;
 using System.Collections.Generic;
-
-using Inno.References;
-using Inno.Core.Logging;
-using Inno.Runtime;
-using Inno.Scene;
-
+using System.IO;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Core.Logging;
+using Inno.References;
+using Inno.Runtime;
+using Inno.Runtime.Contracts;
+using Inno.Scene;
 
 namespace Inno.Runtime.Tests;
 
@@ -19,21 +17,27 @@ public sealed class RuntimeSessionTests : IDisposable
     private readonly string m_root = Path.Combine(
         Path.GetTempPath(),
         "InnoRuntimeSessionTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     public void InlineHostDeliveryPersistsSessionLogsBeforeTheProducerReturns()
     {
         using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
             .UseLogDelivery(LogDeliveryMode.Inline)
             .Build();
         RuntimeSessionOptions options = CreateOptions("inline", RuntimeSessionKind.Play);
         using RuntimeSession session = host.CreateSession(options);
 
         using (session.EnterExecutionScope())
+        {
             Log.Info(typeof(RuntimeSessionTests), "session-inline-delivery");
+        }
 
         string file = Assert.Single(Directory.GetFiles(Path.Combine(m_root, "Persistent", "inline", "Logs")));
         using var stream = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
@@ -50,9 +54,13 @@ public sealed class RuntimeSessionTests : IDisposable
         using RuntimeSession second = secondHost.CreateSession(CreateOptions("second", RuntimeSessionKind.Play));
 
         using (first.EnterExecutionScope())
+        {
             _ = SceneManager.LoadNewScene("First Scene");
+        }
         using (second.EnterExecutionScope())
+        {
             _ = SceneManager.LoadNewScene("Second Scene");
+        }
 
         first.Tick(0.02f);
         second.Tick(0.04f);
@@ -106,10 +114,7 @@ public sealed class RuntimeSessionTests : IDisposable
         using EngineHost host = CreateHost("Features");
         var events = new List<string>();
         var first = new ProbeFeatureFactory("tests.first", [], events);
-        var second = new ProbeFeatureFactory(
-            "tests.second",
-            [new RuntimeSubsystemId("tests.first")],
-            events);
+        var second = new ProbeFeatureFactory("tests.second", [new RuntimeSubsystemId("tests.first")], events);
         RuntimeSessionOptions baseline = CreateOptions("features", RuntimeSessionKind.Play);
         var options = new RuntimeSessionOptions
         {
@@ -126,28 +131,30 @@ public sealed class RuntimeSessionTests : IDisposable
         session.Dispose();
 
         Assert.Equal(
-        [
-            "attach:tests.first",
-            "attach:tests.second",
-            "begin:tests.first",
-            "begin:tests.second",
-            "update:tests.first",
-            "update:tests.second",
-            "late:tests.first",
-            "late:tests.second",
-            "before-render:tests.first",
-            "before-render:tests.second",
-            "render:tests.first",
-            "render:tests.second",
-            "after-render:tests.second",
-            "after-render:tests.first",
-            "end:tests.second",
-            "end:tests.first",
-            "detach:tests.second",
-            "dispose:tests.second",
-            "detach:tests.first",
-            "dispose:tests.first"
-        ], events);
+            [
+                "attach:tests.first",
+                "attach:tests.second",
+                "begin:tests.first",
+                "begin:tests.second",
+                "update:tests.first",
+                "update:tests.second",
+                "late:tests.first",
+                "late:tests.second",
+                "before-render:tests.first",
+                "before-render:tests.second",
+                "render:tests.first",
+                "render:tests.second",
+                "after-render:tests.second",
+                "after-render:tests.first",
+                "end:tests.second",
+                "end:tests.first",
+                "detach:tests.second",
+                "dispose:tests.second",
+                "detach:tests.first",
+                "dispose:tests.first"
+            ],
+            events
+        );
     }
 
     [Fact]
@@ -185,45 +192,58 @@ public sealed class RuntimeSessionTests : IDisposable
         host.Dispose();
 
         Assert.Throws<ObjectDisposedException>(
-            () => host.CreateSession(CreateOptions("disposed", RuntimeSessionKind.Edit)));
+            () => host.CreateSession(CreateOptions("disposed", RuntimeSessionKind.Edit))
+        );
     }
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private EngineHost CreateHost(string name)
         => new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeSessionTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
             .Build();
 
-    private RuntimeSessionOptions CreateOptions(string applicationId, RuntimeSessionKind kind)
-        => new()
-        {
-            kind = kind,
-            applicationId = applicationId,
-            createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", applicationId), "Logs")),
-            fixedDeltaTime = 0.02f,
-            jobExecutionMode = RuntimeJobExecutionMode.SingleThread
-        };
+    private RuntimeSessionOptions CreateOptions(
+        string applicationId,
+        RuntimeSessionKind kind
+    ) => new()
+    {
+        kind = kind,
+        applicationId = applicationId,
+        createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(m_root, "Persistent", applicationId), "Logs")),
+        fixedDeltaTime = 0.02f,
+        jobExecutionMode = RuntimeJobExecutionMode.SingleThread
+    };
 
     private sealed class ProbeFeatureFactory(
         string id,
         IReadOnlyList<RuntimeSubsystemId> dependencies,
-        List<string> events) : IRuntimeSubsystemFactory
+        List<string> events
+    ) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
             new RuntimeSubsystemId(id),
-            dependencies: dependencies);
+            dependencies: dependencies
+        );
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
             => new ProbeFeature(descriptor.id.value, events);
     }
 
-    private sealed class ProbeFeature(string id, List<string> events) : RuntimeSubsystem
+    private sealed class ProbeFeature(
+        string id,
+        List<string> events
+    ) : RuntimeSubsystem
     {
         protected override void OnStart() => events.Add($"attach:{id}");
 

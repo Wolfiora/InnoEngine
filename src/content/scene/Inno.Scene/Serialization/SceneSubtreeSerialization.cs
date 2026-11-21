@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Scene;
@@ -43,7 +42,9 @@ public static class SceneSubtreeSerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (!root.isRuntimeValid)
+        {
             throw new InvalidOperationException("A destroyed or detached GameObject subtree cannot be captured.");
+        }
         SerializationContext context = AssetSerializationContext.Create(assets);
         return serialization.Serialize(new SceneSubtreeState(root), context);
     }
@@ -90,12 +91,14 @@ public static class SceneSubtreeSerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (!scene.isLoaded || scene.isDestroyed)
+        {
             throw new InvalidOperationException("A scene subtree can only be restored into a live loaded scene.");
+        }
         if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
+        {
             throw new ArgumentException("The requested parent belongs to another scene.", nameof(parent));
-        var existing = new HashSet<GameObject>(
-            scene.GetObjects(),
-            ReferenceEqualityComparer.Instance);
+        }
+        var existing = new HashSet<GameObject>(scene.GetObjects(), ReferenceEqualityComparer.Instance);
         try
         {
             SerializationContext context = AssetSerializationContext.Create(assets)
@@ -111,7 +114,8 @@ public static class SceneSubtreeSerialization
                 exception,
                 scene,
                 existing,
-                "Scene subtree restoration");
+                "Scene subtree restoration"
+            );
             throw;
         }
     }

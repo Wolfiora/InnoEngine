@@ -15,8 +15,11 @@ namespace Inno.Build.Bindings.Tests;
 
 public sealed class NativeBindingGenerationTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()),
-        "InnoNativeBindingTests", Guid.NewGuid().ToString("N"));
+    private readonly string m_root = Path.Combine(
+        new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+        "InnoNativeBindingTests",
+        Guid.NewGuid().ToString("N")
+    );
 
     [Fact]
     [Trait("ExternalDependency", "BGCS")]
@@ -31,49 +34,85 @@ public sealed class NativeBindingGenerationTests : IDisposable
         await Git(m_root, "clone", "--no-hardlinks", m_root, consumer);
         var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         string sdk = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        var tools = new NativeToolchainSelection("fixture-target", new BuildHostDescriptor("fixture-host", "fixture-arch"),
-            new Dictionary<string, string> { ["sdk"] = sdk }, new Dictionary<string, string>(), [], [],
-            new NativeLinkPlan(sharedLibraryExtension: ".data"), false);
+        var tools = new NativeToolchainSelection(
+            "fixture-target",
+            new BuildHostDescriptor("fixture-host", "fixture-arch"),
+            new Dictionary<string, string> { ["sdk"] = sdk },
+            new Dictionary<string, string>(),
+            [],
+            [],
+            new NativeLinkPlan(sharedLibraryExtension: ".data"),
+            false
+        );
         var context = new NativeBuildContext(m_root, "release").WithToolchain(tools)
             .WithBindingGenerator(BindingTestProfiles.Generator("fixture-target"));
         int productions = 0;
-        NativeBuildRecipe Recipe(NativeBuildContext current) => new(component, "fixture", "fixture-target",
-            [NativeBuildInput.FromPath(current.engineRoot, Path.Combine(current.engineRoot, "Source"))], ["fixture"]);
-        var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep("fixture", component, new(NativeLibraryKind.Shared), [],
+        NativeBuildRecipe Recipe(NativeBuildContext current)
+            => new(
+                component,
+                "fixture",
+                "fixture-target",
+                [NativeBuildInput.FromPath(current.engineRoot, Path.Combine(current.engineRoot, "Source"))],
+                ["fixture"]
+            );
+        var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep(
+            "fixture",
+            component,
+            new(NativeLibraryKind.Shared),
+            [],
             (
                 current,
                 _,
                 cancellation
-            ) => NativeArtifactPublisher.PublishAsync(current, Recipe(current), (
-                _,
-                output,
-                token
-            ) =>
-            {
-                productions++;
-                return File.WriteAllTextAsync(Path.Combine(output, "fixture.data"), "native payload", token);
-            }, cancellation, describeOutputs: static (
-                _,
-                output
-            ) =>
-                [new NativeArtifact("fixture", Path.Combine(output, "fixture.data"), NativeArtifactRole.SharedLibrary)]),
-            Recipe, static (
+            ) => NativeArtifactPublisher.PublishAsync(
+                current,
+                Recipe(current),
+                (
+                    _,
+                    output,
+                    token
+                ) =>
+                {
+                    productions++;
+                    return File.WriteAllTextAsync(Path.Combine(output, "fixture.data"), "native payload", token);
+                },
+                cancellation,
+                describeOutputs: static (
+                    _,
+                    output
+                ) =>
+                    [new NativeArtifact("fixture", Path.Combine(output, "fixture.data"), NativeArtifactRole.SharedLibrary)]
+            ),
+            Recipe,
+            static (
                 relative,
                 _
-            ) => relative)]);
-        using ProductNativeBuildResult produced = await new ComponentNativeProductExecutor().BuildAsync(context, plan, CancellationToken.None);
+            ) => relative
+        )]);
+        using ProductNativeBuildResult produced = await new ComponentNativeProductExecutor().BuildAsync(
+            context,
+            plan,
+            CancellationToken.None
+        );
         string selection = await NativeDependencyManifest.ExportAsync(context, plan, produced, Path.Combine(m_root, "artifacts", "export"));
         using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(selection));
         JsonElement asset = manifest.RootElement.GetProperty("assets")[0];
         string downloads = Path.Combine(consumer, "artifacts", "fixture-target", "native");
         Directory.CreateDirectory(downloads);
-        File.Copy(Path.Combine(m_root, "artifacts", "export", asset.GetProperty("asset").GetString()!),
-            Path.Combine(downloads, asset.GetProperty("sha256").GetString() + ".zip"));
+        File.Copy(
+            Path.Combine(m_root, "artifacts", "export", asset.GetProperty("asset").GetString()!),
+            Path.Combine(downloads, asset.GetProperty("sha256").GetString() + ".zip")
+        );
         string selected = Path.Combine(consumer, "artifacts", "selection.json");
         File.Copy(selection, selected);
         string managed = File.ReadAllText(produced[0].bindingGeneration!.bindingsPath);
-        using (ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(consumer, selected, "fixture-target", "release", plan))
-        {
+        using (ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
+            consumer,
+            selected,
+            "fixture-target",
+            "release",
+            plan
+        )) {
             NativeBindingGenerationDescriptor binding = imported.bindingGenerations[component.nativeProject];
             Assert.Equal(produced[0].bindingGeneration!.fingerprint, binding.fingerprint);
             Assert.Equal(managed, File.ReadAllText(binding.bindingsPath));
@@ -82,40 +121,52 @@ public sealed class NativeBindingGenerationTests : IDisposable
             Assert.NotEmpty(NativeBindingCompilation.Load(binding.nativeDirectory).roots);
             Assert.Equal(1, productions);
         }
-        using ProductNativeBuildResult warm = await NativeDependencyManifest.AcquireAsync(consumer, selected, "fixture-target", "release", plan);
+        using ProductNativeBuildResult warm = await NativeDependencyManifest.AcquireAsync(
+            consumer,
+            selected,
+            "fixture-target",
+            "release",
+            plan
+        );
         Assert.Equal(managed, File.ReadAllText(warm[0].bindingGeneration!.bindingsPath));
         Assert.Equal(1, productions);
 
         static Task<string> Git(
             string root,
             params string[] arguments
-        )
-            => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);
+        ) => ToolchainEnvironment.CaptureOutputAsync("git", arguments, root, CancellationToken.None);
     }
 
     [Fact]
     public void ManagedSelectionPreservesExactNativeIdentitiesInStableProjectOrder()
     {
         string output = Path.Combine(m_root, "BindingSelection.props");
-        NativeBindingGenerationDescriptor.WriteSelection(output,
+        NativeBindingGenerationDescriptor.WriteSelection(
+            output,
             new Dictionary<string, NativeBindingGenerationDescriptor>
             {
                 ["backends/Text/native/Inno.Native.Text/Inno.Native.Text.csproj"] = SelectedGeneration("text-fingerprint"),
                 ["backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj"] = SelectedGeneration("bgfx-fingerprint")
-            }, new Dictionary<string, NativeLibraryKind>
+            },
+            new Dictionary<string, NativeLibraryKind>
             {
                 ["backends/Text/native/Inno.Native.Text/Inno.Native.Text.csproj"] = NativeLibraryKind.Static,
                 ["backends/Bgfx/native/Inno.Native.Bgfx/Inno.Native.Bgfx.csproj"] = NativeLibraryKind.Shared
-            });
+            }
+        );
 
         XElement[] groups = XDocument.Load(output).Root!.Elements("PropertyGroup").ToArray();
         Assert.Equal(2, groups.Length);
         Assert.Equal("'$(MSBuildProjectName)' == 'Inno.Native.Bgfx'", groups[0].Attribute("Condition")!.Value);
         Assert.Equal("bgfx-fingerprint", groups[0].Element("BindGenExpectedFingerprint")!.Value);
-        Assert.Equal(SelectedGeneration("bgfx-fingerprint").artifactOwnerDirectory,
-            groups[0].Element("BindGenArtifactOwnerDirectory")!.Value);
-        Assert.Equal(Path.GetDirectoryName(SelectedGeneration("bgfx-fingerprint").bindingsPath),
-            groups[0].Element("BindGenOutputDirectory")!.Value);
+        Assert.Equal(
+            SelectedGeneration("bgfx-fingerprint").artifactOwnerDirectory,
+            groups[0].Element("BindGenArtifactOwnerDirectory")!.Value
+        );
+        Assert.Equal(
+            Path.GetDirectoryName(SelectedGeneration("bgfx-fingerprint").bindingsPath),
+            groups[0].Element("BindGenOutputDirectory")!.Value
+        );
         Assert.Equal("text-fingerprint", groups[1].Element("BindGenExpectedFingerprint")!.Value);
         Assert.Equal("Shared", groups[0].Element("InnoNativeLibraryKind")!.Value);
         Assert.Equal("Static", groups[1].Element("InnoNativeLibraryKind")!.Value);
@@ -141,11 +192,14 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Assert.Equal(runtimeImports ? "true" : "false", group.Element("InnoNativeRuntimeImports")!.Value);
         Assert.Equal(linkage.ToString(), group.Element("InnoNativeLibraryKind")!.Value);
         NativeBindingGenerationDescriptor.ValidateSelection(output, generations, links);
-        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output,
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(
+            output,
             new Dictionary<string, NativeBindingGenerationDescriptor>
             {
                 ["Inno.Native.Text.csproj"] = SelectedGeneration("selected", !runtimeImports)
-            }, links));
+            },
+            links
+        ));
     }
 
     [Fact]
@@ -182,19 +236,34 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var linkage = new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared };
         NativeBindingGenerationDescriptor.WriteSelection(output, original, linkage);
         NativeBindingGenerationDescriptor.ValidateSelection(output, original, linkage);
-        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output,
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(
+            output,
             new Dictionary<string, NativeBindingGenerationDescriptor>
             {
                 ["Inno.Native.Text.csproj"] = SelectedGeneration("changed")
-            }, linkage));
-        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output,
-            new Dictionary<string, NativeBindingGenerationDescriptor>(), new Dictionary<string, NativeLibraryKind>()));
-        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(output, original,
-            new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Static }));
-        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output, original,
-            new Dictionary<string, NativeLibraryKind>()));
-        Assert.Equal("original", XDocument.Load(output).Root!.Element("PropertyGroup")!
-            .Element("BindGenExpectedFingerprint")!.Value);
+            },
+            linkage
+        ));
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(
+            output,
+            new Dictionary<string, NativeBindingGenerationDescriptor>(),
+            new Dictionary<string, NativeLibraryKind>()
+        ));
+        Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(
+            output,
+            original,
+            new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Static }
+        ));
+        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(
+            output,
+            original,
+            new Dictionary<string, NativeLibraryKind>()
+        ));
+        Assert.Equal(
+            "original",
+            XDocument.Load(output).Root!.Element("PropertyGroup")!
+                .Element("BindGenExpectedFingerprint")!.Value
+        );
     }
 
     [Fact]
@@ -204,16 +273,19 @@ public sealed class NativeBindingGenerationTests : IDisposable
         Directory.CreateDirectory(Path.Combine(m_root, "Source"));
         File.WriteAllText(output, "previous complete selection");
 
-        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output,
+        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(
+            output,
             new Dictionary<string, NativeBindingGenerationDescriptor>
             {
                 ["first/Inno.Native.Text.csproj"] = SelectedGeneration("first"),
                 ["second/inno.native.text.csproj"] = SelectedGeneration("second")
-            }, new Dictionary<string, NativeLibraryKind>
+            },
+            new Dictionary<string, NativeLibraryKind>
             {
                 ["first/Inno.Native.Text.csproj"] = NativeLibraryKind.Shared,
                 ["second/inno.native.text.csproj"] = NativeLibraryKind.Shared
-            }));
+            }
+        ));
         Assert.Equal("previous complete selection", File.ReadAllText(output));
     }
 
@@ -221,11 +293,14 @@ public sealed class NativeBindingGenerationTests : IDisposable
     public void UnsafeManagedProjectNameIsRejectedBeforeCreatingSelectionOutput()
     {
         string output = Path.Combine(m_root, "BindingSelection.props");
-        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(output,
+        Assert.Throws<ArgumentException>(() => NativeBindingGenerationDescriptor.WriteSelection(
+            output,
             new Dictionary<string, NativeBindingGenerationDescriptor>
             {
                 ["Inno'Injected.csproj"] = SelectedGeneration("selected")
-            }, new Dictionary<string, NativeLibraryKind> { ["Inno'Injected.csproj"] = NativeLibraryKind.Shared }));
+            },
+            new Dictionary<string, NativeLibraryKind> { ["Inno'Injected.csproj"] = NativeLibraryKind.Shared }
+        ));
         Assert.False(Directory.Exists(m_root));
     }
 
@@ -239,10 +314,16 @@ public sealed class NativeBindingGenerationTests : IDisposable
         NativeBindingGenerationDescriptor provider = await GenerateAsync();
         var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
         var request = new NativeBindingGenerationRequest([component], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
-        var profile = new NativeBindingProfile("fixture-target",
-            new BGCS.Configuration.TargetConfiguration { id = "windows-x64-msvc" }, importMode: importMode);
+        var profile = new NativeBindingProfile(
+            "fixture-target",
+            new BGCS.Configuration.TargetConfiguration { id = "windows-x64-msvc" },
+            importMode: importMode
+        );
         using NativeBindingGenerationResult result = await new NativeBindingGenerator(profile).GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        );
         NativeBindingGenerationDescriptor imports = result[component.nativeProject];
         Assert.False(provider.usesRuntimeImports);
         Assert.True(imports.usesRuntimeImports);
@@ -263,8 +344,13 @@ public sealed class NativeBindingGenerationTests : IDisposable
         string descriptorPath = Path.Combine(m_root, "requests", "descriptor.json");
         first.Write(descriptorPath);
         Assert.Equal(first.bindingsPath, NativeBindingGenerationDescriptor.Load(descriptorPath).bindingsPath);
-        Assert.True(BuildArtifactManifest.IsComplete(Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath))!,
-            first.fingerprint, ["Native", "Generated"]));
+        Assert.True(
+            BuildArtifactManifest.IsComplete(
+                Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath))!,
+                first.fingerprint,
+                ["Native", "Generated"]
+            )
+        );
 
         File.WriteAllText(first.bindingsPath, "tampered");
         NativeBindingGenerationDescriptor repaired = await GenerateAsync();
@@ -293,14 +379,16 @@ public sealed class NativeBindingGenerationTests : IDisposable
 
         var unchangedContext = new NativeBuildContext(m_root, "release");
         using (NativeBindingGenerationResult unchanged = await BindingTestProfiles.Generator("fixture-target")
-            .GenerateAsync(unchangedContext, request, CancellationToken.None))
-        {
+            .GenerateAsync(unchangedContext, request, CancellationToken.None)
+        ) {
             Assert.Equal(first.fingerprint, unchanged[owner.nativeProject].fingerprint);
             Assert.Equal(0, unchangedContext.statistics.bindingGenerations);
         }
 
-        File.WriteAllText(Path.Combine(m_root, "selected.json"),
-            File.ReadAllText(config).Replace("Fixture.Native", "Fixture.Selected", StringComparison.Ordinal));
+        File.WriteAllText(
+            Path.Combine(m_root, "selected.json"),
+            File.ReadAllText(config).Replace("Fixture.Native", "Fixture.Selected", StringComparison.Ordinal)
+        );
         definition.Root!.Element("PropertyGroup")!.Element("InnoBindingConfig")!.Value = "selected.json";
         definition.Save(definitionPath);
         NativeBindingGenerationDescriptor changed = await GenerateAsync();
@@ -315,14 +403,22 @@ public sealed class NativeBindingGenerationTests : IDisposable
     {
         string config = CreateConfig("int sample(int value);");
         string facade = Path.Combine(m_root, "Source", "facade.hpp");
-        File.WriteAllText(facade, "class Counter { public: explicit Counter(int value) : value_(value) {} int Add(int value) { return value_ + value; } private: int value_; };");
+        File.WriteAllText(
+            facade,
+            "class Counter { public: explicit Counter(int value) : value_(value) {} int Add(int value) { return value_ + value; } private: int value_; };"
+        );
         WriteCppConfig(config);
         NativeBindingGenerationDescriptor first = await GenerateAsync();
         NativeBindingCompilation compilation = NativeBindingCompilation.Load(first.nativeDirectory);
         Assert.Contains(compilation.files, file => file.compile && file.rootId == "generated");
-        Assert.Contains(compilation.files, file => !file.compile && file.rootId == "generated" && file.relativePath.EndsWith(".h", StringComparison.Ordinal));
-        Assert.Equal(Path.GetDirectoryName(first.nativeDirectory),
-            Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath)));
+        Assert.Contains(
+            compilation.files,
+            file => !file.compile && file.rootId == "generated" && file.relativePath.EndsWith(".h", StringComparison.Ordinal)
+        );
+        Assert.Equal(
+            Path.GetDirectoryName(first.nativeDirectory),
+            Path.GetDirectoryName(Path.GetDirectoryName(first.bindingsPath))
+        );
         Assert.False(Directory.Exists(Path.Combine(m_root, "declared")));
         string original = File.ReadAllText(first.bindingsPath);
         File.WriteAllText(facade, "class Counter { invalid C++; };");
@@ -342,11 +438,17 @@ public sealed class NativeBindingGenerationTests : IDisposable
         NativeBindingGenerationDescriptor initial = await GenerateAsync(mode: NativeBindingOutputMode.HostSource);
         string source = File.ReadAllText(initial.bindingsPath);
         NativeBindingCompilation compilation = NativeBindingCompilation.Load(initial.nativeDirectory);
-        string nativeHeader = Path.Combine(initial.nativeDirectory, compilation.files.First(file =>
-            file.rootId == "generated" && file.relativePath.EndsWith(".h", StringComparison.Ordinal)).relativePath);
+        string nativeHeader = Path.Combine(
+            initial.nativeDirectory,
+            compilation.files.First(file => (
+                file.rootId == "generated" && file.relativePath.EndsWith(".h", StringComparison.Ordinal)
+            )).relativePath
+        );
         string header = File.ReadAllText(nativeHeader);
-        string nativeSource = Path.Combine(initial.nativeDirectory, compilation.files.First(file =>
-            file.rootId == "generated" && file.compile).relativePath);
+        string nativeSource = Path.Combine(
+            initial.nativeDirectory,
+            compilation.files.First(file => (file.rootId == "generated" && file.compile)).relativePath
+        );
         string implementation = File.ReadAllText(nativeSource);
         File.WriteAllText(facade, "class Counter { public: int Changed() { return 9; } };");
         File.WriteAllText(config, File.ReadAllText(config).Replace("facade.hpp", "missing.hpp", StringComparison.Ordinal));
@@ -393,7 +495,9 @@ public sealed class NativeBindingGenerationTests : IDisposable
         if (Directory.Exists(m_root))
         {
             foreach (string file in Directory.EnumerateFiles(m_root, "*", SearchOption.AllDirectories))
+            {
                 File.SetAttributes(file, FileAttributes.Normal);
+            }
             Directory.Delete(m_root, recursive: true);
         }
     }
@@ -401,16 +505,15 @@ public sealed class NativeBindingGenerationTests : IDisposable
     private static NativeBindingGenerationDescriptor SelectedGeneration(
         string fingerprint,
         bool usesRuntimeImports = false
-    )
-        => new()
-        {
-            fingerprint = fingerprint,
-            artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
-            artifactOwnerDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration"),
-            bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
-            usesRuntimeImports = usesRuntimeImports,
-            nativeDirectory = string.Empty
-        };
+    ) => new()
+    {
+        fingerprint = fingerprint,
+        artifactDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint),
+        artifactOwnerDirectory = Path.Combine(Path.GetTempPath(), "SelectedGeneration"),
+        bindingsPath = Path.Combine(Path.GetTempPath(), "SelectedGeneration", fingerprint, "Generated", "Bindings.cs"),
+        usesRuntimeImports = usesRuntimeImports,
+        nativeDirectory = string.Empty
+    };
 
     private string CreateConfig(string header)
     {
@@ -420,13 +523,17 @@ public sealed class NativeBindingGenerationTests : IDisposable
         File.WriteAllText(Path.Combine(m_root, "Fixture.csproj"), "<Project />");
         WriteDefinition();
         string config = Path.Combine(m_root, "bindgen.json");
-        File.WriteAllText(config, JsonSerializer.Serialize(new {
-            schemaVersion = 2,
-            library = new { id = "fixture", nativeName = "fixture" },
-            source = new { language = "c", headers = new[] { "Source/api.h" } },
-            api = new { @namespace = "Fixture.Native", name = "Api" },
-            output = new { root = "Generated", layout = "singleFile" }
-        }));
+        File.WriteAllText(
+            config,
+            JsonSerializer.Serialize(new
+            {
+                schemaVersion = 2,
+                library = new { id = "fixture", nativeName = "fixture" },
+                source = new { language = "c", headers = new[] { "Source/api.h" } },
+                api = new { @namespace = "Fixture.Native", name = "Api" },
+                output = new { root = "Generated", layout = "singleFile" }
+            })
+        );
         return config;
     }
 
@@ -440,27 +547,40 @@ public sealed class NativeBindingGenerationTests : IDisposable
         var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
         var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
         using var result = await BindingTestProfiles.Generator("fixture-target").GenerateAsync(
-            new NativeBuildContext(m_root, "release"), request, cancellation);
+            new NativeBuildContext(m_root, "release"),
+            request,
+            cancellation
+        );
         return result[owner.nativeProject];
     }
 
     private void WriteDefinition()
     {
-        new XDocument(new XElement("Project",
-            new XElement("PropertyGroup", new XElement("InnoNativeComponentId", "fixture"), new XElement("InnoBindingConfig", "bindgen.json"))))
+        new XDocument(
+            new XElement(
+                "Project",
+                new XElement(
+                    "PropertyGroup",
+                    new XElement("InnoNativeComponentId", "fixture"),
+                    new XElement("InnoBindingConfig", "bindgen.json")
+                )
+            )
+        )
             .Save(Path.Combine(m_root, "bindings.props"));
     }
 
     private static void WriteCppConfig(string path)
     {
-        File.WriteAllText(path, JsonSerializer.Serialize(new
-        {
-            schemaVersion = 2,
-            library = new { id = "fixture", nativeName = "fixture" },
-            source = new { language = "cpp", languageStandard = "c++20", headers = new[] { "Source/facade.hpp" } },
-            api = new { @namespace = "Fixture.Native", name = "Api" },
-            output = new { root = "Generated", layout = "singleFile" }
-        }));
+        File.WriteAllText(
+            path,
+            JsonSerializer.Serialize(new
+            {
+                schemaVersion = 2,
+                library = new { id = "fixture", nativeName = "fixture" },
+                source = new { language = "cpp", languageStandard = "c++20", headers = new[] { "Source/facade.hpp" } },
+                api = new { @namespace = "Fixture.Native", name = "Api" },
+                output = new { root = "Generated", layout = "singleFile" }
+            })
+        );
     }
-
 }

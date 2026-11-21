@@ -144,26 +144,50 @@ public sealed class FilePlayerSupportPackPreparation
         string project = Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_productProject);
         string template = Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_templateFile);
         if (!File.Exists(template))
+        {
             throw new FileNotFoundException("The Player publication template is absent.", template);
+        }
         var native = new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION)
             .WithBindingGenerator(m_bindingGenerator);
         if (context.nativeDependencies is null)
-            native = native.WithToolchain(await m_toolchainProvider.ResolveAsync(
-                native, m_host, m_nativePlatform, cancellationToken).ConfigureAwait(false));
+        {
+            native = native.WithToolchain(
+                await m_toolchainProvider.ResolveAsync(
+                    native,
+                    m_host,
+                    m_nativePlatform,
+                    cancellationToken
+                ).ConfigureAwait(false)
+            );
+        }
         DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
-            context.dotnetHost, project, cancellationToken).ConfigureAwait(false);
+            context.dotnetHost,
+            project,
+            cancellationToken
+        ).ConfigureAwait(false);
         var properties = new Dictionary<string, string>
         {
-            ["Configuration"] = "Release", ["RuntimeIdentifier"] = m_runtimeIdentifier,
-            ["DebugType"] = "None", ["DebugSymbols"] = "false",
+            ["Configuration"] = "Release",
+            ["RuntimeIdentifier"] = m_runtimeIdentifier,
+            ["DebugType"] = "None",
+            ["DebugSymbols"] = "false",
             ["InnoShaderToolSourceRoot"] = context.engineRoot,
-            ["InnoNativeTarget"] = m_target.value, ["InnoPrepareProductNative"] = "false"
+            ["InnoNativeTarget"] = m_target.value,
+            ["InnoPrepareProductNative"] = "false"
         };
         if (context.nativeDependencies is not null)
+        {
             properties["InnoNativeDependencyManifest"] = context.nativeDependencies;
+        }
         PlayerSupportPackPreparationIdentity identity = await PlayerSupportPackPreparationIdentity.CaptureAsync(
-            native, m_nativePlan, sdk, project, properties,
-            m_preparationInputs.Append(template).ToArray(), cancellationToken).ConfigureAwait(false);
+            native,
+            m_nativePlan,
+            sdk,
+            project,
+            properties,
+            m_preparationInputs.Append(template).ToArray(),
+            cancellationToken
+        ).ConfigureAwait(false);
         return new PreparationPlan(this, context.engineRoot, project, sdk, native, identity);
     }
 
@@ -175,52 +199,107 @@ public sealed class FilePlayerSupportPackPreparation
         CancellationToken cancellationToken
     ) {
         using ProductNativeBuildResult products = identity.nativeDependencies is string manifest
-            ? await NativeDependencyManifest.AcquireAsync(native.engineRoot, manifest, m_target.value,
-                native.configuration, m_nativePlan, cancellationToken).ConfigureAwait(false)
+            ? await NativeDependencyManifest.AcquireAsync(
+                native.engineRoot,
+                manifest,
+                m_target.value,
+                native.configuration,
+                m_nativePlan,
+                cancellationToken
+            ).ConfigureAwait(false)
             : await m_nativeExecutor.BuildAsync(native, m_nativePlan, cancellationToken).ConfigureAwait(false);
         using ManagedBuildExecution execution = await identity.CreateExecutionAsync(cancellationToken).ConfigureAwait(false);
         context = new PlayerSupportPackBuildContext(execution.engineRoot, context.stagingDirectory, context.sdk);
         project = execution.project;
         string bindingSelection = Path.Combine(Path.GetDirectoryName(execution.project)!, "obj", "support-pack", "BindingSelection.props");
-        NativeBindingGenerationDescriptor.WriteSelection(bindingSelection,
-            m_nativePlan.steps.Select((
-                step,
-                index
-            ) => (step, product: products[index]))
+        NativeBindingGenerationDescriptor.WriteSelection(
+            bindingSelection,
+            m_nativePlan.steps
+                .Select((
+                    step,
+                    index
+                ) => (step, product: products[index]))
                 .Where(static pair => pair.product.bindingGeneration is not null)
-                .ToDictionary(static pair => pair.step.component.nativeProject,
-                    static pair => pair.product.bindingGeneration!, StringComparer.Ordinal),
-            m_nativePlan.steps.Where((
-                step,
-                index
-            ) => products[index].bindingGeneration is not null)
-                .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal));
-        await ToolchainEnvironment.RunAsync(context.sdk.hostPath,
-            [context.sdk.cliPath, "build", project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "--configuration", "Release",
-                "--runtime", m_runtimeIdentifier, "--nologo", "-p:DebugType=None", "-p:DebugSymbols=false",
-                "-p:InnoNativeTarget=" + m_target.value, "-p:InnoPrepareProductNative=false",
+                .ToDictionary(
+                    static pair => pair.step.component.nativeProject,
+                    static pair => pair.product.bindingGeneration!,
+                    StringComparer.Ordinal
+                ),
+            m_nativePlan.steps
+                .Where((
+                    step,
+                    index
+                ) => products[index].bindingGeneration is not null)
+                .ToDictionary(static step => step.component.nativeProject, static step => step.options.libraryKind, StringComparer.Ordinal)
+        );
+        await ToolchainEnvironment.RunAsync(
+            context.sdk.hostPath,
+            [
+                context.sdk.cliPath,
+                "build",
+                project,
+                "--disable-build-servers",
+                "-m:1",
+                "-nodeReuse:false",
+                "--configuration",
+                "Release",
+                "--runtime",
+                m_runtimeIdentifier,
+                "--nologo",
+                "-p:DebugType=None",
+                "-p:DebugSymbols=false",
+                "-p:InnoNativeTarget=" + m_target.value,
+                "-p:InnoPrepareProductNative=false",
                 "-p:InnoShaderToolSourceRoot=" + native.engineRoot,
                 "-p:InnoNativeBindingSelection=" + bindingSelection,
-                ..(identity.nativeDependencies is string selection ? new[] { "-p:InnoNativeDependencyManifest=" + selection } : Array.Empty<string>())],
-            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(context.sdk.hostPath)).ConfigureAwait(false);
-        string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(context.sdk.hostPath,
-            [context.sdk.cliPath, "msbuild", project, "-getProperty:TargetDir", "-p:Configuration=Release", "-p:RuntimeIdentifier=" + m_runtimeIdentifier,
-                "-p:InnoNativeTarget=" + m_target.value, "-p:DesignTimeBuild=true", "-nologo"],
-            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(context.sdk.hostPath)).ConfigureAwait(false)).Trim();
+                ..(identity.nativeDependencies is string selection
+                   ? new[] { "-p:InnoNativeDependencyManifest=" + selection }
+                   : Array.Empty<string>())
+            ],
+            context.engineRoot,
+            cancellationToken,
+            DotNetSdkEnvironment.Create(context.sdk.hostPath)
+        ).ConfigureAwait(false);
+        string buildOutput = (await ToolchainEnvironment.CaptureOutputAsync(
+            context.sdk.hostPath,
+            [
+                context.sdk.cliPath,
+                "msbuild",
+                project,
+                "-getProperty:TargetDir",
+                "-p:Configuration=Release",
+                "-p:RuntimeIdentifier="
+                + m_runtimeIdentifier,
+                "-p:InnoNativeTarget=" + m_target.value,
+                "-p:DesignTimeBuild=true",
+                "-nologo"
+            ],
+            context.engineRoot,
+            cancellationToken,
+            DotNetSdkEnvironment.Create(context.sdk.hostPath)
+        ).ConfigureAwait(false)).Trim();
         PlayerSupportPackFiles.CopyReferences(
             buildOutput,
-            Path.Combine(context.stagingDirectory, "References"), Path.GetFileNameWithoutExtension(project));
+            Path.Combine(context.stagingDirectory, "References"),
+            Path.GetFileNameWithoutExtension(project)
+        );
         await CopyNativeRuntimeAsync(products, context.stagingDirectory, cancellationToken).ConfigureAwait(false);
         string link = Path.Combine(context.stagingDirectory, "PlayerLink");
         Directory.CreateDirectory(link);
         File.Copy(Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_templateFile), Path.Combine(link, "Player.csproj"));
         await PlayerSupportPackFiles.CopyPlayerSourcesAsync(
-            context, project, link, cancellationToken).ConfigureAwait(false);
+            context,
+            project,
+            link,
+            cancellationToken
+        ).ConfigureAwait(false);
         PlayerSupportPackFiles.CopyCompositionInputs(context.engineRoot, link);
         string references = Path.Combine(link, "References");
         Directory.CreateDirectory(references);
         foreach (string reference in Directory.EnumerateFiles(Path.Combine(context.stagingDirectory, "References"), "*.dll"))
+        {
             File.Copy(reference, Path.Combine(references, Path.GetFileName(reference)));
+        }
         await CopyNativeToTemplateAsync(context.stagingDirectory, link, cancellationToken).ConfigureAwait(false);
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }
@@ -241,11 +320,16 @@ public sealed class FilePlayerSupportPackPreparation
         foreach (NativeBuildProduct product in products)
         {
             if (product.targetId != m_nativePlatform)
-                throw new InvalidDataException($"Native product '{product.component}' targets '{product.targetId}', not '{m_nativePlatform}'.");
+            {
+                throw new InvalidDataException(
+                    $"Native product '{product.component}' targets '{product.targetId}', not '{m_nativePlatform}'."
+                );
+            }
             if (!product.files.Any(file => string.Equals(Path.GetExtension(file), m_nativeExtension, StringComparison.OrdinalIgnoreCase)))
             {
                 throw new InvalidDataException(
-                    $"Native runtime product '{product.component}' and '{m_target}' is empty.");
+                    $"Native runtime product '{product.component}' and '{m_target}' is empty."
+                );
             }
         }
         await ProductNativeDeployment.StageAsync(products, m_nativePlan, staging, cancellationToken).ConfigureAwait(false);
@@ -266,9 +350,12 @@ public sealed class FilePlayerSupportPackPreparation
             await using FileStream output = new(destination, FileMode.CreateNew);
             await source.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
             if (!OperatingSystem.IsWindows())
+            {
                 File.SetUnixFileMode(destination, File.GetUnixFileMode(input));
+            }
         }
     }
+
     private sealed class PreparationPlan(
         FilePlayerSupportPackPreparation owner,
         string engineRoot,
@@ -276,7 +363,8 @@ public sealed class FilePlayerSupportPackPreparation
         DotNetSdkDescriptor sdk,
         NativeBuildContext native,
         PlayerSupportPackPreparationIdentity identity
-    ) : PlayerSupportPackPlan(owner.target, identity.fingerprint) {
+    ) : PlayerSupportPackPlan(owner.target, identity.fingerprint)
+    {
         /// <inheritdoc />
         public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken) => identity.VerifyAsync(cancellationToken);
 
@@ -284,8 +372,12 @@ public sealed class FilePlayerSupportPackPreparation
         public override ValueTask PrepareAsync(
             string stagingDirectory,
             CancellationToken cancellationToken
-        ) => owner.ExecuteAsync(new PlayerSupportPackBuildContext(engineRoot, stagingDirectory, sdk),
-            project, native, identity, cancellationToken);
+        ) => owner.ExecuteAsync(
+            new PlayerSupportPackBuildContext(engineRoot, stagingDirectory, sdk),
+            project,
+            native,
+            identity,
+            cancellationToken
+        );
     }
-
 }

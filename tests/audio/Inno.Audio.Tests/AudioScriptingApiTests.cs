@@ -1,20 +1,20 @@
-using Inno.Core.IO;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
-using Inno.Assets;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Audio.Runtime;
+using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Settings;
 using Inno.Plugins;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scripting.Compiler;
-using Xunit;
 
 namespace Inno.Audio.Tests;
 
@@ -23,10 +23,7 @@ public sealed class AudioScriptingApiTests
     [Fact]
     public async Task FacadeMixerProviderAndSceneComponentsCompileThroughLogicalNamespace()
     {
-        string projectRoot = Path.Combine(
-            Path.GetTempPath(),
-            "InnoAudioScriptingTests",
-            Guid.NewGuid().ToString("N"));
+        string projectRoot = Path.Combine(Path.GetTempPath(), "InnoAudioScriptingTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(Path.Combine(projectRoot, "Assets"));
         Directory.CreateDirectory(Path.Combine(projectRoot, "Plugins"));
         Directory.CreateDirectory(Path.Combine(projectRoot, "Library"));
@@ -37,13 +34,17 @@ public sealed class AudioScriptingApiTests
             var identities = new IdentityAllocator();
             using IDisposable identityScope = identities.EnterScope();
             using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(AudioScriptingApiTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+                .UseMetadataSources(
+                    new DotNetAssemblyCatalogSource(typeof(AudioScriptingApiTests).Assembly),
+                    new ReflectionTypeCatalogSource(),
+                    new ReflectionSerializationMetadataSource()
+                )
                 .Build();
             var pluginSources = new PluginSourceService(
                 host.serialization,
                 Path.Combine(projectRoot, "Plugins"),
-                Path.Combine(projectRoot, "Library"));
+                Path.Combine(projectRoot, "Library")
+            );
             PluginScanResult scan = pluginSources.Scan();
             using var assets = new AssetPipeline(
                 host.modules,
@@ -54,16 +55,19 @@ public sealed class AudioScriptingApiTests
                 host.logs,
                 AssetPipelineOptions.Create(
                     Path.Combine(projectRoot, "Assets"),
-                    Path.Combine(projectRoot, "Library")) with
+                    Path.Combine(projectRoot, "Library")
+                ) with
                 {
                     enableFileSystemWatcher = false
-                });
+                }
+            );
             using var settings = new ProjectSettingsStore(
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(projectRoot, "Settings.Project.inno"))),
                 host.types,
                 host.serialization,
                 new ProjectId("tests.audio.scripting"),
-                AssetSerializationContext.Create(assets));
+                AssetSerializationContext.Create(assets)
+            );
             using var plugins = new PluginEnvironment(
                 assets,
                 settings,
@@ -71,10 +75,12 @@ public sealed class AudioScriptingApiTests
                 Path.Combine(projectRoot, "Plugins"),
                 Path.Combine(projectRoot, "Library"),
                 scan,
-                host.modules.generations);
+                host.modules.generations
+            );
             string dotnetHost = Path.Combine(
                 Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
-                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+            );
             var compiler = new ScriptCompiler(
                 new ScriptCompilerOptions
                 {
@@ -82,7 +88,8 @@ public sealed class AudioScriptingApiTests
                     compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
                 },
                 assets,
-                plugins);
+                plugins
+            );
             File.WriteAllText(Path.Combine(projectRoot, "Assets", "AudioProbe.cs"), """
                 using InnoEngine.Audio;
 
@@ -115,14 +122,20 @@ public sealed class AudioScriptingApiTests
 
             ScriptCompilationResult result = await compiler.CompileAuthoringGenerationAsync();
 
-            Assert.True(result.success, string.Join(
-                Environment.NewLine,
-                result.diagnostics.Select(static diagnostic => $"{diagnostic.id}: {diagnostic.message}")));
+            Assert.True(
+                result.success,
+                string.Join(
+                    Environment.NewLine,
+                    result.diagnostics.Select(static diagnostic => $"{diagnostic.id}: {diagnostic.message}")
+                )
+            );
         }
         finally
         {
             if (Directory.Exists(projectRoot))
+            {
                 Directory.Delete(projectRoot, recursive: true);
+            }
         }
     }
 }

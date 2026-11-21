@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 using Inno.Scene;
 using Inno.Scene.Layers;
@@ -45,21 +44,29 @@ internal sealed class GameLayerDiagnosticPublisher
             {
                 GameObject gameObject = objects[objectIndex];
                 if (stack.IsDefined(gameObject.layer))
+                {
                     continue;
+                }
                 Guid targetId = gameObject.identity.persistentId;
                 currentTargets.Add(targetId);
                 if (m_activeTargets.Contains(targetId))
+                {
                     continue;
+                }
                 m_diagnostics.Set(
                     CreateSource(targetId, gameObject.name),
                     [Diagnostic.Error(
                         "GAMEOBJECT-LAYER-UNDEFINED",
-                        $"GameObject '{gameObject.name}' uses undefined layer slot {gameObject.layer.index}.")]);
+                        $"GameObject '{gameObject.name}' uses undefined layer slot {gameObject.layer.index}."
+                    )]
+                );
             }
         }
 
         foreach (Guid targetId in m_activeTargets.Where(id => !currentTargets.Contains(id)).ToArray())
+        {
             m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+        }
         m_activeTargets.Clear();
         m_activeTargets.UnionWith(currentTargets);
     }
@@ -70,13 +77,14 @@ internal sealed class GameLayerDiagnosticPublisher
     internal void Clear()
     {
         foreach (Guid targetId in m_activeTargets)
+        {
             m_diagnostics.Clear(CreateSource(targetId, targetId.ToString("D")));
+        }
         m_activeTargets.Clear();
     }
 
     private static DiagnosticSource CreateSource(
         Guid targetId,
         string displayName
-    )
-        => new($"editor.scene.layer:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
+    ) => new($"editor.scene.layer:{targetId:N}", $"{C_DIAGNOSTIC_GROUP}: {displayName}");
 }

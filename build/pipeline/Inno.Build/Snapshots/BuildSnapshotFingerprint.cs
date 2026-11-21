@@ -37,7 +37,8 @@ internal static class BuildSnapshotFingerprint
                 FileAccess.Read,
                 FileShare.Read,
                 128 * 1024,
-                FileOptions.Asynchronous | FileOptions.SequentialScan);
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            );
             byte[] fileHash = await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false);
             hash.AppendData(fileHash);
         }
@@ -49,12 +50,14 @@ internal static class BuildSnapshotFingerprint
         IReadOnlyList<PluginCandidate> actual
     ) {
         if (expected.Count != actual.Count)
+        {
             return false;
+        }
         for (int index = 0; index < expected.Count; index++)
         {
             if (!string.Equals(expected[index].manifest.pluginId, actual[index].manifest.pluginId, StringComparison.Ordinal)
-                || !string.Equals(expected[index].contentHash, actual[index].contentHash, StringComparison.Ordinal))
-            {
+                || !string.Equals(expected[index].contentHash, actual[index].contentHash, StringComparison.Ordinal)
+            ) {
                 return false;
             }
         }

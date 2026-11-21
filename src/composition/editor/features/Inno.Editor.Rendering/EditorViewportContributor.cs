@@ -1,9 +1,8 @@
-using Inno.References;
 using System;
-
 using Inno.Core.Mathematics;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Runtime;
@@ -138,9 +137,20 @@ public sealed class EditorViewportContext
     internal EditorViewportContext ForLayer(RenderOutputLayer layer)
     {
         ArgumentNullException.ThrowIfNull(layer);
-        return new EditorViewportContext(editor, interactions, kind, viewportId,
-            pixelWidth, pixelHeight, navigation, content, presentation,
-            new SelectedViewContentCollector(viewContent, layer.sourceIds), frameIndex, input);
+        return new EditorViewportContext(
+            editor,
+            interactions,
+            kind,
+            viewportId,
+            pixelWidth,
+            pixelHeight,
+            navigation,
+            content,
+            presentation,
+            new SelectedViewContentCollector(viewContent, layer.sourceIds),
+            frameIndex,
+            input
+        );
     }
 
     /// <summary>
@@ -197,6 +207,7 @@ public sealed class EditorViewportContext
     /// Gets the frame index shared by all Editor views in this output frame.
     /// </summary>
     public ulong frameIndex { get; }
+
     /// <summary>
     /// Gets input located in this viewport's physical pixels.
     /// </summary>
@@ -222,7 +233,9 @@ public readonly record struct EditorViewportPresentation
         float pixelDensity = 1f
     ) {
         if (!float.IsFinite(pixelDensity) || pixelDensity <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(pixelDensity));
+        }
         this.backgroundColor = backgroundColor;
         this.pixelDensity = pixelDensity;
     }
@@ -247,17 +260,14 @@ public enum EditorViewportManipulationPlane
     /// Keeps the full three-dimensional translation, rotation, and scale controls.
     /// </summary>
     Spatial,
-
     /// <summary>
     /// Uses the X/Y translation and scale axes with the Z rotation handle.
     /// </summary>
     XY,
-
     /// <summary>
     /// Uses the X/Z translation and scale axes with the Y rotation handle.
     /// </summary>
     XZ,
-
     /// <summary>
     /// Uses the Y/Z translation and scale axes with the X rotation handle.
     /// </summary>
@@ -295,7 +305,9 @@ public readonly record struct EditorViewportManipulationSpace
         EditorViewportManipulationPlane plane = EditorViewportManipulationPlane.Spatial
     ) {
         if (!Enum.IsDefined(plane))
+        {
             throw new ArgumentOutOfRangeException(nameof(plane));
+        }
         this.viewMatrix = viewMatrix;
         this.projectionMatrix = projectionMatrix;
         this.isOrthographic = isOrthographic;
@@ -422,9 +434,7 @@ public abstract class EditorViewportContributor
     /// <summary>
     /// Creates a parameterless reloadable viewport contributor.
     /// </summary>
-    protected EditorViewportContributor()
-    {
-    }
+    protected EditorViewportContributor() {}
 
     /// <summary>
     /// Determines whether this rendering model participates in the supplied viewport content.
@@ -466,9 +476,7 @@ public abstract class EditorViewportContributor
     /// <param name="context">
     /// Frame-only Editor and viewport context.
     /// </param>
-    public virtual void DrawToolbar(EditorViewportContext context)
-    {
-    }
+    public virtual void DrawToolbar(EditorViewportContext context) {}
 
     /// <summary>
     /// Handles one pointer click when this contributor owns viewport interaction.
@@ -476,7 +484,5 @@ public abstract class EditorViewportContributor
     /// <param name="context">
     /// Normalized frame-only pointer context.
     /// </param>
-    public virtual void HandlePointer(EditorViewportPointerContext context)
-    {
-    }
+    public virtual void HandlePointer(EditorViewportPointerContext context) {}
 }

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-
-using Xunit;
 
 namespace Inno.Assets.Pipeline.Tests;
 
@@ -33,9 +31,10 @@ public sealed class AssetFileSystemChangeTests
             observed = observed.Concat(fileSystem.WaitForIdle()).ToArray();
 
             Assert.False(fileSystem.TryGetEntry(AssetPath.Project("Flow/item.txt"), out _));
-            Assert.Contains(observed, static change =>
-                change.relativePath == "Flow/item.txt" &&
-                change.changeType.HasFlag(WatcherChangeTypes.Deleted));
+            Assert.Contains(observed, static change => (
+                change.relativePath == "Flow/item.txt"
+                && change.changeType.HasFlag(WatcherChangeTypes.Deleted)
+            ));
         }
         finally
         {
@@ -56,8 +55,9 @@ public sealed class AssetFileSystemChangeTests
             System.IO.File.Move(oldPath, newPath);
             IReadOnlyList<AssetChangedEvent> observed = fileSystem.WaitForIdle();
 
-            AssetChangedEvent renamed = Assert.Single(observed.Where(static change =>
-                change.changeType.HasFlag(WatcherChangeTypes.Renamed)));
+            AssetChangedEvent renamed = Assert.Single(
+                observed.Where(static change => change.changeType.HasFlag(WatcherChangeTypes.Renamed))
+            );
             Assert.Equal("old.txt", renamed.oldRelativePath);
             Assert.Equal("new.txt", renamed.relativePath);
             Assert.False(fileSystem.Exists(AssetPath.Project("old.txt")));
@@ -102,6 +102,8 @@ public sealed class AssetFileSystemChangeTests
     private static void DeleteRoot(string root)
     {
         if (Directory.Exists(root))
+        {
             Directory.Delete(root, recursive: true);
+        }
     }
 }

@@ -1,5 +1,5 @@
-using Inno.Scripting.Api;
 using Inno.Editor.Inspection;
+using Inno.Scripting.Api;
 
 [assembly: ScriptingApiNamespace("InnoEditor.Inspection", "Inno.Editor.Inspection", ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(InspectionDrawer<>), ScriptingApiScope.Editor)]

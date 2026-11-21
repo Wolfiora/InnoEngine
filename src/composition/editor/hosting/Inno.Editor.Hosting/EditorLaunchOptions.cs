@@ -1,7 +1,7 @@
 using System;
 using Inno.Adapter.Presentation;
-using Inno.Build.Composition;
 using Inno.Build;
+using Inno.Build.Composition;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Extensibility.Modules;

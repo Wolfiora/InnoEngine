@@ -41,7 +41,9 @@ public sealed class PollingShellFrameDriver : IShellFrameDriver
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (!advanceFrame())
+            {
                 return ValueTask.CompletedTask;
+            }
         }
     }
 }

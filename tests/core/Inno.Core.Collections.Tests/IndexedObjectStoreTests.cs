@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Inno.Core.Collections;
-
 using Xunit;
+using Inno.Core.Collections;
 
 namespace Inno.Core.Collections.Tests;
 
@@ -15,8 +13,10 @@ public sealed class IndexedObjectStoreTests
         public string name { get; }
         public int Category { get; }
 
-        public Item(string name, int category)
-        {
+        public Item(
+            string name,
+            int category
+        ) {
             this.name = name;
             Category = category;
         }
@@ -72,8 +72,7 @@ public sealed class IndexedObjectStoreTests
 
         store.Add(a).Set(key, 10);
 
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() =>
-            store.Add(b).Set(key, 10));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => store.Add(b).Set(key, 10));
 
         Assert.Contains("Duplicate key", ex.Message);
     }
@@ -85,7 +84,7 @@ public sealed class IndexedObjectStoreTests
         var key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
 
         var a = new Item("A", 1);
-        
+
         store.Add(a).Set(key, 10);
         store.Add(a).Set(key, 20);
 
@@ -125,7 +124,8 @@ public sealed class IndexedObjectStoreTests
         IndexedObjectKey<int> orderKey = store.DefineKey<int>(
             "order",
             IndexedObjectKeyFlags.Ordered | IndexedObjectKeyFlags.Unique,
-            Comparer<int>.Default);
+            Comparer<int>.Default
+        );
         var unrelated = new Item("Unrelated", 2);
         var last = new Item("Last", 1);
         var excluded = new Item("Excluded", 1);
@@ -340,5 +340,4 @@ public sealed class IndexedObjectStoreTests
 
         Assert.Throws<InvalidOperationException>(() => enumerator.MoveNext());
     }
-
 }

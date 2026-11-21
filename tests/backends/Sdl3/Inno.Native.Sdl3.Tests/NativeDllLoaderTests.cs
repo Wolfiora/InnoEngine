@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using Inno.Native.LibraryLoading;
 using Xunit;
+using Inno.Native.LibraryLoading;
 
 namespace Inno.Native.Sdl3.Tests;
 
@@ -46,7 +46,9 @@ public sealed class NativeDllLoaderTests
     public void ExplicitDeploymentLoadsSdlNearTheWindowsPathLimit()
     {
         if (OperatingSystem.IsWindows())
+        {
             LoadSdlFromDeepOutputDirectory(252, extendedRoot: false);
+        }
     }
 
     [Fact]
@@ -55,7 +57,9 @@ public sealed class NativeDllLoaderTests
     public void ExplicitDeploymentLoadsSdlBeyondTheWindowsPathLimit()
     {
         if (OperatingSystem.IsWindows())
+        {
             LoadSdlFromDeepOutputDirectory(300, extendedRoot: false);
+        }
     }
 
     [Fact]
@@ -64,7 +68,9 @@ public sealed class NativeDllLoaderTests
     public void ExplicitDeploymentLoadsSdlWithAnExtendedWindowsRoot()
     {
         if (OperatingSystem.IsWindows())
+        {
             LoadSdlFromDeepOutputDirectory(300, extendedRoot: true);
+        }
     }
 
     [Theory]
@@ -104,8 +110,11 @@ public sealed class NativeDllLoaderTests
             string payload = Path.Combine(directory, fileName);
             File.Copy(source, payload);
             Assert.Equal(pathLength, payload.Length);
-            var deployment = new NativeDeploymentIndex("windows-x64",
-                new Dictionary<string, string> { [C_LIBRARY_NAME] = fileName }, new Dictionary<string, string>());
+            var deployment = new NativeDeploymentIndex(
+                "windows-x64",
+                new Dictionary<string, string> { [C_LIBRARY_NAME] = fileName },
+                new Dictionary<string, string>()
+            );
             string selectedRoot = extendedRoot ? @"\\?\" + directory : directory;
             string library = NativeDeploymentIndex.Decode(deployment.Encode()).ResolveLibrary(selectedRoot, C_LIBRARY_NAME);
             nint module = NativeLibrary.Load(library, typeof(SDL).Assembly, null);

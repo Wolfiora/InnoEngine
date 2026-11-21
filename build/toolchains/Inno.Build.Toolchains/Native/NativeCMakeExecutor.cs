@@ -96,19 +96,28 @@ public static class NativeCMakeExecutor
         ArgumentNullException.ThrowIfNull(componentArguments);
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceDirectory);
         if (target is not null)
+        {
             ArgumentException.ThrowIfNullOrWhiteSpace(target);
+        }
         NativeToolchainSelection selection = context.RequireToolchain();
         NativeComponentBuildOptions options = context.RequireComponentOptions(component);
         var reserved = new HashSet<string>(StringComparer.Ordinal);
         foreach (string argument in componentArguments)
         {
             if (argument.StartsWith("-D", StringComparison.Ordinal) && argument.Contains('='))
+            {
                 reserved.Add(argument[2..argument.IndexOf('=')].Split(':')[0]);
+            }
         }
         foreach (string argument in options.cmakeArguments)
         {
             if (reserved.Contains(argument[2..argument.IndexOf('=')].Split(':')[0]))
-                throw new ArgumentException("Product configuration cannot override a recipe-owned component definition.", nameof(componentArguments));
+            {
+                throw new ArgumentException(
+                    "Product configuration cannot override a recipe-owned component definition.",
+                    nameof(componentArguments)
+                );
+            }
         }
         string buildType = context.configuration == "debug" ? "Debug" : "Release";
         string buildDirectory = Path.Combine(context.GetNativeBuildRoot(component), "CMake");
@@ -119,7 +128,9 @@ public static class NativeCMakeExecutor
         configure.Add("-DINNO_ROOT=" + sources.root);
         configure.Add("-DINNO_NATIVE_TARGET=" + selection.targetId);
         if (!selection.multiConfiguration)
+        {
             configure.Add("-DCMAKE_BUILD_TYPE=" + buildType);
+        }
         configure.Add("-DINNO_LIBRARY_KIND=" + options.libraryKind.ToString().ToUpperInvariant());
         configure.AddRange(componentArguments.Select(sources.ResolveDefinition));
         configure.AddRange(options.cmakeArguments.Select(sources.ResolveDefinition));
@@ -140,13 +151,27 @@ public static class NativeCMakeExecutor
             // A different SDK source identity selects another workspace and cannot reuse stale bytecode.
             environment["PYTHONPYCACHEPREFIX"] = Path.Combine(buildDirectory, "PythonCache");
         }
-        await ToolchainEnvironment.RunAsync(context, selection.ResolveExecutable("cmake"), configure,
-            sources.root, cancellationToken, environment).ConfigureAwait(false);
+        await ToolchainEnvironment.RunAsync(
+            context,
+            selection.ResolveExecutable("cmake"),
+            configure,
+            sources.root,
+            cancellationToken,
+            environment
+        ).ConfigureAwait(false);
         List<string> build = ["--build", buildDirectory, "--config", buildType];
         if (target is not null)
+        {
             build.AddRange(["--target", target]);
-        await ToolchainEnvironment.RunAsync(context, selection.ResolveExecutable("cmake"), build,
-            sources.root, cancellationToken, environment).ConfigureAwait(false);
+        }
+        await ToolchainEnvironment.RunAsync(
+            context,
+            selection.ResolveExecutable("cmake"),
+            build,
+            sources.root,
+            cancellationToken,
+            environment
+        ).ConfigureAwait(false);
         return buildDirectory;
     }
 
@@ -177,10 +202,13 @@ public static class NativeCMakeExecutor
         string buildType = context.configuration == "debug" ? "Debug" : "Release";
         string[] candidates = Directory.EnumerateFiles(buildDirectory, filePattern, SearchOption.AllDirectories)
             .Where(path => !Path.GetRelativePath(buildDirectory, path).Split(Path.DirectorySeparatorChar).Contains("CMakeFiles"))
-            .Where(path => !selection.multiConfiguration
-                || Path.GetRelativePath(buildDirectory, path).Split(Path.DirectorySeparatorChar).Contains(buildType))
+            .Where(path => (
+                !selection.multiConfiguration
+                || Path.GetRelativePath(buildDirectory, path).Split(Path.DirectorySeparatorChar).Contains(buildType)
+            ))
             .ToArray();
-        return candidates.Length == 1 ? candidates[0]
-            : throw new FileNotFoundException($"Expected one native output '{filePattern}' but found {candidates.Length}.");
+        return candidates.Length == 1
+               ? candidates[0]
+               : throw new FileNotFoundException($"Expected one native output '{filePattern}' but found {candidates.Length}.");
     }
 }

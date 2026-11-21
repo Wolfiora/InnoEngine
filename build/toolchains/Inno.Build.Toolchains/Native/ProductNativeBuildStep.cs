@@ -58,23 +58,41 @@ public sealed class ProductNativeBuildStep
         Func<NativeBuildContext, NativeBuildRecipe>? createRecipe,
         Func<string, string, string?> deploymentPath,
         string? configuration = null,
-        Func<NativeBuildContext, NativeBuildRecipe, IReadOnlyDictionary<string, NativeBuildProduct>, NativeBuildRecipe>? bindDependencies = null
+        Func<
+            NativeBuildContext,
+            NativeBuildRecipe,
+            IReadOnlyDictionary<string, NativeBuildProduct>,
+            NativeBuildRecipe
+        >? bindDependencies = null
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentNullException.ThrowIfNull(component);
         ArgumentNullException.ThrowIfNull(options);
         if (build is null && options.libraryKind != NativeLibraryKind.Static)
+        {
             throw new ArgumentException("Aggregate-only steps require explicit static linkage.", nameof(options));
+        }
         ArgumentNullException.ThrowIfNull(dependencies);
         if (build is null && component.staticBuild is null)
+        {
             throw new ArgumentException("Aggregate-only steps require a real static build definition.", nameof(build));
+        }
         if ((build is null) != (createRecipe is null))
-            throw new ArgumentException("A standalone producer requires its own source declaration; aggregate steps use their static definition.", nameof(createRecipe));
+        {
+            throw new ArgumentException(
+                "A standalone producer requires its own source declaration; aggregate steps use their static definition.",
+                nameof(createRecipe)
+            );
+        }
         ArgumentNullException.ThrowIfNull(deploymentPath);
         if (configuration is not null)
+        {
             ToolchainEnvironment.ValidateConfiguration(configuration);
+        }
         if (dependencies.Any(string.IsNullOrWhiteSpace) || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Count)
+        {
             throw new ArgumentException("Component dependencies must be assigned and unique.", nameof(dependencies));
+        }
         this.id = id;
         this.component = component;
         this.options = options;
@@ -109,7 +127,12 @@ public sealed class ProductNativeBuildStep
     /// <summary>
     /// Gets the standalone producer, or null for a component owned by a static aggregate executor.
     /// </summary>
-    public Func<NativeBuildContext, IReadOnlyDictionary<string, NativeBuildProduct>, CancellationToken, Task<NativeBuildProduct>>? build { get; }
+    public Func<
+        NativeBuildContext,
+        IReadOnlyDictionary<string, NativeBuildProduct>,
+        CancellationToken,
+        Task<NativeBuildProduct>
+    >? build { get; }
 
     /// <summary>
     /// Gets the producer's source declaration, or null when a static aggregate owns the component recipe.
@@ -131,5 +154,10 @@ public sealed class ProductNativeBuildStep
     /// Gets the backend-owned dependency transformation, or null for an independent source recipe.
     /// The supplied products are borrowed only during recipe construction.
     /// </summary>
-    public Func<NativeBuildContext, NativeBuildRecipe, IReadOnlyDictionary<string, NativeBuildProduct>, NativeBuildRecipe>? bindDependencies { get; }
+    public Func<
+        NativeBuildContext,
+        NativeBuildRecipe,
+        IReadOnlyDictionary<string, NativeBuildProduct>,
+        NativeBuildRecipe
+    >? bindDependencies { get; }
 }

@@ -1,6 +1,6 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Core.Settings;
 
@@ -40,5 +40,4 @@ public static class ProjectSettingsExecutionContext
         ArgumentNullException.ThrowIfNull(settings);
         return S_CURRENT_SCOPE.Enter(settings);
     }
-
 }

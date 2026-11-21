@@ -1,9 +1,8 @@
-using Inno.Core.Diagnostics;
 using System;
-using System.Linq;
 using System.Collections.Generic;
-
+using System.Linq;
 using Inno.Core.Collections;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Core.Graphs;
 
@@ -173,11 +172,14 @@ public static class GraphValidator
         {
             if (!resolver.TryResolve(node.definitionId, out GraphNodeDefinition? definition) || definition is null)
             {
-                diagnostics.Add(new GraphDiagnostic(
-                    "GRAPH_MISSING_NODE",
-                    $"Node definition '{node.definitionId}' is not active. The node and its connections were preserved.",
-                    DiagnosticSeverity.Warning,
-                    node.id));
+                diagnostics.Add(
+                    new GraphDiagnostic(
+                        "GRAPH_MISSING_NODE",
+                        $"Node definition '{node.definitionId}' is not active. The node and its connections were preserved.",
+                        DiagnosticSeverity.Warning,
+                        node.id
+                    )
+                );
                 continue;
             }
 
@@ -188,11 +190,14 @@ public static class GraphValidator
                 {
                     if (!ports.TryAdd(port.id, port))
                     {
-                        diagnostics.Add(new GraphDiagnostic(
-                            "GRAPH_DUPLICATE_PORT",
-                            $"Node definition '{node.definitionId}' returned duplicate port '{port.id}'.",
-                            DiagnosticSeverity.Error,
-                            node.id));
+                        diagnostics.Add(
+                            new GraphDiagnostic(
+                                "GRAPH_DUPLICATE_PORT",
+                                $"Node definition '{node.definitionId}' returned duplicate port '{port.id}'.",
+                                DiagnosticSeverity.Error,
+                                node.id
+                            )
+                        );
                     }
                 }
 
@@ -200,11 +205,14 @@ public static class GraphValidator
             }
             catch (Exception exception)
             {
-                diagnostics.Add(new GraphDiagnostic(
-                    "GRAPH_NODE_RESOLUTION_FAILED",
-                    $"Node '{node.id}' could not resolve its ports: {exception.Message}",
-                    DiagnosticSeverity.Error,
-                    node.id));
+                diagnostics.Add(
+                    new GraphDiagnostic(
+                        "GRAPH_NODE_RESOLUTION_FAILED",
+                        $"Node '{node.id}' could not resolve its ports: {exception.Message}",
+                        DiagnosticSeverity.Error,
+                        node.id
+                    )
+                );
             }
         }
     }
@@ -223,24 +231,30 @@ public static class GraphValidator
             GraphNodeRecord? inputNode = document.FindNode(edge.input.nodeId);
             if (outputNode is null || inputNode is null)
             {
-                diagnostics.Add(new GraphDiagnostic(
-                    "GRAPH_MISSING_ENDPOINT_NODE",
-                    $"Edge '{edge.id}' references a node that is not present in the document.",
-                    DiagnosticSeverity.Error,
-                    edgeId: edge.id));
+                diagnostics.Add(
+                    new GraphDiagnostic(
+                        "GRAPH_MISSING_ENDPOINT_NODE",
+                        $"Edge '{edge.id}' references a node that is not present in the document.",
+                        DiagnosticSeverity.Error,
+                        edgeId: edge.id
+                    )
+                );
                 continue;
             }
 
             if (!TryGetPort(portsByNode, edge.output, out GraphPortDefinition outputPort)
-                || !TryGetPort(portsByNode, edge.input, out GraphPortDefinition inputPort))
-            {
+                || !TryGetPort(portsByNode, edge.input, out GraphPortDefinition inputPort)
+            ) {
                 if (portsByNode.ContainsKey(edge.output.nodeId) && portsByNode.ContainsKey(edge.input.nodeId))
                 {
-                    diagnostics.Add(new GraphDiagnostic(
-                        "GRAPH_MISSING_ENDPOINT_PORT",
-                        $"Edge '{edge.id}' references a port that is not active on its node.",
-                        DiagnosticSeverity.Error,
-                        edgeId: edge.id));
+                    diagnostics.Add(
+                        new GraphDiagnostic(
+                            "GRAPH_MISSING_ENDPOINT_PORT",
+                            $"Edge '{edge.id}' references a port that is not active on its node.",
+                            DiagnosticSeverity.Error,
+                            edgeId: edge.id
+                        )
+                    );
                 }
 
                 continue;
@@ -248,22 +262,28 @@ public static class GraphValidator
 
             if (outputPort.direction != GraphPortDirection.Output || inputPort.direction != GraphPortDirection.Input)
             {
-                diagnostics.Add(new GraphDiagnostic(
-                    "GRAPH_INVALID_DIRECTION",
-                    $"Edge '{edge.id}' must connect an output port to an input port.",
-                    DiagnosticSeverity.Error,
-                    edgeId: edge.id));
+                diagnostics.Add(
+                    new GraphDiagnostic(
+                        "GRAPH_INVALID_DIRECTION",
+                        $"Edge '{edge.id}' must connect an output port to an input port.",
+                        DiagnosticSeverity.Error,
+                        edgeId: edge.id
+                    )
+                );
             }
 
             bool compatible = StringComparer.Ordinal.Equals(outputPort.valueTypeId, inputPort.valueTypeId)
-                || (conversion?.CanConvert(outputPort.valueTypeId, inputPort.valueTypeId) ?? false);
+                              || (conversion?.CanConvert(outputPort.valueTypeId, inputPort.valueTypeId) ?? false);
             if (!compatible)
             {
-                diagnostics.Add(new GraphDiagnostic(
-                    "GRAPH_INCOMPATIBLE_TYPES",
-                    $"Edge '{edge.id}' cannot convert '{outputPort.valueTypeId}' to '{inputPort.valueTypeId}'.",
-                    DiagnosticSeverity.Error,
-                    edgeId: edge.id));
+                diagnostics.Add(
+                    new GraphDiagnostic(
+                        "GRAPH_INCOMPATIBLE_TYPES",
+                        $"Edge '{edge.id}' cannot convert '{outputPort.valueTypeId}' to '{inputPort.valueTypeId}'.",
+                        DiagnosticSeverity.Error,
+                        edgeId: edge.id
+                    )
+                );
             }
 
             CountConnection(edge.output, outputPort, connectionCounts, edge.id, diagnostics);
@@ -283,12 +303,15 @@ public static class GraphValidator
         connectionCounts[endpoint] = currentCount;
         if (port.capacity == GraphPortCapacity.Single && currentCount > 1)
         {
-            diagnostics.Add(new GraphDiagnostic(
-                "GRAPH_PORT_CAPACITY",
-                $"Port '{endpoint.portId}' accepts only one connection.",
-                DiagnosticSeverity.Error,
-                endpoint.nodeId,
-                edgeId));
+            diagnostics.Add(
+                new GraphDiagnostic(
+                    "GRAPH_PORT_CAPACITY",
+                    $"Port '{endpoint.portId}' accepts only one connection.",
+                    DiagnosticSeverity.Error,
+                    endpoint.nodeId,
+                    edgeId
+                )
+            );
         }
     }
 
@@ -309,13 +332,16 @@ public static class GraphValidator
             {
                 if (port.direction == GraphPortDirection.Input
                     && port.required
-                    && !connectedInputs.Contains(new GraphEndpoint(nodeId, port.id)))
-                {
-                    diagnostics.Add(new GraphDiagnostic(
-                        "GRAPH_REQUIRED_INPUT",
-                        $"Required input '{port.displayName}' is not connected.",
-                        DiagnosticSeverity.Error,
-                        nodeId));
+                    && !connectedInputs.Contains(new GraphEndpoint(nodeId, port.id))
+                ) {
+                    diagnostics.Add(
+                        new GraphDiagnostic(
+                            "GRAPH_REQUIRED_INPUT",
+                            $"Required input '{port.displayName}' is not connected.",
+                            DiagnosticSeverity.Error,
+                            nodeId
+                        )
+                    );
                 }
             }
         }
@@ -327,21 +353,28 @@ public static class GraphValidator
     ) {
         var graph = new DependencyGraph<GraphNodeId>();
         foreach (GraphNodeRecord node in document.nodes)
+        {
             graph.AddNode(node.id);
+        }
 
         foreach (GraphEdgeRecord edge in document.edges)
         {
             if (graph.ContainsNode(edge.output.nodeId) && graph.ContainsNode(edge.input.nodeId))
+            {
                 graph.AddDependency(edge.input.nodeId, edge.output.nodeId);
+            }
         }
 
         if (graph.TryFindCycle(out IReadOnlyList<GraphNodeId> cycle))
         {
-            diagnostics.Add(new GraphDiagnostic(
-                "GRAPH_CYCLE",
-                "The graph contains a directed cycle.",
-                DiagnosticSeverity.Error,
-                cycle[0]));
+            diagnostics.Add(
+                new GraphDiagnostic(
+                    "GRAPH_CYCLE",
+                    "The graph contains a directed cycle.",
+                    DiagnosticSeverity.Error,
+                    cycle[0]
+                )
+            );
         }
     }
 
@@ -350,11 +383,9 @@ public static class GraphValidator
         GraphEndpoint endpoint,
         out GraphPortDefinition port
     ) {
-        if (portsByNode.TryGetValue(
-                endpoint.nodeId,
-                out IReadOnlyDictionary<GraphPortId, GraphPortDefinition>? ports)
-            && ports.TryGetValue(endpoint.portId, out GraphPortDefinition? resolved))
-        {
+        if (portsByNode.TryGetValue(endpoint.nodeId, out IReadOnlyDictionary<GraphPortId, GraphPortDefinition>? ports)
+            && ports.TryGetValue(endpoint.portId, out GraphPortDefinition? resolved)
+        ) {
             port = resolved;
             return true;
         }

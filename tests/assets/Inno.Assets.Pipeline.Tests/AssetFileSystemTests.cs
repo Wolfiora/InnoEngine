@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
-
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-
-using Xunit;
 
 namespace Inno.Assets.Pipeline.Tests;
 
@@ -181,8 +179,7 @@ public sealed class AssetFileSystemTests
             System.IO.File.WriteAllText(Path.Combine(root, ".DS_Store"), "noise");
 
             using var fileSystem = new AssetFileSystem(root, autoStart: false);
-            AssetFileEntry entry = Assert.Single(
-                fileSystem.GetEntries(includeDirectories: false));
+            AssetFileEntry entry = Assert.Single(fileSystem.GetEntries(includeDirectories: false));
 
             Assert.Equal("Tool.editor.cs", entry.name);
             Assert.Equal("Tool.editor", entry.nameWithoutExtension);
@@ -203,7 +200,8 @@ public sealed class AssetFileSystemTests
             Directory.CreateDirectory(Path.Combine(root, "~Starter", "Scenes"));
             System.IO.File.WriteAllText(
                 Path.Combine(root, "~Starter", "Scenes", "Game.cs"),
-                "public sealed class Game { }");
+                "public sealed class Game { }"
+            );
             System.IO.File.WriteAllText(Path.Combine(root, "~Standalone.cs"), "sample-like file");
 
             using var fileSystem = new AssetFileSystem(root, autoStart: false);
@@ -211,14 +209,12 @@ public sealed class AssetFileSystemTests
             Assert.True(fileSystem.TryGetEntry(AssetPath.Project("~Starter"), out AssetFileEntry tildeRoot));
             Assert.False(tildeRoot.isSample);
             Assert.False(tildeRoot.isSampleContent);
-            Assert.True(fileSystem.TryGetEntry(
-                AssetPath.Project("~Starter/Scenes/Game.cs"),
-                out AssetFileEntry tildeContent));
+            Assert.True(
+                fileSystem.TryGetEntry(AssetPath.Project("~Starter/Scenes/Game.cs"), out AssetFileEntry tildeContent)
+            );
             Assert.False(tildeContent.isSample);
             Assert.False(tildeContent.isSampleContent);
-            Assert.True(fileSystem.TryGetEntry(
-                AssetPath.Project("~Standalone.cs"),
-                out AssetFileEntry ordinaryFile));
+            Assert.True(fileSystem.TryGetEntry(AssetPath.Project("~Standalone.cs"), out AssetFileEntry ordinaryFile));
             Assert.False(ordinaryFile.isSample);
             Assert.False(ordinaryFile.isSampleContent);
         }
@@ -246,7 +242,8 @@ public sealed class AssetFileSystemTests
                     new AssetSourceMount(AssetSourceId.project, project, isReadOnly: false),
                     new AssetSourceMount(pluginId, plugin, isReadOnly: true)
                 ],
-                autoStart: false);
+                autoStart: false
+            );
 
             Assert.True(fileSystem.TryGetEntry(AssetPath.Project("same.txt"), out AssetFileEntry projectEntry));
             Assert.True(fileSystem.TryGetEntry(new AssetPath(pluginId, "same.txt"), out AssetFileEntry pluginEntry));
@@ -262,13 +259,16 @@ public sealed class AssetFileSystemTests
             Assert.Equal(pluginId, pluginEntry.source);
             Assert.Contains(
                 fileSystem.GetChildren(AssetPath.Project(string.Empty)),
-                entry => entry.source == AssetSourceId.project);
+                entry => entry.source == AssetSourceId.project
+            );
             Assert.Contains(
                 fileSystem.GetChildren(AssetPath.Project(string.Empty)),
-                entry => entry.assetPath == new AssetPath(pluginId, string.Empty));
+                entry => entry.assetPath == new AssetPath(pluginId, string.Empty)
+            );
             Assert.Contains(
                 fileSystem.GetChildren(new AssetPath(pluginId, string.Empty)),
-                entry => entry.assetPath == new AssetPath(pluginId, "same.txt"));
+                entry => entry.assetPath == new AssetPath(pluginId, "same.txt")
+            );
         }
         finally
         {
@@ -313,6 +313,8 @@ public sealed class AssetFileSystemTests
     private static void DeleteRoot(string root)
     {
         if (Directory.Exists(root))
+        {
             Directory.Delete(root, recursive: true);
+        }
     }
 }

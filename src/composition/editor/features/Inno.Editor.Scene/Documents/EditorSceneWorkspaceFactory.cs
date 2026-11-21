@@ -1,10 +1,10 @@
 using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Types;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Runtime;
 
 namespace Inno.Editor.Scene;
@@ -48,6 +48,5 @@ public static class EditorSceneWorkspaceFactory
         SerializationRegistry serialization,
         LogRouter logs,
         IEditorSelectionCoordinator? selection = null
-    )
-        => new(runtimeSession, assets, types, serialization, logs, selection);
+    ) => new(runtimeSession, assets, types, serialization, logs, selection);
 }

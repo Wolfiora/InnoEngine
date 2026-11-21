@@ -27,5 +27,5 @@ public enum KeyModifier
     /// <summary>
     /// The super key.
     /// </summary>
-    Super = 8,
+    Super = 8
 }

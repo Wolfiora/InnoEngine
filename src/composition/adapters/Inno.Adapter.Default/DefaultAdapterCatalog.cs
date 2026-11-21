@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Adapter.Audio;
 using Inno.Adapter.Audio.MiniAudio;
 using Inno.Adapter.Input;

@@ -1,11 +1,9 @@
 using System;
 using System.Linq;
-
+using Xunit;
 using Inno.Core.Settings;
 using Inno.Scene;
 using Inno.Scene.Layers;
-
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -132,9 +130,7 @@ public sealed class GameLayerTests : IDisposable
 
         Assert.Same(first, scene.FindObjectWithLayer(player));
         Assert.Equal([first], scene.FindObjectsWithLayer(player));
-        Assert.Equal(
-            [first, second],
-            scene.FindObjectsWithLayers(GameLayerMask.FromLayers([player, enemy])));
+        Assert.Equal([first, second], scene.FindObjectsWithLayers(GameLayerMask.FromLayers([player, enemy])));
 
         first.layer = enemy;
 

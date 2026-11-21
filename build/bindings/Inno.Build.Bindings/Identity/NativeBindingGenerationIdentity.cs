@@ -32,7 +32,9 @@ internal static class NativeBindingGenerationIdentity
         using HostServices services = BindingHostFactory.CreateHostServices(context.engineRoot);
         var builder = BindingHostFactory.CreateBuilder(definition.profile, cancellation);
         foreach (string plugin in request.configuration.extensions.plugins)
+        {
             builder.AddPluginManifest(plugin, services.paths);
+        }
         BindingHost host = builder.Build();
         try
         {
@@ -44,9 +46,14 @@ internal static class NativeBindingGenerationIdentity
             {
                 targetId = target.id,
                 triple = target.triple,
-                toolchain = new NativeToolchainDescriptor(compilerPath: settings.compilerPath, sysRoot: settings.sysRoot,
-                    systemIncludeFolders: settings.systemIncludeDirectories, cxxSystemIncludeFolders: settings.cxxSystemIncludeDirectories,
-                    defines: settings.defines, arguments: settings.arguments),
+                toolchain = new NativeToolchainDescriptor(
+                    compilerPath: settings.compilerPath,
+                    sysRoot: settings.sysRoot,
+                    systemIncludeFolders: settings.systemIncludeDirectories,
+                    cxxSystemIncludeFolders: settings.cxxSystemIncludeDirectories,
+                    defines: settings.defines,
+                    arguments: settings.arguments
+                ),
                 languageStandard = source.languageStandard!,
                 includeDirectories = source.includeDirectories,
                 systemIncludeDirectories = source.systemIncludeDirectories,
@@ -59,7 +66,9 @@ internal static class NativeBindingGenerationIdentity
                 parseSystemIncludes = source.includeSystemDeclarations
             }, cancellation).GetAwaiter().GetResult();
             if (!analysis.success || analysis.snapshot is null)
+            {
                 throw new InvalidDataException("BGCS input analysis failed: " + analysis.GetDiagnosticSummary());
+            }
             var declarations = new List<string>
             {
                 SerializeIdentity(config),
@@ -72,26 +81,47 @@ internal static class NativeBindingGenerationIdentity
                 definition.request.targetId,
                 definition.request.outputMode.ToString()
             };
-            var profileInputs = definition.profile.inputPaths.Select(path => NativeBuildInput.FromPath(context.engineRoot, Path.GetFullPath(path, context.engineRoot)));
-            var inputs = request.configurationSnapshot.files.Concat(request.pluginSnapshots.SelectMany(static snapshot => snapshot.files)).Concat(analysis.snapshot.files)
-                .Concat(analysis.argumentInputs?.files ?? []).Select(input => NativeBuildInput.FromPath(context.engineRoot, input.path)).ToList();
+            var profileInputs = definition.profile.inputPaths.Select(
+                path => NativeBuildInput.FromPath(context.engineRoot, Path.GetFullPath(path, context.engineRoot))
+            );
+            var inputs = request.configurationSnapshot.files
+                .Concat(request.pluginSnapshots.SelectMany(static snapshot => snapshot.files))
+                .Concat(analysis.snapshot.files)
+                .Concat(analysis.argumentInputs?.files ?? [])
+                .Select(input => NativeBuildInput.FromPath(context.engineRoot, input.path))
+                .ToList();
             inputs.AddRange(profileInputs);
             Assembly implementation = typeof(NativeBindingGenerator).Assembly;
             string implementationIdentity = implementation.GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(attribute => attribute.Key == "Inno.BindingImplementation").Value
                 ?? throw new InvalidDataException("The binding implementation must declare its content identity.");
             declarations.Add("bindingImplementation=" + implementationIdentity);
-            var assemblies = new[] { typeof(BindingHost).Assembly, typeof(BGCS.Core.BindingDiagnostic).Assembly,
-                typeof(BGCS.Runtime.NativeModuleSession).Assembly }.Concat(definition.profile.GetExtensionAssemblies()).ToList();
-            foreach (AssemblyName reference in assemblies.Prepend(implementation).SelectMany(static assembly => assembly.GetReferencedAssemblies())
-                         .Where(static reference => reference.Name == "BGCS" || reference.Name!.StartsWith("BGCS.", StringComparison.Ordinal))
-                         .DistinctBy(static reference => reference.FullName).ToArray())
+            var assemblies = new[]
+            {
+                typeof(BindingHost).Assembly,
+                typeof(BGCS.Core.BindingDiagnostic).Assembly,
+                typeof(BGCS.Runtime.NativeModuleSession).Assembly
+            }.Concat(definition.profile.GetExtensionAssemblies()).ToList();
+            foreach (AssemblyName reference in assemblies
+                .Prepend(implementation)
+                .SelectMany(static assembly => assembly.GetReferencedAssemblies())
+                .Where(
+                    static reference => reference.Name == "BGCS" || reference.Name!.StartsWith("BGCS.", StringComparison.Ordinal)
+                )
+                .DistinctBy(static reference => reference.FullName)
+                .ToArray()
+            ) {
                 assemblies.Add(Assembly.Load(reference));
+            }
             foreach (Assembly assembly in assemblies.Distinct())
+            {
                 inputs.Add(new NativeBuildInput("binding-implementation/" + Path.GetFileName(assembly.Location), assembly.Location));
+            }
             string resources = Path.Combine(Path.GetDirectoryName(typeof(BindingHost).Assembly.Location)!, "bgcs", "worker-assets");
             if (!Directory.Exists(resources))
+            {
                 throw new DirectoryNotFoundException("The restored BGCS SDK worker content is missing: " + resources);
+            }
             inputs.Add(new NativeBuildInput("binding-worker-assets", resources));
             return NativeBuildFingerprint.Create(context, declarations, inputs, cancellation);
         }
@@ -129,10 +159,14 @@ internal static class NativeBindingGenerationIdentity
         {
             writer.WriteStartArray();
             foreach (JsonElement element in value.EnumerateArray())
+            {
                 WriteIdentity(writer, element);
+            }
             writer.WriteEndArray();
         }
         else
+        {
             value.WriteTo(writer);
+        }
     }
 }

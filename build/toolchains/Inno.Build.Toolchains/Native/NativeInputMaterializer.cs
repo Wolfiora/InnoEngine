@@ -51,26 +51,39 @@ public static class NativeInputMaterializer
         {
             byte[] existing = context.inputState.CaptureVerification([output], cancellationToken).entries.Single().hash;
             if (expected.AsSpan().SequenceEqual(existing))
+            {
                 return false;
+            }
         }
         Directory.CreateDirectory(Path.GetDirectoryName(output.physicalPath)!);
         string candidate = output.physicalPath + ".staging-" + Guid.NewGuid().ToString("N");
         try
         {
             await using (FileStream read = File.OpenRead(input.physicalPath))
-            await using (FileStream write = new(candidate, FileMode.CreateNew, FileAccess.Write, FileShare.None,
-                64 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan))
-            {
+            await using (FileStream write = new(
+                candidate,
+                FileMode.CreateNew,
+                FileAccess.Write,
+                FileShare.None,
+                64 * 1024,
+                FileOptions.Asynchronous | FileOptions.SequentialScan
+            )) {
                 await read.CopyToAsync(write, cancellationToken).ConfigureAwait(false);
                 await write.FlushAsync(cancellationToken).ConfigureAwait(false);
                 write.Flush(flushToDisk: true);
             }
             byte[] copied = context.inputState.CaptureVerification(
-                [new NativeBuildInput(input.logicalPath, candidate)], cancellationToken).entries.Single().hash;
+                [new NativeBuildInput(input.logicalPath, candidate)],
+                cancellationToken
+            ).entries.Single().hash;
             if (!expected.AsSpan().SequenceEqual(copied))
+            {
                 throw new InvalidOperationException($"Native input '{input.logicalPath}' changed during materialization.");
+            }
             if (!OperatingSystem.IsWindows())
+            {
                 File.SetUnixFileMode(candidate, File.GetUnixFileMode(input.physicalPath));
+            }
             cancellationToken.ThrowIfCancellationRequested();
             AtomicFile.Install(candidate, output.physicalPath);
             context.inputState.RecordMaterialization(new FileInfo(output.physicalPath).Length);
@@ -79,7 +92,9 @@ public static class NativeInputMaterializer
         finally
         {
             if (File.Exists(candidate))
+            {
                 File.Delete(candidate);
+            }
         }
     }
 }

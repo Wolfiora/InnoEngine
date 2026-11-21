@@ -14,6 +14,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// The horizontal or first component.
     /// </summary>
     [DataMember] public float x;
+
     /// <summary>
     /// The vertical or second component.
     /// </summary>
@@ -40,14 +41,17 @@ public struct Vector2 : IEquatable<Vector2>
     /// A value whose components are all zero.
     /// </summary>
     public static readonly Vector2 ZERO = new(0f, 0f);
+
     /// <summary>
     /// A value whose components are all one.
     /// </summary>
     public static readonly Vector2 ONE = new(1f, 1f);
+
     /// <summary>
     /// A unit value aligned with the x axis.
     /// </summary>
     public static readonly Vector2 UNIT_X = new(1f, 0f);
+
     /// <summary>
     /// A unit value aligned with the y axis.
     /// </summary>
@@ -273,7 +277,7 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 v,
         Vector2 n
     ) => v - 2f * Dot(v, n) * n;
-    
+
     /// <summary>
     /// Transforms the supplied value by the requested transformation.
     /// </summary>
@@ -319,11 +323,12 @@ public struct Vector2 : IEquatable<Vector2>
         float w = rotation.w;
         return new Vector2(
             value.x * (1f - 2f * (y * y + z * z))
-                + value.y * (2f * (x * y - z * w)),
+            + value.y * (2f * (x * y - z * w)),
             value.x * (2f * (x * y + z * w))
-                + value.y * (1f - 2f * (x * x + z * z))
+            + value.y * (1f - 2f * (x * x + z * z))
         );
     }
+
     /// <summary>
     /// Adds the supplied values component by component.
     /// </summary>
@@ -343,6 +348,7 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 a,
         Vector2 b
     ) => new Vector2(a.x + b.x, a.y + b.y);
+
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -360,6 +366,7 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 a,
         Vector2 b
     ) => new Vector2(a.x - b.x, a.y - b.y);
+
     /// <summary>
     /// Subtracts or negates the supplied value component by component.
     /// </summary>
@@ -371,6 +378,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector2 operator -(Vector2 v) => new Vector2(-v.x, -v.y);
+
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -388,6 +396,7 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 v,
         float scalar
     ) => new Vector2(v.x * scalar, v.y * scalar);
+
     /// <summary>
     /// Multiplies the supplied values according to their algebraic contract.
     /// </summary>
@@ -405,6 +414,7 @@ public struct Vector2 : IEquatable<Vector2>
         float scalar,
         Vector2 v
     ) => v * scalar;
+
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
     /// </summary>
@@ -440,6 +450,7 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 a,
         Vector2 b
     ) => MathHelper.AlmostEquals(a.x, b.x) && MathHelper.AlmostEquals(a.y, b.y);
+
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.
     /// </summary>
@@ -457,7 +468,7 @@ public struct Vector2 : IEquatable<Vector2>
         Vector2 a,
         Vector2 b
     ) => !(a == b);
-    
+
     /// <summary>
     /// Converts the supplied value to <see cref="System.Numerics.Vector2"/>.
     /// </summary>
@@ -468,6 +479,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// The validated system.numerics.vector2 that represents the completed operation.
     /// </returns>
     public static implicit operator System.Numerics.Vector2(Vector2 v) => new(v.x, v.y);
+
     /// <summary>
     /// Converts the supplied value to <see cref="Vector2"/>.
     /// </summary>
@@ -489,6 +501,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public override bool Equals(object? obj) => obj is Vector2 other && Equals(other);
+
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.
     /// </summary>
@@ -499,6 +512,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Equals(Vector2 other) => MathHelper.AlmostEquals(x, other.x) && MathHelper.AlmostEquals(y, other.y);
+
     /// <summary>
     /// Computes a hash code consistent with the implemented equality contract.
     /// </summary>
@@ -506,6 +520,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     public override int GetHashCode() => HashCode.Combine(x, y);
+
     /// <summary>
     /// Formats this value as a human-readable component list.
     /// </summary>

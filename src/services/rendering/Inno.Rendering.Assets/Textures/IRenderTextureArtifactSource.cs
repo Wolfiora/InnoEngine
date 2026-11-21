@@ -1,6 +1,6 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -15,4 +15,3 @@ public interface IRenderTextureArtifactSource
     /// </summary>
     IReadOnlyList<RenderTextureArtifactSlot> textureArtifacts { get; }
 }
-

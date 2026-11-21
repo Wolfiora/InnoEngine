@@ -2,10 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Xunit;
 using Inno.Core.Logging;
 using Inno.Extensibility.Modules;
-using Xunit;
 
 namespace Inno.Core.Logging.Tests;
 
@@ -16,7 +15,9 @@ public sealed class FileLogSinkTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Theory]
@@ -28,7 +29,9 @@ public sealed class FileLogSinkTests : IDisposable
         using var sink = new FileLogSink(m_root);
         router.RegisterSink(sink);
         for (int index = 0; index < 100; index++)
+        {
             router.Dispatch(CreateEntry("visible-" + index));
+        }
 
         router.Flush();
 
@@ -43,7 +46,9 @@ public sealed class FileLogSinkTests : IDisposable
     {
         using var sink = new FileLogSink(m_root, maxFileSizeBytes: 512, maxFiles: 3);
         for (int index = 0; index < 120; index++)
+        {
             sink.Receive(CreateEntry($"entry-{index:D3}-" + new string('★', 80)));
+        }
 
         string[] files = Directory.GetFiles(m_root, "*.log");
         Assert.InRange(files.Length, 1, 3);
@@ -75,7 +80,9 @@ public sealed class FileLogSinkTests : IDisposable
         try
         {
             for (int index = 0; index < sinks.Length; index++)
+            {
                 sinks[index].Receive(CreateEntry("sink-" + index));
+            }
 
             string[] files = Directory.GetFiles(m_root, "*.log");
             Assert.Equal(sinks.Length, files.Length);
@@ -84,7 +91,9 @@ public sealed class FileLogSinkTests : IDisposable
         finally
         {
             foreach (FileLogSink sink in sinks)
+            {
                 sink.Dispose();
+            }
         }
     }
 
@@ -173,7 +182,16 @@ public sealed class FileLogSinkTests : IDisposable
         return reader.ReadToEnd();
     }
 
-    private static LogEntry CreateEntry(string message) => new(
-        LogLevel.Info, AssemblyDomain.InnoInternal, AssemblyScope.Runtime,
-        "file-test", message, string.Empty, 0, string.Empty, LogSessionId.none);
+    private static LogEntry CreateEntry(string message)
+        => new(
+            LogLevel.Info,
+            AssemblyDomain.InnoInternal,
+            AssemblyScope.Runtime,
+            "file-test",
+            message,
+            string.Empty,
+            0,
+            string.Empty,
+            LogSessionId.none
+        );
 }

@@ -41,14 +41,17 @@ public sealed class BuildHostServices
     /// Gets the host's scoped execution path provider.
     /// </summary>
     public IToolchainWorkspaceProvider workspaces { get; }
+
     /// <summary>
     /// Gets environment variable name semantics.
     /// </summary>
     public StringComparer environmentComparer { get; }
+
     /// <summary>
     /// Gets checkout-relative execution implementation inputs.
     /// </summary>
     public IReadOnlyList<string> inputPaths { get; }
+
     /// <summary>
     /// Gets the host-owned executable suffix.
     /// </summary>

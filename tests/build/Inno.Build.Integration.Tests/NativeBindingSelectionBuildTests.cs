@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -21,8 +21,13 @@ public sealed class NativeBindingSelectionBuildTests
         try
         {
             foreach (string name in new[] { "Directory.Build.props", "Directory.Build.targets" })
-                File.WriteAllText(Path.Combine(root, name), "<Project><Import Project=\""
-                    + SecurityElement.Escape(Path.Combine(repository, name)) + "\" /></Project>");
+            {
+                File.WriteAllText(
+                    Path.Combine(root, name),
+                    "<Project><Import Project=\""
+                    + SecurityElement.Escape(Path.Combine(repository, name)) + "\" /></Project>"
+                );
+            }
             File.WriteAllText(Path.Combine(root, "Probe.csproj"), """
                 <Project Sdk="Microsoft.NET.Sdk">
                   <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>disable</ImplicitUsings></PropertyGroup>
@@ -49,8 +54,10 @@ public sealed class NativeBindingSelectionBuildTests
         string root,
         string selection
     ) {
-        string dotnet = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string dotnet = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         var start = new ProcessStartInfo(dotnet)
         {
             WorkingDirectory = root,
@@ -59,9 +66,18 @@ public sealed class NativeBindingSelectionBuildTests
             RedirectStandardOutput = true,
             RedirectStandardError = true
         };
-        foreach (string argument in new[] { "build", "Probe.csproj", "--disable-build-servers", "--nologo", "-m:1",
-            "-nodeReuse:false", "-p:InnoNativeBindingSelection=" + selection })
+        foreach (string argument in new[]
+        {
+            "build",
+            "Probe.csproj",
+            "--disable-build-servers",
+            "--nologo",
+            "-m:1",
+            "-nodeReuse:false",
+            "-p:InnoNativeBindingSelection=" + selection
+        }) {
             start.ArgumentList.Add(argument);
+        }
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("MSBuild did not start.");
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> errors = process.StandardError.ReadToEndAsync();
@@ -73,7 +89,9 @@ public sealed class NativeBindingSelectionBuildTests
         catch
         {
             if (!process.HasExited)
+            {
                 process.Kill(entireProcessTree: true);
+            }
             await process.WaitForExitAsync();
             await output;
             await errors;

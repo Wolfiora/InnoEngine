@@ -61,9 +61,13 @@ public sealed class PhysicalPathResolver
     private string ResolveCore(string path)
     {
         if (m_paths.TryGetValue(path, out string? cached))
+        {
             return cached;
+        }
         if (!m_resolving.Add(path))
+        {
             throw new IOException($"Filesystem alias '{path}' forms a resolution cycle.");
+        }
         try
         {
             string? parent = Path.GetDirectoryName(path);
@@ -79,9 +83,14 @@ public sealed class PhysicalPathResolver
             if ((attributes & FileAttributes.ReparsePoint) != 0)
             {
                 FileSystemInfo entry = (attributes & FileAttributes.Directory) != 0
-                    ? new DirectoryInfo(candidate) : new FileInfo(candidate);
-                resolved = ResolveCore(Path.GetFullPath(entry.ResolveLinkTarget(returnFinalTarget: true)?.FullName
-                    ?? throw new IOException($"Filesystem alias '{candidate}' has no resolvable target.")));
+                                       ? new DirectoryInfo(candidate)
+                                       : new FileInfo(candidate);
+                resolved = ResolveCore(
+                    Path.GetFullPath(
+                        entry.ResolveLinkTarget(returnFinalTarget: true)?.FullName
+                        ?? throw new IOException($"Filesystem alias '{candidate}' has no resolvable target.")
+                    )
+                );
             }
             m_paths.Add(path, resolved);
             return resolved;

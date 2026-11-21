@@ -1,15 +1,18 @@
 using System;
 using System.Numerics;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
+
 /// <summary>
 /// Provides reusable editor controls and rendering helpers built on the native ImGui API.
 /// </summary>
 public sealed unsafe partial class ImGuiWidget
 {
     private const float C_INLINE_RENAME_FOCUS_OFFSET = 1f;
+
     /// <summary>
     /// Draws a compact single-line rename editor inside an existing row.
     /// </summary>
@@ -77,7 +80,13 @@ public sealed unsafe partial class ImGuiWidget
             NativeImGui.PushStyleColor((int)(ImGuiCol.NavCursor), EditorPalette.transparent);
             try
             {
-                submitted = ImGuiUtf8Buffer.InputText(controlId, null, ref text, (nuint)capacity, ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll);
+                submitted = ImGuiUtf8Buffer.InputText(
+                    controlId,
+                    null,
+                    ref text,
+                    (nuint)capacity,
+                    ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll
+                );
             }
             finally
             {
@@ -114,9 +123,13 @@ public sealed unsafe partial class ImGuiWidget
             }
 
             if (escapePressed)
+            {
                 return InlineRenameResult.Cancel;
+            }
             if (submitted)
+            {
                 return InlineRenameResult.Commit;
+            }
             if (contextMenuRequested)
             {
                 // A context menu transfers focus into a popup after this item has already been
@@ -169,7 +182,9 @@ public sealed class InlineRenamePresentation
         nuint bufferSize = 512
     ) {
         if (string.IsNullOrWhiteSpace(id))
+        {
             throw new ArgumentException("An inline rename identifier is required.", nameof(id));
+        }
         if (!float.IsFinite(width) || width <= 0f)
         {
             throw new ArgumentOutOfRangeException(nameof(width), width, "The inline rename width must be finite and positive.");
@@ -177,7 +192,11 @@ public sealed class InlineRenamePresentation
 
         if (!float.IsFinite(rowHeight) || rowHeight <= 0f)
         {
-            throw new ArgumentOutOfRangeException(nameof(rowHeight), rowHeight, "The inline rename row height must be finite and positive.");
+            throw new ArgumentOutOfRangeException(
+                nameof(rowHeight),
+                rowHeight,
+                "The inline rename row height must be finite and positive."
+            );
         }
 
         if (bufferSize == 0)
@@ -195,14 +214,17 @@ public sealed class InlineRenamePresentation
     /// Gets the stable ImGui identifier used by the input field.
     /// </summary>
     public string id { get; }
+
     /// <summary>
     /// Gets the requested input width in logical pixels.
     /// </summary>
     public float width { get; }
+
     /// <summary>
     /// Gets the height of the row area in which the input field is centered.
     /// </summary>
     public float rowHeight { get; }
+
     /// <summary>
     /// Gets the maximum UTF-8 buffer size accepted by the input.
     /// </summary>

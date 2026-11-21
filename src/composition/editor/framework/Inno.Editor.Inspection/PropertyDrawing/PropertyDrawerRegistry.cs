@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Inspection;
 
@@ -77,16 +76,17 @@ public sealed class PropertyDrawerRegistry : IDisposable
             TypeCatalog types,
             SerializationRegistry serialization,
             IEnumerable<object> drawerServices
-        )
-            : base(types)
+        ) : base(types)
         {
             m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
             m_serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
             ArgumentNullException.ThrowIfNull(drawerServices);
-            m_drawerServices = drawerServices.Select(static service =>
+            m_drawerServices = drawerServices.Select(static service => (
                 service ?? throw new ArgumentException(
                     "Property drawer services cannot contain null.",
-                    nameof(drawerServices))).ToArray();
+                    nameof(drawerServices)
+                )
+            )).ToArray();
         }
 
         internal IPropertyDrawer Resolve(Type propertyType)
@@ -96,14 +96,16 @@ public sealed class PropertyDrawerRegistry : IDisposable
             foreach (Registration registration in current)
             {
                 if (!DrawerTypeUtility.TryGetDistance(
-                        propertyType,
-                        registration.targetType,
-                        registration.useForChildren,
-                        out int distance))
+                    propertyType,
+                    registration.targetType,
+                    registration.useForChildren,
+                    out int distance
+                )) {
                     continue;
-                if (best is null || distance < bestDistance ||
-                    distance == bestDistance && registration.priority > best.priority)
-                {
+                }
+                if (best is null || distance < bestDistance
+                    || distance == bestDistance && registration.priority > best.priority
+                ) {
                     best = registration;
                     bestDistance = distance;
                 }
@@ -125,29 +127,35 @@ public sealed class PropertyDrawerRegistry : IDisposable
             var drawers = new Dictionary<Type, IPropertyDrawer>();
             var registrations = new List<Registration>();
             foreach (Type drawerType in types.GetTypesWithAttribute<PropertyDrawerAttribute>()
-                         .Select(typeRef => typeRef.Resolve(types))
-                         .OrderBy(static type => type.FullName, StringComparer.Ordinal))
-            {
+                .Select(typeRef => typeRef.Resolve(types))
+                .OrderBy(static type => type.FullName, StringComparer.Ordinal)
+            ) {
                 IPropertyDrawer drawer = drawers.TryGetValue(drawerType, out IPropertyDrawer? existing)
-                    ? existing
-                    : OwnCandidateExtension(CreateDrawer(
-                        drawerType,
-                        m_interactions,
-                        types,
-                        m_serialization,
-                        m_drawerServices));
+                                         ? existing
+                                         : OwnCandidateExtension(
+                                             CreateDrawer(
+                                                 drawerType,
+                                                 m_interactions,
+                                                 types,
+                                                 m_serialization,
+                                                 m_drawerServices
+                                             )
+                                         );
                 drawers[drawerType] = drawer;
 
                 foreach (PropertyDrawerAttribute attribute in
-                         drawerType.GetCustomAttributes<PropertyDrawerAttribute>(false))
-                {
+                         drawerType.GetCustomAttributes<PropertyDrawerAttribute>(false)
+                ) {
                     EnsureNoConflict(registrations, attribute, drawerType);
-                    registrations.Add(new Registration(
-                        attribute.targetType,
-                        attribute.useForChildren,
-                        attribute.priority,
-                        drawerType,
-                        drawer));
+                    registrations.Add(
+                        new Registration(
+                            attribute.targetType,
+                            attribute.useForChildren,
+                            attribute.priority,
+                            drawerType,
+                            drawer
+                        )
+                    );
                 }
             }
             return registrations.ToArray();
@@ -171,9 +179,12 @@ public sealed class PropertyDrawerRegistry : IDisposable
         IReadOnlyList<object> drawerServices
     ) {
         ConstructorInfo[] constructors = type.GetConstructors(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
         if (constructors.Length != 1)
+        {
             throw new InvalidOperationException($"Property drawer '{type.FullName}' must declare exactly one constructor.");
+        }
         ParameterInfo[] parameters = constructors[0].GetParameters();
         object?[] arguments = new object?[parameters.Length];
         for (int index = 0; index < parameters.Length; index++)
@@ -192,11 +203,13 @@ public sealed class PropertyDrawerRegistry : IDisposable
             {
                 1 => matches[0],
                 0 => throw new InvalidOperationException(
-                    $"Property drawer '{type.FullName}' requests unavailable service " +
-                    $"'{parameterType.FullName}'."),
+                    $"Property drawer '{type.FullName}' requests unavailable service "
+                    + $"'{parameterType.FullName}'."
+                ),
                 _ => throw new InvalidOperationException(
-                    $"Property drawer '{type.FullName}' requests ambiguous service " +
-                    $"'{parameterType.FullName}'.")
+                    $"Property drawer '{type.FullName}' requests ambiguous service "
+                    + $"'{parameterType.FullName}'."
+                )
             };
         }
         return (IPropertyDrawer)constructors[0].Invoke(arguments);
@@ -212,8 +225,9 @@ public sealed class PropertyDrawerRegistry : IDisposable
             if (existing.targetType == attribute.targetType && existing.priority == attribute.priority)
             {
                 throw new InvalidOperationException(
-                    $"Property drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' " +
-                    $"conflict for '{attribute.targetType.FullName}'.");
+                    $"Property drawers '{existing.drawerType.FullName}' and '{drawerType.FullName}' "
+                    + $"conflict for '{attribute.targetType.FullName}'."
+                );
             }
         }
     }

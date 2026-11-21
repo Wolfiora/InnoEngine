@@ -40,8 +40,12 @@ public readonly record struct ManagedDeploymentId
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(value);
         foreach (char character in value)
+        {
             if (!(character is >= 'a' and <= 'z' or >= '0' and <= '9' or '-'))
+            {
                 throw new ArgumentException("Managed deployment IDs require lowercase portable characters.", nameof(value));
+            }
+        }
         this.value = value;
     }
 

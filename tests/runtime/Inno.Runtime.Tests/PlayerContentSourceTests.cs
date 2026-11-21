@@ -1,9 +1,10 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Adapter;
 using Inno.Adapter.Audio;
 using Inno.Adapter.Input;
@@ -23,7 +24,6 @@ using Inno.Extensibility.Types;
 using Inno.Player.Runtime;
 using Inno.Shell;
 using Inno.Storage;
-using Xunit;
 
 namespace Inno.Runtime.Tests;
 
@@ -53,33 +53,49 @@ public sealed class PlayerContentSourceTests
         };
         PlayerContentMetadata metadata;
         using (EngineHost metadataOwner = new EngineHostBuilder()
-            .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(PlayerContentSourceTests).Assembly),
-                new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build())
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(PlayerContentSourceTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .Build())
         using (SerializationGeneration serialization = metadataOwner.serialization.CaptureGeneration())
         {
             string hash = new string('A', 64);
-            metadata = new PlayerContentMetadata(RuntimeManifestEnvelope.Encode(manifest, serialization),
+            metadata = new PlayerContentMetadata(
+                RuntimeManifestEnvelope.Encode(manifest, serialization),
                 serialization.Serialize(new RuntimeContentCatalog
                 {
-                    contentHash = hash, packFileName = $"content-{hash}.pack",
-                    snapshotFingerprint = hash, runtimeAssemblyCount = 1
-                }));
+                    contentHash = hash,
+                    packFileName = $"content-{hash}.pack",
+                    snapshotFingerprint = hash,
+                    runtimeAssemblyCount = 1
+                })
+            );
         }
         using var cancellation = new CancellationTokenSource();
         var source = new PreparedSource(metadata, failure, cancellation);
         var modules = new DotNetAssemblyCatalogSource(typeof(PlayerContentSourceTests).Assembly);
-        var activator = new StaticPlayerModuleActivator(GameCodeDeployment.FromManifest(manifest.modules),
+        var activator = new StaticPlayerModuleActivator(
+            GameCodeDeployment.FromManifest(manifest.modules),
             new Dictionary<string, IReadOnlyList<Assembly>>
             {
                 ["Game"] = [typeof(PlayerContentSourceTests).Assembly]
-            });
+            }
+        );
         PlayerLaunchOptions options = CreateOptions(modules, source, activator);
         if (failure == "missing")
+        {
             await Assert.ThrowsAsync<InvalidOperationException>(() => PlayerApplication.RunAsync(options, cancellation.Token));
+        }
         else if (failure == "mismatch")
+        {
             await Assert.ThrowsAsync<InvalidDataException>(() => PlayerApplication.RunAsync(options, cancellation.Token));
+        }
         else
+        {
             await Assert.ThrowsAnyAsync<OperationCanceledException>(() => PlayerApplication.RunAsync(options, cancellation.Token));
+        }
         Assert.Equal(1, source.preparations);
         Assert.Equal(failure == "missing" ? 0 : 1, source.store?.disposals ?? 0);
         Assert.Throws<ObjectDisposedException>(() => modules.GetAssemblies());
@@ -102,16 +118,19 @@ public sealed class PlayerContentSourceTests
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task MetadataFailureRetiresTheTransferredModuleOwnerBeforeAnyAdapterOrContentPreparation(
-        bool malformed
-    ) {
+    public async Task MetadataFailureRetiresTheTransferredModuleOwnerBeforeAnyAdapterOrContentPreparation(bool malformed)
+    {
         var source = new MemorySource { malformed = malformed };
         var modules = new DotNetAssemblyCatalogSource(typeof(PlayerContentSourceTests).Assembly);
         PlayerLaunchOptions options = CreateOptions(modules, source);
         if (malformed)
+        {
             await Assert.ThrowsAsync<InvalidDataException>(() => PlayerApplication.RunAsync(options));
+        }
         else
+        {
             await Assert.ThrowsAsync<IOException>(() => PlayerApplication.RunAsync(options));
+        }
         Assert.Equal(1, source.metadataReads);
         Assert.Equal(0, source.preparations);
         Assert.Throws<ObjectDisposedException>(() => modules.GetAssemblies());
@@ -144,8 +163,10 @@ public sealed class PlayerContentSourceTests
         adapters = new RejectedAdapterCatalog(),
         contentSource = source,
         createStorage = _ => throw new InvalidOperationException("Storage must not start before content validation."),
-        moduleActivator = activator ?? new StaticPlayerModuleActivator(new GameCodeDeployment([]),
-            new Dictionary<string, IReadOnlyList<Assembly>>()),
+        moduleActivator = activator ?? new StaticPlayerModuleActivator(
+            new GameCodeDeployment([]),
+            new Dictionary<string, IReadOnlyList<Assembly>>()
+        ),
         frameDriver = new PollingShellFrameDriver(),
         logDeliveryMode = LogDeliveryMode.Inline
     };
@@ -171,10 +192,14 @@ public sealed class PlayerContentSourceTests
             preparations++;
             Assert.Equal("tests.memory", scope.value);
             if (failure == "missing")
+            {
                 return ValueTask.FromResult<IRuntimeContentStore>(null!);
+            }
             store = new PreparedStore(failure == "mismatch" ? null : pack);
             if (failure == "canceled")
+            {
                 cancellation.Cancel();
+            }
             return ValueTask.FromResult<IRuntimeContentStore>(store);
         }
     }
@@ -186,7 +211,9 @@ public sealed class PlayerContentSourceTests
 
         public ContentPackDescriptor descriptor => expected ?? m_content.descriptor;
         public ContentPackIndex index => m_content.index;
+
         public ContentReadLease Acquire(ContentKey key) => m_content.Acquire(key);
+
         public void Dispose()
         {
             disposals++;
@@ -204,8 +231,8 @@ public sealed class PlayerContentSourceTests
         {
             metadataReads++;
             return malformed
-                ? ValueTask.FromResult(new PlayerContentMetadata([1], [2]))
-                : ValueTask.FromException<PlayerContentMetadata>(new IOException("Metadata unavailable."));
+                   ? ValueTask.FromResult(new PlayerContentMetadata([1], [2]))
+                   : ValueTask.FromException<PlayerContentMetadata>(new IOException("Metadata unavailable."));
         }
 
         public ValueTask<IRuntimeContentStore> PrepareAsync(

@@ -23,7 +23,9 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (!Path.IsPathFullyQualified(path))
+        {
             throw new ArgumentException("A file document requires an absolute path.", nameof(path));
+        }
         m_path = Path.GetFullPath(path);
     }
 
@@ -54,7 +56,9 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
             using var stream = new FileStream(m_path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             long length = stream.Length;
             if (length > Array.MaxLength)
+            {
                 throw new IOException("The file document exceeds the maximum supported byte-array size.");
+            }
             byte[] data = GC.AllocateUninitializedArray<byte>((int)length);
             stream.ReadExactly(data);
             return data;

@@ -1,9 +1,9 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -88,28 +88,36 @@ public static class RenderShaderArtifactCodec
             using var stream = new MemoryStream(bytes.ToArray(), writable: false);
             using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: true);
             if (!reader.ReadBytes(S_MAGIC.Length).AsSpan().SequenceEqual(S_MAGIC))
+            {
                 throw new InvalidDataException("Shader artifact magic is invalid.");
+            }
             string shaderName = ReadString(reader);
             if (!string.Equals(shaderName, expectedShaderName, StringComparison.Ordinal))
             {
                 throw new InvalidDataException(
-                    $"Shader artifact '{shaderName}' does not match requested shader '{expectedShaderName}'.");
+                    $"Shader artifact '{shaderName}' does not match requested shader '{expectedShaderName}'."
+                );
             }
             string targetKey = ReadString(reader);
             RenderShaderVariant variant = RenderShaderVariant.Parse(ReadString(reader));
             if (variant != expectedVariant)
             {
                 throw new InvalidDataException(
-                    $"Shader artifact variant '{variant}' does not match requested variant '{expectedVariant}'.");
+                    $"Shader artifact variant '{variant}' does not match requested variant '{expectedVariant}'."
+                );
             }
             int definitionLength = ReadCount(reader, C_MAX_STAGE_BYTES, "shader definition byte");
             if (definitionLength == 0)
+            {
                 throw new InvalidDataException("A shader publication has no runtime contract.");
+            }
             byte[] definitionData = ReadBytes(reader, definitionLength);
             ShaderInterface shaderInterface = ReadInterface(reader);
             int passCount = ReadCount(reader, C_MAX_PASSES, "shader pass");
             if (passCount == 0)
+            {
                 throw new InvalidDataException("Shader artifact contains no pass.");
+            }
             var passes = new RenderShaderPassArtifact[passCount];
             for (int index = 0; index < passes.Length; index++)
             {
@@ -124,18 +132,17 @@ public static class RenderShaderArtifactCodec
                     ShaderStage stage = ReadEnum<ShaderStage>(reader);
                     int byteCount = ReadCount(reader, C_MAX_STAGE_BYTES, "shader stage byte");
                     if (byteCount == 0)
+                    {
                         throw new InvalidDataException($"Shader pass '{passName}' contains an empty stage.");
+                    }
                     stages[stageIndex] = new RenderShaderStageArtifact(stage, ReadBytes(reader, byteCount));
                 }
-                passes[index] = new RenderShaderPassArtifact(
-                    passName,
-                    programKind,
-                    rasterState,
-                    passInterface,
-                    stages);
+                passes[index] = new RenderShaderPassArtifact(passName, programKind, rasterState, passInterface, stages);
             }
             if (stream.Position != stream.Length)
+            {
                 throw new InvalidDataException("Shader artifact contains trailing data.");
+            }
             return new RenderShaderArtifact(shaderName, targetKey, variant, shaderInterface, passes, definitionData);
         }
         catch (InvalidDataException)
@@ -143,10 +150,10 @@ public static class RenderShaderArtifactCodec
             throw;
         }
         catch (Exception exception) when (exception is EndOfStreamException
-            or IOException
-            or ArgumentException
-            or FormatException
-            or OverflowException)
+                                          or IOException
+                                          or ArgumentException
+                                          or FormatException
+                                          or OverflowException)
         {
             throw new InvalidDataException("Shader artifact payload is corrupt.", exception);
         }
@@ -168,7 +175,9 @@ public static class RenderShaderArtifactCodec
             WriteString(writer, binding.nativeName);
             writer.Write(binding.location.HasValue);
             if (binding.location.HasValue)
+            {
                 writer.Write(binding.location.Value);
+            }
         }
     }
 
@@ -181,15 +190,21 @@ public static class RenderShaderArtifactCodec
         {
             string id = ReadString(reader);
             if (!identities.Add(id))
+            {
                 throw new InvalidDataException($"Shader interface repeats binding '{id}'.");
+            }
             ShaderPropertyType type = ReadEnum<ShaderPropertyType>(reader);
             ShaderStage stages = (ShaderStage)reader.ReadInt32();
             const ShaderStage validStages = ShaderStage.Vertex | ShaderStage.Fragment | ShaderStage.Compute;
             if (stages == ShaderStage.None || (stages & ~validStages) != 0)
+            {
                 throw new InvalidDataException($"Shader binding '{id}' has an invalid stage mask.");
+            }
             int arrayCount = reader.ReadInt32();
             if (arrayCount <= 0)
+            {
                 throw new InvalidDataException($"Shader binding '{id}' has an invalid array count.");
+            }
             bindings[index] = new ShaderInterfaceBinding(
                 new ShaderPropertyId(id),
                 type,
@@ -198,7 +213,8 @@ public static class RenderShaderArtifactCodec
                 ReadEnum<ShaderPropertyBindingKind>(reader),
                 ReadEnum<RenderStorageAccess>(reader),
                 ReadString(reader),
-                reader.ReadBoolean() ? reader.ReadInt32() : null);
+                reader.ReadBoolean() ? reader.ReadInt32() : null
+            );
         }
         return new ShaderInterface(bindings);
     }
@@ -227,27 +243,27 @@ public static class RenderShaderArtifactCodec
 
     private static RenderRasterState ReadRasterState(BinaryReader reader)
         => new()
+    {
+        topology = ReadEnum<RenderPrimitiveTopology>(reader),
+        cull = ReadEnum<RenderCullMode>(reader),
+        frontFace = ReadEnum<RenderFrontFace>(reader),
+        depthCompare = ReadEnum<RenderDepthCompare>(reader),
+        depthWrite = reader.ReadBoolean(),
+        colorWriteMask = reader.ReadByte(),
+        multisampling = reader.ReadBoolean(),
+        blend = new RenderBlendState
         {
-            topology = ReadEnum<RenderPrimitiveTopology>(reader),
-            cull = ReadEnum<RenderCullMode>(reader),
-            frontFace = ReadEnum<RenderFrontFace>(reader),
-            depthCompare = ReadEnum<RenderDepthCompare>(reader),
-            depthWrite = reader.ReadBoolean(),
-            colorWriteMask = reader.ReadByte(),
-            multisampling = reader.ReadBoolean(),
-            blend = new RenderBlendState
-            {
-                enabled = reader.ReadBoolean(),
-                colorSource = ReadEnum<RenderBlendFactor>(reader),
-                colorDestination = ReadEnum<RenderBlendFactor>(reader),
-                colorEquation = ReadEnum<RenderBlendEquation>(reader),
-                alphaSource = ReadEnum<RenderBlendFactor>(reader),
-                alphaDestination = ReadEnum<RenderBlendFactor>(reader),
-                alphaEquation = ReadEnum<RenderBlendEquation>(reader),
-                constantRgba = reader.ReadUInt32(),
-                alphaToCoverage = reader.ReadBoolean()
-            }
-        };
+            enabled = reader.ReadBoolean(),
+            colorSource = ReadEnum<RenderBlendFactor>(reader),
+            colorDestination = ReadEnum<RenderBlendFactor>(reader),
+            colorEquation = ReadEnum<RenderBlendEquation>(reader),
+            alphaSource = ReadEnum<RenderBlendFactor>(reader),
+            alphaDestination = ReadEnum<RenderBlendFactor>(reader),
+            alphaEquation = ReadEnum<RenderBlendEquation>(reader),
+            constantRgba = reader.ReadUInt32(),
+            alphaToCoverage = reader.ReadBoolean()
+        }
+    };
 
     private static void WriteString(
         BinaryWriter writer,
@@ -256,7 +272,9 @@ public static class RenderShaderArtifactCodec
         ArgumentNullException.ThrowIfNull(value);
         byte[] bytes = Encoding.UTF8.GetBytes(value);
         if (bytes.Length > C_MAX_STRING_BYTES)
+        {
             throw new ArgumentException("Shader artifact string exceeds the deployment safety limit.", nameof(value));
+        }
         writer.Write(bytes.Length);
         writer.Write(bytes);
     }
@@ -274,7 +292,9 @@ public static class RenderShaderArtifactCodec
     ) {
         int value = reader.ReadInt32();
         if (value < 0 || value > maximum)
+        {
             throw new InvalidDataException($"Shader artifact {subject} count '{value}' is outside the valid range.");
+        }
         return value;
     }
 
@@ -284,7 +304,9 @@ public static class RenderShaderArtifactCodec
     ) {
         byte[] bytes = reader.ReadBytes(count);
         if (bytes.Length != count)
+        {
             throw new EndOfStreamException("Shader artifact ended before the declared payload length.");
+        }
         return bytes;
     }
 
@@ -293,8 +315,9 @@ public static class RenderShaderArtifactCodec
     {
         int value = reader.ReadInt32();
         if (!Enum.IsDefined(typeof(TEnum), value))
+        {
             throw new InvalidDataException($"Shader artifact contains invalid {typeof(TEnum).Name} value '{value}'.");
+        }
         return (TEnum)Enum.ToObject(typeof(TEnum), value);
     }
 }
-

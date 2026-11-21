@@ -59,7 +59,9 @@ public sealed partial class ShaderIrBuilder
         ValidateSample(texture, coordinate);
         RequireOwned(level);
         if (!level.type.IsEquivalentTo(ShaderSourceType.Atomic("float")))
+        {
             throw new ArgumentException("A mip level must be float.", nameof(level));
+        }
         ShaderIrValue output = NewValue(ShaderSourceType.Atomic("float4"));
         m_instructions.Add(new(ShaderIrOperation.TextureSampleLevel, [texture, coordinate, level], [output]));
         return output;
@@ -86,7 +88,9 @@ public sealed partial class ShaderIrBuilder
     ) {
         ShaderStorageType storage = ValidateStorage(resource, coordinate);
         if (storage.access == RenderStorageAccess.Write)
+        {
             throw new ArgumentException("A write-only resource cannot be loaded.", nameof(resource));
+        }
         ShaderIrValue output = NewValue(storage.valueType);
         m_instructions.Add(new(ShaderIrOperation.StorageLoad, [resource, coordinate], [output]));
         return output;
@@ -115,7 +119,9 @@ public sealed partial class ShaderIrBuilder
         ShaderStorageType storage = ValidateStorage(resource, coordinate);
         RequireOwned(value);
         if (storage.access == RenderStorageAccess.Read || !storage.valueType.IsEquivalentTo(value.type))
+        {
             throw new ArgumentException("A store requires a writable resource and its exact element type.", nameof(resource));
+        }
         m_instructions.Add(new(ShaderIrOperation.StorageStore, [resource, coordinate, value], []));
     }
 
@@ -145,9 +151,12 @@ public sealed partial class ShaderIrBuilder
         ShaderStorageType storage = ValidateStorage(resource, index);
         RequireOwned(value);
         if (storage.isImage || storage.access != RenderStorageAccess.ReadWrite
-            || !(storage.valueType.IsEquivalentTo(ShaderSourceType.Atomic("int")) || storage.valueType.IsEquivalentTo(ShaderSourceType.Atomic("uint")))
-            || !storage.valueType.IsEquivalentTo(value.type))
+            || !(storage.valueType.IsEquivalentTo(ShaderSourceType.Atomic("int"))
+                 || storage.valueType.IsEquivalentTo(ShaderSourceType.Atomic("uint")))
+            || !storage.valueType.IsEquivalentTo(value.type)
+        ) {
                 throw new ArgumentException("Atomic add requires a read-write scalar integer buffer.", nameof(resource));
+        }
         ShaderIrValue output = NewValue(storage.valueType);
         m_instructions.Add(new(ShaderIrOperation.StorageAtomicAdd, [resource, index, value], [output]));
         return output;
@@ -166,7 +175,9 @@ public sealed partial class ShaderIrBuilder
     {
         RequireOwned(condition);
         if (!condition.type.IsEquivalentTo(ShaderSourceType.Atomic("bool")))
+        {
             throw new ArgumentException("Discard requires bool.", nameof(condition));
+        }
         m_instructions.Add(new(ShaderIrOperation.Discard, [condition], []));
     }
 
@@ -177,7 +188,9 @@ public sealed partial class ShaderIrBuilder
         RequireOwned(texture);
         RequireOwned(coordinate);
         if (!texture.type.IsEquivalentTo(ShaderSourceType.Atomic(texture.type.id)))
+        {
             throw new ArgumentException("A sampled binding cannot be disguised as an aggregate.", nameof(texture));
+        }
         string type = texture.type.id switch
         {
             "sampled-texture2d" => "float2",
@@ -185,7 +198,9 @@ public sealed partial class ShaderIrBuilder
             _ => throw new ArgumentException("Sampling requires a supported sampled texture type.", nameof(texture))
         };
         if (!coordinate.type.IsEquivalentTo(ShaderSourceType.Atomic(type)))
+        {
             throw new ArgumentException($"Sampling requires a {type} coordinate.", nameof(coordinate));
+        }
     }
 
     private ShaderStorageType ValidateStorage(
@@ -194,10 +209,15 @@ public sealed partial class ShaderIrBuilder
     ) {
         RequireOwned(resource);
         RequireOwned(coordinate);
-        ShaderStorageType storage = resource.type.storage ?? throw new ArgumentException("A typed storage binding is required.", nameof(resource));
-        string coordinateType = !storage.isImage ? "uint" : storage.array || storage.dimension == RenderTextureDimension.Texture3D ? "int3" : "int2";
+        ShaderStorageType storage = resource.type.storage
+                                    ?? throw new ArgumentException("A typed storage binding is required.", nameof(resource));
+        string coordinateType = !storage.isImage
+                                ? "uint"
+                                : storage.array || storage.dimension == RenderTextureDimension.Texture3D ? "int3" : "int2";
         if (!coordinate.type.IsEquivalentTo(ShaderSourceType.Atomic(coordinateType)))
+        {
             throw new ArgumentException($"This resource requires a {coordinateType} coordinate.", nameof(coordinate));
+        }
         return storage;
     }
 }

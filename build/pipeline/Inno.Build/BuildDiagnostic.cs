@@ -11,12 +11,10 @@ public enum BuildDiagnosticSeverity
     /// Provides non-failing build context.
     /// </summary>
     Information,
-
     /// <summary>
     /// Reports a condition that did not prevent output creation.
     /// </summary>
     Warning,
-
     /// <summary>
     /// Reports a condition that prevented a valid build.
     /// </summary>

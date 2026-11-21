@@ -12,7 +12,7 @@ internal static class EditorDefaultLayout
     private static string ReadDocument()
     {
         using Stream stream = typeof(EditorDefaultLayout).Assembly.GetManifestResourceStream(C_RESOURCE_NAME)
-            ?? throw new InvalidOperationException("The standard Editor layout resource is missing.");
+                              ?? throw new InvalidOperationException("The standard Editor layout resource is missing.");
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }

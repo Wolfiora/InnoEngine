@@ -2,18 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Rendering;
 
-internal sealed class EditorViewportContributorRegistry
-    : TypeRegistry<EditorViewportContributorRegistry.Snapshot>
+internal sealed class EditorViewportContributorRegistry : TypeRegistry<EditorViewportContributorRegistry.Snapshot>
 {
     internal EditorViewportContributorRegistry(TypeCatalog types)
-        : base(types)
-    {
-    }
+        : base(types) {}
 
     internal Snapshot contributors => current;
 
@@ -40,7 +36,9 @@ internal sealed class EditorViewportContributorRegistry
             .GroupBy(static registration => registration.attribute.id, StringComparer.Ordinal)
             .FirstOrDefault(static group => group.Count() > 1)?.Key;
         if (duplicateId is not null)
+        {
             throw new InvalidOperationException($"Editor viewport contributor ID '{duplicateId}' is duplicated.");
+        }
         IReadOnlyDictionary<EditorViewportKindId, Registration[]> byKind = registrations
             .GroupBy(static registration => registration.attribute.kind)
             .ToDictionary(static group => group.Key, static group => group.ToArray());
@@ -59,7 +57,8 @@ internal sealed class EditorViewportContributorRegistry
     private Registration CreateRegistration(Type type)
         => new(
             type.GetCustomAttribute<EditorViewportContributorExtensionAttribute>(inherit: false)!,
-            CreateExtension<EditorViewportContributor>(type));
+            CreateExtension<EditorViewportContributor>(type)
+        );
 
     internal sealed record Snapshot(
         long revision,

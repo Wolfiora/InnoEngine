@@ -26,8 +26,7 @@ internal static class GraphHistoryDocumentCodec
     public static byte[] Encode(
         GraphDocument document,
         SerializationRegistry serialization
-    )
-        => GraphDocumentCodec.Encode(document, serialization);
+    ) => GraphDocumentCodec.Encode(document, serialization);
 
     /// <summary>
     /// Decodes deterministic structured data into a validated value.
@@ -44,8 +43,7 @@ internal static class GraphHistoryDocumentCodec
     public static GraphDocument Decode(
         ReadOnlySpan<byte> bytes,
         SerializationRegistry serialization
-    )
-        => GraphDocumentCodec.Decode(bytes, serialization);
+    ) => GraphDocumentCodec.Decode(bytes, serialization);
 }
 
 internal sealed record GraphHistoryData(
@@ -58,6 +56,7 @@ internal sealed record GraphHistoryData(
     /// The c kind value used as part of this type's public representation.
     /// </summary>
     public const string C_KIND = "editor.graph.document";
+
     private static readonly UTF8Encoding S_UTF8 = new(false, true);
 
     /// <summary>
@@ -134,7 +133,9 @@ internal sealed record GraphHistoryData(
         int idLength = ReadLength(payload, ref offset);
         Guid id = Guid.ParseExact(S_UTF8.GetString(ReadSlice(payload, ref offset, idLength)), "D");
         if (id == Guid.Empty)
+        {
             throw new InvalidDataException("Graph history requires a persistent document identity.");
+        }
         int beforeLength = ReadLength(payload, ref offset);
         byte[] before = ReadSlice(payload, ref offset, beforeLength).ToArray();
         int afterLength = ReadLength(payload, ref offset);
@@ -209,22 +210,24 @@ internal static class GraphHistoryTransition
     ) {
         try
         {
-            GraphHistoryData data = GraphHistoryData.Decode(
-                change.payload.ReadBytes(),
-                module.serialization);
+            GraphHistoryData data = GraphHistoryData.Decode(change.payload.ReadBytes(), module.serialization);
             if (!module.TryResolve(data.documentId, out GraphDocumentSession? session) || session is null)
             {
                 return new GraphHistoryTransitionResult(
                     EditorHistoryResult.Failure($"Graph document '{data.documentId}' is not open."),
-                    false);
+                    false
+                );
             }
 
             GraphDocument original = session.document.Clone();
             try
             {
-                session.document.ReplaceContents(GraphHistoryDocumentCodec.Decode(
-                    direction == EditorHistoryDirection.Undo ? data.before : data.after,
-                    module.serialization));
+                session.document.ReplaceContents(
+                    GraphHistoryDocumentCodec.Decode(
+                        direction == EditorHistoryDirection.Undo ? data.before : data.after,
+                        module.serialization
+                    )
+                );
                 session.revision++;
                 session.isDirty = true;
                 return new GraphHistoryTransitionResult(EditorHistoryResult.Success(), false);
@@ -239,8 +242,10 @@ internal static class GraphHistoryTransition
                 {
                     return new GraphHistoryTransitionResult(
                         EditorHistoryResult.Failure(
-                            $"Graph transition failed: {exception.Message} Rollback failed: {rollbackException.Message}"),
-                        true);
+                            $"Graph transition failed: {exception.Message} Rollback failed: {rollbackException.Message}"
+                        ),
+                        true
+                    );
                 }
 
                 return new GraphHistoryTransitionResult(EditorHistoryResult.Failure(exception.Message), false);
@@ -250,7 +255,8 @@ internal static class GraphHistoryTransition
         {
             return new GraphHistoryTransitionResult(
                 EditorHistoryResult.Failure($"Graph History payload is invalid: {exception.Message}"),
-                false);
+                false
+            );
         }
     }
 }
@@ -282,12 +288,10 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
         _ = direction;
         try
         {
-            GraphHistoryData data = GraphHistoryData.Decode(
-                change.payload.ReadBytes(),
-                module.serialization);
+            GraphHistoryData data = GraphHistoryData.Decode(change.payload.ReadBytes(), module.serialization);
             return module.TryResolve(data.documentId, out _)
-                ? EditorHistoryAvailability.Available()
-                : EditorHistoryAvailability.Unavailable($"Graph document '{data.documentId}' is not open.");
+                   ? EditorHistoryAvailability.Available()
+                   : EditorHistoryAvailability.Unavailable($"Graph document '{data.documentId}' is not open.");
         }
         catch (Exception exception)
         {
@@ -318,8 +322,8 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
         _ = context;
         GraphHistoryTransitionResult transition = GraphHistoryTransition.Apply(module, change, direction);
         return transition.stateIntegrityLost
-            ? StateIntegrityFailure(transition.result.message)
-            : transition.result;
+               ? StateIntegrityFailure(transition.result.message)
+               : transition.result;
     }
 
     /// <summary>
@@ -350,27 +354,20 @@ internal sealed class GraphHistoryHandler(GraphEditorModule module) : EditorHist
 
         try
         {
-            GraphHistoryData previous = GraphHistoryData.Decode(
-                older.payload.ReadBytes(),
-                module.serialization);
-            GraphHistoryData current = GraphHistoryData.Decode(
-                newer.payload.ReadBytes(),
-                module.serialization);
+            GraphHistoryData previous = GraphHistoryData.Decode(older.payload.ReadBytes(), module.serialization);
+            GraphHistoryData current = GraphHistoryData.Decode(newer.payload.ReadBytes(), module.serialization);
             if (previous.documentId != current.documentId
-                || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > 1.0)
-            {
+                || Stopwatch.GetElapsedTime(previous.timestamp, current.timestamp).TotalSeconds > 1.0
+            ) {
                 return false;
             }
 
-            var combined = new GraphHistoryData(
-                previous.documentId,
-                previous.before,
-                current.after,
-                current.timestamp);
+            var combined = new GraphHistoryData(previous.documentId, previous.before, current.after, current.timestamp);
             merged = new EditorHistoryChange(
                 GraphHistoryData.C_KIND,
                 EditorHistoryPayload.FromBytes(combined.Encode()),
-                older.mergeKey);
+                older.mergeKey
+            );
             return true;
         }
         catch

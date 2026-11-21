@@ -53,21 +53,24 @@ public sealed class AssetCreationMenuAttribute : Attribute
         ArgumentException.ThrowIfNullOrWhiteSpace(extension);
         ArgumentException.ThrowIfNullOrWhiteSpace(defaultName);
         if (extension.Length == 0 || extension[0] != '.'
-            || extension.IndexOfAny(['/', '\\']) >= 0)
-        {
+            || extension.IndexOfAny(['/', '\\']) >= 0
+        ) {
             throw new ArgumentException(
                 "A native source extension beginning with a dot is required.",
-                nameof(extension));
+                nameof(extension)
+            );
         }
 
         string normalizedPath = menuPath.Replace('\\', '/').Trim('/');
         if (normalizedPath.Length == 0
-            || Array.Exists(normalizedPath.Split('/'), static segment => string.IsNullOrWhiteSpace(segment)))
-        {
+            || Array.Exists(normalizedPath.Split('/'), static segment => string.IsNullOrWhiteSpace(segment))
+        ) {
             throw new ArgumentException("A valid menu path is required.", nameof(menuPath));
         }
         if (defaultName.IndexOfAny(['/', '\\']) >= 0)
+        {
             throw new ArgumentException("The default name cannot contain a path separator.", nameof(defaultName));
+        }
 
         this.id = id;
         this.menuPath = normalizedPath;

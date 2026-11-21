@@ -1,7 +1,7 @@
 using System.IO;
 using System.Threading.Tasks;
-using Inno.Content;
 using Xunit;
+using Inno.Content;
 
 namespace Inno.Adapter.Content.FileSystem.Tests;
 
@@ -76,7 +76,9 @@ public sealed class ContentCacheIntegrityTests
         File.WriteAllBytes(file, [3, 2, 1]);
         File.SetLastWriteTimeUtc(file, time);
         using (ContentReadLease lease = store.Acquire(new ContentKey("AssetDatabase/Catalog.snapshot")))
+        {
             Assert.Throws<InvalidDataException>(() => lease.OpenRead());
+        }
         store.Dispose();
         using FileContentStore repaired = await FileContentPreparation.PrepareAsync(fixture.source, fixture.options);
         Assert.False(Directory.Exists(original));

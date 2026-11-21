@@ -1,14 +1,13 @@
 using System;
 using System.IO;
+using Xunit;
 using Inno.Build;
 using Inno.Testing.SupportPacks;
-using Xunit;
 
 namespace Inno.Build.MacOSArm64.Tests;
 
 public sealed class SupportPackValidationTests : PlayerSupportPackFixture
 {
-
     [Fact]
     public void PlatformPackRejectsAMissingContentSource()
     {
@@ -31,7 +30,8 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+        );
 
         Assert.Contains("forbidden build-time file", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
@@ -44,7 +44,8 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+        );
 
         Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);
     }
@@ -55,8 +56,10 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         BuildTargetId target = new BuildTargetId("macos-arm64");
         string directory = GetSupportPackDirectory(target);
         string library = "libminiaudio-release.dylib";
-        File.WriteAllBytes(Path.Combine(directory, "native", library),
-            CreateNativeImage(new BuildTargetId("windows-x64")));
+        File.WriteAllBytes(
+            Path.Combine(directory, "native", library),
+            CreateNativeImage(new BuildTargetId("windows-x64"))
+        );
         IPlayerSupportPackValidator validator = new MacOSArm64SupportPackValidator();
         InvalidDataException failure = Assert.Throws<InvalidDataException>(() => validator.Validate(directory));
         Assert.Contains("ARM64 ABI", failure.Message);
@@ -70,7 +73,8 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+        );
 
         Assert.Contains("foreign native runtime", exception.Message, StringComparison.Ordinal);
     }
@@ -85,9 +89,9 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()));
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+        );
 
         Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);
     }
-
 }

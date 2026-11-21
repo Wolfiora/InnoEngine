@@ -1,8 +1,8 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -44,7 +44,9 @@ public sealed class RenderShaderPassArtifact
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (!Enum.IsDefined(programKind))
+        {
             throw new ArgumentOutOfRangeException(nameof(programKind));
+        }
         ArgumentNullException.ThrowIfNull(rasterState);
         ArgumentNullException.ThrowIfNull(shaderInterface);
         ArgumentNullException.ThrowIfNull(stages);
@@ -83,28 +85,31 @@ public sealed class RenderShaderPassArtifact
     public IReadOnlyList<RenderShaderStageArtifact> stages => m_stages;
 
     internal static ShaderInterface CloneInterface(ShaderInterface source)
-        => new(source.bindings.Select(static binding => new ShaderInterfaceBinding(
-            binding.id,
-            binding.type,
-            binding.stages,
-            binding.arrayCount,
-            binding.bindingKind,
-            binding.storageAccess,
-            binding.nativeName,
-            binding.location)).ToArray());
+        => new(
+            source.bindings.Select(static binding => new ShaderInterfaceBinding(
+                binding.id,
+                binding.type,
+                binding.stages,
+                binding.arrayCount,
+                binding.bindingKind,
+                binding.storageAccess,
+                binding.nativeName,
+                binding.location
+            )).ToArray()
+        );
 
     internal static RenderRasterState CloneRasterState(RenderRasterState source)
         => new()
-        {
-            topology = source.topology,
-            cull = source.cull,
-            frontFace = source.frontFace,
-            depthCompare = source.depthCompare,
-            depthWrite = source.depthWrite,
-            blend = source.blend,
-            colorWriteMask = source.colorWriteMask,
-            multisampling = source.multisampling
-        };
+    {
+        topology = source.topology,
+        cull = source.cull,
+        frontFace = source.frontFace,
+        depthCompare = source.depthCompare,
+        depthWrite = source.depthWrite,
+        blend = source.blend,
+        colorWriteMask = source.colorWriteMask,
+        multisampling = source.multisampling
+    };
 
     private static void ValidateStages(
         ShaderProgramKind programKind,
@@ -112,14 +117,14 @@ public sealed class RenderShaderPassArtifact
     ) {
         ShaderStage[] actual = stages.Select(static value => value.stage).Order().ToArray();
         ShaderStage[] expected = programKind == ShaderProgramKind.Raster
-            ? [ShaderStage.Vertex, ShaderStage.Fragment]
-            : [ShaderStage.Compute];
+                                 ? [ShaderStage.Vertex, ShaderStage.Fragment]
+                                 : [ShaderStage.Compute];
         if (!actual.SequenceEqual(expected))
         {
             throw new ArgumentException(
                 $"Program kind '{programKind}' requires stages '{string.Join(", ", expected)}'.",
-                nameof(stages));
+                nameof(stages)
+            );
         }
     }
 }
-

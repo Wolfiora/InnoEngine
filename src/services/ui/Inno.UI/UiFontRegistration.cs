@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Text;
 
 namespace Inno.UI;
@@ -35,11 +34,15 @@ public readonly record struct UiFontRegistration
         int weight
     ) {
         if (data.IsEmpty)
+        {
             throw new ArgumentException("Font data cannot be empty.", nameof(data));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(faceIndex);
         ArgumentException.ThrowIfNullOrWhiteSpace(family);
         if (weight is < 100 or > 1000)
+        {
             throw new ArgumentOutOfRangeException(nameof(weight));
+        }
         this.data = data;
         this.faceIndex = faceIndex;
         this.family = family.Trim();
@@ -51,18 +54,22 @@ public readonly record struct UiFontRegistration
     /// Gets encoded font bytes valid for the synchronous backend call.
     /// </summary>
     public ReadOnlyMemory<byte> data { get; }
+
     /// <summary>
     /// Gets the zero-based collection face index.
     /// </summary>
     public int faceIndex { get; }
+
     /// <summary>
     /// Gets the logical family.
     /// </summary>
     public string family { get; }
+
     /// <summary>
     /// Gets the logical style.
     /// </summary>
     public TextFontStyle style { get; }
+
     /// <summary>
     /// Gets the logical weight.
     /// </summary>

@@ -1,6 +1,6 @@
 using System;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx.Tests;
 
@@ -12,17 +12,20 @@ public sealed class BgfxProcessLifetimeTests
     {
         using (var device = new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = GraphicsApi.Noop, forceSingleThreaded = true
-        }))
-        {
+            preferredBackend = GraphicsApi.Noop,
+            forceSingleThreaded = true
+        })) {
             device.BeginFrame();
             device.EndFrame();
         }
         foreach (bool inline in new[] { false, true })
+        {
             Assert.Throws<InvalidOperationException>(() => new BgfxDevice(new BgfxDeviceOptions
             {
-                preferredBackend = GraphicsApi.Noop, forceSingleThreaded = inline
+                preferredBackend = GraphicsApi.Noop,
+                forceSingleThreaded = inline
             }));
+        }
     }
 
     [Fact]
@@ -30,11 +33,11 @@ public sealed class BgfxProcessLifetimeTests
     {
         Assert.Throws<NotSupportedException>(() => new BgfxDevice(new BgfxDeviceOptions
         {
-            preferredBackend = new GraphicsApi("fixture.unsupported"), forceSingleThreaded = true
+            preferredBackend = new GraphicsApi("fixture.unsupported"),
+            forceSingleThreaded = true
         }));
         using var device = new BgfxDevice(new BgfxDeviceOptions { preferredBackend = GraphicsApi.Noop });
         device.BeginFrame();
         device.EndFrame();
     }
-
 }

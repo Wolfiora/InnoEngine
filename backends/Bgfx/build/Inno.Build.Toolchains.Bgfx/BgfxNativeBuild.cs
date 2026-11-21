@@ -19,8 +19,10 @@ public static class BgfxNativeBuild
         new NativeStaticBuildDefinition(
             "backends/Bgfx/build/Inno.Build.Toolchains.Bgfx/Native/StaticLibraries.cmake",
             ["extern/bgfx", "extern/bx", "extern/bimg"],
-            ["bgfxRelease", "bxRelease", "bimgRelease", "bimg_decodeRelease"]),
-        bindingDefinition: "backends/Bgfx/native/Inno.Native.Bgfx/Bindings/bindings.props");
+            ["bgfxRelease", "bxRelease", "bimgRelease", "bimg_decodeRelease"]
+        ),
+        bindingDefinition: "backends/Bgfx/native/Inno.Native.Bgfx/Bindings/bindings.props"
+    );
 
     /// <summary>
     /// Builds and installs graphics artifacts using explicit platform-owned SDK configuration.

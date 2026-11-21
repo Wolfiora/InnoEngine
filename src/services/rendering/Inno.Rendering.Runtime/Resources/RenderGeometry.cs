@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -96,11 +96,12 @@ public sealed class RenderGeometry
         ArgumentNullException.ThrowIfNull(commands);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(instanceCount);
         if ((uint)sectionIndex >= (uint)m_sections.Count)
+        {
             throw new ArgumentOutOfRangeException(nameof(sectionIndex));
+        }
         RenderGeometrySection section = m_sections[sectionIndex];
         commands.BindVertexBuffer(vertexBuffer);
         commands.BindIndexBuffer(indexBuffer, section.firstIndex);
         commands.DrawIndexed(section.indexCount, instanceCount);
     }
 }
-

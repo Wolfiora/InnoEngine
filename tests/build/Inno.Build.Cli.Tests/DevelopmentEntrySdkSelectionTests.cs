@@ -1,10 +1,10 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Cli;
 using Xunit;
+using Inno.Build.Cli;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Cli.Tests;
 

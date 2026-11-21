@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 namespace Inno.Build.Toolchains;
@@ -22,7 +22,8 @@ internal sealed class NativeBuildInputState
 
     internal NativeBuildInputState() => m_initialInputs = new(this);
 
-    internal NativeBuildStatistics statistics => new()
+    internal NativeBuildStatistics statistics
+        => new()
     {
         hashedFiles = Interlocked.Read(ref m_hashedFiles),
         hashedBytes = Interlocked.Read(ref m_hashedBytes),
@@ -41,7 +42,9 @@ internal sealed class NativeBuildInputState
         CancellationToken cancellationToken
     ) {
         lock (m_gate)
+        {
             return NativeInputSnapshot.Capture(inputs, m_initialInputs, cancellationToken);
+        }
     }
 
     internal NativeInputSnapshot CaptureVerification(
@@ -65,19 +68,25 @@ internal sealed class NativeBuildInputState
     internal byte[] GetFrozenHash(string path)
     {
         lock (m_gate)
+        {
             return m_initialInputs.GetFrozenHash(path);
+        }
     }
 
     internal NativeInputSnapshot CaptureRecordedInputs(string engineRoot)
     {
         lock (m_gate)
+        {
             return m_initialInputs.CaptureRecordedInputs(engineRoot);
+        }
     }
 
     internal string[][] CaptureRootMembership()
     {
         lock (m_gate)
+        {
             return m_initialInputs.CaptureRootMembership();
+        }
     }
 
     internal void RecordReuse(string phase)
@@ -90,7 +99,9 @@ internal sealed class NativeBuildInputState
     }
 
     internal void RecordBindingBatch() => Interlocked.Increment(ref m_bindingBatches);
+
     internal void RecordBindingGeneration() => Interlocked.Increment(ref m_bindingGenerations);
+
     internal void RecordMaterialization(long bytes) => Interlocked.Add(ref m_materializedBytes, bytes);
 
     internal void RecordOutput(long bytes)
@@ -104,11 +115,19 @@ internal sealed class NativeBuildInputState
     private IReadOnlyList<NativeBuildPhaseStatistics> CapturePhases()
     {
         lock (m_gate)
-            return Array.AsReadOnly(m_phases.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
-                .Select(static pair => new NativeBuildPhaseStatistics
-                {
-                    phase = pair.Key, files = pair.Value.files, bytes = pair.Value.bytes, reusedReads = pair.Value.reused
-                }).ToArray());
+        {
+            return Array.AsReadOnly(
+                m_phases.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
+                    .Select(static pair => new NativeBuildPhaseStatistics
+                    {
+                        phase = pair.Key,
+                        files = pair.Value.files,
+                        bytes = pair.Value.bytes,
+                        reusedReads = pair.Value.reused
+                    })
+                    .ToArray()
+            );
+        }
     }
 
     internal void RecordProcess() => Interlocked.Increment(ref m_nativeProcesses);

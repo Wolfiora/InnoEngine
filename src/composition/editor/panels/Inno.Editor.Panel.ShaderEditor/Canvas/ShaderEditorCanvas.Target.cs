@@ -1,9 +1,11 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Inno.Core.Graphs;
 using Inno.Rendering.Shaders;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using ImGuiApi = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.ShaderEditor;
+
 internal sealed partial class ShaderEditorCanvas
 {
     private void DrawTarget()
@@ -15,15 +17,25 @@ internal sealed partial class ShaderEditorCanvas
             InspectorRow("target", "Target", () =>
             {
                 if (!EditorUI.current.widgets.BeginBoundedCombo("##target", current.Length == 0 ? "Explicit Stages" : current))
+                {
                     return;
+                }
                 try
                 {
                     if (ImGuiApi.Selectable("Explicit Stages", current.Length == 0))
+                    {
                         Assign("");
+                    }
                     if (owner.targets is { } targets)
+                    {
                         foreach (string id in targets.ids)
+                        {
                             if (ImGuiApi.Selectable(id, current == id))
+                            {
                                 Assign(id);
+                            }
+                        }
+                    }
                 }
                 finally
                 {
@@ -39,7 +51,9 @@ internal sealed partial class ShaderEditorCanvas
         void Assign(string id)
         {
             if (id == current)
+            {
                 return;
+            }
             GraphDocument candidate = Controller.document.Clone();
             ShaderGraphDocument.SetTarget(candidate, id, owner.serialization, owner.context);
             Controller.ReplaceDocument(candidate, "Change Shader Target");

@@ -20,9 +20,7 @@ public abstract class EditorSetting
     /// Creates a Settings definition. A field supplies its persisted default through
     /// <see cref="defaultValue"/>; a page keeps the base implementation.
     /// </summary>
-    protected EditorSetting()
-    {
-    }
+    protected EditorSetting() {}
 
     /// <summary>
     /// Gets the complete slash-delimited identity and placement path.
@@ -85,9 +83,7 @@ public abstract class EditorSetting
     public bool Draw(EditorSettingObject setting)
     {
         ArgumentNullException.ThrowIfNull(setting);
-        EditorSettingObject baseline = m_drawBaselines.GetValue(
-            setting,
-            static value => value.Copy());
+        EditorSettingObject baseline = m_drawBaselines.GetValue(setting, static value => value.Copy());
         OnDraw(setting);
         return !setting.ValueEquals(baseline);
     }
@@ -111,8 +107,7 @@ public abstract class EditorSetting
     {
         ArgumentNullException.ThrowIfNull(setting);
         EditorSettingObject boundDefault = m_boundDefaultValue
-            ?? throw new InvalidOperationException(
-                $"Settings page '{path}' does not own a default value.");
+                                           ?? throw new InvalidOperationException($"Settings page '{path}' does not own a default value.");
         return boundDefault.ValueEquals(setting);
     }
 
@@ -123,9 +118,7 @@ public abstract class EditorSetting
     /// <param name="setting">
     /// The isolated mutable object being edited.
     /// </param>
-    protected virtual void OnDraw(EditorSettingObject setting)
-    {
-    }
+    protected virtual void OnDraw(EditorSettingObject setting) {}
 
     internal bool isPageDefinition { get; private set; }
 
@@ -138,16 +131,15 @@ public abstract class EditorSetting
         int placementOrder
     ) {
         string normalized = EditorSettingsPathUtility.Normalize(placementPath);
-        if (m_path is not null &&
-            (!string.Equals(m_path, normalized, StringComparison.Ordinal) || m_order != placementOrder))
-        {
+        if (m_path is not null
+            && (!string.Equals(m_path, normalized, StringComparison.Ordinal) || m_order != placementOrder)
+        ) {
             throw new InvalidOperationException(
-                $"Settings definition '{GetType().FullName}' was registered at more than one path.");
+                $"Settings definition '{GetType().FullName}' was registered at more than one path."
+            );
         }
 
-        MethodInfo? drawMethod = GetType().GetMethod(
-            nameof(OnDraw),
-            BindingFlags.Instance | BindingFlags.NonPublic);
+        MethodInfo? drawMethod = GetType().GetMethod(nameof(OnDraw), BindingFlags.Instance | BindingFlags.NonPublic);
         isPageDefinition = drawMethod?.DeclaringType == typeof(EditorSetting);
         EditorSettingObject? declaredDefault = defaultValue;
         (string path, string parentPath, string label) = EditorSettingsPathUtility.Parse(normalized);
@@ -155,13 +147,13 @@ public abstract class EditorSetting
         {
             throw new InvalidOperationException(
                 isPageDefinition
-                    ? $"Settings page '{path}' cannot declare a persisted default value."
-                    : $"Settings field '{path}' must declare a persisted default value.");
+                ? $"Settings page '{path}' cannot declare a persisted default value."
+                : $"Settings field '{path}' must declare a persisted default value."
+            );
         }
         if (!isPageDefinition && parentPath.Length == 0)
         {
-            throw new InvalidOperationException(
-                $"Settings field '{path}' requires at least one parent page segment.");
+            throw new InvalidOperationException($"Settings field '{path}' requires at least one parent page segment.");
         }
         m_path = path;
         m_pagePath = isPageDefinition ? path : parentPath;

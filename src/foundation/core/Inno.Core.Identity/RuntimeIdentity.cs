@@ -28,9 +28,13 @@ public readonly struct RuntimeIdentity : IEquatable<RuntimeIdentity>
         int runtimeId
     ) {
         if (!domainId.isValid)
+        {
             throw new ArgumentException("A runtime identity requires a valid domain.", nameof(domainId));
+        }
         if (runtimeId <= 0)
+        {
             throw new ArgumentException("A runtime identity requires a positive runtime identifier.", nameof(runtimeId));
+        }
         this.domainId = domainId;
         this.runtimeId = runtimeId;
     }

@@ -23,7 +23,9 @@ public sealed class GraphSerializedValue
     public GraphSerializedValue(ReadOnlySpan<byte> data)
     {
         if (data.IsEmpty)
+        {
             throw new ArgumentException("A graph value payload cannot be empty.", nameof(data));
+        }
         m_data = data.ToArray();
     }
 

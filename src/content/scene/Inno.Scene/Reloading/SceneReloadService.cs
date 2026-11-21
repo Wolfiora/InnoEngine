@@ -1,8 +1,7 @@
 using System;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene;
 
@@ -55,6 +54,9 @@ public sealed class SceneReloadService
         ArgumentNullException.ThrowIfNull(context);
         return new SceneReloadRecovery(
             SceneReloadStateTransfer.Capture(m_world, context, m_serialization, m_assets),
-            m_world, context, m_assets);
+            m_world,
+            context,
+            m_assets
+        );
     }
 }

@@ -35,10 +35,14 @@ public sealed class ManagedDeploymentResult
         ArgumentException.ThrowIfNullOrWhiteSpace(outputDirectory);
         ArgumentException.ThrowIfNullOrWhiteSpace(sdkIdentity);
         ArgumentNullException.ThrowIfNull(files);
-        if (files.Count == 0 || files.Any(static file => string.IsNullOrWhiteSpace(file)
-            || Path.IsPathRooted(file) || file.Split('/', '\\').Any(static segment => segment is "." or ".."))
-            || files.Distinct(StringComparer.Ordinal).Count() != files.Count)
+        if (files.Count == 0 || files.Any(static file => (
+            string.IsNullOrWhiteSpace(file)
+            || Path.IsPathRooted(file) || file.Split('/', '\\').Any(static segment => segment is "." or "..")
+        ))
+            || files.Distinct(StringComparer.Ordinal).Count() != files.Count
+        ) {
             throw new ArgumentException("Managed output requires unique relative artifact paths.", nameof(files));
+        }
         this.deployment = deployment;
         this.outputDirectory = Path.GetFullPath(outputDirectory);
         this.sdkIdentity = sdkIdentity;

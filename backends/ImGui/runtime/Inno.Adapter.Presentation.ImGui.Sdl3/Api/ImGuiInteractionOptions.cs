@@ -24,7 +24,9 @@ public sealed class ImGuiInteractionOptions
         int horizontalWheelDirection
     ) {
         if (horizontalWheelDirection is not (1 or -1))
+        {
             throw new ArgumentOutOfRangeException(nameof(horizontalWheelDirection), "Wheel direction must be one or minus one.");
+        }
         this.commandKeyBehavior = commandKeyBehavior;
         this.horizontalWheelDirection = horizontalWheelDirection;
     }

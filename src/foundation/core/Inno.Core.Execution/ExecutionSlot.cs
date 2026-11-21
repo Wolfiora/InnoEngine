@@ -36,9 +36,10 @@ public sealed class ExecutionSlot<TValue>
     /// <exception cref="InvalidOperationException">
     /// No live binding exists on the permitted thread.
     /// </exception>
-    public TValue current => TryGet(out TValue? value)
-        ? value
-        : throw new InvalidOperationException($"No active '{m_name}' execution scope is available to this caller.");
+    public TValue current
+        => TryGet(out TValue? value)
+           ? value
+           : throw new InvalidOperationException($"No active '{m_name}' execution scope is available to this caller.");
 
     /// <summary>
     /// Binds a value until the returned scope is retired in strict last-in-first-out order.
@@ -91,7 +92,9 @@ public sealed class ExecutionSlot<TValue>
     {
         Binding? binding = m_current.Value;
         if (binding is not null)
+        {
             return binding.TryGet(out value);
+        }
         value = default;
         return false;
     }
@@ -145,11 +148,17 @@ public sealed class ExecutionSlot<TValue>
             lock (m_sync)
             {
                 if (!m_active)
+                {
                     return;
+                }
                 if (!ReferenceEquals(m_slot.m_current.Value, this))
+                {
                     throw new InvalidOperationException($"'{m_slot.m_name}' scopes must retire in last-in-first-out order.");
+                }
                 if (m_threadId != 0 && m_threadId != Environment.CurrentManagedThreadId)
+                {
                     throw new InvalidOperationException($"'{m_slot.m_name}' must retire on its owner thread.");
+                }
                 m_slot.m_current.Value = m_parent;
                 m_active = false;
                 m_value = default!;

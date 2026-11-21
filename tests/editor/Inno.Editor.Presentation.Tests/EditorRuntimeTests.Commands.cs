@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
+using Xunit;
 using Inno.Core.Input;
 using Inno.Editor.Interactions;
-using Xunit;
 
 namespace Inno.Editor.Presentation.Tests;
 
@@ -81,17 +81,17 @@ public sealed class MenuStateAction : EditorAction
 {
     protected override EditorActionState Query(EditorActionContext context)
         => context.target is MenuStateTarget target
-            ? new(target.visible, target.enabled, target.isChecked, target.label, "Current owner is read-only.")
-            : EditorActionState.hidden;
+           ? new(target.visible, target.enabled, target.isChecked, target.label, "Current owner is read-only.")
+           : EditorActionState.hidden;
 
-    protected override void Execute(EditorActionContext context) { }
+    protected override void Execute(EditorActionContext context) {}
 }
 
 [EditorAction("tests.menu-fallback", "tests/shared-menu")]
 [EditorMenu("tests/shared-menu", "Shared", order: 100)]
 public sealed class MenuFallbackAction : EditorAction
 {
-    protected override void Execute(EditorActionContext context) { }
+    protected override void Execute(EditorActionContext context) {}
 }
 
 [EditorAction("tests.menu-conditional", "tests/shared-menu")]
@@ -101,7 +101,7 @@ public sealed class MenuConditionalAction : EditorAction
     protected override EditorActionState Query(EditorActionContext context)
         => context.target is MenuStateTarget { visible: true } ? EditorActionState.enabled : EditorActionState.hidden;
 
-    protected override void Execute(EditorActionContext context) { }
+    protected override void Execute(EditorActionContext context) {}
 }
 
 [EditorMenuSource("tests/failed-menu")]

@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Serialization;
 
 namespace Inno.Animation;
@@ -49,22 +48,18 @@ public enum AnimationValueKind
     /// A single scalar component.
     /// </summary>
     Scalar,
-
     /// <summary>
     /// Two independent components.
     /// </summary>
     Vector2,
-
     /// <summary>
     /// Three independent components.
     /// </summary>
     Vector3,
-
     /// <summary>
     /// Four independent components.
     /// </summary>
     Vector4,
-
     /// <summary>
     /// Four normalized rotation components.
     /// </summary>
@@ -144,14 +139,17 @@ public struct AnimationValue
         float amount
     ) {
         if (left.kind != right.kind)
+        {
             throw new InvalidOperationException("Animation values with different kinds cannot be interpolated.");
+        }
         float t = Math.Clamp(amount, 0f, 1f);
         var value = new AnimationValue(
             left.kind,
             left.x + ((right.x - left.x) * t),
             left.y + ((right.y - left.y) * t),
             left.z + ((right.z - left.z) * t),
-            left.w + ((right.w - left.w) * t));
+            left.w + ((right.w - left.w) * t)
+        );
         return left.kind == AnimationValueKind.Quaternion ? NormalizeQuaternion(value) : value;
     }
 
@@ -164,7 +162,8 @@ public struct AnimationValue
             sum.x * inverseWeight,
             sum.y * inverseWeight,
             sum.z * inverseWeight,
-            sum.w * inverseWeight);
+            sum.w * inverseWeight
+        );
         return sum.kind == AnimationValueKind.Quaternion ? NormalizeQuaternion(value) : value;
     }
 
@@ -174,7 +173,9 @@ public struct AnimationValue
         float weight
     ) {
         if (sum.kind != value.kind)
+        {
             throw new InvalidOperationException("Animation tracks targeting one binding must use one value kind.");
+        }
         sum.x += value.x * weight;
         sum.y += value.y * weight;
         sum.z += value.z * weight;
@@ -185,18 +186,20 @@ public struct AnimationValue
     private static AnimationValue NormalizeQuaternion(AnimationValue value)
     {
         float length = MathF.Sqrt(
-            (value.x * value.x) +
-            (value.y * value.y) +
-            (value.z * value.z) +
-            (value.w * value.w));
+            (value.x * value.x)
+            + (value.y * value.y)
+            + (value.z * value.z)
+            + (value.w * value.w)
+        );
         return length <= float.Epsilon
-            ? new AnimationValue(AnimationValueKind.Quaternion, 0f, 0f, 0f, 1f)
-            : new AnimationValue(
-                AnimationValueKind.Quaternion,
-                value.x / length,
-                value.y / length,
-                value.z / length,
-                value.w / length);
+               ? new AnimationValue(AnimationValueKind.Quaternion, 0f, 0f, 0f, 1f)
+               : new AnimationValue(
+                   AnimationValueKind.Quaternion,
+                   value.x / length,
+                   value.y / length,
+                   value.z / length,
+                   value.w / length
+               );
     }
 }
 
@@ -209,7 +212,6 @@ public enum AnimationInterpolation
     /// Holds the previous keyframe value until the next keyframe.
     /// </summary>
     Step,
-
     /// <summary>
     /// Blends linearly between adjacent keyframes.
     /// </summary>
@@ -225,7 +227,6 @@ public enum AnimationClock
     /// Uses scaled simulation time and stops while the session is paused.
     /// </summary>
     Scaled,
-
     /// <summary>
     /// Uses unscaled session time and continues while simulation is paused.
     /// </summary>
@@ -241,7 +242,6 @@ public enum AnimationPlaybackState
     /// The playback is advancing and producing samples.
     /// </summary>
     Playing,
-
     /// <summary>
     /// The playback retains its position without advancing.
     /// </summary>
@@ -256,7 +256,8 @@ public struct AnimationPlayOptions
     /// <summary>
     /// Gets the default playback options.
     /// </summary>
-    public static AnimationPlayOptions defaultValue => new()
+    public static AnimationPlayOptions defaultValue
+        => new()
     {
         speed = 1f,
         weight = 1f,
@@ -339,9 +340,13 @@ public readonly record struct AnimationSample
         AnimationValue value
     ) {
         if (!target.isValid)
+        {
             throw new ArgumentException("A valid animation destination is required.", nameof(target));
+        }
         if (!binding.isValid)
+        {
             throw new ArgumentException("A valid animation binding is required.", nameof(binding));
+        }
         this.binding = binding;
         this.target = target;
         this.value = value;

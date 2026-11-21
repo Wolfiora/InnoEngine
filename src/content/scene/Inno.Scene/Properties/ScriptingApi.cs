@@ -1,20 +1,11 @@
-using Inno.Scripting.Api;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Scene",
-    "Inno.Scene",
-    ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Scene",
-    "Inno.Scene.Components",
-    ScriptingApiScope.Runtime)]
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Scene",
-    "Inno.Scene.Layers",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Scene", "Inno.Scene", ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Scene", "Inno.Scene.Components", ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Scene", "Inno.Scene.Layers", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(AllowMultipleComponentAttribute), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(AllowMultipleSystemAttribute), ScriptingApiScope.Runtime)]

@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Inno.Rendering.Shaders;
 using Inno.Rendering.Assets.Authoring;
+using Inno.Rendering.Shaders;
 
 namespace Inno.Build.Toolchains.Bgfx.Tools;
 
@@ -42,7 +42,9 @@ public sealed partial class BgfxShadercToolchain
             string name = Encoding.UTF8.GetString(binary, offset, nameLength);
             offset += nameLength + C_SHADER_UNIFORM_METADATA_SIZE;
             if (activeNames.Contains(name))
+            {
                 records.Add(name, binary.AsSpan(start, offset - start).ToArray());
+            }
         }
 
         // Shaderc's line scanner stops at layout-qualified declarations. Complete its metadata
@@ -51,18 +53,24 @@ public sealed partial class BgfxShadercToolchain
         {
             ShaderIrStageInput input = stage.inputs.Single(value => value.id == binding.id);
             if (input.kind != ShaderIrInputKind.Storage && !records.ContainsKey(binding.nativeName))
+            {
                 records.Add(binding.nativeName, EncodeGlslUniform(input, binding.nativeName));
+            }
         }
 
         if (records.Count > ushort.MaxValue)
+        {
             throw new InvalidDataException("The compiled GLSL uniform table exceeds the BGFX binary limit.");
+        }
         using var output = new MemoryStream();
         output.Write(binary.AsSpan(0, C_SHADER_BINARY_HEADER_SIZE));
         Span<byte> encodedCount = stackalloc byte[sizeof(ushort)];
         BinaryPrimitives.WriteUInt16LittleEndian(encodedCount, (ushort)records.Count);
         output.Write(encodedCount);
         foreach (byte[] record in records.OrderBy(static pair => pair.Key, StringComparer.Ordinal).Select(static pair => pair.Value))
+        {
             output.Write(record);
+        }
         output.Write(binary.AsSpan(offset));
         return output.ToArray();
     }
@@ -84,7 +92,9 @@ public sealed partial class BgfxShadercToolchain
                 _ => throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' has unsupported storage '{typeId}'.")
             };
         if (name.Length == 0 || name.Length > byte.MaxValue || count <= 0 || count > byte.MaxValue)
+        {
             throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' exceeds the BGFX binary limits.");
+        }
         int registerCount = count * (type == ShaderUniformType.Mat3 ? 3 : type == ShaderUniformType.Mat4 ? 4 : 1);
         byte[] record = new byte[1 + name.Length + C_SHADER_UNIFORM_METADATA_SIZE];
         record[0] = (byte)name.Length;

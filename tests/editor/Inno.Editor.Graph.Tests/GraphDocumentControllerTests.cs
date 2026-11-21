@@ -1,19 +1,19 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
-using Inno.Extensibility.Modules;
-using Inno.Extensibility.Reload;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Graphs;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Graph;
 using Inno.Editor.Interactions;
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Graph.Tests;
 
@@ -22,7 +22,9 @@ public sealed class GraphDocumentControllerTests : IDisposable
     private readonly string m_testRoot = Path.Combine(
         Path.GetTempPath(),
         "InnoEditorGraphTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
@@ -35,14 +37,17 @@ public sealed class GraphDocumentControllerTests : IDisposable
     {
         _ = typeof(GraphEditorModule);
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphDocumentControllerTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(GraphDocumentControllerTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
             new EditorContext(m_testRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
             m_types,
             m_logs,
-            [m_serialization, m_sink, m_reloads]);
+            [m_serialization, m_sink, m_reloads]
+        );
         m_runtime.Start();
     }
 
@@ -57,7 +62,9 @@ public sealed class GraphDocumentControllerTests : IDisposable
         GC.WaitForPendingFinalizers();
         GC.Collect();
         if (Directory.Exists(m_testRoot))
+        {
             Directory.Delete(m_testRoot, recursive: true);
+        }
     }
 
     [Theory]
@@ -80,13 +87,20 @@ public sealed class GraphDocumentControllerTests : IDisposable
             using (AssemblyReloadSession reload = m_modules.BeginReload([new DotNetModuleSource
             {
                 artifactRootDirectory = Path.Combine(m_testRoot, "Assemblies"),
-                moduleName = "GraphRecovery", domain = AssemblyDomain.InnoPlugin, scope = AssemblyScope.Runtime,
+                moduleName = "GraphRecovery",
+                domain = AssemblyDomain.InnoPlugin,
+                scope = AssemblyScope.Runtime,
                 mainAssemblyPath = Path.Combine(directory, "Inno.Extensibility.Modules.TestModule.dll"),
                 preloadAssemblyPaths = [Path.Combine(directory, "Reloadable.PrivateDependency.dll")]
-            }]))
-            {
-                if (reject) Assert.Throws<InvalidOperationException>(() => m_reloads.Execute(reload));
-                else _ = m_reloads.Execute(reload);
+            }])) {
+                if (reject)
+                {
+                    Assert.Throws<InvalidOperationException>(() => m_reloads.Execute(reload));
+                }
+                else
+                {
+                    _ = m_reloads.Execute(reload);
+                }
             }
             m_modules.generations.Wait();
             Assert.Equal(GenerationState.Ready, m_modules.generations.state);
@@ -111,7 +125,9 @@ public sealed class GraphDocumentControllerTests : IDisposable
         Guid identity = Guid.NewGuid();
         var retired = new List<(GraphDocumentController controller, WeakReference<GraphDocument> document)>();
         for (int iteration = 0; iteration < 100; iteration++)
+        {
             retired.Add(OpenAndClose());
+        }
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
@@ -137,12 +153,21 @@ public sealed class GraphDocumentControllerTests : IDisposable
     private sealed class RejectionParticipant(bool reject) : IEditorReloadParticipant, IGenerationChange
     {
         public IGenerationChange Capture(AssemblyReloadContext context) => this;
-        public void RefreshDiagnostics() { }
-        public void PrepareForActivation() { }
-        public void Apply() { if (reject) throw new InvalidOperationException("Later recovery participant rejected the candidate."); }
-        public void Complete() { }
-        public void RollbackStructure() { }
-        public void RestorePreviousState() { }
+
+        public void RefreshDiagnostics() {}
+
+        public void PrepareForActivation() {}
+
+        public void Apply()
+        {
+            if (reject) throw new InvalidOperationException("Later recovery participant rejected the candidate.");
+        }
+
+        public void Complete() {}
+
+        public void RollbackStructure() {}
+
+        public void RestorePreviousState() {}
     }
 
     [Fact]
@@ -227,7 +252,8 @@ public sealed class GraphDocumentControllerTests : IDisposable
         GraphNodeId second = controller.AddNode("test.second", new GraphPosition(3f, 4f));
         controller.Connect(
             new GraphEndpoint(first, new GraphPortId("out")),
-            new GraphEndpoint(second, new GraphPortId("in")));
+            new GraphEndpoint(second, new GraphPortId("in"))
+        );
 
         GraphClipboardData clipboard = controller.Copy([first, second]);
         IReadOnlyList<GraphNodeId> pasted = controller.Paste(clipboard, new GraphPosition(10f, 20f));
@@ -290,7 +316,10 @@ public sealed class GraphDocumentControllerTests : IDisposable
             remap
         ) =>
             node.SetValue("owner", new(System.Text.Encoding.UTF8.GetBytes(remap[owner].value))));
-        Assert.Equal(created[0].value, System.Text.Encoding.UTF8.GetString(controller.document.FindNode(created[1])!.values["owner"].data.Span));
+        Assert.Equal(
+            created[0].value,
+            System.Text.Encoding.UTF8.GetString(controller.document.FindNode(created[1])!.values["owner"].data.Span)
+        );
         Assert.True(history.Undo().succeeded);
         Assert.Equal(2, controller.document.nodes.Count);
         byte[] before = GraphDocumentCodec.Encode(controller.document, m_serialization);
@@ -314,11 +343,14 @@ public sealed class GraphDocumentControllerTests : IDisposable
         public string? faultReason => null;
         public long residentBytes => 0;
         public long diskBytes => 0;
+
         public EditorHistoryTransaction BeginTransaction(string name) => throw new NotSupportedException();
+
         public EditorHistoryResult Execute(
             string name,
             EditorHistoryChange change
         ) => throw new NotSupportedException();
+
         public void RecordApplied(
             string name,
             EditorHistoryChange change
@@ -326,8 +358,11 @@ public sealed class GraphDocumentControllerTests : IDisposable
             _ = name;
             changes.Add(change);
         }
+
         public EditorHistoryResult Undo() => throw new NotSupportedException();
+
         public EditorHistoryResult Redo() => throw new NotSupportedException();
+
         public void DisposeChanges()
         {
             foreach (EditorHistoryChange change in changes)

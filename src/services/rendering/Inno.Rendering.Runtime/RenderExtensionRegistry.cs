@@ -15,9 +15,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     private Exception? m_retirementFailure;
 
     internal RenderExtensionRegistry(TypeCatalog types)
-        : base(types)
-    {
-    }
+        : base(types) {}
 
     internal Snapshot extensions => current;
 
@@ -26,7 +24,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         try
         {
             if (resource is not null)
+            {
                 RetireResource("render generation", resource.Dispose);
+            }
         }
         catch (Exception exception)
         {
@@ -39,7 +39,12 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     internal void EnsureHealthy()
     {
         if (m_retirementFailure is not null)
-            throw new InvalidOperationException("The rendering generation owner is Faulted and requires a host restart.", m_retirementFailure);
+        {
+            throw new InvalidOperationException(
+                "The rendering generation owner is Faulted and requires a host restart.",
+                m_retirementFailure
+            );
+        }
     }
 
     /// <summary>
@@ -73,29 +78,33 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         Dictionary<string, Type> pipelines = Discover<RenderPipelineExtensionAttribute, RenderPipeline>(
             types,
             static attribute => attribute.id,
-            "render pipeline");
+            "render pipeline"
+        );
         Dictionary<string, Type> features = Discover<RenderFeatureExtensionAttribute, RenderPipelineFeature>(
             types,
             static attribute => attribute.id,
-            "render feature");
+            "render feature"
+        );
         Dictionary<string, Type> requestProviders = Discover<
             RenderRequestProviderExtensionAttribute,
-            RenderRequestProvider>(
-            types,
-            static attribute => attribute.id,
-            "render request provider");
+            RenderRequestProvider>(types, static attribute => attribute.id, "render request provider");
         Dictionary<string, Type> contentSources = Discover<
             ViewContentSourceExtensionAttribute,
-            IViewContentSource>(
-            types,
-            static attribute => attribute.id,
-            "view content source");
+            IViewContentSource>(types, static attribute => attribute.id, "view content source");
         Dictionary<string, Type> renderModels = Discover<
-            RenderModelExtensionAttribute, IRenderModel>(types,
-            static attribute => attribute.id, "render model");
-        return new Snapshot(types, pipelines, features, requestProviders, contentSources, renderModels,
-            CreateExtension<RenderRequestProvider>, CreateExtension<IViewContentSource>,
-            CreateExtension<IRenderModel>, Retire);
+            RenderModelExtensionAttribute, IRenderModel>(types, static attribute => attribute.id, "render model");
+        return new Snapshot(
+            types,
+            pipelines,
+            features,
+            requestProviders,
+            contentSources,
+            renderModels,
+            CreateExtension<RenderRequestProvider>,
+            CreateExtension<IViewContentSource>,
+            CreateExtension<IRenderModel>,
+            Retire
+        );
     }
 
     internal static string GetConfigurationFingerprint(RenderPipelineAsset asset)
@@ -129,8 +138,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         TypeCacheSnapshot types,
         Func<TAttribute, string> getId,
         string kind
-    )
-        where TAttribute : Attribute
+    ) where TAttribute : Attribute
     {
         var result = new Dictionary<string, Type>(StringComparer.Ordinal);
         foreach (TypeRef typeRef in types.GetTypesWithAttribute<TAttribute>())
@@ -139,13 +147,15 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             if (type.IsAbstract || !typeof(TContract).IsAssignableFrom(type))
             {
                 throw new InvalidOperationException(
-                    $"Reloadable {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}.");
+                    $"Reloadable {kind} '{type.FullName}' must be a non-abstract {typeof(TContract).FullName}."
+                );
             }
 
             if (!types.CanCreateInstance(typeRef))
             {
                 throw new InvalidOperationException(
-                    $"Reloadable {kind} '{type.FullName}' requires a parameterless constructor.");
+                    $"Reloadable {kind} '{type.FullName}' requires a parameterless constructor."
+                );
             }
 
             TAttribute attribute = types.GetAttribute<TAttribute>(typeRef, inherit: false)!;
@@ -153,8 +163,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             if (!result.TryAdd(id, type))
             {
                 throw new InvalidOperationException(
-                    $"Reloadable {kind} ID '{id}' is declared by both " +
-                    $"'{result[id].FullName}' and '{type.FullName}'.");
+                    $"Reloadable {kind} ID '{id}' is declared by both "
+                    + $"'{result[id].FullName}' and '{type.FullName}'."
+                );
             }
         }
 
@@ -218,7 +229,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         {
             var sources = new List<ContentSourceEntry>(m_contentSources.Count);
             foreach ((string id, Type type) in m_contentSources.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+            {
                 sources.Add(new ContentSourceEntry(id, createSource(type)));
+            }
             return new ContentSourceGeneration(typeCacheVersion, sources);
         }
 
@@ -226,7 +239,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         {
             var models = new List<RenderModelEntry>(m_renderModels.Count);
             foreach ((string id, Type type) in m_renderModels.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+            {
                 models.Add(new RenderModelEntry(id, createModel(type)));
+            }
             return new RenderModelGeneration(typeCacheVersion, models);
         }
 
@@ -256,7 +271,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
         ) {
             ArgumentNullException.ThrowIfNull(asset);
             if (string.IsNullOrWhiteSpace(asset.pipelineTypeId))
+            {
                 throw new InvalidOperationException("A render pipeline asset requires a stable pipeline extension ID.");
+            }
             if (!m_pipelines.TryGetValue(asset.pipelineTypeId, out Type? pipelineType))
             {
                 generation = null;
@@ -267,13 +284,18 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             foreach (RenderFeatureConfiguration configuration in asset.features)
             {
                 if (!configuration.enabled)
+                {
                     continue;
+                }
                 if (string.IsNullOrWhiteSpace(configuration.featureTypeId))
+                {
                     throw new InvalidOperationException("An enabled render feature requires a stable extension ID.");
+                }
                 if (featureTypes.ContainsKey(configuration.featureTypeId))
                 {
                     throw new InvalidOperationException(
-                        $"Render feature '{configuration.featureTypeId}' is configured more than once.");
+                        $"Render feature '{configuration.featureTypeId}' is configured more than once."
+                    );
                 }
                 if (!m_features.TryGetValue(configuration.featureTypeId, out Type? featureType))
                 {
@@ -289,10 +311,11 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
                 var settings = new RenderExtensionStateContext(asset);
                 candidate.pipeline.Configure(asset.pipelineState, settings);
                 foreach (RenderFeatureConfiguration configuration in asset.features.Where(
-                             static value => value.enabled))
-                {
+                    static value => value.enabled
+                )) {
                     RenderPipelineFeature feature = Create<RenderPipelineFeature>(
-                        featureTypes[configuration.featureTypeId]);
+                        featureTypes[configuration.featureTypeId]
+                    );
                     candidate.AddFeature(configuration.featureTypeId, feature);
                     feature.Configure(configuration, settings);
                 }
@@ -318,7 +341,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             }
         }
 
-        private TContract Create<TContract>(Type type) where TContract : class
+        private TContract Create<TContract>(Type type)
+            where TContract : class
         {
             try
             {
@@ -328,7 +352,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             {
                 throw new InvalidOperationException(
                     $"Rendering extension '{type.FullName}' could not be activated.",
-                    exception);
+                    exception
+                );
             }
         }
     }
@@ -345,7 +370,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             this.typeCacheVersion = typeCacheVersion;
             m_providers = Array.AsReadOnly(providers.ToArray());
             foreach (RequestProviderEntry entry in m_providers)
+            {
                 m_lifetime.Own(entry.provider);
+            }
         }
 
         internal long typeCacheVersion { get; }
@@ -392,7 +419,9 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             this.typeCacheVersion = typeCacheVersion;
             m_sources = Array.AsReadOnly(sources.ToArray());
             foreach (ContentSourceEntry entry in m_sources)
+            {
                 m_lifetime.Own(entry.source);
+            }
         }
 
         internal long typeCacheVersion { get; }
@@ -426,7 +455,9 @@ public void Dispose()
             this.typeCacheVersion = typeCacheVersion;
             m_models = Array.AsReadOnly(models.ToArray());
             foreach (RenderModelEntry entry in m_models)
+            {
                 m_lifetime.Own(entry.model);
+            }
         }
 
         internal long typeCacheVersion { get; }
@@ -446,5 +477,4 @@ public void Dispose()
         string id,
         IRenderModel model
     );
-
 }

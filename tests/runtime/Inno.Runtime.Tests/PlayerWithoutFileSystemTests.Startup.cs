@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
@@ -11,8 +12,8 @@ using Inno.Assets.Pipeline;
 using Inno.Content;
 using Inno.Content.Testing;
 using Inno.Core.Execution;
-using Inno.Core.Identity;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
@@ -21,7 +22,6 @@ using Inno.Player.Runtime;
 using Inno.Scene;
 using Inno.Shell;
 using Inno.Storage;
-using Xunit;
 
 namespace Inno.Runtime.Tests;
 
@@ -40,7 +40,8 @@ public sealed partial class PlayerWithoutFileSystemTests
         var deployment = GameCodeDeployment.FromManifest(source.manifest.modules);
         var options = new PlayerLaunchOptions
         {
-            adapterSelection = new Inno.Adapter.AdapterSelection {
+            adapterSelection = new Inno.Adapter.AdapterSelection
+            {
                 platform = Inno.Adapter.Platform.PlatformBackendId.sdl3,
                 input = Inno.Adapter.Input.InputBackendId.events,
                 rendering = Inno.Adapter.Rendering.RenderingBackendId.bgfx,
@@ -55,11 +56,13 @@ public sealed partial class PlayerWithoutFileSystemTests
             contentSource = source,
             adapters = adapters,
             createStorage = _ => new MemoryStorage(),
-            moduleActivator = new StaticPlayerModuleActivator(deployment,
+            moduleActivator = new StaticPlayerModuleActivator(
+                deployment,
                 new Dictionary<string, IReadOnlyList<Assembly>>
                 {
                     ["Game"] = [typeof(PlayerWithoutFileSystemTests).Assembly]
-                }),
+                }
+            ),
             frameDriver = new PollingShellFrameDriver(),
             smokeFrameLimit = 3,
             windowVisible = false,
@@ -67,10 +70,14 @@ public sealed partial class PlayerWithoutFileSystemTests
             logDeliveryMode = LogDeliveryMode.Inline
         };
         if (failFrame)
+        {
             Assert.Throws<InvalidOperationException>(() =>
                 OwnerThreadExecution.Run(() => PlayerApplication.RunAsync(options)));
+        }
         else
+        {
             Assert.Equal(0, OwnerThreadExecution.Run(() => PlayerApplication.RunAsync(options)));
+        }
         Assert.Equal(1, source.metadataReads);
         Assert.Equal(1, source.preparations);
         Assert.Equal(1, source.disposals);
@@ -90,18 +97,31 @@ public sealed partial class PlayerWithoutFileSystemTests
             var identities = new IdentityAllocator();
             var world = new SceneWorld(identities, engine.types);
             using IDisposable sceneScope = world.EnterScope();
-            using var assets = new AssetPipeline(engine.modules, engine.types, engine.serialization,
-                identities, engine.diagnostics, engine.logs,
+            using var assets = new AssetPipeline(
+                engine.modules,
+                engine.types,
+                engine.serialization,
+                identities,
+                engine.diagnostics,
+                engine.logs,
                 AssetPipelineOptions.Create(assetsDirectory, Path.Combine(root, "Library")) with
                 {
                     enableFileSystemWatcher = false
-                });
-            Assert.True(assets.Save(AssetPath.Project("Startup.iscene"),
-                SceneAsset.Capture(new GameScene("Memory scene"), engine.serialization, assets)));
+                }
+            );
+            Assert.True(
+                assets.Save(
+                    AssetPath.Project("Startup.iscene"),
+                    SceneAsset.Capture(new GameScene("Memory scene"), engine.serialization, assets)
+                )
+            );
             using var settings = new ProjectSettingsStore(
                 new FileByteDocumentStore(Path.Combine(root, SettingsFileNames.project)),
-                engine.types, engine.serialization, new ProjectId("tests.memory.player"),
-                AssetSerializationContext.Create(assets));
+                engine.types,
+                engine.serialization,
+                new ProjectId("tests.memory.player"),
+                AssetSerializationContext.Create(assets)
+            );
             string exported = Path.Combine(root, "Exported");
             assets.ExportRuntimeArtifacts(exported);
             File.WriteAllBytes(Path.Combine(exported, SettingsFileNames.project), settings.CaptureDocument());
@@ -123,15 +143,20 @@ public sealed partial class PlayerWithoutFileSystemTests
                 }]
             };
             using SerializationGeneration serialization = engine.serialization.CaptureGeneration();
-            return new MemoryPlayerSource(manifest, content,
-                new PlayerContentMetadata(RuntimeManifestEnvelope.Encode(manifest, serialization),
+            return new MemoryPlayerSource(
+                manifest,
+                content,
+                new PlayerContentMetadata(
+                    RuntimeManifestEnvelope.Encode(manifest, serialization),
                     serialization.Serialize(new RuntimeContentCatalog
                     {
                         contentHash = content.descriptor.contentHash,
                         packFileName = content.descriptor.fileName,
                         snapshotFingerprint = new string('A', 64),
                         runtimeAssemblyCount = 1
-                    })));
+                    })
+                )
+            );
         }
         finally
         {

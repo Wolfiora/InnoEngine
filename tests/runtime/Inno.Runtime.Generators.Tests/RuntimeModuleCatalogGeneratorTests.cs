@@ -4,12 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
-using Inno.Extensibility.Catalogs;
-using Inno.Runtime;
-using Inno.Runtime.Generators;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
+using Inno.Extensibility.Catalogs;
+using Inno.Runtime;
+using Inno.Runtime.Generators;
 
 namespace Inno.Runtime.Generators.Tests;
 
@@ -34,9 +34,12 @@ public sealed class RuntimeModuleCatalogGeneratorTests
             }
             """;
         string[] paths = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
-        CSharpCompilation input = CSharpCompilation.Create("Inno.InvalidStaticCatalogFixture",
-            [CSharpSyntaxTree.ParseText(source)], paths.Select(static path => MetadataReference.CreateFromFile(path)),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+        CSharpCompilation input = CSharpCompilation.Create(
+            "Inno.InvalidStaticCatalogFixture",
+            [CSharpSyntaxTree.ParseText(source)],
+            paths.Select(static path => MetadataReference.CreateFromFile(path)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
+        );
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new RuntimeModuleCatalogGenerator().AsSourceGenerator());
         driver.RunGeneratorsAndUpdateCompilation(input, out _, out var diagnostics);
         Diagnostic failure = Assert.Single(diagnostics, static diagnostic => diagnostic.Id == "INNORUN002");
@@ -95,10 +98,13 @@ public sealed class RuntimeModuleCatalogGeneratorTests
             public sealed class RequiredChild : RequiredBase { }
             """;
         string[] paths = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")
-            ?? throw new InvalidOperationException("The test host provides no platform closure.")).Split(Path.PathSeparator);
-        CSharpCompilation input = CSharpCompilation.Create("Inno.StaticCatalogFixture",
-            [CSharpSyntaxTree.ParseText(source)], paths.Select(static path => MetadataReference.CreateFromFile(path)),
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable));
+                          ?? throw new InvalidOperationException("The test host provides no platform closure.")).Split(Path.PathSeparator);
+        CSharpCompilation input = CSharpCompilation.Create(
+            "Inno.StaticCatalogFixture",
+            [CSharpSyntaxTree.ParseText(source)],
+            paths.Select(static path => MetadataReference.CreateFromFile(path)),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
+        );
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new RuntimeModuleCatalogGenerator().AsSourceGenerator());
         driver.RunGeneratorsAndUpdateCompilation(input, out Compilation output, out var diagnostics);
         Assert.Empty(diagnostics.Where(static value => value.Severity == DiagnosticSeverity.Error));
@@ -119,9 +125,15 @@ public sealed class RuntimeModuleCatalogGeneratorTests
             Assert.Equal(derived.type, catalog.CreateInstance(derived.type).GetType());
             Assert.Equal("Fixture.Base", Assert.Single(derived.baseTypes).FullName);
             Assert.Equal(typeof(int), Assert.Single(derived.interfaces).GenericTypeArguments[0]);
-            Attribute marker = Assert.Single(derived.inheritedAttributes, static attribute => attribute.GetType().Name == "MarkerAttribute");
+            Attribute marker = Assert.Single(
+                derived.inheritedAttributes,
+                static attribute => attribute.GetType().Name == "MarkerAttribute"
+            );
             Assert.Equal("derived", marker.GetType().GetProperty("name")!.GetValue(marker));
-            Assert.Contains(derived.parameterlessOverrides, static slot => slot.name == "Tick" && slot.declaringBase.FullName == "Fixture.Base");
+            Assert.Contains(
+                derived.parameterlessOverrides,
+                static slot => slot.name == "Tick" && slot.declaringBase.FullName == "Fixture.Base"
+            );
             Assert.False(catalog.CanCreateInstance(assembly.GetType("Fixture.RequiredChild", throwOnError: true)!));
             Assert.False(catalog.CanCreateInstance(assembly.GetType("Fixture.Generic`1+Nested", throwOnError: true)!));
             Type generic = assembly.GetType("Fixture.Generic`1", throwOnError: true)!;

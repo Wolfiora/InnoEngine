@@ -1,6 +1,7 @@
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(bool))]
 internal sealed class BooleanPropertyDrawer : IPropertyDrawer
 {

@@ -375,7 +375,8 @@ internal sealed partial class RecordedRenderCommandEncoder : RenderCommandEncode
     private void EnsureWritable()
     {
         if (m_sealed)
+        {
             throw new InvalidOperationException("A recorded render command list is already sealed.");
+        }
     }
-
 }

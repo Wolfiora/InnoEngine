@@ -1,10 +1,10 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using Inno.Build.SupportPacks;
-using Inno.Core.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.SupportPacks;
+using Inno.Core.IO;
 
 namespace Inno.Build.Cli;
 
@@ -16,8 +16,14 @@ internal static class SupportPackCommand
         CancellationToken cancellationToken
     ) {
         string output = options.Read("output", Path.Combine(context.root, "artifacts", "support-packs"));
-        using PlayerSupportPackPublication pack = await context.distribution.supportPacks.PublishAsync(context.root, output, context.target,
-            context.composition.dotnetHost, cancellationToken, context.nativeDependencies.Length == 0 ? null : context.nativeDependencies).ConfigureAwait(false);
+        using PlayerSupportPackPublication pack = await context.distribution.supportPacks.PublishAsync(
+            context.root,
+            output,
+            context.target,
+            context.composition.dotnetHost,
+            cancellationToken,
+            context.nativeDependencies.Length == 0 ? null : context.nativeDependencies
+        ).ConfigureAwait(false);
         string archive = options.Read("archive", string.Empty);
         if (archive.Length != 0)
         {
@@ -38,11 +44,15 @@ internal static class SupportPackCommand
             finally
             {
                 if (File.Exists(candidate))
+                {
                     File.Delete(candidate);
+                }
             }
         }
         Console.WriteLine(pack.directory);
         foreach (string diagnostic in pack.diagnostics)
+        {
             Console.Error.WriteLine(diagnostic);
+        }
     }
 }

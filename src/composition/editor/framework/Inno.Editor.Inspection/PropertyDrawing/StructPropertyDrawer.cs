@@ -1,18 +1,21 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Inno.Core.Serialization;
+using Inno.Editor.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(ValueType), useForChildren: true, priority: -100)]
 internal sealed class StructPropertyDrawer : IPropertyDrawer
 {
     private static readonly ConditionalWeakTable<Type, MembersBox> S_MEMBER_CACHE = new();
+
     /// <summary>
     /// Renders the value presentation for the current editor frame.
     /// </summary>
@@ -41,12 +44,20 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
                 MemberInfo member = members[i];
                 Type memberType = GetMemberType(member);
                 bool memberReadOnly = !CanWrite(member) || (GetVisibility(member) & PropertyVisibility.RuntimeSet) == 0;
-                context.DrawChildMember(context.GetValue() ?? boxedValue, member, memberType, () => GetMemberValue(member, context.GetValue() ?? boxedValue), value =>
+                context.DrawChildMember(
+                    context.GetValue()
+                    ?? boxedValue,
+                    member,
+                    memberType,
+                    () => GetMemberValue(member, context.GetValue() ?? boxedValue),
+                    value =>
                 {
                     object updated = context.GetValue() ?? Activator.CreateInstance(context.propertyType)!;
                     SetMemberValue(member, updated, value);
                     context.SetValue(updated);
-                }, memberReadOnly);
+                },
+                    memberReadOnly
+                );
             }
         });
         Ui.TreePop();
@@ -56,7 +67,13 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
     {
         return S_MEMBER_CACHE.GetValue(
             type,
-            static value => new MembersBox(value.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(IsRuntimeVisibleMember).OrderBy(static member => member.MetadataToken).ToArray())
+            static value => new MembersBox(
+                value
+                    .GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(IsRuntimeVisibleMember)
+                    .OrderBy(static member => member.MetadataToken)
+                    .ToArray()
+            )
         ).members;
     }
 
@@ -65,14 +82,16 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         SerializablePropertyAttribute? attribute = member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true);
         PropertyVisibility visibility = attribute?.propertyVisibility ?? PropertyVisibility.Show;
         if ((visibility & PropertyVisibility.RuntimeGet) == 0)
+        {
             return false;
+        }
         return member switch
         {
             FieldInfo field => !field.IsStatic && (attribute is not null || field.IsPublic && !field.IsInitOnly),
             PropertyInfo property => property.GetIndexParameters().Length == 0
-                && (attribute is not null
-                || property.GetGetMethod(nonPublic: true)?.IsPublic == true
-                && property.GetSetMethod(nonPublic: true)?.IsPublic == true),
+                                     && (attribute is not null
+                                         || property.GetGetMethod(nonPublic: true)?.IsPublic == true
+                                            && property.GetSetMethod(nonPublic: true)?.IsPublic == true),
             _ => false
         };
     }
@@ -88,7 +107,8 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
         {
             FieldInfo field => field.FieldType,
             PropertyInfo property => property.PropertyType,
-            _ => throw new InvalidOperationException($"Unsupported struct member '{member.MemberType}'.")};
+            _ => throw new InvalidOperationException($"Unsupported struct member '{member.MemberType}'.")
+        };
     }
 
     private static object? GetMemberValue(

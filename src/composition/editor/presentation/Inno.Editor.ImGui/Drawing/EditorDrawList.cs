@@ -2,9 +2,11 @@ using System;
 using System.Numerics;
 using BGCS.Runtime;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// A pointer-free drawing borrow valid only in its original window, UI session and frame.
 /// </summary>
@@ -13,6 +15,7 @@ public readonly unsafe struct EditorDrawList
     private readonly EditorUiSession m_session;
     private readonly int m_frame;
     private readonly uint m_window;
+
     internal EditorDrawList(EditorUiSession session)
     {
         ImGuiNativeContext* context = session.RequireDrawingFrame();
@@ -42,6 +45,7 @@ public readonly unsafe struct EditorDrawList
         uint color,
         float thickness = 1f
     ) => ImGui.DrawNativeLine(Resolve(), start, end, color, thickness);
+
     /// <summary>
     /// Adds a filled rectangular surface.
     /// </summary>
@@ -66,7 +70,15 @@ public readonly unsafe struct EditorDrawList
         uint color,
         float rounding = 0f,
         bool topCornersOnly = false
-    ) => ImGui.DrawNativeFilledRectangle(Resolve(), minimum, maximum, color, rounding, topCornersOnly ? (int)ImDrawFlags.RoundCornersTop : 0);
+    ) => ImGui.DrawNativeFilledRectangle(
+        Resolve(),
+        minimum,
+        maximum,
+        color,
+        rounding,
+        topCornersOnly ? (int)ImDrawFlags.RoundCornersTop : 0
+    );
+
     /// <summary>
     /// Adds a rectangular outline.
     /// </summary>
@@ -92,6 +104,7 @@ public readonly unsafe struct EditorDrawList
         float rounding = 0f,
         float thickness = 1f
     ) => ImGui.DrawNativeRectangle(Resolve(), minimum, maximum, color, rounding, 0, thickness);
+
     /// <summary>
     /// Adds a filled circle with backend-selected tessellation.
     /// </summary>
@@ -139,7 +152,17 @@ public readonly unsafe struct EditorDrawList
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(scale);
         ImVec2C native = ImGui.ToNative(position);
         using NativeStringLease encoded = Utf8Codec.EncodeNullTerminated(text, allowsNull: false);
-        NativeImGui.Raw.AddText(draw, NativeImGui.Raw.GetFont(), NativeImGui.GetFontSize() * scale, &native, color, (sbyte*)encoded.pointer, null, 0f, null);
+        NativeImGui.Raw.AddText(
+            draw,
+            NativeImGui.Raw.GetFont(),
+            NativeImGui.GetFontSize() * scale,
+            &native,
+            color,
+            (sbyte*)encoded.pointer,
+            null,
+            0f,
+            null
+        );
     }
 
     /// <summary>
@@ -167,6 +190,7 @@ public readonly unsafe struct EditorDrawList
     /// Restores the enclosing clip after a matching PushClip.
     /// </summary>
     public void PopClip() => NativeImGui.Raw.PopClipRect(Resolve());
+
     /// <summary>
     /// Begins ordered draw channels within this window.
     /// </summary>
@@ -186,17 +210,23 @@ public readonly unsafe struct EditorDrawList
     /// The zero-based channel.
     /// </param>
     public void SetChannel(int index) => NativeImGui.Raw.ChannelsSetCurrent(Resolve(), index);
+
     /// <summary>
     /// Merges the current split back into ordered draw commands.
     /// </summary>
     public void MergeChannels() => NativeImGui.Raw.ChannelsMerge(Resolve());
+
     private ImDrawList* Resolve()
     {
         if (m_session is null)
+        {
             throw new InvalidOperationException("A default drawing borrow has no owner.");
+        }
         ImGuiNativeContext* context = m_session.RequireDrawingFrame();
         if (context->FrameCount != m_frame || context->CurrentWindow->ID != m_window)
+        {
             throw new InvalidOperationException("The drawing borrow belongs to a different window or frame.");
+        }
         return NativeImGui.Raw.GetWindowDrawList();
     }
 }

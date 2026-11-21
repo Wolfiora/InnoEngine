@@ -1,4 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections;
 using System.Globalization;
@@ -7,9 +6,12 @@ using Inno.Core.Serialization;
 using Inno.Editor.Annotations;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [InspectorAttributeDrawer(typeof(HeaderAttribute))]
 internal sealed class HeaderInspectorAttributeDrawer : IInspectorAttributeDrawer
 {
@@ -131,7 +133,11 @@ internal sealed class ShowIfInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void Update(InspectorAttributeDrawContext context)
     {
         var condition = (ShowIfAttribute)context.attribute;
-        context.isVisible &= InspectorConditionEvaluator.Evaluate(context.GetSiblingValue(condition.memberName), condition.condition, condition.expectedValue);
+        context.isVisible &= InspectorConditionEvaluator.Evaluate(
+            context.GetSiblingValue(condition.memberName),
+            condition.condition,
+            condition.expectedValue
+        );
     }
 }
 
@@ -147,7 +153,11 @@ internal sealed class HideIfInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void Update(InspectorAttributeDrawContext context)
     {
         var condition = (HideIfAttribute)context.attribute;
-        context.isVisible &= !InspectorConditionEvaluator.Evaluate(context.GetSiblingValue(condition.memberName), condition.condition, condition.expectedValue);
+        context.isVisible &= !InspectorConditionEvaluator.Evaluate(
+            context.GetSiblingValue(condition.memberName),
+            condition.condition,
+            condition.expectedValue
+        );
     }
 }
 
@@ -165,11 +175,11 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
         var help = (HelpBoxAttribute)context.attribute;
         if (!string.IsNullOrWhiteSpace(help.conditionMember)
             && !InspectorConditionEvaluator.Evaluate(
-            context.GetSiblingValue(help.conditionMember),
-            help.condition,
-            help.expectedValue
-        ))
-        {
+                context.GetSiblingValue(help.conditionMember),
+                help.condition,
+                help.expectedValue
+            )
+        ) {
             return;
         }
 
@@ -177,7 +187,8 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
         {
             InspectorMessageType.Warning => EditorPalette.warning,
             InspectorMessageType.Error => EditorPalette.error,
-            _ => new System.Numerics.Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)};
+            _ => new System.Numerics.Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)
+        };
         string icon = help.messageType switch
         {
             InspectorMessageType.Warning => ImGuiIcon.TriangleExclamation,
@@ -205,7 +216,8 @@ internal static class InspectorConditionEvaluator
             InspectorCondition.NotNull => value is not null,
             InspectorCondition.Assigned => IsAssigned(value),
             InspectorCondition.NotAssigned => !IsAssigned(value),
-            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Unknown Inspector condition.")};
+            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Unknown Inspector condition.")
+        };
     }
 
     private static bool IsTruthy(object? value)
@@ -223,9 +235,15 @@ internal static class InspectorConditionEvaluator
     private static bool IsAssigned(object? value)
     {
         if (value is null)
+        {
             return false;
-        PropertyInfo? property = value.GetType().GetProperty("isAssigned", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        return property?.PropertyType == typeof(bool) && property.GetIndexParameters().Length == 0 ? (bool)(property.GetValue(value) ?? false) : true;
+        }
+        PropertyInfo? property = value
+            .GetType()
+            .GetProperty("isAssigned", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        return property?.PropertyType == typeof(bool) && property.GetIndexParameters().Length == 0
+               ? (bool)(property.GetValue(value) ?? false)
+               : true;
     }
 
     private static bool AreEqual(
@@ -233,24 +251,21 @@ internal static class InspectorConditionEvaluator
         object? expected
     ) {
         if (Equals(value, expected))
+        {
             return true;
+        }
         if (value is null || expected is null)
+        {
             return false;
+        }
         Type valueType = value.GetType();
         try
         {
-            object converted = valueType.IsEnum ? expected is string name ? Enum.Parse(
-                valueType,
-                name,
-                ignoreCase: false
-            ) : Enum.ToObject(
-                valueType,
-                expected
-            ) : Convert.ChangeType(
-                expected,
-                valueType,
-                CultureInfo.InvariantCulture
-            );
+            object converted = valueType.IsEnum
+                               ? expected is string name
+                                 ? Enum.Parse(valueType, name, ignoreCase: false)
+                                 : Enum.ToObject(valueType, expected)
+                               : Convert.ChangeType(expected, valueType, CultureInfo.InvariantCulture);
             return Equals(value, converted);
         }
         catch (Exception exception) when (exception is ArgumentException or InvalidCastException or FormatException or OverflowException)

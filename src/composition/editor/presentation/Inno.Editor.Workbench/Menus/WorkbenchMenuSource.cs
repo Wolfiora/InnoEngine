@@ -2,6 +2,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
+
 [EditorMenuSource(GlobalInteractionIds.C_MAIN_MENU_AREA)]
 internal sealed class WorkbenchMenuSource : EditorMenuSource
 {

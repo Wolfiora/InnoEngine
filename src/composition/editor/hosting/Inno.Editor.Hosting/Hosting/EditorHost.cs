@@ -1,9 +1,4 @@
-using Inno.Extensibility.Modules;
-using Inno.Scripting.Compiler;
-using Inno.Engine.Default;
-using Inno.Runtime.Contracts;
 using System;
-using Inno.Core.Diagnostics;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,14 +6,14 @@ using Inno.Adapter;
 using Inno.Adapter.Audio;
 using Inno.Adapter.Input;
 using Inno.Adapter.Presentation;
+using Inno.Animation.Runtime;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Animation.Runtime;
-using Inno.Audio.Runtime;
 using Inno.Audio;
+using Inno.Audio.Runtime;
 using Inno.Build;
 using Inno.Build.Composition;
-using Inno.UI.Runtime;
+using Inno.Core.Diagnostics;
 using Inno.Core.Events;
 using Inno.Core.Layers;
 using Inno.Core.Logging;
@@ -27,17 +22,23 @@ using Inno.Editor.Audio;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.Rendering;
+using Inno.Engine.Default;
+using Inno.Extensibility.Modules;
 using Inno.Input.Runtime;
 using Inno.Platform;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Runtime;
 using Inno.Runtime;
+using Inno.Runtime.Contracts;
 using Inno.Scene;
+using Inno.Scripting.Compiler;
 using Inno.Shell;
 using Inno.Storage.Runtime;
+using Inno.UI.Runtime;
+
 using ShellHost = Inno.Shell.Shell;
-using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Editor.Hosting;
 
@@ -70,14 +71,16 @@ internal sealed class EditorHost : ShellHost
         EditorLaunchOptions launch,
         string projectDirectory,
         string bootLogPath
-    ) : base(launch.adapterCatalog, launch.shell) {
+    ) : base(launch.adapterCatalog, launch.shell)
+    {
         m_launch = launch;
         m_authoringAdapters = launch.adapterCatalog;
         m_presentationBackend = launch.presentation;
         this.projectDirectory = projectDirectory;
         m_bootLogPath = bootLogPath;
         m_resources = new EditorHostResourceStack(
-            exception => AppendBootLog(bootLogPath, $"Teardown failure: {exception}"));
+            exception => AppendBootLog(bootLogPath, $"Teardown failure: {exception}")
+        );
     }
 
     /// <summary>
@@ -89,11 +92,14 @@ internal sealed class EditorHost : ShellHost
     {
         IAuthoringAdapterCatalog adapterCatalog = launch.adapterCatalog;
         AdapterSelection adapterSelection = launch.shell.adapters;
-        if (!adapterSelection.rendering.isValid ||
-            !adapterCatalog.rendering.supportedBackends.Contains(adapterSelection.rendering) ||
-            !adapterCatalog.renderingAuthoring.supportedBackends.Contains(adapterSelection.rendering))
+        if (!adapterSelection.rendering.isValid
+            || !adapterCatalog.rendering.supportedBackends.Contains(adapterSelection.rendering)
+            || !adapterCatalog.renderingAuthoring.supportedBackends.Contains(adapterSelection.rendering)
+        ) {
             throw new NotSupportedException(
-                $"Rendering backend '{adapterSelection.rendering}' requires paired runtime and authoring providers.");
+                $"Rendering backend '{adapterSelection.rendering}' requires paired runtime and authoring providers."
+            );
+        }
         string normalizedProject = PrepareProjectDirectory(launch.projectDirectory);
         string logDirectory = Path.Combine(normalizedProject, C_LOG_DIRECTORY_NAME);
         Directory.CreateDirectory(logDirectory);
@@ -142,7 +148,9 @@ internal sealed class EditorHost : ShellHost
         bool shouldExit = evnt is WindowCloseEvent closeEvent
                           && closeEvent.windowId == primaryWindow.windowId;
         if (shouldExit)
+        {
             BootLog($"Exit requested by event: {evnt.GetType().Name}.");
+        }
         return shouldExit;
     }
 
@@ -163,7 +171,9 @@ internal sealed class EditorHost : ShellHost
     protected override void OnFrame(ShellFrame frame)
     {
         if (frame.frameIndex == 0)
+        {
             BootLog("About to execute first editor frame.");
+        }
 
         using (rendering.EnterExecutionScope())
         using (audio.EnterExecutionScope(editSession))
@@ -185,13 +195,17 @@ internal sealed class EditorHost : ShellHost
                 {
                     uint resetWindowId = m_gameInputCapture?.CompleteFrame() ?? 0;
                     if (resetWindowId != 0)
+                    {
                         m_gameInputSource?.ProcessEvent(new WindowFocusChangedEvent(resetWindowId, false));
+                    }
                 }
             }
         }
 
         if (frame.frameIndex == 0)
+        {
             BootLog("First editor frame completed.");
+        }
     }
 
     /// <summary>
@@ -209,10 +223,17 @@ internal sealed class EditorHost : ShellHost
         hub.UnregisterSink(snapshot);
         string[] errors = snapshot.errors;
         foreach (string error in errors)
+        {
             BootLog("Smoke diagnostic: " + error);
+        }
         if (errors.Length != 0)
-            throw new InvalidOperationException($"Native Editor smoke completed with {errors.Length} active error diagnostic(s). See the smoke diagnostics above.");
+        {
+            throw new InvalidOperationException(
+                $"Native Editor smoke completed with {errors.Length} active error diagnostic(s). See the smoke diagnostics above."
+            );
+        }
     }
+
     /// <summary>
     /// Submits product UI requests while the host output pipeline is open.
     /// </summary>
@@ -282,42 +303,50 @@ internal sealed class EditorHost : ShellHost
         AppendBootLog(m_bootLogPath, "EditorHost creation start.");
         InitializeAdapterResources();
         if (primaryWindow.isFocused)
+        {
             m_focusedWindowIds.Add(primaryWindow.windowId);
+        }
 
-        EngineHost engineHost = m_resources.Acquire(
-            m_launch.createEngineHost,
-            static host => host.Dispose());
+        EngineHost engineHost = m_resources.Acquire(m_launch.createEngineHost, static host => host.Dispose());
         ILogSink? hostLog = m_launch.createHostLogSink?.Invoke();
         m_diagnostics = engineHost.diagnostics;
         if (hostLog is not null)
         {
             if (hostLog is IDisposable disposableLog)
+            {
                 m_resources.Register(disposableLog.Dispose);
+            }
             engineHost.logs.RegisterSink(hostLog);
             m_resources.Register(() => engineHost.logs.UnregisterSink(hostLog));
         }
         EditorAuthoringServices activeAuthoring = m_resources.Acquire(
             () => EditorAuthoringServices.Start(projectDirectory, engineHost, m_launch.buildContext.dotnetHost),
-            static services => services.Dispose());
+            static services => services.Dispose()
+        );
         m_authoring = activeAuthoring;
         _ = m_resources.Acquire(
             () => AssetExecutionContext.EnterScope(activeAuthoring.assets),
-            static scope => scope.Dispose());
+            static scope => scope.Dispose()
+        );
         _ = m_resources.Acquire(
             () => ProjectSettingsExecutionContext.EnterScope(activeAuthoring.settings),
-            static scope => scope.Dispose());
+            static scope => scope.Dispose()
+        );
         EditorAudioHost activeAudio = m_resources.Acquire(
             () => new EditorAudioHost(
                 engineHost.types,
                 activeAuthoring.assets,
                 engineHost.diagnostics,
                 () => adapters.audio.CreateDevice(adapterSelection.audio, new AudioBackendOptions()),
-                () => activeAuthoring.settings.TryGet(
-                        AudioProjectSettings.settingId,
-                        out AudioProjectSettings? configured) && configured is not null
+                () => (
+                    activeAuthoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? configured)
+                    && configured is not null
                     ? configured
-                    : new AudioProjectSettings()),
-            static host => host.Dispose());
+                    : new AudioProjectSettings()
+                )
+            ),
+            static host => host.Dispose()
+        );
         m_audio = activeAudio;
         RuntimeSession activeEditSession = m_resources.Acquire(
             () => engineHost.CreateSession(new RuntimeSessionOptions
@@ -325,8 +354,8 @@ internal sealed class EditorHost : ShellHost
                 kind = RuntimeSessionKind.Edit,
                 applicationId = "inno.editor",
                 createLogSink = m_launch.createSessionLogSink is null
-                    ? null
-                    : session => m_launch.createSessionLogSink(RuntimeSessionKind.Edit, session),
+                                ? null
+                                : session => m_launch.createSessionLogSink(RuntimeSessionKind.Edit, session),
                 fixedDeltaTime = 1f / 60f,
                 maxFrameDeltaTime = 0.25f,
                 maxFixedStepsPerFrame = 8,
@@ -334,11 +363,10 @@ internal sealed class EditorHost : ShellHost
                 createSubsystems = owner => CreateStandardRuntimeSubsystems(activeAudio, inputSource, owner),
                 referenceResolvers = [activeAuthoring.assets]
             }),
-            static session => session.Dispose());
+            static session => session.Dispose()
+        );
         m_editSession = activeEditSession;
-        _ = m_resources.Acquire(
-            activeEditSession.EnterExecutionScope,
-            static scope => scope.Dispose());
+        _ = m_resources.Acquire(activeEditSession.EnterExecutionScope, static scope => scope.Dispose());
 
         BuildPipeline buildPipeline = BuildPipelineFactory.Create(
             m_launch.buildContext,
@@ -348,18 +376,22 @@ internal sealed class EditorHost : ShellHost
             activeAuthoring.plugins,
             activeAuthoring.settings,
             activeAuthoring.compiler,
-            m_launch.supportPackRoot);
+            m_launch.supportPackRoot
+        );
         BuildSettings defaultBuildSettings = BuildSettings.CreateDefault(
             Path.GetFileName(Path.TrimEndingDirectorySeparator(projectDirectory)),
             FindDefaultStartupScene(activeAuthoring.assets),
-            m_launch.defaultBuildTarget);
+            m_launch.defaultBuildTarget
+        );
         var buildSettings = new BuildSettingsStore(
             Path.Combine(projectDirectory, SettingsFileNames.build),
             engineHost.serialization,
-            defaultBuildSettings);
+            defaultBuildSettings
+        );
         LayerStack activeLayers = m_resources.Acquire(
             () => new LayerStack(() => activeEditSession.events.CreateHub()),
-            static stack => stack.Dispose());
+            static stack => stack.Dispose()
+        );
         m_layers = activeLayers;
         m_resources.Register(() =>
         {
@@ -375,14 +407,14 @@ internal sealed class EditorHost : ShellHost
         });
 
         var shaderCompiler = new ShaderCompiler(
-            m_authoringAdapters.renderingAuthoring.CreateShaderCompilerToolchain(
-                adapterSelection.rendering));
+            m_authoringAdapters.renderingAuthoring.CreateShaderCompilerToolchain(adapterSelection.rendering)
+        );
         ITextureTargetCompiler textureCompiler =
-            m_authoringAdapters.renderingAuthoring.CreateTextureTargetCompiler(
-                adapterSelection.rendering);
+            m_authoringAdapters.renderingAuthoring.CreateTextureTargetCompiler(adapterSelection.rendering);
         DiagnosticReporter renderDiagnostics = m_resources.Acquire(
             () => engineHost.diagnostics.CreateReporter(new DiagnosticSource("inno.editor.rendering", "Rendering")),
-            static sink => sink.Dispose());
+            static sink => sink.Dispose()
+        );
         var renderArtifacts = m_resources.Acquire(
             () => new EditorRenderTargetArtifactProvider(
                 activeAuthoring.assets,
@@ -390,8 +422,10 @@ internal sealed class EditorHost : ShellHost
                 engineHost.types,
                 shaderCompiler,
                 textureCompiler,
-                renderDiagnostics),
-            static provider => provider.Dispose());
+                renderDiagnostics
+            ),
+            static provider => provider.Dispose()
+        );
         presentation = m_resources.Acquire(
             () => m_authoringAdapters.presentation.CreateContext(
                 m_presentationBackend,
@@ -403,16 +437,22 @@ internal sealed class EditorHost : ShellHost
                     features = PresentationFeatures.MultipleWindows
                                | PresentationFeatures.Docking
                                | PresentationFeatures.SmoothResize
-                }),
-            static context => context.Dispose());
+                }
+            ),
+            static context => context.Dispose()
+        );
         m_gameInputCapture = new EditorGameInputCapture(
-            viewportId => presentation.TryGetWindowId(viewportId, out uint windowId)
+            viewportId => (
+                presentation.TryGetWindowId(viewportId, out uint windowId)
                 && m_focusedWindowIds.Contains(windowId)
-                    ? windowId
-                    : null);
+                ? windowId
+                : null
+            )
+        );
         IInputEventSource gameInputSource = m_resources.Acquire(
             () => adapters.input.CreateEventSource(adapterSelection.input, primaryWindow, acceptAllWindows: true),
-            static source => source.Dispose());
+            static source => source.Dispose()
+        );
         m_gameInputSource = gameInputSource;
         activeEditSession.events.dispatched += RouteGameInput;
         m_resources.Register(() => activeEditSession.events.dispatched -= RouteGameInput);
@@ -422,19 +462,17 @@ internal sealed class EditorHost : ShellHost
             renderDiagnostics,
             contributors: [presentation],
             targetArtifacts: renderArtifacts,
-            compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(
-                adapterSelection.rendering));
+            compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(adapterSelection.rendering)
+        );
         m_rendering = renderingLayer;
         RuntimeSubsystemPipeline hostPipeline = engineHost.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(renderingLayer));
         m_resources.Register(hostPipeline.Dispose);
         UseHostPipeline(hostPipeline);
         var reloadCoordinator = new EditorReloadCoordinator();
         var renderingHost = m_resources.Acquire(
-            () => new EditorRenderingHostService(
-                renderingLayer,
-                presentation,
-                reloadCoordinator),
-            static service => service.Dispose());
+            () => new EditorRenderingHostService(renderingLayer, presentation, reloadCoordinator),
+            static service => service.Dispose()
+        );
         var editorContext = new EditorContext(projectDirectory, m_launch.keyboard, EditorDefaultLayout.document);
         presentation.SetLayoutFile(null);
         presentation.LoadLayout(editorContext.imguiLayout);
@@ -442,9 +480,9 @@ internal sealed class EditorHost : ShellHost
         {
             kind = RuntimeSessionKind.Play,
             applicationId = "inno.editor.play",
-                    createLogSink = m_launch.createSessionLogSink is null
-                        ? null
-                        : session => m_launch.createSessionLogSink(RuntimeSessionKind.Play, session),
+            createLogSink = m_launch.createSessionLogSink is null
+                            ? null
+                            : session => m_launch.createSessionLogSink(RuntimeSessionKind.Play, session),
             fixedDeltaTime = 1f / 60f,
             maxFrameDeltaTime = 0.25f,
             maxFixedStepsPerFrame = 8,
@@ -480,7 +518,8 @@ internal sealed class EditorHost : ShellHost
                 activeAuthoring.identities,
                 activeEditSession.identities,
                 activeAudio
-            ])
+            ]
+        )
         {
             isFocused = primaryWindow.isFocused
         };
@@ -488,23 +527,31 @@ internal sealed class EditorHost : ShellHost
         m_resources.Register(() =>
         {
             if (overlayPushed)
+            {
                 activeLayers.PopOverlay(layer);
+            }
             else
+            {
                 layer.DisposeUnattached();
+            }
         });
         activeLayers.PushOverlay(layer);
         overlayPushed = true;
         if (layer.panelCount == 0)
+        {
             throw new InvalidOperationException("No editor panels were discovered from the active host assemblies.");
+        }
 
         BootLog($"Editor layer attached with {layer.panelCount} panel(s).");
         BootLog(
             $"Rendering initialized with {renderDevice.capabilities.backend} "
-            + $"(views={renderDevice.capabilities.limits.maxViews}).");
+            + $"(views={renderDevice.capabilities.limits.maxViews})."
+        );
         BootLog($"Primary presentation encodes sRGB: {renderDevice.primaryPresentationEncodesSrgb}.");
         BootLog(
             $"AssetPipeline initialized={activeAuthoring.assets.isInitialized} "
-            + $"root='{activeAuthoring.assets.assetRoot}'.");
+            + $"root='{activeAuthoring.assets.assetRoot}'."
+        );
     }
 
     private IModuleSource CreateScriptModuleSource(ScriptModuleDeployment deployment)
@@ -517,22 +564,38 @@ internal sealed class EditorHost : ShellHost
     ) {
         ArgumentNullException.ThrowIfNull(activeAudio);
         ArgumentNullException.ThrowIfNull(activeInputSource);
-        return DefaultEngine.CreateSessionSubsystems(new EngineSessionComposition(
-            owner, adapters, adapterSelection, activeInputSource, authoring.assets,
-            () => authoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? settings) && settings is not null
-                ? settings : new AudioProjectSettings(),
-            () => adapters.storage.CreateStorage(adapterSelection.storage,
-                new Inno.Storage.StorageScope(owner.options.applicationId)),
-            activeAudio.CreateRuntimeSubsystemFactory(owner)));
+        return DefaultEngine.CreateSessionSubsystems(
+            new EngineSessionComposition(
+                owner,
+                adapters,
+                adapterSelection,
+                activeInputSource,
+                authoring.assets,
+                () => (
+                    authoring.settings.TryGet(AudioProjectSettings.settingId, out AudioProjectSettings? settings) && settings is not null
+                    ? settings
+                    : new AudioProjectSettings()
+                ),
+                () => adapters.storage.CreateStorage(
+                    adapterSelection.storage,
+                    new Inno.Storage.StorageScope(owner.options.applicationId)
+                ),
+                activeAudio.CreateRuntimeSubsystemFactory(owner)
+            )
+        );
     }
 
     private static string PrepareProjectDirectory(string projectDirectory)
     {
         if (string.IsNullOrWhiteSpace(projectDirectory))
+        {
             throw new ArgumentException("Project directory is required.", nameof(projectDirectory));
+        }
         string normalizedPath = Path.GetFullPath(projectDirectory);
         if (File.Exists(normalizedPath))
+        {
             throw new IOException($"Project directory '{normalizedPath}' points to a file.");
+        }
         Directory.CreateDirectory(normalizedPath);
         return normalizedPath;
     }
@@ -540,12 +603,14 @@ internal sealed class EditorHost : ShellHost
     private static string FindDefaultStartupScene(AssetPipeline assets)
     {
         foreach (AssetFileEntry entry in assets.GetFileSystemEntries(includeDirectories: false)
-                     .Where(static entry => entry.source == AssetSourceId.project)
-                     .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
-                     .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal))
-        {
+            .Where(static entry => entry.source == AssetSourceId.project)
+            .Where(static entry => !AssetSample.IsRuntimeExcluded(entry.assetPath, isDirectory: false))
+            .OrderBy(static entry => entry.assetPath.localPath, StringComparer.Ordinal)
+        ) {
             if (assets.TryGetAssetType(entry.assetPath, out Type? type) && type == typeof(SceneAsset))
+            {
                 return entry.assetPath.ToString();
+            }
         }
         return string.Empty;
     }
@@ -554,7 +619,9 @@ internal sealed class EditorHost : ShellHost
     {
         Event? gameEvent = m_gameInputCapture?.Route(evnt);
         if (gameEvent is not null)
+        {
             m_gameInputSource?.ProcessEvent(gameEvent);
+        }
     }
 
     private bool HasEditorFocus() => m_focusedWindowIds.Count > 0;
@@ -562,11 +629,15 @@ internal sealed class EditorHost : ShellHost
     private void SaveBeforeShutdown()
     {
         if (m_shutdownStateSaved || m_editorLayer is null)
+        {
             return;
+        }
         m_shutdownStateSaved = m_editorLayer.PrepareShutdown();
-        BootLog(m_shutdownStateSaved
+        BootLog(
+            m_shutdownStateSaved
             ? "Project editor state frozen and saved before shutdown."
-            : "Project editor state save failed before shutdown.");
+            : "Project editor state save failed before shutdown."
+        );
     }
 
     private void UpdateFocusedWindows(Event evnt)
@@ -574,9 +645,13 @@ internal sealed class EditorHost : ShellHost
         if (evnt is WindowFocusChangedEvent focusChanged)
         {
             if (focusChanged.isFocused)
+            {
                 m_focusedWindowIds.Add(focusChanged.windowId);
+            }
             else
+            {
                 m_focusedWindowIds.Remove(focusChanged.windowId);
+            }
         }
         else if (evnt is WindowCloseEvent closeEvent)
         {

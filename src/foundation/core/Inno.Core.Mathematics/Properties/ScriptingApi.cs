@@ -1,10 +1,7 @@
-using Inno.Scripting.Api;
 using Inno.Core.Mathematics;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Mathematics",
-    "Inno.Core.Mathematics",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Mathematics", "Inno.Core.Mathematics", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(Color), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(MathHelper), ScriptingApiScope.Runtime)]

@@ -1,8 +1,7 @@
 using System;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scripting.Compiler;
 
@@ -51,9 +50,7 @@ public sealed class ScriptAssemblyDefinitionAsset : AssetObject
     /// <summary>
     /// Creates an empty definition asset for deserialization.
     /// </summary>
-    public ScriptAssemblyDefinitionAsset()
-    {
-    }
+    public ScriptAssemblyDefinitionAsset() {}
 
     /// <summary>
     /// Creates a configured script assembly definition for native asset export.

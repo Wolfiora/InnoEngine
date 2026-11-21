@@ -32,7 +32,9 @@ public sealed class ShaderNodeCompilerCatalog
             ArgumentNullException.ThrowIfNull(compiler);
             ArgumentException.ThrowIfNullOrWhiteSpace(compiler.definitionId);
             if (!m_compilers.TryAdd(compiler.definitionId, compiler))
+            {
                 throw new ArgumentException($"Duplicate shader node compiler '{compiler.definitionId}'.", nameof(compilers));
+            }
         }
         providers = Array.AsReadOnly(m_compilers.Values.ToArray());
         definitionIds = Array.AsReadOnly(m_compilers.Keys.Order(StringComparer.Ordinal).ToArray());
@@ -77,7 +79,9 @@ public sealed class ShaderNodeCompilerCatalog
     ) {
         ArgumentNullException.ThrowIfNull(node);
         if (!m_compilers.TryGetValue(node.definitionId, out IShaderNodeCompiler? compiler))
+        {
             throw new InvalidOperationException($"Node compiler '{node.definitionId}' is unavailable.");
+        }
         return Array.AsReadOnly(compiler.GetPorts(new(node, serialization, context, source, implementationId, input)).ToArray());
     }
 
@@ -138,15 +142,25 @@ public sealed class ShaderNodeCompilerCatalog
                 nodePorts.Add(node.id, describedPorts);
                 foreach (ShaderNodePort port in describedPorts)
                 {
-                    if (port is null || string.IsNullOrWhiteSpace(port.id) || port.type is null || port.type.id == "void" || !Enum.IsDefined(port.direction))
+                    if (port is null
+                        || string.IsNullOrWhiteSpace(port.id)
+                        || port.type is null
+                        || port.type.id == "void"
+                        || !Enum.IsDefined(port.direction)
+                    ) {
                         throw new InvalidOperationException($"Compiler '{node.definitionId}' returned an invalid port.");
+                    }
                     if (!ports.TryAdd(new(node.id, new(port.id)), port))
+                    {
                         throw new InvalidOperationException($"Compiler '{node.definitionId}' returned duplicate port '{port.id}'.");
+                    }
                 }
             }
             activeNode = null;
             if (diagnostics.Count != 0)
+            {
                 return new(null, diagnostics);
+            }
 
             var connections = new Dictionary<GraphEndpoint, GraphEndpoint>();
             var inputDefaults = new Dictionary<GraphEndpoint, ShaderGraphLiteral>();
@@ -157,22 +171,42 @@ public sealed class ShaderNodeCompilerCatalog
             {
                 if (!ports.TryGetValue(edge.input, out ShaderNodePort? input) || input.direction != GraphPortDirection.Input)
                 {
-                    Error("SHADER_GRAPH_PORT_MISSING", $"Connection '{edge.id}' has an unavailable input; it remains stored for explicit repair.", edge.input.nodeId, edge.input.portId.value);
+                    Error(
+                        "SHADER_GRAPH_PORT_MISSING",
+                        $"Connection '{edge.id}' has an unavailable input; it remains stored for explicit repair.",
+                        edge.input.nodeId,
+                        edge.input.portId.value
+                    );
                     continue;
                 }
                 if (!ports.TryGetValue(edge.output, out ShaderNodePort? output) || output.direction != GraphPortDirection.Output)
                 {
-                    Error("SHADER_GRAPH_PORT_MISSING", $"Connection '{edge.id}' has an unavailable output; it remains stored for explicit repair.", edge.output.nodeId, edge.output.portId.value);
+                    Error(
+                        "SHADER_GRAPH_PORT_MISSING",
+                        $"Connection '{edge.id}' has an unavailable output; it remains stored for explicit repair.",
+                        edge.output.nodeId,
+                        edge.output.portId.value
+                    );
                     continue;
                 }
                 if (!input.type.IsEquivalentTo(output.type))
                 {
-                    Error("SHADER_GRAPH_TYPE", $"Connection '{edge.id}' changed type or aggregate layout; implicit conversion and positional rebinding are forbidden.", edge.input.nodeId, edge.input.portId.value);
+                    Error(
+                        "SHADER_GRAPH_TYPE",
+                        $"Connection '{edge.id}' changed type or aggregate layout; implicit conversion and positional rebinding are forbidden.",
+                        edge.input.nodeId,
+                        edge.input.portId.value
+                    );
                     continue;
                 }
                 if (!connections.TryAdd(edge.input, edge.output))
                 {
-                    Error("SHADER_GRAPH_INPUT_CAPACITY", "A value input has more than one connection.", edge.input.nodeId, edge.input.portId.value);
+                    Error(
+                        "SHADER_GRAPH_INPUT_CAPACITY",
+                        "A value input has more than one connection.",
+                        edge.input.nodeId,
+                        edge.input.portId.value
+                    );
                     continue;
                 }
                 int target = nodeIndexes[edge.input.nodeId];
@@ -183,14 +217,17 @@ public sealed class ShaderNodeCompilerCatalog
             foreach ((GraphEndpoint endpoint, ShaderNodePort port) in ports)
             {
                 if (port.direction != GraphPortDirection.Input || connections.ContainsKey(endpoint))
+                {
                     continue;
+                }
                 if (port.required)
                 {
                     Error(
                         "SHADER_GRAPH_INPUT_REQUIRED",
                         $"Required input '{endpoint.portId.value}' on node '{endpoint.nodeId.value}' is not connected. Connect a Constant or another compatible graph output.",
                         endpoint.nodeId,
-                        endpoint.portId.value);
+                        endpoint.portId.value
+                    );
                     continue;
                 }
                 try
@@ -203,15 +240,27 @@ public sealed class ShaderNodeCompilerCatalog
                         "SHADER_GRAPH_OPTIONAL_TYPE",
                         $"Optional input '{endpoint.portId.value}' cannot represent an automatic zero value and must be required instead.",
                         endpoint.nodeId,
-                        endpoint.portId.value);
+                        endpoint.portId.value
+                    );
                 }
             }
             activeNode = null;
             foreach ((string name, GraphEndpoint endpoint) in request.outputs)
+            {
                 if (!ports.TryGetValue(endpoint, out ShaderNodePort? port) || port.direction != GraphPortDirection.Output)
-                    Error("SHADER_GRAPH_OUTPUT_MISSING", $"Region output '{name}' points to an unavailable output port.", endpoint.nodeId, endpoint.portId.value);
+                {
+                    Error(
+                        "SHADER_GRAPH_OUTPUT_MISSING",
+                        $"Region output '{name}' points to an unavailable output port.",
+                        endpoint.nodeId,
+                        endpoint.portId.value
+                    );
+                }
+            }
             if (diagnostics.Count != 0)
+            {
                 return new(null, diagnostics);
+            }
 
             var ready = new SortedSet<int>(Enumerable.Range(0, nodes.Count).Where(index => incoming[index] == 0));
             var ordered = new List<int>();
@@ -221,12 +270,19 @@ public sealed class ShaderNodeCompilerCatalog
                 ready.Remove(index);
                 ordered.Add(index);
                 foreach (int next in following[index])
+                {
                     if (--incoming[next] == 0)
+                    {
                         ready.Add(next);
+                    }
+                }
             }
             if (ordered.Count != nodes.Count)
             {
-                Error("SHADER_GRAPH_CYCLE", "Value connections contain a cycle; structured control flow must be represented by a control-flow operation.");
+                Error(
+                    "SHADER_GRAPH_CYCLE",
+                    "Value connections contain a cycle; structured control flow must be represented by a control-flow operation."
+                );
                 return new(null, diagnostics);
             }
             var builder = new ShaderIrBuilder();
@@ -238,27 +294,45 @@ public sealed class ShaderNodeCompilerCatalog
                 activeNode = node.id;
                 var inputs = new Dictionary<string, ShaderIrValue>(StringComparer.Ordinal);
                 foreach ((string port, GraphEndpoint source) in nodeConnections[node.id])
+                {
                     inputs.Add(port, values[source]);
+                }
                 foreach (ShaderNodePort port in nodePorts[node.id])
+                {
                     if (inputDefaults.TryGetValue(new(node.id, new(port.id)), out ShaderGraphLiteral? literal))
+                    {
                         inputs.Add(port.id, literal.Emit(builder, port.type));
-                IReadOnlyDictionary<string, ShaderIrValue> outputs = m_compilers[node.definitionId].Lower(new(descriptions[node.id], builder, inputs));
+                    }
+                }
+                IReadOnlyDictionary<string, ShaderIrValue> outputs = m_compilers[node.definitionId].Lower(
+                    new(descriptions[node.id], builder, inputs)
+                );
                 ShaderNodePort[] expected = nodePorts[node.id].Where(static port => port.direction == GraphPortDirection.Output).ToArray();
                 if (outputs.Count != expected.Length)
+                {
                     throw new InvalidOperationException("A node compiler did not return exactly its declared outputs.");
+                }
                 foreach (ShaderNodePort port in expected)
                 {
                     if (!outputs.TryGetValue(port.id, out ShaderIrValue? value) || !port.type.IsEquivalentTo(value.type))
+                    {
                         throw new InvalidOperationException($"Node output '{port.id}' is missing or has an incompatible type.");
+                    }
                     builder.RequireOwned(value);
                     values.Add(new(node.id, new(port.id)), value);
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
-            return new(builder.Build(request.outputs.ToDictionary(static pair => pair.Key, pair => values[pair.Value], StringComparer.Ordinal)), diagnostics);
+            return new(
+                builder.Build(request.outputs.ToDictionary(static pair => pair.Key, pair => values[pair.Value], StringComparer.Ordinal)),
+                diagnostics
+            );
         }
-        catch (Exception failure) when (failure is ArgumentException or InvalidOperationException or InvalidDataException or KeyNotFoundException
-            or FormatException or NotSupportedException && RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when (failure is ArgumentException
+                                        or InvalidOperationException
+                                        or InvalidDataException
+                                        or KeyNotFoundException
+                                        or FormatException or NotSupportedException && RetirementPendingException.Find(failure) is null)
         {
             Error("SHADER_NODE_LOWERING", failure.Message, activeNode);
             return new(null, diagnostics);
@@ -269,7 +343,6 @@ public sealed class ShaderNodeCompilerCatalog
             string message,
             GraphNodeId? nodeId = null,
             string? portId = null
-        )
-            => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, nodeId, portId));
+        ) => diagnostics.Add(new(code, DiagnosticSeverity.Error, message, nodeId, portId));
     }
 }

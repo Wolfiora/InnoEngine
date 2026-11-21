@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Logging;
 using Inno.Editor.Audio;
 using Inno.Editor.Core;
@@ -38,7 +37,8 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
             scripting,
             interactions,
             engineHost.logs,
-            audio);
+            audio
+        );
     }
 
     /// <summary>

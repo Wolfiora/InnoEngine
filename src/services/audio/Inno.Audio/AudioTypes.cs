@@ -12,12 +12,10 @@ public enum AudioClipLoadMode
     /// Lets the runtime choose between decoded and streamed storage.
     /// </summary>
     Automatic,
-
     /// <summary>
     /// Decodes the complete clip before playback.
     /// </summary>
     Decode,
-
     /// <summary>
     /// Decodes encoded data incrementally while playback advances.
     /// </summary>
@@ -33,22 +31,18 @@ public enum AudioDeviceState
     /// The device has not completed initialization.
     /// </summary>
     Initializing,
-
     /// <summary>
     /// The device is available for audible playback.
     /// </summary>
     Ready,
-
     /// <summary>
     /// Playback is advancing without an output device.
     /// </summary>
     Muted,
-
     /// <summary>
     /// The active output device was lost and recovery is pending.
     /// </summary>
     Lost,
-
     /// <summary>
     /// The device has been released and cannot accept work.
     /// </summary>
@@ -64,27 +58,22 @@ public enum AudioPlaybackState
     /// The voice is waiting for clip preparation.
     /// </summary>
     Preparing,
-
     /// <summary>
     /// The voice is scheduled against the audio clock.
     /// </summary>
     Scheduled,
-
     /// <summary>
     /// The voice is actively advancing.
     /// </summary>
     Playing,
-
     /// <summary>
     /// The voice is paused at its current cursor.
     /// </summary>
     Paused,
-
     /// <summary>
     /// The voice has completed and no longer accepts control commands.
     /// </summary>
     Completed,
-
     /// <summary>
     /// The handle is invalid, stale, or unknown to the active runtime.
     /// </summary>
@@ -100,22 +89,18 @@ public enum AudioCompletionReason
     /// The clip reached its natural end.
     /// </summary>
     NaturalEnd,
-
     /// <summary>
     /// A caller explicitly stopped the voice.
     /// </summary>
     Stopped,
-
     /// <summary>
     /// The runtime reclaimed the voice to satisfy its voice budget.
     /// </summary>
     Stolen,
-
     /// <summary>
     /// Encoded data could not be prepared or decoded.
     /// </summary>
     DecodeFailed,
-
     /// <summary>
     /// Playback ended because the owning device generation was lost.
     /// </summary>
@@ -131,17 +116,14 @@ public enum AudioDistanceModel
     /// Disables distance attenuation while retaining spatial direction.
     /// </summary>
     None,
-
     /// <summary>
     /// Uses inverse-distance attenuation.
     /// </summary>
     Inverse,
-
     /// <summary>
     /// Uses linear-distance attenuation.
     /// </summary>
     Linear,
-
     /// <summary>
     /// Uses exponential-distance attenuation.
     /// </summary>
@@ -331,18 +313,30 @@ public readonly record struct AudioSpatialOptions
         AudioValueValidation.RequireFinite(direction, nameof(direction));
         AudioValueValidation.RequireFinite(velocity, nameof(velocity));
         if (!Enum.IsDefined(distanceModel))
+        {
             throw new ArgumentOutOfRangeException(nameof(distanceModel));
+        }
         if (!float.IsFinite(minDistance) || !float.IsFinite(maxDistance) || minDistance < 0f || maxDistance < minDistance)
+        {
             throw new ArgumentOutOfRangeException(nameof(minDistance), "Spatial distance bounds are invalid.");
+        }
         if (!float.IsFinite(rolloff) || rolloff < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(rolloff));
-        if (!float.IsFinite(coneInnerAngle) || !float.IsFinite(coneOuterAngle) ||
-            coneInnerAngle is < 0f or > 360f || coneOuterAngle < coneInnerAngle || coneOuterAngle > 360f)
+        }
+        if (!float.IsFinite(coneInnerAngle) || !float.IsFinite(coneOuterAngle)
+            || coneInnerAngle is < 0f or > 360f || coneOuterAngle < coneInnerAngle || coneOuterAngle > 360f
+        ) {
             throw new ArgumentOutOfRangeException(nameof(coneOuterAngle), "Spatial cone angles are invalid.");
+        }
         if (!float.IsFinite(coneOuterGain) || coneOuterGain is < 0f or > 1f)
+        {
             throw new ArgumentOutOfRangeException(nameof(coneOuterGain));
+        }
         if (!float.IsFinite(dopplerFactor) || dopplerFactor < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(dopplerFactor));
+        }
         this.position = position;
         this.direction = direction;
         this.velocity = velocity;
@@ -421,9 +415,7 @@ public readonly record struct AudioPlayOptions
     /// Creates default playback parameters.
     /// </summary>
     public AudioPlayOptions()
-        : this(1f, 1f, 0f, false, 0, AudioBusId.master, AudioClipLoadMode.Automatic, null)
-    {
-    }
+        : this(1f, 1f, 0f, false, 0, AudioBusId.master, AudioClipLoadMode.Automatic, null) {}
 
     /// <summary>
     /// Creates playback parameters.
@@ -469,16 +461,26 @@ public readonly record struct AudioPlayOptions
         AudioSpatialOptions? spatial = null
     ) {
         if (!float.IsFinite(volume) || volume < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(volume));
+        }
         if (!float.IsFinite(pitch) || pitch <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(pitch));
+        }
         if (!float.IsFinite(pan) || pan is < -1f or > 1f)
+        {
             throw new ArgumentOutOfRangeException(nameof(pan));
+        }
         if (!Enum.IsDefined(loadMode))
+        {
             throw new ArgumentOutOfRangeException(nameof(loadMode));
+        }
         AudioBusId resolvedBus = bus ?? AudioBusId.master;
         if (!resolvedBus.isValid)
+        {
             throw new ArgumentException("A valid destination bus is required.", nameof(bus));
+        }
         this.volume = volume;
         this.pitch = pitch;
         this.pan = pan;
@@ -565,11 +567,17 @@ public readonly record struct AudioVoiceParameters
         AudioSpatialOptions? spatial = null
     ) {
         if (!float.IsFinite(volume) || volume < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(volume));
+        }
         if (!float.IsFinite(pitch) || pitch <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(pitch));
+        }
         if (!float.IsFinite(pan) || pan is < -1f or > 1f)
+        {
             throw new ArgumentOutOfRangeException(nameof(pan));
+        }
         this.volume = volume;
         this.pitch = pitch;
         this.pan = pan;

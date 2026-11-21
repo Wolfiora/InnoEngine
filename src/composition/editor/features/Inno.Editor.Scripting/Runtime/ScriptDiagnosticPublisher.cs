@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-
 using Inno.Core.Diagnostics;
 using Inno.Scripting.Compiler;
 
@@ -16,33 +15,25 @@ internal static class ScriptDiagnosticPublisher
     internal static void PublishCompilation(ScriptCompilationResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
-        Diagnostics.Set(
-            C_COMPILER_DIAGNOSTICS,
-            result.diagnostics.Select(CreateCompilationDiagnostic));
+        Diagnostics.Set(C_COMPILER_DIAGNOSTICS, result.diagnostics.Select(CreateCompilationDiagnostic));
     }
 
     internal static void PublishReloadFailure(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        Diagnostics.Set(
-            C_RELOAD_DIAGNOSTICS,
-            Diagnostic.Error("INNO-RELOAD", exception.ToString()));
+        Diagnostics.Set(C_RELOAD_DIAGNOSTICS, Diagnostic.Error("INNO-RELOAD", exception.ToString()));
     }
 
     internal static void PublishIdeProjectionFailure(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        Diagnostics.Set(
-            C_IDE_PROJECTION_DIAGNOSTICS,
-            Diagnostic.Warning("INNO-IDE-PROJECTION", exception.ToString()));
+        Diagnostics.Set(C_IDE_PROJECTION_DIAGNOSTICS, Diagnostic.Warning("INNO-IDE-PROJECTION", exception.ToString()));
     }
 
     internal static void PublishUnloadFailure(Exception exception)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        Diagnostics.Set(
-            C_UNLOAD_DIAGNOSTICS,
-            Diagnostic.Error("INNO-ALC-UNLOAD", exception.Message));
+        Diagnostics.Set(C_UNLOAD_DIAGNOSTICS, Diagnostic.Error("INNO-ALC-UNLOAD", exception.Message));
     }
 
     internal static void ClearReload() => Diagnostics.Clear(C_RELOAD_DIAGNOSTICS);
@@ -62,30 +53,14 @@ internal static class ScriptDiagnosticPublisher
     private static Diagnostic CreateCompilationDiagnostic(ScriptDiagnostic diagnostic)
     {
         DiagnosticLocation? location = string.IsNullOrWhiteSpace(diagnostic.filePath)
-            ? null
-            : new DiagnosticLocation(
-                diagnostic.filePath,
-                diagnostic.line,
-                diagnostic.column);
+                                       ? null
+                                       : new DiagnosticLocation(diagnostic.filePath, diagnostic.line, diagnostic.column);
         return diagnostic.severity switch
         {
-            DiagnosticSeverity.Info => Diagnostic.Info(
-                diagnostic.id,
-                diagnostic.message,
-                location),
-            DiagnosticSeverity.Warning => Diagnostic.Warning(
-                diagnostic.id,
-                diagnostic.message,
-                location),
-            DiagnosticSeverity.Error => Diagnostic.Error(
-                diagnostic.id,
-                diagnostic.message,
-                location),
-            _ => Diagnostic.Error(
-                diagnostic.id,
-                diagnostic.message,
-                location)
+            DiagnosticSeverity.Info => Diagnostic.Info(diagnostic.id, diagnostic.message, location),
+            DiagnosticSeverity.Warning => Diagnostic.Warning(diagnostic.id, diagnostic.message, location),
+            DiagnosticSeverity.Error => Diagnostic.Error(diagnostic.id, diagnostic.message, location),
+            _ => Diagnostic.Error(diagnostic.id, diagnostic.message, location)
         };
     }
-
 }

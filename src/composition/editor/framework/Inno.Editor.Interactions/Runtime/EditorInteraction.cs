@@ -2,6 +2,7 @@ using System;
 using Inno.Core.Identity;
 
 namespace Inno.Editor.Interactions;
+
 /// <summary>
 /// Provides a fluent handle that borrows an optional target for a synchronous interaction request.
 /// </summary>
@@ -14,6 +15,7 @@ namespace Inno.Editor.Interactions;
 public readonly struct EditorInteraction
 {
     private readonly EditorInteractions m_interactions;
+
     internal EditorInteraction(
         EditorInteractions interactions,
         string area,
@@ -29,10 +31,12 @@ public readonly struct EditorInteraction
     /// Gets the stable interaction area.
     /// </summary>
     public string area { get; }
+
     /// <summary>
     /// Gets the borrowed target without extending its validity or resolving a replacement generation.
     /// </summary>
     public object? target { get; }
+
     /// <summary>
     /// Gets whether this handle's target is the current editor selection.
     /// </summary>
@@ -42,6 +46,7 @@ public readonly struct EditorInteraction
     /// Marks this area and target as the active keyboard context.
     /// </summary>
     public void Focus() => m_interactions.Focus(area, target);
+
     /// <summary>
     /// Selects this target, or clears selection when the target is <see langword="null"/>.
     /// </summary>
@@ -49,6 +54,7 @@ public readonly struct EditorInteraction
     /// <see langword="true"/> when the built-in selection action executed; otherwise, <see langword="false"/>.
     /// </returns>
     public bool Select() => Execute(target is null ? EditorBuiltInInteractionIds.C_CLEAR_SELECTION : EditorBuiltInInteractionIds.C_SELECT);
+
     /// <summary>
     /// Queries an action for this area and target.
     /// </summary>
@@ -68,6 +74,7 @@ public readonly struct EditorInteraction
         string action,
         object? argument = null
     ) => m_interactions.Query(action, area, target, argument);
+
     /// <summary>
     /// Executes an action for this area and target.
     /// </summary>
@@ -87,6 +94,7 @@ public readonly struct EditorInteraction
         string action,
         object? argument = null
     ) => m_interactions.Execute(action, area, target, argument);
+
     /// <summary>
     /// Queues an action until the current UI traversal completes.
     /// </summary>
@@ -103,6 +111,7 @@ public readonly struct EditorInteraction
         string action,
         object? argument = null
     ) => m_interactions.Enqueue(action, area, target, argument);
+
     /// <summary>
     /// Presents an active action in place of this target's normal content.
     /// </summary>
@@ -122,6 +131,7 @@ public readonly struct EditorInteraction
         string action,
         object? argument = null
     ) => m_interactions.Present(action, area, target, argument);
+
     /// <summary>
     /// Gets whether an action owns an active multi-frame operation for this target.
     /// </summary>
@@ -135,6 +145,7 @@ public readonly struct EditorInteraction
     /// Thrown when <paramref name="action"/> is empty.
     /// </exception>
     public bool IsActive(string action) => m_interactions.IsActive(action, area, target);
+
     /// <summary>
     /// Builds the complete contextual menu for this area and target.
     /// </summary>
@@ -142,6 +153,7 @@ public readonly struct EditorInteraction
     /// The immutable resolved menu model.
     /// </returns>
     public EditorMenuModel BuildMenu() => m_interactions.BuildMenu(area, target);
+
     /// <summary>
     /// Builds searchable commands from this area's menus and applicable unplaced Actions.
     /// </summary>
@@ -149,6 +161,7 @@ public readonly struct EditorInteraction
     /// Current command states and neutral placement arguments; execution revalidates their targets.
     /// </returns>
     public EditorMenuModel BuildCommands() => m_interactions.BuildCommands(area, target);
+
     /// <summary>
     /// Builds the complete compact toolbar for this area and target.
     /// </summary>
@@ -156,6 +169,7 @@ public readonly struct EditorInteraction
     /// The immutable resolved toolbar model.
     /// </returns>
     public EditorToolbarModel BuildToolbar() => m_interactions.BuildToolbar(area, target);
+
     /// <summary>
     /// Resolves the shortcut displayed for an action in this area.
     /// </summary>
@@ -175,6 +189,7 @@ public readonly struct EditorInteraction
         string action,
         out HotKeyGesture gesture
     ) => m_interactions.TryGetShortcut(action, area, target, out gesture);
+
     /// <summary>
     /// Gets the currently active drag identity, if its source remains registered.
     /// </summary>
@@ -185,6 +200,7 @@ public readonly struct EditorInteraction
     /// <see langword="true"/> when a live drag source exists; otherwise, <see langword="false"/>.
     /// </returns>
     public bool TryGetActiveDragIdentity(out RuntimeIdentity identity) => m_interactions.TryGetActiveDragIdentity(out identity);
+
     /// <summary>
     /// Begins a managed drag originating from this area.
     /// </summary>
@@ -195,6 +211,7 @@ public readonly struct EditorInteraction
     /// The source object's domain-qualified transient identity.
     /// </returns>
     public RuntimeIdentity BeginDrag(EditorDragData data) => m_interactions.BeginDrag(area, data);
+
     /// <summary>
     /// Queries this handle as a drop target.
     /// </summary>
@@ -211,6 +228,7 @@ public readonly struct EditorInteraction
         RuntimeIdentity identity,
         EditorDropPlacement placement = EditorDropPlacement.None
     ) => m_interactions.QueryDrop(identity, area, target, placement);
+
     /// <summary>
     /// Delivers a managed drop to this target.
     /// </summary>

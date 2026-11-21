@@ -1,5 +1,5 @@
-using Inno.Assets;
 using Xunit;
+using Inno.Assets;
 
 namespace Inno.Scene.Tests;
 

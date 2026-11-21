@@ -158,7 +158,9 @@ public sealed class CoroutineScheduler : IDisposable
         lock (m_tickGate)
         {
             if (Interlocked.Exchange(ref m_disposed, 1) != 0)
+            {
                 return;
+            }
 
             m_operationDepth++;
             try
@@ -204,7 +206,9 @@ public sealed class CoroutineScheduler : IDisposable
             ObjectDisposedException.ThrowIf(Volatile.Read(ref m_disposed) != 0, this);
 
             if (m_ticking || m_operationDepth != 0)
+            {
                 throw new InvalidOperationException("A coroutine callback cannot recursively advance its scheduler.");
+            }
 
             m_operationDepth++;
             m_ticking = true;
@@ -243,7 +247,9 @@ public sealed class CoroutineScheduler : IDisposable
     {
         // Cleanup callbacks may enqueue commands, but must not recursively drain the queue.
         if (m_applyingCommands)
+        {
             return;
+        }
 
         m_applyingCommands = true;
         try
@@ -254,23 +260,31 @@ public sealed class CoroutineScheduler : IDisposable
                 {
                     case CommandKind.Start:
                         if (cmd.routine is null)
+                        {
                             break;
+                        }
                         CoroutineState state = new(cmd.id, cmd.owner, cmd.routine);
                         m_states.Add(state.id, state);
                         m_active.Add(state.id);
                         if (Volatile.Read(ref m_disposed) != 0)
+                        {
                             Retire(state);
+                        }
                         break;
                     case CommandKind.Stop:
                         if (m_states.TryGetValue(cmd.id, out CoroutineState? stopped))
+                        {
                             Retire(stopped);
+                        }
                         break;
                     case CommandKind.StopByOwner:
                         for (int i = 0; i < m_active.Count; i++)
                         {
                             if (m_states.TryGetValue(m_active[i], out CoroutineState? owned)
-                                && ReferenceEquals(owned.owner, cmd.owner))
+                                && ReferenceEquals(owned.owner, cmd.owner)
+                            ) {
                                 Retire(owned);
+                            }
                         }
                         break;
                     case CommandKind.StopAll:
@@ -283,7 +297,9 @@ public sealed class CoroutineScheduler : IDisposable
         {
             m_applyingCommands = false;
             if (!m_ticking)
+            {
                 PruneInactive();
+            }
         }
     }
 
@@ -295,13 +311,17 @@ public sealed class CoroutineScheduler : IDisposable
         for (int i = 0; i < count; i++)
         {
             if (!m_states.TryGetValue(m_active[i], out CoroutineState? state))
+            {
                 continue;
+            }
 
             state.executing = true;
             try
             {
                 if (!StepCoroutine(state))
+                {
                     Retire(state);
+                }
             }
             catch (Exception failure)
             {
@@ -312,7 +332,9 @@ public sealed class CoroutineScheduler : IDisposable
             {
                 state.executing = false;
                 if (state.retired)
+                {
                     DisposeStack(state);
+                }
             }
         }
     }
@@ -324,9 +346,13 @@ public sealed class CoroutineScheduler : IDisposable
         {
             bool waiting = state.waiter.Invoke(this);
             if (state.retired)
+            {
                 return false;
+            }
             if (waiting)
+            {
                 return true;
+            }
             state.waiter = null;
         }
 
@@ -340,18 +366,24 @@ public sealed class CoroutineScheduler : IDisposable
             IEnumerator current = state.stack.Peek();
             bool moved = current.MoveNext();
             if (state.retired)
+            {
                 return false;
+            }
             if (!moved)
             {
                 state.stack.Pop();
                 if (!DisposeEnumerator(current))
+                {
                     return false;
+                }
                 continue;
             }
 
             object? yielded = current.Current;
             if (state.retired)
+            {
                 return false;
+            }
             if (yielded is null)
             {
                 ulong targetFrame = m_frame + 1;
@@ -364,7 +396,9 @@ public sealed class CoroutineScheduler : IDisposable
                 foreach (IEnumerator ancestor in state.stack)
                 {
                     if (ReferenceEquals(ancestor, nested))
+                    {
                         throw new InvalidOperationException("A coroutine cannot yield an enumerator already on its stack.");
+                    }
                 }
                 state.stack.Push(nested);
                 continue;
@@ -397,14 +431,18 @@ public sealed class CoroutineScheduler : IDisposable
     private void Retire(CoroutineState state)
     {
         if (state.retired)
+        {
             return;
+        }
         state.retired = true;
         m_needsPruning = true;
         m_states.Remove(state.id);
         m_liveIds.TryRemove(state.id, out _);
         state.waiter = null;
         if (!state.executing)
+        {
             DisposeStack(state);
+        }
     }
 
     private void RetireAll()
@@ -412,7 +450,9 @@ public sealed class CoroutineScheduler : IDisposable
         for (int i = 0; i < m_active.Count; i++)
         {
             if (m_states.TryGetValue(m_active[i], out CoroutineState? state))
+            {
                 Retire(state);
+            }
         }
     }
 
@@ -424,7 +464,9 @@ public sealed class CoroutineScheduler : IDisposable
         try
         {
             while (state.stack.TryPop(out IEnumerator? routine))
+            {
                 DisposeEnumerator(routine);
+            }
         }
         finally
         {
@@ -436,7 +478,9 @@ public sealed class CoroutineScheduler : IDisposable
     private bool DisposeEnumerator(IEnumerator routine)
     {
         if (routine is not IDisposable disposable)
+        {
             return true;
+        }
         try
         {
             disposable.Dispose();
@@ -452,16 +496,22 @@ public sealed class CoroutineScheduler : IDisposable
     private void PruneInactive()
     {
         if (!m_needsPruning || m_ticking || m_applyingCommands)
+        {
             return;
+        }
         int retained = 0;
         for (int i = 0; i < m_active.Count; i++)
         {
             long id = m_active[i];
             if (m_states.ContainsKey(id))
+            {
                 m_active[retained++] = id;
+            }
         }
         if (retained != m_active.Count)
+        {
             m_active.RemoveRange(retained, m_active.Count - retained);
+        }
         m_needsPruning = false;
     }
 
@@ -470,7 +520,9 @@ public sealed class CoroutineScheduler : IDisposable
     private void CompleteOperation()
     {
         if (--m_operationDepth != 0 || m_failures is null)
+        {
             return;
+        }
         List<Exception> failures = m_failures;
         m_failures = null;
         throw new AggregateException("Coroutine execution or retirement failed; all eligible cleanup was attempted.", failures);
@@ -494,14 +546,17 @@ public sealed class CoroutineScheduler : IDisposable
         /// Gets the operation kind that determines how this value is interpreted.
         /// </summary>
         public CommandKind kind { get; } = kind;
+
         /// <summary>
         /// Gets the stable identity used to reference this value across subsystem boundaries.
         /// </summary>
         public long id { get; } = id;
+
         /// <summary>
         /// Gets the object that owns the coroutine lifetime.
         /// </summary>
         public object? owner { get; } = owner;
+
         /// <summary>
         /// Gets the root enumerator advanced by this coroutine.
         /// </summary>
@@ -568,22 +623,27 @@ public sealed class CoroutineScheduler : IDisposable
         /// Gets the stable identity used to reference this value across subsystem boundaries.
         /// </summary>
         public long id { get; } = id;
+
         /// <summary>
         /// Gets the object that owns the coroutine lifetime.
         /// </summary>
         public object? owner { get; set; } = owner;
+
         /// <summary>
         /// Gets the nested enumerator stack retained by this coroutine.
         /// </summary>
         public Stack<IEnumerator> stack { get; } = new([routine]);
+
         /// <summary>
         /// Gets the current continuation predicate, or null when the coroutine can advance.
         /// </summary>
         public CoroutineWaitDelegate? waiter { get; set; }
+
         /// <summary>
         /// Gets whether a user callback is borrowing the enumerator stack.
         /// </summary>
         public bool executing { get; set; }
+
         /// <summary>
         /// Gets whether call admission has closed and the remaining stack must retire.
         /// </summary>

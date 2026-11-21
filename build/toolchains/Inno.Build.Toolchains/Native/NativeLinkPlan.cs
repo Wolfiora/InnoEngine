@@ -34,15 +34,21 @@ public sealed class NativeLinkPlan
         IEnumerable<string>? cmakeArguments = null
     ) {
         if (sharedLibraryExtension is null && staticLibraryExtension is null)
+        {
             throw new ArgumentException("A linker plan must contribute at least one library format.");
+        }
         if (importLibraryExtension is not null && sharedLibraryExtension is null)
+        {
             throw new ArgumentException("Import libraries require a shared-library format.", nameof(importLibraryExtension));
+        }
         this.sharedLibraryExtension = sharedLibraryExtension is null ? null : Validate(sharedLibraryExtension);
         this.importLibraryExtension = importLibraryExtension is null ? null : Validate(importLibraryExtension);
         this.staticLibraryExtension = staticLibraryExtension is null ? null : Validate(staticLibraryExtension);
         string[] arguments = (cmakeArguments ?? []).ToArray();
         if (arguments.Any(static argument => argument is null))
+        {
             throw new ArgumentException("Linker arguments cannot contain null entries.", nameof(cmakeArguments));
+        }
         this.cmakeArguments = Array.AsReadOnly(arguments);
     }
 
@@ -50,14 +56,17 @@ public sealed class NativeLinkPlan
     /// Gets the shared-library suffix, or null when shared linkage is unsupported.
     /// </summary>
     public string? sharedLibraryExtension { get; }
+
     /// <summary>
     /// Gets the separate import suffix, or null when no separate import library is used.
     /// </summary>
     public string? importLibraryExtension { get; }
+
     /// <summary>
     /// Gets the static archive suffix, or null when static linkage is unavailable.
     /// </summary>
     public string? staticLibraryExtension { get; }
+
     /// <summary>
     /// Gets ordered platform linker definitions.
     /// </summary>
@@ -92,20 +101,28 @@ public sealed class NativeLinkPlan
     /// <exception cref="ArgumentOutOfRangeException">
     /// The linkage kind is not defined.
     /// </exception>
-    public string GetFileExtension(NativeLibraryKind kind) => (kind switch
-    {
-        NativeLibraryKind.Shared => sharedLibraryExtension,
-        NativeLibraryKind.Static => staticLibraryExtension,
-        _ => throw new ArgumentOutOfRangeException(nameof(kind))
-    }) ?? throw new NotSupportedException($"This target does not contribute '{kind}' linkage.");
+    public string GetFileExtension(NativeLibraryKind kind)
+        => (kind switch
+        {
+            NativeLibraryKind.Shared => sharedLibraryExtension,
+            NativeLibraryKind.Static => staticLibraryExtension,
+            _ => throw new ArgumentOutOfRangeException(nameof(kind))
+        }) ?? throw new NotSupportedException($"This target does not contribute '{kind}' linkage.");
 
-    internal IEnumerable<string> declarations => new[] { "sharedSuffix=" + sharedLibraryExtension,
-        "importSuffix=" + importLibraryExtension, "staticSuffix=" + staticLibraryExtension }.Concat(cmakeArguments);
+    internal IEnumerable<string> declarations
+        => new[]
+    {
+        "sharedSuffix=" + sharedLibraryExtension,
+        "importSuffix=" + importLibraryExtension,
+        "staticSuffix=" + staticLibraryExtension
+    }.Concat(cmakeArguments);
 
     private static string Validate(string value)
     {
         if (string.IsNullOrWhiteSpace(value) || !value.StartsWith('.') || value.IndexOfAny(['/', '\\', ':']) >= 0)
+        {
             throw new ArgumentException("A native output format requires a file suffix.", nameof(value));
+        }
         return value;
     }
 }

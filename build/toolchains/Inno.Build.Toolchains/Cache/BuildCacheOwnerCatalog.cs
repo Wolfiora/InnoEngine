@@ -51,20 +51,29 @@ public static class BuildCacheOwnerCatalog
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         if (!Enum.IsDefined(role))
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         string root = Path.GetFullPath(engineRoot);
         string owned = PathBoundary.RequireUnlinkedPath(root, directory);
         if (owned == root)
+        {
             throw new ArgumentException("The checkout cannot be registered as a cache.");
+        }
         string relative = Path.GetRelativePath(root, owned).Replace('\\', '/');
         string catalog = CatalogRoot(root);
         string key = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(relative)));
         string file = Path.Combine(catalog, key + ".json");
-        using FileLease writing = FileLease.AcquireAsync(Path.Combine(catalog, "owner.lock"),
-            TimeSpan.FromSeconds(30), cancellationToken).AsTask().GetAwaiter().GetResult();
+        using FileLease writing = FileLease.AcquireAsync(
+            Path.Combine(catalog, "owner.lock"),
+            TimeSpan.FromSeconds(30),
+            cancellationToken
+        ).AsTask().GetAwaiter().GetResult();
         var registration = new Registration(id, relative, role);
         if (File.Exists(file) && Read(file) != registration)
+        {
             throw new InvalidDataException("A cache root cannot change its registered owner or lifetime.");
+        }
         cancellationToken.ThrowIfCancellationRequested();
         AtomicFile.WriteAllBytes(file, JsonSerializer.SerializeToUtf8Bytes(registration));
     }
@@ -100,9 +109,14 @@ public static class BuildCacheOwnerCatalog
         string root = Path.GetFullPath(engineRoot);
         string catalog = CatalogRoot(root);
         if (!Directory.Exists(catalog))
+        {
             return [];
-        using FileLease reading = FileLease.AcquireSharedAsync(Path.Combine(catalog, "owner.lock"),
-            TimeSpan.FromSeconds(30), cancellationToken).AsTask().GetAwaiter().GetResult();
+        }
+        using FileLease reading = FileLease.AcquireSharedAsync(
+            Path.Combine(catalog, "owner.lock"),
+            TimeSpan.FromSeconds(30),
+            cancellationToken
+        ).AsTask().GetAwaiter().GetResult();
         var result = new List<BuildCacheOwnerDescriptor>();
         var identities = new HashSet<string>(StringComparer.Ordinal);
         foreach (string file in PathBoundary.EnumerateFiles(catalog).Where(static file => file.EndsWith(".json", StringComparison.Ordinal)))
@@ -110,10 +124,15 @@ public static class BuildCacheOwnerCatalog
             cancellationToken.ThrowIfCancellationRequested();
             Registration value = Read(file);
             if (!identities.Add(value.id))
+            {
                 throw new InvalidDataException("Cache registration identities must be unique.");
+            }
             string owned = PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, value.directory));
-            result.Add((progress is null ? new BuildCachePublisher(owned, value.role)
-                : new BuildCachePublisher(owned, value.role, progress)).Describe(value.id));
+            result.Add(
+                (progress is null
+                 ? new BuildCachePublisher(owned, value.role)
+                 : new BuildCachePublisher(owned, value.role, progress)).Describe(value.id)
+            );
         }
         return result.AsReadOnly();
     }
@@ -128,15 +147,21 @@ public static class BuildCacheOwnerCatalog
         if (root.ValueKind != JsonValueKind.Object || root.EnumerateObject().Count() != 3
             || !root.TryGetProperty("id", out JsonElement id) || id.ValueKind != JsonValueKind.String
             || !root.TryGetProperty("directory", out JsonElement directory) || directory.ValueKind != JsonValueKind.String
-            || !root.TryGetProperty("role", out JsonElement role) || !role.TryGetInt32(out int lifetime))
+            || !root.TryGetProperty("role", out JsonElement role) || !role.TryGetInt32(out int lifetime)
+        ) {
             throw new InvalidDataException("A cache registration lacks its exact owner, directory and lifetime.");
+        }
         var value = new Registration(id.GetString()!, directory.GetString()!, (BuildCacheArtifactRole)lifetime);
         if (string.IsNullOrWhiteSpace(value.id) || string.IsNullOrWhiteSpace(value.directory)
-            || Path.IsPathRooted(value.directory) || value.directory == "." || !Enum.IsDefined(value.role))
+            || Path.IsPathRooted(value.directory) || value.directory == "." || !Enum.IsDefined(value.role)
+        ) {
             throw new InvalidDataException("A cache registration has invalid ownership metadata.");
+        }
         string key = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value.directory)));
         if (Path.GetFileName(path) != key + ".json")
+        {
             throw new InvalidDataException("A cache registration has a mismatched publisher key.");
+        }
         return value;
     }
 

@@ -28,7 +28,9 @@ public sealed class ToolchainWorkingDirectory : IDisposable
         IDisposable? ownership = null
     ) {
         if (!Path.IsPathFullyQualified(toolPath))
+        {
             throw new ArgumentException("Tool execution paths must be absolute.", nameof(toolPath));
+        }
         this.toolPath = toolPath;
         m_ownership = ownership;
     }

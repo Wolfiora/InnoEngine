@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported input text flags choices at the Editor presentation boundary.
 /// </summary>
@@ -110,5 +111,5 @@ public enum ImGuiInputTextFlags : int
     /// <summary>
     /// InputTextMultiline(): word-wrap lines that are too long.
     /// </summary>
-    WordWrap = (int)Inno.Native.ImGui.ImGuiInputTextFlags.WordWrap,
+    WordWrap = (int)Inno.Native.ImGui.ImGuiInputTextFlags.WordWrap
 }

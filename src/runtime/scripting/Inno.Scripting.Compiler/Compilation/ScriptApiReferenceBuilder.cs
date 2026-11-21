@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -60,9 +59,19 @@ internal static class ScriptApiReferenceBuilder
             .ToArray();
         ScriptApiDocumentationBuilder.Inputs documentationInputs = ScriptApiDocumentationBuilder.Capture(allExports);
         string contractFingerprint = CreateFingerprint(profile);
-        string fingerprint = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(
-            string.Join('|', contractFingerprint, environment.fingerprint, baseReferences?.artifactFingerprint ?? string.Empty,
-                documentationInputs.identity))));
+        string fingerprint = Convert.ToHexStringLower(
+            SHA256.HashData(
+                Encoding.UTF8.GetBytes(
+                    string.Join(
+                        '|',
+                        contractFingerprint,
+                        environment.fingerprint,
+                        baseReferences?.artifactFingerprint ?? string.Empty,
+                        documentationInputs.identity
+                    )
+                )
+            )
+        );
         string directory = Path.Combine(options.scriptApiDirectory, profile.name, fingerprint);
         Directory.CreateDirectory(directory);
         string[] implementationPaths = GetImplementationPaths(profile, environment);
@@ -76,11 +85,19 @@ internal static class ScriptApiReferenceBuilder
         {
             cancellationToken.ThrowIfCancellationRequested();
             string assemblyName = export.assembly.GetName().Name
-                ?? throw new InvalidOperationException("A script API assembly has no simple name.");
+                                  ?? throw new InvalidOperationException("A script API assembly has no simple name.");
             string referencePath = Path.Combine(runtimeDirectory, assemblyName + ".dll");
             if (!File.Exists(referencePath))
+            {
                 EmitImplementationReferenceAssembly(
-                    export, referencePath, implementationPaths, exportedTypes, environment, cancellationToken);
+                    export,
+                    referencePath,
+                    implementationPaths,
+                    exportedTypes,
+                    environment,
+                    cancellationToken
+                );
+            }
             runtimeReferencePaths.Add(referencePath);
         }
 
@@ -94,7 +111,9 @@ internal static class ScriptApiReferenceBuilder
             .ToArray();
         var ideReferencePaths = new List<string>();
         if (baseReferences is not null)
+        {
             ideReferencePaths.AddRange(baseReferences.ideReferencePaths);
+        }
         if (logicalExports.Length > 0)
         {
             string logicalDirectory = Path.Combine(directory, "IDE");
@@ -111,7 +130,8 @@ internal static class ScriptApiReferenceBuilder
                     profile.namespaceMappings,
                     baseReferences?.ideReferencePaths ?? [],
                     environment,
-                    cancellationToken);
+                    cancellationToken
+                );
             }
             string documentationPath = Path.ChangeExtension(referencePath, ".xml");
             if (!File.Exists(documentationPath))
@@ -122,21 +142,21 @@ internal static class ScriptApiReferenceBuilder
                     logicalExports,
                     profile.namespaceMappings,
                     profile.typeMappings,
-                    documentationInputs);
+                    documentationInputs
+                );
             }
             ideReferencePaths.Add(referencePath);
         }
         ScriptApiDocumentationBuilder.Verify(documentationInputs);
-        ScriptApiArtifactCache.Collect(
-            options.scriptApiDirectory,
-            new[] { directory, baseReferences?.cacheDirectory });
+        ScriptApiArtifactCache.Collect(options.scriptApiDirectory, new[] { directory, baseReferences?.cacheDirectory });
         return new ScriptApiReferenceSet(
             runtimeReferencePaths,
             ideReferencePaths,
             contractFingerprint,
             fingerprint,
             environment,
-            directory);
+            directory
+        );
     }
 
     private static void EmitImplementationReferenceAssembly(
@@ -153,20 +173,23 @@ internal static class ScriptApiReferenceBuilder
             SourceText.From(source, Encoding.UTF8),
             new CSharpParseOptions(LanguageVersion.CSharp14),
             $"<{assemblyName}.ScriptApi.g.cs>",
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
         var references = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
         foreach (MetadataReference reference in environment.frameworkReferences)
         {
             if (!string.IsNullOrWhiteSpace(reference.Display))
+            {
                 references[reference.Display!] = reference;
+            }
         }
         foreach (string implementationPath in implementationPaths)
         {
             if (string.Equals(
-                    Path.GetFileNameWithoutExtension(implementationPath),
-                    assemblyName,
-                    StringComparison.OrdinalIgnoreCase))
-            {
+                Path.GetFileNameWithoutExtension(implementationPath),
+                assemblyName,
+                StringComparison.OrdinalIgnoreCase
+            )) {
                 continue;
             }
             references[implementationPath] = MetadataReference.CreateFromFile(implementationPath);
@@ -183,10 +206,16 @@ internal static class ScriptApiReferenceBuilder
                 deterministic: true,
                 concurrentBuild: false,
                 nullableContextOptions: NullableContextOptions.Enable,
-                metadataImportOptions: MetadataImportOptions.Public));
+                metadataImportOptions: MetadataImportOptions.Public
+            )
+        );
         EmitReferenceAssembly(
-            compilation, referencePath, source,
-            $"Failed to build script API reference assembly '{assemblyName}'.", cancellationToken);
+            compilation,
+            referencePath,
+            source,
+            $"Failed to build script API reference assembly '{assemblyName}'.",
+            cancellationToken
+        );
     }
 
     private static void EmitLogicalReferenceAssembly(
@@ -204,21 +233,27 @@ internal static class ScriptApiReferenceBuilder
             .ToDictionary(
                 static group => group.Key,
                 static group => group.First().apiNamespace,
-                StringComparer.Ordinal);
+                StringComparer.Ordinal
+            );
         string source = ScriptApiStubSourceBuilder.BuildLogical(exports, exportedTypes, mappings);
         SyntaxTree syntaxTree = CSharpSyntaxTree.ParseText(
             SourceText.From(source, Encoding.UTF8),
             new CSharpParseOptions(LanguageVersion.CSharp14),
             $"<{assemblyName}.g.cs>",
-            cancellationToken: cancellationToken);
+            cancellationToken: cancellationToken
+        );
         var references = new Dictionary<string, MetadataReference>(StringComparer.OrdinalIgnoreCase);
         foreach (MetadataReference reference in environment.frameworkReferences)
         {
             if (!string.IsNullOrWhiteSpace(reference.Display))
+            {
                 references[reference.Display!] = reference;
+            }
         }
         foreach (string baseReferencePath in baseReferencePaths)
+        {
             references[baseReferencePath] = MetadataReference.CreateFromFile(baseReferencePath);
+        }
 
         CSharpCompilation compilation = CSharpCompilation.Create(
             assemblyName,
@@ -231,10 +266,16 @@ internal static class ScriptApiReferenceBuilder
                 deterministic: true,
                 concurrentBuild: false,
                 nullableContextOptions: NullableContextOptions.Enable,
-                metadataImportOptions: MetadataImportOptions.Public));
+                metadataImportOptions: MetadataImportOptions.Public
+            )
+        );
         EmitReferenceAssembly(
-            compilation, referencePath, source,
-            $"Failed to build logical script API assembly '{assemblyName}'.", cancellationToken);
+            compilation,
+            referencePath,
+            source,
+            $"Failed to build logical script API assembly '{assemblyName}'.",
+            cancellationToken
+        );
     }
 
     private static void EmitReferenceAssembly(
@@ -252,16 +293,19 @@ internal static class ScriptApiReferenceBuilder
                 EmitResult result = compilation.Emit(
                     peStream: stream,
                     options: new EmitOptions(metadataOnly: true, includePrivateMembers: false),
-                    cancellationToken: cancellationToken);
+                    cancellationToken: cancellationToken
+                );
                 if (!result.Success)
                 {
                     string errors = string.Join(
                         Environment.NewLine,
                         result.Diagnostics
                             .Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
-                            .Select(static diagnostic => diagnostic.ToString()));
+                            .Select(static diagnostic => diagnostic.ToString())
+                    );
                     throw new InvalidOperationException(
-                        failureMessage + $"{Environment.NewLine}{errors}{Environment.NewLine}{source}");
+                        failureMessage + $"{Environment.NewLine}{errors}{Environment.NewLine}{source}"
+                    );
                 }
             }
             cancellationToken.ThrowIfCancellationRequested();
@@ -270,7 +314,9 @@ internal static class ScriptApiReferenceBuilder
         finally
         {
             if (File.Exists(temporaryPath))
+            {
                 File.Delete(temporaryPath);
+            }
         }
     }
 
@@ -289,7 +335,9 @@ internal static class ScriptApiReferenceBuilder
         finally
         {
             if (File.Exists(temporaryPath))
+            {
                 File.Delete(temporaryPath);
+            }
         }
     }
 
@@ -306,14 +354,16 @@ internal static class ScriptApiReferenceBuilder
             .ToDictionary(
                 static group => group.Key,
                 static group => group.First().apiNamespace,
-                StringComparer.Ordinal);
+                StringComparer.Ordinal
+            );
         ScriptApiDocumentationBuilder.Write(
             Path.ChangeExtension(referencePath, ".xml"),
             assemblyName,
             exports,
             mappings,
             typeMappings,
-            documentationInputs);
+            documentationInputs
+        );
     }
 
     private static string CreateFingerprint(ScriptApiProfile profile)
@@ -328,30 +378,32 @@ internal static class ScriptApiReferenceBuilder
             .Append('|')
             .Append(profile.name);
         foreach (ScriptApiAssembly export in profile.exports
-                     .OrderBy(static value => value.assembly.GetName().Name, StringComparer.Ordinal))
-        {
+            .OrderBy(static value => value.assembly.GetName().Name, StringComparer.Ordinal)
+        ) {
             builder.Append("|implementation:")
                 .Append(export.assembly.GetName().Name)
                 .Append('|')
                 .Append(ScriptApiStubSourceBuilder.BuildImplementation(export, exportedTypes));
         }
         foreach (string apiNamespace in profile.apiNamespaces.OrderBy(static value => value, StringComparer.Ordinal))
-            builder.Append('|').Append(apiNamespace);
-        foreach (ScriptApiNamespaceMapping mapping in profile.namespaceMappings
-                     .OrderBy(static value => value.apiNamespace, StringComparer.Ordinal)
-                     .ThenBy(static value => value.implementationNamespace, StringComparer.Ordinal))
         {
+            builder.Append('|').Append(apiNamespace);
+        }
+        foreach (ScriptApiNamespaceMapping mapping in profile.namespaceMappings
+            .OrderBy(static value => value.apiNamespace, StringComparer.Ordinal)
+            .ThenBy(static value => value.implementationNamespace, StringComparer.Ordinal)
+        ) {
             builder.Append('|')
                 .Append(mapping.apiNamespace)
                 .Append('>')
                 .Append(mapping.implementationNamespace);
         }
         foreach (ScriptApiTypeMapping mapping in profile.typeMappings
-                     .OrderBy(static value => value.apiNamespace, StringComparer.Ordinal)
-                     .ThenBy(static value => value.apiName, StringComparer.Ordinal)
-                     .ThenBy(static value => value.implementationNamespace, StringComparer.Ordinal)
-                     .ThenBy(static value => value.implementationName, StringComparer.Ordinal))
-        {
+            .OrderBy(static value => value.apiNamespace, StringComparer.Ordinal)
+            .ThenBy(static value => value.apiName, StringComparer.Ordinal)
+            .ThenBy(static value => value.implementationNamespace, StringComparer.Ordinal)
+            .ThenBy(static value => value.implementationName, StringComparer.Ordinal)
+        ) {
             builder.Append('|')
                 .Append(mapping.apiNamespace)
                 .Append('.')
@@ -364,8 +416,8 @@ internal static class ScriptApiReferenceBuilder
                 .Append(mapping.arity);
         }
         foreach (ScriptApiAttachableType attachableType in profile.attachableTypes
-                     .OrderBy(static value => value.implementationName, StringComparer.Ordinal))
-        {
+            .OrderBy(static value => value.implementationName, StringComparer.Ordinal)
+        ) {
             builder.Append('|')
                 .Append(attachableType.implementationName)
                 .Append('>')
@@ -388,5 +440,4 @@ internal static class ScriptApiReferenceBuilder
             .OrderBy(static path => path, StringComparer.Ordinal)
             .ToArray();
     }
-
 }

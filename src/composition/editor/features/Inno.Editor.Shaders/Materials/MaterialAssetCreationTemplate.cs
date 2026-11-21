@@ -11,5 +11,6 @@ namespace Inno.Editor.Shaders;
     "New Material",
     groupOrder: 200,
     itemOrder: 100,
-    separatorBeforeGroup: true)]
+    separatorBeforeGroup: true
+)]
 internal sealed class MaterialAssetCreationTemplate : AssetCreationTemplate<MaterialAsset>;

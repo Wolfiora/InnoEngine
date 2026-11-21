@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -65,7 +65,9 @@ public class MaterialAsset : AssetObject
         MaterialValue value
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
+        }
         int index = Array.FindIndex(m_properties, candidate => candidate.id == id);
         if (index < 0)
         {
@@ -91,12 +93,12 @@ public class MaterialAsset : AssetObject
         foreach (MaterialPropertyEntry property in candidate)
         {
             if (!property.id.isValid)
+            {
                 throw new ArgumentException("A material property ID must be valid.", nameof(properties));
+            }
             if (!ids.Add(property.id))
             {
-                throw new ArgumentException(
-                    $"Material property '{property.id}' is duplicated.",
-                    nameof(properties));
+                throw new ArgumentException($"Material property '{property.id}' is duplicated.", nameof(properties));
             }
         }
         m_properties = candidate
@@ -141,9 +143,13 @@ public class MaterialAsset : AssetObject
         ArgumentException.ThrowIfNullOrWhiteSpace(keyword);
         var values = m_keywords.ToHashSet(StringComparer.Ordinal);
         if (enabled)
+        {
             values.Add(keyword);
+        }
         else
+        {
             values.Remove(keyword);
+        }
         m_keywords = values.OrderBy(static value => value, StringComparer.Ordinal).ToArray();
     }
 
@@ -205,24 +211,21 @@ public class MaterialAsset : AssetObject
     public bool RemoveMetadata(string key)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
-        int index = Array.FindIndex(m_metadata, entry =>
-            string.Equals(entry.key, key, StringComparison.Ordinal));
+        int index = Array.FindIndex(m_metadata, entry => string.Equals(entry.key, key, StringComparison.Ordinal));
         if (index < 0)
+        {
             return false;
+        }
         var replacement = new MaterialMetadataEntry[m_metadata.Length - 1];
         if (index > 0)
+        {
             Array.Copy(m_metadata, 0, replacement, 0, index);
+        }
         if (index < m_metadata.Length - 1)
         {
-            Array.Copy(
-                m_metadata,
-                index + 1,
-                replacement,
-                index,
-                m_metadata.Length - index - 1);
+            Array.Copy(m_metadata, index + 1, replacement, index, m_metadata.Length - index - 1);
         }
         m_metadata = replacement;
         return true;
     }
 }
-

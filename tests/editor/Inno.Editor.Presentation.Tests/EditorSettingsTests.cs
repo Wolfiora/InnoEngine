@@ -1,11 +1,10 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Inno.Extensibility.Modules;
-using Inno.Extensibility.Types;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Diagnostics;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
@@ -14,9 +13,11 @@ using Inno.Editor.Diagnostics;
 using Inno.Editor.Interactions;
 using Inno.Editor.PlayMode;
 using Inno.Editor.Settings;
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 
 namespace Inno.Editor.Presentation.Tests;
+
 public sealed class EditorSettingsTests : IDisposable
 {
     private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoEditorSettingsTests", Guid.NewGuid().ToString("N"));
@@ -29,10 +30,13 @@ public sealed class EditorSettingsTests : IDisposable
     private readonly DiagnosticHub m_diagnostics = new();
     private readonly FakePlayMode m_playMode = new();
     private readonly LogRouter m_logs = new();
+
     public EditorSettingsTests()
     {
         Directory.CreateDirectory(m_projectRoot);
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly) });
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly) }
+        );
         _ = typeof(EditorSettings);
         _ = System.Reflection.Assembly.Load("Inno.Editor.Panel.Logging");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
@@ -60,7 +64,9 @@ public sealed class EditorSettingsTests : IDisposable
         m_modules.Dispose();
         m_logs.Dispose();
         if (Directory.Exists(m_projectRoot))
+        {
             Directory.Delete(m_projectRoot, recursive: true);
+        }
     }
 
     [Fact]
@@ -75,7 +81,11 @@ public sealed class EditorSettingsTests : IDisposable
         });
         var value = new EditorSettingObject();
         value.SetAsInt32("value", 10);
-        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Values/Project Count"] = value }));
+        Assert.True(
+            m_settings.Apply(
+                new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Values/Project Count"] = value }
+            )
+        );
         string path = Path.Combine(m_projectRoot, "Settings.Editor.inno");
         Assert.True(File.Exists(path));
         Assert.False(Directory.Exists(Path.Combine(m_projectRoot, "Settings")));
@@ -92,7 +102,11 @@ public sealed class EditorSettingsTests : IDisposable
         using IDisposable deliveredSubscription = m_settings.ListenChanges(_ => delivered++);
         var value = new EditorSettingObject();
         value.SetAsInt32("value", 11);
-        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Values/Project Count"] = value }));
+        Assert.True(
+            m_settings.Apply(
+                new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Values/Project Count"] = value }
+            )
+        );
         Assert.Equal(1, delivered);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(2, delivered);
@@ -115,12 +129,20 @@ public sealed class EditorSettingsTests : IDisposable
     [Fact]
     public void ResetRemovesThePathOverrideAndRestoresTheDefinitionObject()
     {
-        EditorSetting definition = Assert.Single(m_settings.definitions, static setting => setting.path == "Editor/Tests/Values/Project Count");
+        EditorSetting definition = Assert.Single(
+            m_settings.definitions,
+            static setting => setting.path == "Editor/Tests/Values/Project Count"
+        );
         var value = new EditorSettingObject();
         value.SetAsInt32("value", 8);
         Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject> { ["Editor/Tests/Values/Project Count"] = value }));
         Assert.False(definition.IsDefault(m_settings.Get("Editor/Tests/Values/Project Count")));
-        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(), new HashSet<string>(StringComparer.Ordinal) { "Editor/Tests/Values/Project Count" }));
+        Assert.True(
+            m_settings.Apply(
+                new Dictionary<string, EditorSettingObject>(),
+                new HashSet<string>(StringComparer.Ordinal) { "Editor/Tests/Values/Project Count" }
+            )
+        );
         Assert.Equal(3, m_settings.Get("Editor/Tests/Values/Project Count").GetAsInt32("value"));
         Assert.True(definition.IsDefault(m_settings.Get("Editor/Tests/Values/Project Count")));
         Assert.NotSame(definition.defaultValue, definition.defaultValue);
@@ -134,7 +156,15 @@ public sealed class EditorSettingsTests : IDisposable
         count.SetAsInt32("value", 7);
         var toggle = new EditorSettingObject();
         toggle.SetAsBoolean("value", false);
-        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Values/Project Count"] = count, ["Editor/Tests/Values/Project Toggle"] = toggle }));
+        Assert.True(
+            m_settings.Apply(
+                new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal)
+                {
+                    ["Editor/Tests/Values/Project Count"] = count,
+                    ["Editor/Tests/Values/Project Toggle"] = toggle
+                }
+            )
+        );
         Assert.Equal("Apply Settings", m_runtime.interactions.history.undoName);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Equal(3, m_settings.Get("Editor/Tests/Values/Project Count").GetAsInt32("value"));
@@ -191,7 +221,11 @@ public sealed class EditorSettingsTests : IDisposable
         value.SetAsSingleArray("singles", [1.5f, 2.5f]);
         value.SetAsDoubleArray("doubles", [3.5d, 4.5d]);
         value.SetAsStringArray("strings", ["first", null, "third"]);
-        Assert.True(m_settings.Apply(new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Objects/Primitives"] = value }));
+        Assert.True(
+            m_settings.Apply(
+                new Dictionary<string, EditorSettingObject>(StringComparer.Ordinal) { ["Editor/Tests/Objects/Primitives"] = value }
+            )
+        );
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         EditorSettingObject restored = m_settings.Get("Editor/Tests/Objects/Primitives");
@@ -219,7 +253,10 @@ public sealed class EditorSettingsTests : IDisposable
     [Fact]
     public void DrawTracksDifferenceFromEachStagedObjectsFirstDraw()
     {
-        EditorSetting definition = Assert.Single(m_settings.definitions, static setting => setting.path == "Editor/Tests/Objects/Draw Mutation");
+        EditorSetting definition = Assert.Single(
+            m_settings.definitions,
+            static setting => setting.path == "Editor/Tests/Objects/Draw Mutation"
+        );
         var value = new EditorSettingObject();
         Assert.True(definition.Draw(value));
         Assert.Equal(42, value.GetAsInt32("value"));
@@ -237,6 +274,7 @@ public sealed class EditorSettingsTests : IDisposable
     {
         internal static EditorSettings? current;
         internal static IEditorConsole? console;
+
         protected override void OnStart(EditorContext context)
         {
             current = settings;
@@ -252,9 +290,11 @@ public sealed class EditorSettingsTests : IDisposable
         public LogSessionId activeSessionId => LogSessionId.none;
 
         private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
+
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 
         public bool EnterPlayMode() => false;
+
         public bool ExitPlayMode() => false;
     }
 
@@ -271,9 +311,7 @@ public sealed class EditorSettingsTests : IDisposable
         public override string section => "Numbers";
         public override string description => "Exercises path-addressed project persistence.";
 
-        protected override void OnDraw(EditorSettingObject setting)
-        {
-        }
+        protected override void OnDraw(EditorSettingObject setting) {}
 
         private static EditorSettingObject CreateDefault()
         {
@@ -289,9 +327,7 @@ public sealed class EditorSettingsTests : IDisposable
         public override EditorSettingObject defaultValue => CreateDefault();
         public override string section => "Alpha";
 
-        protected override void OnDraw(EditorSettingObject setting)
-        {
-        }
+        protected override void OnDraw(EditorSettingObject setting) {}
 
         private static EditorSettingObject CreateDefault()
         {
@@ -306,9 +342,7 @@ public sealed class EditorSettingsTests : IDisposable
     {
         public override EditorSettingObject defaultValue => new();
 
-        protected override void OnDraw(EditorSettingObject setting)
-        {
-        }
+        protected override void OnDraw(EditorSettingObject setting) {}
     }
 
     [EditorSettingPath("Editor/Tests/Objects/Draw Mutation")]

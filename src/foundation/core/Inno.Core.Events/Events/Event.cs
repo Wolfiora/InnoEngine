@@ -10,6 +10,7 @@ public abstract class Event
 {
     private readonly Event m_consumptionOwner;
     private int m_globalHandled;
+
     [ThreadStatic]
     private static HubFrameStack? t_hubFrames;
 

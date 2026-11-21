@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using Inno.Assets;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scene.Components;
 using Inno.Scripting.Api;
 
@@ -18,6 +17,7 @@ namespace Inno.Scene;
 public sealed class PrefabAsset : AssetObject
 {
     private byte[] m_pendingPayload = [];
+
     [SerializableProperty]
     internal AssetDependency[] sourceDependencies { get; set; } = [];
 
@@ -84,15 +84,21 @@ public sealed class PrefabAsset : AssetObject
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (parent is not null && !ReferenceEquals(parent.gameObject.scene, scene))
+        {
             throw new InvalidOperationException("The prefab parent must belong to the target scene.");
+        }
         SerializationContext context = AssetSerializationContext.Create(assets)
             .With(scene)
             .With<AssetObject>(this);
         GameObject root = serialization.Deserialize<GameObject>(GetPayload(), context);
         if (parent is not null)
+        {
             scene.SetParent(root.transform, parent, worldPositionStays: false);
+        }
         if (!string.IsNullOrWhiteSpace(assetPath.localPath))
+        {
             root.name = Path.GetFileNameWithoutExtension(assetPath.localPath);
+        }
         return root;
     }
 
@@ -115,7 +121,9 @@ public sealed class PrefabAsset : AssetObject
     ) {
         ArgumentNullException.ThrowIfNull(dependencies);
         if (payload.IsEmpty)
+        {
             throw new ArgumentException("Imported prefab content cannot be empty.", nameof(payload));
+        }
         return new PrefabAsset
         {
             m_pendingPayload = payload.ToArray(),
@@ -135,10 +143,13 @@ public sealed class PrefabAsset : AssetObject
     private byte[] GetPayload()
     {
         if (!runtimePayload.IsEmpty)
+        {
             return runtimePayload.ToArray();
+        }
         if (m_pendingPayload.Length != 0)
+        {
             return (byte[])m_pendingPayload.Clone();
+        }
         throw new InvalidOperationException($"Prefab asset '{assetPath}' does not contain an imported or pending prefab payload.");
     }
-
 }

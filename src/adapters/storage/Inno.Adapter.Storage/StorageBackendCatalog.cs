@@ -30,7 +30,9 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
         foreach (StorageBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<StorageBackendId>(new List<StorageBackendId>(m_providers.Keys));
     }
@@ -47,11 +49,14 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
         StorageScope scope
     ) {
         if (!scope.isValid)
+        {
             throw new ArgumentException("Storage requires an assigned application namespace.", nameof(scope));
+        }
         if (!m_providers.TryGetValue(backend, out StorageBackendProvider? provider))
+        {
             throw new NotSupportedException("Storage backend '" + backend + "' is not registered.");
+        }
         return provider.CreateStorage(scope)
-            ?? throw new InvalidOperationException("Storage provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Storage provider '" + backend + "' returned no service.");
     }
 }
-

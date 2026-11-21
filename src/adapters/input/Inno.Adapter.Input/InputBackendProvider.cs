@@ -24,7 +24,9 @@ public abstract class InputBackendProvider
     protected InputBackendProvider(InputBackendId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A provider requires an assigned backend ID.", nameof(id));
+        }
         this.id = id;
     }
 
@@ -50,4 +52,3 @@ public abstract class InputBackendProvider
         bool acceptAllWindows
     );
 }
-

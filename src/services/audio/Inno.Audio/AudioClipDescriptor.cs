@@ -40,9 +40,13 @@ public readonly record struct AudioClipDescriptor
         long encodedByteLength
     ) {
         if (!codec.isValid)
+        {
             throw new ArgumentException("A valid codec identifier is required.", nameof(codec));
+        }
         if (!Enum.IsDefined(loadMode))
+        {
             throw new ArgumentOutOfRangeException(nameof(loadMode));
+        }
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(channels);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         ArgumentOutOfRangeException.ThrowIfNegative(frameCount);
@@ -84,5 +88,4 @@ public readonly record struct AudioClipDescriptor
     /// Gets the encoded artifact length in bytes.
     /// </summary>
     public long encodedByteLength { get; }
-
 }

@@ -24,11 +24,14 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         lock (S_SYNC)
         {
             if (s_active is not null)
+            {
                 throw new InvalidOperationException("Only one BGFX device may own the native process runtime.");
+            }
             if (s_singleThreadedRuntimeConsumed)
             {
                 throw new InvalidOperationException(
-                    "BGFX cannot be initialized again after this process entered single-threaded mode.");
+                    "BGFX cannot be initialized again after this process entered single-threaded mode."
+                );
             }
 
             var lease = new BgfxProcessDeviceLease(singleThreaded);
@@ -42,9 +45,13 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         lock (S_SYNC)
         {
             if (!ReferenceEquals(s_active, this) || m_disposed)
+            {
                 throw new InvalidOperationException("The BGFX process lease is not active.");
+            }
             if (m_singleThreaded)
+            {
                 s_singleThreadedRuntimeConsumed = true;
+            }
         }
     }
 
@@ -56,9 +63,13 @@ internal sealed class BgfxProcessDeviceLease : IDisposable
         lock (S_SYNC)
         {
             if (m_disposed)
+            {
                 return;
+            }
             if (!ReferenceEquals(s_active, this))
+            {
                 throw new InvalidOperationException("BGFX process leases must be released by their owner.");
+            }
             m_disposed = true;
             s_active = null;
         }

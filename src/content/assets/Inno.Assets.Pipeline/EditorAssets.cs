@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 
@@ -23,8 +22,11 @@ public static class EditorAssets
     {
         ArgumentNullException.ThrowIfNull(asset);
         if (AssetExecutionContext.current is not AssetPipeline pipeline)
+        {
             throw new InvalidOperationException(
-                "Encoding an authoring asset requires an asset pipeline execution context.");
+                "Encoding an authoring asset requires an asset pipeline execution context."
+            );
+        }
         return pipeline.CreateSourceStore().Encode(asset);
     }
 
@@ -40,12 +42,16 @@ public static class EditorAssets
     /// <returns>
     /// A detached asset value that can be edited without publishing it.
     /// </returns>
-    public static TAsset DecodeNative<TAsset>(byte[] bytes) where TAsset : AssetObject
+    public static TAsset DecodeNative<TAsset>(byte[] bytes)
+        where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(bytes);
         if (AssetExecutionContext.current is not AssetPipeline pipeline)
+        {
             throw new InvalidOperationException(
-                "Decoding an authoring asset requires an asset pipeline execution context.");
+                "Decoding an authoring asset requires an asset pipeline execution context."
+            );
+        }
         return pipeline.CreateSourceStore().Decode<TAsset>(bytes);
     }
 
@@ -61,12 +67,16 @@ public static class EditorAssets
     /// <returns>
     /// Native properties, stable type identity and automatically collected dependencies.
     /// </returns>
-    public static AssetPropertySnapshot CaptureProperties<TValue>(TValue value) where TValue : class, ISerializable
+    public static AssetPropertySnapshot CaptureProperties<TValue>(TValue value)
+        where TValue : class, ISerializable
     {
         if (AssetExecutionContext.current is not AssetPipeline pipeline)
+        {
             throw new InvalidOperationException("Capturing authoring settings requires an asset pipeline execution context.");
+        }
         return pipeline.CaptureProperties(value);
     }
+
     /// <summary>
     /// Creates or replaces a writable project asset source and imports the committed result.
     /// </summary>
@@ -93,7 +103,8 @@ public static class EditorAssets
         if (AssetExecutionContext.current is not AssetPipeline pipeline)
         {
             throw new InvalidOperationException(
-                "Editor asset mutation requires an authoring asset pipeline execution context.");
+                "Editor asset mutation requires an authoring asset pipeline execution context."
+            );
         }
         return pipeline.Save(path, asset);
     }

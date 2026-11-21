@@ -44,18 +44,36 @@ internal sealed class ManagedInputEvaluation : IDisposable
     ) {
         // An explicitly supplied SDK layout remains the caller's owned concurrency boundary.
         if (properties.Keys.Any(static name => name.Equals("ArtifactsPath", StringComparison.OrdinalIgnoreCase)))
+        {
             return new(properties, null, null, string.Empty, null);
-        string identity = NativeBuildFingerprint.Create(new[] { "managed-input-layout", context.engineRoot,
-            project, sdk.hostPath, sdk.cliPath, sdk.sdkIdentity }
-            .Concat(properties.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
-                .Select(static pair => pair.Key + "=" + pair.Value)), []);
+        }
+        string identity = NativeBuildFingerprint.Create(
+            new[]
+            {
+                "managed-input-layout",
+                context.engineRoot,
+                project,
+                sdk.hostPath,
+                sdk.cliPath,
+                sdk.sdkIdentity
+            }
+                .Concat(
+                    properties.OrderBy(static pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+                        .Select(static pair => pair.Key + "=" + pair.Value)
+                ),
+            []
+        );
         string root = Path.Combine(context.engineRoot, "artifacts", "managed", "evaluations");
         string directory = Path.Combine(root, identity);
         var cache = new BuildCachePublisher(root, BuildCacheArtifactRole.ReusableWorkspace);
         BuildCacheOwnerCatalog.Register(context.engineRoot, root, "managed-evaluations", cache.role, cancellation);
         using FileLease activity = await cache.AcquireUseAsync(cancellation).ConfigureAwait(false);
-        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(Path.Combine(root, "owner.lock"),
-            directory + ".lock", Timeout.InfiniteTimeSpan, cancellationToken: cancellation).ConfigureAwait(false);
+        CoordinatedFileLease ownership = await CoordinatedFileLease.AcquireAsync(
+            Path.Combine(root, "owner.lock"),
+            directory + ".lock",
+            Timeout.InfiniteTimeSpan,
+            cancellationToken: cancellation
+        ).ConfigureAwait(false);
         try
         {
             string? target = properties.TryGetValue("InnoNativeTarget", out string? selected) ? selected : context.toolchain?.targetId;

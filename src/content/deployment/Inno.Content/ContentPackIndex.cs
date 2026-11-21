@@ -36,7 +36,9 @@ public sealed class ContentPackIndex
         {
             ArgumentNullException.ThrowIfNull(entry);
             if (!folded.Add(entry.key.value!))
+            {
                 throw new ArgumentException($"Content repeats a reserved or ambiguous key '{entry.key}'.", nameof(entries));
+            }
             m_byKey.Add(entry.key, entry);
             ordered.Add(entry);
             totalLength = checked(totalLength + entry.length);
@@ -86,7 +88,9 @@ public sealed class ContentPackIndex
             for (int separator = key.IndexOf('/'); separator >= 0; separator = key.IndexOf('/', separator + 1))
             {
                 if (files.Contains(key[..separator]))
+                {
                     throw new ArgumentException($"Content uses '{key[..separator]}' as both a file and directory.", nameof(entries));
+                }
             }
         }
     }

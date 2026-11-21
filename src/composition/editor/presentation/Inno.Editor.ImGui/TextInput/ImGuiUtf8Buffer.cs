@@ -1,14 +1,16 @@
 using System;
+using System.Buffers;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Buffers;
 using System.Text.Unicode;
 using BGCS.Runtime;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 internal static unsafe class ImGuiUtf8Buffer
 {
     private static readonly UTF8Encoding S_TEXT_ENCODING = new(false, true);
@@ -29,7 +31,9 @@ internal static unsafe class ImGuiUtf8Buffer
     ) {
         ArgumentNullException.ThrowIfNull(text);
         if (text.AsSpan().Contains('\0'))
+        {
             throw new ArgumentException("Literal native text cannot contain zero code units.", nameof(text));
+        }
         int length = checked(S_TEXT_ENCODING.GetByteCount(text) + 1);
         byte[]? rented = length > 1024 ? ArrayPool<byte>.Shared.Rent(length) : null;
         Span<byte> buffer = rented is null ? stackalloc byte[length] : rented.AsSpan(0, length);
@@ -41,16 +45,22 @@ internal static unsafe class ImGuiUtf8Buffer
             {
                 ImVec2C size = default;
                 if (measure)
+                {
                     NativeImGui.Raw.CalcTextSize((sbyte*)value, (sbyte*)value + count, 0, wrapWidth, &size);
+                }
                 else
+                {
                     NativeImGui.Raw.TextUnformatted((sbyte*)value, (sbyte*)value + count);
+                }
                 return new Vector2(size.X, size.Y);
             }
         }
         finally
         {
             if (rented is not null)
+            {
                 ArrayPool<byte>.Shared.Return(rented, clearArray: true);
+            }
         }
     }
 
@@ -63,10 +73,19 @@ internal static unsafe class ImGuiUtf8Buffer
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(label);
         if (capacity is 0 or > int.MaxValue)
+        {
             throw new ArgumentOutOfRangeException(nameof(capacity));
-        const ImGuiInputTextFlags callbacks = ImGuiInputTextFlags.CallbackCompletion | ImGuiInputTextFlags.CallbackHistory | ImGuiInputTextFlags.CallbackAlways | ImGuiInputTextFlags.CallbackCharFilter | ImGuiInputTextFlags.CallbackResize | ImGuiInputTextFlags.CallbackEdit;
+        }
+        const ImGuiInputTextFlags callbacks = ImGuiInputTextFlags.CallbackCompletion
+                                              | ImGuiInputTextFlags.CallbackHistory
+                                              | ImGuiInputTextFlags.CallbackAlways
+                                              | ImGuiInputTextFlags.CallbackCharFilter
+                                              | ImGuiInputTextFlags.CallbackResize
+                                              | ImGuiInputTextFlags.CallbackEdit;
         if ((flags & callbacks) != 0)
+        {
             throw new ArgumentException("Managed text controls do not accept native callback flags.", nameof(flags));
+        }
         int length = (int)capacity;
         byte[]? rented = length > 1024 ? ArrayPool<byte>.Shared.Rent(length) : null;
         Span<byte> buffer = rented is null ? stackalloc byte[length] : rented.AsSpan(0, length);
@@ -79,22 +98,24 @@ internal static unsafe class ImGuiUtf8Buffer
             using NativeStringLease nativeHint = Utf8Codec.EncodeNullTerminated(hint, allowsNull: true);
             fixed (byte* nativeBuffer = buffer)
             {
-                changed = hint is null ? NativeImGui.Raw.InputText(
-                    (sbyte*)nativeLabel.pointer,
-                    (sbyte*)nativeBuffer,
-                    (uint)capacity,
-                    (int)flags,
-                    null,
-                    null
-                ) != 0 : NativeImGui.Raw.InputTextWithHint(
-                    (sbyte*)nativeLabel.pointer,
-                    (sbyte*)nativeHint.pointer,
-                    (sbyte*)nativeBuffer,
-                    (uint)capacity,
-                    (int)flags,
-                    null,
-                    null
-                ) != 0;
+                changed = hint is null
+                          ? NativeImGui.Raw.InputText(
+                              (sbyte*)nativeLabel.pointer,
+                              (sbyte*)nativeBuffer,
+                              (uint)capacity,
+                              (int)flags,
+                              null,
+                              null
+                          ) != 0
+                          : NativeImGui.Raw.InputTextWithHint(
+                              (sbyte*)nativeLabel.pointer,
+                              (sbyte*)nativeHint.pointer,
+                              (sbyte*)nativeBuffer,
+                              (uint)capacity,
+                              (int)flags,
+                              null,
+                              null
+                          ) != 0;
             }
 
             if (changed)
@@ -108,7 +129,9 @@ internal static unsafe class ImGuiUtf8Buffer
         finally
         {
             if (rented is not null)
+            {
                 ArrayPool<byte>.Shared.Return(rented, clearArray: true);
+            }
         }
     }
 }

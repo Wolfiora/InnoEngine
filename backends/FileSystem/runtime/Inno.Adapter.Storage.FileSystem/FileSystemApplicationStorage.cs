@@ -4,9 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-using Inno.Storage;
 using Inno.Core.IO;
+using Inno.Storage;
 
 namespace Inno.Adapter.Storage.FileSystem;
 
@@ -97,8 +96,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
             ThrowIfDisposed();
             ValidateExistingPath(path, includeLeaf: true);
             return File.Exists(path)
-                ? await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false)
-                : null;
+                   ? await File.ReadAllBytesAsync(path, cancellationToken).ConfigureAwait(false)
+                   : null;
         }
         finally
         {
@@ -132,15 +131,13 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         {
             ThrowIfDisposed();
             string directory = Path.GetDirectoryName(path)
-                ?? throw new IOException("A storage key did not resolve to a parent directory.");
+                               ?? throw new IOException("A storage key did not resolve to a parent directory.");
             ValidateExistingPath(directory, includeLeaf: true);
             Directory.CreateDirectory(directory);
             ValidateExistingPath(directory, includeLeaf: true);
             ValidateExistingPath(path, includeLeaf: true);
 
-            string temporaryPath = Path.Combine(
-                directory,
-                $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+            string temporaryPath = Path.Combine(directory, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
             try
             {
                 await using (var stream = new FileStream(
@@ -149,8 +146,8 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
                     FileAccess.Write,
                     FileShare.None,
                     4096,
-                    FileOptions.Asynchronous | FileOptions.WriteThrough))
-                {
+                    FileOptions.Asynchronous | FileOptions.WriteThrough
+                )) {
                     await stream.WriteAsync(value, cancellationToken).ConfigureAwait(false);
                     stream.Flush(flushToDisk: true);
                 }
@@ -160,7 +157,9 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
             finally
             {
                 if (File.Exists(temporaryPath))
+                {
                     File.Delete(temporaryPath);
+                }
             }
         }
         finally
@@ -192,7 +191,9 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
             ThrowIfDisposed();
             ValidateExistingPath(path, includeLeaf: true);
             if (!File.Exists(path))
+            {
                 return false;
+            }
             File.Delete(path);
             return true;
         }
@@ -228,9 +229,10 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
             if (prefix is { } requestedPrefix)
             {
                 string prefixValue = requestedPrefix.value;
-                filtered = filtered.Where(candidate =>
+                filtered = filtered.Where(candidate => (
                     string.Equals(candidate.value, prefixValue, StringComparison.Ordinal)
-                    || candidate.value.StartsWith(prefixValue + "/", StringComparison.Ordinal));
+                    || candidate.value.StartsWith(prefixValue + "/", StringComparison.Ordinal)
+                ));
             }
             return filtered
                 .OrderBy(static key => key.value, StringComparer.Ordinal)
@@ -276,7 +278,9 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
                 continue;
             }
             if (entry is not FileInfo)
+            {
                 continue;
+            }
             string relative = Path.GetRelativePath(m_root, entry.FullName)
                 .Replace(Path.DirectorySeparatorChar, '/');
             values.Add(new StorageKey(relative));
@@ -287,10 +291,10 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
     {
         ThrowIfDisposed();
         if (!key.isValid)
+        {
             throw new ArgumentException("A valid storage key is required.", nameof(key));
-        return PathBoundary.Resolve(
-            m_root,
-            key.value.Replace('/', Path.DirectorySeparatorChar));
+        }
+        return PathBoundary.Resolve(m_root, key.value.Replace('/', Path.DirectorySeparatorChar));
     }
 
     private void ValidateExistingPath(
@@ -301,24 +305,33 @@ public sealed class FileSystemApplicationStorage : IApplicationStorage, IDisposa
         string current = m_root;
         string[] segments = relative.Split(
             [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
-            StringSplitOptions.RemoveEmptyEntries);
+            StringSplitOptions.RemoveEmptyEntries
+        );
         int length = includeLeaf ? segments.Length : Math.Max(0, segments.Length - 1);
         for (int index = 0; index < length; index++)
         {
             current = Path.Combine(current, segments[index]);
             if (Directory.Exists(current))
+            {
                 RejectLink(new DirectoryInfo(current));
+            }
             else if (File.Exists(current))
+            {
                 RejectLink(new FileInfo(current));
+            }
             else
+            {
                 break;
+            }
         }
     }
 
     private static void RejectLink(FileSystemInfo entry)
     {
         if (entry.LinkTarget is not null || (entry.Attributes & FileAttributes.ReparsePoint) != 0)
+        {
             throw new IOException($"Storage sandbox path '{entry.FullName}' contains a symbolic link or reparse point.");
+        }
     }
 
     private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(m_disposed, this);

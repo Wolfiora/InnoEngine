@@ -34,7 +34,8 @@ internal interface IIndexedObjectStore
 /// <typeparam name="T">
 /// The stored reference type.
 /// </typeparam>
-public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T : class
+public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
+    where T : class
 {
     private readonly WeakReference<IIndexedObjectStore> m_storeRef;
     private readonly List<T> m_activeList = new();
@@ -130,7 +131,9 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
             m_handleByItem.Clear();
             m_denseToSlot.Clear();
             foreach (var index in m_indexes.Values)
+            {
                 index.Clear();
+            }
             BumpVersion();
         }
         finally
@@ -151,7 +154,9 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
     public IndexedObjectEntry<T> Add(T item)
     {
         if (item == null)
+        {
             throw new ArgumentNullException(nameof(item));
+        }
 
         m_lock.EnterWriteLock();
         try
@@ -188,16 +193,22 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
     public bool Remove(T item)
     {
         if (item == null)
+        {
             throw new ArgumentNullException(nameof(item));
+        }
 
         m_lock.EnterWriteLock();
         try
         {
             if (!m_activeIndex.TryGetValue(item, out var index))
+            {
                 return false;
+            }
 
             foreach (var objectIndex in m_indexes.Values)
+            {
                 objectIndex.Remove(item);
+            }
 
             var lastIndex = m_activeList.Count - 1;
             var lastItem = m_activeList[lastIndex];
@@ -233,10 +244,13 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore where T 
     private void EnsureVersion(int expected)
     {
         if (Volatile.Read(ref m_version) != expected)
+        {
             throw new InvalidOperationException("Collection was modified during enumeration.");
+        }
     }
 
-    internal sealed class ReferenceEqualityComparer<TItem> : IEqualityComparer<TItem> where TItem : class
+    internal sealed class ReferenceEqualityComparer<TItem> : IEqualityComparer<TItem>
+        where TItem : class
     {
         /// <summary>
         /// The instance value used as part of this type's public representation.

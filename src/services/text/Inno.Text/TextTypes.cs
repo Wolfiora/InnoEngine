@@ -94,14 +94,22 @@ public readonly record struct TextStyle
         float letterSpacing = 0f
     ) {
         if (!float.IsFinite(fontSize) || fontSize <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(fontSize));
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(faceIndex);
         if (weight is < 1 or > 1000)
+        {
             throw new ArgumentOutOfRangeException(nameof(weight));
+        }
         if (!Enum.IsDefined(style))
+        {
             throw new ArgumentOutOfRangeException(nameof(style));
+        }
         if (!float.IsFinite(letterSpacing))
+        {
             throw new ArgumentOutOfRangeException(nameof(letterSpacing));
+        }
         this.fontSize = fontSize;
         this.faceIndex = faceIndex;
         this.weight = weight;
@@ -113,22 +121,27 @@ public readonly record struct TextStyle
     /// Gets a 16-pixel regular default style.
     /// </summary>
     public static TextStyle defaultValue { get; } = new(16f);
+
     /// <summary>
     /// Gets the logical font size.
     /// </summary>
     public float fontSize { get; }
+
     /// <summary>
     /// Gets the collection face index.
     /// </summary>
     public int faceIndex { get; }
+
     /// <summary>
     /// Gets the CSS-compatible font weight.
     /// </summary>
     public int weight { get; }
+
     /// <summary>
     /// Gets the requested face slant.
     /// </summary>
     public TextFontStyle style { get; }
+
     /// <summary>
     /// Gets additional spacing appended to each glyph advance.
     /// </summary>
@@ -158,7 +171,9 @@ public readonly record struct TextShapingOptions
         string? script = null
     ) {
         if (!Enum.IsDefined(direction))
+        {
             throw new ArgumentOutOfRangeException(nameof(direction));
+        }
         this.direction = direction;
         this.language = string.IsNullOrWhiteSpace(language) ? null : language.Trim();
         this.script = string.IsNullOrWhiteSpace(script) ? null : script.Trim();
@@ -168,14 +183,17 @@ public readonly record struct TextShapingOptions
     /// Gets automatic shaping hints.
     /// </summary>
     public static TextShapingOptions automatic { get; } = new();
+
     /// <summary>
     /// Gets the requested logical direction.
     /// </summary>
     public TextDirection direction { get; }
+
     /// <summary>
     /// Gets the optional BCP 47 language code.
     /// </summary>
     public string? language { get; }
+
     /// <summary>
     /// Gets the optional ISO 15924 script code.
     /// </summary>
@@ -269,9 +287,13 @@ public sealed class TextLayout
     ) {
         ArgumentNullException.ThrowIfNull(glyphs);
         if (!float.IsFinite(width) || width < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(width));
+        }
         if (!float.IsFinite(height) || height < 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(height));
+        }
         m_glyphs = [..glyphs];
         this.metrics = metrics;
         this.width = width;
@@ -282,14 +304,17 @@ public sealed class TextLayout
     /// Gets the immutable positioned glyph sequence.
     /// </summary>
     public IReadOnlyList<TextGlyph> glyphs => m_glyphs;
+
     /// <summary>
     /// Gets the font metrics used to build this layout.
     /// </summary>
     public TextMetrics metrics { get; }
+
     /// <summary>
     /// Gets the aggregate horizontal advance.
     /// </summary>
     public float width { get; }
+
     /// <summary>
     /// Gets the aggregate line height.
     /// </summary>
@@ -335,9 +360,13 @@ public sealed class GlyphBitmap
         ArgumentOutOfRangeException.ThrowIfNegative(width);
         ArgumentOutOfRangeException.ThrowIfNegative(height);
         if (pixels.Length != checked(width * height))
+        {
             throw new ArgumentException("Glyph coverage length must match its dimensions.", nameof(pixels));
+        }
         if (!float.IsFinite(advanceX))
+        {
             throw new ArgumentOutOfRangeException(nameof(advanceX));
+        }
         this.width = width;
         this.height = height;
         this.bearingX = bearingX;
@@ -350,22 +379,27 @@ public sealed class GlyphBitmap
     /// Gets the bitmap width in pixels.
     /// </summary>
     public int width { get; }
+
     /// <summary>
     /// Gets the bitmap height in pixels.
     /// </summary>
     public int height { get; }
+
     /// <summary>
     /// Gets the horizontal bearing in pixels.
     /// </summary>
     public int bearingX { get; }
+
     /// <summary>
     /// Gets the vertical bearing in pixels.
     /// </summary>
     public int bearingY { get; }
+
     /// <summary>
     /// Gets the horizontal glyph advance.
     /// </summary>
     public float advanceX { get; }
+
     /// <summary>
     /// Gets tightly packed row-major 8-bit coverage.
     /// </summary>

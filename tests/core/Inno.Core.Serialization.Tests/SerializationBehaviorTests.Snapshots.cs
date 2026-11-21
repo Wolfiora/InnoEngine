@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Inno.Core.Serialization.Converters;
 using Xunit;
+using Inno.Core.Serialization.Converters;
 
 namespace Inno.Core.Serialization.Tests;
 
@@ -117,7 +117,9 @@ public sealed partial class SerializationBehaviorTests
     {
         var value = new SnapshotEnvelope { omitState = true };
         for (int index = 0; index < count; index++)
+        {
             value.fields.Add("item-" + index, index);
+        }
         SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(value);
         value.fields.Remove("item-0");
         value.fields.Add("replacement", 91);
@@ -139,8 +141,10 @@ public sealed partial class SerializationBehaviorTests
         value.state.count = 42;
         SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
         byte[] bytes = before.ToArray();
-        Assert.Equal(m_serialization.CapturePropertiesData(value.state),
-            m_serialization.Decode(bytes, reader => reader.Read<byte[]>("state")));
+        Assert.Equal(
+            m_serialization.CapturePropertiesData(value.state),
+            m_serialization.Decode(bytes, reader => reader.Read<byte[]>("state"))
+        );
         value.items.RemoveAt(1);
         value.state.name = "changed";
         SerializationSnapshot after = m_serialization.CaptureSnapshot(value, previous: before);
@@ -208,10 +212,14 @@ public sealed partial class SerializationBehaviorTests
         source.state.bytes = new byte[1024 * 1024];
         SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(source);
         for (int index = 0; index < 8; index++)
+        {
             Assert.Same(snapshot, m_serialization.CaptureSnapshot(source, previous: snapshot));
+        }
         long started = GC.GetAllocatedBytesForCurrentThread();
         for (int index = 0; index < 16; index++)
+        {
             Assert.Same(snapshot, m_serialization.CaptureSnapshot(source, previous: snapshot));
+        }
         long allocated = (GC.GetAllocatedBytesForCurrentThread() - started) / 16;
         Assert.True(allocated < 16_384, $"An unchanged 1 MiB payload allocated {allocated} bytes per capture.");
         source.state.bytes[500] = 12;
@@ -277,7 +285,9 @@ internal sealed class SnapshotEnvelopeConverter : SerializationConverter<Snapsho
         value.writeCalls++;
         value.observedTypeGeneration = writer.typeSnapshot.version;
         foreach (var pair in value.fields)
+        {
             writer.Write(pair.Key, pair.Value);
+        }
         if (value.duplicate)
         {
             writer.Write("duplicate", 1);
@@ -292,7 +302,9 @@ internal sealed class SnapshotEnvelopeConverter : SerializationConverter<Snapsho
             ) => child.Write("value", number));
         }
         if (value.fail)
+        {
             throw new InvalidOperationException("Capture rejected by its source converter.");
+        }
     }
 
     public override SnapshotEnvelope Read(SerializationReader reader) => throw new NotSupportedException();

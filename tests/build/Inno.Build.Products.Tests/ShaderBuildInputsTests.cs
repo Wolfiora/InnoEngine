@@ -3,14 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Assets.Pipeline;
-using Inno.Build.Toolchains;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.Bgfx.Shaders;
 using Inno.Core.IO;
 using Inno.Integration.WindowsX64.Bgfx;
 using Inno.Rendering;
-using Xunit;
 
 namespace Inno.Build.Products.Tests;
 
@@ -109,7 +109,13 @@ public sealed class ShaderBuildInputsTests : IDisposable
         ShaderBuildInputs inputs = ShaderBuildInputs.Capture(sources);
         using ProcessOwnedDirectory compilation = await ProcessOwnedDirectory.CreateAsync(Path.Combine(m_root, "requests"));
         Assert.Throws<InvalidDataException>(() => ShaderArtifactBuilder.CompileGraphicsProgram(
-            inputs, compilation, "invalid.ishader", WindowsX64BgfxIntegration.shaderProfile, GraphicsApi.Direct3D12, output));
+            inputs,
+            compilation,
+            "invalid.ishader",
+            WindowsX64BgfxIntegration.shaderProfile,
+            GraphicsApi.Direct3D12,
+            output
+        ));
         Assert.Equal(original, Directory.GetFiles(sources));
         Assert.Equal(bytes, File.ReadAllBytes(original.Single()));
         Assert.Equal("last good artifact", File.ReadAllText(output));
@@ -127,8 +133,14 @@ public sealed class ShaderBuildInputsTests : IDisposable
         File.WriteAllText(output, "last good artifact");
         using ProcessOwnedDirectory compilation = await ProcessOwnedDirectory.CreateAsync(Path.Combine(m_root, "requests"));
         Assert.Throws<OperationCanceledException>(() => ShaderArtifactBuilder.CompileGraphicsProgram(
-            inputs, compilation, "graph.ishader", WindowsX64BgfxIntegration.shaderProfile, GraphicsApi.Direct3D12, output,
-            cancellationToken: canceled.Token));
+            inputs,
+            compilation,
+            "graph.ishader",
+            WindowsX64BgfxIntegration.shaderProfile,
+            GraphicsApi.Direct3D12,
+            output,
+            cancellationToken: canceled.Token
+        ));
         Assert.Equal("last good artifact", File.ReadAllText(output));
     }
 

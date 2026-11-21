@@ -25,11 +25,12 @@ internal static class ValidationCiContracts
 
     internal static bool Owns(string path)
         => path == C_GATE || path.StartsWith(C_DIRECTORY, StringComparison.Ordinal)
-            && !path[C_DIRECTORY.Length..].Contains('/')
-            && path.EndsWith(".Tests.ps1", StringComparison.Ordinal);
+                             && !path[C_DIRECTORY.Length..].Contains('/')
+                             && path.EndsWith(".Tests.ps1", StringComparison.Ordinal);
 
     internal static string[] Discover(string root)
         => Directory.GetFiles(Path.Combine(root, "tests", "ci"))
             .Where(path => path.EndsWith(".Tests.ps1", StringComparison.Ordinal))
-            .Order(StringComparer.Ordinal).ToArray();
+            .Order(StringComparer.Ordinal)
+            .ToArray();
 }

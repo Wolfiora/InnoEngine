@@ -39,7 +39,9 @@ public sealed record MiniAudioDeviceOptions
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(channels);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         if (listenerCount is < 1 or > 4)
+        {
             throw new ArgumentOutOfRangeException(nameof(listenerCount), "MiniAudio supports between one and four listeners.");
+        }
         return this;
     }
 }

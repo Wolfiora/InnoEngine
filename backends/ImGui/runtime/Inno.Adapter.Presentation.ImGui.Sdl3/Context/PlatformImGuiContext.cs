@@ -5,10 +5,10 @@ using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
-
 using Inno.Adapter.Platform.Sdl3;
-using Inno.Native.Sdl3;
 using Inno.Native.ImGui;
+using Inno.Native.Sdl3;
+
 using ImGuiNative = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Adapter.Presentation.ImGui;
@@ -80,8 +80,8 @@ public sealed unsafe partial class PlatformImGuiContext
             // docking, and the official SDL backend disables this capability on macOS. Let Dear ImGui
             // use its viewport heuristic instead of publishing incorrect hovered viewport identities.
             io->BackendFlags |= (int)ImGuiBackendFlags.HasMouseCursors
-                | (int)ImGuiBackendFlags.HasSetMousePos
-                | (int)ImGuiBackendFlags.RendererHasTextures;
+                                | (int)ImGuiBackendFlags.HasSetMousePos
+                                | (int)ImGuiBackendFlags.RendererHasTextures;
             io->ConfigFlags |= (int)ImGuiConfigFlags.NavEnableKeyboard;
 
             if (enableDocking)
@@ -107,7 +107,9 @@ public sealed unsafe partial class PlatformImGuiContext
             UpdateDisplayMetrics(io);
             m_renderer = renderer ?? new PlatformImGuiSdlRenderer(window);
             if (m_renderer.supportsVertexOffsets)
+            {
                 io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasVtxOffset;
+            }
             m_viewports = enableViewports ? new PlatformImGuiViewportBackend(application, window, m_renderer) : null;
             RegisterClipboardCallbacks();
         }
@@ -117,7 +119,9 @@ public sealed unsafe partial class PlatformImGuiContext
             ImGuiFont.UnregisterContext(m_context);
             ImGuiNative.Raw.DestroyContext(m_context);
             if (renderer is null)
+            {
                 m_renderer?.Dispose();
+            }
             throw;
         }
     }
@@ -149,7 +153,9 @@ public sealed unsafe partial class PlatformImGuiContext
             return true;
         }
         if (m_viewports is not null && m_viewports.TryGetWindowId(viewportId, out windowId))
+        {
             return true;
+        }
         windowId = 0;
         return false;
     }
@@ -164,7 +170,9 @@ public sealed unsafe partial class PlatformImGuiContext
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_hasStartedFrame)
+        {
             throw new InvalidOperationException("The ImGui layout file must be configured before the first frame.");
+        }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         var io = ImGuiNative.Raw.GetIO();
@@ -182,7 +190,9 @@ public sealed unsafe partial class PlatformImGuiContext
         string fullPath = Path.GetFullPath(filePath);
         string? directory = Path.GetDirectoryName(fullPath);
         if (!string.IsNullOrWhiteSpace(directory))
+        {
             Directory.CreateDirectory(directory);
+        }
         m_iniFilename = Marshal.StringToCoTaskMemUTF8(fullPath);
         SetIniFilename(io, m_iniFilename);
     }
@@ -197,14 +207,20 @@ public sealed unsafe partial class PlatformImGuiContext
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_hasStartedFrame)
+        {
             throw new InvalidOperationException("ImGui layout settings must be loaded before the first frame.");
+        }
         if (string.IsNullOrEmpty(settings))
+        {
             return;
+        }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         byte[] encoded = Encoding.UTF8.GetBytes(settings);
         fixed (byte* data = encoded)
+        {
             ImGuiNative.Raw.LoadIniSettingsFromMemory((sbyte*)data, (uint)encoded.Length);
+        }
     }
 
     /// <summary>
@@ -239,11 +255,7 @@ public sealed unsafe partial class PlatformImGuiContext
             uv1 = Vector2.One;
         }
 
-        ImGuiNative.Image(
-            new ImTextureRef { TexID = texture.value },
-            size,
-            uv0,
-            uv1);
+        ImGuiNative.Image(new ImTextureRef { TexID = texture.value }, size, uv0, uv1);
     }
 
     /// <summary>
@@ -301,27 +313,37 @@ public sealed unsafe partial class PlatformImGuiContext
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_hasStartedFrame)
+        {
             throw new InvalidOperationException("Font styles must be registered before the first ImGui frame.");
+        }
         ImGuiFont.ValidateStyle(style);
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
         if (!float.IsFinite(fontSizePixels) || fontSizePixels <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(fontSizePixels));
+        }
 
         string fullPath = Path.GetFullPath(filePath);
         if (!File.Exists(fullPath))
+        {
             throw new FileNotFoundException("The font file does not exist.", fullPath);
+        }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         ImGuiIO* io = ImGuiNative.Raw.GetIO();
         ImFont* loadedFont = LoadFont(io->Fonts, fullPath, fontSizePixels);
         if (loadedFont == null)
+        {
             throw new InvalidOperationException($"Could not load the font '{fullPath}'.");
+        }
 
         ResolveFontPaths(out _, out List<string> iconFontPaths);
         MergeIconFontsIntoCurrentBaseFont(io->Fonts, iconFontPaths);
         ImGuiFont.RegisterStyle(m_context, style, (nint)loadedFont);
         if (style == ImGuiFontStyle.Regular)
+        {
             io->FontDefault = loadedFont;
+        }
     }
 
     private static void ConfigureFonts(
@@ -366,7 +388,9 @@ public sealed unsafe partial class PlatformImGuiContext
 
         io->FontDefault = defaultFont;
         if (defaultFont != null && !styleFonts.ContainsKey(ImGuiFontStyle.Regular))
+        {
             styleFonts[ImGuiFontStyle.Regular] = (nint)defaultFont;
+        }
         ImGuiFont.RegisterContext(context, styleFonts);
     }
 
@@ -375,8 +399,8 @@ public sealed unsafe partial class PlatformImGuiContext
         string name = Path.GetFileNameWithoutExtension(fontPath);
         bool bold = name.Contains("Bold", StringComparison.OrdinalIgnoreCase);
         bool italic = name.Contains("Italic", StringComparison.OrdinalIgnoreCase);
-        return (bold ? ImGuiFontStyle.Bold : ImGuiFontStyle.Regular) |
-               (italic ? ImGuiFontStyle.Italic : ImGuiFontStyle.Regular);
+        return (bold ? ImGuiFontStyle.Bold : ImGuiFontStyle.Regular)
+               | (italic ? ImGuiFontStyle.Italic : ImGuiFontStyle.Regular);
     }
 
     private static int FindPreferredFontIndex(List<string> fontPaths)
@@ -459,8 +483,8 @@ public sealed unsafe partial class PlatformImGuiContext
         {
             var extension = Path.GetExtension(fontFile);
             if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase)
-                && !extension.Equals(".otf", StringComparison.OrdinalIgnoreCase))
-            {
+                && !extension.Equals(".otf", StringComparison.OrdinalIgnoreCase)
+            ) {
                 continue;
             }
 
@@ -520,7 +544,9 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         if (m_enableSmoothResize)
+        {
             RefreshLiveResizeHoverLock(eventType, eventWindowId, ref sdlEvent);
+        }
 
         m_viewports?.ProcessEvent(ref sdlEvent, eventWindowId);
 
@@ -542,7 +568,13 @@ public sealed unsafe partial class PlatformImGuiContext
                 if (key != ImGuiKey.None)
                 {
                     ImGuiNative.Raw.AddKeyEvent(io, key, down ? (byte)1 : (byte)0);
-                    ImGuiNative.Raw.SetKeyEventNativeData(io, key, (int)sdlEvent.Key.Key, (int)sdlEvent.Key.Scancode, (int)sdlEvent.Key.Scancode);
+                    ImGuiNative.Raw.SetKeyEventNativeData(
+                        io,
+                        key,
+                        (int)sdlEvent.Key.Key,
+                        (int)sdlEvent.Key.Scancode,
+                        (int)sdlEvent.Key.Scancode
+                    );
                 }
                 break;
             }
@@ -550,7 +582,9 @@ public sealed unsafe partial class PlatformImGuiContext
             case SDLEventType.TextInput:
             {
                 if (sdlEvent.Text.Text != null)
+                {
                     ImGuiNative.Raw.AddInputCharactersUTF8(io, sdlEvent.Text.Text);
+                }
                 break;
             }
 
@@ -559,11 +593,7 @@ public sealed unsafe partial class PlatformImGuiContext
                 m_mouseWindowId = eventWindowId;
                 m_mousePendingLeaveFrame = 0;
                 m_mousePendingLeaveWindowId = 0;
-                Vector2 mousePosition = GetEventMousePosition(
-                    io,
-                    eventWindowId,
-                    sdlEvent.Motion.X,
-                    sdlEvent.Motion.Y);
+                Vector2 mousePosition = GetEventMousePosition(io, eventWindowId, sdlEvent.Motion.X, sdlEvent.Motion.Y);
                 ImGuiNative.Raw.AddMousePosEvent(io, mousePosition.X, mousePosition.Y);
                 break;
             }
@@ -576,9 +606,13 @@ public sealed unsafe partial class PlatformImGuiContext
                 {
                     int mask = 1 << button;
                     if (down)
+                    {
                         m_mouseButtonsDown |= mask;
+                    }
                     else
+                    {
                         m_mouseButtonsDown &= ~mask;
+                    }
                     ImGuiNative.Raw.AddMouseButtonEvent(io, button, down ? (byte)1 : (byte)0);
                     // Docking can destroy the source viewport before SDL emits MouseUp. Capturing
                     // the mouse keeps the complete press/release sequence inside this application.
@@ -594,9 +628,11 @@ public sealed unsafe partial class PlatformImGuiContext
 
                 wheelX *= m_interaction.horizontalWheelDirection;
 
-                ImGuiNative.Raw.AddMouseWheelEvent(io,
+                ImGuiNative.Raw.AddMouseWheelEvent(
+                    io,
                     wheelX * DEFAULT_MOUSE_SCROLLING_UNITS,
-                    wheelY * DEFAULT_MOUSE_SCROLLING_UNITS);
+                    wheelY * DEFAULT_MOUSE_SCROLLING_UNITS
+                );
                 break;
             }
 
@@ -677,7 +713,9 @@ public sealed unsafe partial class PlatformImGuiContext
         ArgumentNullException.ThrowIfNull(drawFrame);
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_isFrameOperationActive || m_isFrameActive)
+        {
             throw new InvalidOperationException("An ImGui frame cannot be reentered.");
+        }
 
         var now = m_frameTimer.Elapsed;
         var deltaSeconds = (float)(now - m_lastFrameTime).TotalSeconds;
@@ -713,7 +751,9 @@ public sealed unsafe partial class PlatformImGuiContext
     private void AbortNativeFrame()
     {
         if (m_disposed || m_context->WithinFrameScope == 0)
+        {
             return;
+        }
         ImGuiNativeContext* previous = ImGuiNative.Raw.GetCurrentContext();
         ImGuiNative.Raw.SetCurrentContext(m_context);
         try
@@ -723,7 +763,9 @@ public sealed unsafe partial class PlatformImGuiContext
         finally
         {
             if (previous != m_context)
+            {
                 ImGuiNative.Raw.SetCurrentContext(previous);
+            }
         }
     }
 
@@ -759,8 +801,8 @@ public sealed unsafe partial class PlatformImGuiContext
         var mainViewport = ImGuiNative.Raw.GetMainViewport();
         if (m_liveResizeLockedWindowId != 0
             && (io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0
-            && mainViewport != null)
-        {
+            && mainViewport != null
+        ) {
             mainViewport->Flags &= ~(int)ImGuiViewportFlags.CanHostOtherWindows;
         }
     }
@@ -832,8 +874,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
         if (eventType == SDLEventType.WindowExposed
             && eventWindowId == m_liveResizeLockedWindowId
-            && sdlEvent.Window.Data1 == 0)
-        {
+            && sdlEvent.Window.Data1 == 0
+        ) {
             m_liveResizeLockedWindowId = 0;
             return;
         }
@@ -862,7 +904,9 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         if (m_isFrameOperationActive)
+        {
             throw new InvalidOperationException("A presentation context cannot retire during its frame operation.");
+        }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
         var io = ImGuiNative.Raw.GetIO();
@@ -983,7 +1027,9 @@ public sealed unsafe partial class PlatformImGuiContext
         Encoding.UTF8.GetBytes(filePath, encoded);
         encoded[length] = 0;
         fixed (byte* filename = encoded)
+        {
             return ImGuiNative.Raw.AddFontFromFileTTF(fonts, (sbyte*)filename, fontSizePixels, config, null);
+        }
     }
 
     private static unsafe ImFont* LoadDefaultFont(ImFontAtlas* fonts) => ImGuiNative.Raw.AddFontDefault(fonts, null);
@@ -1038,14 +1084,18 @@ public sealed unsafe partial class PlatformImGuiContext
                 m_renderer.SynchronizeMainOutput(pixelWidth, pixelHeight);
             }
             else
+            {
                 m_viewports?.SynchronizeWindow(windowId);
+            }
         }
     }
 
     private void ReconcileMouseButtons(ImGuiIO* io)
     {
         if (m_mouseButtonsDown == 0)
+        {
             return;
+        }
 
         float mouseX = 0f;
         float mouseY = 0f;
@@ -1062,11 +1112,15 @@ public sealed unsafe partial class PlatformImGuiContext
         {
             int trackedMask = 1 << button;
             if ((m_mouseButtonsDown & trackedMask) == 0)
+            {
                 continue;
+            }
 
             SDLMouseButtonFlags sdlMask = (SDLMouseButtonFlags)(1u << (sdlButtons[button] - 1));
             if ((currentButtons & sdlMask) != 0)
+            {
                 continue;
+            }
 
             // Recover when a destroyed viewport prevented the corresponding MouseUp event from
             // reaching the event queue. Without this release ImGui keeps its active drag forever.
@@ -1075,7 +1129,9 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         if (m_mouseButtonsDown == 0)
+        {
             _ = SDL.CaptureMouse(false);
+        }
     }
 
     private static Vector2 GetEventMousePosition(
@@ -1105,12 +1161,12 @@ public sealed unsafe partial class PlatformImGuiContext
     private void FlushPendingMouseLeave(ImGuiIO* io)
     {
         if (!ShouldFlushPendingMouseLeave(
-                m_mousePendingLeaveFrame,
-                ImGuiNative.GetFrameCount(),
-                m_mouseButtonsDown,
-                m_mousePendingLeaveWindowId,
-                m_liveResizeLockedWindowId))
-        {
+            m_mousePendingLeaveFrame,
+            ImGuiNative.GetFrameCount(),
+            m_mouseButtonsDown,
+            m_mousePendingLeaveWindowId,
+            m_liveResizeLockedWindowId
+        )) {
             return;
         }
 
@@ -1122,10 +1178,10 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private void ReleaseCompletedLiveResizeHoverLock()
     {
-        if (m_liveResizeLockedWindowId == 0 ||
-            (m_frameTimer.Elapsed - m_lastLiveResizeLockTime).TotalSeconds <=
-            LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS)
-        {
+        if (m_liveResizeLockedWindowId == 0
+            || (m_frameTimer.Elapsed - m_lastLiveResizeLockTime).TotalSeconds
+               <= LIVE_RESIZE_HOVER_LOCK_TIMEOUT_SECONDS
+        ) {
             return;
         }
 
@@ -1133,7 +1189,9 @@ public sealed unsafe partial class PlatformImGuiContext
         float mouseY = 0f;
         SDLMouseButtonFlags mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         if ((mouseButtons & SDLMouseButtonFlags.Left) == 0)
+        {
             m_liveResizeLockedWindowId = 0;
+        }
     }
 
     private static bool ShouldFlushPendingMouseLeave(
@@ -1144,7 +1202,9 @@ public sealed unsafe partial class PlatformImGuiContext
         uint liveResizeLockedWindowId
     ) {
         if (pendingFrame == 0 || mouseButtonsDown != 0 || currentFrame < pendingFrame)
+        {
             return false;
+        }
 
         return liveResizeLockedWindowId == 0 || pendingWindowId != liveResizeLockedWindowId;
     }
@@ -1400,5 +1460,4 @@ public sealed unsafe partial class PlatformImGuiContext
                 return false;
         }
     }
-
 }

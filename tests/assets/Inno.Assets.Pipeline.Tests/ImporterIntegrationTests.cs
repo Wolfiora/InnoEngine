@@ -1,19 +1,17 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
 using System.Text;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-
-using Xunit;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 
 namespace Inno.Assets.Pipeline.Tests;
 
@@ -31,7 +29,9 @@ public sealed class ImporterIntegrationTests : IDisposable
     {
         m_identityScope = m_identities.EnterScope();
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(ImporterIntegrationTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ImporterIntegrationTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -52,8 +52,10 @@ public sealed class ImporterIntegrationTests : IDisposable
     [InlineData("Text/a.yml", "yaml")]
     [InlineData("Text/a.md", "markdown")]
     [InlineData("Text/a.xml", "xml")]
-    public void TextExtensions_AreAutomaticallyDiscovered(string relativePath, string languageHint)
-    {
+    public void TextExtensions_AreAutomaticallyDiscovered(
+        string relativePath,
+        string languageHint
+    ) {
         using TestWorkspace workspace = new();
         workspace.Write(relativePath, Encoding.UTF8.GetBytes("content"));
         using var loader = new AssetLoader(
@@ -63,7 +65,8 @@ public sealed class ImporterIntegrationTests : IDisposable
             m_diagnostics,
             m_logs,
             workspace.assetRoot,
-            workspace.libraryRoot);
+            workspace.libraryRoot
+        );
 
         AssetPath path = AssetPath.Project(relativePath);
         Assert.True(loader.Import(path));
@@ -84,7 +87,8 @@ public sealed class ImporterIntegrationTests : IDisposable
             m_diagnostics,
             m_logs,
             workspace.assetRoot,
-            workspace.libraryRoot);
+            workspace.libraryRoot
+        );
 
         BinaryAsset binary = Assert.IsType<BinaryAsset>(loader.Load(AssetPath.Project("Data/blob.bytes"), typeof(BinaryAsset)));
 
@@ -102,7 +106,8 @@ public sealed class ImporterIntegrationTests : IDisposable
             m_diagnostics,
             m_logs,
             workspace.assetRoot,
-            workspace.libraryRoot);
+            workspace.libraryRoot
+        );
         var source = new TextAsset("saved", "plain");
 
         Assert.True(loader.Save(AssetPath.Project("Text/saved.txt"), source));
@@ -117,7 +122,8 @@ public sealed class ImporterIntegrationTests : IDisposable
         private readonly string m_root = Path.Combine(
             Path.GetTempPath(),
             "InnoAssetsImporterTests",
-            Guid.NewGuid().ToString("N"));
+            Guid.NewGuid().ToString("N")
+        );
 
         internal TestWorkspace()
         {
@@ -128,8 +134,10 @@ public sealed class ImporterIntegrationTests : IDisposable
         internal string assetRoot => Path.Combine(m_root, "Assets");
         internal string libraryRoot => Path.Combine(m_root, "Library");
 
-        internal void Write(string relativePath, byte[] bytes)
-        {
+        internal void Write(
+            string relativePath,
+            byte[] bytes
+        ) {
             string path = Path.Combine(assetRoot, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             System.IO.File.WriteAllBytes(path, bytes);
@@ -138,7 +146,9 @@ public sealed class ImporterIntegrationTests : IDisposable
         public void Dispose()
         {
             if (Directory.Exists(m_root))
+            {
                 Directory.Delete(m_root, recursive: true);
+            }
         }
     }
 }

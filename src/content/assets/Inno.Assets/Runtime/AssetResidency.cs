@@ -29,8 +29,7 @@ public interface IAssetResidency
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         AssetPath path,
         CancellationToken cancellationToken = default
-    )
-        where TAsset : AssetObject;
+    ) where TAsset : AssetObject;
 
     /// <summary>
     /// Acquires a canonical asset by persistent identity and keeps it resident until release.
@@ -50,8 +49,7 @@ public interface IAssetResidency
     ValueTask<AssetLease<TAsset>> AcquireAsync<TAsset>(
         Guid persistentId,
         CancellationToken cancellationToken = default
-    )
-        where TAsset : AssetObject;
+    ) where TAsset : AssetObject;
 
     /// <summary>
     /// Acquires one verified immutable artifact output.
@@ -97,8 +95,7 @@ public abstract class AssetResidencyProvider
     protected static AssetLease<TAsset> CreateAssetLease<TAsset>(
         TAsset asset,
         Action release
-    )
-        where TAsset : AssetObject
+    ) where TAsset : AssetObject
         => new(asset, release);
 
     /// <summary>
@@ -216,12 +213,16 @@ public sealed class ArtifactLease : IDisposable
     {
         long length = info.length;
         if (length < 0 || length > Array.MaxLength)
+        {
             throw new InvalidDataException("The artifact payload exceeds the supported array budget.");
+        }
         using Stream input = OpenRead();
         byte[] bytes = new byte[(int)length];
         input.ReadExactly(bytes);
         if (input.ReadByte() != -1)
+        {
             throw new InvalidDataException("The artifact payload exceeds its indexed length.");
+        }
         return bytes;
     }
 
@@ -242,7 +243,9 @@ public sealed class ArtifactLease : IDisposable
     public void Dispose()
     {
         lock (m_sync)
+        {
             m_openRead = null;
+        }
         m_residency.Dispose();
     }
 }

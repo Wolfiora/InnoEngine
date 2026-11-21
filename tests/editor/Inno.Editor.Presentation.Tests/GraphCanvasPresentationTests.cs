@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using Xunit;
 using Inno.Core.Graphs;
 using Inno.Editor.Graph;
 using Inno.Editor.Graph.ImGui;
-using Xunit;
 
 namespace Inno.Editor.Presentation.Tests;
 
@@ -32,8 +32,14 @@ public sealed class GraphCanvasPresentationTests
         var state = new GraphCanvasState();
         var view = new GraphCanvasView(state, Vector2.Zero, new(800f, 600f));
         GraphNodeId id = new("workflow.output");
-        var port = new GraphCanvasPort(new(id, new("next")), GraphPortDirection.Output, new(200f, 40f), "Continue",
-            isMissing: true, labelBounds: (new(100f, 28f), new(200f, 52f)));
+        var port = new GraphCanvasPort(
+            new(id, new("next")),
+            GraphPortDirection.Output,
+            new(200f, 40f),
+            "Continue",
+            isMissing: true,
+            labelBounds: (new(100f, 28f), new(200f, 52f))
+        );
         var node = new GraphCanvasNode(id, new(10f, 10f), new(200f, 100f), 24f, "Flow step", [port]);
         var layout = new GraphCanvasLayout();
         _ = layout.SetNodes([node]);
@@ -47,7 +53,8 @@ public sealed class GraphCanvasPresentationTests
     public void ChangingOneOfTwoThousandNodesPreservesOtherGeometry()
     {
         GraphCanvasNode[] nodes = Enumerable.Range(0, 2000)
-            .Select(index => Node("workflow." + index, new(index * 220f, 0f))).ToArray();
+            .Select(index => Node("workflow." + index, new(index * 220f, 0f)))
+            .ToArray();
         var layout = new GraphCanvasLayout();
         Assert.Equal(2000, layout.SetNodes(nodes));
         GraphCanvasNode retained = nodes[999];
@@ -67,8 +74,14 @@ public sealed class GraphCanvasPresentationTests
         Assert.Throws<ArgumentException>(() => layout.SetNodes([node, node]));
         Assert.Same(node, Assert.Single(layout.nodes));
         Assert.Throws<ArgumentOutOfRangeException>(() => new GraphCanvasNode(node.id, default, new(float.NaN, 10f), 2f, "Invalid", []));
-        Assert.Throws<ArgumentException>(() => new GraphCanvasNode(node.id, default, new(200f, 100f), 24f, "Invalid",
-            [new GraphCanvasPort(new(new("foreign"), new("port")), GraphPortDirection.Input, Vector2.Zero, "Foreign")]));
+        Assert.Throws<ArgumentException>(() => new GraphCanvasNode(
+            node.id,
+            default,
+            new(200f, 100f),
+            24f,
+            "Invalid",
+            [new GraphCanvasPort(new(new("foreign"), new("port")), GraphPortDirection.Input, Vector2.Zero, "Foreign")]
+        ));
     }
 
     private static GraphCanvasNode Node(

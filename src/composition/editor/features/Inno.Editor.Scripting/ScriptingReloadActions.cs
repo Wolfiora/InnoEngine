@@ -1,6 +1,7 @@
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Scripting;
+
 [EditorAction(ScriptingInteractionIds.C_RELOAD_SCRIPTING, ScriptingInteractionIds.C_MAIN_MENU_AREA)]
 [EditorMenu(ScriptingInteractionIds.C_MAIN_MENU_AREA, "Tools/Scripting/Reload Scripts", order: 100)]
 internal sealed class ReloadScriptingAction(EditorScripting scripting) : EditorAction
@@ -14,7 +15,9 @@ internal sealed class ReloadScriptingAction(EditorScripting scripting) : EditorA
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => scripting.canReload ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext context)
+        => scripting.canReload ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -37,7 +40,9 @@ internal sealed class ReloadPluginsAction(EditorScripting scripting) : EditorAct
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => scripting.canReload ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext context)
+        => scripting.canReload ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>

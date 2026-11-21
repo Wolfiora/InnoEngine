@@ -23,8 +23,8 @@ public sealed class InspectorAttributeDrawContext
         this.member = member ?? throw new ArgumentNullException(nameof(member));
         this.property = property;
         this.path = string.IsNullOrWhiteSpace(path)
-            ? throw new ArgumentException("The property path is required.", nameof(path))
-            : path;
+                    ? throw new ArgumentException("The property path is required.", nameof(path))
+                    : path;
         this.label = label ?? throw new ArgumentNullException(nameof(label));
         this.isReadOnly = isReadOnly;
     }
@@ -99,25 +99,31 @@ public sealed class InspectorAttributeDrawContext
     public object? GetSiblingValue(string memberName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(memberName);
-        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public |
-                                   BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public
+                                   | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
         for (Type? type = owner.GetType(); type is not null && type != typeof(object); type = type.BaseType)
         {
             FieldInfo? field = type.GetField(memberName, flags);
             if (field is not null)
+            {
                 return field.GetValue(owner);
+            }
             PropertyInfo? candidate = type.GetProperty(memberName, flags);
             if (candidate is null)
+            {
                 continue;
+            }
             if (candidate.GetIndexParameters().Length != 0 || candidate.GetGetMethod(true) is null)
             {
                 throw new InvalidOperationException(
-                    $"Inspector condition member '{type.FullName}.{memberName}' is not readable.");
+                    $"Inspector condition member '{type.FullName}.{memberName}' is not readable."
+                );
             }
             return candidate.GetValue(owner);
         }
         throw new InvalidOperationException(
-            $"Inspector condition member '{owner.GetType().FullName}.{memberName}' does not exist.");
+            $"Inspector condition member '{owner.GetType().FullName}.{memberName}' does not exist."
+        );
     }
 
     internal void SelectAttribute(Attribute value) => m_attribute = value ?? throw new ArgumentNullException(nameof(value));

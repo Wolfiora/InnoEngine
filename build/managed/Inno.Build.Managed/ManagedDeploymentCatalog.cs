@@ -23,13 +23,20 @@ public sealed class ManagedDeploymentCatalog
     public ManagedDeploymentCatalog(IReadOnlyList<IManagedDeploymentCompiler> compilers)
     {
         ArgumentNullException.ThrowIfNull(compilers);
-        if (compilers.Count == 0 || compilers.Any(static compiler => compiler is null
-            || string.IsNullOrWhiteSpace(compiler.id.value))
-            || compilers.Select(static compiler => compiler.id).Distinct().Count() != compilers.Count)
+        if (compilers.Count == 0 || compilers.Any(static compiler => (
+            compiler is null
+            || string.IsNullOrWhiteSpace(compiler.id.value)
+        ))
+            || compilers.Select(static compiler => compiler.id).Distinct().Count() != compilers.Count
+        ) {
             throw new ArgumentException("Managed providers require unique valid identities.", nameof(compilers));
+        }
         m_compilers = compilers.ToDictionary(static compiler => compiler.id);
-        availableDeployments = Array.AsReadOnly(compilers.Select(static compiler => compiler.id)
-            .OrderBy(static id => id.value, StringComparer.Ordinal).ToArray());
+        availableDeployments = Array.AsReadOnly(
+            compilers.Select(static compiler => compiler.id)
+                .OrderBy(static id => id.value, StringComparer.Ordinal)
+                .ToArray()
+        );
     }
 
     /// <summary>
@@ -47,8 +54,10 @@ public sealed class ManagedDeploymentCatalog
     /// A new immutable list in stable identity order; unsupported targets produce an empty list.
     /// </returns>
     public IReadOnlyList<ManagedDeploymentId> GetSupportedDeployments(string runtimeIdentifier)
-        => Array.AsReadOnly(availableDeployments.Where(id =>
-            m_compilers[id].capabilities.runtimeIdentifiers.Contains(runtimeIdentifier, StringComparer.Ordinal)).ToArray());
+        => Array.AsReadOnly(
+            availableDeployments.Where(id =>
+                m_compilers[id].capabilities.runtimeIdentifiers.Contains(runtimeIdentifier, StringComparer.Ordinal)).ToArray()
+        );
 
     /// <summary>
     /// Resolves a provider and verifies target support before staging begins.
@@ -70,9 +79,13 @@ public sealed class ManagedDeploymentCatalog
         string runtimeIdentifier
     ) {
         if (!m_compilers.TryGetValue(deployment, out IManagedDeploymentCompiler? compiler))
+        {
             throw new InvalidOperationException($"Managed deployment '{deployment}' is not registered.");
+        }
         if (!compiler.capabilities.runtimeIdentifiers.Contains(runtimeIdentifier, StringComparer.Ordinal))
+        {
             throw new InvalidOperationException($"Managed deployment '{deployment}' does not support '{runtimeIdentifier}'.");
+        }
         return compiler;
     }
 }

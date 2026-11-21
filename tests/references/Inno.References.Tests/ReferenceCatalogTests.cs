@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using Xunit;
 using Inno.Core.Identity;
 using Inno.Extensibility.Reload;
 using Inno.References;
-using Xunit;
 
 namespace Inno.References.Tests;
 
@@ -42,16 +42,11 @@ public sealed class ReferenceCatalogTests
         var target = new Target();
         Assert.True(allocator.Register(target));
         var descriptor = new ReferenceDescriptor(S_KIND, target.identity.persistentId);
-        var catalog = ReferenceCatalog.Create(
-            1,
-            [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
+        var catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var first = new RecordingParticipant("first", events);
         var second = new RecordingParticipant("second", events, failApply: true);
-        var state = new SerializedMissingState(
-            new ReferenceKey(Guid.NewGuid(), "portrait"),
-            descriptor,
-            [1, 2, 3]);
+        var state = new SerializedMissingState(new ReferenceKey(Guid.NewGuid(), "portrait"), descriptor, [1, 2, 3]);
 
         var transaction = new ReferenceRecoveryTransaction(catalog, [state], [first, second]);
         transaction.PrepareForActivation();
@@ -91,8 +86,11 @@ public sealed class ReferenceCatalogTests
     [Fact]
     public void RecoveryRejectsDuplicateSlotsAndOutOfOrderPhases()
     {
-        var state = new SerializedMissingState(new ReferenceKey(Guid.NewGuid(), "asset"),
-            new ReferenceDescriptor(S_KIND, Guid.NewGuid()), []);
+        var state = new SerializedMissingState(
+            new ReferenceKey(Guid.NewGuid(), "asset"),
+            new ReferenceDescriptor(S_KIND, Guid.NewGuid()),
+            []
+        );
         Assert.Throws<ArgumentException>(() => new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [state, state], []));
         var transaction = new ReferenceRecoveryTransaction(ReferenceCatalog.empty, [state], []);
         Assert.Throws<InvalidOperationException>(transaction.Apply);
@@ -102,27 +100,28 @@ public sealed class ReferenceCatalogTests
         transaction.RestorePreviousState();
     }
 
-    private sealed class Target : IdentityObject
-    {
-    }
+    private sealed class Target : IdentityObject;
 
-    private sealed class FixedResolver(ReferenceKindId kindId, RuntimeIdentity? runtimeIdentity) : IReferenceResolver
+    private sealed class FixedResolver(
+        ReferenceKindId kindId,
+        RuntimeIdentity? runtimeIdentity
+    ) : IReferenceResolver
     {
         public ReferenceKindId kindId { get; } = kindId;
 
         public ReferenceResolution Resolve(ReferenceDescriptor descriptor)
             => runtimeIdentity.HasValue
-                ? new ReferenceResolution(descriptor, ReferenceResolutionState.Resolved, runtimeIdentity)
-                : new ReferenceResolution(descriptor, ReferenceResolutionState.Missing);
+               ? new ReferenceResolution(descriptor, ReferenceResolutionState.Resolved, runtimeIdentity)
+               : new ReferenceResolution(descriptor, ReferenceResolutionState.Missing);
     }
 
     private sealed class RecordingParticipant(
         string name,
         ICollection<string> events,
-        bool failApply = false) : IReferenceRecoveryParticipant
+        bool failApply = false
+    ) : IReferenceRecoveryParticipant
     {
-        public void Validate(IReadOnlyList<ReferenceRecoveryChange> changes)
-            => events.Add($"validate:{name}");
+        public void Validate(IReadOnlyList<ReferenceRecoveryChange> changes) => events.Add($"validate:{name}");
 
         public void PrepareForActivation() => events.Add($"prepare:{name}");
 
@@ -130,13 +129,15 @@ public sealed class ReferenceCatalogTests
         {
             events.Add($"apply:{name}");
             if (failApply)
+            {
                 throw new InvalidOperationException("expected apply failure");
+            }
         }
 
-        public void RollbackStructure()
-            => events.Add($"rollback:{name}");
+        public void RollbackStructure() => events.Add($"rollback:{name}");
 
         public void RestorePreviousState() => events.Add($"restore:{name}");
+
         public void Complete() => events.Add($"complete:{name}");
     }
 }

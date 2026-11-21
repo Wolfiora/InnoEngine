@@ -53,14 +53,20 @@ public sealed class NativeBindingProfile
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(targetId);
         if (targetId == "host")
+        {
             throw new ArgumentException("A binding profile requires an explicit engine target.", nameof(targetId));
+        }
         ArgumentNullException.ThrowIfNull(target);
         if (target.id == "host" || string.IsNullOrWhiteSpace(target.id))
+        {
             throw new ArgumentException("Binding profiles require an explicit native ABI.", nameof(target));
+        }
         this.targetId = targetId;
         this.target = target;
         if (importMode is { } selectedImport && !Enum.IsDefined(selectedImport))
+        {
             throw new ArgumentOutOfRangeException(nameof(importMode));
+        }
         this.runtime = runtime;
         this.importMode = importMode;
         this.inputPaths = Array.AsReadOnly((inputPaths ?? []).Select(ValidatePath).ToArray());
@@ -71,18 +77,22 @@ public sealed class NativeBindingProfile
     /// Gets the engine target authorized to consume this profile.
     /// </summary>
     public string targetId { get; }
+
     /// <summary>
     /// Gets the immutable official BGCS target configuration.
     /// </summary>
     public TargetConfiguration target { get; }
+
     /// <summary>
     /// Gets the managed projection runtime, or null for the component's portable default.
     /// </summary>
     public ManagedRuntimeId? runtime { get; }
+
     /// <summary>
     /// Gets the explicit platform import mechanism, or null for the component's mechanism.
     /// </summary>
     public BindingImportMode? importMode { get; }
+
     /// <summary>
     /// Gets the profile's exact checkout implementation inputs.
     /// </summary>
@@ -90,8 +100,8 @@ public sealed class NativeBindingProfile
 
     internal void Configure(BindingHostBuilder builder) => m_configureGenerator?.Invoke(builder);
 
-    internal IEnumerable<System.Reflection.Assembly> GetExtensionAssemblies() =>
-        m_configureGenerator?.GetInvocationList().Select(static action => action.Method.Module.Assembly) ?? [];
+    internal IEnumerable<System.Reflection.Assembly> GetExtensionAssemblies()
+        => m_configureGenerator?.GetInvocationList().Select(static action => action.Method.Module.Assembly) ?? [];
 
     internal GenerationRequest Apply(
         GenerationRequest request,
@@ -101,12 +111,14 @@ public sealed class NativeBindingProfile
     ) {
         TargetConfiguration selected = target;
         if (compiler is not null)
+        {
             selected = selected with
             {
                 settings = selected.settings with
                 {
                     compilerPath = request.configuration.source.language == BGCS.Core.Inputs.SourceLanguage.Cpp
-                        ? compiler.cppCompiler : compiler.cCompiler,
+                                   ? compiler.cppCompiler
+                                   : compiler.cCompiler,
                     sysRoot = compiler.sysRoot,
                     systemIncludeDirectories = compiler.systemIncludeDirectories.ToImmutableArray(),
                     cxxSystemIncludeDirectories = compiler.cppSystemIncludeDirectories.ToImmutableArray(),
@@ -114,29 +126,37 @@ public sealed class NativeBindingProfile
                     arguments = [.. selected.settings.arguments, .. compiler.arguments]
                 }
             };
+        }
         BindingConfiguration config = request.configuration;
-        return request.WithConfiguration(config with
-        {
-            targets = [selected],
-            api = config.api with
+        return request.WithConfiguration(
+            config with
             {
-                runtime = runtime ?? config.api.runtime,
-                importMode = importMode ?? config.api.importMode
-            },
-            library = config.library with { nativeName = options?.bindingLibraryName ?? config.library.nativeName },
-            source = config.source with
-            {
-                includeDirectories = [.. config.source.includeDirectories,
-                    .. (options?.bindingIncludeDirectories ?? []).Select(path => Path.GetFullPath(path, engineRoot))]
+                targets = [selected],
+                api = config.api with
+                {
+                    runtime = runtime ?? config.api.runtime,
+                    importMode = importMode ?? config.api.importMode
+                },
+                library = config.library with { nativeName = options?.bindingLibraryName ?? config.library.nativeName },
+                source = config.source with
+                {
+                    includeDirectories =
+                    [
+                        .. config.source.includeDirectories,
+                        .. (options?.bindingIncludeDirectories ?? []).Select(path => Path.GetFullPath(path, engineRoot))
+                    ]
+                }
             }
-        });
+        );
     }
 
     private static string ValidatePath(string path)
     {
         if (string.IsNullOrWhiteSpace(path) || Path.IsPathFullyQualified(path) || path.Contains(':')
-            || path.Replace('\\', '/').Split('/').Any(static part => part is "" or "." or ".."))
+            || path.Replace('\\', '/').Split('/').Any(static part => part is "" or "." or "..")
+        ) {
             throw new ArgumentException("Binding profile inputs must remain within the checkout.", nameof(path));
+        }
         return path.Replace('\\', '/');
     }
 }

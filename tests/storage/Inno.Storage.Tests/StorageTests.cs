@@ -1,18 +1,17 @@
-using Inno.Core.Logging;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
-using Inno.Runtime.Contracts;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.Execution;
-
-using Inno.Adapter.Storage.FileSystem;
-using Inno.Storage.Runtime;
-using Inno.Runtime;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Storage.FileSystem;
+using Inno.Core.Execution;
+using Inno.Core.Logging;
+using Inno.Runtime;
+using Inno.Runtime.Contracts;
+using Inno.Storage.Runtime;
 
 namespace Inno.Storage.Tests;
 
@@ -85,7 +84,9 @@ public sealed class StorageTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -110,7 +111,9 @@ public sealed class StorageTests
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -143,9 +146,13 @@ public sealed class StorageTests
         finally
         {
             if (Directory.Exists(firstRoot))
+            {
                 Directory.Delete(firstRoot, recursive: true);
+            }
             if (Directory.Exists(secondRoot))
+            {
                 Directory.Delete(secondRoot, recursive: true);
+            }
         }
     }
 
@@ -156,8 +163,11 @@ public sealed class StorageTests
         try
         {
             using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(StorageTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+                .UseMetadataSources(
+                    new DotNetAssemblyCatalogSource(typeof(StorageTests).Assembly),
+                    new ReflectionTypeCatalogSource(),
+                    new ReflectionSerializationMetadataSource()
+                )
                 .Build();
             var options = new RuntimeSessionOptions
             {
@@ -168,22 +178,24 @@ public sealed class StorageTests
                 createSubsystems = owner =>
                 [
                     new StorageRuntimeFactory(context =>
-                        new FileSystemApplicationStorage(Path.Combine(
-                            root, "tests.storage",
-                            "Storage"))),
+                        new FileSystemApplicationStorage(Path.Combine(root, "tests.storage", "Storage"))),
                     new StorageProbeFactory()
                 ]
             };
 
             using (RuntimeSession session = host.CreateSession(options))
+            {
                 session.Tick(0.01f);
+            }
 
             Assert.Throws<InvalidOperationException>(() => _ = StorageExecutionContext.current);
         }
         finally
         {
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -194,15 +206,15 @@ public sealed class StorageTests
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(
             new RuntimeSubsystemId("tests.storage.probe"),
-            dependencies: [new RuntimeSubsystemId("inno.runtime.storage")]);
+            dependencies: [new RuntimeSubsystemId("inno.runtime.storage")]
+        );
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context) => new StorageProbe();
     }
 
     private sealed class StorageProbe : RuntimeSubsystem
     {
-        protected override void OnUpdate(RuntimeFrame frame)
-            => Assert.NotNull(StorageExecutionContext.current);
+        protected override void OnUpdate(RuntimeFrame frame) => Assert.NotNull(StorageExecutionContext.current);
     }
 
     private sealed class PendingStorage : IApplicationStorage, IDisposable
@@ -211,17 +223,37 @@ public sealed class StorageTests
         internal CancellationToken token { get; private set; }
         internal bool disposed { get; private set; }
         internal ReadOnlyMemory<byte> value { get; private set; }
-        public ValueTask WriteAsync(StorageKey key, ReadOnlyMemory<byte> value, CancellationToken cancellationToken = default)
-        {
+
+        public ValueTask WriteAsync(
+            StorageKey key,
+            ReadOnlyMemory<byte> value,
+            CancellationToken cancellationToken = default
+        ) {
             token = cancellationToken;
             this.value = value;
             return new ValueTask(completion.Task);
         }
-        public ValueTask<bool> ExistsAsync(StorageKey key, CancellationToken cancellationToken = default) => ValueTask.FromResult(false);
-        public ValueTask<byte[]?> ReadAsync(StorageKey key, CancellationToken cancellationToken = default) => ValueTask.FromResult<byte[]?>(null);
-        public ValueTask<bool> DeleteAsync(StorageKey key, CancellationToken cancellationToken = default) => ValueTask.FromResult(false);
-        public ValueTask<IReadOnlyList<StorageKey>> ListAsync(StorageKey? prefix = null, CancellationToken cancellationToken = default)
-            => ValueTask.FromResult<IReadOnlyList<StorageKey>>(Array.Empty<StorageKey>());
+
+        public ValueTask<bool> ExistsAsync(
+            StorageKey key,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult(false);
+
+        public ValueTask<byte[]?> ReadAsync(
+            StorageKey key,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult<byte[]?>(null);
+
+        public ValueTask<bool> DeleteAsync(
+            StorageKey key,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult(false);
+
+        public ValueTask<IReadOnlyList<StorageKey>> ListAsync(
+            StorageKey? prefix = null,
+            CancellationToken cancellationToken = default
+        ) => ValueTask.FromResult<IReadOnlyList<StorageKey>>(Array.Empty<StorageKey>());
+
         public void Dispose() => disposed = true;
     }
 }

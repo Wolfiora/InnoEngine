@@ -1,6 +1,6 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
+using Inno.Core.Execution;
 
 namespace Inno.Animation;
 
@@ -30,7 +30,6 @@ public static class AnimationExecutionContext
         ArgumentNullException.ThrowIfNull(animation);
         return S_CURRENT_SCOPE.Enter(animation);
     }
-
 }
 
 /// <summary>
@@ -53,8 +52,7 @@ public static class Animation
     public static AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target
-    )
-        => AnimationExecutionContext.current.Play(clip, target);
+    ) => AnimationExecutionContext.current.Play(clip, target);
 
     /// <summary>
     /// Starts one clip with explicit playback options.
@@ -75,8 +73,7 @@ public static class Animation
         AnimationClipAsset clip,
         AnimationTarget target,
         AnimationPlayOptions options
-    )
-        => AnimationExecutionContext.current.Play(clip, target, options);
+    ) => AnimationExecutionContext.current.Play(clip, target, options);
 
     /// <summary>
     /// Stops one live playback.
@@ -147,6 +144,5 @@ public static class Animation
         AnimationPlaybackHandle handle,
         out AnimationPlaybackState state,
         out float time
-    )
-        => AnimationExecutionContext.current.TryGetState(handle, out state, out time);
+    ) => AnimationExecutionContext.current.TryGetState(handle, out state, out time);
 }

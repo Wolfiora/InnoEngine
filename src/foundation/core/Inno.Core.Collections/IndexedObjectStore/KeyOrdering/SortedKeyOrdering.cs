@@ -2,7 +2,8 @@ using System.Collections.Generic;
 
 namespace Inno.Core.Collections;
 
-internal sealed class SortedKeyOrdering<TKey> : IKeyOrdering<TKey> where TKey : notnull
+internal sealed class SortedKeyOrdering<TKey> : IKeyOrdering<TKey>
+    where TKey : notnull
 {
     private readonly SortedSet<TKey> m_keys;
 
@@ -47,6 +48,8 @@ internal sealed class SortedKeyOrdering<TKey> : IKeyOrdering<TKey> where TKey : 
     public IEnumerable<TKey> Enumerate()
     {
         foreach (var key in m_keys)
+        {
             yield return key;
+        }
     }
 }

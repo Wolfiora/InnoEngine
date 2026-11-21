@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported selectable flags choices at the Editor presentation boundary.
 /// </summary>
@@ -38,5 +39,5 @@ public enum ImGuiSelectableFlags : int
     /// <summary>
     /// Auto-select when moved into, unless Ctrl is held. Automatic when in a BeginMultiSelect() block.
     /// </summary>
-    SelectOnNav = (int)Inno.Native.ImGui.ImGuiSelectableFlags.SelectOnNav,
+    SelectOnNav = (int)Inno.Native.ImGui.ImGuiSelectableFlags.SelectOnNav
 }

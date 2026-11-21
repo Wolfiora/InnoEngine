@@ -1,6 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,13 +5,19 @@ using System.Linq;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed partial class FileBrowserPanel
 {
     private void DrawGridRegion(
@@ -29,7 +32,9 @@ internal sealed partial class FileBrowserPanel
             if (entriesVisible)
             {
                 if (Ui.IsWindowFocused())
+                {
                     m_rename.MarkInteraction(FileBrowserPresentation.Grid);
+                }
                 float cellSize = GetGridCellSize();
                 int columns = Math.Max(1, (int)(Ui.GetContentRegionAvailable().X / cellSize));
                 int rows = Math.Max(1, (int)(Ui.GetContentRegionAvailable().Y / cellSize));
@@ -87,7 +92,9 @@ internal sealed partial class FileBrowserPanel
             0f
         );
         if (!tableStarted)
+        {
             return;
+        }
         try
         {
             int rowCount = (entries.Count + columns - 1) / columns;
@@ -106,7 +113,9 @@ internal sealed partial class FileBrowserPanel
                     {
                         int index = row * state.columns + column;
                         if (index >= state.entries.Count)
+                        {
                             break;
+                        }
                         _ = Ui.TableSetColumnIndex(column);
                         state.panel.DrawGridItem(state.context, state.entries[index]);
                     }
@@ -142,7 +151,9 @@ internal sealed partial class FileBrowserPanel
         {
             ImGuiSelectableFlags selectableFlags = ImGuiSelectableFlags.AllowDoubleClick;
             if (editing)
+            {
                 selectableFlags |= ImGuiSelectableFlags.AllowOverlap;
+            }
             RequestEntryKeyboardFocus(entry);
             bool activated = Ui.Selectable("##GridItem", selected, selectableFlags, itemSize);
             bool itemHovered = Ui.IsItemHovered();
@@ -161,7 +172,9 @@ internal sealed partial class FileBrowserPanel
                 m_dragDrop.DrawAssetSource(context, entry);
                 m_contextMenu.DrawEntry(context, "##asset_grid_context", entry.assetPath.ToString(), FileBrowserPresentation.Grid);
                 if (entry.isDirectory && !entry.isReadOnly)
+                {
                     m_dragDrop.DrawDirectoryTarget(context, entry.assetPath.ToString());
+                }
             }
 
             DrawGridItemVisual(icon, name, selected, m_gridScale, itemHovered, itemActive, itemMin, itemMax, drawName: !editing);
@@ -174,7 +187,14 @@ internal sealed partial class FileBrowserPanel
                 float labelAreaTop = itemMax.Y - CurrentBrowserStyle.gridLabelBottomPadding - labelAreaHeight;
                 float y = labelAreaTop + (labelAreaHeight - lineHeight) * 0.5f;
                 Ui.SetCursorScreenPosition(new Vector2(itemMin.X + CurrentBrowserStyle.gridLabelHorizontalPadding * 0.5f, y));
-                m_rename.Draw(context, $"grid_{entry.assetPath.ToString()}", entry.assetPath.ToString(), FileBrowserPresentation.Grid, width, lineHeight);
+                m_rename.Draw(
+                    context,
+                    $"grid_{entry.assetPath.ToString()}",
+                    entry.assetPath.ToString(),
+                    FileBrowserPresentation.Grid,
+                    width,
+                    lineHeight
+                );
                 Ui.SetCursorScreenPosition(layoutCursor);
                 Ui.Dummy(Vector2.Zero);
             }
@@ -200,16 +220,24 @@ internal sealed partial class FileBrowserPanel
         Vector2 size = max - min;
         Vector4 bg = selected ? EditorPalette.contentAccent : EditorPalette.collectionHeader;
         if (active)
+        {
             bg = EditorPalette.GetActive(bg);
+        }
         else if (hovered)
+        {
             bg = EditorPalette.GetHovered(bg);
+        }
         uint bgColor = Ui.ToPackedColor(bg);
         Ui.DrawFilledRectangle(min, max, bgColor, CurrentBrowserStyle.frameRounding);
         float fontSize = Ui.GetFontSize();
         float iconFontSize = fontSize * scale;
         Vector4 iconBounds = EditorUI.current.widgets.GetGlyphVisualBounds(iconFontSize, icon);
         Vector2 iconSize = new(iconBounds.Z - iconBounds.X, iconBounds.W - iconBounds.Y);
-        string[] nameLines = FitTextToLines(name, MathF.Max(1f, size.X - CurrentBrowserStyle.gridLabelHorizontalPadding), C_GRID_LABEL_LINE_COUNT);
+        string[] nameLines = FitTextToLines(
+            name,
+            MathF.Max(1f, size.X - CurrentBrowserStyle.gridLabelHorizontalPadding),
+            C_GRID_LABEL_LINE_COUNT
+        );
         float lineHeight = Ui.GetTextLineHeight();
         float lineAdvance = MathF.Max(1f, lineHeight + CurrentBrowserStyle.gridLabelLineSpacing);
         float labelAreaHeight = lineHeight + lineAdvance * (C_GRID_LABEL_LINE_COUNT - 1);
@@ -229,7 +257,10 @@ internal sealed partial class FileBrowserPanel
         }
 
         float horizontalCenter = min.X + size.X * 0.5f;
-        Vector2 iconAreaCenter = new(horizontalCenter + C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET * EditorUI.current.widgets.style.zoom, iconAreaTop + maximumIconHeight * 0.5f);
+        Vector2 iconAreaCenter = new(
+            horizontalCenter + C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET * EditorUI.current.widgets.style.zoom,
+            iconAreaTop + maximumIconHeight * 0.5f
+        );
         uint textColor = Ui.ToPackedColor(EditorPalette.contentText);
         Ui.PushClipRect(min, max, true);
         EditorUI.current.widgets.AddGlyphCentered(iconFontSize, icon, iconAreaCenter, textColor);

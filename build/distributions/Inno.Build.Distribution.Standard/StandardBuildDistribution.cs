@@ -57,23 +57,58 @@ public sealed class StandardBuildDistribution
         tools ??= new ToolRunner(context.host.services.workspaces);
         (BuildPlatformContribution platform, BgfxShaderTargetProfile shaders, GameContentCompilerFactory compiler)[] bindings =
         [
-            (WindowsX64BuildIntegration.Create(context), WindowsX64BgfxIntegration.shaderProfile, WindowsX64BgfxIntegration.CreateContentCompilerFactory(tools)),
-            (MacOSArm64BuildIntegration.Create(context), MacOSArm64BgfxIntegration.shaderProfile, MacOSArm64BgfxIntegration.CreateContentCompilerFactory(tools)),
-            (BrowserWasm32BuildIntegration.Create(context), BrowserWasm32BgfxIntegration.shaderProfile, BrowserWasm32BgfxIntegration.CreateContentCompilerFactory(tools))
+            (WindowsX64BuildIntegration.Create(
+                context
+            ), WindowsX64BgfxIntegration.shaderProfile, WindowsX64BgfxIntegration.CreateContentCompilerFactory(tools)),
+            (MacOSArm64BuildIntegration.Create(
+                context
+            ), MacOSArm64BgfxIntegration.shaderProfile, MacOSArm64BgfxIntegration.CreateContentCompilerFactory(tools)),
+            (BrowserWasm32BuildIntegration.Create(
+                context
+            ), BrowserWasm32BgfxIntegration.shaderProfile, BrowserWasm32BgfxIntegration.CreateContentCompilerFactory(tools))
         ];
         foreach ((BuildPlatformContribution platform, BgfxShaderTargetProfile shaders, GameContentCompilerFactory _) in bindings)
+        {
             if (platform.descriptor.id.value != shaders.id)
+            {
                 throw new InvalidOperationException("Platform publication and shader target identities disagree.");
-        string[] Runtimes(ManagedDeploymentId deployment) => bindings
-            .Where(binding => binding.platform.managedDeployments.Contains(deployment))
-            .Select(static binding => binding.platform.descriptor.runtimeIdentifier).Distinct(StringComparer.Ordinal).ToArray();
-        var build = new BuildDistribution(bindings.Select(static binding => new GameBuildContribution(binding.platform, binding.compiler)).ToArray(),
-            [new CoreClrDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.coreClr), context.host.services.workspaces),
-                new MonoWasmDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.monoWasm), context.host.services.workspaces, aheadOfTime: false),
-                new MonoWasmDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.monoWasmAot), context.host.services.workspaces, aheadOfTime: true),
-                new NativeAotDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.nativeAot), context.host.services.workspaces)]);
-        return new(build, new ReadOnlyDictionary<BuildTargetId, BgfxShaderTargetProfile>(
-            bindings.ToDictionary(static binding => binding.platform.descriptor.id, static binding => binding.shaders)));
+            }
+        }
+        string[] Runtimes(ManagedDeploymentId deployment)
+            => bindings
+                .Where(binding => binding.platform.managedDeployments.Contains(deployment))
+                .Select(static binding => binding.platform.descriptor.runtimeIdentifier)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+        var build = new BuildDistribution(
+            bindings.Select(static binding => new GameBuildContribution(binding.platform, binding.compiler)).ToArray(),
+            [
+                new CoreClrDeploymentCompiler(context.dotnetHost, Runtimes(ManagedDeploymentId.coreClr), context.host.services.workspaces),
+                new MonoWasmDeploymentCompiler(
+                    context.dotnetHost,
+                    Runtimes(ManagedDeploymentId.monoWasm),
+                    context.host.services.workspaces,
+                    aheadOfTime: false
+                ),
+                new MonoWasmDeploymentCompiler(
+                    context.dotnetHost,
+                    Runtimes(ManagedDeploymentId.monoWasmAot),
+                    context.host.services.workspaces,
+                    aheadOfTime: true
+                ),
+                new NativeAotDeploymentCompiler(
+                    context.dotnetHost,
+                    Runtimes(ManagedDeploymentId.nativeAot),
+                    context.host.services.workspaces
+                )
+            ]
+        );
+        return new(
+            build,
+            new ReadOnlyDictionary<BuildTargetId, BgfxShaderTargetProfile>(
+                bindings.ToDictionary(static binding => binding.platform.descriptor.id, static binding => binding.shaders)
+            )
+        );
     }
 
     /// <summary>
@@ -89,6 +124,7 @@ public sealed class StandardBuildDistribution
     /// The distribution has no shader configuration for this target.
     /// </exception>
     public BgfxShaderTargetProfile ResolveShaderTarget(BuildTargetId target)
-        => m_shaders.TryGetValue(target, out BgfxShaderTargetProfile? profile) ? profile
-            : throw new NotSupportedException($"No shader configuration is registered for '{target}'.");
+        => m_shaders.TryGetValue(target, out BgfxShaderTargetProfile? profile)
+           ? profile
+           : throw new NotSupportedException($"No shader configuration is registered for '{target}'.");
 }

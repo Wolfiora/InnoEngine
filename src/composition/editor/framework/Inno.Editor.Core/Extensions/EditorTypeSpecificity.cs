@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.Core;
+
 /// <summary>
 /// Ranks assignable editor extension targets by class ancestry, with interface registrations one step away.
 /// </summary>
@@ -48,7 +49,9 @@ public static class EditorTypeSpecificity
         while (current is not null)
         {
             if (current == candidateType)
+            {
                 return true;
+            }
             distance++;
             current = current.BaseType;
         }

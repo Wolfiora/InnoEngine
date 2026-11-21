@@ -1,15 +1,14 @@
-using Inno.Content.Testing;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.IO;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Content.Testing;
+using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-
-using Inno.Core.Identity;
 using Inno.Rendering;
-using Xunit;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Runtime;
 
@@ -20,7 +19,9 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
     private readonly string m_root = Path.Combine(
         Path.GetTempPath(),
         "InnoRenderTargetArtifactProviderTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
@@ -29,7 +30,8 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
     {
         m_modules = new(new()
         {
-            catalogSource = new DotNetAssemblyCatalogSource(typeof(ContentRenderTargetArtifactProviderTests).Assembly)        });
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ContentRenderTargetArtifactProviderTests).Assembly)
+        });
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -43,18 +45,14 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
         Guid persistentId = Guid.NewGuid();
         identities.InitializePersistentIdentity(texture, persistentId);
         RenderTextureArtifactReference reference = texture.GetTextureArtifactReference();
-        string artifactPath = Path.Combine(
-            m_root,
-            RenderTargetArtifactPath.GetTexturePath(reference));
+        string artifactPath = Path.Combine(m_root, RenderTargetArtifactPath.GetTexturePath(reference));
         Directory.CreateDirectory(Path.GetDirectoryName(artifactPath)!);
         byte[] expected = [0xAB, 0x4B, 0x54, 0x58];
         File.WriteAllBytes(artifactPath, expected);
         using ContentTestStore content = ContentTestStore.FromDirectory(m_root);
         var provider = new ContentRenderTargetArtifactProvider(content, m_serialization, SerializationContext.empty);
 
-        RenderTargetArtifactStatus status = provider.GetTextureArtifact(
-            reference,
-            out ReadOnlyMemory<byte> artifact);
+        RenderTargetArtifactStatus status = provider.GetTextureArtifact(reference, out ReadOnlyMemory<byte> artifact);
 
         Assert.Equal(RenderTargetArtifactStatus.Ready, status);
         Assert.Equal(expected, artifact.ToArray());
@@ -72,9 +70,7 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
         using ContentTestStore content = ContentTestStore.FromDirectory(m_root);
         var provider = new ContentRenderTargetArtifactProvider(content, m_serialization, SerializationContext.empty);
 
-        RenderTargetArtifactStatus status = provider.GetTextureArtifact(
-            reference,
-            out ReadOnlyMemory<byte> artifact);
+        RenderTargetArtifactStatus status = provider.GetTextureArtifact(reference, out ReadOnlyMemory<byte> artifact);
 
         Assert.Equal(RenderTargetArtifactStatus.Unavailable, status);
         Assert.True(artifact.IsEmpty);
@@ -94,10 +90,7 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
 
         Assert.NotEqual(firstRelativePath, secondRelativePath);
         Assert.Equal(firstRelativePath, RenderTargetArtifactPath.GetTexturePath(first));
-        Assert.StartsWith(
-            "TargetArtifacts/Textures/" + $"{assetId:D}/",
-            firstRelativePath,
-            StringComparison.Ordinal);
+        Assert.StartsWith("TargetArtifacts/Textures/" + $"{assetId:D}/", firstRelativePath, StringComparison.Ordinal);
 
         string firstPath = Path.Combine(m_root, firstRelativePath);
         string secondPath = Path.Combine(m_root, secondRelativePath);
@@ -119,6 +112,8 @@ public sealed class ContentRenderTargetArtifactProviderTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -36,7 +36,9 @@ public sealed class MaterialPropertyBlock
         MaterialValue value
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A material property ID must be valid.", nameof(id));
+        }
         m_values[id] = value;
     }
 
@@ -66,8 +68,9 @@ public sealed class MaterialPropertyBlock
     {
         var snapshot = new MaterialPropertyBlock();
         foreach ((ShaderPropertyId id, MaterialValue value) in m_values)
+        {
             snapshot.m_values.Add(id, value);
+        }
         return snapshot;
     }
 }
-

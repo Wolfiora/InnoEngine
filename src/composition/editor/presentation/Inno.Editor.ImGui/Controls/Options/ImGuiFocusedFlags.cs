@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported focused flags choices at the Editor presentation boundary.
 /// </summary>
@@ -34,5 +35,5 @@ public enum ImGuiFocusedFlags : int
     /// <summary>
     /// Selects the root and child windows presentation behavior.
     /// </summary>
-    RootAndChildWindows = (int)Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows,
+    RootAndChildWindows = (int)Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows
 }

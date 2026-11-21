@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
 using Xunit;
 
 namespace Inno.Core.IO.Tests;
@@ -73,7 +72,9 @@ public sealed class AtomicFilePublicationTests : IDisposable
             string destination = Path.Combine(m_root, "document-" + round);
             string[] candidates = Enumerable.Range(0, count).Select(index => destination + ".candidate-" + index).ToArray();
             foreach (string candidate in candidates)
+            {
                 File.WriteAllBytes(candidate, Enumerable.Repeat((byte)Array.IndexOf(candidates, candidate), 64 * 1024).ToArray());
+            }
             int winner = -1;
             int successes = 0;
             using var ready = new CountdownEvent(count);
@@ -101,7 +102,9 @@ public sealed class AtomicFilePublicationTests : IDisposable
             Assert.Equal(64 * 1024, bytes.Length);
             Assert.All(bytes, value => Assert.Equal((byte)winner, value));
             for (int index = 0; index < count; index++)
+            {
                 Assert.Equal(index != winner, File.Exists(candidates[index]));
+            }
         }
     }
 
@@ -109,11 +112,26 @@ public sealed class AtomicFilePublicationTests : IDisposable
     public async Task IndependentCreatorsAndAReaderObserveOnlyTheCompleteWinningPayload()
     {
         string project = Path.Combine(m_root, "Publisher.csproj");
-        new XDocument(new XElement("Project", new XAttribute("Sdk", "Microsoft.NET.Sdk"),
-            new XElement("PropertyGroup", new XElement("TargetFramework", "net10.0"), new XElement("OutputType", "Exe"),
-                new XElement("ImplicitUsings", "disable")),
-            new XElement("ItemGroup", new XElement("Reference", new XAttribute("Include", "Inno.Core.IO"),
-                new XElement("HintPath", typeof(AtomicFile).Assembly.Location))))).Save(project);
+        new XDocument(
+            new XElement(
+                "Project",
+                new XAttribute("Sdk", "Microsoft.NET.Sdk"),
+                new XElement(
+                    "PropertyGroup",
+                    new XElement("TargetFramework", "net10.0"),
+                    new XElement("OutputType", "Exe"),
+                    new XElement("ImplicitUsings", "disable")
+                ),
+                new XElement(
+                    "ItemGroup",
+                    new XElement(
+                        "Reference",
+                        new XAttribute("Include", "Inno.Core.IO"),
+                        new XElement("HintPath", typeof(AtomicFile).Assembly.Location)
+                    )
+                )
+            )
+        ).Save(project);
         File.WriteAllText(Path.Combine(m_root, "Program.cs"), """
             using System;
             using System.IO;
@@ -164,7 +182,9 @@ public sealed class AtomicFilePublicationTests : IDisposable
             Assert.InRange(winner[0], (byte)1, (byte)8);
             Assert.All(winner, value => Assert.Equal(winner[0], value));
             for (int read = 0; read < 16; read++)
+            {
                 Assert.Equal(winner, document.Read());
+            }
             await Task.WhenAll(creators.Select(process => process.WaitForExitAsync())).WaitAsync(TimeSpan.FromSeconds(30));
             Assert.Single(creators.Where(process => process.ExitCode == 0));
             Assert.All(creators, process => Assert.True(process.ExitCode is 0 or 17));
@@ -175,7 +195,9 @@ public sealed class AtomicFilePublicationTests : IDisposable
             foreach (Process process in creators)
             {
                 if (!process.HasExited)
+                {
                     process.Kill(entireProcessTree: true);
+                }
                 await process.WaitForExitAsync();
                 process.Dispose();
             }
@@ -186,8 +208,10 @@ public sealed class AtomicFilePublicationTests : IDisposable
 
     private Process Start(params string[] arguments)
     {
-        string sdk = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string sdk = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         var start = new ProcessStartInfo(sdk)
         {
             WorkingDirectory = m_root,
@@ -197,7 +221,9 @@ public sealed class AtomicFilePublicationTests : IDisposable
             RedirectStandardError = true
         };
         foreach (string argument in arguments)
+        {
             start.ArgumentList.Add(argument);
+        }
         return Process.Start(start) ?? throw new InvalidOperationException("The SDK fixture did not start.");
     }
 

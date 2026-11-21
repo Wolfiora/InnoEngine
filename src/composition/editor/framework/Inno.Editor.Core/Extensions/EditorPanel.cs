@@ -1,7 +1,5 @@
-
 using System;
 using System.Numerics;
-
 using Inno.Core.Execution;
 using Inno.Scripting.Api;
 
@@ -57,7 +55,9 @@ public abstract class EditorPanel
     {
         ArgumentNullException.ThrowIfNull(context);
         if (m_attached)
+        {
             throw new InvalidOperationException($"Editor panel '{GetType().FullName}' is already attached.");
+        }
         m_attached = true;
         OnAttach(context);
         m_ready = true;
@@ -83,7 +83,9 @@ public abstract class EditorPanel
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!m_attached)
+        {
             return;
+        }
         m_ready = false;
         try
         {
@@ -118,7 +120,9 @@ public abstract class EditorPanel
     {
         ArgumentNullException.ThrowIfNull(context);
         if (!m_ready)
+        {
             throw new InvalidOperationException($"Editor panel '{GetType().FullName}' is not attached.");
+        }
         OnDraw(context);
     }
 
@@ -136,9 +140,7 @@ public abstract class EditorPanel
     /// <param name="context">
     /// The shared editor context for the active runtime.
     /// </param>
-    protected virtual void OnAttach(EditorContext context)
-    {
-    }
+    protected virtual void OnAttach(EditorContext context) {}
 
     /// <summary>
     /// Runs before the panel is detached from its active extension generation.
@@ -150,9 +152,7 @@ public abstract class EditorPanel
     /// <param name="context">
     /// The shared editor context for the runtime being detached.
     /// </param>
-    protected virtual void OnDetach(EditorContext context)
-    {
-    }
+    protected virtual void OnDetach(EditorContext context) {}
 
     /// <summary>
     /// Captures readable project state owned by this panel.
@@ -165,9 +165,7 @@ public abstract class EditorPanel
     /// <param name="state">
     /// The writable parameter that receives the complete readable state for this panel.
     /// </param>
-    protected virtual void Capture(EditorState state)
-    {
-    }
+    protected virtual void Capture(EditorState state) {}
 
     /// <summary>
     /// Restores readable project state owned by this panel.
@@ -180,7 +178,5 @@ public abstract class EditorPanel
     /// The read-only state parameter for this panel. Missing or incompatible values return the
     /// fallback supplied to <see cref="EditorState.Get{T}(string, T)"/>.
     /// </param>
-    protected virtual void Restore(EditorState state)
-    {
-    }
+    protected virtual void Restore(EditorState state) {}
 }

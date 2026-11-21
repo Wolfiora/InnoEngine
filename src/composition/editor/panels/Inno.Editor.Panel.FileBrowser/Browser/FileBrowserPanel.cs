@@ -1,6 +1,3 @@
-using Inno.Core.Identity;
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,12 +5,17 @@ using System.Linq;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 /// <summary>
 /// Asset browser panel with a tree pane and filtered table view.
 /// </summary>
@@ -46,6 +48,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     private float m_gridScale;
     private float m_listNameSeparatorPosition;
     private float m_listTypeSeparatorPosition;
+
     private enum ViewMode
     {
         List,
@@ -86,7 +89,9 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     protected override void Restore(EditorState state)
     {
         if (Enum.TryParse(state.Get("viewMode", string.Empty), out ViewMode viewMode))
+        {
             m_viewMode = viewMode;
+        }
         if (Enum.TryParse(state.Get("entryTypeFilter", string.Empty), out FileBrowserEntryTypeFilter typeFilter))
         {
             m_entryTypeFilter = typeFilter;

@@ -102,9 +102,14 @@ public sealed class NativeDeploymentIndex
             JsonElement root = document.RootElement;
             string[] names = root.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal).ToArray();
             if (!names.SequenceEqual(new[] { "files", "libraries", "targetId" }, StringComparer.Ordinal))
+            {
                 throw new InvalidDataException("The native deployment index must contain its exact current fields.");
-            return new(root.GetProperty("targetId").GetString()!, ReadMapping(root.GetProperty("libraries")),
-                ReadMapping(root.GetProperty("files")));
+            }
+            return new(
+                root.GetProperty("targetId").GetString()!,
+                ReadMapping(root.GetProperty("libraries")),
+                ReadMapping(root.GetProperty("files"))
+            );
         }
         catch (Exception failure) when (failure is JsonException or ArgumentException or InvalidOperationException)
         {
@@ -133,8 +138,10 @@ public sealed class NativeDeploymentIndex
     ) {
         string file = Resolve(nativeDirectory, name, libraries);
         if (!OperatingSystem.IsWindows() || file.StartsWith(@"\\?\", StringComparison.Ordinal)
-            || file.StartsWith(@"\\.\", StringComparison.Ordinal))
+            || file.StartsWith(@"\\.\", StringComparison.Ordinal)
+        ) {
             return file;
+        }
         // Windows native loading can reject ordinary paths even below MAX_PATH.
         // Apply loading syntax only after validating the actual deployment boundary.
         return file.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + file[2..] : @"\\?\" + file;
@@ -168,8 +175,10 @@ public sealed class NativeDeploymentIndex
         {
             if (string.IsNullOrWhiteSpace(alias) || alias.IndexOfAny(['/', '\\', ':', '*', '?']) >= 0
                 || alias is "." or ".." || string.IsNullOrWhiteSpace(path) || path.Contains('\\')
-                || path.Contains(':') || path.Split('/').Any(static part => part is "" or "." or ".."))
+                || path.Contains(':') || path.Split('/').Any(static part => part is "" or "." or "..")
+            ) {
                 throw new ArgumentException("Native deployment aliases and paths must be assigned and portable.", nameof(mapping));
+            }
             result.Add(alias, path);
         }
         return new ReadOnlyDictionary<string, string>(result);
@@ -182,15 +191,21 @@ public sealed class NativeDeploymentIndex
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         if (!mapping.TryGetValue(name, out string? relative))
+        {
             throw new FileNotFoundException($"No native deployment entry is registered for '{name}'.");
+        }
         string file = PathBoundary.RequireUnlinkedPath(directory, PathBoundary.Resolve(directory, relative));
         if (!File.Exists(file))
+        {
             throw new FileNotFoundException("An explicitly deployed native payload is absent.", file);
+        }
         return file;
     }
 
     private static IReadOnlyDictionary<string, string> ReadMapping(JsonElement element)
-        => element.EnumerateObject().ToDictionary(static entry => entry.Name, static entry => entry.Value.GetString()!, StringComparer.Ordinal);
+        => element
+            .EnumerateObject()
+            .ToDictionary(static entry => entry.Name, static entry => entry.Value.GetString()!, StringComparer.Ordinal);
 
     private static void WriteMapping(
         Utf8JsonWriter writer,
@@ -199,7 +214,9 @@ public sealed class NativeDeploymentIndex
     ) {
         writer.WriteStartObject(name);
         foreach ((string alias, string path) in mapping)
+        {
             writer.WriteString(alias, path);
+        }
         writer.WriteEndObject();
     }
 }

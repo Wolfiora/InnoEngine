@@ -1,15 +1,18 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using Inno.Assets.Pipeline;
 using Inno.Core.Input;
 using Inno.Core.Logging;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+
 namespace Inno.Editor.Panel.FileBrowser;
+
 [EditorAction(FileBrowserInteractionIds.C_RENAME, priority: 100)]
 [EditorMenu(FileBrowserInteractionIds.C_AREA, "Rename", order: 100)]
 [EditorShortcut(FileBrowserInteractionIds.C_AREA, KeyCode.F2)]
@@ -21,6 +24,7 @@ internal sealed class RenameAssetCommand(
     private readonly Logger m_log = (logs ?? throw new ArgumentNullException(nameof(logs))).CreateLogger<RenameAssetCommand>();
     private string m_buffer = string.Empty;
     private bool m_requestFocus;
+
     /// <summary>
     /// Evaluates whether the requested change can be applied to the current generation.
     /// </summary>
@@ -30,11 +34,10 @@ internal sealed class RenameAssetCommand(
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context) => !context.target.isReadOnly
-        && TryGetAssetContext(
-        context,
-        out _
-    ) ? EditorActionState.enabled : EditorActionState.hidden;
+    protected override EditorActionState Query(EditorActionContext<AssetFileEntry> context)
+        => !context.target.isReadOnly
+           && TryGetAssetContext(context, out _) ? EditorActionState.enabled : EditorActionState.hidden;
+
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.
     /// </summary>
@@ -44,7 +47,9 @@ internal sealed class RenameAssetCommand(
     protected override void Execute(EditorActionContext<AssetFileEntry> context)
     {
         if (!TryGetAssetContext(context, out AssetEditorContext? assetContext) || assetContext is null)
+        {
             return;
+        }
         Activate(context);
         m_buffer = GetEditableName(assetContext.name, assetContext.isDirectory);
         m_requestFocus = true;
@@ -62,7 +67,9 @@ internal sealed class RenameAssetCommand(
     protected override bool Present(EditorActionContext<AssetFileEntry, InlineRenamePresentation> context)
     {
         if (!TryResolveAsset(out AssetEditorContext? asset) || asset is null)
+        {
             return false;
+        }
         InlineRenamePresentation presentation = context.argument;
         InlineRenameResult result = EditorUI.current.widgets.InlineRename(
             presentation.id,
@@ -85,7 +92,9 @@ internal sealed class RenameAssetCommand(
         }
 
         if (result != InlineRenameResult.Commit)
+        {
             return true;
+        }
         _ = TryCommit(keepActiveWhenInvalid: true);
         return true;
     }
@@ -94,14 +103,17 @@ internal sealed class RenameAssetCommand(
     /// Commits the interaction after editing completes successfully.
     /// </summary>
     protected override void OnCompleted() => ClearState();
+
     /// <summary>
     /// Cancels the interaction without committing its pending value.
     /// </summary>
     protected override void OnCancelled() => ClearState();
+
     /// <summary>
     /// Cancels pending presentation state when its editor surface disappears.
     /// </summary>
     protected override void OnPresentationLost() => _ = TryCommit(keepActiveWhenInvalid: false);
+
     private bool TryCommit(bool keepActiveWhenInvalid)
     {
         if (!TryResolveAsset(out AssetEditorContext? asset) || asset is null)
@@ -115,9 +127,13 @@ internal sealed class RenameAssetCommand(
         {
             m_log.Write(LogLevel.Warn, "Asset rename was rejected: {0}", [validation.message]);
             if (keepActiveWhenInvalid)
+            {
                 m_requestFocus = true;
+            }
             else
+            {
                 Cancel();
+            }
             return false;
         }
 
@@ -130,7 +146,9 @@ internal sealed class RenameAssetCommand(
     private bool TryResolveAsset(out AssetEditorContext? asset)
     {
         asset = null;
-        return activeTarget is AssetFileEntry entry && activeEditorContext is { } editor && assets.edits.TryCreateContext(editor, entry.assetPath.ToString(), out asset);
+        return activeTarget is AssetFileEntry entry
+               && activeEditorContext is { } editor
+               && assets.edits.TryCreateContext(editor, entry.assetPath.ToString(), out asset);
     }
 
     private void ClearState()

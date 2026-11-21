@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using Inno.Assets.Pipeline;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
-using Inno.Assets.Pipeline;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 /// <summary>
 /// Moves directory drag payloads into File Browser directory targets.
 /// </summary>
@@ -23,10 +24,12 @@ internal sealed class MoveAssetEntryDropHandler(AssetBrowserModule assets) : Edi
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, string> context) => assets.edits.CanMoveSelection(
-        SelectedSources(context),
-        context.target
-    ) ? EditorDropStatus.Accept() : EditorDropStatus.rejected;
+    protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, string> context)
+        => assets.edits.CanMoveSelection(
+            SelectedSources(context),
+            context.target
+        ) ? EditorDropStatus.Accept() : EditorDropStatus.rejected;
+
     /// <summary>
     /// Validates and applies the current editor drag-and-drop interaction atomically.
     /// </summary>
@@ -39,7 +42,9 @@ internal sealed class MoveAssetEntryDropHandler(AssetBrowserModule assets) : Edi
     protected override EditorDropResult Drop(EditorDropContext<AssetFileEntry, string> context)
     {
         if (!Query(context).canDrop)
+        {
             return EditorDropResult.rejected;
+        }
         assets.edits.MoveSelection(SelectedSources(context), context.target);
         return EditorDropResult.Accepted(context.source, context.target);
     }
@@ -47,7 +52,9 @@ internal sealed class MoveAssetEntryDropHandler(AssetBrowserModule assets) : Edi
     private static IReadOnlyList<AssetFileEntry> SelectedSources(EditorDropContext<AssetFileEntry, string> context)
     {
         if (!context.interactions.selection.Contains(context.source))
+        {
             return[context.source];
+        }
         var values = new List<AssetFileEntry>();
         context.interactions.selection.CopyTargets(values);
         return values.Count == context.interactions.selection.count ? values : [];

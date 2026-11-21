@@ -12,7 +12,9 @@ namespace Inno.Core.Collections;
 /// <typeparam name="TKey">
 /// The indexed key type.
 /// </typeparam>
-public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCondition<T> where T : class where TKey : notnull
+public sealed class IndexedObjectKeyCondition<T, TKey> : IIndexedObjectQueryCondition<T>
+    where T : class
+    where TKey : notnull
 {
     private readonly IndexedObjectKey<TKey> m_key;
     private readonly TKey m_value;

@@ -79,7 +79,9 @@ public sealed class SerializedProperty
     public object? GetValue()
     {
         if (!canRead)
+        {
             throw new InvalidOperationException($"Serialized property '{name}' does not permit runtime reads.");
+        }
         return m_getter();
     }
 
@@ -95,7 +97,9 @@ public sealed class SerializedProperty
     public void SetValue(object? value)
     {
         if (!canWrite)
+        {
             throw new InvalidOperationException($"Serialized property '{name}' does not permit runtime writes.");
+        }
         m_setter(value);
     }
 

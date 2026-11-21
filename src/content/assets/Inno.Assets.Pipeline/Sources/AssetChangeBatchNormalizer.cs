@@ -24,7 +24,9 @@ internal static class AssetChangeBatchNormalizer
         IReadOnlyList<AssetChangedEvent> rawBatch
     ) {
         if (rawBatch.Count == 0)
+        {
             return [];
+        }
 
         var byPath = new Dictionary<string, Accumulator>(StringComparer.OrdinalIgnoreCase);
         var renameOldPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -34,10 +36,14 @@ internal static class AssetChangeBatchNormalizer
             AssetChangedEvent e = rawBatch[i];
             string path = NormalizeRelativePath(e.relativePath);
             if (string.IsNullOrWhiteSpace(path))
+            {
                 continue;
+            }
 
             if (!byPath.TryGetValue(path, out Accumulator acc))
+            {
                 acc = new Accumulator(path);
+            }
 
             if (!string.IsNullOrWhiteSpace(e.oldRelativePath))
             {
@@ -51,13 +57,21 @@ internal static class AssetChangeBatchNormalizer
 
             WatcherChangeTypes type = e.changeType;
             if (type.HasFlag(WatcherChangeTypes.Renamed))
+            {
                 acc.renamed = true;
+            }
             if (type.HasFlag(WatcherChangeTypes.Created))
+            {
                 acc.created = true;
+            }
             if (type.HasFlag(WatcherChangeTypes.Changed))
+            {
                 acc.changed = true;
+            }
             if (type.HasFlag(WatcherChangeTypes.Deleted))
+            {
                 acc.deleted = true;
+            }
 
             byPath[path] = acc;
         }
@@ -66,10 +80,14 @@ internal static class AssetChangeBatchNormalizer
         foreach (Accumulator acc in byPath.Values)
         {
             if (renameOldPaths.Contains(acc.path) && !acc.renamed)
+            {
                 continue;
+            }
 
             if (TryBuildNormalized(rootPath, acc, out AssetChangedEvent normalizedEvent))
+            {
                 normalized.Add(normalizedEvent);
+            }
         }
 
         return normalized
@@ -88,9 +106,13 @@ internal static class AssetChangeBatchNormalizer
         {
             WatcherChangeTypes type = WatcherChangeTypes.Renamed;
             if (acc.changed)
+            {
                 type |= WatcherChangeTypes.Changed;
+            }
             if (acc.created)
+            {
                 type |= WatcherChangeTypes.Created;
+            }
 
             normalized = new AssetChangedEvent(acc.path, type, acc.renameOldPath);
             return true;
@@ -100,17 +122,29 @@ internal static class AssetChangeBatchNormalizer
         WatcherChangeTypes foldedType;
 
         if (acc.deleted && (acc.created || acc.changed))
+        {
             foldedType = exists ? WatcherChangeTypes.Changed : WatcherChangeTypes.Deleted;
+        }
         else if (acc.deleted)
+        {
             foldedType = WatcherChangeTypes.Deleted;
+        }
         else if (acc.created && acc.changed)
+        {
             foldedType = WatcherChangeTypes.Created | WatcherChangeTypes.Changed;
+        }
         else if (acc.created)
+        {
             foldedType = WatcherChangeTypes.Created;
+        }
         else if (acc.changed)
+        {
             foldedType = WatcherChangeTypes.Changed;
+        }
         else
+        {
             foldedType = 0;
+        }
 
         if (foldedType == 0)
         {
@@ -133,15 +167,23 @@ internal static class AssetChangeBatchNormalizer
     private static string NormalizeRelativePath(string relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath))
+        {
             return string.Empty;
+        }
 
         string path = relativePath.Replace('\\', '/').Trim();
         while (path.StartsWith("./", StringComparison.Ordinal))
+        {
             path = path[2..];
+        }
         while (path.StartsWith("/", StringComparison.Ordinal))
+        {
             path = path[1..];
+        }
         while (path.EndsWith("/", StringComparison.Ordinal))
+        {
             path = path[..^1];
+        }
 
         return path == "." ? string.Empty : path;
     }
@@ -152,22 +194,27 @@ internal static class AssetChangeBatchNormalizer
         /// The path value used as part of this type's public representation.
         /// </summary>
         public string path = path;
+
         /// <summary>
         /// The created value used as part of this type's public representation.
         /// </summary>
         public bool created;
+
         /// <summary>
         /// The changed value used as part of this type's public representation.
         /// </summary>
         public bool changed;
+
         /// <summary>
         /// The deleted value used as part of this type's public representation.
         /// </summary>
         public bool deleted;
+
         /// <summary>
         /// The renamed value used as part of this type's public representation.
         /// </summary>
         public bool renamed;
+
         /// <summary>
         /// The rename old path value used as part of this type's public representation.
         /// </summary>

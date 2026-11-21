@@ -1,11 +1,11 @@
-using Inno.Testing.Validation;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Inno.Tooling.Documentation;
 using Xunit;
+using Inno.Testing.Validation;
+using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation.Tests;
 
@@ -17,11 +17,19 @@ public sealed class ValidationDocumentationInputTests
         using var repository = new ValidationRepository();
         const string C_FOREIGN = "src/Foreign/Foreign.Player/Foreign.Player.csproj";
         repository.Write("Product.props", "<Project />");
-        repository.Write("entry/InnoEngine.Editor/InnoEngine.Editor.csproj", ValidationRepository.Project(
-            "<PropertyGroup><InnoDevelopmentTarget>host-fixture</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
-            + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"));
-        repository.Write(C_FOREIGN, ValidationRepository.Project(
-            "<PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>foreign-fixture</InnoProductTarget></PropertyGroup>"));
+        repository.Write(
+            "entry/InnoEngine.Editor/InnoEngine.Editor.csproj",
+            ValidationRepository.Project(
+                "<PropertyGroup><InnoDevelopmentTarget>host-fixture</InnoDevelopmentTarget><InnoDevelopmentEditorBuildProperties>"
+                + repository.PathOf("Product.props") + "</InnoDevelopmentEditorBuildProperties></PropertyGroup>"
+            )
+        );
+        repository.Write(
+            C_FOREIGN,
+            ValidationRepository.Project(
+                "<PropertyGroup><InnoProductId>player</InnoProductId><InnoProductTarget>foreign-fixture</InnoProductTarget></PropertyGroup>"
+            )
+        );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare the foreign source-only product boundary");
         var docs = new ValidationDocumentationFixture(repository);
@@ -32,13 +40,18 @@ public sealed class ValidationDocumentationInputTests
         repository.Write("src/Example/Changed.cs", "namespace Example; internal sealed class Changed { }");
         using JsonDocument planned = await docs.PlanAsync(await docs.IndexAsync());
         JsonNode execution = JsonNode.Parse(planned.RootElement.GetRawText())!;
-        execution["checks"] = new JsonArray(planned.RootElement.GetProperty("checks").EnumerateArray()
-            .Where(check => check.GetProperty("id").GetString() is "documentation" or "documentation-api:source:default")
-            .Select(check => JsonNode.Parse(check.GetRawText())).ToArray());
+        execution["checks"] = new JsonArray(
+            planned.RootElement.GetProperty("checks")
+                .EnumerateArray()
+                .Where(check => check.GetProperty("id").GetString() is "documentation" or "documentation-api:source:default")
+                .Select(check => JsonNode.Parse(check.GetRawText()))
+                .ToArray()
+        );
         repository.Write("artifacts/plan/plan.json", execution.ToJsonString());
         Assert.Equal(0, await repository.RunAsync());
         using JsonDocument result = JsonDocument.Parse(File.ReadAllBytes(repository.PathOf("artifacts/run/results.json")));
-        JsonElement source = result.RootElement.GetProperty("results").EnumerateArray()
+        JsonElement source = result.RootElement.GetProperty("results")
+            .EnumerateArray()
             .Single(check => check.GetProperty("id").GetString() == "documentation-api:source:default");
         Assert.Equal("Passed", source.GetProperty("status").GetString());
         JsonElement proof = Assert.Single(source.GetProperty("documentationInputs").EnumerateArray());

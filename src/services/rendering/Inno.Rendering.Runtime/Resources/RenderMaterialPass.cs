@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -55,14 +55,17 @@ public sealed class RenderMaterialPass
         this.computePipeline = computePipeline;
         m_declaredBindings = declaredBindings.ToDictionary(
             static property => new RenderBindingId(property.id.value),
-            static property => ToRenderBindingKind(property.bindingKind));
+            static property => ToRenderBindingKind(property.bindingKind)
+        );
         m_activeBindings = activeInterface.bindings
             .Select(static binding => new RenderBindingId(binding.id.value))
             .ToHashSet();
-        m_bindings = Array.AsReadOnly(bindings.Select(static binding => binding with
-        {
-            uniformData = binding.uniformData?.ToArray()
-        }).ToArray());
+        m_bindings = Array.AsReadOnly(
+            bindings.Select(static binding => binding with
+            {
+                uniformData = binding.uniformData?.ToArray()
+            }).ToArray()
+        );
     }
 
     /// <summary>
@@ -111,15 +114,24 @@ public sealed class RenderMaterialPass
         RenderShaderBindingKind kind
     ) {
         if (!binding.isValid)
+        {
             throw new ArgumentException("A stable shader binding identifier is required.", nameof(binding));
+        }
         if (!Enum.IsDefined(kind))
+        {
             throw new ArgumentOutOfRangeException(nameof(kind));
+        }
         if (!m_declaredBindings.TryGetValue(binding, out RenderShaderBindingKind declaredKind))
+        {
             throw new ArgumentException($"Shader does not declare binding '{binding.value}'.", nameof(binding));
+        }
         if (declaredKind != kind)
+        {
             throw new ArgumentException(
                 $"Shader binding '{binding.value}' is declared as {declaredKind}, not {kind}.",
-                nameof(kind));
+                nameof(kind)
+            );
+        }
         return m_activeBindings.Contains(binding);
     }
 
@@ -133,29 +145,38 @@ public sealed class RenderMaterialPass
     {
         ArgumentNullException.ThrowIfNull(commands);
         if (graphicsPipeline.isValid)
+        {
             commands.BindGraphicsPipeline(graphicsPipeline);
+        }
         else if (computePipeline.isValid)
+        {
             commands.BindComputePipeline(computePipeline);
+        }
         else
+        {
             throw new InvalidOperationException("A resolved material pass has no active program.");
+        }
 
         foreach (RenderMaterialBinding binding in m_bindings)
         {
             if (binding.kind == RenderMaterialBindingKind.Uniform)
+            {
                 commands.SetUniform(binding.id, binding.uniformData ?? []);
+            }
             else
+            {
                 commands.BindTexture(binding.id, binding.texture, binding.sampler);
+            }
         }
     }
 
     private static RenderShaderBindingKind ToRenderBindingKind(ShaderPropertyBindingKind kind)
         => kind switch
-        {
-            ShaderPropertyBindingKind.Uniform => RenderShaderBindingKind.Uniform,
-            ShaderPropertyBindingKind.SampledTexture => RenderShaderBindingKind.Texture,
-            ShaderPropertyBindingKind.StorageTexture => RenderShaderBindingKind.StorageTexture,
-            ShaderPropertyBindingKind.StorageBuffer => RenderShaderBindingKind.StorageBuffer,
-            _ => throw new ArgumentOutOfRangeException(nameof(kind))
-        };
+    {
+        ShaderPropertyBindingKind.Uniform => RenderShaderBindingKind.Uniform,
+        ShaderPropertyBindingKind.SampledTexture => RenderShaderBindingKind.Texture,
+        ShaderPropertyBindingKind.StorageTexture => RenderShaderBindingKind.StorageTexture,
+        ShaderPropertyBindingKind.StorageBuffer => RenderShaderBindingKind.StorageBuffer,
+        _ => throw new ArgumentOutOfRangeException(nameof(kind))
+    };
 }
-

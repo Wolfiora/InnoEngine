@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Input;
@@ -165,12 +164,17 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         ArgumentNullException.ThrowIfNull(document);
         EnsureActive();
         if (document.isMissing)
+        {
             throw new InvalidOperationException("The UI document asset is missing.");
+        }
         UiDocumentSource source = document.source
-            ?? throw new InvalidOperationException("The UI document has no imported runtime payload.");
+                                  ?? throw new InvalidOperationException("The UI document has no imported runtime payload.");
         if (!string.Equals(document.implementationId, m_backend.implementationId, StringComparison.Ordinal))
+        {
             throw new InvalidOperationException(
-                $"UI document implementation '{document.implementationId}' cannot be loaded by selected backend '{m_backend.implementationId}'.");
+                $"UI document implementation '{document.implementationId}' cannot be loaded by selected backend '{m_backend.implementationId}'."
+            );
+        }
         EnsureLanguageSupported(source.language);
         string text = source.text;
         var families = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -182,14 +186,16 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
                 if (!families.TryGetValue(face.family, out string? versionedFamily))
                 {
                     versionedFamily = face.family + "__v"
-                        + document.contentVersion.ToString("x", CultureInfo.InvariantCulture);
+                                      + document.contentVersion.ToString("x", CultureInfo.InvariantCulture);
                     families.Add(face.family, versionedFamily);
                     text = text.Replace(face.family, versionedFamily, StringComparison.Ordinal);
                 }
                 registrations.Add(RegisterDocumentFont(face, document.contentVersion, versionedFamily));
             }
-            UiDocumentHandle handle = m_backend.LoadDocument(context,
-                new UiDocumentSource(source.language, text, source.sourceUri));
+            UiDocumentHandle handle = m_backend.LoadDocument(
+                context,
+                new UiDocumentSource(source.language, text, source.sourceUri)
+            );
             if (registrations.Count > 0)
             {
                 var key = new DocumentKey(context, handle);
@@ -259,7 +265,9 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         m_backend.CloseDocument(context, document);
         var key = new DocumentKey(context, document);
         if (m_documentFonts.Remove(key, out FontRegistration[]? registrations))
+        {
             ReleaseFonts(registrations);
+        }
     }
 
     /// <summary>
@@ -433,15 +441,19 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     public void Update(UiContextHandle context)
     {
         EnsureActive();
-        m_backend.Update(context, new UiInputSnapshot(
-            m_input.mousePosition,
-            m_input.scrollDelta,
-            m_input.modifiers,
-            m_input.keysPressed,
-            m_input.keysReleased,
-            m_input.mouseButtonsPressed,
-            m_input.mouseButtonsReleased,
-            m_input.textInput));
+        m_backend.Update(
+            context,
+            new UiInputSnapshot(
+                m_input.mousePosition,
+                m_input.scrollDelta,
+                m_input.modifiers,
+                m_input.keysPressed,
+                m_input.keysReleased,
+                m_input.mouseButtonsPressed,
+                m_input.mouseButtonsReleased,
+                m_input.textInput
+            )
+        );
     }
 
     /// <summary>
@@ -497,7 +509,9 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     protected override void OnStop()
     {
         if (m_disposed)
+        {
             return;
+        }
         List<Exception> failures = [];
         try
         {
@@ -521,7 +535,9 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         }
         m_documentFonts.Clear();
         if (failures.Count > 0)
+        {
             throw new AggregateException("UI runtime retirement failed.", failures);
+        }
         m_disposed = true;
     }
 
@@ -530,21 +546,22 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     private void RegisterBackendFont(
         ArtifactLease artifact,
         FontRegistration registration
-    )
-        => m_backend.RegisterFont(new UiFontRegistration(
+    ) => m_backend.RegisterFont(
+        new UiFontRegistration(
             artifact.ReadAllBytes(),
             registration.faceIndex,
             registration.family,
             registration.style,
-            registration.weight));
+            registration.weight
+        )
+    );
 
     private FontRegistration RegisterDocumentFont(
         UiDocumentFontFace face,
         long documentVersion,
         string family
     ) {
-        var registration = new FontRegistration(face.assetId, documentVersion, 0,
-            family, face.style, face.weight);
+        var registration = new FontRegistration(face.assetId, documentVersion, 0, family, face.style, face.weight);
         if (m_fonts.TryGetValue(registration, out FontResidency? existing))
         {
             RegisterBackendFont(existing.lease, registration);
@@ -572,7 +589,9 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
         {
             FontResidency residency = m_fonts[registration];
             if (--residency.references > 0)
+            {
                 continue;
+            }
             try
             {
                 residency.lease.Dispose();
@@ -584,7 +603,9 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
             }
         }
         if (failures is not null)
+        {
             throw new AggregateException("UI font artifact retirement is incomplete.", failures);
+        }
     }
 
     private sealed class FontResidency(ArtifactLease lease)
@@ -601,8 +622,11 @@ public sealed class UiRuntime : RuntimeSubsystem, IUiService
     private void EnsureLanguageSupported(UiDocumentLanguageId language)
     {
         if (!m_backend.capabilities.Supports(language))
+        {
             throw new NotSupportedException(
-                $"UI document language '{language}' is not supported by selected backend '{m_backend.implementationId}'.");
+                $"UI document language '{language}' is not supported by selected backend '{m_backend.implementationId}'."
+            );
+        }
     }
 
     private readonly record struct FontRegistration(

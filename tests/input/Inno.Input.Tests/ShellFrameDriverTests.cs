@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Shell;
 using Xunit;
+using Inno.Shell;
 
 namespace Inno.Input.Tests;
 
@@ -71,9 +71,11 @@ public sealed class ShellFrameDriverTests
         var expected = new InvalidOperationException("frame failed");
         var driver = new ScheduledShellFrameDriver(_ => ValueTask.CompletedTask);
         Exception actual = await Assert.ThrowsAsync<InvalidOperationException>(
-            () => driver.RunAsync(() => throw expected, CancellationToken.None).AsTask());
+            () => driver.RunAsync(() => throw expected, CancellationToken.None).AsTask()
+        );
         Assert.Same(expected, actual);
         Assert.Throws<InvalidOperationException>(
-            () => new PollingShellFrameDriver().RunAsync(() => throw expected, CancellationToken.None));
+            () => new PollingShellFrameDriver().RunAsync(() => throw expected, CancellationToken.None)
+        );
     }
 }

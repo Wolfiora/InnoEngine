@@ -18,9 +18,7 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     /// The persistent type identity, or an empty value for an invalid reference.
     /// </param>
     public TypeRef(Guid stableId)
-        : this(stableId, runtimeId: 0)
-    {
-    }
+        : this(stableId, runtimeId: 0) {}
 
     internal TypeRef(
         Guid stableId,
@@ -101,7 +99,9 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     {
         ArgumentNullException.ThrowIfNull(snapshot);
         if (stableId != Guid.Empty && snapshot.TryResolve(this, out Type? type))
+        {
             return type!;
+        }
         throw CreateResolutionException(snapshot.version);
     }
 
@@ -180,11 +180,12 @@ public readonly struct TypeRef : IEquatable<TypeRef>
     private InvalidOperationException CreateResolutionException(long? snapshotVersion = null)
     {
         string generation = snapshotVersion is long version
-            ? $" in type-cache snapshot {version}"
-            : string.Empty;
+                            ? $" in type-cache snapshot {version}"
+                            : string.Empty;
         return new InvalidOperationException(
             stableId == Guid.Empty
-                ? "An empty type reference cannot be resolved."
-                : $"Type reference '{stableId:D}' is not available{generation}.");
+            ? "An empty type reference cannot be resolved."
+            : $"Type reference '{stableId:D}' is not available{generation}."
+        );
     }
 }

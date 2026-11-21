@@ -19,11 +19,18 @@ public sealed class NativeProductExecutorTests : IDisposable
     public async Task NewTargetAndBackendUseTheSameExecutorAndStaticLinkageCanUseAStandaloneProducer()
     {
         NativeBuildContext context = Context();
-        var plan = new ProductNativeBuildPlan("probe-product", [new ProductNativeBuildStep("probe", m_owner,
-            new(NativeLibraryKind.Static), [], Produce, Recipe, static (
+        var plan = new ProductNativeBuildPlan("probe-product", [new ProductNativeBuildStep(
+            "probe",
+            m_owner,
+            new(NativeLibraryKind.Static),
+            [],
+            Produce,
+            Recipe,
+            static (
                 relative,
                 target
-            ) => relative)]);
+            ) => relative
+        )]);
         var executor = new SelectedExecutor();
         var contribution = new NativeProductContribution(plan, executor);
         using (ProductNativeBuildResult first = await contribution.BuildAsync(context, CancellationToken.None))
@@ -43,14 +50,28 @@ public sealed class NativeProductExecutorTests : IDisposable
     {
         NativeBuildContext context = Context();
         string sdk = ToolchainEnvironment.ResolveExecutable("dotnet");
-        var selection = new NativeToolchainSelection("probe-target", new BuildHostDescriptor("ProbeHost", "processor"),
-            new Dictionary<string, string> { ["sdk"] = sdk }, new Dictionary<string, string>(), [], [],
-            new NativeLinkPlan(staticLibraryExtension: ".archive"), false);
-        var plan = new ProductNativeBuildPlan("probe-product", [new ProductNativeBuildStep("probe", m_owner,
-            new(NativeLibraryKind.Shared), [], Produce, Recipe, static (
+        var selection = new NativeToolchainSelection(
+            "probe-target",
+            new BuildHostDescriptor("ProbeHost", "processor"),
+            new Dictionary<string, string> { ["sdk"] = sdk },
+            new Dictionary<string, string>(),
+            [],
+            [],
+            new NativeLinkPlan(staticLibraryExtension: ".archive"),
+            false
+        );
+        var plan = new ProductNativeBuildPlan("probe-product", [new ProductNativeBuildStep(
+            "probe",
+            m_owner,
+            new(NativeLibraryKind.Shared),
+            [],
+            Produce,
+            Recipe,
+            static (
                 relative,
                 target
-            ) => relative)]);
+            ) => relative
+        )]);
         await Assert.ThrowsAsync<NotSupportedException>(() => new ComponentNativeProductExecutor()
             .BuildAsync(context.WithToolchain(selection), plan, CancellationToken.None));
         Assert.Equal(0, m_productions);
@@ -62,7 +83,9 @@ public sealed class NativeProductExecutorTests : IDisposable
     public async Task IncompleteRoleInventoryIsRejectedBeforePublication()
     {
         NativeBuildContext context = Context();
-        await Assert.ThrowsAsync<InvalidDataException>(() => NativeArtifactPublisher.PublishAsync(context, Recipe(context),
+        await Assert.ThrowsAsync<InvalidDataException>(() => NativeArtifactPublisher.PublishAsync(
+            context,
+            Recipe(context),
             static (
                 operation,
                 output,
@@ -71,14 +94,19 @@ public sealed class NativeProductExecutorTests : IDisposable
             describeOutputs: static (
                 operation,
                 output
-            ) => []));
-        Assert.Empty(Directory.GetFiles(Path.Combine(m_root, "artifacts", "native"), "generation-manifest.json", SearchOption.AllDirectories));
+            ) => []
+        ));
+        Assert.Empty(
+            Directory.GetFiles(Path.Combine(m_root, "artifacts", "native"), "generation-manifest.json", SearchOption.AllDirectories)
+        );
     }
 
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private NativeBuildContext Context()
@@ -88,29 +116,50 @@ public sealed class NativeProductExecutorTests : IDisposable
         File.WriteAllText(Path.Combine(m_root, "component", "Native.csproj"), "<Project />");
         File.WriteAllText(Path.Combine(m_root, "component", "Toolchain.csproj"), "<Project />");
         string sdk = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
-        var tools = new NativeToolchainSelection("probe-target", new BuildHostDescriptor("ProbeHost", "processor"),
-            new Dictionary<string, string> { ["sdk"] = sdk }, new Dictionary<string, string>(), [], [], new NativeLinkPlan(".shared", staticLibraryExtension: ".data"), false);
+        var tools = new NativeToolchainSelection(
+            "probe-target",
+            new BuildHostDescriptor("ProbeHost", "processor"),
+            new Dictionary<string, string> { ["sdk"] = sdk },
+            new Dictionary<string, string>(),
+            [],
+            [],
+            new NativeLinkPlan(".shared", staticLibraryExtension: ".data"),
+            false
+        );
         return new NativeBuildContext(m_root, "release").WithToolchain(tools);
     }
 
-    private NativeBuildRecipe Recipe(NativeBuildContext context) => new(m_owner, "probe", "probe-target",
-        [NativeBuildInput.FromPath(m_root, Path.Combine(m_root, "component", "Native.csproj"))], ["probe-recipe"]);
+    private NativeBuildRecipe Recipe(NativeBuildContext context)
+        => new(
+            m_owner,
+            "probe",
+            "probe-target",
+            [NativeBuildInput.FromPath(m_root, Path.Combine(m_root, "component", "Native.csproj"))],
+            ["probe-recipe"]
+        );
 
     private Task<NativeBuildProduct> Produce(
         NativeBuildContext context,
         IReadOnlyDictionary<string, NativeBuildProduct> dependencies,
         CancellationToken cancellation
-    ) => NativeArtifactPublisher.PublishAsync(context, Recipe(context), (
-        operation,
-        output,
-        token
-    ) => {
-        m_productions++;
-        return File.WriteAllTextAsync(Path.Combine(output, "probe-output.data"), "archive", token);
-    }, cancellation, describeOutputs: static (
-        operation,
-        output
-    ) => [new NativeArtifact("probe-archive", Path.Combine(output, "probe-output.data"), NativeArtifactRole.StaticArchive)]);
+    ) => NativeArtifactPublisher.PublishAsync(
+        context,
+        Recipe(context),
+        (
+            operation,
+            output,
+            token
+        ) =>
+        {
+            m_productions++;
+            return File.WriteAllTextAsync(Path.Combine(output, "probe-output.data"), "archive", token);
+        },
+        cancellation,
+        describeOutputs: static (
+            operation,
+            output
+        ) => [new NativeArtifact("probe-archive", Path.Combine(output, "probe-output.data"), NativeArtifactRole.StaticArchive)]
+    );
 
     private sealed class SelectedExecutor : INativeProductExecutor
     {

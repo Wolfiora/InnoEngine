@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Core.Collections;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
@@ -124,7 +123,8 @@ public sealed class ModuleHost : IDisposable
                     Trace.TraceError(
                         "Assembly catalog participant '{0}' failed during initial cleanup: {1}",
                         participant.GetType().FullName,
-                        exception);
+                        exception
+                    );
                     throw;
                 }
                 return registration;
@@ -151,7 +151,8 @@ public sealed class ModuleHost : IDisposable
                     Trace.TraceError(
                         "Assembly catalog participant '{0}' failed during initial rollback: {1}",
                         participant.GetType().FullName,
-                        exception);
+                        exception
+                    );
                 }
                 registration.Dispose();
                 throw;
@@ -177,7 +178,9 @@ public sealed class ModuleHost : IDisposable
             EnsureNoReloadInProgress();
             ValidateUniqueModuleName(request.moduleName);
             if (request.domain != AssemblyDomain.InnoPlugin)
+            {
                 ValidateUniqueReloadBoundary(request.domain, request.scope);
+            }
 
             AssemblyModuleHandle handle = new(Guid.NewGuid());
             IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies =
@@ -187,7 +190,8 @@ public sealed class ModuleHost : IDisposable
                 request,
                 generation: 1,
                 upstreamModules: GetUpstreamModules(request, []),
-                plannedAssemblies);
+                plannedAssemblies
+            );
             m_modules.Add(handle, module);
             try
             {
@@ -220,12 +224,18 @@ public sealed class ModuleHost : IDisposable
         IReadOnlyList<Assembly> assemblies
     ) {
         if (string.IsNullOrWhiteSpace(moduleName))
+        {
             throw new ArgumentException("Module name is required.", nameof(moduleName));
+        }
         ArgumentNullException.ThrowIfNull(assemblies);
         if (assemblies.Count == 0)
+        {
             throw new ArgumentException("At least one assembly is required.", nameof(assemblies));
+        }
         if (assemblies.Any(static assembly => assembly is null || assembly.IsDynamic))
+        {
             throw new ArgumentException("External modules must contain non-dynamic assemblies.", nameof(assemblies));
+        }
 
         lock (m_sync)
         {
@@ -233,19 +243,20 @@ public sealed class ModuleHost : IDisposable
             EnsureNoReloadInProgress();
             ValidateUniqueModuleName(moduleName);
 
-            if (!assemblies[0].TryGetInnoAssemblyClassification(
-                    out AssemblyDomain domain,
-                    out AssemblyScope scope) ||
-                assemblies.Any(assembly =>
+            if (!assemblies[0].TryGetInnoAssemblyClassification(out AssemblyDomain domain, out AssemblyScope scope)
+                || assemblies.Any(assembly => (
                     !assembly.TryGetInnoAssemblyClassification(
                         out AssemblyDomain candidateDomain,
-                        out AssemblyScope candidateScope) ||
-                    candidateDomain != domain ||
-                    candidateScope != scope))
-            {
+                        out AssemblyScope candidateScope
+                    )
+                    || candidateDomain != domain
+                    || candidateScope != scope
+                ))
+            ) {
                 throw new ArgumentException(
                     "Every externally owned module assembly must declare the same valid domain and scope metadata.",
-                    nameof(assemblies));
+                    nameof(assemblies)
+                );
             }
 
             AssemblyModuleHandle handle = new(Guid.NewGuid());
@@ -260,9 +271,13 @@ public sealed class ModuleHost : IDisposable
                 scope = scope,
                 assemblies = assemblies.Distinct().ToArray(),
                 assemblyScopes = assemblies.Distinct().ToDictionary(static assembly => assembly, _ => scope),
-                contribution = new ModuleCatalogContribution(moduleName, domain, scope,
+                contribution = new ModuleCatalogContribution(
+                    moduleName,
+                    domain,
+                    scope,
                     assemblies.Distinct().ToArray(),
-                    assemblies.Distinct().ToDictionary(static assembly => assembly, _ => scope))
+                    assemblies.Distinct().ToDictionary(static assembly => assembly, _ => scope)
+                )
             };
             m_modules.Add(handle, module);
             try
@@ -300,19 +315,22 @@ public sealed class ModuleHost : IDisposable
             EnsureInitialized();
             EnsureNoReloadInProgress();
             if (!m_modules.TryGetValue(module, out AssemblyModuleEntry? previous))
+            {
                 throw new ArgumentException("The assembly module is not active.", nameof(module));
+            }
             if (!string.Equals(previous.moduleName, request.moduleName, StringComparison.Ordinal))
             {
                 throw new ArgumentException(
                     $"Reload request module name '{request.moduleName}' does not match '{previous.moduleName}'.",
-                    nameof(request));
+                    nameof(request)
+                );
             }
 
             return BeginReloadLocked(
                 [request],
                 removedModuleNames: [],
-                new Dictionary<string, AssemblyModuleHandle>(
-                    StringComparer.Ordinal) { [request.moduleName] = module });
+                new Dictionary<string, AssemblyModuleHandle>(StringComparer.Ordinal) { [request.moduleName] = module }
+            );
         }
     }
 
@@ -392,7 +410,9 @@ public sealed class ModuleHost : IDisposable
             EnsureNoReloadInProgress();
             ValidateUnloadClosure([module]);
             if (!m_modules.Remove(module, out AssemblyModuleEntry? removed))
+            {
                 throw new ArgumentException("The assembly module is not active.", nameof(module));
+            }
             try
             {
                 RebuildLocked();
@@ -430,17 +450,23 @@ public sealed class ModuleHost : IDisposable
             EnsureInitialized();
             EnsureNoReloadInProgress();
             if (modules.Distinct().Count() != modules.Count)
+            {
                 throw new ArgumentException("Module handles must be distinct.", nameof(modules));
+            }
             ValidateUnloadClosure(modules);
             var removed = new List<AssemblyModuleEntry>(modules.Count);
             foreach (AssemblyModuleHandle handle in modules)
             {
                 if (!m_modules.TryGetValue(handle, out AssemblyModuleEntry? module))
+                {
                     throw new ArgumentException("An assembly module is not active.", nameof(modules));
+                }
                 removed.Add(module);
             }
             foreach (AssemblyModuleEntry module in removed)
+            {
                 m_modules.Remove(module.handle);
+            }
             try
             {
                 RebuildLocked();
@@ -448,19 +474,23 @@ public sealed class ModuleHost : IDisposable
             catch
             {
                 foreach (AssemblyModuleEntry module in removed)
+                {
                     m_modules.Add(module.handle, module);
+                }
                 throw;
             }
 
             AssemblyModuleEntry[] unloadOrder = removed
-                .OrderByDescending(static module => module.domain == AssemblyDomain.InnoPlugin
+                .OrderByDescending(static module => (
+                    module.domain == AssemblyDomain.InnoPlugin
                     ? 0
-                    : module.scope == AssemblyScope.Runtime ? 1 : 2)
+                    : module.scope == AssemblyScope.Runtime ? 1 : 2
+                ))
                 .ToArray();
             var monitors = unloadOrder.Select(BeginUnload).ToArray();
             return monitors.Length == 1
-                ? monitors[0]
-                : new CompositeAssemblyUnloadProbe(monitors);
+                   ? monitors[0]
+                   : new CompositeAssemblyUnloadProbe(monitors);
         }
     }
 
@@ -509,7 +539,9 @@ public sealed class ModuleHost : IDisposable
     public void Dispose()
     {
         lock (m_sync)
+        {
             ShutdownLocked();
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -519,12 +551,18 @@ public sealed class ModuleHost : IDisposable
         {
             EnsureActiveState(state);
             if (state.activated)
+            {
                 return;
+            }
 
             foreach (AssemblyModuleEntry removed in state.removedModules)
+            {
                 m_modules.Remove(removed.handle);
+            }
             for (int i = 0; i < state.candidateModules.Length; i++)
+            {
                 m_modules[state.candidateModules[i].handle] = state.candidateModules[i];
+            }
             m_currentCatalog = state.candidateCatalog;
             try
             {
@@ -543,7 +581,9 @@ public sealed class ModuleHost : IDisposable
                 state.finished = true;
                 m_reloadInProgress = false;
                 if (activationFailure is AggregateException)
+                {
                     generations.Fault(activationFailure);
+                }
                 try
                 {
                     state.refresh.Rollback();
@@ -562,7 +602,9 @@ public sealed class ModuleHost : IDisposable
                 finally
                 {
                     if (m_retirementFailure is null)
+                    {
                         BeginUnloadReverse(state.candidateModules);
+                    }
                 }
                 throw;
             }
@@ -575,7 +617,9 @@ public sealed class ModuleHost : IDisposable
         {
             EnsureActiveState(state);
             if (!state.activated)
+            {
                 throw new InvalidOperationException("The reload session must be activated before completion.");
+            }
 
             state.finished = true;
             m_reloadInProgress = false;
@@ -599,9 +643,15 @@ public sealed class ModuleHost : IDisposable
                     .OfType<AssemblyModuleEntry>()
                     .Concat(state.removedModules)
                     .Distinct()
-                    .ToArray());
+                    .ToArray()
+            );
             if (cleanupFailure is not null)
-                throw new InvalidOperationException("The module generation committed but retirement failed; restart the host.", cleanupFailure);
+            {
+                throw new InvalidOperationException(
+                    "The module generation committed but retirement failed; restart the host.",
+                    cleanupFailure
+                );
+            }
             return monitor;
         }
     }
@@ -612,7 +662,9 @@ public sealed class ModuleHost : IDisposable
         {
             EnsureRetirementSafe();
             if (state.finished)
+            {
                 return;
+            }
             if (state.activated)
             {
                 RestorePreviousModules(state);
@@ -638,7 +690,9 @@ public sealed class ModuleHost : IDisposable
             finally
             {
                 if (m_retirementFailure is null)
+                {
                     BeginUnloadReverse(state.candidateModules);
+                }
             }
         }
     }
@@ -649,29 +703,36 @@ public sealed class ModuleHost : IDisposable
         IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles
     ) {
         if (requests.Count == 0 && removedModuleNames.Count == 0)
-            throw new ArgumentException("At least one module change is required.", nameof(requests));
-        if (requests.Any(static request => request is null))
-            throw new ArgumentException("Module reload requests cannot contain null entries.", nameof(requests));
-        IModuleSource[] orderedRequests = OrderReloadRequests(requests);
-        if (orderedRequests.Select(static request => request.moduleName).Distinct(StringComparer.Ordinal).Count() !=
-            orderedRequests.Length)
         {
+            throw new ArgumentException("At least one module change is required.", nameof(requests));
+        }
+        if (requests.Any(static request => request is null))
+        {
+            throw new ArgumentException("Module reload requests cannot contain null entries.", nameof(requests));
+        }
+        IModuleSource[] orderedRequests = OrderReloadRequests(requests);
+        if (orderedRequests.Select(static request => request.moduleName).Distinct(StringComparer.Ordinal).Count()
+            != orderedRequests.Length
+        ) {
             throw new ArgumentException("A reload plan cannot contain duplicate module names.", nameof(requests));
         }
-        if (removedModuleNames.Any(static name => string.IsNullOrWhiteSpace(name)) ||
-            removedModuleNames.Distinct(StringComparer.Ordinal).Count() != removedModuleNames.Count)
-        {
+        if (removedModuleNames.Any(static name => string.IsNullOrWhiteSpace(name))
+            || removedModuleNames.Distinct(StringComparer.Ordinal).Count() != removedModuleNames.Count
+        ) {
             throw new ArgumentException("Removed module names must be non-empty and distinct.", nameof(removedModuleNames));
         }
         if (orderedRequests.Any(request => removedModuleNames.Contains(request.moduleName, StringComparer.Ordinal)))
+        {
             throw new ArgumentException("A module cannot be replaced and removed together.", nameof(removedModuleNames));
+        }
         AssemblyModuleEntry[] removedModules = removedModuleNames.Select(name =>
         {
             AssemblyModuleEntry? module = m_modules.Values.SingleOrDefault(candidate =>
                 string.Equals(candidate.moduleName, name, StringComparison.Ordinal));
             return module ?? throw new ArgumentException(
                 $"Removed assembly module '{name}' is not active.",
-                nameof(removedModuleNames));
+                nameof(removedModuleNames)
+            );
         }).ToArray();
         ValidateReloadClosure(orderedRequests, removedModules);
         IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies =
@@ -696,7 +757,8 @@ public sealed class ModuleHost : IDisposable
             AssemblyCatalogSnapshot previousCatalog = m_currentCatalog;
             AssemblyCatalogSnapshot candidateCatalog = BuildCatalog(
                 replacements,
-                removedModules.Select(static module => module.handle).ToHashSet());
+                removedModules.Select(static module => module.handle).ToHashSet()
+            );
             AssemblyCatalogRefreshSet refresh = m_catalogs.Prepare(candidateCatalog);
             m_reloadInProgress = true;
             return new AssemblyReloadSession(this, new ReloadState
@@ -726,15 +788,22 @@ public sealed class ModuleHost : IDisposable
         IReadOnlyDictionary<string, AssemblyModuleHandle>? forcedHandles
     ) {
         if (forcedHandles is not null && forcedHandles.TryGetValue(request.moduleName, out AssemblyModuleHandle handle))
+        {
             return m_modules[handle];
+        }
         AssemblyModuleEntry? previous = m_modules.Values.SingleOrDefault(module =>
             string.Equals(module.moduleName, request.moduleName, StringComparison.Ordinal));
         if (previous is null && request.domain != AssemblyDomain.InnoPlugin)
+        {
             ValidateUniqueReloadBoundary(request.domain, request.scope);
-        else if (previous is not null &&
-                 (previous.domain != request.domain || previous.scope != request.scope))
+        }
+        else if (previous is not null
+                 && (previous.domain != request.domain || previous.scope != request.scope)
+        ) {
             throw new InvalidOperationException(
-                $"Module '{request.moduleName}' cannot change its domain or scope across generations.");
+                $"Module '{request.moduleName}' cannot change its domain or scope across generations."
+            );
+        }
         return previous;
     }
 
@@ -746,17 +815,21 @@ public sealed class ModuleHost : IDisposable
             .Where(active => stagedCandidates.All(candidate => candidate.handle != active.handle))
             .Concat(stagedCandidates);
         if (request.upstreamModuleNames.Count == 0)
+        {
             return [];
+        }
 
         Dictionary<string, AssemblyModuleEntry> byName = effectiveModules.ToDictionary(
             static module => module.moduleName,
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
         return request.upstreamModuleNames.Select(name =>
         {
             if (!byName.TryGetValue(name, out AssemblyModuleEntry? module))
             {
                 throw new InvalidOperationException(
-                    $"Module '{request.moduleName}' requires unavailable upstream module '{name}'.");
+                    $"Module '{request.moduleName}' requires unavailable upstream module '{name}'."
+                );
             }
             return module;
         }).ToArray();
@@ -764,18 +837,19 @@ public sealed class ModuleHost : IDisposable
 
     private int GetReloadOrder(IModuleSource request)
         => request.domain switch
-        {
-            AssemblyDomain.InnoPlugin => 0,
-            AssemblyDomain.InnoScripting when request.scope == AssemblyScope.Runtime => 1,
-            AssemblyDomain.InnoScripting => 2,
-            _ => throw new ArgumentException("InnoInternal assemblies cannot be loaded into a collectible module.")
-        };
+    {
+        AssemblyDomain.InnoPlugin => 0,
+        AssemblyDomain.InnoScripting when request.scope == AssemblyScope.Runtime => 1,
+        AssemblyDomain.InnoScripting => 2,
+        _ => throw new ArgumentException("InnoInternal assemblies cannot be loaded into a collectible module.")
+    };
 
     private IModuleSource[] OrderReloadRequests(IReadOnlyList<IModuleSource> requests)
     {
         Dictionary<string, IModuleSource> byName = requests.ToDictionary(
             static request => request.moduleName,
-            StringComparer.Ordinal);
+            StringComparer.Ordinal
+        );
         IComparer<string> ordering = Comparer<string>.Create((
             left,
             right
@@ -783,23 +857,26 @@ public sealed class ModuleHost : IDisposable
         {
             int domainOrder = GetReloadOrder(byName[left]).CompareTo(GetReloadOrder(byName[right]));
             return domainOrder != 0
-                ? domainOrder
-                : StringComparer.Ordinal.Compare(left, right);
+                   ? domainOrder
+                   : StringComparer.Ordinal.Compare(left, right);
         });
         var graph = new DependencyGraph<string>(StringComparer.Ordinal, ordering);
         foreach (IModuleSource request in requests)
         {
             graph.AddNode(request.moduleName);
             foreach (string dependencyName in request.upstreamModuleNames
-                         .OrderBy(static value => value, StringComparer.Ordinal))
-            {
+                .OrderBy(static value => value, StringComparer.Ordinal)
+            ) {
                 if (!byName.TryGetValue(dependencyName, out IModuleSource? dependency))
+                {
                     continue;
+                }
                 if (GetReloadOrder(dependency) > GetReloadOrder(request))
                 {
                     throw new ArgumentException(
                         $"Module '{request.moduleName}' cannot depend on downstream module '{dependencyName}'.",
-                        nameof(requests));
+                        nameof(requests)
+                    );
                 }
                 graph.AddDependency(request.moduleName, dependencyName);
             }
@@ -821,12 +898,18 @@ public sealed class ModuleHost : IDisposable
             AssemblyModuleEntry candidate = state.candidateModules[i];
             AssemblyModuleEntry? previous = state.previousModules[i];
             if (previous is null)
+            {
                 m_modules.Remove(candidate.handle);
+            }
             else
+            {
                 m_modules[candidate.handle] = previous;
+            }
         }
         foreach (AssemblyModuleEntry removed in state.removedModules)
+        {
             m_modules[removed.handle] = removed;
+        }
         m_currentCatalog = state.previousCatalog;
     }
 
@@ -843,7 +926,9 @@ public sealed class ModuleHost : IDisposable
         {
             m_hostCatalogDirty = true;
             if (deferWhileBusy)
+            {
                 return;
+            }
             throw new InvalidOperationException("Catalog publication is blocked by a generation owner operation.");
         }
         using IDisposable publication = reservation!;
@@ -870,7 +955,8 @@ public sealed class ModuleHost : IDisposable
         try
         {
             AssemblyCatalogSnapshot candidate = BuildCatalog(
-                new Dictionary<AssemblyModuleHandle, AssemblyModuleEntry>());
+                new Dictionary<AssemblyModuleHandle, AssemblyModuleEntry>()
+            );
             AssemblyCatalogRefreshSet refresh = m_catalogs.Prepare(candidate);
             m_currentCatalog = candidate;
             bool activated = false;
@@ -888,7 +974,9 @@ public sealed class ModuleHost : IDisposable
             catch (Exception failure)
             {
                 if (activated)
+                {
                     generations.Fault(failure);
+                }
                 else
                 {
                     m_currentCatalog = previous;
@@ -914,7 +1002,9 @@ public sealed class ModuleHost : IDisposable
         catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
         {
             if (m_retirementFailure is null)
+            {
                 RetainFailedRetirement(failure, (m_catalogs, previous));
+            }
             throw;
         }
     }
@@ -940,11 +1030,6 @@ public sealed class ModuleHost : IDisposable
         return host.Concat(moduleAssemblies).Distinct().ToArray();
     }
 
-
-
-
-
-
     private AssemblyModuleEntry StageModule(
         AssemblyModuleHandle handle,
         IModuleSource source,
@@ -954,34 +1039,50 @@ public sealed class ModuleHost : IDisposable
     ) {
         ValidateRequest(source);
         var context = new ModuleSourceContext(
-            generation, m_options.catalogSource,
+            generation,
+            m_options.catalogSource,
             upstreamModules.Select(static module => module.contribution).ToArray(),
             m_modules.Values.Select(static module => module.contribution).ToArray(),
-            plannedAssemblies.ToDictionary(static pair => pair.Key,
+            plannedAssemblies.ToDictionary(
+                static pair => pair.Key,
                 static pair => new ModuleAssemblyDescriptor(pair.Value.domain, pair.Value.scope),
-                StringComparer.OrdinalIgnoreCase),
-            generations.TrackRetirement);
+                StringComparer.OrdinalIgnoreCase
+            ),
+            generations.TrackRetirement
+        );
         ModuleCatalogContribution contribution = source.Prepare(context);
         try
         {
-            if (contribution.moduleName != source.moduleName || contribution.domain != source.domain ||
-                contribution.scope != source.scope || (contribution.lifetime is not null) != source.collectible)
+            if (contribution.moduleName != source.moduleName || contribution.domain != source.domain
+                || contribution.scope != source.scope || (contribution.lifetime is not null) != source.collectible
+            ) {
                 throw new InvalidOperationException("A module source changed its declared ownership during preparation.");
+            }
             foreach (Assembly assembly in contribution.assemblies)
+            {
                 assembly.RegisterInnoAssemblyClassification(contribution.domain, contribution.assemblyScopes[assembly]);
+            }
             return new AssemblyModuleEntry
             {
-                handle = handle, moduleName = source.moduleName, generation = generation,
-                externallyOwned = contribution.lifetime is null, collectible = source.collectible,
-                domain = source.domain, scope = source.scope, assemblies = contribution.assemblies.ToArray(),
-                assemblyScopes = contribution.assemblyScopes, upstreamModuleNames = source.upstreamModuleNames.ToArray(),
+                handle = handle,
+                moduleName = source.moduleName,
+                generation = generation,
+                externallyOwned = contribution.lifetime is null,
+                collectible = source.collectible,
+                domain = source.domain,
+                scope = source.scope,
+                assemblies = contribution.assemblies.ToArray(),
+                assemblyScopes = contribution.assemblyScopes,
+                upstreamModuleNames = source.upstreamModuleNames.ToArray(),
                 contribution = contribution
             };
         }
         catch
         {
             if (contribution.lifetime is not null)
+            {
                 generations.TrackRetirement(contribution.lifetime.BeginRetirement());
+            }
             throw;
         }
     }
@@ -991,7 +1092,7 @@ public sealed class ModuleHost : IDisposable
     private IAssemblyUnloadProbe BeginUnload(AssemblyModuleEntry module)
     {
         IAssemblyUnloadProbe probe = module.contribution.lifetime?.BeginRetirement()
-            ?? new CompositeAssemblyUnloadProbe([]);
+                                     ?? new CompositeAssemblyUnloadProbe([]);
         generations.TrackRetirement(probe);
         return probe;
     }
@@ -1000,30 +1101,37 @@ public sealed class ModuleHost : IDisposable
     {
         var monitors = new List<IAssemblyUnloadProbe>(modules.Count);
         for (int i = modules.Count - 1; i >= 0; i--)
+        {
             monitors.Add(BeginUnload(modules[i]));
+        }
         return monitors.Count == 1
-            ? monitors[0]
-            : new CompositeAssemblyUnloadProbe(monitors);
+               ? monitors[0]
+               : new CompositeAssemblyUnloadProbe(monitors);
     }
-
-
 
     private void ValidateRequest(IModuleSource request)
     {
         if (string.IsNullOrWhiteSpace(request.moduleName))
-            throw new ArgumentException("Module name is required.", nameof(request));
-        if (!Enum.IsDefined(request.domain) || request.domain == AssemblyDomain.InnoInternal)
-            throw new ArgumentException("A reloadable module must belong to InnoPlugin or InnoScripting.", nameof(request));
-        if (!Enum.IsDefined(request.scope) || request.assemblyScopes.Values.Any(static scope => !Enum.IsDefined(scope)))
-            throw new ArgumentException("A reloadable module contains an invalid assembly scope.", nameof(request));
-        if (request.upstreamModuleNames.Any(static name => string.IsNullOrWhiteSpace(name)) ||
-            request.upstreamModuleNames.Distinct(StringComparer.Ordinal).Count() !=
-            request.upstreamModuleNames.Count ||
-            request.upstreamModuleNames.Contains(request.moduleName, StringComparer.Ordinal))
         {
+            throw new ArgumentException("Module name is required.", nameof(request));
+        }
+        if (!Enum.IsDefined(request.domain) || request.domain == AssemblyDomain.InnoInternal)
+        {
+            throw new ArgumentException("A reloadable module must belong to InnoPlugin or InnoScripting.", nameof(request));
+        }
+        if (!Enum.IsDefined(request.scope) || request.assemblyScopes.Values.Any(static scope => !Enum.IsDefined(scope)))
+        {
+            throw new ArgumentException("A reloadable module contains an invalid assembly scope.", nameof(request));
+        }
+        if (request.upstreamModuleNames.Any(static name => string.IsNullOrWhiteSpace(name))
+            || request.upstreamModuleNames.Distinct(StringComparer.Ordinal).Count()
+               != request.upstreamModuleNames.Count
+            || request.upstreamModuleNames.Contains(request.moduleName, StringComparer.Ordinal)
+        ) {
             throw new ArgumentException(
                 "Upstream module names must be non-empty, distinct, and cannot reference the owning module.",
-                nameof(request));
+                nameof(request)
+            );
         }
 
         _ = request.GetAssemblyNames();
@@ -1041,26 +1149,31 @@ public sealed class ModuleHost : IDisposable
                 ownedNames.Add(name);
                 AssemblyScope scope = request.assemblyScopes.GetValueOrDefault(name, request.scope);
                 if (!result.TryAdd(name, new PlannedAssembly(request.domain, scope)))
+                {
                     throw new InvalidDataException($"Reload plan contains duplicate managed assembly name '{name}'.");
+                }
             }
             string? unknownScope = request.assemblyScopes.Keys.FirstOrDefault(name => !ownedNames.Contains(name));
             if (unknownScope is not null)
             {
                 throw new InvalidDataException(
-                    $"Module '{request.moduleName}' declares a scope for unknown assembly '{unknownScope}'.");
+                    $"Module '{request.moduleName}' declares a scope for unknown assembly '{unknownScope}'."
+                );
             }
         }
         return result;
     }
 
-
-
     private void ValidateUniqueModuleName(string moduleName)
     {
         if (string.IsNullOrWhiteSpace(moduleName))
+        {
             throw new ArgumentException("Module name is required.", nameof(moduleName));
+        }
         if (m_modules.Values.Any(module => string.Equals(module.moduleName, moduleName, StringComparison.Ordinal)))
+        {
             throw new InvalidOperationException($"Assembly module '{moduleName}' is already active.");
+        }
     }
 
     private void ValidateUniqueReloadBoundary(
@@ -1068,11 +1181,12 @@ public sealed class ModuleHost : IDisposable
         AssemblyScope scope
     ) {
         if (domain == AssemblyDomain.InnoPlugin)
+        {
             return;
+        }
         if (m_modules.Values.Any(module => module.domain == domain && module.scope == scope))
         {
-            throw new InvalidOperationException(
-                $"Only one {scope} scripting module can be active.");
+            throw new InvalidOperationException($"Only one {scope} scripting module can be active.");
         }
     }
 
@@ -1080,32 +1194,39 @@ public sealed class ModuleHost : IDisposable
         IReadOnlyList<IModuleSource> requests,
         IReadOnlyList<AssemblyModuleEntry> removedModules
     ) {
-        bool reloadsPlugins = requests.Any(static request => request.domain == AssemblyDomain.InnoPlugin) ||
-                              removedModules.Any(static module => module.domain == AssemblyDomain.InnoPlugin);
-        bool reloadsRuntime = requests.Any(static request =>
-                                  request.domain == AssemblyDomain.InnoScripting &&
-                                  request.scope == AssemblyScope.Runtime) ||
-                              removedModules.Any(static module =>
-                                  module.domain == AssemblyDomain.InnoScripting &&
-                                  module.scope == AssemblyScope.Runtime);
-        bool reloadsEditor = requests.Any(static request =>
-                                 request.domain == AssemblyDomain.InnoScripting &&
-                                 request.scope == AssemblyScope.Editor) ||
-                             removedModules.Any(static module =>
-                                 module.domain == AssemblyDomain.InnoScripting &&
-                                 module.scope == AssemblyScope.Editor);
-        if (reloadsPlugins && m_modules.Values.Any(static module => module.domain == AssemblyDomain.InnoScripting) &&
-            (!reloadsRuntime || !reloadsEditor))
-        {
+        bool reloadsPlugins = requests.Any(static request => request.domain == AssemblyDomain.InnoPlugin)
+                              || removedModules.Any(static module => module.domain == AssemblyDomain.InnoPlugin);
+        bool reloadsRuntime = requests.Any(static request => (
+            request.domain == AssemblyDomain.InnoScripting
+            && request.scope == AssemblyScope.Runtime
+        ))
+                              || removedModules.Any(static module => (
+                                  module.domain == AssemblyDomain.InnoScripting
+                                  && module.scope == AssemblyScope.Runtime
+                              ));
+        bool reloadsEditor = requests.Any(static request => (
+            request.domain == AssemblyDomain.InnoScripting
+            && request.scope == AssemblyScope.Editor
+        ))
+                             || removedModules.Any(static module => (
+                                 module.domain == AssemblyDomain.InnoScripting
+                                 && module.scope == AssemblyScope.Editor
+                             ));
+        if (reloadsPlugins && m_modules.Values.Any(static module => module.domain == AssemblyDomain.InnoScripting)
+            && (!reloadsRuntime || !reloadsEditor)
+        ) {
             throw new InvalidOperationException(
-                "Reloading plugins requires both dependent scripting modules in the same transaction.");
+                "Reloading plugins requires both dependent scripting modules in the same transaction."
+            );
         }
-        if (reloadsRuntime && m_modules.Values.Any(static module =>
-                module.domain == AssemblyDomain.InnoScripting && module.scope == AssemblyScope.Editor) &&
-            !reloadsEditor)
-        {
+        if (reloadsRuntime && m_modules.Values.Any(static module => (
+            module.domain == AssemblyDomain.InnoScripting && module.scope == AssemblyScope.Editor
+        ))
+            && !reloadsEditor
+        ) {
             throw new InvalidOperationException(
-                "Reloading runtime scripts requires the editor scripting module in the same transaction.");
+                "Reloading runtime scripts requires the editor scripting module in the same transaction."
+            );
         }
         HashSet<string> reloadedNames = requests
             .Select(static request => request.moduleName)
@@ -1115,101 +1236,118 @@ public sealed class ModuleHost : IDisposable
             .Where(static request => request.domain == AssemblyDomain.InnoPlugin)
             .Select(static request => request.moduleName)
             .ToHashSet(StringComparer.Ordinal);
-        reloadedPlugins.UnionWith(removedModules
-            .Where(static module => module.domain == AssemblyDomain.InnoPlugin)
-            .Select(static module => module.moduleName));
-        string? omittedDependent = m_modules.Values.FirstOrDefault(module =>
-            module.domain == AssemblyDomain.InnoPlugin &&
-            !reloadedNames.Contains(module.moduleName) &&
-            module.upstreamModuleNames.Any(reloadedPlugins.Contains))?.moduleName;
+        reloadedPlugins.UnionWith(
+            removedModules
+                .Where(static module => module.domain == AssemblyDomain.InnoPlugin)
+                .Select(static module => module.moduleName)
+        );
+        string? omittedDependent = m_modules.Values.FirstOrDefault(module => (
+            module.domain == AssemblyDomain.InnoPlugin
+            && !reloadedNames.Contains(module.moduleName)
+            && module.upstreamModuleNames.Any(reloadedPlugins.Contains)
+        ))?.moduleName;
         if (omittedDependent is not null)
         {
             throw new InvalidOperationException(
-                $"Reloading a Plugin module also requires dependent module '{omittedDependent}'.");
+                $"Reloading a Plugin module also requires dependent module '{omittedDependent}'."
+            );
         }
     }
 
     private void ValidateUnloadClosure(IReadOnlyList<AssemblyModuleHandle> handles)
     {
         var removed = handles.ToHashSet();
-        bool removesPlugin = m_modules.Values.Any(module =>
-            removed.Contains(module.handle) && module.domain == AssemblyDomain.InnoPlugin);
-        bool removesRuntime = m_modules.Values.Any(module =>
-            removed.Contains(module.handle) &&
-            module.domain == AssemblyDomain.InnoScripting &&
-            module.scope == AssemblyScope.Runtime);
-        if (removesPlugin && m_modules.Values.Any(module =>
-                !removed.Contains(module.handle) && module.domain == AssemblyDomain.InnoScripting))
-        {
+        bool removesPlugin = m_modules.Values.Any(module => (
+            removed.Contains(module.handle) && module.domain == AssemblyDomain.InnoPlugin
+        ));
+        bool removesRuntime = m_modules.Values.Any(module => (
+            removed.Contains(module.handle)
+            && module.domain == AssemblyDomain.InnoScripting
+            && module.scope == AssemblyScope.Runtime
+        ));
+        if (removesPlugin && m_modules.Values.Any(module => (
+            !removed.Contains(module.handle) && module.domain == AssemblyDomain.InnoScripting
+        ))
+        ) {
             throw new InvalidOperationException(
-                "Plugin unload requires all dependent scripting modules in the same transaction.");
+                "Plugin unload requires all dependent scripting modules in the same transaction."
+            );
         }
         HashSet<string> removedNames = m_modules.Values
             .Where(module => removed.Contains(module.handle))
             .Select(static module => module.moduleName)
             .ToHashSet(StringComparer.Ordinal);
-        if (m_modules.Values.Any(module =>
-                !removed.Contains(module.handle) &&
-                module.upstreamModuleNames.Any(removedNames.Contains)))
-        {
-            throw new InvalidOperationException(
-                "A module cannot unload while an active module depends on it.");
+        if (m_modules.Values.Any(module => (
+            !removed.Contains(module.handle)
+            && module.upstreamModuleNames.Any(removedNames.Contains)
+        ))
+        ) {
+            throw new InvalidOperationException("A module cannot unload while an active module depends on it.");
         }
-        if (removesRuntime && m_modules.Values.Any(module =>
-                !removed.Contains(module.handle) &&
-                module.domain == AssemblyDomain.InnoScripting &&
-                module.scope == AssemblyScope.Editor))
-        {
+        if (removesRuntime && m_modules.Values.Any(module => (
+            !removed.Contains(module.handle)
+            && module.domain == AssemblyDomain.InnoScripting
+            && module.scope == AssemblyScope.Editor
+        ))
+        ) {
             throw new InvalidOperationException(
-                "Runtime scripting unload requires the editor scripting module in the same transaction.");
+                "Runtime scripting unload requires the editor scripting module in the same transaction."
+            );
         }
     }
 
     private void EnsureInitialized()
     {
         if (!isInitialized)
+        {
             throw new InvalidOperationException("ModuleHost is not initialized.");
+        }
     }
 
     private void EnsureNoReloadInProgress()
     {
         generations.EnsureReady("change the module generation");
         if (m_reloadInProgress)
+        {
             throw new InvalidOperationException("Another assembly reload transaction is already active.");
+        }
     }
 
     private void EnsureActiveState(ReloadState state)
     {
         EnsureRetirementSafe();
         if (state.finished)
+        {
             throw new InvalidOperationException("The reload session is already finished.");
+        }
         if (!m_reloadInProgress)
+        {
             throw new InvalidOperationException("The reload session is no longer current.");
+        }
         for (int i = 0; i < state.candidateModules.Length; i++)
         {
             AssemblyModuleEntry candidate = state.candidateModules[i];
             AssemblyModuleEntry? expected = state.activated ? candidate : state.previousModules[i];
             bool exists = m_modules.TryGetValue(candidate.handle, out AssemblyModuleEntry? current);
             if (expected is null ? exists : !exists || !ReferenceEquals(current, expected))
+            {
                 throw new InvalidOperationException("The reload session is no longer current.");
+            }
         }
         foreach (AssemblyModuleEntry removed in state.removedModules)
         {
             bool exists = m_modules.TryGetValue(removed.handle, out AssemblyModuleEntry? current);
             if (state.activated ? exists : !exists || !ReferenceEquals(current, removed))
+            {
                 throw new InvalidOperationException("The reload session removal set is no longer current.");
+            }
         }
     }
-
-
-
-
 
     private readonly record struct PlannedAssembly(
         AssemblyDomain domain,
         AssemblyScope scope
     );
-
 
     private void ShutdownLocked()
     {
@@ -1236,10 +1374,12 @@ public sealed class ModuleHost : IDisposable
         }
 
         foreach (AssemblyModuleEntry module in m_modules.Values
-                     .OrderByDescending(static value => value.domain == AssemblyDomain.InnoPlugin
-                         ? 0
-                         : value.scope == AssemblyScope.Runtime ? 1 : 2))
-        {
+            .OrderByDescending(static value => (
+                value.domain == AssemblyDomain.InnoPlugin
+                ? 0
+                : value.scope == AssemblyScope.Runtime ? 1 : 2
+            ))
+        ) {
             BeginUnload(module);
         }
         m_modules.Clear();

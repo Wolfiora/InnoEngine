@@ -1,9 +1,8 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
-using Inno.Core.Serialization;
+using System.IO;
 using Inno.Content;
-
+using Inno.Core.Serialization;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -95,9 +94,12 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         string path = RenderTargetArtifactPath.GetShaderPath(
             shader.identity.persistentId,
             capabilities.backend,
-            variant);
+            variant
+        );
         if (m_shaders.TryGetValue(path, out artifact))
+        {
             return RenderTargetArtifactStatus.Ready;
+        }
         if (!m_content.index.TryGetEntry(new ContentKey(path), out _))
         {
             artifact = null;
@@ -106,12 +108,8 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         try
         {
             ShaderDefinition definition = shader.definition
-                ?? throw new InvalidDataException(
-                    $"Runtime shader '{shader.assetPath}' has no committed definition.");
-            artifact = RenderShaderArtifactCodec.Decode(
-                ReadContent(new ContentKey(path)),
-                definition.name,
-                variant);
+                ?? throw new InvalidDataException($"Runtime shader '{shader.assetPath}' has no committed definition.");
+            artifact = RenderShaderArtifactCodec.Decode(ReadContent(new ContentKey(path)), definition.name, variant);
             m_shaders.Add(path, artifact);
             return RenderTargetArtifactStatus.Ready;
         }
@@ -119,7 +117,8 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         {
             throw new InvalidDataException(
                 $"Deployed shader artifact '{path}' failed integrity validation.",
-                exception);
+                exception
+            );
         }
     }
 
@@ -147,7 +146,9 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         out ReadOnlyMemory<byte> artifact
     ) {
         if (texture.assetId == Guid.Empty || string.IsNullOrWhiteSpace(texture.slot.id))
+        {
             throw new ArgumentException("A valid texture artifact reference is required.", nameof(texture));
+        }
         string path = RenderTargetArtifactPath.GetTexturePath(texture);
         if (!m_content.index.TryGetEntry(new ContentKey(path), out _))
         {
@@ -156,7 +157,9 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
         }
         byte[] bytes = ReadContent(new ContentKey(path));
         if (bytes.Length == 0)
+        {
             throw new InvalidDataException($"Deployed texture artifact '{path}' is empty.");
+        }
         artifact = bytes;
         return RenderTargetArtifactStatus.Ready;
     }
@@ -165,12 +168,16 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
     {
         using ContentReadLease lease = m_content.Acquire(key);
         if (lease.entry.length > Array.MaxLength)
+        {
             throw new InvalidDataException($"Target artifact '{key}' exceeds the managed payload limit.");
+        }
         using Stream stream = lease.OpenRead();
         byte[] bytes = new byte[checked((int)lease.entry.length)];
         stream.ReadExactly(bytes);
         if (stream.ReadByte() != -1)
+        {
             throw new InvalidDataException($"Target artifact '{key}' exceeds its indexed length.");
+        }
         return bytes;
     }
 }

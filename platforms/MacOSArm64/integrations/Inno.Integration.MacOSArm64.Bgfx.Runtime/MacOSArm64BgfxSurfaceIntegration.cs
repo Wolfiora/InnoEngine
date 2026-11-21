@@ -37,10 +37,13 @@ public sealed class MacOSArm64BgfxSurfaceIntegration : IBgfxSurfaceIntegration
         BgfxSurfaceRole role
     ) {
         if (role != BgfxSurfaceRole.Primary && role != BgfxSurfaceRole.Additional)
+        {
             throw new ArgumentOutOfRangeException(nameof(role));
+        }
         if (handles.handleKind != PlatformNativeHandleId.cocoa)
+        {
             throw new NotSupportedException("The MacOS BGFX integration requires its explicit cocoa surface ABI.");
-        return new BgfxSurfaceDescriptor(handles.windowHandle, handles.displayHandle,
-            supportsSrgbReset: true);
+        }
+        return new BgfxSurfaceDescriptor(handles.windowHandle, handles.displayHandle, supportsSrgbReset: true);
     }
 }

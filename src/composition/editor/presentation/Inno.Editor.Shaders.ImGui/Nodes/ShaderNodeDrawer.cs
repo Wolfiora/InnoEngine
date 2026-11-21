@@ -1,11 +1,12 @@
-using Inno.Editor.Shaders;
 using System;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
-using Inno.Editor.Rendering;
 using Inno.Editor.Inspection;
+using Inno.Editor.Rendering;
+using Inno.Editor.Shaders;
 
 namespace Inno.Editor.Shaders.ImGui;
+
 /// <summary>
 /// Registers Editor-only node controls independently from a node's shader compiler.
 /// </summary>
@@ -49,18 +50,22 @@ public sealed class ShaderNodeDrawerAttribute : Attribute
     /// Gets the stable node identity handled by this drawer.
     /// </summary>
     public string definitionId { get; }
+
     /// <summary>
     /// Gets the optional presentation-only name; it does not participate in Shader compilation or identity.
     /// </summary>
     public string displayName { get; }
+
     /// <summary>
     /// Gets the optional creation-menu path below Create.
     /// </summary>
     public string createPath { get; }
+
     /// <summary>
     /// Gets the creation-menu order.
     /// </summary>
     public int createOrder { get; }
+
     /// <summary>
     /// Gets whether the contributed creation group starts a new visual section.
     /// </summary>
@@ -103,14 +108,17 @@ public readonly record struct ShaderNodePresentation
     /// Gets the optional artist-facing node name.
     /// </summary>
     public string displayName { get; }
+
     /// <summary>
     /// Gets the optional slash-delimited creation-menu path.
     /// </summary>
     public string createPath { get; }
+
     /// <summary>
     /// Gets the stable ordering value within the creation menu.
     /// </summary>
     public int createOrder { get; }
+
     /// <summary>
     /// Gets whether the contributed group starts a visual section.
     /// </summary>
@@ -142,6 +150,7 @@ public sealed class ShaderNodeDrawContext
     private readonly Action<string, GraphSerializedValue, string?> m_write;
     private readonly InspectionDrawContext m_inspection;
     private readonly bool m_readOnly;
+
     /// <summary>
     /// Creates invocation-scoped access for a graph or Inspector host.
     /// </summary>
@@ -188,6 +197,7 @@ public sealed class ShaderNodeDrawContext
     /// Gets the shared generation-scoped preview service for optional inline texture previews; valid only during this draw.
     /// </summary>
     public IEditorPreviewService previews { get; }
+
     /// <summary>
     /// Gets the stable node identity for Editor widget IDs.
     /// </summary>
@@ -212,6 +222,7 @@ public sealed class ShaderNodeDrawContext
         string key,
         T defaultValue
     ) => Inno.Rendering.Shaders.ShaderGraphDocument.Read(m_node, key, defaultValue, m_serialization, m_context);
+
     /// <summary>
     /// Records an unsaved draft edit through shared history; only an explicit document save applies it to the asset.
     /// </summary>
@@ -233,7 +244,9 @@ public sealed class ShaderNodeDrawContext
         string? mergeKey = null
     ) {
         if (m_readOnly)
+        {
             throw new InvalidOperationException("Copy this installed Shader into the project before editing.");
+        }
         m_write(key, Inno.Rendering.Shaders.ShaderGraphDocument.Encode(value, m_serialization, m_context), mergeKey);
     }
 
@@ -258,14 +271,24 @@ public sealed class ShaderNodeDrawContext
         T defaultValue
     ) {
         T value = Read(key, defaultValue);
-        m_inspection.properties.DrawValue(m_inspection.editorContext, m_node, "shader.node." + key, label, typeof(T), () => value, edited => value = (T)edited!, new Edits((
-            mutation,
-            mergeKey
-        ) =>
-        {
-            mutation();
-            Write(key, value, mergeKey);
-        }), m_readOnly);
+        m_inspection.properties.DrawValue(
+            m_inspection.editorContext,
+            m_node,
+            "shader.node." + key,
+            label,
+            typeof(T),
+            () => value,
+            edited => value = (T)edited!,
+            new Edits((
+                mutation,
+                mergeKey
+            ) =>
+            {
+                mutation();
+                Write(key, value, mergeKey);
+            }),
+            m_readOnly
+        );
     }
 
     private sealed class Edits(Action<Action, string?> apply) : IInspectionPropertyEditService

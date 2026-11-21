@@ -1,14 +1,14 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Xunit;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Shaders.Tests;
@@ -25,7 +25,8 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
     {
         m_modules = new(new()
         {
-            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphInputDefaultTests).Assembly)        });
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderGraphInputDefaultTests).Assembly)
+        });
         m_types = new(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -81,13 +82,18 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
     public void AggregateDefaultsPreserveExactIntegerBitsAndRejectResourcesOrMalformedValues()
     {
         ShaderSourceType type = ShaderSourceType.Structure("Settings", [
-            new("index", ShaderSourceType.Atomic("uint")), new("values", ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float3"), 2))]);
+            new("index", ShaderSourceType.Atomic("uint")),
+            new("values", ShaderSourceType.ArrayOf(ShaderSourceType.Atomic("float3"), 2))
+        ]);
         ShaderGraphLiteral value = ShaderGraphLiteral.Zero(type);
         Assert.Equal(7, value.scalarBits.Length);
         value.scalarBits[0] = uint.MaxValue;
         var builder = new ShaderIrBuilder();
         ShaderIrValue output = value.Emit(builder, type);
-        Assert.Equal(uint.MaxValue, builder.Build(new Dictionary<string, ShaderIrValue> { ["value"] = output }).instructions[0].constantBits);
+        Assert.Equal(
+            uint.MaxValue,
+            builder.Build(new Dictionary<string, ShaderIrValue> { ["value"] = output }).instructions[0].constantBits
+        );
         Assert.Throws<NotSupportedException>(() => ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("sampled-texture2d")));
         var boolean = new ShaderGraphLiteral { type = new() { id = "bool" }, scalarBits = [2] };
         Assert.Throws<InvalidOperationException>(() => boolean.Emit(new(), ShaderSourceType.Atomic("bool")));
@@ -102,7 +108,8 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         GraphDocument child = ShaderGraphDocument.Create(
             new ShaderDefinition("Optional Node", [], [], []),
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
         ShaderGraphNodes.WriteSettings(
             child,
             new ShaderGraphNodeSettings
@@ -111,7 +118,8 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
                 kind = ShaderGraphNodeKind.Function
             },
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
         var boundaryInput = new GraphNodeRecord(new("node-inputs"), ShaderGraphNodes.inputDefinitionId);
         var boundaryOutput = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.outputDefinitionId);
         child.AddNode(boundaryInput);
@@ -130,29 +138,32 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         {
             ports = [new() { id = "value", type = new() { id = "float3" } }]
         });
-        child.AddEdge(new(
-            new("return"),
-            new(boundaryInput.id, new("offset")),
-            new(boundaryOutput.id, new("value"))));
+        child.AddEdge(new(new("return"), new(boundaryInput.id, new("offset")), new(boundaryOutput.id, new("value"))));
 
         GraphDocument parent = ShaderGraphDocument.Create(
             new ShaderDefinition("Parent", [], [], []),
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
         var call = new GraphNodeRecord(new("call"), ShaderGraphNodes.callDefinitionId);
         parent.AddNode(call);
         Set(call, "sourceId", sourceId);
         Set(call, "sourcePath", "Optional.ishader");
-        Set(call, ShaderGraphNodes.interfaceKey, ShaderGraphNodes.ReadInterface(
-            child,
-            m_serialization,
-            SerializationContext.empty));
+        Set(
+            call,
+            ShaderGraphNodes.interfaceKey,
+            ShaderGraphNodes.ReadInterface(child, m_serialization, SerializationContext.empty)
+        );
 
         GraphDocument expanded = ShaderGraphNodes.Expand(
             parent,
-            (id, _) => id == sourceId ? child : throw new InvalidOperationException(),
+            (
+                id,
+                _
+            ) => id == sourceId ? child : throw new InvalidOperationException(),
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
         GraphNodeRecord value = Assert.Single(expanded.nodes);
         Assert.Equal("inno.shader.reroute", value.definitionId);
         Assert.False(value.TryGetValue(ShaderGraphDocument.inputDefaultPrefix + "input", out _));
@@ -175,9 +186,11 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
                 {
                     ["value"] = new(reroute.id, new("value"))
                 },
-                "test.optional-zero"),
+                "test.optional-zero"
+            ),
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
 
         Assert.True(result.succeeded, string.Join("\n", result.diagnostics.Select(value => value.message)));
         Assert.Empty(result.diagnostics);
@@ -200,20 +213,36 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
                 {
                     ["value"] = new(reroute.id, new("value"))
                 },
-                "test.optional-resource"),
+                "test.optional-resource"
+            ),
             m_serialization,
-            SerializationContext.empty);
+            SerializationContext.empty
+        );
 
         ShaderGraphDiagnostic diagnostic = Assert.Single(result.diagnostics);
         Assert.Equal("SHADER_GRAPH_OPTIONAL_TYPE", diagnostic.code);
     }
 
-    private ShaderGraphLoweringResult Lower(GraphDocument graph, ShaderNodeCompilerCatalog catalog)
-        => catalog.Lower(new(graph, new Dictionary<string, GraphEndpoint> { ["value"] = new(new("multiply"), new("value")) }, "test.defaults"), m_serialization, SerializationContext.empty);
+    private ShaderGraphLoweringResult Lower(
+        GraphDocument graph,
+        ShaderNodeCompilerCatalog catalog
+    ) => catalog.Lower(
+        new(graph, new Dictionary<string, GraphEndpoint> { ["value"] = new(new("multiply"), new("value")) }, "test.defaults"),
+        m_serialization,
+        SerializationContext.empty
+    );
 
-    private void Set<T>(GraphNodeRecord node, string key, T value)
-        => node.SetValue(key, ShaderGraphDocument.Encode(value, m_serialization, SerializationContext.empty));
+    private void Set<T>(
+        GraphNodeRecord node,
+        string key,
+        T value
+    ) => node.SetValue(key, ShaderGraphDocument.Encode(value, m_serialization, SerializationContext.empty));
 
     public void Dispose()
-    { m_serialization.Dispose(); m_types.Dispose(); m_modules.Dispose(); if (Directory.Exists(m_root)) Directory.Delete(m_root, true); }
+    {
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+        if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
+    }
 }

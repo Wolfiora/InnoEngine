@@ -60,7 +60,8 @@ internal static unsafe class BgfxNativeCalls
         return result;
     }
 
-    internal static bgfx.ShaderHandle CreateShader(bgfx.Memory* memory) {
+    internal static bgfx.ShaderHandle CreateShader(bgfx.Memory* memory)
+    {
         bgfx.ShaderHandle result = default;
         bgfx.Raw.create_shader(memory, &result);
         return result;
@@ -131,7 +132,8 @@ internal static unsafe class BgfxNativeCalls
         return result;
     }
 
-    internal static bgfx.VertexLayoutHandle CreateVertexLayout(bgfx.VertexLayout* layout) {
+    internal static bgfx.VertexLayoutHandle CreateVertexLayout(bgfx.VertexLayout* layout)
+    {
         bgfx.VertexLayoutHandle result = default;
         bgfx.Raw.create_vertex_layout(layout, &result);
         return result;
@@ -169,7 +171,8 @@ internal static unsafe class BgfxNativeCalls
             srcZ,
             width,
             height,
-            depth);
+            depth
+        );
     }
 
     internal static void EncoderDispatch(
@@ -274,7 +277,8 @@ internal static unsafe class BgfxNativeCalls
             &handle,
             startVertex,
             numVertices,
-            &layoutHandle);
+            &layoutHandle
+        );
     }
 
     internal static void EncoderSetImage(
@@ -358,7 +362,8 @@ internal static unsafe class BgfxNativeCalls
             &handle,
             startVertex,
             numVertices,
-            &layoutHandle);
+            &layoutHandle
+        );
     }
 
     internal static void EncoderSubmit(
@@ -497,5 +502,4 @@ internal static unsafe class BgfxNativeCalls
     ) {
         bgfx.Raw.update_texture_cube(&handle, layer, side, mip, x, y, width, height, memory, pitch);
     }
-
 }

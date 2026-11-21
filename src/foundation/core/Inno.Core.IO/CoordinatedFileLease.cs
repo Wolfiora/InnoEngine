@@ -60,26 +60,36 @@ public sealed class CoordinatedFileLease : IDisposable
         CancellationToken cancellationToken = default
     ) {
         if (!Path.IsPathFullyQualified(coordinationPath) || !Path.IsPathFullyQualified(leafPath))
+        {
             throw new ArgumentException("Coordinated leases require absolute owner and leaf paths.");
+        }
         string ownerPath = Path.GetFullPath(coordinationPath);
         string leaf = Path.GetFullPath(leafPath);
         string root = Path.GetDirectoryName(ownerPath)!;
         PathBoundary.RequireUnlinkedPath(root, leaf);
         if (string.Equals(ownerPath, leaf, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        {
             throw new ArgumentException("The leaf must differ from its persistent owner gate.", nameof(leafPath));
+        }
         if (timeout < TimeSpan.Zero && timeout != Timeout.InfiniteTimeSpan)
+        {
             throw new ArgumentOutOfRangeException(nameof(timeout));
+        }
         Stopwatch elapsed = Stopwatch.StartNew();
         if (!File.Exists(ownerPath))
+        {
             using (await FileLease.AcquireAsync(ownerPath, Remaining(), cancellationToken).ConfigureAwait(false)) { }
+        }
         FileLease owner = await FileLease.AcquireSharedAsync(ownerPath, Remaining(), cancellationToken).ConfigureAwait(false);
         try
         {
             if (shared && !File.Exists(leaf))
+            {
                 using (await FileLease.AcquireAsync(leaf, Remaining(), cancellationToken).ConfigureAwait(false)) { }
+            }
             FileLease acquired = shared
-                ? await FileLease.AcquireSharedAsync(leaf, Remaining(), cancellationToken).ConfigureAwait(false)
-                : await FileLease.AcquireAsync(leaf, Remaining(), cancellationToken).ConfigureAwait(false);
+                                 ? await FileLease.AcquireSharedAsync(leaf, Remaining(), cancellationToken).ConfigureAwait(false)
+                                 : await FileLease.AcquireAsync(leaf, Remaining(), cancellationToken).ConfigureAwait(false);
             return new(owner, acquired);
         }
         catch
@@ -88,8 +98,10 @@ public sealed class CoordinatedFileLease : IDisposable
             throw;
         }
 
-        TimeSpan Remaining() => timeout == Timeout.InfiniteTimeSpan ? timeout
-            : timeout > elapsed.Elapsed ? timeout - elapsed.Elapsed : TimeSpan.Zero;
+        TimeSpan Remaining()
+            => timeout == Timeout.InfiniteTimeSpan
+               ? timeout
+               : timeout > elapsed.Elapsed ? timeout - elapsed.Elapsed : TimeSpan.Zero;
     }
 
     /// <summary>
@@ -99,7 +111,9 @@ public sealed class CoordinatedFileLease : IDisposable
     {
         FileLease? leaf = Interlocked.Exchange(ref m_leaf, null);
         if (leaf is null)
+        {
             return;
+        }
         try
         {
             leaf.Dispose();

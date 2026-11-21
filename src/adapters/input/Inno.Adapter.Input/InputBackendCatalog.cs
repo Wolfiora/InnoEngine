@@ -30,7 +30,9 @@ public sealed class InputBackendCatalog : IInputBackendFactory
         foreach (InputBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<InputBackendId>(new List<InputBackendId>(m_providers.Keys));
     }
@@ -49,9 +51,10 @@ public sealed class InputBackendCatalog : IInputBackendFactory
     ) {
         ArgumentNullException.ThrowIfNull(window);
         if (!m_providers.TryGetValue(backend, out InputBackendProvider? provider))
+        {
             throw new NotSupportedException("Input backend '" + backend + "' is not registered.");
+        }
         return provider.CreateEventSource(window, acceptAllWindows)
-            ?? throw new InvalidOperationException("Input provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Input provider '" + backend + "' returned no service.");
     }
 }
-

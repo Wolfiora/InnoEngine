@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Assets;
@@ -35,7 +35,9 @@ public sealed class AssetSourceMount
         IEnumerable<AssetSourceId>? dependencies = null
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("An asset source ID must be valid.", nameof(id));
+        }
         ArgumentException.ThrowIfNullOrWhiteSpace(rootPath);
         this.id = id;
         this.rootPath = Path.GetFullPath(rootPath);

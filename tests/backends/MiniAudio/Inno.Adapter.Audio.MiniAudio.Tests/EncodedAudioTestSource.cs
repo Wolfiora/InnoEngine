@@ -17,5 +17,6 @@ internal sealed class EncodedAudioTestSource : IAudioClipSource
 
     public string contentHash { get; }
     public long length => m_bytes.LongLength;
+
     public Stream OpenRead() => new MemoryStream(m_bytes, writable: false);
 }

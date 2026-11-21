@@ -31,12 +31,13 @@ public sealed class AssemblyUnloadException : InvalidOperationException
         IReadOnlyList<string> retainedGenerations,
         TimeSpan elapsed,
         int collectionAttempts
-    )
-        : base(CreateMessage(retainedGenerations, elapsed, collectionAttempts))
+    ) : base(CreateMessage(retainedGenerations, elapsed, collectionAttempts))
     {
         ArgumentNullException.ThrowIfNull(retainedGenerations);
         if (retainedGenerations.Count == 0)
+        {
             throw new ArgumentException("An unload failure requires at least one retained generation.", nameof(retainedGenerations));
+        }
         this.retainedGenerations = retainedGenerations.ToArray();
         this.elapsed = elapsed;
         this.collectionAttempts = collectionAttempts;
@@ -64,11 +65,13 @@ public sealed class AssemblyUnloadException : InvalidOperationException
     ) {
         ArgumentNullException.ThrowIfNull(retainedGenerations);
         if (retainedGenerations.Count == 0)
+        {
             throw new ArgumentException("An unload failure requires at least one retained generation.", nameof(retainedGenerations));
+        }
         return
-            $"Retired assembly generations remained reachable for {elapsed.TotalSeconds:F1} seconds across " +
-            $"{collectionAttempts} full garbage-collection attempts: {string.Join(", ", retainedGenerations)}. " +
-            "A Type, object, delegate, extension, task, subscription, thread, native callback, or other generation-bound " +
-            "reference is still retained. The reload subsystem is faulted and requires a host restart.";
+            $"Retired assembly generations remained reachable for {elapsed.TotalSeconds:F1} seconds across "
+            + $"{collectionAttempts} full garbage-collection attempts: {string.Join(", ", retainedGenerations)}. "
+            + "A Type, object, delegate, extension, task, subscription, thread, native callback, or other generation-bound "
+            + "reference is still retained. The reload subsystem is faulted and requires a host restart.";
     }
 }

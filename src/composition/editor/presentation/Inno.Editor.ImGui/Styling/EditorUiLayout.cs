@@ -2,6 +2,7 @@ using System.Numerics;
 using Inno.Native.ImGui;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Copies the presentation metrics needed by custom layouts without retaining native style memory.
 /// </summary>
@@ -11,30 +12,37 @@ public readonly struct EditorUiLayout
     /// Gets spacing between neighboring controls.
     /// </summary>
     public Vector2 itemSpacing { get; }
+
     /// <summary>
     /// Gets the current window inset.
     /// </summary>
     public Vector2 windowPadding { get; }
+
     /// <summary>
     /// Gets table cell padding.
     /// </summary>
     public Vector2 cellPadding { get; }
+
     /// <summary>
     /// Gets spacing between parts of a compound control.
     /// </summary>
     public Vector2 itemInnerSpacing { get; }
+
     /// <summary>
     /// Gets padding inside a control.
     /// </summary>
     public Vector2 framePadding { get; }
+
     /// <summary>
     /// Gets dock splitter thickness.
     /// </summary>
     public float dockingSeparatorSize { get; }
+
     /// <summary>
     /// Gets scrollbar width.
     /// </summary>
     public float scrollbarSize { get; }
+
     /// <summary>
     /// Gets control corner radius.
     /// </summary>

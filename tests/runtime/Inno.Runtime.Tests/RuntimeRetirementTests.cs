@@ -1,14 +1,14 @@
-using Inno.Core.Logging;
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.Execution;
-using Inno.Runtime.Contracts;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Core.Execution;
+using Inno.Core.Logging;
+using Inno.Runtime.Contracts;
 
 namespace Inno.Runtime.Tests;
 
@@ -19,26 +19,32 @@ public sealed class RuntimeRetirementTests
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(true, true)]
-    public void FailedStartupDrainsBeforeReleasingFactoryResources(bool hostLifetime, bool failAttach)
-    {
+    public void FailedStartupDrainsBeforeReleasingFactoryResources(
+        bool hostLifetime,
+        bool failAttach
+    ) {
         string root = Path.Combine(Path.GetTempPath(), "InnoStartupTests", Guid.NewGuid().ToString("N"));
         using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .Build();
         var resource = new Resource();
         var factory = new FailingFactory(resource, hostLifetime, failAttach);
         try
         {
             Exception error = hostLifetime
-                ? Assert.Throws<InvalidOperationException>(() => host.CreateHostPipeline([factory]))
-                : Assert.Throws<InvalidOperationException>(() => host.CreateSession(new RuntimeSessionOptions
-                {
-                    applicationId = "startup.test",
-                    kind = RuntimeSessionKind.Play,
-                    createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "startup.test"), "Logs")),
-                    jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
-                    createSubsystems = _ => [factory]
-                }));
+                              ? Assert.Throws<InvalidOperationException>(() => host.CreateHostPipeline([factory]))
+                              : Assert.Throws<InvalidOperationException>(() => host.CreateSession(new RuntimeSessionOptions
+                              {
+                                  applicationId = "startup.test",
+                                  kind = RuntimeSessionKind.Play,
+                                  createLogSink = _ => new FileLogSink(Path.Combine(Path.Combine(root, "startup.test"), "Logs")),
+                                  jobExecutionMode = RuntimeJobExecutionMode.SingleThread,
+                                  createSubsystems = _ => [factory]
+                              }));
             Assert.Equal("startup failure", error.Message);
             Assert.True(factory.observedRetainedResource);
             Assert.True(resource.disposed);
@@ -51,7 +57,9 @@ public sealed class RuntimeRetirementTests
         {
             host.Dispose();
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
@@ -60,8 +68,12 @@ public sealed class RuntimeRetirementTests
     {
         string root = Path.Combine(Path.GetTempPath(), "InnoStopTests", Guid.NewGuid().ToString("N"));
         using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .Build();
         var pending = new StopPendingSubsystem();
         var resource = new Resource();
         RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
@@ -89,8 +101,12 @@ public sealed class RuntimeRetirementTests
         var pending = new PendingSubsystem();
         var resource = new Resource();
         using EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeRetirementTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .Build();
         try
         {
             RuntimeSession session = host.CreateSession(new RuntimeSessionOptions
@@ -118,13 +134,19 @@ public sealed class RuntimeRetirementTests
             pending.work.TrySetResult();
             host.Dispose();
             if (Directory.Exists(root))
+            {
                 Directory.Delete(root, recursive: true);
+            }
         }
     }
 
-    private sealed class Factory(PendingSubsystem subsystem, Resource resource) : IRuntimeSubsystemFactory
+    private sealed class Factory(
+        PendingSubsystem subsystem,
+        Resource resource
+    ) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("tests.pending"));
+
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {
             context.resources.Own(resource);
@@ -136,7 +158,9 @@ public sealed class RuntimeRetirementTests
     {
         internal TaskCompletionSource work { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         internal bool stopped { get; private set; }
+
         protected override void OnStart() => lifetime.Track(work.Task);
+
         protected override void OnStop() => stopped = true;
     }
 
@@ -144,45 +168,70 @@ public sealed class RuntimeRetirementTests
     {
         internal bool disposed { get; private set; }
         internal int disposeCount { get; private set; }
-        public void Dispose() { disposed = true; disposeCount++; }
+
+        public void Dispose()
+        {
+            disposed = true;
+            disposeCount++;
+        }
     }
 
-    private sealed class FailingFactory(Resource resource, bool hostLifetime, bool failAttach) : IRuntimeSubsystemFactory
+    private sealed class FailingFactory(
+        Resource resource,
+        bool hostLifetime,
+        bool failAttach
+    ) : IRuntimeSubsystemFactory
     {
-        public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("tests.failure"),
-            lifetime: hostLifetime ? RuntimeSubsystemLifetime.Host : RuntimeSubsystemLifetime.Session);
+        public RuntimeSubsystemDescriptor descriptor { get; } = new(
+            new RuntimeSubsystemId("tests.failure"),
+            lifetime: hostLifetime ? RuntimeSubsystemLifetime.Host : RuntimeSubsystemLifetime.Session
+        );
+
         internal bool observedRetainedResource;
 
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {
             context.resources.Own(resource);
             if (failAttach)
+            {
                 return new FailingSubsystem(this, resource);
+            }
             context.resources.Track(Drain(context.resources.cancellationToken));
             throw new InvalidOperationException("startup failure");
         }
 
         internal async Task Drain(CancellationToken cancellationToken)
         {
-            try { await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false); }
+            try
+            {
+                await Task.Delay(Timeout.Infinite, cancellationToken).ConfigureAwait(false);
+            }
             catch (OperationCanceledException) { }
             observedRetainedResource = !resource.disposed;
         }
 
-        private sealed class FailingSubsystem(FailingFactory factory, Resource resource) : RuntimeSubsystem
+        private sealed class FailingSubsystem(
+            FailingFactory factory,
+            Resource resource
+        ) : RuntimeSubsystem
         {
             protected override void OnStart()
             {
                 lifetime.Track(factory.Drain(lifetime.cancellationToken));
                 throw new InvalidOperationException("startup failure");
             }
+
             protected override void OnStop() => Assert.False(resource.disposed);
         }
     }
 
-    private sealed class SimpleFactory(IRuntimeSubsystem subsystem, Resource resource) : IRuntimeSubsystemFactory
+    private sealed class SimpleFactory(
+        IRuntimeSubsystem subsystem,
+        Resource resource
+    ) : IRuntimeSubsystemFactory
     {
         public RuntimeSubsystemDescriptor descriptor { get; } = new(new RuntimeSubsystemId("tests.stop"));
+
         public IRuntimeSubsystem Create(RuntimeSubsystemContext context)
         {
             context.resources.Own(resource);
@@ -194,11 +243,14 @@ public sealed class RuntimeRetirementTests
     {
         internal bool ready;
         internal int stopAttempts;
+
         protected override void OnStop()
         {
             stopAttempts++;
             if (!ready)
+            {
                 throw new RetirementPendingException("native drain pending");
+            }
         }
     }
 }

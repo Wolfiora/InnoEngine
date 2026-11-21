@@ -30,8 +30,7 @@ internal sealed record SceneScalarHistoryData(
         SceneScalarKind scalarKind,
         string before,
         string after
-    )
-        => new(targetId, scalarKind, before, after, Stopwatch.GetTimestamp());
+    ) => new(targetId, scalarKind, before, after, Stopwatch.GetTimestamp());
 
     internal static SceneScalarHistoryData Decode(ReadOnlySpan<byte> bytes)
     {
@@ -40,12 +39,16 @@ internal sealed record SceneScalarHistoryData(
         Guid targetId = new(reader.ReadBytes(16));
         var scalarKind = (SceneScalarKind)reader.ReadByte();
         if (!Enum.IsDefined(scalarKind))
+        {
             throw new InvalidDataException($"Unknown scene scalar history kind '{scalarKind}'.");
+        }
         string before = reader.ReadString();
         string after = reader.ReadString();
         long timestamp = reader.ReadInt64();
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Scene scalar history payload contains trailing data.");
+        }
         return new SceneScalarHistoryData(targetId, scalarKind, before, after, timestamp);
     }
 }

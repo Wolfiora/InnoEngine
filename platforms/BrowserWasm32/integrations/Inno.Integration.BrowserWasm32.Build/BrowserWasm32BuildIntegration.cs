@@ -27,11 +27,20 @@ public static class BrowserWasm32BuildIntegration
     {
         ArgumentNullException.ThrowIfNull(context);
         var generator = new NativeBindingGenerator(BrowserWasm32BindingProfile.Create());
-        ProductNativeBuildPlan player = StandardNativeComponents.CreateStaticPlayer(BrowserWasm32NativeProducts.Options, BrowserWasm32NativeLayout.Map);
+        ProductNativeBuildPlan player = StandardNativeComponents.CreateStaticPlayer(
+            BrowserWasm32NativeProducts.Options,
+            BrowserWasm32NativeLayout.Map
+        );
         var validator = new PlayerSupportPackClosureValidator(
             StandardSupportPackRequirements.CreateStatic(player, BrowserWasm32BuildModule.target.id, BrowserWasm32LinkerSettings.Create()),
-            new BrowserWasm32SupportPackValidator(), null);
-        return BrowserWasm32BuildModule.CreateContribution(context,
-            new NativeProductContribution(player, new BrowserWasm32NativeProductExecutor()), validator, generator);
+            new BrowserWasm32SupportPackValidator(),
+            null
+        );
+        return BrowserWasm32BuildModule.CreateContribution(
+            context,
+            new NativeProductContribution(player, new BrowserWasm32NativeProductExecutor()),
+            validator,
+            generator
+        );
     }
 }

@@ -1,4 +1,3 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
 using Inno.Core.Logging;
@@ -10,9 +9,12 @@ using Inno.Editor.Interactions;
 using Inno.Editor.PlayMode;
 using Inno.Editor.Scene;
 using Inno.Scene;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 /// <summary>
 /// Draws the registered inspector for the current editor selection.
 /// </summary>
@@ -26,10 +28,12 @@ internal sealed class InspectorPanel : EditorPanel
     private readonly InspectorTargetHeader m_targetHeader;
     private readonly Logger m_log;
     private string m_failureState = string.Empty;
+
     /// <summary>
     /// Gets whether use window padding is enabled for this implementation.
     /// </summary>
     public override bool useWindowPadding => false;
+
     /// <summary>
     /// Lets the inspector content child own vertical scrolling.
     /// </summary>
@@ -96,7 +100,10 @@ internal sealed class InspectorPanel : EditorPanel
 
     private void DrawContent(EditorContext context)
     {
-        object? target = m_targetHeader.Resolve(m_interactions, m_interactions.selection.count > 1 ? m_interactions.selection.Capture() : m_interactions.selection.selectedTarget);
+        object? target = m_targetHeader.Resolve(
+            m_interactions,
+            m_interactions.selection.count > 1 ? m_interactions.selection.Capture() : m_interactions.selection.selectedTarget
+        );
         if (target is null)
         {
             m_failureState = string.Empty;
@@ -104,8 +111,10 @@ internal sealed class InspectorPanel : EditorPanel
             return;
         }
 
-        if (!m_inspection.TryResolve(context, target, out IInspectionDrawer? drawer, out InspectionDrawContext? drawContext) || drawer is null || drawContext is null)
-        {
+        if (!m_inspection.TryResolve(context, target, out IInspectionDrawer? drawer, out InspectionDrawContext? drawContext)
+            || drawer is null
+            || drawContext is null
+        ) {
             m_failureState = string.Empty;
             EditorUI.current.widgets.Hint($"No inspector drawer is registered for {target.GetType().Name}.");
             return;
@@ -136,7 +145,11 @@ internal sealed class InspectorPanel : EditorPanel
             string failureState = $"{target.GetType().FullName}:{exception}";
             if (!string.Equals(m_failureState, failureState, StringComparison.Ordinal))
             {
-                m_log.Write(LogLevel.Error, "Inspector failed for target '{0}': {1}", [target.GetType().FullName ?? target.GetType().Name, exception]);
+                m_log.Write(
+                    LogLevel.Error,
+                    "Inspector failed for target '{0}': {1}",
+                    [target.GetType().FullName ?? target.GetType().Name, exception]
+                );
                 m_failureState = failureState;
             }
         }

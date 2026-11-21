@@ -20,7 +20,7 @@ public class RetirementPendingException : InvalidOperationException
     public RetirementPendingException(
         string message,
         Exception? innerException = null
-    ) : base(message, innerException) { }
+    ) : base(message, innerException) {}
 
     /// <summary>
     /// Finds unfinished retirement in an exception tree without discarding its contextual or sibling failures.
@@ -39,16 +39,23 @@ public class RetirementPendingException : InvalidOperationException
     {
         ArgumentNullException.ThrowIfNull(exception);
         if (exception is RetirementPendingException pending)
+        {
             return pending.InnerException is Exception detail && Find(detail) is RetirementTimeoutException terminal
-                ? terminal : pending;
+                   ? terminal
+                   : pending;
+        }
         if (exception is not AggregateException aggregate)
+        {
             return exception.InnerException is Exception cause ? Find(cause) : null;
+        }
         RetirementPendingException? result = null;
         foreach (Exception inner in aggregate.InnerExceptions)
         {
             RetirementPendingException? found = Find(inner);
             if (found is RetirementTimeoutException)
+            {
                 return found;
+            }
             result ??= found;
         }
         return result;
@@ -75,13 +82,17 @@ public class RetirementPendingException : InvalidOperationException
         if (exception is RetirementPendingException pending)
         {
             if (pending.InnerException is Exception detail)
+            {
                 CollectCompletedFailures(detail, failures);
+            }
             return;
         }
         if (exception is AggregateException aggregate)
         {
             foreach (Exception inner in aggregate.InnerExceptions)
+            {
                 CollectCompletedFailures(inner, failures);
+            }
             return;
         }
         if (Find(exception) is not null && exception.InnerException is Exception cause)
@@ -90,8 +101,12 @@ public class RetirementPendingException : InvalidOperationException
             return;
         }
         foreach (Exception previous in failures)
+        {
             if (ReferenceEquals(previous, exception))
+            {
                 return;
+            }
+        }
         failures.Add(exception);
     }
 }

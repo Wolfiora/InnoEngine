@@ -1,5 +1,4 @@
 using System.Numerics;
-
 using Inno.Scripting.Api;
 
 namespace Inno.Editor.Core;
@@ -88,9 +87,11 @@ public abstract class EditorModal
         Vector2 availableContentSize
     ) {
         System.ArgumentNullException.ThrowIfNull(context);
-        if (!float.IsFinite(availableContentSize.X) || !float.IsFinite(availableContentSize.Y) ||
-            availableContentSize.X <= 0f || availableContentSize.Y <= 0f)
+        if (!float.IsFinite(availableContentSize.X) || !float.IsFinite(availableContentSize.Y)
+            || availableContentSize.X <= 0f || availableContentSize.Y <= 0f
+        ) {
             throw new System.ArgumentOutOfRangeException(nameof(availableContentSize));
+        }
         return OnPrepare(context, availableContentSize);
     }
 

@@ -59,7 +59,11 @@ public static class ManagedProjectGraphCapture
         bool resolveReferences = false
     ) {
         ValidateProjects(projects, properties);
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(dotnetHost, engineRoot, cancellationToken).ConfigureAwait(false);
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveDirectoryAsync(
+            dotnetHost,
+            engineRoot,
+            cancellationToken
+        ).ConfigureAwait(false);
         return await EvaluateAsync(engineRoot, sdk, projects, properties, cancellationToken, resolveReferences).ConfigureAwait(false);
     }
 
@@ -119,10 +123,16 @@ public static class ManagedProjectGraphCapture
         ArgumentNullException.ThrowIfNull(projects);
         ArgumentNullException.ThrowIfNull(properties);
         if (projects.Count == 0 || projects.Any(static project => !Path.IsPathFullyQualified(project)))
+        {
             throw new ArgumentException("SDK capture requires nonempty absolute project paths.", nameof(projects));
+        }
         foreach (string project in projects)
+        {
             if (!File.Exists(project))
+            {
                 throw new FileNotFoundException("The SDK project input is missing.", project);
+            }
+        }
     }
 
     private static async Task<string> EvaluateAsync(
@@ -134,45 +144,99 @@ public static class ManagedProjectGraphCapture
         bool resolveReferences
     ) {
         var context = new NativeBuildContext(engineRoot, "debug");
-        using ManagedInputEvaluatorPreparation.Result evaluator = await ManagedInputEvaluatorPreparation.PrepareAsync(context, sdk, cancellationToken).ConfigureAwait(false);
+        using ManagedInputEvaluatorPreparation.Result evaluator = await ManagedInputEvaluatorPreparation.PrepareAsync(
+            context,
+            sdk,
+            cancellationToken
+        ).ConfigureAwait(false);
         string requests = Path.Combine(context.engineRoot, "artifacts", "build-tools", "managed-inputs", "requests");
-        BuildCacheOwnerCatalog.Register(context.engineRoot, requests, "managed-input-requests", BuildCacheArtifactRole.ProcessWorkingDirectory, cancellationToken);
+        BuildCacheOwnerCatalog.Register(
+            context.engineRoot,
+            requests,
+            "managed-input-requests",
+            BuildCacheArtifactRole.ProcessWorkingDirectory,
+            cancellationToken
+        );
         using ProcessOwnedDirectory request = await ProcessOwnedDirectory.CreateAsync(requests, cancellationToken).ConfigureAwait(false);
         string output = Path.Combine(request.directory, "Graph.json");
         string entry = Path.Combine(request.directory, "Graph.proj");
         string compilerTargets = Path.Combine(request.directory, "RepositoryReferences.targets");
-        var compiler = new XElement("Project",
-            new XElement("Import", new XAttribute("Project", "$(InnoOriginalCustomAfterMicrosoftCommonTargets)"),
-                new XAttribute("Condition", "'$(InnoOriginalCustomAfterMicrosoftCommonTargets)' != '' and Exists('$(InnoOriginalCustomAfterMicrosoftCommonTargets)')")),
-            new XElement("Target", new XAttribute("Name", "KeepInnoReferenceCaptureReadOnly"),
+        var compiler = new XElement(
+            "Project",
+            new XElement(
+                "Import",
+                new XAttribute("Project", "$(InnoOriginalCustomAfterMicrosoftCommonTargets)"),
+                new XAttribute(
+                    "Condition",
+                    "'$(InnoOriginalCustomAfterMicrosoftCommonTargets)' != '' and Exists('$(InnoOriginalCustomAfterMicrosoftCommonTargets)')"
+                )
+            ),
+            new XElement(
+                "Target",
+                new XAttribute("Name", "KeepInnoReferenceCaptureReadOnly"),
                 new XAttribute("BeforeTargets", "ResolveProjectReferences"),
-                new XElement("PropertyGroup", new XElement("BuildProjectReferences", "false"))),
-            new XElement("Target", new XAttribute("Name", "CaptureInnoRepositoryReferences"),
+                new XElement("PropertyGroup", new XElement("BuildProjectReferences", "false"))
+            ),
+            new XElement(
+                "Target",
+                new XAttribute("Name", "CaptureInnoRepositoryReferences"),
                 new XAttribute("DependsOnTargets", "ResolveReferences;AddImplicitDefineConstants"),
                 new XAttribute("Returns", "@(_InnoRepositoryCapture)"),
-                new XElement("ItemGroup",
-                    new[] { "ReferencePath", "Compile" }.Select(name => new XElement("_InnoRepositoryCapture",
-                        new XAttribute("Include", name == "Compile" ? "@(Compile->'%(FullPath)')" : "@(ReferencePath)"), new XElement("CaptureKind", name))),
+                new XElement(
+                    "ItemGroup",
+                    new[] { "ReferencePath", "Compile" }.Select(name => new XElement(
+                        "_InnoRepositoryCapture",
+                        new XAttribute("Include", name == "Compile" ? "@(Compile->'%(FullPath)')" : "@(ReferencePath)"),
+                        new XElement("CaptureKind", name)
+                    )),
                     new[] { "TargetPath", "DefineConstants", "LangVersion", "Nullable", "AllowUnsafeBlocks" }.Select(name =>
-                        new XElement("_InnoRepositoryCapture", new XAttribute("Include", name),
-                            new XElement("CaptureKind", "Property"), new XElement("Value", "$(" + name + ")"))))));
-        var document = new XElement("Project",
-            new XElement("UsingTask", new XAttribute("TaskName", "Inno.Build.Toolchains.ManagedInputGraphTask"),
-                new XAttribute("AssemblyFile", Path.Combine(evaluator.directory, "Outputs", "ManagedInputGraphTask.dll"))),
-            new XElement("ItemGroup",
+                        new XElement(
+                            "_InnoRepositoryCapture",
+                            new XAttribute("Include", name),
+                            new XElement("CaptureKind", "Property"),
+                            new XElement("Value", "$(" + name + ")")
+                        ))
+                )
+            )
+        );
+        var document = new XElement(
+            "Project",
+            new XElement(
+                "UsingTask",
+                new XAttribute("TaskName", "Inno.Build.Toolchains.ManagedInputGraphTask"),
+                new XAttribute("AssemblyFile", Path.Combine(evaluator.directory, "Outputs", "ManagedInputGraphTask.dll"))
+            ),
+            new XElement(
+                "ItemGroup",
                 projects.Select(project => new XElement("RepositoryProject", new XAttribute("Include", project))),
-                properties.Select(pair => new XElement("InputProperty", new XAttribute("Include", pair.Key), new XElement("Value", pair.Value)))),
-            new XElement("Target", new XAttribute("Name", "Capture"),
-                new XElement("Inno.Build.Toolchains.ManagedInputGraphTask", new XAttribute("ProjectPath", projects[0]),
-                    new XAttribute("OutputPath", output), new XAttribute("CompilerInputsTargets", compilerTargets),
+                properties.Select(
+                    pair => new XElement("InputProperty", new XAttribute("Include", pair.Key), new XElement("Value", pair.Value))
+                )
+            ),
+            new XElement(
+                "Target",
+                new XAttribute("Name", "Capture"),
+                new XElement(
+                    "Inno.Build.Toolchains.ManagedInputGraphTask",
+                    new XAttribute("ProjectPath", projects[0]),
+                    new XAttribute("OutputPath", output),
+                    new XAttribute("CompilerInputsTargets", compilerTargets),
                     new XAttribute("ResolveRepositoryReferences", resolveReferences),
-                    new XAttribute("RepositoryProjects", "@(RepositoryProject)"), new XAttribute("Properties", "@(InputProperty)"))));
+                    new XAttribute("RepositoryProjects", "@(RepositoryProject)"),
+                    new XAttribute("Properties", "@(InputProperty)")
+                )
+            )
+        );
         Directory.CreateDirectory(request.directory);
         await File.WriteAllTextAsync(compilerTargets, compiler.ToString(), cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(entry, document.ToString(), cancellationToken).ConfigureAwait(false);
-        await ToolchainEnvironment.RunAsync(sdk.hostPath,
+        await ToolchainEnvironment.RunAsync(
+            sdk.hostPath,
             [sdk.cliPath, "msbuild", entry, "-t:Capture", "-nologo", "-v:minimal", "-m:1", "-nodeReuse:false"],
-            context.engineRoot, cancellationToken, DotNetSdkEnvironment.Create(sdk.hostPath)).ConfigureAwait(false);
+            context.engineRoot,
+            cancellationToken,
+            DotNetSdkEnvironment.Create(sdk.hostPath)
+        ).ConfigureAwait(false);
         return await File.ReadAllTextAsync(output, cancellationToken).ConfigureAwait(false);
     }
 }

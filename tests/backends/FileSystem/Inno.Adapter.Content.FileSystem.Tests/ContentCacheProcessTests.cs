@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Inno.Content.Testing;
 using Xunit;
+using Inno.Content.Testing;
 
 namespace Inno.Adapter.Content.FileSystem.Tests;
 
@@ -34,21 +34,25 @@ public sealed class ContentCacheProcessTests
             Assert.Single(Directory.GetDirectories(Path.Combine(cache, "generations")));
 
             File.WriteAllBytes(Path.Combine(oldDirectory, "repair.bin"), [6, 5, 4]);
-            using (FileContentStore repaired = await FileContentPreparation.PrepareAsync(source,
-                       new FileContentCacheOptions(cacheRoot)))
-            {
+            using (FileContentStore repaired = await FileContentPreparation.PrepareAsync(
+                source,
+                new FileContentCacheOptions(cacheRoot)
+            )) {
                 Assert.NotEqual(generation, File.ReadAllText(Path.Combine(cache, "current")));
                 Assert.True(Directory.Exists(oldDirectory));
             }
             await first.ReleaseAsync();
-            using (FileContentStore next = await FileContentPreparation.PrepareAsync(source,
-                       new FileContentCacheOptions(cacheRoot)))
-            {
+            using (FileContentStore next = await FileContentPreparation.PrepareAsync(
+                source,
+                new FileContentCacheOptions(cacheRoot)
+            )) {
                 Assert.True(Directory.Exists(oldDirectory));
             }
             await second.ReleaseAsync();
-            using FileContentStore final = await FileContentPreparation.PrepareAsync(source,
-                new FileContentCacheOptions(cacheRoot));
+            using FileContentStore final = await FileContentPreparation.PrepareAsync(
+                source,
+                new FileContentCacheOptions(cacheRoot)
+            );
             Assert.False(Directory.Exists(oldDirectory));
             Assert.Single(Directory.GetDirectories(Path.Combine(cache, "generations")));
         }
@@ -84,7 +88,7 @@ public sealed class ContentCacheProcessTests
 
         internal async Task<string> ReadLineAsync()
             => await process.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(30))
-                ?? throw new InvalidOperationException("The cache probe exited before reporting its state.");
+               ?? throw new InvalidOperationException("The cache probe exited before reporting its state.");
 
         internal async Task ReleaseAsync()
         {

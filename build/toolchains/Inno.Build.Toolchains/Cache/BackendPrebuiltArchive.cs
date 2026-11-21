@@ -19,6 +19,7 @@ public static class BackendPrebuiltArchive
     private const string C_MANIFEST = "manifest.json";
     private const long C_MAX_BYTES = 8L * 1024 * 1024 * 1024;
     private static readonly DateTimeOffset S_EPOCH = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
     private sealed record FileRecord(
         string owner,
         string configuration,
@@ -26,6 +27,7 @@ public static class BackendPrebuiltArchive
         string path,
         string sha256
     );
+
     private sealed record Inventory(
         int version,
         string target,
@@ -65,7 +67,9 @@ public static class BackendPrebuiltArchive
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Create))
             {
                 using (Stream output = Entry(C_MANIFEST).Open())
+                {
                     JsonSerializer.Serialize(output, inventory);
+                }
                 long total = 0;
                 foreach (FileRecord file in inventory.files)
                 {
@@ -73,14 +77,19 @@ public static class BackendPrebuiltArchive
                     using FileStream input = File.OpenRead(source);
                     total = checked(total + input.Length);
                     if (total > C_MAX_BYTES)
+                    {
                         throw new InvalidDataException("Backend archive exceeds its size limit.");
+                    }
                     using Stream output = Entry(file.path).Open();
                     CopyVerified(input, output, file.sha256, input.Length, cancellationToken);
                 }
 
                 ZipArchiveEntry Entry(string path)
                 {
-                    ZipArchiveEntry entry = zip.CreateEntry(path, path.EndsWith(".zip", StringComparison.Ordinal) ? CompressionLevel.NoCompression : CompressionLevel.Fastest);
+                    ZipArchiveEntry entry = zip.CreateEntry(
+                        path,
+                        path.EndsWith(".zip", StringComparison.Ordinal) ? CompressionLevel.NoCompression : CompressionLevel.Fastest
+                    );
                     entry.LastWriteTime = S_EPOCH;
                     entry.ExternalAttributes = 0;
                     return entry;
@@ -127,18 +136,27 @@ public static class BackendPrebuiltArchive
         string output = Path.GetFullPath(destination);
         string parent = Path.GetDirectoryName(output)!;
         using FileStream stream = File.OpenRead(archivePath);
-        if (!IsDigest(sha256) || Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false)) != sha256)
+        if (!IsDigest(sha256)
+            || Convert.ToHexStringLower(await SHA256.HashDataAsync(stream, cancellationToken).ConfigureAwait(false)) != sha256
+        ) {
             throw new InvalidDataException("The backend platform ZIP differs from its receipt.");
+        }
         stream.Position = 0;
         using var zip = new ZipArchive(stream, ZipArchiveMode.Read);
         ZipArchiveEntry metadata = zip.GetEntry(C_MANIFEST) ?? throw new InvalidDataException("Missing backend inventory.");
         if (metadata.Length > 16 * 1024 * 1024 || zip.Entries.Count > 50001)
+        {
             throw new InvalidDataException("Backend ZIP inventory exceeds its limit.");
+        }
         Inventory inventory;
         using (Stream input = metadata.Open())
+        {
             inventory = Read(input);
+        }
         if (inventory.target != target || zip.Entries.Count != inventory.files.Length + 1)
+        {
             throw new InvalidDataException("Backend target or inventory does not match the request.");
+        }
         using ProcessOwnedDirectory staging = await ProcessOwnedDirectory.CreateAsync(parent, cancellationToken).ConfigureAwait(false);
         string payload = Path.Combine(staging.directory, "payload");
         Directory.CreateDirectory(payload);
@@ -147,10 +165,15 @@ public static class BackendPrebuiltArchive
         foreach (ZipArchiveEntry entry in zip.Entries)
         {
             if (entry == metadata)
+            {
                 continue;
+            }
             if (!expected.Remove(entry.FullName, out FileRecord? file) || ((entry.ExternalAttributes >> 16) & 0xf000) is not (0 or 0x8000)
-                || (entry.ExternalAttributes & (int)FileAttributes.ReparsePoint) != 0 || (total = checked(total + entry.Length)) > C_MAX_BYTES)
+                || (entry.ExternalAttributes & (int)FileAttributes.ReparsePoint) != 0
+                || (total = checked(total + entry.Length)) > C_MAX_BYTES
+            ) {
                 throw new InvalidDataException("Unexpected, duplicate, linked or excessive backend ZIP entry: " + entry.FullName);
+            }
             string path = PathBoundary.Resolve(payload, entry.FullName);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             using Stream input = entry.Open();
@@ -158,13 +181,20 @@ public static class BackendPrebuiltArchive
             CopyVerified(input, targetFile, file.sha256, entry.Length, cancellationToken);
         }
         if (expected.Count != 0)
+        {
             throw new InvalidDataException("Missing backend ZIP entries.");
+        }
         byte[] manifestBytes = JsonSerializer.SerializeToUtf8Bytes(inventory);
         AtomicFile.WriteAllBytes(Path.Combine(payload, C_MANIFEST), manifestBytes);
-        AtomicFile.WriteAllBytes(Path.Combine(payload, "receipt.json"), JsonSerializer.SerializeToUtf8Bytes(new
-        {
-            target, sha256, manifestSha256 = Convert.ToHexStringLower(SHA256.HashData(manifestBytes))
-        }));
+        AtomicFile.WriteAllBytes(
+            Path.Combine(payload, "receipt.json"),
+            JsonSerializer.SerializeToUtf8Bytes(new
+            {
+                target,
+                sha256,
+                manifestSha256 = Convert.ToHexStringLower(SHA256.HashData(manifestBytes))
+            })
+        );
         AtomicDirectory.Publish(payload, output, cancellationToken);
     }
 
@@ -172,17 +202,29 @@ public static class BackendPrebuiltArchive
     {
         Inventory inventory = JsonSerializer.Deserialize<Inventory>(input) ?? throw new InvalidDataException("Missing backend inventory.");
         if (inventory.version != 1 || string.IsNullOrWhiteSpace(inventory.target) || inventory.files is not { Length: > 0 and <= 50000 })
+        {
             throw new InvalidDataException("Unsupported or empty backend inventory.");
+        }
         var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (FileRecord file in inventory.files)
         {
-            if (file is null || string.IsNullOrWhiteSpace(file.owner) || string.IsNullOrWhiteSpace(file.configuration) || !IsDigest(file.input)
-                || !IsDigest(file.sha256) || string.IsNullOrEmpty(file.path) || !paths.Add(file.path) || file.path.Equals(C_MANIFEST, StringComparison.OrdinalIgnoreCase)
+            if (file is null
+                || string.IsNullOrWhiteSpace(file.owner)
+                || string.IsNullOrWhiteSpace(file.configuration)
+                || !IsDigest(file.input)
+                || !IsDigest(file.sha256)
+                || string.IsNullOrEmpty(file.path)
+                || !paths.Add(file.path)
+                || file.path.Equals(C_MANIFEST, StringComparison.OrdinalIgnoreCase)
                 || file.path.Equals("receipt.json", StringComparison.OrdinalIgnoreCase)
-                || file.path.Split('/').Any(static part => part is "" or "." or ".." || part.EndsWith('.') || part.EndsWith(' ')
+                || file.path.Split('/').Any(static part => (
+                    part is "" or "." or ".." || part.EndsWith('.') || part.EndsWith(' ')
                     || part.Any(static c => !char.IsAsciiLetterOrDigit(c) && c is not ('.' or '_' or '-'))
-                    || IsReservedName(part)))
+                    || IsReservedName(part)
+                ))
+            ) {
                 throw new InvalidDataException("Invalid or duplicated backend file ownership: " + file?.path);
+            }
         }
         return inventory with { files = inventory.files.OrderBy(static file => file.path, StringComparer.Ordinal).ToArray() };
     }
@@ -191,10 +233,11 @@ public static class BackendPrebuiltArchive
     {
         string name = part.Split('.')[0].ToUpperInvariant();
         return name is "CON" or "PRN" or "AUX" or "NUL"
-            || name.Length == 4 && name[..3] is ("LPT" or "COM") && name[3] is >= '1' and <= '9';
+               || name.Length == 4 && name[..3] is ("LPT" or "COM") && name[3] is >= '1' and <= '9';
     }
 
-    private static bool IsDigest(string? value) => value is { Length: 64 } && value.All(static c => char.IsAsciiDigit(c) || c is >= 'a' and <= 'f');
+    private static bool IsDigest(string? value)
+        => value is { Length: 64 } && value.All(static c => char.IsAsciiDigit(c) || c is >= 'a' and <= 'f');
 
     private static void CopyVerified(
         Stream input,
@@ -211,11 +254,15 @@ public static class BackendPrebuiltArchive
         {
             cancellation.ThrowIfCancellationRequested();
             if ((copied += read) > length)
+            {
                 throw new InvalidDataException("Backend payload exceeds its declared length.");
+            }
             hash.AppendData(buffer, 0, read);
             output.Write(buffer, 0, read);
         }
         if (copied != length || Convert.ToHexStringLower(hash.GetHashAndReset()) != digest)
+        {
             throw new InvalidDataException("Backend payload does not match its inventory.");
+        }
     }
 }

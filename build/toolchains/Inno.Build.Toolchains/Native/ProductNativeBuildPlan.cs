@@ -42,11 +42,15 @@ public sealed class ProductNativeBuildPlan
         ArgumentNullException.ThrowIfNull(steps);
         var completed = new HashSet<string>(StringComparer.Ordinal);
         if (steps.Count == 0)
+        {
             throw new ArgumentException("A native product requires an explicit component closure.", nameof(steps));
+        }
         foreach (ProductNativeBuildStep step in steps)
         {
             if (step is null || step.dependencies.Any(dependency => !completed.Contains(dependency)) || !completed.Add(step.id))
+            {
                 throw new ArgumentException("Native steps must be unique and ordered after every dependency.", nameof(steps));
+            }
         }
         this.productId = productId;
         m_steps = steps.ToArray();
@@ -100,19 +104,28 @@ public sealed class ProductNativeBuildPlan
             NativeBuildContext selected = configured.WithComponentOptions(step.component, step.options);
             NativeBuildRecipe recipe;
             if (step.createRecipe is not null)
+            {
                 recipe = step.createRecipe(selected);
+            }
             else
             {
                 NativeStaticBuildDefinition definition = step.component.staticBuild!;
-                recipe = NativeBuildRecipe.CreateForComponent(selected, step.component, step.id, tools.targetId,
+                recipe = NativeBuildRecipe.CreateForComponent(
+                    selected,
+                    step.component,
+                    step.id,
+                    tools.targetId,
                     definition.inputPaths.Append(definition.cmakeFile).Select(path => Path.GetFullPath(path, context.engineRoot)),
                     definition.logicalOutputs.Select(static archive => "archive=" + archive).Prepend("static=" + definition.cmakeFile),
-                    [Path.GetFullPath(definition.cmakeFile, context.engineRoot)]);
+                    [Path.GetFullPath(definition.cmakeFile, context.engineRoot)]
+                );
             }
             if (recipe is null || recipe.component != step.id || recipe.targetId != tools.targetId
                 || recipe.owner.nativeProject != step.component.nativeProject
-                || recipe.owner.toolchainProject != step.component.toolchainProject)
+                || recipe.owner.toolchainProject != step.component.toolchainProject
+            ) {
                 throw new InvalidOperationException($"Native step '{step.id}' returned a foreign source declaration.");
+            }
             recipes.Add(recipe);
         }
         return recipes.AsReadOnly();
@@ -134,25 +147,33 @@ public sealed class ProductNativeBuildPlan
     {
         ArgumentNullException.ThrowIfNull(products);
         if (products.Count != m_steps.Length)
+        {
             throw new ArgumentException("A deployment requires this plan's exact product closure.", nameof(products));
+        }
         var files = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         for (int index = 0; index < m_steps.Length; index++)
         {
             ProductNativeBuildStep step = m_steps[index];
             NativeBuildProduct product = products[index];
             if (step.id != product.component)
+            {
                 throw new ArgumentException("The products do not match this plan's declaration order.", nameof(products));
+            }
             foreach (string file in product.files)
             {
                 string relative = Path.GetRelativePath(Path.Combine(product.directory, "Outputs"), file);
                 string? output = step.deploymentPath(relative, product.targetId);
                 if (output is null)
+                {
                     continue;
+                }
                 string portable = output.Replace('\\', '/');
                 if (Path.IsPathFullyQualified(portable) || portable.Contains(':')
                     || portable.Split('/').Any(static segment => segment is "" or "." or "..")
-                    || !files.TryAdd(portable.Replace('/', Path.DirectorySeparatorChar), file))
+                    || !files.TryAdd(portable.Replace('/', Path.DirectorySeparatorChar), file)
+                ) {
                     throw new ArgumentException("Native deployment paths must be portable, contained and unique.", nameof(products));
+                }
             }
         }
         return new ReadOnlyDictionary<string, string>(files);

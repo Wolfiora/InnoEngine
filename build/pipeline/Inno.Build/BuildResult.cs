@@ -96,7 +96,8 @@ public sealed class BuildResult
             artifactBundleCount,
             runtimeAssemblyCount,
             embeddedPluginCount,
-            diagnostics);
+            diagnostics
+        );
     }
 
     internal static BuildResult Failure(
@@ -105,7 +106,9 @@ public sealed class BuildResult
     ) {
         ArgumentNullException.ThrowIfNull(diagnostics);
         if (diagnostics.Count == 0)
+        {
             throw new ArgumentException("A failed build requires at least one diagnostic.", nameof(diagnostics));
+        }
         return new BuildResult(
             false,
             outputPath: null,
@@ -115,6 +118,7 @@ public sealed class BuildResult
             artifactBundleCount: 0,
             runtimeAssemblyCount: 0,
             embeddedPluginCount: 0,
-            diagnostics);
+            diagnostics
+        );
     }
 }

@@ -1,9 +1,8 @@
 using System;
 using System.IO;
-
+using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Core.IO;
 
 namespace Inno.Build;
 
@@ -47,7 +46,8 @@ public sealed class BuildSettingsStore
             new FileByteDocumentStore(Path.GetFullPath(path)),
             serialization,
             defaultSettings.Copy,
-            static value => value.ValidateDocument());
+            static value => value.ValidateDocument()
+        );
         m_defaultSettings = defaultSettings.Copy();
     }
 
@@ -59,7 +59,9 @@ public sealed class BuildSettingsStore
         get
         {
             lock (m_sync)
+            {
                 return m_documents.exists;
+            }
         }
     }
 
@@ -71,7 +73,9 @@ public sealed class BuildSettingsStore
         get
         {
             lock (m_sync)
+            {
                 return m_defaultSettings.Copy();
+            }
         }
     }
 
@@ -87,7 +91,9 @@ public sealed class BuildSettingsStore
     public BuildSettings Load()
     {
         lock (m_sync)
+        {
             return LoadLocked();
+        }
     }
 
     /// <summary>
@@ -110,7 +116,9 @@ public sealed class BuildSettingsStore
         ArgumentNullException.ThrowIfNull(settings);
         settings.ValidateDocument();
         lock (m_sync)
+        {
             m_documents.Save(settings.Copy());
+        }
     }
 
     /// <summary>
@@ -122,7 +130,9 @@ public sealed class BuildSettingsStore
     public byte[] CaptureDocument()
     {
         lock (m_sync)
+        {
             return m_documents.Capture(LoadLocked());
+        }
     }
 
     /// <summary>
@@ -141,7 +151,9 @@ public sealed class BuildSettingsStore
     {
         BuildSettings settings = Deserialize(document);
         lock (m_sync)
+        {
             m_documents.Save(settings);
+        }
     }
 
     /// <summary>
@@ -158,13 +170,12 @@ public sealed class BuildSettingsStore
     private BuildSettings LoadLocked()
     {
         return m_documents.exists
-            ? m_documents.LoadRequired()
-            : m_defaultSettings.Copy();
+               ? m_documents.LoadRequired()
+               : m_defaultSettings.Copy();
     }
 
     private BuildSettings Deserialize(ReadOnlySpan<byte> document)
     {
         return m_documents.Deserialize(document);
     }
-
 }

@@ -4,8 +4,8 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Core.Execution;
 using Xunit;
+using Inno.Core.Execution;
 
 namespace Inno.Assets.Tests;
 
@@ -23,20 +23,34 @@ public sealed class ResidencyRetirementTests
         Action release = () =>
         {
             if (++attempts == 1)
+            {
                 throw new RetirementPendingException("Expected residency drain.");
+            }
         };
         using IDisposable lease = artifact ? provider.Artifact(info, release) : provider.Asset(asset, release);
         Assert.Throws<RetirementPendingException>(lease.Dispose);
-        if (lease is ArtifactLease artifactLease) Assert.Same(info, artifactLease.info);
-        else Assert.Same(asset, ((AssetLease<TextAsset>)lease).asset);
+        if (lease is ArtifactLease artifactLease)
+        {
+            Assert.Same(info, artifactLease.info);
+        }
+        else
+        {
+            Assert.Same(asset, ((AssetLease<TextAsset>)lease).asset);
+        }
         lease.Dispose();
         Assert.Equal(2, attempts);
         lease.Dispose();
         Assert.Equal(2, attempts);
         Assert.Throws<ObjectDisposedException>(() =>
         {
-            if (lease is ArtifactLease releasedArtifact) _ = releasedArtifact.info;
-            else _ = ((AssetLease<TextAsset>)lease).asset;
+            if (lease is ArtifactLease releasedArtifact)
+            {
+                _ = releasedArtifact.info;
+            }
+            else
+            {
+                _ = ((AssetLease<TextAsset>)lease).asset;
+            }
         });
     }
 
@@ -47,7 +61,11 @@ public sealed class ResidencyRetirementTests
     {
         int attempts = 0;
         var provider = new TestProvider();
-        Action release = () => { attempts++; throw new InvalidOperationException("Expected terminal release failure."); };
+        Action release = () =>
+        {
+            attempts++;
+            throw new InvalidOperationException("Expected terminal release failure.");
+        };
         IDisposable lease = artifact ? provider.Artifact(Artifact(), release) : provider.Asset(new TextAsset(), release);
         Assert.Throws<InvalidOperationException>(lease.Dispose);
         lease.Dispose();
@@ -64,12 +82,21 @@ public sealed class ResidencyRetirementTests
         var asset = new TextAsset();
         var ordinary = new InvalidOperationException("completed sibling");
         var pending = new AggregateException(ordinary, new RetirementPendingException("unfinished callback"));
-        Action release = () => { if (++attempts < 3) throw pending; };
+        Action release = () =>
+        {
+            if (++attempts < 3) throw pending;
+        };
         IDisposable lease = artifact ? provider.Artifact(Artifact(), release) : provider.Asset(asset, release);
         Assert.Same(pending, Assert.Throws<AggregateException>(lease.Dispose));
         Assert.Same(pending, Assert.Throws<AggregateException>(lease.Dispose));
-        if (lease is ArtifactLease artifactLease) Assert.NotNull(artifactLease.info);
-        else Assert.Same(asset, ((AssetLease<TextAsset>)lease).asset);
+        if (lease is ArtifactLease artifactLease)
+        {
+            Assert.NotNull(artifactLease.info);
+        }
+        else
+        {
+            Assert.Same(asset, ((AssetLease<TextAsset>)lease).asset);
+        }
         AggregateException completed = Assert.Throws<AggregateException>(lease.Dispose);
         Assert.Same(ordinary, Assert.Single(completed.InnerExceptions));
         lease.Dispose();
@@ -92,7 +119,8 @@ public sealed class ResidencyRetirementTests
             lease.Dispose,
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
-            TaskScheduler.Default);
+            TaskScheduler.Default
+        );
         try
         {
             Assert.True(started.Wait(TimeSpan.FromSeconds(30)));
@@ -100,7 +128,11 @@ public sealed class ResidencyRetirementTests
             Assert.NotNull(lease.info);
             Assert.Equal(1, attempts);
         }
-        finally { finish.Set(); await worker; }
+        finally
+        {
+            finish.Set();
+            await worker;
+        }
         lease.Dispose();
         Assert.Equal(1, attempts);
         Assert.Throws<ObjectDisposedException>(() => _ = lease.info);
@@ -113,16 +145,24 @@ public sealed class ResidencyRetirementTests
         int pendingAttempts = 0;
         var scope = new RetentionScope();
         scope.Retain(new ReleaseStep(() => order.Add("dependency")));
-        scope.Retain(new ReleaseStep(() =>
-        {
-            order.Add("pending");
-            if (++pendingAttempts == 1) throw new RetirementPendingException("Expected owner drain.");
-        }));
-        scope.Retain(new ReleaseStep(() => { order.Add("failure"); throw new InvalidOperationException("Expected release failure."); }));
+        scope.Retain(
+            new ReleaseStep(() =>
+            {
+                order.Add("pending");
+                if (++pendingAttempts == 1) throw new RetirementPendingException("Expected owner drain.");
+            })
+        );
+        scope.Retain(
+            new ReleaseStep(() =>
+            {
+                order.Add("failure");
+                throw new InvalidOperationException("Expected release failure.");
+            })
+        );
 
         Assert.Throws<RetirementPendingException>(scope.Dispose);
         Assert.Equal(new[] { "failure", "pending" }, order);
-        Assert.Throws<InvalidOperationException>(() => scope.Retain(new ReleaseStep(() => { })));
+        Assert.Throws<InvalidOperationException>(() => scope.Retain(new ReleaseStep(() => {})));
         AggregateException failure = Assert.Throws<AggregateException>(scope.Dispose);
         Assert.Contains(failure.InnerExceptions, exception => exception.Message == "Expected release failure.");
         Assert.Equal(new[] { "failure", "pending", "pending", "dependency" }, order);
@@ -166,7 +206,11 @@ public sealed class ResidencyRetirementTests
 
     private sealed class TestProvider : AssetResidencyProvider
     {
-        internal AssetLease<TextAsset> Asset(TextAsset asset, Action release) => CreateAssetLease(asset, release);
+        internal AssetLease<TextAsset> Asset(
+            TextAsset asset,
+            Action release
+        ) => CreateAssetLease(asset, release);
+
         internal ArtifactLease Artifact(
             AssetArtifactInfo info,
             Action release

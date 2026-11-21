@@ -1,18 +1,21 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Settings;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Workbench;
+
 internal abstract class IconSetting : EditorSetting
 {
     private static readonly IReadOnlyList<(string Name, string Glyph)> C_ICONS = EditorIconCatalog.standard;
     private readonly string m_glyph;
+
     /// <summary>
     /// Creates a validated icon setting instance.
     /// </summary>
@@ -29,6 +32,7 @@ internal abstract class IconSetting : EditorSetting
     /// Gets a new value initialized to this setting's canonical default state.
     /// </summary>
     public override EditorSettingObject defaultValue => CreateDefault(m_glyph);
+
     /// <summary>
     /// Gets the presentation section that groups this setting.
     /// </summary>
@@ -69,13 +73,18 @@ internal abstract class IconSetting : EditorSetting
                         float lineHeight = Ui.GetTextLineHeight();
                         DrawIconTextAt(
                             Ui.GetDrawList(),
-                            new Vector2(minimum.X + style.framePadding.X, minimum.Y + MathF.Max(0f, (maximum.Y - minimum.Y - lineHeight) * 0.5f)),
+                            new Vector2(
+                                minimum.X + style.framePadding.X,
+                                minimum.Y + MathF.Max(0f, (maximum.Y - minimum.Y - lineHeight) * 0.5f)
+                            ),
                             candidate,
                             name,
                             iconSlotWidth
                         );
                         if (selected)
+                        {
                             Ui.SetItemDefaultFocus();
+                        }
                     }
                     finally
                     {
@@ -99,12 +108,15 @@ internal abstract class IconSetting : EditorSetting
     }
 
     private static float GetIconSlotWidth() => EditorUI.current.widgets.GetIconCatalogWidth();
+
     private static string GetIconName(string glyph)
     {
         for (int i = 0; i < C_ICONS.Count; i++)
         {
             if (string.Equals(C_ICONS[i].Glyph, glyph, StringComparison.Ordinal))
+            {
                 return C_ICONS[i].Name;
+            }
         }
 
         return glyph;
@@ -121,7 +133,12 @@ internal abstract class IconSetting : EditorSetting
         float fontSize = Ui.GetFontSize();
         float lineHeight = Ui.GetTextLineHeight();
         uint color = Ui.GetStyleColor(ImGuiCol.Text);
-        EditorUI.current.widgets.AddGlyphCentered(fontSize, glyph, new Vector2(origin.X + iconSlotWidth * 0.5f, origin.Y + lineHeight * 0.5f), color);
+        EditorUI.current.widgets.AddGlyphCentered(
+            fontSize,
+            glyph,
+            new Vector2(origin.X + iconSlotWidth * 0.5f, origin.Y + lineHeight * 0.5f),
+            color
+        );
         Inno.Editor.ImGui.ImGui.DrawText(new Vector2(origin.X + iconSlotWidth + style.itemInnerSpacing.X, origin.Y), color, text);
     }
 }
@@ -195,7 +212,8 @@ internal sealed class ShaderSourceIconSetting() : IconSetting(ImGuiIcon.RupeeSig
     /// <summary>
     /// Gets the user-facing explanation of this feature or setting.
     /// </summary>
-    public override string description => "Selects the icon used consistently for Shader source-function libraries. The default function symbol distinguishes reusable code from complete Shader graphs.";
+    public override string description
+        => "Selects the icon used consistently for Shader source-function libraries. The default function symbol distinguishes reusable code from complete Shader graphs.";
 }
 
 [EditorSettingPath("Editor/Appearance/Icons/Material")]

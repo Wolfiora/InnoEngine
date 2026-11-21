@@ -4,8 +4,8 @@ using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Core.Identity;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Plugins.Authoring;
@@ -27,8 +27,7 @@ internal sealed class CompilerFixture : IDisposable
     internal CompilerFixture(
         Action<string, SerializationRegistry>? configure = null,
         IScriptCompilationEnvironmentProvider? compilationEnvironment = null
-    )
-    {
+    ) {
         projectRoot = Path.Combine(Path.GetTempPath(), "InnoCompilerTests", Guid.NewGuid().ToString("N"));
         string assetsRoot = Path.Combine(projectRoot, "Assets");
         string pluginsRoot = Path.Combine(projectRoot, "Plugins");
@@ -38,35 +37,61 @@ internal sealed class CompilerFixture : IDisposable
         Directory.CreateDirectory(libraryRoot);
         m_identityScope = m_identities.EnterScope();
         m_host = new EngineHostBuilder().UseMetadataSources(
-            new DotNetAssemblyCatalogSource(typeof(CompilerFixture).Assembly,
-                typeof(GameBehavior).Assembly, typeof(ScriptCompiler).Assembly),
-            new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
+            new DotNetAssemblyCatalogSource(
+                typeof(CompilerFixture).Assembly,
+                typeof(GameBehavior).Assembly,
+                typeof(ScriptCompiler).Assembly
+            ),
+            new ReflectionTypeCatalogSource(),
+            new ReflectionSerializationMetadataSource()
+        ).Build();
         m_diagnosticScope = m_host.diagnostics.EnterScope();
         configure?.Invoke(projectRoot, m_host.serialization);
         var sources = new PluginSourceService(m_host.serialization, pluginsRoot, libraryRoot);
         PluginScanResult scan = sources.Scan();
         AssetPipelineOptions options = AssetPipelineOptions.Create(assetsRoot, libraryRoot);
-        m_assets = new AssetPipeline(m_host.modules, m_host.types, m_host.serialization,
-            m_identities, m_host.diagnostics, m_host.logs, options with
+        m_assets = new AssetPipeline(
+            m_host.modules,
+            m_host.types,
+            m_host.serialization,
+            m_identities,
+            m_host.diagnostics,
+            m_host.logs,
+            options with
             {
                 enableFileSystemWatcher = false,
                 sourceMounts = [.. options.sourceMounts!, .. PluginSourceService.GetActivatableMounts(scan)]
-            });
+            }
+        );
         m_settings = new ProjectSettingsStore(
             new FileByteDocumentStore(Path.Combine(projectRoot, "Settings.Project.inno")),
-            m_host.types, m_host.serialization, new ProjectId("tests.compiler"),
-            AssetSerializationContext.Create(m_assets));
-        m_plugins = new PluginEnvironment(m_assets, m_settings, m_host.serialization,
-            pluginsRoot, libraryRoot, scan, m_host.modules.generations);
+            m_host.types,
+            m_host.serialization,
+            new ProjectId("tests.compiler"),
+            AssetSerializationContext.Create(m_assets)
+        );
+        m_plugins = new PluginEnvironment(
+            m_assets,
+            m_settings,
+            m_host.serialization,
+            pluginsRoot,
+            libraryRoot,
+            scan,
+            m_host.modules.generations
+        );
         string dotnetHost = Path.Combine(
             Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         compiler = new ScriptCompiler(
             new ScriptCompilerOptions
             {
                 projectRootDirectory = projectRoot,
                 compilationEnvironment = compilationEnvironment ?? new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
-            }, m_assets, m_plugins);
+            },
+            m_assets,
+            m_plugins
+        );
     }
 
     internal string projectRoot { get; }

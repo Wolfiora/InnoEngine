@@ -2,6 +2,7 @@ using Inno.Core.Input;
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Workbench;
+
 /// <summary>
 /// Increases UI zoom by one multiple of the configured actual size.
 /// </summary>
@@ -22,7 +23,9 @@ internal sealed class ZoomInEditorAction(EditorZoomModule zoom) : EditorAction
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => zoom.canZoomIn ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext context)
+        => zoom.canZoomIn ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>
@@ -52,7 +55,9 @@ internal sealed class ZoomOutEditorAction(EditorZoomModule zoom) : EditorAction
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => zoom.canZoomOut ? EditorActionState.enabled : EditorActionState.disabled;
+    protected override EditorActionState Query(EditorActionContext context)
+        => zoom.canZoomOut ? EditorActionState.enabled : EditorActionState.disabled;
+
     /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>
@@ -82,7 +87,9 @@ internal sealed class ActualSizeEditorAction(EditorZoomModule zoom) : EditorActi
     /// <returns>
     /// The validated editor action state that represents the completed operation.
     /// </returns>
-    protected override EditorActionState Query(EditorActionContext context) => zoom.isActualSize ? EditorActionState.disabled : EditorActionState.enabled;
+    protected override EditorActionState Query(EditorActionContext context)
+        => zoom.isActualSize ? EditorActionState.disabled : EditorActionState.enabled;
+
     /// <summary>
     /// Applies the editor action to the supplied interaction context.
     /// </summary>

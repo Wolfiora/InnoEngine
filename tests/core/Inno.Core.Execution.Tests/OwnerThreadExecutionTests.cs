@@ -37,15 +37,18 @@ public sealed class OwnerThreadExecutionTests
     {
         int owner = Environment.CurrentManagedThreadId;
         SynchronizationContext? original = SynchronizationContext.Current;
-        Assert.Equal(42, OwnerThreadExecution.Run(async () =>
-        {
-            SynchronizationContext context = SynchronizationContext.Current!;
-            await Task.Run(() => context.Send(_ => Assert.Equal(owner, Environment.CurrentManagedThreadId), null));
-            Assert.Equal(owner, Environment.CurrentManagedThreadId);
-            await Task.Delay(10);
-            Assert.Equal(owner, Environment.CurrentManagedThreadId);
-            return 42;
-        }));
+        Assert.Equal(
+            42,
+            OwnerThreadExecution.Run(async () =>
+            {
+                SynchronizationContext context = SynchronizationContext.Current!;
+                await Task.Run(() => context.Send(_ => Assert.Equal(owner, Environment.CurrentManagedThreadId), null));
+                Assert.Equal(owner, Environment.CurrentManagedThreadId);
+                await Task.Delay(10);
+                Assert.Equal(owner, Environment.CurrentManagedThreadId);
+                return 42;
+            })
+        );
         Assert.Same(original, SynchronizationContext.Current);
     }
 
@@ -55,8 +58,11 @@ public sealed class OwnerThreadExecutionTests
         SynchronizationContext? original = SynchronizationContext.Current;
         Assert.Equal(1, OwnerThreadExecution.Run(() => Task.FromResult(1)));
         var failure = new InvalidOperationException("Expected owner failure.");
-        Assert.Same(failure, Assert.Throws<InvalidOperationException>(() =>
-            OwnerThreadExecution.Run(() => Task.FromException<int>(failure))));
+        Assert.Same(
+            failure,
+            Assert.Throws<InvalidOperationException>(() =>
+                OwnerThreadExecution.Run(() => Task.FromException<int>(failure)))
+        );
         Assert.Throws<TaskCanceledException>(() => OwnerThreadExecution.Run(() =>
             Task.FromCanceled<int>(new CancellationToken(canceled: true))));
         Assert.Throws<ArgumentNullException>(() => OwnerThreadExecution.Run<int>(null!));
@@ -67,16 +73,19 @@ public sealed class OwnerThreadExecutionTests
     public void CompletedOperationsDrainCallbacksPostedByAlreadyQueuedWork()
     {
         int callbacks = 0;
-        Assert.Equal(7, OwnerThreadExecution.Run(() =>
-        {
-            SynchronizationContext context = SynchronizationContext.Current!;
-            context.Post(_ =>
+        Assert.Equal(
+            7,
+            OwnerThreadExecution.Run(() =>
             {
-                callbacks++;
-                context.Post(_ => callbacks++, null);
-            }, null);
-            return Task.FromResult(7);
-        }));
+                SynchronizationContext context = SynchronizationContext.Current!;
+                context.Post(_ =>
+                {
+                    callbacks++;
+                    context.Post(_ => callbacks++, null);
+                }, null);
+                return Task.FromResult(7);
+            })
+        );
         Assert.Equal(2, callbacks);
     }
 }

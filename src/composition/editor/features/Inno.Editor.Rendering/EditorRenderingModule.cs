@@ -1,17 +1,17 @@
-using Inno.References;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
-using Inno.Scripting.Api;
-using Inno.Extensibility.Types;
 using Inno.Core.Identity;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Rendering;
-using EngineColor = Inno.Core.Mathematics.Color;
 using Inno.Rendering.Runtime;
+using Inno.Scripting.Api;
+
+using EngineColor = Inno.Core.Mathematics.Color;
 
 namespace Inno.Editor.Rendering;
 
@@ -28,10 +28,13 @@ public sealed class EditorRenderingModule : EditorModule
     private readonly Dictionary<string, ContentReadScope> m_contentScopes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> m_compositionErrors = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> m_controllerIds = new(StringComparer.Ordinal);
+
     private readonly Dictionary<string, EditorViewportManipulationSpace> m_manipulationSpaces =
         new(StringComparer.Ordinal);
+
     private readonly Dictionary<string, EditorViewportPresentation> m_presentations =
         new(StringComparer.Ordinal);
+
     private readonly Dictionary<string, RenderOutputInput> m_outputInputs = new(StringComparer.Ordinal);
     private readonly Dictionary<string, RenderOutputRoute> m_outputRoutes = new(StringComparer.Ordinal);
     private readonly IEditorRenderingHost m_host;
@@ -60,8 +63,7 @@ public sealed class EditorRenderingModule : EditorModule
     ) {
         m_host = host ?? throw new ArgumentNullException(nameof(host));
         m_interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
-        m_contributors = new EditorViewportContributorRegistry(
-            types ?? throw new ArgumentNullException(nameof(types)));
+        m_contributors = new EditorViewportContributorRegistry(types ?? throw new ArgumentNullException(nameof(types)));
         m_gizmos = new EditorGizmoProviderRegistry(types);
     }
 
@@ -89,12 +91,16 @@ public sealed class EditorRenderingModule : EditorModule
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         var frame = new EditorGizmoFrame();
         if (!m_contentScopes.TryGetValue(viewportId, out ContentReadScope? content))
+        {
             return frame;
+        }
         RuntimeIdentity? selected = (m_interactions.selection.selectedTarget as IdentityObject)?
             .identity.runtimeIdentity;
         var context = new EditorGizmoContext(content, selected, pixelWidth, pixelHeight);
         foreach (EditorGizmoProviderRegistry.Registration provider in m_gizmos.providers.registrations)
+        {
             provider.provider.Collect(context, frame);
+        }
         return frame;
     }
 
@@ -141,9 +147,13 @@ public sealed class EditorRenderingModule : EditorModule
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         if (route is null)
+        {
             m_outputRoutes.Remove(viewportId);
+        }
         else
+        {
             m_outputRoutes[viewportId] = route;
+        }
     }
 
     /// <summary>
@@ -199,7 +209,9 @@ public sealed class EditorRenderingModule : EditorModule
         ArgumentException.ThrowIfNullOrWhiteSpace(viewportId);
         ArgumentNullException.ThrowIfNull(content);
         if (m_contentScopes.Remove(viewportId, out ContentReadScope? previous))
+        {
             previous.Dispose();
+        }
         m_contentScopes[viewportId] = content ?? throw new ArgumentNullException(nameof(content));
     }
 
@@ -233,19 +245,23 @@ public sealed class EditorRenderingModule : EditorModule
     ) {
         profile = EditorViewportNavigationProfile.disabled;
         if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        {
             return false;
+        }
         var failures = new List<string>();
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         foreach (EditorViewportContributorRegistry.Registration registration in contributors
-                     .OrderByDescending(static value => value.attribute.controllerPriority)
-                     .ThenBy(static value => value.attribute.id, StringComparer.Ordinal))
-        {
+            .OrderByDescending(static value => value.attribute.controllerPriority)
+            .ThenBy(static value => value.attribute.id, StringComparer.Ordinal)
+        ) {
             try
             {
                 EditorViewportNavigationProfile candidate = registration.contributor.ConfigureNavigation(context!)
                     ?? throw new InvalidOperationException("Viewport contributor returned a null navigation profile.");
                 if (!candidate.id.isValid)
+                {
                     continue;
+                }
                 profile = candidate;
                 m_controllerIds[viewportId] = registration.attribute.id;
                 SetCompositionFailures(viewportId, failures);
@@ -254,7 +270,8 @@ public sealed class EditorRenderingModule : EditorModule
             catch (Exception exception)
             {
                 failures.Add(
-                    $"Viewport contributor '{registration.attribute.id}' navigation failed: {exception.Message}");
+                    $"Viewport contributor '{registration.attribute.id}' navigation failed: {exception.Message}"
+                );
             }
         }
         m_controllerIds.Remove(viewportId);
@@ -323,7 +340,9 @@ public sealed class EditorRenderingModule : EditorModule
         int pixelHeight
     ) {
         if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        {
             return;
+        }
         var failures = new List<string>();
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         EditorViewportContributorRegistry.Registration? registration = SelectController(viewportId, contributors);
@@ -338,8 +357,7 @@ public sealed class EditorRenderingModule : EditorModule
         }
         catch (Exception exception)
         {
-            failures.Add(
-                $"Viewport contributor '{registration.attribute.id}' toolbar failed: {exception.Message}");
+            failures.Add($"Viewport contributor '{registration.attribute.id}' toolbar failed: {exception.Message}");
         }
         SetCompositionFailures(viewportId, failures);
     }
@@ -374,18 +392,14 @@ public sealed class EditorRenderingModule : EditorModule
     ) {
         output = default;
         if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        {
             return false;
+        }
         var failures = new List<string>();
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         if (contributors.Length == 0)
         {
-            PublishViewportStatistics(
-                kind,
-                viewportId,
-                pixelWidth,
-                pixelHeight,
-                "Unavailable",
-                contributorIds: "None");
+            PublishViewportStatistics(kind, viewportId, pixelWidth, pixelHeight, "Unavailable", contributorIds: "None");
             m_host.Release(viewportId);
             m_controllerIds.Remove(viewportId);
             m_manipulationSpaces.Remove(viewportId);
@@ -399,10 +413,12 @@ public sealed class EditorRenderingModule : EditorModule
         {
             if (!m_outputRoutes.TryGetValue(viewportId, out route)
                 || route.layers.Count != contributors.Length
-                || route.layers.Any(layer => contributors.All(entry => entry.attribute.id != layer.modelId)))
-            {
-                failures.Add("Multiple rendering models accept this output; configure a RenderOutputRoute naming every contributor exactly once: "
-                    + string.Join(", ", contributors.Select(static entry => entry.attribute.id)));
+                || route.layers.Any(layer => contributors.All(entry => entry.attribute.id != layer.modelId))
+            ) {
+                failures.Add(
+                    "Multiple rendering models accept this output; configure a RenderOutputRoute naming every contributor exactly once: "
+                    + string.Join(", ", contributors.Select(static entry => entry.attribute.id))
+                );
                 HandleViewportFailure(kind, viewportId, pixelWidth, pixelHeight, contributors, failures);
                 return false;
             }
@@ -418,16 +434,17 @@ public sealed class EditorRenderingModule : EditorModule
             try
             {
                 EditorViewportContext modelContext = route is null
-                    ? context!
-                    : context!.ForLayer(route.layers[index]);
+                                                     ? context!
+                                                     : context!.ForLayer(route.layers[index]);
                 EditorViewportContribution contribution = registration.contributor.Build(modelContext)
                     ?? throw new InvalidOperationException("Viewport contributor returned a null contribution.");
                 if (targetFormat is RenderTextureFormat selectedFormat
-                    && contribution.targetFormat != selectedFormat)
-                {
+                    && contribution.targetFormat != selectedFormat
+                ) {
                     failures.Add(
-                        $"Viewport contributor '{registration.attribute.id}' requested target format " +
-                        $"'{contribution.targetFormat}' while the composition uses '{selectedFormat}'.");
+                        $"Viewport contributor '{registration.attribute.id}' requested target format "
+                        + $"'{contribution.targetFormat}' while the composition uses '{selectedFormat}'."
+                    );
                     continue;
                 }
                 targetFormat ??= contribution.targetFormat;
@@ -451,27 +468,35 @@ public sealed class EditorRenderingModule : EditorModule
 
         try
         {
-            output = m_host.Submit(new EditorViewportComposition(
-                viewportId,
-                pixelWidth,
-                pixelHeight,
-                targetFormat!.Value,
-                accepted.Select((
-                    value,
-                    index
-                ) => new EditorViewportLayer(
-                    value.registration.attribute.id,
-                    value.contribution.pipeline,
-                    value.contribution.data,
-                    route is null ? value.registration.attribute.order : index))));
+            output = m_host.Submit(
+                new EditorViewportComposition(
+                    viewportId,
+                    pixelWidth,
+                    pixelHeight,
+                    targetFormat!.Value,
+                    accepted.Select((
+                        value,
+                        index
+                    ) => new EditorViewportLayer(
+                        value.registration.attribute.id,
+                        value.contribution.pipeline,
+                        value.contribution.data,
+                        route is null ? value.registration.attribute.order : index
+                    ))
+                )
+            );
             EditorViewportContributorRegistry.Registration? controller = SelectController(viewportId, contributors);
             EditorViewportContribution? controllerContribution = controller is null
                 ? null
                 : accepted.FirstOrDefault(value => ReferenceEquals(value.registration, controller))?.contribution;
             if (controllerContribution?.manipulationSpace is EditorViewportManipulationSpace manipulationSpace)
+            {
                 m_manipulationSpaces[viewportId] = manipulationSpace;
+            }
             else
+            {
                 m_manipulationSpaces.Remove(viewportId);
+            }
             PublishViewportStatistics(
                 kind,
                 viewportId,
@@ -479,7 +504,8 @@ public sealed class EditorRenderingModule : EditorModule
                 pixelHeight,
                 output.isReady ? "Ready" : "Preparing",
                 string.Join(", ", accepted.Select(static value => value.registration.attribute.id)),
-                accepted);
+                accepted
+            );
             SetCompositionFailures(viewportId, failures);
             return true;
         }
@@ -525,7 +551,9 @@ public sealed class EditorRenderingModule : EditorModule
         int button
     ) {
         if (!TryCreateContext(kind, viewportId, pixelWidth, pixelHeight, out EditorViewportContext? context))
+        {
             return;
+        }
         var failures = new List<string>();
         EditorViewportContributorRegistry.Registration[] contributors = GetApplicableContributors(context!, failures);
         EditorViewportContributorRegistry.Registration? registration = SelectController(viewportId, contributors);
@@ -541,7 +569,8 @@ public sealed class EditorRenderingModule : EditorModule
         catch (Exception exception)
         {
             failures.Add(
-                $"Viewport contributor '{registration.attribute.id}' pointer handler failed: {exception.Message}");
+                $"Viewport contributor '{registration.attribute.id}' pointer handler failed: {exception.Message}"
+            );
         }
         SetCompositionFailures(viewportId, failures);
     }
@@ -573,7 +602,9 @@ public sealed class EditorRenderingModule : EditorModule
         m_outputRoutes.Remove(viewportId);
         m_manipulationSpaces.Remove(viewportId);
         if (m_contentScopes.Remove(viewportId, out ContentReadScope? content))
+        {
             content.Dispose();
+        }
         m_controllerIds.Remove(viewportId);
         m_host.Release(viewportId);
     }
@@ -600,7 +631,9 @@ public sealed class EditorRenderingModule : EditorModule
     {
         RenderFrameStatistics? statistics = GraphicsSettings.frameStatistics;
         if (statistics is null)
+        {
             return;
+        }
         var groupId = new EditorStatisticGroupId("inno.rendering.frame");
         context.statistics.Publish(new EditorStatistic[]
         {
@@ -617,7 +650,12 @@ public sealed class EditorRenderingModule : EditorModule
                 CreateStatistic("allocation-generation", "Allocation Generation", allocations.deviceGeneration.ToString(), 50),
                 CreateStatistic("texture-allocations", "Transient Textures (lifetime)", allocations.textureAllocations.ToString(), 60),
                 CreateStatistic("buffer-allocations", "Transient Buffers (lifetime)", allocations.bufferAllocations.ToString(), 70),
-                CreateStatistic("framebuffer-allocations", "Transient Framebuffers (lifetime)", allocations.frameBufferAllocations.ToString(), 80)
+                CreateStatistic(
+                    "framebuffer-allocations",
+                    "Transient Framebuffers (lifetime)",
+                    allocations.frameBufferAllocations.ToString(),
+                    80
+                )
             });
         }
         else
@@ -634,15 +672,15 @@ public sealed class EditorRenderingModule : EditorModule
             string label,
             string value,
             int order
-        )
-            => new(
-                new EditorStatisticId($"inno.rendering.frame.{id}"),
-                groupId,
-                "Rendering",
-                label,
-                value,
-                C_RENDERING_STATISTICS_ORDER,
-                order);
+        ) => new(
+            new EditorStatisticId($"inno.rendering.frame.{id}"),
+            groupId,
+            "Rendering",
+            label,
+            value,
+            C_RENDERING_STATISTICS_ORDER,
+            order
+        );
     }
 
     /// <summary>
@@ -687,7 +725,9 @@ public sealed class EditorRenderingModule : EditorModule
     private void ClearContentScopes()
     {
         foreach (ContentReadScope scope in m_contentScopes.Values)
+        {
             scope.Dispose();
+        }
         m_contentScopes.Clear();
     }
 
@@ -715,12 +755,11 @@ public sealed class EditorRenderingModule : EditorModule
             pixelHeight,
             GetNavigationState(viewportId),
             m_contentScopes.GetValueOrDefault(viewportId, ContentReadScope.empty),
-            m_presentations.GetValueOrDefault(
-                viewportId,
-                new EditorViewportPresentation(EngineColor.DARKGRAY)),
+            m_presentations.GetValueOrDefault(viewportId, new EditorViewportPresentation(EngineColor.DARKGRAY)),
             m_host.viewContent,
             m_host.currentFrameIndex,
-            m_outputInputs.GetValueOrDefault(viewportId, RenderOutputInput.empty));
+            m_outputInputs.GetValueOrDefault(viewportId, RenderOutputInput.empty)
+        );
         return true;
     }
 
@@ -734,7 +773,9 @@ public sealed class EditorRenderingModule : EditorModule
         IReadOnlyList<AcceptedContribution>? contributions = null
     ) {
         if (m_context is null)
+        {
             return;
+        }
         string groupKey = $"inno.rendering.viewport.{viewportId}";
         var groupId = new EditorStatisticGroupId(groupKey);
         string groupName = GetDisplayName(viewportId);
@@ -747,26 +788,30 @@ public sealed class EditorRenderingModule : EditorModule
         };
         if (contributions is { Count: > 0 })
         {
-            string pipeline = string.Join(", ", contributions.Select(static contribution =>
-                string.IsNullOrWhiteSpace(contribution.contribution.pipeline?.pipelineTypeId)
+            string pipeline = string.Join(
+                ", ",
+                contributions.Select(static contribution => (
+                    string.IsNullOrWhiteSpace(contribution.contribution.pipeline?.pipelineTypeId)
                     ? GraphicsSettings.defaultPipeline?.pipelineTypeId ?? "Project Default"
-                    : contribution.contribution.pipeline.pipelineTypeId));
-            statistics.Add(CreateStatistic(
-                "pipelines",
-                "Pipelines",
-                pipeline,
-                40));
-            statistics.Add(CreateStatistic(
-                "format",
-                "Target Format",
-                contributions[0].contribution.targetFormat.ToString(),
-                50));
-            statistics.Add(CreateStatistic(
-                "order",
-                "Composition Order",
-                string.Join(", ", contributions.Select(static contribution =>
-                    contribution.registration.attribute.order.ToString())),
-                60));
+                    : contribution.contribution.pipeline.pipelineTypeId
+                ))
+            );
+            statistics.Add(CreateStatistic("pipelines", "Pipelines", pipeline, 40));
+            statistics.Add(
+                CreateStatistic("format", "Target Format", contributions[0].contribution.targetFormat.ToString(), 50)
+            );
+            statistics.Add(
+                CreateStatistic(
+                    "order",
+                    "Composition Order",
+                    string.Join(
+                        ", ",
+                        contributions.Select(static contribution =>
+                            contribution.registration.attribute.order.ToString())
+                    ),
+                    60
+                )
+            );
         }
         m_context.statistics.Publish(statistics);
         return;
@@ -776,15 +821,15 @@ public sealed class EditorRenderingModule : EditorModule
             string label,
             string value,
             int order
-        )
-            => new(
-                new EditorStatisticId($"{groupKey}.{id}"),
-                groupId,
-                groupName,
-                label,
-                value,
-                C_VIEWPORT_STATISTICS_ORDER,
-                order);
+        ) => new(
+            new EditorStatisticId($"{groupKey}.{id}"),
+            groupId,
+            groupName,
+            label,
+            value,
+            C_VIEWPORT_STATISTICS_ORDER,
+            order
+        );
     }
 
     private EditorViewportContributorRegistry.Registration[] GetApplicableContributors(
@@ -792,9 +837,9 @@ public sealed class EditorRenderingModule : EditorModule
         List<string> failures
     ) {
         if (!m_contributors.contributors.byKind.TryGetValue(
-                context.kind,
-                out EditorViewportContributorRegistry.Registration[]? registrations))
-        {
+            context.kind,
+            out EditorViewportContributorRegistry.Registration[]? registrations
+        )) {
             return [];
         }
 
@@ -804,13 +849,16 @@ public sealed class EditorRenderingModule : EditorModule
             try
             {
                 if (registration.contributor.CanContribute(context))
+                {
                     applicable.Add(registration);
+                }
             }
             catch (Exception exception)
             {
                 failures.Add(
-                    $"Viewport contributor '{registration.attribute.id}' participation check failed: " +
-                    exception.Message);
+                    $"Viewport contributor '{registration.attribute.id}' participation check failed: "
+                    + exception.Message
+                );
             }
         }
         return applicable.ToArray();
@@ -823,12 +871,12 @@ public sealed class EditorRenderingModule : EditorModule
         if (m_controllerIds.TryGetValue(viewportId, out string? controllerId))
         {
             EditorViewportContributorRegistry.Registration? selected = contributors.FirstOrDefault(
-                contributor => string.Equals(
-                    contributor.attribute.id,
-                    controllerId,
-                    StringComparison.Ordinal));
+                contributor => string.Equals(contributor.attribute.id, controllerId, StringComparison.Ordinal)
+            );
             if (selected is not null)
+            {
                 return selected;
+            }
         }
 
         return contributors
@@ -851,7 +899,8 @@ public sealed class EditorRenderingModule : EditorModule
             pixelWidth,
             pixelHeight,
             "Failed",
-            string.Join(", ", contributors.Select(static contributor => contributor.attribute.id)));
+            string.Join(", ", contributors.Select(static contributor => contributor.attribute.id))
+        );
         m_host.Release(viewportId);
         m_controllerIds.Remove(viewportId);
         m_manipulationSpaces.Remove(viewportId);
@@ -864,9 +913,13 @@ public sealed class EditorRenderingModule : EditorModule
     ) {
         string[] distinct = failures.Distinct(StringComparer.Ordinal).ToArray();
         if (distinct.Length == 0)
+        {
             m_compositionErrors.Remove(viewportId);
+        }
         else
+        {
             m_compositionErrors[viewportId] = string.Join(Environment.NewLine, distinct);
+        }
     }
 
     private sealed record AcceptedContribution(
@@ -886,7 +939,9 @@ public sealed class EditorRenderingModule : EditorModule
                 continue;
             }
             if (!capitalize)
+            {
                 continue;
+            }
             characters[i] = char.ToUpperInvariant(characters[i]);
             capitalize = false;
         }

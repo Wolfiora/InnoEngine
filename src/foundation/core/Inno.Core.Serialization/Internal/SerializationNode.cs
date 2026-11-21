@@ -13,7 +13,9 @@ internal abstract record SerializationNode
     internal void RememberPath(string path)
     {
         if (this is not NullSerializationNode)
+        {
             Interlocked.CompareExchange(ref m_capturePath, path, null);
+        }
     }
 }
 
@@ -21,9 +23,7 @@ internal sealed record NullSerializationNode : SerializationNode
 {
     internal static NullSerializationNode instance { get; } = new();
 
-    private NullSerializationNode()
-    {
-    }
+    private NullSerializationNode() {}
 }
 
 internal sealed record ScalarSerializationNode(object value) : SerializationNode;
@@ -44,12 +44,14 @@ internal sealed record ObjectSerializationNode : SerializationNode
     internal bool encodingTooLarge => Volatile.Read(ref m_encodingTooLarge) != 0;
 
     internal byte[] PublishEncodedCapture(byte[] data) => Interlocked.CompareExchange(ref m_encodedCapture, data, null) ?? data;
+
     internal void RejectEncodedCapture() => Volatile.Write(ref m_encodingTooLarge, 1);
 }
 
 internal sealed record ArraySerializationNode : SerializationNode
 {
-    internal ArraySerializationNode() : this([]) { }
+    internal ArraySerializationNode()
+        : this([]) {}
 
     internal ArraySerializationNode(List<SerializationNode> values) => this.values = values;
 

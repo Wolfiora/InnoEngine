@@ -1,9 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
@@ -11,7 +12,7 @@ using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
-using Xunit;
+
 using NativeGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.PlayMode.Tests;
@@ -60,7 +61,9 @@ public sealed unsafe class SettingsApplyNativeTests
         {
             using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true);
             for (int cycle = 0; cycle < 100; cycle++)
+            {
                 OpenAndClose(host);
+            }
             Assert.True(AtomicEditorSetting.snapshots.Count >= 100);
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -99,7 +102,11 @@ public sealed unsafe class SettingsApplyNativeTests
         try
         {
             var document = new FailingSettingsDocument(new FileByteDocumentStore(Path.Combine(directory, "Project.inno")));
-            using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true, settingsDocument: document);
+            using var host = new NativeProjectPanelHost(
+                typeof(SettingsApplyNativeTests).Assembly,
+                includeSettings: true,
+                settingsDocument: document
+            );
             Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out var editor));
             var driver = new SettingsInput(host);
             Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
@@ -116,7 +123,9 @@ public sealed unsafe class SettingsApplyNativeTests
             using IDisposable listener = editor!.ListenChanges(_ =>
             {
                 if (obstructed)
+                {
                     return;
+                }
                 File.Move(editorFile, savedFile);
                 Directory.CreateDirectory(editorFile);
                 obstructed = true;
@@ -147,7 +156,12 @@ public sealed unsafe class SettingsApplyNativeTests
             Assert.Equal(0, host.projectSettings.Get<AtomicProjectSetting>(new("tests.ui.atomic-settings")).value);
             driver.Cancel();
             host.native.logs.Flush();
-            Assert.False(driver.isVisible, driver.diagnostic + Environment.NewLine + string.Join(Environment.NewLine, host.native.console.Capture().occurrences.Select(entry => entry.message)));
+            Assert.False(
+                driver.isVisible,
+                driver.diagnostic
+                + Environment.NewLine
+                + string.Join(Environment.NewLine, host.native.console.Capture().occurrences.Select(entry => entry.message))
+            );
         }
         finally
         {
@@ -166,7 +180,11 @@ public sealed unsafe class SettingsApplyNativeTests
         try
         {
             var document = new FailingSettingsDocument(new FileByteDocumentStore(Path.Combine(directory, "Project.inno")));
-            using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true, settingsDocument: document);
+            using var host = new NativeProjectPanelHost(
+                typeof(SettingsApplyNativeTests).Assembly,
+                includeSettings: true,
+                settingsDocument: document
+            );
             Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out var editor));
             var driver = new SettingsInput(host);
             Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
@@ -209,11 +227,15 @@ public sealed unsafe class SettingsApplyNativeTests
         public string documentName => owner.documentName;
         public bool canWrite => owner.canWrite;
         public bool exists => owner.exists;
+
         public byte[]? Read() => owner.Read();
+
         public void Write(ReadOnlySpan<byte> data)
         {
             if (failWrites)
+            {
                 throw new IOException("Controlled project settings publication failure.");
+            }
             owner.Write(data);
         }
     }
@@ -242,12 +264,17 @@ public sealed unsafe class SettingsApplyNativeTests
                     Assert.True(modal.TryGetPresentation(out var presentation));
                     isVisible = presentation.isVisible;
                     if (!isVisible)
+                    {
                         return;
+                    }
                     Assert.True(modal.Draw(host.runtime.context), "The operational Settings failure must not quarantine the modal.");
                     m_apply = (NativeGui.GetItemRectMin() + NativeGui.GetItemRectMax()) * 0.5f;
                     var style = NativeGui.Raw.GetStyle();
-                    m_cancel = new Vector2(NativeGui.GetItemRectMin().X - style->ItemSpacing.X
-                        - NativeGui.CalcTextSize("Cancel").X * 0.5f - style->FramePadding.X, m_apply.Y);
+                    m_cancel = new Vector2(
+                        NativeGui.GetItemRectMin().X - style->ItemSpacing.X
+                        - NativeGui.CalcTextSize("Cancel").X * 0.5f - style->FramePadding.X,
+                        m_apply.Y
+                    );
                 }
                 finally
                 {
@@ -267,13 +294,17 @@ public sealed unsafe class SettingsApplyNativeTests
             NativeGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModCtrl, 0);
             Draw();
             foreach (char character in text)
+            {
                 NativeGui.Raw.AddInputCharacter(io, character);
+            }
             Draw();
             Draw();
         }
 
         internal void Apply() => Click(m_apply);
+
         internal void Cancel() => Click(m_cancel);
+
         internal void CloseClean() => Click(m_apply);
 
         private void Click(Vector2 point)
@@ -297,6 +328,7 @@ public sealed class AtomicEditorSetting : EditorSetting
     public static bool throwOnDraw;
     public static bool observe;
     public static readonly List<WeakReference<EditorSettingObject>> snapshots = [];
+
     public override EditorSettingObject defaultValue
     {
         get
@@ -306,14 +338,21 @@ public sealed class AtomicEditorSetting : EditorSetting
             return value;
         }
     }
+
     protected override void OnDraw(EditorSettingObject setting)
     {
         if (throwOnDraw)
+        {
             throw new InvalidOperationException("Controlled Settings drawer failure.");
+        }
         if (observe && (snapshots.Count == 0 || !snapshots[^1].TryGetTarget(out var last) || !ReferenceEquals(last, setting)))
+        {
             snapshots.Add(new WeakReference<EditorSettingObject>(setting));
+        }
         if (!stage)
+        {
             return;
+        }
         setting.SetAsInt32("value", 42);
         stage = false;
     }
@@ -331,10 +370,13 @@ public sealed class AtomicProjectSetting : ISerializable
 public sealed class AtomicProjectEditor : ProjectSettingEditor<AtomicProjectSetting>
 {
     public static bool stage;
+
     protected override void OnDraw(AtomicProjectSetting setting)
     {
         if (!stage)
+        {
             return;
+        }
         setting.value = 84;
         stage = false;
     }

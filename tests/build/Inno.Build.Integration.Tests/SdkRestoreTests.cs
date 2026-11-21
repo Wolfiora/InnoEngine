@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 using Inno.Testing.Source;
-using Xunit;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -56,33 +56,62 @@ public sealed class SdkRestoreTests
         try
         {
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-            string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-                ["msbuild", project, "-t:Restore", "-p:ArtifactsPath=" + workspace,
-                    "-p:InnoNativeTarget=" + target, "-p:RuntimeIdentifier=" + runtime,
-                    "-p:PublishAot=" + aheadOfTime, "-p:PublishTrimmed=" + trimmed,
-                    "-getProperty:ProjectAssetsFile", "-nologo", "-nr:false", "-v:quiet"],
-                root, cancellation.Token, DotNetSdkEnvironment.Create(host));
+            string output = await ToolchainEnvironment.CaptureOutputAsync(
+                host,
+                [
+                    "msbuild",
+                    project,
+                    "-t:Restore",
+                    "-p:ArtifactsPath=" + workspace,
+                    "-p:InnoNativeTarget=" + target,
+                    "-p:RuntimeIdentifier=" + runtime,
+                    "-p:PublishAot=" + aheadOfTime,
+                    "-p:PublishTrimmed=" + trimmed,
+                    "-getProperty:ProjectAssetsFile",
+                    "-nologo",
+                    "-nr:false",
+                    "-v:quiet"
+                ],
+                root,
+                cancellation.Token,
+                DotNetSdkEnvironment.Create(host)
+            );
             string assetsPath = output.Trim();
-            Assert.StartsWith(Path.GetFullPath(workspace) + Path.DirectorySeparatorChar,
-                Path.GetFullPath(assetsPath), StringComparison.Ordinal);
+            Assert.StartsWith(
+                Path.GetFullPath(workspace) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(assetsPath),
+                StringComparison.Ordinal
+            );
             using JsonDocument assets = JsonDocument.Parse(File.ReadAllBytes(assetsPath));
             JsonProperty[] resolved = assets.RootElement.GetProperty("targets").EnumerateObject().ToArray();
             Assert.NotEmpty(resolved);
             if (runtime.Length != 0)
+            {
                 Assert.Contains(resolved, entry => entry.Name.EndsWith("/" + runtime, StringComparison.Ordinal));
+            }
             if (aheadOfTime)
-                Assert.Contains(assets.RootElement.GetProperty("libraries").EnumerateObject(),
-                    static entry => entry.Name.StartsWith("Microsoft.DotNet.ILCompiler/", StringComparison.Ordinal));
+            {
+                Assert.Contains(
+                    assets.RootElement.GetProperty("libraries").EnumerateObject(),
+                    static entry => entry.Name.StartsWith("Microsoft.DotNet.ILCompiler/", StringComparison.Ordinal)
+                );
+            }
             if (trimmed)
-                Assert.Contains(assets.RootElement.GetProperty("libraries").EnumerateObject(),
-                    static entry => entry.Name.StartsWith("Microsoft.NET.ILLink.Tasks/", StringComparison.Ordinal));
+            {
+                Assert.Contains(
+                    assets.RootElement.GetProperty("libraries").EnumerateObject(),
+                    static entry => entry.Name.StartsWith("Microsoft.NET.ILLink.Tasks/", StringComparison.Ordinal)
+                );
+            }
             Assert.Empty(Directory.EnumerateFiles(Path.GetDirectoryName(project)!, "packages*.lock.json"));
             Assert.Empty(Directory.EnumerateFiles(workspace, "packages*.lock.json", SearchOption.AllDirectories));
         }
         finally
         {
             if (Directory.Exists(workspace))
+            {
                 Directory.Delete(workspace, recursive: true);
+            }
         }
     }
 }

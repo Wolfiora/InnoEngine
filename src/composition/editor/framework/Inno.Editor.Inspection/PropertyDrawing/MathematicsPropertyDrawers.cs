@@ -1,12 +1,14 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using Inno.Core.Mathematics;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
-using Ui = Inno.Editor.ImGui.ImGui;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using NumericsVector4 = System.Numerics.Vector4;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 internal static unsafe class ComponentFieldDrawer
 {
     internal static float GetWidth(int count)
@@ -50,10 +52,14 @@ internal sealed unsafe class Vector2PropertyDrawer : IPropertyDrawer
         Vector2 value = context.GetValue() is Vector2 current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(2);
         if (ComponentFieldDrawer.Float(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
     }
 }
 
@@ -71,13 +77,19 @@ internal sealed unsafe class Vector3PropertyDrawer : IPropertyDrawer
         Vector3 value = context.GetValue() is Vector3 current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(3);
         if (ComponentFieldDrawer.Float(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Z", ref value.z, width))
+        {
             context.SetValue(value, "z");
+        }
     }
 }
 
@@ -95,16 +107,24 @@ internal sealed unsafe class Vector4PropertyDrawer : IPropertyDrawer
         Vector4 value = context.GetValue() is Vector4 current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(4);
         if (ComponentFieldDrawer.Float(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Z", ref value.z, width))
+        {
             context.SetValue(value, "z");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "W", ref value.w, width))
+        {
             context.SetValue(value, "w");
+        }
     }
 }
 
@@ -122,10 +142,14 @@ internal sealed unsafe class Vector2IntPropertyDrawer : IPropertyDrawer
         Vector2Int value = context.GetValue() is Vector2Int current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(2);
         if (ComponentFieldDrawer.Int(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
     }
 }
 
@@ -143,13 +167,19 @@ internal sealed unsafe class Vector3IntPropertyDrawer : IPropertyDrawer
         Vector3Int value = context.GetValue() is Vector3Int current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(3);
         if (ComponentFieldDrawer.Int(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "Z", ref value.z, width))
+        {
             context.SetValue(value, "z");
+        }
     }
 }
 
@@ -167,16 +197,24 @@ internal sealed unsafe class Vector4IntPropertyDrawer : IPropertyDrawer
         Vector4Int value = context.GetValue() is Vector4Int current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(4);
         if (ComponentFieldDrawer.Int(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "Z", ref value.z, width))
+        {
             context.SetValue(value, "z");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "W", ref value.w, width))
+        {
             context.SetValue(value, "w");
+        }
     }
 }
 
@@ -194,16 +232,24 @@ internal sealed unsafe class RectPropertyDrawer : IPropertyDrawer
         Rect value = context.GetValue() is Rect current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(4);
         if (ComponentFieldDrawer.Float(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "W", ref value.width, width))
+        {
             context.SetValue(value, "width");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "H", ref value.height, width))
+        {
             context.SetValue(value, "height");
+        }
     }
 }
 
@@ -221,16 +267,24 @@ internal sealed unsafe class RectIntPropertyDrawer : IPropertyDrawer
         RectInt value = context.GetValue() is RectInt current ? current : default;
         float width = ComponentFieldDrawer.GetWidth(4);
         if (ComponentFieldDrawer.Int(context.path, "X", ref value.x, width))
+        {
             context.SetValue(value, "x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "Y", ref value.y, width))
+        {
             context.SetValue(value, "y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "W", ref value.width, width))
+        {
             context.SetValue(value, "width");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Int(context.path, "H", ref value.height, width))
+        {
             context.SetValue(value, "height");
+        }
     }
 }
 
@@ -247,7 +301,12 @@ internal sealed unsafe class ColorPropertyDrawer : IPropertyDrawer
     {
         Color value = context.GetValue() is Color current ? current : default;
         var nativeValue = new NumericsVector4(value.r, value.g, value.b, value.a);
-        var flags = context.hdrColor ? Inno.Editor.ImGui.ImGuiColorEditFlags.Hdr | Inno.Editor.ImGui.ImGuiColorEditFlags.Float | Inno.Editor.ImGui.ImGuiColorEditFlags.InputRgb | Inno.Editor.ImGui.ImGuiColorEditFlags.DisplayRgb : Inno.Editor.ImGui.ImGuiColorEditFlags.None;
+        var flags = context.hdrColor
+                    ? Inno.Editor.ImGui.ImGuiColorEditFlags.Hdr
+                      | Inno.Editor.ImGui.ImGuiColorEditFlags.Float
+                      | Inno.Editor.ImGui.ImGuiColorEditFlags.InputRgb
+                      | Inno.Editor.ImGui.ImGuiColorEditFlags.DisplayRgb
+                    : Inno.Editor.ImGui.ImGuiColorEditFlags.None;
         if (Ui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
         {
             context.SetValue(new Color(nativeValue.X, nativeValue.Y, nativeValue.Z, nativeValue.W));
@@ -270,12 +329,18 @@ internal sealed unsafe class QuaternionPropertyDrawer : IPropertyDrawer
         Vector3 eulerDegrees = value.ToEulerAnglesXYZDegrees();
         float width = ComponentFieldDrawer.GetWidth(3);
         if (ComponentFieldDrawer.Float(context.path, "X", ref eulerDegrees.x, width))
+        {
             context.SetValue(Quaternion.FromEulerAnglesXYZDegrees(eulerDegrees).normalized, "euler.x");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Y", ref eulerDegrees.y, width))
+        {
             context.SetValue(Quaternion.FromEulerAnglesXYZDegrees(eulerDegrees).normalized, "euler.y");
+        }
         ComponentFieldDrawer.Next();
         if (ComponentFieldDrawer.Float(context.path, "Z", ref eulerDegrees.z, width))
+        {
             context.SetValue(Quaternion.FromEulerAnglesXYZDegrees(eulerDegrees).normalized, "euler.z");
+        }
     }
 }

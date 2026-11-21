@@ -63,11 +63,9 @@ public sealed unsafe partial class Sdl3PlatformApplication : IPlatformApplicatio
     /// </returns>
     public partial IReadOnlyList<Sdl3PlatformWindow> GetWindows();
 
-    IPlatformWindow IPlatformApplication.CreateWindow(PlatformWindowOptions options)
-        => CreateWindow(options);
+    IPlatformWindow IPlatformApplication.CreateWindow(PlatformWindowOptions options) => CreateWindow(options);
 
-    IReadOnlyList<IPlatformWindow> IPlatformApplication.GetWindows()
-        => GetWindows();
+    IReadOnlyList<IPlatformWindow> IPlatformApplication.GetWindows() => GetWindows();
 
     /// <summary>
     /// Registers an optional platform backend integration for this application instance.

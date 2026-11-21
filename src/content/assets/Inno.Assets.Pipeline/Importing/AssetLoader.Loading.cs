@@ -7,18 +7,17 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
@@ -153,7 +152,8 @@ sealed partial class AssetLoader
                     _ => RemovePathOperation(normalized, operation),
                     CancellationToken.None,
                     TaskContinuationOptions.ExecuteSynchronously,
-                    TaskScheduler.Default);
+                    TaskScheduler.Default
+                );
             }
         }
         return AwaitSharedLoad(operation, requestedAssetType, cancellationToken);
@@ -192,7 +192,8 @@ sealed partial class AssetLoader
                     _ => RemoveIdOperation(persistentId, operation),
                     CancellationToken.None,
                     TaskContinuationOptions.ExecuteSynchronously,
-                    TaskScheduler.Default);
+                    TaskScheduler.Default
+                );
             }
         }
         return AwaitSharedLoad(operation, requestedAssetType, cancellationToken);
@@ -224,7 +225,9 @@ sealed partial class AssetLoader
     ) {
         ArgumentNullException.ThrowIfNull(expectedType);
         if (persistentId == Guid.Empty)
+        {
             throw new InvalidOperationException("A serialized asset reference has an empty persistent identity.");
+        }
         return Execute(() => ResolveReferenceLocked(persistentId, stableTypeId, lastKnownPath, expectedType));
     }
 
@@ -246,9 +249,10 @@ sealed partial class AssetLoader
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                $"Asset reference '{persistentId:D}' at '{propertyPath}' cannot be resolved as " +
-                $"'{expectedType.FullName}'.",
-                exception);
+                $"Asset reference '{persistentId:D}' at '{propertyPath}' cannot be resolved as "
+                + $"'{expectedType.FullName}'.",
+                exception
+            );
         }
     }
 
@@ -273,7 +277,9 @@ sealed partial class AssetLoader
             }
         }
         if (catalogChanged && !stale)
+        {
             CommitCatalogLocked();
+        }
         if (record is null || stale)
         {
             if (!ImportLocked(relativePath))
@@ -291,18 +297,22 @@ sealed partial class AssetLoader
         Type requestedAssetType
     ) {
         if (persistentId == Guid.Empty)
+        {
             return null;
+        }
         if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record))
         {
             LoadCatalogLocked();
             if (!m_recordsById.TryGetValue(persistentId, out record))
+            {
                 return null;
+            }
         }
         if (record.meta.isTombstone)
         {
             return record.asset is null
-                ? null
-                : LoadRecordLocked(record, requestedAssetType);
+                   ? null
+                   : LoadRecordLocked(record, requestedAssetType);
         }
 
         // A source-side identity can be indexed before its body is imported. Route identity loads
@@ -310,11 +320,11 @@ sealed partial class AssetLoader
         // or stale artifact merely because their sidecar was discovered first. The sidecar check
         // keeps a newly created asset at the same path from satisfying an older identity lookup.
         bool ownsCurrentSource = IOFile.Exists(GetSourcePath(record.relativePath))
-            && TryReadSourceMeta(GetMetaPath(record.relativePath), out AssetSourceMeta sourceMeta)
-            && sourceMeta.persistentId == persistentId;
+                                 && TryReadSourceMeta(GetMetaPath(record.relativePath), out AssetSourceMeta sourceMeta)
+                                 && sourceMeta.persistentId == persistentId;
         return ownsCurrentSource
-            ? LoadPathLocked(record.relativePath, requestedAssetType)
-            : LoadRecordLocked(record, requestedAssetType);
+               ? LoadPathLocked(record.relativePath, requestedAssetType)
+               : LoadRecordLocked(record, requestedAssetType);
     }
 
     private AssetObject? LoadRecordLocked(
@@ -324,23 +334,33 @@ sealed partial class AssetLoader
         if (string.IsNullOrEmpty(record.meta.artifactKey) && record.meta.assetStateBytes.Length == 0)
         {
             if (m_activeImports.Count != 0 && m_unavailableImports.TryGetValue(record.relativePath, out var unavailable))
+            {
                 throw new AssetImportExtensionUnavailableException(unavailable.kind, unavailable.id);
+            }
             return null;
         }
         Type? actualType = ResolveRecordType(record);
         if (actualType is null || !requestedAssetType.IsAssignableFrom(actualType))
+        {
             return null;
+        }
         if (record.asset is not null)
+        {
             return requestedAssetType.IsInstanceOfType(record.asset) ? record.asset : null;
+        }
 
         var transaction = new AssetLoadTransaction();
         try
         {
             PrepareShellsLocked(record, transaction);
             foreach (AssetRecord created in transaction.createdRecords)
+            {
                 HydrateRecordLocked(created);
+            }
             foreach (AssetRecord created in transaction.createdRecords)
+            {
                 AttachDependenciesLocked(created);
+            }
             return record.asset;
         }
         catch
@@ -355,24 +375,31 @@ sealed partial class AssetLoader
         AssetLoadTransaction transaction
     ) {
         if (record.asset is not null)
+        {
             return;
+        }
         Type type = ResolveRecordType(record)
-            ?? throw new InvalidOperationException(
-                $"Asset '{record.relativePath}' has unknown stable type '{record.stableTypeId}'.");
+                    ?? throw new InvalidOperationException(
+                        $"Asset '{record.relativePath}' has unknown stable type '{record.stableTypeId}'."
+                    );
         AssetObject shell;
         try
         {
             shell = (AssetObject)(Activator.CreateInstance(type, nonPublic: true)
-                ?? throw new InvalidOperationException("Activator returned null."));
+                                  ?? throw new InvalidOperationException("Activator returned null."));
         }
         catch (Exception exception)
         {
             throw new InvalidOperationException(
-                $"Asset type '{type.FullName}' requires a parameterless constructor.", exception);
+                $"Asset type '{type.FullName}' requires a parameterless constructor.",
+                exception
+            );
         }
         m_identities.InitializePersistentIdentity(shell, record.persistentId);
         if (m_identitiesActive)
+        {
             m_identities.Register(shell, record.persistentId);
+        }
         record.asset = shell;
         transaction.createdRecords.Add(record);
 
@@ -383,9 +410,11 @@ sealed partial class AssetLoader
             // activated yet. Do not let that temporary type gap abort the entire object graph;
             // AttachDependenciesLocked installs the identity-preserving placeholder and a later
             // registry generation rehydrates the reference from the retained catalog record.
-            if (dependencyRecord is not null && ResolveRecordType(dependencyRecord) is not null &&
-                (dependencyRecord.meta.assetStateBytes.Length != 0 || !string.IsNullOrEmpty(dependencyRecord.meta.artifactKey)))
+            if (dependencyRecord is not null && ResolveRecordType(dependencyRecord) is not null
+                && (dependencyRecord.meta.assetStateBytes.Length != 0 || !string.IsNullOrEmpty(dependencyRecord.meta.artifactKey))
+            ) {
                 PrepareShellsLocked(dependencyRecord, transaction);
+            }
         }
     }
 
@@ -393,11 +422,11 @@ sealed partial class AssetLoader
     {
         AssetObject asset = record.asset!;
         RestoreAssetState(asset, record.meta.assetStateBytes);
-        byte[] payload = m_artifacts.Read(
-            new AssetArtifactKey(record.meta.artifactKey),
-            "runtime");
+        byte[] payload = m_artifacts.Read(new AssetArtifactKey(record.meta.artifactKey), "runtime");
         if (payload.Length == 0 && record.payload.Length > 0)
+        {
             payload = record.payload;
+        }
         record.payload = payload;
         bool isMissing = record.meta.importStatus == (int)AssetImportStatus.Missing;
         m_runtimeOwner.Initialize(
@@ -406,7 +435,8 @@ sealed partial class AssetLoader
             record.meta.sourceHash,
             payload,
             isMissing,
-            1);
+            1
+        );
     }
 
     private AssetObject ResolveReferenceLocked(
@@ -417,31 +447,37 @@ sealed partial class AssetLoader
     ) {
         AssetObject? loaded = LoadIdLocked(persistentId, expectedType);
         if (loaded is not null)
+        {
             return loaded;
+        }
         // A cataloged source whose importer/type belongs to a later module generation is
         // unavailable, not missing. Startup and atomic reload may legitimately observe this
         // state before the corresponding generation is activated; publishing a missing-reference
         // diagnostic here would turn a healthy last-good asset into a false warning.
         if (!IsSourceBackedTypeUnavailableLocked(persistentId))
-            m_diagnostics.PublishMissingReference(persistentId, lastKnownPath, expectedType);
-        if (m_missingAssets.TryGetValue(persistentId, out WeakReference<AssetObject>? weak) &&
-            weak.TryGetTarget(out AssetObject? existing) && expectedType.IsInstanceOfType(existing))
         {
+            m_diagnostics.PublishMissingReference(persistentId, lastKnownPath, expectedType);
+        }
+        if (m_missingAssets.TryGetValue(persistentId, out WeakReference<AssetObject>? weak)
+            && weak.TryGetTarget(out AssetObject? existing) && expectedType.IsInstanceOfType(existing)
+        ) {
             return existing;
         }
         Type type = ResolveDependencyExpectedType(
-            new AssetDependency(persistentId, new TypeRef(stableTypeId), lastKnownPath));
-        if (type == typeof(MissingAsset) &&
-            !expectedType.IsAbstract &&
-            !expectedType.IsInterface &&
-            typeof(AssetObject).IsAssignableFrom(expectedType))
-        {
+            new AssetDependency(persistentId, new TypeRef(stableTypeId), lastKnownPath)
+        );
+        if (type == typeof(MissingAsset)
+            && !expectedType.IsAbstract
+            && !expectedType.IsInterface
+            && typeof(AssetObject).IsAssignableFrom(expectedType)
+        ) {
             type = expectedType;
         }
         if (!expectedType.IsAssignableFrom(type))
         {
             throw new InvalidOperationException(
-                $"Missing asset type '{type.FullName}' cannot be assigned to '{expectedType.FullName}'.");
+                $"Missing asset type '{type.FullName}' cannot be assigned to '{expectedType.FullName}'."
+            );
         }
         AssetObject missing = (AssetObject)(Activator.CreateInstance(type, nonPublic: true)
             ?? throw new InvalidOperationException($"Missing asset type '{type.FullName}' cannot be created."));
@@ -452,7 +488,8 @@ sealed partial class AssetLoader
             string.Empty,
             ReadOnlyMemory<byte>.Empty,
             true,
-            0);
+            0
+        );
         m_missingAssets[persistentId] = new WeakReference<AssetObject>(missing);
         return missing;
     }
@@ -473,7 +510,9 @@ sealed partial class AssetLoader
     private T Execute<T>(Func<T> action)
     {
         if (ReferenceEquals(t_activeLoader, this))
+        {
             return action();
+        }
         using IDisposable generation = m_types.AcquireOperation("access Asset loader");
         lock (m_asyncSync)
         {
@@ -498,7 +537,9 @@ sealed partial class AssetLoader
         finally
         {
             lock (m_asyncSync)
+            {
                 m_admittedOperations--;
+            }
         }
     }
 
@@ -524,9 +565,9 @@ sealed partial class AssetLoader
     ) {
         lock (m_asyncSync)
         {
-            if (m_inFlightPathLoads.TryGetValue(relativePath, out Task<AssetObject?>? current) &&
-                ReferenceEquals(current, operation))
-            {
+            if (m_inFlightPathLoads.TryGetValue(relativePath, out Task<AssetObject?>? current)
+                && ReferenceEquals(current, operation)
+            ) {
                 m_inFlightPathLoads.Remove(relativePath);
             }
         }
@@ -538,9 +579,9 @@ sealed partial class AssetLoader
     ) {
         lock (m_asyncSync)
         {
-            if (m_inFlightIdLoads.TryGetValue(persistentId, out Task<AssetObject?>? current) &&
-                ReferenceEquals(current, operation))
-            {
+            if (m_inFlightIdLoads.TryGetValue(persistentId, out Task<AssetObject?>? current)
+                && ReferenceEquals(current, operation)
+            ) {
                 m_inFlightIdLoads.Remove(persistentId);
             }
         }
@@ -550,5 +591,4 @@ sealed partial class AssetLoader
     {
         internal List<AssetRecord> createdRecords { get; } = [];
     }
-
 }

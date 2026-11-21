@@ -45,24 +45,33 @@ public sealed class GameRuntimePlugin : ISerializable
     public void Validate()
     {
         if (string.IsNullOrWhiteSpace(id))
-            throw new InvalidDataException("A runtime Plugin contribution requires an ID.");
-        if (dependencies is null || overrides is null || settings is null)
-            throw new InvalidDataException($"Runtime Plugin '{id}' contains a null collection.");
-        if (dependencies.Any(string.IsNullOrWhiteSpace)
-            || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Length)
         {
+            throw new InvalidDataException("A runtime Plugin contribution requires an ID.");
+        }
+        if (dependencies is null || overrides is null || settings is null)
+        {
+            throw new InvalidDataException($"Runtime Plugin '{id}' contains a null collection.");
+        }
+        if (dependencies.Any(string.IsNullOrWhiteSpace)
+            || dependencies.Distinct(StringComparer.Ordinal).Count() != dependencies.Length
+        ) {
             throw new InvalidDataException($"Runtime Plugin '{id}' has invalid dependencies.");
         }
         if (overrides.Any(dependency => !dependencies.Contains(dependency, StringComparer.Ordinal)))
-            throw new InvalidDataException($"Runtime Plugin '{id}' overrides an undeclared dependency.");
-        if (settings.Select(static setting => setting.id).Distinct().Count() != settings.Length)
-            throw new InvalidDataException($"Runtime Plugin '{id}' has duplicate setting contributions.");
-        if (settings.Any(static setting =>
-                !setting.id.isValid
-                || setting.stableTypeId == Guid.Empty
-                || setting.propertyData is null
-                || setting.propertyData.Length == 0))
         {
+            throw new InvalidDataException($"Runtime Plugin '{id}' overrides an undeclared dependency.");
+        }
+        if (settings.Select(static setting => setting.id).Distinct().Count() != settings.Length)
+        {
+            throw new InvalidDataException($"Runtime Plugin '{id}' has duplicate setting contributions.");
+        }
+        if (settings.Any(static setting => (
+            !setting.id.isValid
+            || setting.stableTypeId == Guid.Empty
+            || setting.propertyData is null
+            || setting.propertyData.Length == 0
+        ))
+        ) {
             throw new InvalidDataException($"Runtime Plugin '{id}' has an invalid setting contribution.");
         }
     }

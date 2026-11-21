@@ -111,11 +111,17 @@ public sealed class RenderShaderBindingDescriptor
         ArgumentOutOfRangeException.ThrowIfNegative(slot);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
         if (!Enum.IsDefined(kind))
+        {
             throw new ArgumentOutOfRangeException(nameof(kind));
+        }
         if (!Enum.IsDefined(uniformType))
+        {
             throw new ArgumentOutOfRangeException(nameof(uniformType));
+        }
         if (!Enum.IsDefined(storageAccess))
+        {
             throw new ArgumentOutOfRangeException(nameof(storageAccess));
+        }
         this.id = id;
         this.kind = kind;
         this.slot = slot;
@@ -161,4 +167,3 @@ public sealed class RenderShaderBindingDescriptor
     /// </summary>
     public string nativeName { get; }
 }
-

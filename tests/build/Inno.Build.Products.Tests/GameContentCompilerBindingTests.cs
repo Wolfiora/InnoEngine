@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Build.Managed;
 using Xunit;
+using Inno.Build.Managed;
 
 namespace Inno.Build.Products.Tests;
 
@@ -63,6 +63,7 @@ public sealed class GameContentCompilerBindingTests
         public string runtimeIdentifier => "fixture-rid";
         public string displayName => "Fixture";
         internal int calls { get; private set; }
+
         public void Validate(string directory) => throw new InvalidOperationException("Binding must not inspect output.");
 
         public ValueTask<string> PackageAsync(

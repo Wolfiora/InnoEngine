@@ -1,12 +1,12 @@
-using Inno.Testing.Source;
 using System;
 using System.IO;
 using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -21,7 +21,11 @@ public sealed class SolutionBootstrapOwnershipTests
         bool explicitlyDisablePreparation
     ) {
         string repository = TestRepository.GetRoot(typeof(SolutionBootstrapOwnershipTests).Assembly);
-        string root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoProductCleanTests", Guid.NewGuid().ToString("N"));
+        string root = Path.Combine(
+            new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+            "InnoProductCleanTests",
+            Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(root);
         try
         {
@@ -31,12 +35,25 @@ public sealed class SolutionBootstrapOwnershipTests
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(1));
             using var output = new StringWriter();
             using var error = new StringWriter();
-            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(host,
-                ["clean", Path.Combine(repository, project),
-                    "--artifacts-path", artifacts, "-p:InnoTaskArtifacts=" + tasks,
+            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
+                host,
+                [
+                    "clean",
+                    Path.Combine(repository, project),
+                    "--artifacts-path",
+                    artifacts,
+                    "-p:InnoTaskArtifacts=" + tasks,
                     .. (explicitlyDisablePreparation ? new[] { "-p:InnoPrepareProductNative=false" } : Array.Empty<string>()),
-                    "--disable-build-servers", "-m:1", "-nr:false"],
-                repository, cancellation.Token, DotNetSdkEnvironment.Create(host), output, error));
+                    "--disable-build-servers",
+                    "-m:1",
+                    "-nr:false"
+                ],
+                repository,
+                cancellation.Token,
+                DotNetSdkEnvironment.Create(host),
+                output,
+                error
+            ));
             Assert.True(failure is null, $"{failure}\n{output}\n{error}");
             Assert.False(Directory.Exists(tasks), output.ToString());
             Assert.Empty(Directory.GetFiles(artifacts, "*.dll", SearchOption.AllDirectories));
@@ -52,7 +69,11 @@ public sealed class SolutionBootstrapOwnershipTests
     public async Task BootstrapClaimsAreSharedWithinOneProcessButCannotCrossExitedProcesses()
     {
         string repository = TestRepository.GetRoot(typeof(SolutionBootstrapOwnershipTests).Assembly);
-        string root = Path.Combine(new PhysicalPathResolver().Resolve(Path.GetTempPath()), "InnoBootstrapLifetimeTests", Guid.NewGuid().ToString("N"));
+        string root = Path.Combine(
+            new PhysicalPathResolver().Resolve(Path.GetTempPath()),
+            "InnoBootstrapLifetimeTests",
+            Guid.NewGuid().ToString("N")
+        );
         Directory.CreateDirectory(root);
         try
         {
@@ -85,11 +106,19 @@ public sealed class SolutionBootstrapOwnershipTests
                 using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(1));
                 using var output = new StringWriter();
                 using var error = new StringWriter();
-                Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(host,
+                Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
+                    host,
                     ["msbuild", project, "-t:Build", "-nr:false", "-p:InnoTaskBootstrapOwner=" + owner],
-                    root, cancellation.Token, DotNetSdkEnvironment.Create(host), output, error));
+                    root,
+                    cancellation.Token,
+                    DotNetSdkEnvironment.Create(host),
+                    output,
+                    error
+                ));
                 if (failure is not null)
+                {
                     throw new InvalidOperationException(output.ToString() + error, failure);
+                }
             }
         }
         finally
@@ -108,6 +137,7 @@ public sealed class SolutionBootstrapOwnershipTests
         {
             File.Copy(Path.Combine(root, "Directory.Solution.targets"), Path.Combine(fixture, "Directory.Solution.targets"));
             foreach (string name in new[] { "First", "Second" })
+            {
                 await File.WriteAllTextAsync(Path.Combine(fixture, name + ".csproj"), """
                     <Project DefaultTargets="Build">
                       <Target Name="Build">
@@ -117,6 +147,7 @@ public sealed class SolutionBootstrapOwnershipTests
                       </Target>
                     </Project>
                     """);
+            }
             string solution = Path.Combine(fixture, "InnoEngine.sln");
             await File.WriteAllTextAsync(solution, """
                 Microsoft Visual Studio Solution File, Format Version 12.00
@@ -144,8 +175,14 @@ public sealed class SolutionBootstrapOwnershipTests
                 using var output = new StringWriter();
                 using var error = new StringWriter();
                 Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
-                    host, ["msbuild", solution, "-m:2", "-nodeReuse:false", "-v:quiet"],
-                    fixture, cancellation.Token, DotNetSdkEnvironment.Create(host), output, error));
+                    host,
+                    ["msbuild", solution, "-m:2", "-nodeReuse:false", "-v:quiet"],
+                    fixture,
+                    cancellation.Token,
+                    DotNetSdkEnvironment.Create(host),
+                    output,
+                    error
+                ));
                 Assert.True(failure is null, $"{failure}{Environment.NewLine}{output}{Environment.NewLine}{error}");
                 string first = File.ReadAllText(Path.Combine(fixture, "First.owner")).Trim();
                 Assert.True(Guid.TryParseExact(first, "N", out _));

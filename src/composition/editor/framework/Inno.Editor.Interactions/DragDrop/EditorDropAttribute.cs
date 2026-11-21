@@ -15,9 +15,7 @@ public sealed class EditorDropAttribute : Attribute
     /// The tie-breaking priority used after source and target specificity.
     /// </param>
     public EditorDropAttribute(int priority = 0)
-        : this(string.Empty, priority)
-    {
-    }
+        : this(string.Empty, priority) {}
 
     /// <summary>
     /// Creates a drop registration scoped to an exact interaction area.

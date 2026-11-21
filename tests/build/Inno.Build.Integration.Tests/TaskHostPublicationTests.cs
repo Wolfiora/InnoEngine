@@ -5,11 +5,11 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using Inno.Build.TaskHosting;
-using Inno.Build.Toolchains;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Xunit;
+using Inno.Build.TaskHosting;
+using Inno.Build.Toolchains;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -46,7 +46,9 @@ public sealed class TaskHostPublicationTests : IDisposable
         PublishTaskHostTask first = CreateTask();
         PublishTaskHostTask second = CreateTask();
         bool[] results = await System.Threading.Tasks.Task.WhenAll(
-            System.Threading.Tasks.Task.Run(first.Execute), System.Threading.Tasks.Task.Run(second.Execute));
+            System.Threading.Tasks.Task.Run(first.Execute),
+            System.Threading.Tasks.Task.Run(second.Execute)
+        );
         Assert.All(results, result => Assert.True(result));
         Assert.Equal(first.PublishedAssembly, second.PublishedAssembly);
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "hosts")));
@@ -151,7 +153,8 @@ public sealed class TaskHostPublicationTests : IDisposable
         file.SetMetadata("FileHash", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))));
         return new PublishTaskHostTask
         {
-            InputFiles = [file], CacheDirectory = Path.Combine(m_root, "hosts"),
+            InputFiles = [file],
+            CacheDirectory = Path.Combine(m_root, "hosts"),
             LoadDirectory = Path.Combine(m_root, "loads", Guid.NewGuid().ToString("N"), "Debug"),
             BuildEngine = m_engine
         };
@@ -163,10 +166,17 @@ public sealed class TaskHostPublicationTests : IDisposable
         [
             new BuildCachePublisher(Path.Combine(m_root, "hosts"), BuildCacheArtifactRole.ImmutableArtifact).Describe("hosts"),
             new BuildCachePublisher(Path.Combine(m_root, "loads"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("loads"),
-            new BuildCachePublisher(Path.Combine(m_root, "publishers"), BuildCacheArtifactRole.ProcessWorkingDirectory).Describe("publishers")
+            new BuildCachePublisher(
+                Path.Combine(m_root, "publishers"),
+                BuildCacheArtifactRole.ProcessWorkingDirectory
+            ).Describe("publishers")
         ];
-        BuildCacheCleanupResult result = await BuildCacheCleanupPlan.Create(m_root, owners,
-            new BuildCachePolicy(0, 0, TimeSpan.FromSeconds(20)), retireAll: true).ExecuteAsync();
+        BuildCacheCleanupResult result = await BuildCacheCleanupPlan.Create(
+            m_root,
+            owners,
+            new BuildCachePolicy(0, 0, TimeSpan.FromSeconds(20)),
+            retireAll: true
+        ).ExecuteAsync();
         Assert.Empty(result.failures);
     }
 
@@ -177,10 +187,15 @@ public sealed class TaskHostPublicationTests : IDisposable
         public int LineNumberOfTaskNode => 0;
         public int ColumnNumberOfTaskNode => 0;
         public string ProjectFileOfTaskNode => string.Empty;
+
         public void LogErrorEvent(BuildErrorEventArgs error) => errors.Add(error);
-        public void LogWarningEvent(BuildWarningEventArgs warning) { }
-        public void LogMessageEvent(BuildMessageEventArgs message) { }
-        public void LogCustomEvent(CustomBuildEventArgs custom) { }
+
+        public void LogWarningEvent(BuildWarningEventArgs warning) {}
+
+        public void LogMessageEvent(BuildMessageEventArgs message) {}
+
+        public void LogCustomEvent(CustomBuildEventArgs custom) {}
+
         public bool BuildProjectFile(
             string project,
             string[] targets,

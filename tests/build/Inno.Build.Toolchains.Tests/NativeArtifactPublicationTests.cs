@@ -1,21 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Build.Toolchains;
-
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains.Tests;
 
 public sealed class NativeArtifactPublicationTests : IDisposable
 {
-
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoNativePublication", Guid.NewGuid().ToString("N"));
 
     [Fact]
@@ -24,9 +22,11 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         NativeBuildContext context = CreateContext();
         string source = Path.Combine(m_root, "repair.h");
         File.WriteAllText(source, "input");
-        var owner = new NativeComponentDescriptor("fixture",
+        var owner = new NativeComponentDescriptor(
+            "fixture",
             "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
-            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj");
+            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+        );
         NativeBuildRecipe recipe = CreateRecipe(context, owner, "fixture", "fixture-x64", [source], []);
         var prepared = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         int calls = 0;
@@ -37,7 +37,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         ) {
             await File.WriteAllTextAsync(Path.Combine(output, "result.native"), "complete", cancellation);
             if (Interlocked.Increment(ref calls) > 1)
+            {
                 prepared.TrySetResult();
+            }
         }
         using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(context, recipe, Produce);
         File.WriteAllText(first.files[0], "damaged");
@@ -61,30 +63,60 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string source = Path.Combine(m_root, "source.h");
         File.WriteAllText(source, "int first;");
         string intermediate = Path.Combine(m_root, "Intermediate", "input.h");
-        using NativeBuildProduct result1 = await NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
+        using NativeBuildProduct result1 = await NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            async (
                 @scoped,
                 output,
                 cancellation
-            ) => {
+            ) =>
+            {
                 Assert.True(await NativeInputMaterializer.CopyAsync(scoped, source, intermediate, cancellation));
                 DateTime original = File.GetLastWriteTimeUtc(intermediate);
                 Assert.False(await NativeInputMaterializer.CopyAsync(scoped, source, intermediate, cancellation));
                 Assert.Equal(original, File.GetLastWriteTimeUtc(intermediate));
                 File.WriteAllText(Path.Combine(output, "result.native"), "complete");
-            });
+            }
+        );
 
         context = CreateContext();
         File.WriteAllText(source, "int newer;");
-        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            async (
                 @scoped,
                 output,
                 cancellation
-            ) => {
+            ) =>
+            {
                 File.WriteAllText(source, "int wrong;");
                 await NativeInputMaterializer.CopyAsync(scoped, source, intermediate, cancellation);
-            }));
+            }
+        ));
         Assert.Equal("int first;", File.ReadAllText(intermediate));
         Assert.Empty(Directory.EnumerateFiles(m_root, "*.staging-*", SearchOption.AllDirectories));
     }
@@ -97,18 +129,33 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string intermediate = Path.Combine(m_root, "input.h");
         File.WriteAllText(source, "source");
         File.WriteAllText(intermediate, "previous");
-        using NativeBuildProduct result2 = await NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
+        using NativeBuildProduct result2 = await NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            async (
                 @scoped,
                 output,
                 cancellation
-            ) => {
+            ) =>
+            {
                 using var canceled = new CancellationTokenSource();
                 canceled.Cancel();
                 await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
                     NativeInputMaterializer.CopyAsync(scoped, source, intermediate, canceled.Token).AsTask());
                 File.WriteAllText(Path.Combine(output, "result.native"), "complete");
-            });
+            }
+        );
         Assert.Equal("previous", File.ReadAllText(intermediate));
     }
 
@@ -135,8 +182,22 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             Task<NativeBuildProduct> Publish()
             {
                 NativeBuildContext operation = CreateContext();
-                return NativeArtifactPublisher.PublishAsync(operation,
-                    CreateRecipe(operation, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), Produce);
+                return NativeArtifactPublisher.PublishAsync(
+                    operation,
+                    CreateRecipe(
+                        operation,
+                        new NativeComponentDescriptor(
+                            "fixture",
+                            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                        ),
+                        "fixture",
+                        "fixture-x64",
+                        [source],
+                        []
+                    ),
+                    Produce
+                );
             }
             using NativeBuildProduct first = await Publish();
             File.WriteAllText(header, "changed declaration");
@@ -154,7 +215,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         finally
         {
             if (Directory.Exists(cycle))
+            {
                 Directory.Delete(cycle, recursive: false);
+            }
             Directory.Delete(alias, recursive: false);
         }
     }
@@ -174,15 +237,36 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             CancellationToken cancellation
         ) {
             Interlocked.Increment(ref builds);
-            string intermediate = scoped.GetNativeBuildRoot(new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"));
+            string intermediate = scoped.GetNativeBuildRoot(
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                )
+            );
             string physical = new DirectoryInfo(intermediate).LinkTarget ?? intermediate;
             Assert.Contains(Path.Combine("obj", "native", "fixture-x64"), physical);
             toolDirectory = intermediate;
             Assert.True(Directory.Exists(intermediate));
             await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
         }
-        Task<NativeBuildProduct> Publish() => NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], ["sdk"]), Produce);
+        Task<NativeBuildProduct> Publish()
+            => NativeArtifactPublisher.PublishAsync(
+                context,
+                CreateRecipe(
+                    context,
+                    new NativeComponentDescriptor(
+                        "fixture",
+                        "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                        "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                    ),
+                    "fixture",
+                    "fixture-x64",
+                    [source],
+                    ["sdk"]
+                ),
+                Produce
+            );
 
         NativeBuildProduct[] products = await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Publish()));
         Assert.Equal(1, builds);
@@ -192,7 +276,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         File.WriteAllText(products[0].files[0], "tampered");
 
         foreach (NativeBuildProduct product in products)
+        {
             product.Dispose();
+        }
         using NativeBuildProduct repaired = await Publish();
         Assert.Equal(2, builds);
         Assert.Equal(products[0].fingerprint, repaired.fingerprint);
@@ -211,18 +297,60 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             string output,
             CancellationToken cancellation
         ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
-        using NativeBuildProduct result3 = await NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "first", "fixture-x64", [source], []), Produce);
-        using NativeBuildProduct result4 = await NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "second", "fixture-x64", [source], []), Produce);
+        using NativeBuildProduct result3 = await NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "first",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            Produce
+        );
+        using NativeBuildProduct result4 = await NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "second",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            Produce
+        );
         Assert.Equal(5, context.statistics.hashedFiles);
         Assert.Equal(30, context.statistics.hashedBytes);
 
         DateTime timestamp = File.GetLastWriteTimeUtc(source);
         File.WriteAllText(source, "unsafe");
         File.SetLastWriteTimeUtc(source, timestamp);
-        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "third", "fixture-x64", [source], []), Produce));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "third",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            Produce
+        ));
     }
 
     [Fact]
@@ -237,30 +365,72 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             string output,
             CancellationToken cancellation
         ) => File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
-        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), Produce);
+        using NativeBuildProduct first = await NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            Produce
+        );
 
         File.WriteAllText(Path.Combine(source, "added.h"), "new closure");
         context = CreateContext();
-        await Assert.ThrowsAsync<IOException>(() => NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []),
+        await Assert.ThrowsAsync<IOException>(() => NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
             (
                 @scoped,
                 output,
                 cancellation
-            ) => throw new IOException("Compiler failed.")));
+            ) => throw new IOException("Compiler failed.")
+        ));
         Assert.Equal("complete", File.ReadAllText(first.files[0]));
 
         context = CreateContext();
-        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
+        await Assert.ThrowsAsync<InvalidOperationException>(() => NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            async (
                 @scoped,
                 output,
                 cancellation
-            ) => {
+            ) =>
+            {
                 await Produce(scoped, output, cancellation);
                 File.WriteAllText(Path.Combine(source, "changed-during-build.h"), "changed");
-            }));
+            }
+        ));
         Assert.Equal("complete", File.ReadAllText(first.files[0]));
         Assert.Empty(Directory.GetDirectories(m_root, "*.staging-*", SearchOption.AllDirectories));
     }
@@ -271,19 +441,41 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         NativeBuildContext context = CreateContext();
         string source = Path.Combine(m_root, "source.h");
         File.WriteAllText(source, "source");
-        using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
+        using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            async (
                 @scoped,
                 output,
                 cancellation
-            ) => {
+            ) =>
+            {
                 await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "complete", cancellation);
                 string link = Path.Combine(output, "Link");
                 Directory.CreateDirectory(link);
                 await File.WriteAllTextAsync(Path.Combine(link, "api.lib"), "build-only", cancellation);
-            });
+            }
+        );
         var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep(
-            "fixture", new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), new(NativeLibraryKind.Shared), [],
+            "fixture",
+            new NativeComponentDescriptor(
+                "fixture",
+                "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+            ),
+            new(NativeLibraryKind.Shared),
+            [],
             (
                 context,
                 dependencies,
@@ -293,11 +485,17 @@ public sealed class NativeArtifactPublicationTests : IDisposable
             (
                 relative,
                 target
-            ) => relative.Split(Path.DirectorySeparatorChar)[0] == "Link"
-                ? null : Path.Combine("fixture", target, relative))]);
+            ) => (
+                relative.Split(Path.DirectorySeparatorChar)[0] == "Link"
+                ? null
+                : Path.Combine("fixture", target, relative)
+            )
+        )]);
         string application = Path.Combine(m_root, "Application");
-        await Task.WhenAll(Enumerable.Range(0, 3)
-            .Select(_ => ProductNativeDeployment.InstallAsync([product], plan, application).AsTask()));
+        await Task.WhenAll(
+            Enumerable.Range(0, 3)
+                .Select(_ => ProductNativeDeployment.InstallAsync([product], plan, application).AsTask())
+        );
         string deployed = Path.Combine(application, "native", "fixture", "fixture-x64", "api.native");
         Assert.Equal("complete", File.ReadAllText(deployed));
         Assert.Single(Directory.EnumerateFiles(Path.Combine(application, "native"), "*", SearchOption.AllDirectories));
@@ -334,9 +532,12 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         Assert.Empty(Directory.EnumerateFileSystemEntries(canceledCandidate));
         Assert.Empty(Directory.EnumerateDirectories(application, "*.staging-*"));
 
-        static NativeComponentDescriptor productOwner() => new("fixture",
-            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
-            "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj");
+        static NativeComponentDescriptor productOwner()
+            => new(
+                "fixture",
+                "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+            );
     }
 
     [Fact]
@@ -346,15 +547,31 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string source = Path.Combine(m_root, "source.h");
         File.WriteAllText(source, "source");
         using var cancellation = new CancellationTokenSource();
-        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => NativeArtifactPublisher.PublishAsync(context,
-            CreateRecipe(context, new NativeComponentDescriptor("fixture", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj", "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"), "fixture", "fixture-x64", [source], []), async (
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => NativeArtifactPublisher.PublishAsync(
+            context,
+            CreateRecipe(
+                context,
+                new NativeComponentDescriptor(
+                    "fixture",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj",
+                    "build/toolchains/Inno.Build.Toolchains/Inno.Build.Toolchains.csproj"
+                ),
+                "fixture",
+                "fixture-x64",
+                [source],
+                []
+            ),
+            async (
                 @scoped,
                 output,
                 token
-            ) => {
+            ) =>
+            {
                 await File.WriteAllTextAsync(Path.Combine(output, "api.native"), "candidate", token);
                 cancellation.Cancel();
-            }, cancellation.Token));
+            },
+            cancellation.Token
+        ));
         Assert.Empty(Directory.EnumerateFiles(Path.Combine(m_root, "artifacts"), "api.native", SearchOption.AllDirectories));
         Assert.Empty(Directory.GetDirectories(m_root, "*.staging-*", SearchOption.AllDirectories));
     }
@@ -362,7 +579,9 @@ public sealed class NativeArtifactPublicationTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private static NativeBuildRecipe CreateRecipe(
@@ -372,10 +591,14 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         string targetId,
         IReadOnlyList<string> inputPaths,
         IReadOnlyList<string> declarations
-    ) => new(owner, component, targetId,
+    ) => new(
+        owner,
+        component,
+        targetId,
         inputPaths.Concat(context.toolchain?.inputPaths ?? [])
             .Select(path => NativeBuildInput.FromPath(context.engineRoot, path)),
-        declarations.Concat(context.toolchain?.declarations ?? []));
+        declarations.Concat(context.toolchain?.declarations ?? [])
+    );
 
     private static async Task CreateDirectoryAlias(
         string path,
@@ -388,10 +611,17 @@ public sealed class NativeArtifactPublicationTests : IDisposable
         }
         string escapedPath = path.Replace("'", "''", StringComparison.Ordinal);
         string escapedTarget = target.Replace("'", "''", StringComparison.Ordinal);
-        await ToolchainEnvironment.RunAsync("powershell.exe",
-            ["-NoProfile", "-NonInteractive", "-Command",
-                $"$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path '{escapedPath}' -Target '{escapedTarget}' | Out-Null"],
-            Path.GetDirectoryName(path)!, CancellationToken.None);
+        await ToolchainEnvironment.RunAsync(
+            "powershell.exe",
+            [
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                $"$ErrorActionPreference='Stop'; New-Item -ItemType Junction -Path '{escapedPath}' -Target '{escapedTarget}' | Out-Null"
+            ],
+            Path.GetDirectoryName(path)!,
+            CancellationToken.None
+        );
     }
 
     private NativeBuildContext CreateContext()

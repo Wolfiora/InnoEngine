@@ -16,10 +16,11 @@ using Inno.Editor.PlayMode;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
-using NativeImGui = Inno.Native.ImGui.ImGui;
-using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+
 using ImGuiCond = Inno.Native.ImGui.ImGuiCond;
 using ImGuiWindowFlags = Inno.Native.ImGui.ImGuiWindowFlags;
+using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
 namespace Inno.Testing.Editor.Native;
 
@@ -47,7 +48,10 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// </summary>
     /// <param name="composition">The calling test assembly owning the complete discovery closure.</param>
     /// <param name="assemblies">Additional declared panel assemblies to load before discovery.</param>
-    public NativePanelHost(Assembly composition, params string[] assemblies) : this(composition, false, assemblies) { }
+    public NativePanelHost(
+        Assembly composition,
+        params string[] assemblies
+    ) : this(composition, false, assemblies) {}
 
     /// <summary>
     /// Creates a panel host with an explicit vertex-offset capability.
@@ -59,7 +63,7 @@ public sealed unsafe class NativePanelHost : IDisposable
         Assembly composition,
         bool supportsVertexOffsets,
         params string[] assemblies
-    ) : this(composition, supportsVertexOffsets, new EditorKeyboardPolicy(KeyModifier.Control, "Super"), assemblies) { }
+    ) : this(composition, supportsVertexOffsets, new EditorKeyboardPolicy(KeyModifier.Control, "Super"), assemblies) {}
 
     /// <summary>
     /// Creates the owned diagnostics, discovery, interactions and native frame context.
@@ -78,7 +82,9 @@ public sealed unsafe class NativePanelHost : IDisposable
         m_ownsServices = true;
         Directory.CreateDirectory(m_root);
         foreach (string assembly in assemblies)
+        {
             _ = Assembly.Load(assembly);
+        }
         diagnostics = new DiagnosticHub();
         m_diagnosticScope = diagnostics.EnterScope();
         logs = new LogRouter();
@@ -118,18 +124,22 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// Gets the borrowed diagnostic hub for this host's lifetime.
     /// </summary>
     public DiagnosticHub diagnostics { get; }
+
     /// <summary>
     /// Gets the borrowed log router for this host's lifetime.
     /// </summary>
     public LogRouter logs { get; }
+
     /// <summary>
     /// Gets the borrowed console consuming the host's logs.
     /// </summary>
     public EditorConsole console { get; }
+
     /// <summary>
     /// Gets the borrowed interaction runtime and discovered panels.
     /// </summary>
     public EditorInteractionRuntime runtime { get; }
+
     /// <summary>
     /// Gets the borrowed UI session owning the host's frame state.
     /// </summary>
@@ -170,7 +180,9 @@ public sealed unsafe class NativePanelHost : IDisposable
         {
             NativeImGui.Render();
             if (m_validateVertexOffsets)
+            {
                 ValidateDrawData();
+            }
             m_clipboard.ThrowIfFaulted();
         }
     }
@@ -218,9 +230,12 @@ public sealed unsafe class NativePanelHost : IDisposable
                 if (panel.isOpen && !panel.Draw(runtime.context))
                 {
                     logs.Flush();
-                    string failures = string.Join(Environment.NewLine, console.Capture().occurrences
-                        .Where(static entry => entry.level >= LogLevel.Error)
-                        .Select(static entry => entry.message + Environment.NewLine + entry.stackTrace));
+                    string failures = string.Join(
+                        Environment.NewLine,
+                        console.Capture().occurrences
+                            .Where(static entry => entry.level >= LogLevel.Error)
+                            .Select(static entry => entry.message + Environment.NewLine + entry.stackTrace)
+                    );
                     throw new InvalidOperationException("The actual panel was quarantined: " + panel.id + Environment.NewLine + failures);
                 }
                 afterDraw?.Invoke();
@@ -253,7 +268,9 @@ public sealed unsafe class NativePanelHost : IDisposable
         NativeImGui.Raw.DestroyContext(m_nativeContext);
         m_clipboard.Dispose();
         if (m_ownsServices)
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     private static ImGuiNativeContext* CreateNativeContext(
@@ -266,14 +283,18 @@ public sealed unsafe class NativePanelHost : IDisposable
         io->DeltaTime = 1f / 60f;
         io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
         if (supportsVertexOffsets)
+        {
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasVtxOffset;
+        }
         io->ConfigFlags |= (int)ImGuiConfigFlags.NavEnableKeyboard;
         // Fixture input uses an explicit Control convention on every runner.
         io->ConfigMacOsxBehaviors = 0;
         io->Fonts->RendererHasTextures = 1;
         io->IniFilename = null;
         using (ui.Enter())
+        {
             ui.widgets.SetupStyle();
+        }
         return context;
     }
 
@@ -288,10 +309,18 @@ public sealed unsafe class NativePanelHost : IDisposable
                 ImDrawCmd command = list->CmdBuffer.Data[commandIndex];
                 ulong lastIndex = (ulong)command.IdxOffset + command.ElemCount;
                 if (lastIndex > (ulong)list->IdxBuffer.Size)
+                {
                     throw new InvalidOperationException("Native draw data exceeded its index buffer.");
+                }
                 for (ulong index = command.IdxOffset; index < lastIndex; index++)
+                {
                     if ((ulong)command.VtxOffset + list->IdxBuffer.Data[index] >= (ulong)list->VtxBuffer.Size)
-                        throw new InvalidOperationException("Native draw data exceeded its vertex buffer after applying the command offset.");
+                    {
+                        throw new InvalidOperationException(
+                            "Native draw data exceeded its vertex buffer after applying the command offset."
+                        );
+                    }
+                }
             }
         }
     }
@@ -303,8 +332,11 @@ public sealed unsafe class NativePanelHost : IDisposable
         public bool isPlaying => false;
         public string? lastFailure => null;
         public LogSessionId activeSessionId => LogSessionId.none;
+
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_events.CreateHub();
+
         public bool EnterPlayMode() => false;
+
         public bool ExitPlayMode() => false;
     }
 }

@@ -4,9 +4,9 @@ using System.Security;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Testing.Source;
-using Xunit;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -167,15 +167,27 @@ public sealed class TaskRegistrationBuildTests
             string dotnet = ToolchainEnvironment.ResolveExecutable("dotnet");
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
             var environment = DotNetSdkEnvironment.Create(dotnet);
-            await ToolchainEnvironment.RunAsync(dotnet,
+            await ToolchainEnvironment.RunAsync(
+                dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],
-                repository, timeout.Token, environment);
-            string sdk = (await ToolchainEnvironment.CaptureOutputAsync(dotnet,
+                repository,
+                timeout.Token,
+                environment
+            );
+            string sdk = (await ToolchainEnvironment.CaptureOutputAsync(
+                dotnet,
                 ["msbuild", project, "-nologo", "-getProperty:MSBuildBinPath"],
-                repository, timeout.Token, environment)).Trim();
-            await ToolchainEnvironment.RunAsync(dotnet,
+                repository,
+                timeout.Token,
+                environment
+            )).Trim();
+            await ToolchainEnvironment.RunAsync(
+                dotnet,
                 [Path.Combine(root, "bin/Debug/net10.0/Runner.dll"), fixture, sdk, report, repository],
-                repository, timeout.Token, environment);
+                repository,
+                timeout.Token,
+                environment
+            );
             using JsonDocument results = JsonDocument.Parse(await File.ReadAllTextAsync(report));
             Assert.Equal(2, results.RootElement.GetArrayLength());
             string? previous = null;

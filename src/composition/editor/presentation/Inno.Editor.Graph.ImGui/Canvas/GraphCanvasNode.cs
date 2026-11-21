@@ -53,15 +53,23 @@ public sealed class GraphCanvasNode
         ArgumentNullException.ThrowIfNull(title);
         ArgumentNullException.ThrowIfNull(ports);
         if (!float.IsFinite(position.x) || !float.IsFinite(position.y))
+        {
             throw new ArgumentOutOfRangeException(nameof(position));
+        }
         if (!float.IsFinite(size.X) || !float.IsFinite(size.Y) || size.X <= 0f || size.Y <= 0f)
+        {
             throw new ArgumentOutOfRangeException(nameof(size));
+        }
         if (!float.IsFinite(headerHeight) || headerHeight < 0f || headerHeight > size.Y)
+        {
             throw new ArgumentOutOfRangeException(nameof(headerHeight));
+        }
         GraphCanvasPort[] frozen = ports.ToArray();
         if (frozen.Any(port => port.endpoint.nodeId != id)
-            || frozen.Select(static port => (port.endpoint, port.direction)).Distinct().Count() != frozen.Length)
+            || frozen.Select(static port => (port.endpoint, port.direction)).Distinct().Count() != frozen.Length
+        ) {
             throw new ArgumentException("Node ports require unique endpoint/direction pairs owned by the same node.", nameof(ports));
+        }
         this.id = id;
         this.position = position;
         this.size = size;

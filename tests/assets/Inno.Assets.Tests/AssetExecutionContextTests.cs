@@ -1,9 +1,7 @@
 using System;
 using System.Threading.Tasks;
-
-using Inno.Assets;
-
 using Xunit;
+using Inno.Assets;
 
 namespace Inno.Assets.Tests;
 
@@ -30,7 +28,9 @@ public sealed class AssetExecutionContextTests
         {
             Assert.Same(outerAsset, Assets.Load<TextAsset>(AssetPath.Project("value.txt")));
             using (AssetExecutionContext.EnterScope(inner))
+            {
                 Assert.Same(innerAsset, Assets.Load<TextAsset>(AssetPath.Project("value.txt")));
+            }
             Assert.Same(outerAsset, Assets.Load<TextAsset>(AssetPath.Project("value.txt")));
         }
     }
@@ -79,21 +79,25 @@ public sealed class AssetExecutionContextTests
     {
         public TAsset Load<TAsset>(AssetPath path)
             where TAsset : AssetObject
-            => Cast<TAsset>();
+                => Cast<TAsset>();
 
         public TAsset Load<TAsset>(Guid persistentId)
             where TAsset : AssetObject
-            => Cast<TAsset>();
+                => Cast<TAsset>();
 
-        public bool TryLoad<TAsset>(AssetPath path, out TAsset? loadedAsset)
-            where TAsset : AssetObject
+        public bool TryLoad<TAsset>(
+            AssetPath path,
+            out TAsset? loadedAsset
+        ) where TAsset : AssetObject
         {
             loadedAsset = Cast<TAsset>();
             return true;
         }
 
-        public bool TryLoad<TAsset>(Guid persistentId, out TAsset? loadedAsset)
-            where TAsset : AssetObject
+        public bool TryLoad<TAsset>(
+            Guid persistentId,
+            out TAsset? loadedAsset
+        ) where TAsset : AssetObject
         {
             loadedAsset = Cast<TAsset>();
             return true;
@@ -101,6 +105,6 @@ public sealed class AssetExecutionContextTests
 
         private TAsset Cast<TAsset>()
             where TAsset : AssetObject
-            => Assert.IsType<TAsset>(asset);
+                => Assert.IsType<TAsset>(asset);
     }
 }

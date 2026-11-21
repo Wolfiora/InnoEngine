@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Runtime.ExceptionServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using Inno.Core.Events;
 using Inno.Core.Input;
@@ -50,7 +50,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
         // Browser frames are already driven by requestAnimationFrame; SDL's native
         // resize callback is only needed by desktop window move/resize loops.
         if (!m_hostIntegration.capabilities.liveResize)
+        {
             return;
+        }
 
         m_liveResizeEventWatch = LiveResizeEventWatch;
         m_liveResizeMainThreadCallback = LiveResizeMainThreadCallback;
@@ -135,7 +137,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
         ObjectDisposedException.ThrowIf(m_disposed, this);
         ArgumentNullException.ThrowIfNull(extension);
         if (m_extensions.Contains(extension))
+        {
             throw new InvalidOperationException("The platform extension is already registered.");
+        }
         m_extensions.Add(extension);
         return new ExtensionRegistration(this, extension);
     }
@@ -176,8 +180,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
             }
 
             if (TryCreatePendingEventCoalesceKey(translatedEvent, out var key)
-                && latestEventIndicesByKey.TryGetValue(key, out var index))
-            {
+                && latestEventIndicesByKey.TryGetValue(key, out var index)
+            ) {
                 m_pendingEvents[index] = translatedEvent;
                 continue;
             }
@@ -220,7 +224,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
         }
 
         foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
+        {
             extension.OnApplicationDisposing(this);
+        }
         m_extensions.Clear();
 
         foreach (var window in new List<Sdl3PlatformWindow>(m_windows.Values))
@@ -298,17 +304,19 @@ public sealed unsafe partial class Sdl3PlatformApplication
 
     private unsafe void DispatchNativeEvent(ref SDLEvent sdlEvent)
     {
-        ReadOnlySpan<byte> nativeEventData = new(
-            Unsafe.AsPointer(ref sdlEvent),
-            sizeof(SDLEvent));
+        ReadOnlySpan<byte> nativeEventData = new(Unsafe.AsPointer(ref sdlEvent), sizeof(SDLEvent));
         foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
+        {
             extension.ProcessNativeEvent(this, nativeEventData);
+        }
     }
 
     private void DispatchLiveResizeRedraw(uint windowId)
     {
         if (m_dispatchingRedraw || m_redrawFailure is not null)
+        {
             return;
+        }
         m_dispatchingRedraw = true;
         try
         {
@@ -316,11 +324,15 @@ public sealed unsafe partial class Sdl3PlatformApplication
             {
                 int width = 0, height = 0;
                 if (SDL.Raw.GetWindowSize(window.sdlWindow, &width, &height) == 0)
+                {
                     throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSize failed during live resize.");
+                }
                 window.UpdateLogicalSize(width, height);
             }
             foreach (ISdl3ApplicationExtension extension in m_extensions.ToArray())
+            {
                 extension.PrepareLiveResizeWindow(this, windowId);
+            }
             redrawRequested?.Invoke(windowId);
         }
         finally
@@ -347,7 +359,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
             Sdl3PlatformApplication? owner = Interlocked.Exchange(ref m_application, null);
             ISdl3ApplicationExtension? registered = Interlocked.Exchange(ref m_extension, null);
             if (owner is not null && registered is not null)
+            {
                 owner.UnregisterExtension(registered);
+            }
         }
     }
 
@@ -399,7 +413,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
                     evnt = new WindowResizeEvent(
                         sdlEvent.Window.WindowID,
                         pixelResizedWindow.width,
-                        pixelResizedWindow.height);
+                        pixelResizedWindow.height
+                    );
                     return true;
                 }
 
@@ -420,7 +435,9 @@ public sealed unsafe partial class Sdl3PlatformApplication
             {
                 bool isFocused = eventType == SDLEventType.WindowFocusGained;
                 if (m_windows.TryGetValue(sdlEvent.Window.WindowID, out Sdl3PlatformWindow? focusedWindow))
+                {
                     focusedWindow.UpdateFocus(isFocused);
+                }
                 evnt = new WindowFocusChangedEvent(sdlEvent.Window.WindowID, isFocused);
                 return true;
             }
@@ -444,8 +461,8 @@ public sealed unsafe partial class Sdl3PlatformApplication
             case SDLEventType.TextInput:
             {
                 string? text = sdlEvent.Text.Text == null
-                    ? null
-                    : Marshal.PtrToStringUTF8((IntPtr)sdlEvent.Text.Text);
+                               ? null
+                               : Marshal.PtrToStringUTF8((IntPtr)sdlEvent.Text.Text);
                 if (!string.IsNullOrEmpty(text))
                 {
                     evnt = new TextInputEvent(sdlEvent.Text.WindowID, text);

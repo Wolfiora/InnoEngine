@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Inno.Core.Mathematics;
 
-
 namespace Inno.UI;
 
 /// <summary>
@@ -19,6 +18,7 @@ public interface IUiService
     /// A handle owned by the caller until destruction.
     /// </returns>
     UiContextHandle CreateContext(UiContextOptions options);
+
     /// <summary>
     /// Destroys one UI context and all owned documents.
     /// </summary>
@@ -26,6 +26,7 @@ public interface IUiService
     /// The context that owns the requested document or state.
     /// </param>
     void DestroyContext(UiContextHandle context);
+
     /// <summary>
     /// Changes one context's pixel dimensions and density.
     /// </summary>
@@ -47,6 +48,7 @@ public interface IUiService
         int height,
         float density = 1f
     );
+
     /// <summary>
     /// Loads one explicitly tagged in-memory document.
     /// </summary>
@@ -63,6 +65,7 @@ public interface IUiService
         UiContextHandle context,
         UiDocumentSource source
     );
+
     /// <summary>
     /// Loads one imported document compatible with the selected backend.
     /// </summary>
@@ -79,6 +82,7 @@ public interface IUiService
         UiContextHandle context,
         UiDocumentAsset document
     );
+
     /// <summary>
     /// Shows one document.
     /// </summary>
@@ -92,6 +96,7 @@ public interface IUiService
         UiContextHandle context,
         UiDocumentHandle document
     );
+
     /// <summary>
     /// Hides one document.
     /// </summary>
@@ -105,6 +110,7 @@ public interface IUiService
         UiContextHandle context,
         UiDocumentHandle document
     );
+
     /// <summary>
     /// Closes one document.
     /// </summary>
@@ -118,6 +124,7 @@ public interface IUiService
         UiContextHandle context,
         UiDocumentHandle document
     );
+
     /// <summary>
     /// Replaces an element's children with plain Unicode text.
     /// </summary>
@@ -143,6 +150,7 @@ public interface IUiService
         string elementId,
         string text
     );
+
     /// <summary>
     /// Replaces an element's children with an explicitly tagged source-language fragment.
     /// </summary>
@@ -168,6 +176,7 @@ public interface IUiService
         string elementId,
         UiDocumentFragment fragment
     );
+
     /// <summary>
     /// Sets one element attribute.
     /// </summary>
@@ -197,6 +206,7 @@ public interface IUiService
         string name,
         string value
     );
+
     /// <summary>
     /// Activates or deactivates one element class.
     /// </summary>
@@ -226,6 +236,7 @@ public interface IUiService
         string className,
         bool active
     );
+
     /// <summary>
     /// Registers one named RGBA8 texture source.
     /// </summary>
@@ -243,6 +254,7 @@ public interface IUiService
         string source,
         UiTextureData texture
     );
+
     /// <summary>
     /// Tests whether a visible document element receives pointer events at a pixel location.
     /// </summary>
@@ -259,6 +271,7 @@ public interface IUiService
         UiContextHandle context,
         Vector2 position
     );
+
     /// <summary>
     /// Processes current-frame input and advances one context.
     /// </summary>
@@ -266,6 +279,7 @@ public interface IUiService
     /// The context that owns the requested document or state.
     /// </param>
     void Update(UiContextHandle context);
+
     /// <summary>
     /// Advances one context with explicitly routed viewport-local input.
     /// </summary>
@@ -279,6 +293,7 @@ public interface IUiService
         UiContextHandle context,
         UiInputSnapshot input
     );
+
     /// <summary>
     /// Builds an immutable frame of incremental resources and ordered draws.
     /// </summary>
@@ -289,6 +304,7 @@ public interface IUiService
     /// An immutable frame of ordered UI draws and resources.
     /// </returns>
     UiRenderFrame Render(UiContextHandle context);
+
     /// <summary>
     /// Drains document events queued by preceding updates.
     /// </summary>

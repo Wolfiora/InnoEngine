@@ -8,7 +8,8 @@ namespace Inno.Core.Collections;
 /// <typeparam name="T">
 /// Item type.
 /// </typeparam>
-public readonly struct IndexedObjectEntry<T> where T : class
+public readonly struct IndexedObjectEntry<T>
+    where T : class
 {
     private readonly IndexedObjectStore<T> m_store;
     private readonly T m_item;

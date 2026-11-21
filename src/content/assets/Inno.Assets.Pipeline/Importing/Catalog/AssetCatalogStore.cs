@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 
@@ -46,13 +45,17 @@ internal sealed class AssetCatalogStore
     {
         string path = IOFile.Exists(m_journalPath) ? m_journalPath : m_snapshotPath;
         if (!IOFile.Exists(path))
+        {
             return [];
+        }
         try
         {
             AssetCatalogSnapshot snapshot = Deserialize<AssetCatalogSnapshot>(IOFile.ReadAllBytes(path));
             m_revision = snapshot.revision;
             if (string.Equals(path, m_journalPath, StringComparison.Ordinal))
+            {
                 Commit(DeserializeEntries(snapshot.entries));
+            }
             return DeserializeEntries(snapshot.entries);
         }
         catch
@@ -72,7 +75,9 @@ internal sealed class AssetCatalogStore
         AtomicFile.WriteAllBytes(m_journalPath, bytes);
         AtomicFile.WriteAllBytes(m_snapshotPath, bytes);
         if (IOFile.Exists(m_journalPath))
+        {
             IOFile.Delete(m_journalPath);
+        }
     }
 
     internal void CopyLatestTo(string destinationLibraryRoot)
@@ -80,12 +85,12 @@ internal sealed class AssetCatalogStore
         ArgumentException.ThrowIfNullOrWhiteSpace(destinationLibraryRoot);
         string? sourcePath = LatestPathOrNull();
         if (sourcePath is null)
+        {
             return;
+        }
         string destinationRoot = GetDatabaseRoot(destinationLibraryRoot);
         Directory.CreateDirectory(destinationRoot);
-        AtomicFile.WriteAllBytes(
-            Path.Combine(destinationRoot, "Catalog.snapshot"),
-            IOFile.ReadAllBytes(sourcePath));
+        AtomicFile.WriteAllBytes(Path.Combine(destinationRoot, "Catalog.snapshot"), IOFile.ReadAllBytes(sourcePath));
     }
 
     internal void PromoteTo(string destinationLibraryRoot)
@@ -102,9 +107,13 @@ internal sealed class AssetCatalogStore
         try
         {
             if (candidate is null)
+            {
                 IOFile.Delete(destinationSnapshot);
+            }
             else
+            {
                 AtomicFile.WriteAllBytes(destinationSnapshot, candidate);
+            }
             snapshotChanged = true;
             IOFile.Delete(destinationJournal);
         }
@@ -115,9 +124,13 @@ internal sealed class AssetCatalogStore
                 try
                 {
                     if (previous is null)
+                    {
                         IOFile.Delete(destinationSnapshot);
+                    }
                     else
+                    {
                         AtomicFile.WriteAllBytes(destinationSnapshot, previous);
+                    }
                 }
                 catch (Exception rollback)
                 {
@@ -145,7 +158,9 @@ internal sealed class AssetCatalogStore
     private string? LatestPathOrNull()
     {
         if (IOFile.Exists(m_journalPath))
+        {
             return m_journalPath;
+        }
         return IOFile.Exists(m_snapshotPath) ? m_snapshotPath : null;
     }
 
@@ -155,7 +170,9 @@ internal sealed class AssetCatalogStore
     {
         var result = new byte[entries.Length][];
         for (int i = 0; i < entries.Length; i++)
+        {
             result[i] = Serialize(entries[i]);
+        }
         return result;
     }
 
@@ -163,19 +180,21 @@ internal sealed class AssetCatalogStore
     {
         var result = new AssetMeta[entries.Length];
         for (int i = 0; i < entries.Length; i++)
+        {
             result[i] = Deserialize<AssetMeta>(entries[i]);
+        }
         return result;
     }
 
     private byte[] Serialize<T>(T value)
         where T : class, ISerializable
-        => m_serializationGeneration is null
-            ? m_serialization!.Serialize(value)
-            : m_serializationGeneration.Serialize(value);
+            => m_serializationGeneration is null
+               ? m_serialization!.Serialize(value)
+               : m_serializationGeneration.Serialize(value);
 
     private T Deserialize<T>(ReadOnlySpan<byte> bytes)
         where T : class, ISerializable
-        => m_serializationGeneration is null
-            ? m_serialization!.Deserialize<T>(bytes)
-            : m_serializationGeneration.Deserialize<T>(bytes);
+            => m_serializationGeneration is null
+               ? m_serialization!.Deserialize<T>(bytes)
+               : m_serializationGeneration.Deserialize<T>(bytes);
 }

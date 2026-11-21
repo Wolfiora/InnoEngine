@@ -33,10 +33,14 @@ public sealed class EditorMenuAttribute : Attribute
         bool separatorBefore = false
     ) {
         if (string.IsNullOrWhiteSpace(area))
+        {
             throw new ArgumentException("An editor menu area is required.", nameof(area));
+        }
         this.area = area;
         if (string.IsNullOrWhiteSpace(path))
+        {
             throw new ArgumentException("An editor menu path is required.", nameof(path));
+        }
         this.path = path;
         this.order = order;
         this.separatorBefore = separatorBefore;

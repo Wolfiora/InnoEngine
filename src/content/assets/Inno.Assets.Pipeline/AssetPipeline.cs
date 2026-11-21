@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -113,7 +112,8 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <returns>
     /// Complete stable properties and dependencies without writing or importing an asset.
     /// </returns>
-    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value) where TValue : class, ISerializable
+    public AssetPropertySnapshot CaptureProperties<TValue>(TValue value)
+        where TValue : class, ISerializable
     {
         EnsureOwnerThread();
         using IDisposable operationScope = AcquireOperation();
@@ -144,7 +144,9 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         ArgumentNullException.ThrowIfNull(target);
         using IDisposable operationScope = AcquireOperation();
         if (m_types.GetTypeRef(target.GetType()).stableId != stableTypeId)
+        {
             throw new InvalidOperationException("The asset property payload has an incompatible stable type identity.");
+        }
         m_serialization.Decode(propertyData, reader =>
         {
             reader.RestoreProperties(target);
@@ -212,9 +214,13 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         ArgumentNullException.ThrowIfNull(diagnostics);
         ArgumentNullException.ThrowIfNull(logs);
         if (string.IsNullOrWhiteSpace(options.assetRoot))
+        {
             throw new ArgumentException("Asset root is required.", nameof(options));
+        }
         if (string.IsNullOrWhiteSpace(options.libraryRoot))
+        {
             throw new ArgumentException("Library root is required.", nameof(options));
+        }
 
         m_types = types;
         m_generations = modules.generations;
@@ -227,11 +233,13 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         lock (m_lifecycleLock)
         {
             AssetSourceMount[] mounts = options.sourceMounts?.ToArray()
-                ?? [new AssetSourceMount(AssetSourceId.project, options.assetRoot, isReadOnly: false)];
+                                        ?? [new AssetSourceMount(AssetSourceId.project, options.assetRoot, isReadOnly: false)];
             AssetSourceMount projectMount = mounts.SingleOrDefault(static mount => mount.id == AssetSourceId.project)
-                ?? throw new ArgumentException("A project asset source mount is required.", nameof(options));
+                                            ?? throw new ArgumentException("A project asset source mount is required.", nameof(options));
             if (projectMount.isReadOnly && options.mode != AssetPipelineMode.RuntimeArtifacts)
+            {
                 throw new ArgumentException("The project asset source mount must be writable.", nameof(options));
+            }
             assetRoot = projectMount.rootPath;
             libraryRoot = Path.GetFullPath(options.libraryRoot);
             DeleteCandidateCatalogRoots(libraryRoot);
@@ -246,9 +254,12 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
                 mounts,
                 libraryRoot,
                 options.sourcePolicy,
-                runtimeArtifactsOnly: options.mode == AssetPipelineMode.RuntimeArtifacts);
+                runtimeArtifactsOnly: options.mode == AssetPipelineMode.RuntimeArtifacts
+            );
             if (options.deferUnavailableExtensions)
+            {
                 loader.DeferUnavailableExtensions();
+            }
             AssetFileSystem fileSystem = new(
                 mounts,
                 autoStart: false,
@@ -256,11 +267,13 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
                 options.sourcePolicy,
                 requireWritableProject: options.mode == AssetPipelineMode.Authoring,
                 identities,
-                persistentIdentityResolver: path =>
+                persistentIdentityResolver: path => (
                     loader.TryGetPersistentId(path, out Guid persistentId)
-                        ? persistentId
-                        : null,
-                activateIdentities: true);
+                    ? persistentId
+                    : null
+                ),
+                activateIdentities: true
+            );
             loader.AssetReloaded += OnAssetReloaded;
             m_loader = loader;
             m_fileSystem = fileSystem;
@@ -276,9 +289,10 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
                 CollectArtifactsIfDue(loader, force: true);
                 fileSystem.Refresh();
                 if (options.enableFileSystemWatcher && options.mode == AssetPipelineMode.Authoring)
+                {
                     fileSystem.Start();
-                m_catalogParticipantRegistration = modules.RegisterCatalogParticipant(
-                    m_catalogParticipant);
+                }
+                m_catalogParticipantRegistration = modules.RegisterCatalogParticipant(m_catalogParticipant);
             }
             catch
             {
@@ -298,7 +312,9 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
         AssetFileSystem fileSystem = GetFileSystem();
         IReadOnlyList<AssetChangedEvent> changes = fileSystem.WaitForIdle(out bool requiresFullRescan);
         if (changes.Count > 0 || requiresFullRescan)
+        {
             ApplySourceChanges(changes, requiresFullRescan);
+        }
         GetLoader().WaitForIdle();
         CollectArtifactsIfDue(GetLoader(), force: true);
     }
@@ -314,26 +330,35 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     {
         m_generations.EnsureRetirementSafe();
         if (m_generations.state == GenerationState.Faulted)
+        {
             m_generations.EnsureReady("access Asset Pipeline");
+        }
         if (m_shutdown is not null || m_failedPreparation is not null)
+        {
             throw new InvalidOperationException("The Asset Pipeline is retiring and cannot accept operations.");
+        }
     }
 
     private void EnsureOwnerThread()
     {
         EnsureInitializationThread();
         if (m_sampleImport is not null)
+        {
             throw new InvalidOperationException("Asset mutations are deferred until the pending sample import finishes.");
+        }
     }
 
     private void EnsureInitializationThread()
     {
         if (!isInitialized)
+        {
             throw new InvalidOperationException("AssetPipeline is not initialized.");
+        }
         if (Environment.CurrentManagedThreadId != m_ownerThreadId)
         {
             throw new InvalidOperationException(
-                "Asset database mutations must run on the thread that initialized AssetPipeline.");
+                "Asset database mutations must run on the thread that initialized AssetPipeline."
+            );
         }
     }
 }

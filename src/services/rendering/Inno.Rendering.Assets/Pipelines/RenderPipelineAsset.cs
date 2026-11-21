@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -15,7 +15,6 @@ namespace Inno.Rendering.Assets;
 [StableTypeId("b17d289e-62de-4299-9e85-497143911798")]
 public sealed class RenderPipelineAsset : AssetObject
 {
-
     /// <summary>
     /// Gets or sets the globally stable pipeline extension identifier.
     /// </summary>
@@ -54,4 +53,3 @@ public sealed class RenderPipelineAsset : AssetObject
         this.features = features.ToArray();
     }
 }
-

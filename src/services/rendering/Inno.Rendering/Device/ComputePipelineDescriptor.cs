@@ -50,4 +50,3 @@ public sealed class ComputePipelineDescriptor
     /// </summary>
     public IReadOnlyList<RenderShaderBindingDescriptor> bindings => m_bindings;
 }
-

@@ -40,7 +40,9 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         List<Exception> failures = [];
         for (int i = m_cleanup.Count - 1; i >= 0; i--)
         {
@@ -70,6 +72,8 @@ internal sealed class EditorHostResourceStack(Action<Exception> reportCleanupFai
         m_disposed = true;
         m_cleanup.Clear();
         if (failures.Count > 0)
+        {
             throw new AggregateException("Editor resources could not all retire cleanly.", failures);
+        }
     }
 }

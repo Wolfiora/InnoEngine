@@ -1,6 +1,7 @@
-using Inno.Scripting.Api;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Scripting.Api;
+
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 [assembly: ScriptingApiNamespace("InnoEditor.ImGui", "Inno.Editor.ImGui", ScriptingApiScope.Editor)]

@@ -13,7 +13,9 @@ internal sealed class RenderRetirementQueue : IDisposable
     internal void Add(Action retire)
     {
         if (m_stopping)
+        {
             throw new InvalidOperationException("Rendering retirement no longer accepts allocations.");
+        }
         m_steps.Enqueue(retire);
     }
 

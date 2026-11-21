@@ -1,6 +1,5 @@
-using Inno.Extensibility.Reload;
-
 using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 
 namespace Inno.Scripting.Reload;
 

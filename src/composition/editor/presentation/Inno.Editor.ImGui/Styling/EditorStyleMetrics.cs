@@ -37,7 +37,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Creates independent metrics whose changes apply immediately without a native context.
     /// </summary>
-    public EditorStyleMetrics() { }
+    public EditorStyleMetrics() {}
 
     internal EditorStyleMetrics(EditorUiSession owner)
     {
@@ -81,7 +81,9 @@ public sealed class EditorStyleMetrics
         bool changed = m_requestedCompactMode != value;
         m_requestedCompactMode = value;
         if (!defer)
+        {
             CommitPending();
+        }
         return changed;
     }
 
@@ -106,13 +108,17 @@ public sealed class EditorStyleMetrics
     public bool SetZoom(float value)
     {
         if (!float.IsFinite(value))
+        {
             throw new ArgumentOutOfRangeException(nameof(value), value, "UI zoom must be finite.");
+        }
         bool defer = ShouldDeferChanges();
         float clamped = Math.Clamp(value, C_MIN_ZOOM, C_MAX_ZOOM);
         bool changed = MathF.Abs(m_requestedZoom - clamped) >= 0.0001f;
         m_requestedZoom = clamped;
         if (!defer)
+        {
             CommitPending();
+        }
         return changed;
     }
 
@@ -505,9 +511,13 @@ public sealed class EditorStyleMetrics
     private bool ShouldDeferChanges()
     {
         if (m_owner is null)
+        {
             return false;
+        }
         if (!m_owner.TryGetTarget(out EditorUiSession? owner))
+        {
             throw new ObjectDisposedException(nameof(EditorUiSession));
+        }
         return owner.shouldDeferStyleChanges;
     }
 

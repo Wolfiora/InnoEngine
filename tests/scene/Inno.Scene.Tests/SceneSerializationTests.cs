@@ -1,16 +1,14 @@
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
-
+using Xunit;
 using Inno.Core.Mathematics;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
-
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -76,7 +74,8 @@ public sealed partial class SceneSerializationTests : IDisposable
         byte[] bytes = m_serialization.Serialize(source, m_serializationContext);
         Assert.Contains(
             m_types.GetSubTypesOf<SerializationConverter>(),
-            type => type.Resolve(m_types).Name == "GameSceneConverter");
+            type => type.Resolve(m_types).Name == "GameSceneConverter"
+        );
         SceneManager.LoadScene(source);
         Assert.True(SceneManager.UnloadScene(source));
 
@@ -94,8 +93,10 @@ public sealed partial class SceneSerializationTests : IDisposable
         Assert.Equal(new GameLayer(7), restoredChild.layer);
         Assert.Same(restoredRoot, restored.FindObjectWithLayer(new GameLayer(3)));
         Assert.Same(restoredRoot, restored.FindObjectWithTag("Player"));
-        Assert.Equal(new[] { typeof(Transform), typeof(ReferenceComponent) },
-            restoredRoot.GetComponents().Select(static component => component.GetType()));
+        Assert.Equal(
+            new[] { typeof(Transform), typeof(ReferenceComponent) },
+            restoredRoot.GetComponents().Select(static component => component.GetType())
+        );
         Assert.Same(restoredRoot.transform, restoredChild.transform.parent);
         Assert.Equal(new Vector3(1, 2, 3), restoredChild.transform.localPosition);
         Assert.False(restoredChild.activeSelf);
@@ -158,7 +159,8 @@ public sealed partial class SceneSerializationTests : IDisposable
         Assert.NotSame(firstReference.targetObject, secondReference.targetObject);
         Assert.NotEqual(
             firstReference.targetComponent!.identity.persistentId,
-            secondReference.targetComponent!.identity.persistentId);
+            secondReference.targetComponent!.identity.persistentId
+        );
     }
 
     [Fact]
@@ -181,10 +183,12 @@ public sealed partial class SceneSerializationTests : IDisposable
 
         Assert.Equal(
             [typeof(OrderComponentB), typeof(OrderComponentA), typeof(Transform)],
-            Assert.Single(restored.GetObjects()).GetComponents().Select(static component => component.GetType()));
+            Assert.Single(restored.GetObjects()).GetComponents().Select(static component => component.GetType())
+        );
         Assert.Equal(
             [typeof(OrderSerializationSystemB), typeof(OrderSerializationSystemA)],
-            restored.GetSystems().Select(static system => system.GetType()));
+            restored.GetSystems().Select(static system => system.GetType())
+        );
     }
 
     [Fact]
@@ -239,7 +243,8 @@ public sealed partial class SceneSerializationTests : IDisposable
         root.AddComponent<ReferenceComponent>().targetObject = external;
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Serialize(root, m_serializationContext));
+            () => m_serialization.Serialize(root, m_serializationContext)
+        );
 
         Assert.Contains(typeof(ReferenceComponent).FullName!, exception.Message);
         Assert.Contains("targetObject", exception.Message);

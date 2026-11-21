@@ -1,14 +1,14 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
 using Inno.Runtime.Contracts;
-using Xunit;
 
 namespace Inno.Runtime.Tests;
 
@@ -19,14 +19,20 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
 
     public RuntimeSubsystemPolicyTests()
         => m_host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource()).Build();
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .Build();
 
     public void Dispose()
     {
         m_host.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -59,11 +65,17 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [InlineData(true)]
     public void OptionalUnavailabilityPropagatesToOptionalConsumers(bool missingCapability)
     {
-        var unavailable = Create("test.optional", RuntimeSubsystemRequirement.Optional,
-            capabilities: missingCapability ? [new RuntimeCapabilityId("test.absent")] : []);
+        var unavailable = Create(
+            "test.optional",
+            RuntimeSubsystemRequirement.Optional,
+            capabilities: missingCapability ? [new RuntimeCapabilityId("test.absent")] : []
+        );
         unavailable.failCreate = !missingCapability;
-        var consumer = Create("test.consumer", RuntimeSubsystemRequirement.Optional,
-            dependencies: [unavailable.descriptor.id]);
+        var consumer = Create(
+            "test.consumer",
+            RuntimeSubsystemRequirement.Optional,
+            dependencies: [unavailable.descriptor.id]
+        );
         var available = Create("test.available");
         RuntimeSubsystemPipeline pipeline = m_host.CreateHostPipeline([consumer, available, unavailable]);
         Assert.Equal("test.available", Assert.Single(pipeline.descriptors).id.value);
@@ -116,8 +128,11 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void OptionalMissingDependencyIsDiagnosedButCyclesStillReject()
     {
-        var missing = Create("test.missing", RuntimeSubsystemRequirement.Optional,
-            dependencies: [new RuntimeSubsystemId("test.absent")]);
+        var missing = Create(
+            "test.missing",
+            RuntimeSubsystemRequirement.Optional,
+            dependencies: [new RuntimeSubsystemId("test.absent")]
+        );
         Assert.Single(m_host.CreateHostPipeline([missing]).startupDiagnostics);
         var a = Create("test.a", RuntimeSubsystemRequirement.Optional, dependencies: [new RuntimeSubsystemId("test.b")]);
         var b = Create("test.b", RuntimeSubsystemRequirement.Optional, dependencies: [a.descriptor.id]);
@@ -131,9 +146,13 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     {
         string root = Path.Combine(m_root, "Timeout");
         EngineHost host = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
-            .UseRetirementTimeout(TimeSpan.FromTicks(1)).Build();
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
+            .UseRetirementTimeout(TimeSpan.FromTicks(1))
+            .Build();
         var pending = new TaskCompletionSource();
         var factory = Create("test.timeout");
         factory.pending = pending.Task;
@@ -151,10 +170,20 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
         host.logs.Dispose();
     }
 
-    private static Factory Create(string id, RuntimeSubsystemRequirement requirement = RuntimeSubsystemRequirement.Required,
-        IReadOnlyList<RuntimeSubsystemId>? dependencies = null, IReadOnlyList<RuntimeCapabilityId>? capabilities = null)
-        => new(new RuntimeSubsystemDescriptor(new RuntimeSubsystemId(id), dependencies: dependencies,
-            lifetime: RuntimeSubsystemLifetime.Host, requirement: requirement, requiredCapabilities: capabilities));
+    private static Factory Create(
+        string id,
+        RuntimeSubsystemRequirement requirement = RuntimeSubsystemRequirement.Required,
+        IReadOnlyList<RuntimeSubsystemId>? dependencies = null,
+        IReadOnlyList<RuntimeCapabilityId>? capabilities = null
+    ) => new(
+        new RuntimeSubsystemDescriptor(
+            new RuntimeSubsystemId(id),
+            dependencies: dependencies,
+            lifetime: RuntimeSubsystemLifetime.Host,
+            requirement: requirement,
+            requiredCapabilities: capabilities
+        )
+    );
 
     private sealed class Factory(RuntimeSubsystemDescriptor descriptor) : IRuntimeSubsystemFactory
     {
@@ -173,9 +202,13 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
             createCount++;
             context.resources.Own(new Resource(this));
             if (pending is not null)
+            {
                 context.resources.Track(pending);
+            }
             if (failCreate)
+            {
                 throw new InvalidOperationException("factory failed");
+            }
             return new Subsystem(this);
         }
 
@@ -185,7 +218,9 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
             {
                 factory.releaseCount++;
                 if (factory.failRelease)
+                {
                     throw new InvalidOperationException("resource retirement failed");
+                }
             }
         }
 
@@ -194,7 +229,9 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
             protected override void OnStart()
             {
                 if (factory.failAttach)
+                {
                     throw new InvalidOperationException("attach failed");
+                }
             }
         }
     }

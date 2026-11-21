@@ -1,7 +1,6 @@
 using System;
 using System.Buffers.Binary;
 using System.IO;
-
 using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Settings;
@@ -25,10 +24,14 @@ internal static class ProjectSettingsHistory
     {
         byte[] payload = change.payload.ReadBytes();
         if (payload.Length < sizeof(int))
+        {
             throw new InvalidDataException("The Project Settings history payload is truncated.");
+        }
         int beforeLength = BinaryPrimitives.ReadInt32LittleEndian(payload);
         if (beforeLength < 0 || beforeLength > payload.Length - sizeof(int))
+        {
             throw new InvalidDataException("The Project Settings history payload has an invalid boundary.");
+        }
         ReadOnlyMemory<byte> before = payload.AsMemory(sizeof(int), beforeLength);
         ReadOnlyMemory<byte> after = payload.AsMemory(sizeof(int) + beforeLength);
         return (before, after);
@@ -96,8 +99,7 @@ internal sealed class ProjectSettingsHistoryHandler(ProjectSettingsEditor settin
         try
         {
             (ReadOnlyMemory<byte> before, ReadOnlyMemory<byte> after) = ProjectSettingsHistory.Read(change);
-            settings.RestoreFromHistory(
-                direction == EditorHistoryDirection.Undo ? before.Span : after.Span);
+            settings.RestoreFromHistory(direction == EditorHistoryDirection.Undo ? before.Span : after.Span);
             return EditorHistoryResult.Success();
         }
         catch (Exception exception) when (
@@ -110,8 +112,9 @@ internal sealed class ProjectSettingsHistoryHandler(ProjectSettingsEditor settin
             catch (Exception rollbackException)
             {
                 return StateIntegrityFailure(
-                    $"Project Settings transition failed: {exception.Message} " +
-                    $"Rollback failed: {rollbackException.Message}");
+                    $"Project Settings transition failed: {exception.Message} "
+                    + $"Rollback failed: {rollbackException.Message}"
+                );
             }
             return EditorHistoryResult.Failure(exception.Message);
         }

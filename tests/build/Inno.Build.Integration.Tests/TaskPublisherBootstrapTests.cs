@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -8,8 +7,9 @@ using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Logging;
-using Inno.Build.Toolchains;
 using Xunit;
+using Inno.Build.Toolchains;
+using Inno.Testing.Source;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -25,9 +25,11 @@ public sealed class TaskPublisherBootstrapTests
         Directory.CreateDirectory(root);
         try
         {
-            File.WriteAllText(Path.Combine(root, "Directory.Build.props"),
+            File.WriteAllText(
+                Path.Combine(root, "Directory.Build.props"),
                 "<Project><Import Project=\"" + SecurityElement.Escape(Path.Combine(repository, "Directory.Build.props"))
-                + "\" /></Project>");
+                + "\" /></Project>"
+            );
             File.WriteAllText(Path.Combine(root, "Directory.Build.targets"), $$"""
                 <Project>
                   <Import Project="{{SecurityElement.Escape(Path.Combine(repository, "Directory.Build.targets"))}}" />
@@ -46,16 +48,23 @@ public sealed class TaskPublisherBootstrapTests
                     "Left" or "Right" => ["Shared"],
                     _ => []
                 };
-                string references = string.Join(string.Empty, dependencies.Select(static name =>
-                    $"<ProjectReference Include=\"../{name}/{name}.csproj\" />"));
+                string references = string.Join(
+                    string.Empty,
+                    dependencies.Select(static name => $"<ProjectReference Include=\"../{name}/{name}.csproj\" />")
+                );
                 if (name == "Root")
-                    references += "<ProjectReference Include=\"" + SecurityElement.Escape(Path.Combine(repository,
-                        "src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj")) + "\" />";
-                File.WriteAllText(Path.Combine(directory, name + ".csproj"),
+                {
+                    references += "<ProjectReference Include=\"" + SecurityElement.Escape(
+                        Path.Combine(repository, "src/foundation/core/Inno.Core.IO/Inno.Core.IO.csproj")
+                    ) + "\" />";
+                }
+                File.WriteAllText(
+                    Path.Combine(directory, name + ".csproj"),
                     "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net10.0</TargetFramework>"
                     + "<ImplicitUsings>disable</ImplicitUsings><BuildingInsideVisualStudio>false</BuildingInsideVisualStudio></PropertyGroup>"
                     + "<ItemDefinitionGroup><ProjectReference><AdditionalProperties>BuildProjectReferences=true;BuildingInsideVisualStudio=false</AdditionalProperties>"
-                    + "</ProjectReference></ItemDefinitionGroup><ItemGroup>" + references + "</ItemGroup></Project>");
+                    + "</ProjectReference></ItemDefinitionGroup><ItemGroup>" + references + "</ItemGroup></Project>"
+                );
             }
             var first = await Build(root, configuration);
             string firstOwner = Validate(first.output, first.binlog);
@@ -95,28 +104,59 @@ public sealed class TaskPublisherBootstrapTests
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
             using var output = new StringWriter();
             using var errors = new StringWriter();
-            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(dotnet,
-                ["msbuild", project, "-nologo", "-t:Probe", "-nr:false", "-bl:" + binlog,
-                    "-p:InnoTaskArtifacts=" + Path.Combine(root, "tasks"), "-p:ArtifactsPath=" + Path.Combine(root, "caller"),
-                    "-p:TargetFramework=" + framework, "-p:RuntimeIdentifier=" + runtimeIdentifier,
-                    "-p:PublishAot=true", "-p:PublishSingleFile=true", "-p:SelfContained=true", "-p:WasmBuildNative=true"],
-                repository, timeout.Token, DotNetSdkEnvironment.Create(dotnet), output, errors));
+            Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
+                dotnet,
+                [
+                    "msbuild",
+                    project,
+                    "-nologo",
+                    "-t:Probe",
+                    "-nr:false",
+                    "-bl:" + binlog,
+                    "-p:InnoTaskArtifacts=" + Path.Combine(root, "tasks"),
+                    "-p:ArtifactsPath=" + Path.Combine(root, "caller"),
+                    "-p:TargetFramework=" + framework,
+                    "-p:RuntimeIdentifier=" + runtimeIdentifier,
+                    "-p:PublishAot=true",
+                    "-p:PublishSingleFile=true",
+                    "-p:SelfContained=true",
+                    "-p:WasmBuildNative=true"
+                ],
+                repository,
+                timeout.Token,
+                DotNetSdkEnvironment.Create(dotnet),
+                output,
+                errors
+            ));
             Assert.True(failure is null, $"{failure}\n{output}\n{errors}");
             int requests = 0;
             var events = new BinaryLogReplayEventSource();
             events.ProjectStarted += (
                 _,
                 item
-            ) => {
+            ) =>
+            {
                 if (Path.GetFileNameWithoutExtension(item.ProjectFile) != "Inno.Core.IO"
-                    || item.TargetNames != "Restore;Build")
+                    || item.TargetNames != "Restore;Build"
+                ) {
                     return;
+                }
                 requests++;
                 Assert.NotNull(item.GlobalProperties);
-                foreach (string property in new[] { "RuntimeIdentifier", "TargetFramework", "PublishAot", "PublishSingleFile", "SelfContained", "WasmBuildNative" })
+                foreach (string property in new[] {
+                    "RuntimeIdentifier",
+                    "TargetFramework",
+                    "PublishAot",
+                    "PublishSingleFile",
+                    "SelfContained",
+                    "WasmBuildNative"
+                }) {
                     Assert.DoesNotContain(property, item.GlobalProperties!.Keys);
-                Assert.Equal(Path.Combine(root, "caller", ".inno-task-foundation").Replace('\\', '/'),
-                    item.GlobalProperties!["ArtifactsPath"].Replace('\\', '/'));
+                }
+                Assert.Equal(
+                    Path.Combine(root, "caller", ".inno-task-foundation").Replace('\\', '/'),
+                    item.GlobalProperties!["ArtifactsPath"].Replace('\\', '/')
+                );
             };
             events.Replay(binlog);
             Assert.True(requests > 0, "No neutral Foundation bootstrap was inspected.");
@@ -133,9 +173,11 @@ public sealed class TaskPublisherBootstrapTests
         string output,
         string binlog
     ) {
-        string[][] reports = output.Split('\n').Select(static line => line.Trim())
+        string[][] reports = output.Split('\n')
+            .Select(static line => line.Trim())
             .Where(static line => line.StartsWith("INNO-PUBLISHER-PROBE|", StringComparison.Ordinal))
-            .Select(static line => line.Split('|')).ToArray();
+            .Select(static line => line.Split('|'))
+            .ToArray();
         Assert.True(reports.Length == 4, output);
         Assert.Equal(4, reports.Select(static report => report[1]).Distinct().Count());
         Assert.Equal(4, reports.Select(static report => report[3]).Distinct().Count());
@@ -148,11 +190,14 @@ public sealed class TaskPublisherBootstrapTests
         events.ProjectStarted += (
             _,
             project
-        ) => {
+        ) =>
+        {
             if (Path.GetFileNameWithoutExtension(project.ProjectFile) != "Inno.Core.IO"
                 || project.GlobalProperties is not { } globals
-                || !globals.TryGetValue("ArtifactsPath", out string? artifacts))
+                || !globals.TryGetValue("ArtifactsPath", out string? artifacts)
+            ) {
                 return;
+            }
             if (string.Equals(Path.GetFileName(artifacts), ".inno-task-foundation", StringComparison.Ordinal))
             {
                 bootstrapFoundationRequests++;
@@ -161,8 +206,10 @@ public sealed class TaskPublisherBootstrapTests
                 return;
             }
             if (!string.IsNullOrEmpty(project.TargetNames)
-                || !string.Equals(Path.GetFileName(artifacts), "managed", StringComparison.Ordinal))
+                || !string.Equals(Path.GetFileName(artifacts), "managed", StringComparison.Ordinal)
+            ) {
                 return;
+            }
             sharedFoundationRequests++;
             Assert.True(globals.TryGetValue("InnoNativeTarget", out string? target));
             Assert.Equal("fixture-target", target);
@@ -172,21 +219,28 @@ public sealed class TaskPublisherBootstrapTests
         events.TaskStarted += (
             _,
             task
-        ) => {
+        ) =>
+        {
             if (task.TaskName == "Csc" && Path.GetFileNameWithoutExtension(task.ProjectFile) == "Inno.Build.TaskHosting")
+            {
                 compilations++;
+            }
         };
         events.Replay(binlog);
         Assert.True(sharedFoundationRequests > 0, "The real shared Foundation graph was not exercised.");
         Assert.True(bootstrapFoundationRequests > 0, "The neutral bootstrap output owner was not exercised.");
         Assert.True(compilations == 1, $"Expected one bootstrap Csc task, observed {compilations}.\n{output}");
-        string[] runtimeReports = output.Split('\n').Select(static line => line.Trim())
-            .Where(static line => line.StartsWith("INNO-TASK-RUNTIME ", StringComparison.Ordinal)).ToArray();
+        string[] runtimeReports = output.Split('\n')
+            .Select(static line => line.Trim())
+            .Where(static line => line.StartsWith("INNO-TASK-RUNTIME ", StringComparison.Ordinal))
+            .ToArray();
         Assert.Equal(4, runtimeReports.Length);
         Assert.Single(runtimeReports.Select(static line => line[(line.LastIndexOf(' ') + 1)..]).Distinct());
         Assert.InRange(runtimeReports.Count(static line => line.StartsWith("INNO-TASK-RUNTIME prepared ", StringComparison.Ordinal)), 0, 1);
         foreach (string[] report in reports)
+        {
             Assert.True(File.Exists(report[3]), "The private publisher was not retained for its loading process: " + report[3]);
+        }
         return owner;
     }
 
@@ -194,8 +248,10 @@ public sealed class TaskPublisherBootstrapTests
         string root,
         string configuration
     ) {
-        string dotnet = Path.Combine(Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
-            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet");
+        string dotnet = Path.Combine(
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
+            OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+        );
         var start = new ProcessStartInfo(dotnet)
         {
             WorkingDirectory = root,
@@ -207,13 +263,21 @@ public sealed class TaskPublisherBootstrapTests
         string binlog = Path.Combine(root, Guid.NewGuid().ToString("N") + ".binlog");
         foreach (string argument in new[]
         {
-            "build", "Root/Root.csproj", "--configuration", configuration, "--disable-build-servers", "--nologo", "-m:2", "-nodeReuse:false",
+            "build",
+            "Root/Root.csproj",
+            "--configuration",
+            configuration,
+            "--disable-build-servers",
+            "--nologo",
+            "-m:2",
+            "-nodeReuse:false",
             "-p:InnoNativeTarget=fixture-target",
             "-p:InnoTaskArtifacts=" + Path.Combine(root, "tasks"),
             "-p:ArtifactsPath=" + Path.Combine(root, "managed"),
             "-bl:" + binlog
-        })
+        }) {
             start.ArgumentList.Add(argument);
+        }
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("MSBuild did not start.");
         Task<string> output = process.StandardOutput.ReadToEndAsync();
         Task<string> errors = process.StandardError.ReadToEndAsync();
@@ -225,7 +289,9 @@ public sealed class TaskPublisherBootstrapTests
         catch
         {
             if (!process.HasExited)
+            {
                 process.Kill(entireProcessTree: true);
+            }
             await process.WaitForExitAsync();
             await output;
             await errors;

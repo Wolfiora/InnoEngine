@@ -3,15 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-
+using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Layers;
-
-using Xunit;
 
 namespace Inno.Scene.Tests;
 
@@ -21,7 +19,9 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     private readonly string m_root = Path.Combine(
         Path.GetTempPath(),
         "InnoEngineAssetTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly SceneTestsFixture m_fixture;
     private readonly AssetPipeline m_assets;
     private readonly SerializationContext m_assetSerializationContext;
@@ -44,7 +44,8 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
             fixture.identities,
             fixture.diagnostics,
             fixture.logs,
-            options);
+            options
+        );
         m_assetSerializationContext = AssetSerializationContext.Create(m_assets);
     }
 
@@ -54,7 +55,9 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         m_assets.Dispose();
         m_sceneScope.Dispose();
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 
     [Fact]
@@ -77,7 +80,8 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         Assert.NotEqual(first.identity.persistentId, second.identity.persistentId);
         Assert.NotEqual(
             Assert.Single(first.GetObjects()).identity.persistentId,
-            Assert.Single(second.GetObjects()).identity.persistentId);
+            Assert.Single(second.GetObjects()).identity.persistentId
+        );
 
         DestroyScene(source);
         DestroyScene(first);
@@ -108,10 +112,12 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         Assert.NotEqual(first.identity.persistentId, second.identity.persistentId);
         Assert.Same(
             Assert.Single(first.transform.children).gameObject,
-            first.GetComponent<EngineObjectReferenceComponent>().targetObject);
+            first.GetComponent<EngineObjectReferenceComponent>().targetObject
+        );
         Assert.Same(
             Assert.Single(second.transform.children).gameObject,
-            second.GetComponent<EngineObjectReferenceComponent>().targetObject);
+            second.GetComponent<EngineObjectReferenceComponent>().targetObject
+        );
 
         DestroyScene(sourceScene);
         DestroyScene(targetScene);
@@ -147,7 +153,8 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
             Assert.Same(spawner.gameObject.transform, instance.transform.parent);
             Assert.Same(
                 Assert.Single(instance.transform.children).gameObject,
-                instance.GetComponent<EngineObjectReferenceComponent>().targetObject);
+                instance.GetComponent<EngineObjectReferenceComponent>().targetObject
+            );
         }
 
         DestroyScene(sourceScene);
@@ -389,13 +396,12 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
         SceneManager.UnloadScene(scene);
     }
 
-    private void WriteAsset(string relativePath, string content)
-    {
+    private void WriteAsset(
+        string relativePath,
+        string content
+    ) {
         string path = Path.Combine(m_root, "Assets", relativePath);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        File.WriteAllText(
-            path,
-            content,
-            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        File.WriteAllText(path, content, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
     }
 }

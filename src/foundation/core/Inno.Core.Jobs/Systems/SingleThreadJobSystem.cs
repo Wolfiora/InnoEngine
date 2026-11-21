@@ -1,7 +1,7 @@
 using System;
-using Inno.Core.Execution;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Inno.Core.Execution;
 using Inno.Core.Jobs.Internal;
 
 namespace Inno.Core.Jobs;
@@ -11,12 +11,13 @@ namespace Inno.Core.Jobs;
 /// </summary>
 internal sealed class SingleThreadJobSystem : IJobSystem
 {
-    private static readonly Action<object?> s_noop = static _ => { };
+    private static readonly Action<object?> s_noop = static _ => {};
     private static readonly Action<object?> s_actionInvoker = static state => ((Action?)state)?.Invoke();
+
     private static readonly Action<object?> s_parallelRangeInvoker = static state =>
     {
         var rangeState = (ParallelForRangeState?)state
-            ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
+                         ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
         rangeState.body(rangeState.startInclusive, rangeState.endExclusive);
     };
 
@@ -53,10 +54,14 @@ internal sealed class SingleThreadJobSystem : IJobSystem
         get
         {
             lock (m_jobsGate)
+            {
                 return m_mainThreadQueue.statistics with
             {
-                frameJobs = m_frameJobs.Count, peakFrameJobs = m_peakFrameJobs, rejectedJobs = m_rejectedJobs
+                frameJobs = m_frameJobs.Count,
+                peakFrameJobs = m_peakFrameJobs,
+                rejectedJobs = m_rejectedJobs
             };
+            }
         }
     }
 
@@ -209,7 +214,9 @@ internal sealed class SingleThreadJobSystem : IJobSystem
             foreach (JobHandle dependency in dependencies)
             {
                 if (!dependency.isValid)
+                {
                     throw new ArgumentException("Dependency handle is invalid.", nameof(dependencies));
+                }
                 _ = ResolveHandleNoLock(dependency);
             }
             var index = AllocateJobIndexNoLock(job, state);
@@ -383,7 +390,9 @@ internal sealed class SingleThreadJobSystem : IJobSystem
         ArgumentNullException.ThrowIfNull(action);
         ThrowIfDisposed();
         if (!m_mainThreadQueue.TryEnqueue(action))
+        {
             throw new InvalidOperationException("The main-thread callback queue is at capacity or retiring.");
+        }
     }
 
     /// <summary>
@@ -403,12 +412,16 @@ internal sealed class SingleThreadJobSystem : IJobSystem
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         EnsureMainThread();
         try
         {
             if (m_frameActive)
+            {
                 EndFrame();
+            }
         }
         catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
         {

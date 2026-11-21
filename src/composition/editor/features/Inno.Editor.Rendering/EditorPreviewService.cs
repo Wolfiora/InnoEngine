@@ -32,7 +32,9 @@ public readonly record struct EditorPreviewHandle
         int pixelHeight
     ) {
         if (value == 0 || deviceGeneration == 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(value), "Preview identity and device generation must be non-zero.");
+        }
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
         this.value = value;

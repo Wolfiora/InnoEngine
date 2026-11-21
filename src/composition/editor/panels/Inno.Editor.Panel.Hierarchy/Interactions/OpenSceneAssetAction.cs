@@ -17,9 +17,9 @@ internal sealed class OpenSceneAssetAction(IEditorSceneWorkspace workspace) : Ed
     /// The validated editor action state that represents the completed operation.
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<SceneAsset, string> context)
-        => workspace.canPersist
-            ? EditorActionState.enabled
-            : EditorActionState.disabled;
+    => workspace.canPersist
+       ? EditorActionState.enabled
+       : EditorActionState.disabled;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.

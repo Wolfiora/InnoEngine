@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported mouse button choices at the Editor presentation boundary.
 /// </summary>
@@ -21,5 +22,5 @@ public enum ImGuiMouseButton : int
     /// <summary>
     /// Marks the exclusive end of the valid option range.
     /// </summary>
-    Count = (int)Inno.Native.ImGui.ImGuiMouseButton.Count,
+    Count = (int)Inno.Native.ImGui.ImGuiMouseButton.Count
 }

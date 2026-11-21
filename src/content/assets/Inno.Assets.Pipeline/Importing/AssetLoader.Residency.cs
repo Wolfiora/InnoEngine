@@ -7,18 +7,17 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Collections;
 using Inno.Core.Diagnostics;
-using Inno.Core.Identity;
-using Inno.References;
 using Inno.Core.Execution;
 using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
-using Inno.Core.Collections;
+using Inno.Extensibility.Types;
+using Inno.References;
 
 using IOFile = System.IO.File;
 
@@ -46,7 +45,9 @@ sealed partial class AssetLoader
         {
             HashSet<string> reachable = [];
             foreach (AssetArtifactKey retained in m_artifactRetention.GetRetainedKeys())
+            {
                 AddArtifactKey(reachable, retained.value);
+            }
             foreach (AssetRecord record in m_recordsByPath.Values)
             {
                 AddArtifactKey(reachable, record.meta.artifactKey);
@@ -79,13 +80,16 @@ sealed partial class AssetLoader
         AssetArtifactInfo? result = Execute(() =>
         {
             if (!m_recordsById.TryGetValue(persistentId, out AssetRecord? record))
+            {
                 return null;
+            }
             return m_artifacts.TryGet(
                 new AssetArtifactKey(record.meta.artifactKey),
                 outputName,
-                out AssetArtifactInfo? found)
-                ? found
-                : null;
+                out AssetArtifactInfo? found
+            )
+                   ? found
+                   : null;
         });
         artifact = result;
         return result is not null;
@@ -109,13 +113,14 @@ sealed partial class AssetLoader
     public ArtifactLease AcquireArtifact(
         Guid persistentId,
         string outputName
-    )
-        => Execute(() =>
+    ) => Execute(() =>
+    {
+        if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
         {
-            if (!TryGetArtifact(persistentId, outputName, out AssetArtifactInfo? artifact) || artifact is null)
-                throw new InvalidOperationException($"Asset '{persistentId:D}' has no output '{outputName}'.");
-            return m_artifactRetention.Retain(artifact, m_artifacts.CreateReadFactory(artifact));
-        });
+            throw new InvalidOperationException($"Asset '{persistentId:D}' has no output '{outputName}'.");
+        }
+        return m_artifactRetention.Retain(artifact, m_artifacts.CreateReadFactory(artifact));
+    });
 
     /// <summary>
     /// Collects canonical assets that have no external managed references.
@@ -130,7 +135,9 @@ sealed partial class AssetLoader
     {
         SweepCandidate[] candidates = DetachSweepCandidatesLocked();
         if (candidates.Length == 0)
+        {
             return 0;
+        }
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
         GC.WaitForPendingFinalizers();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true, compacting: true);
@@ -157,7 +164,9 @@ sealed partial class AssetLoader
         foreach (AssetRecord record in m_recordsByPath.Values)
         {
             if (record.asset is null)
+            {
                 continue;
+            }
             result.Add(new SweepCandidate(record, new WeakReference<AssetObject>(record.asset)));
             record.asset = null;
         }
@@ -169,12 +178,13 @@ sealed partial class AssetLoader
         string value
     ) {
         if (!string.IsNullOrWhiteSpace(value))
+        {
             reachable.Add(value.ToUpperInvariant());
+        }
     }
 
     private readonly record struct SweepCandidate(
         AssetRecord record,
         WeakReference<AssetObject> reference
     );
-
 }

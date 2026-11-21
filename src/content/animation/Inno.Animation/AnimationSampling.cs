@@ -24,8 +24,7 @@ public static class AnimationSampling
         AnimationValue left,
         AnimationValue right,
         float amount
-    )
-        => AnimationValue.Lerp(left, right, amount);
+    ) => AnimationValue.Lerp(left, right, amount);
 
     /// <summary>
     /// Adds one weighted value to an accumulation of the same kind.
@@ -46,8 +45,7 @@ public static class AnimationSampling
         AnimationValue sum,
         AnimationValue value,
         float weight
-    )
-        => AnimationValue.AddWeighted(sum, value, weight);
+    ) => AnimationValue.AddWeighted(sum, value, weight);
 
     /// <summary>
     /// Normalizes a weighted sum, including quaternion normalization.
@@ -64,6 +62,5 @@ public static class AnimationSampling
     public static AnimationValue CompleteWeighted(
         AnimationValue sum,
         float inverseWeight
-    )
-        => AnimationValue.WeightedAverage(sum, inverseWeight);
+    ) => AnimationValue.WeightedAverage(sum, inverseWeight);
 }

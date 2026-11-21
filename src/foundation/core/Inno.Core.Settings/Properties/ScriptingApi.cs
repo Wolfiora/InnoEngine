@@ -1,10 +1,7 @@
-using Inno.Scripting.Api;
 using Inno.Core.Settings;
+using Inno.Scripting.Api;
 
-[assembly: ScriptingApiNamespace(
-    "InnoEngine.Settings",
-    "Inno.Core.Settings",
-    ScriptingApiScope.Runtime)]
+[assembly: ScriptingApiNamespace("InnoEngine.Settings", "Inno.Core.Settings", ScriptingApiScope.Runtime)]
 
 [assembly: ScriptingApiExport(typeof(ProjectSettingId), ScriptingApiScope.Runtime)]
 [assembly: ScriptingApiExport(typeof(ProjectId), ScriptingApiScope.Runtime)]

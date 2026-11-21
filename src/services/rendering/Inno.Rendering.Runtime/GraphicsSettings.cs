@@ -1,8 +1,8 @@
+using System;
+using System.Threading;
 using Inno.Core.Execution;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using System;
-using System.Threading;
 
 namespace Inno.Rendering.Runtime;
 
@@ -51,12 +51,16 @@ internal sealed class GraphicsSettingsState
         get
         {
             lock (m_sync)
+            {
                 return m_defaultPipeline;
+            }
         }
         set
         {
             lock (m_sync)
+            {
                 m_defaultPipeline = value;
+            }
         }
     }
 
@@ -65,12 +69,16 @@ internal sealed class GraphicsSettingsState
         get
         {
             lock (m_sync)
+            {
                 return m_frameStatistics;
+            }
         }
         set
         {
             lock (m_sync)
+            {
                 m_frameStatistics = value;
+            }
         }
     }
 
@@ -91,8 +99,7 @@ internal static class GraphicsSettingsExecutionContext
 
     internal static GraphicsSettingsState current
         => currentOrNull
-            ?? throw new InvalidOperationException(
-                "No rendering runtime is bound to the current execution context.");
+           ?? throw new InvalidOperationException("No rendering runtime is bound to the current execution context.");
 
     internal static GraphicsSettingsState? currentOrNull => S_CURRENT.TryGet(out GraphicsSettingsState? state) ? state : null;
 
@@ -101,5 +108,4 @@ internal static class GraphicsSettingsExecutionContext
         ArgumentNullException.ThrowIfNull(state);
         return S_CURRENT.Enter(state);
     }
-
 }

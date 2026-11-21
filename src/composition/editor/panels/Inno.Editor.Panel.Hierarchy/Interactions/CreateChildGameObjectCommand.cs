@@ -19,8 +19,8 @@ internal sealed class CreateChildGameObjectCommand(SceneEdits edits) : EditorAct
     /// </returns>
     protected override EditorActionState Query(EditorActionContext<GameObject> context)
         => context.target.isRuntimeValid
-            ? edits.CanEdit(context.target) ? EditorActionState.enabled : EditorActionState.disabled
-            : EditorActionState.hidden;
+           ? edits.CanEdit(context.target) ? EditorActionState.enabled : EditorActionState.disabled
+           : EditorActionState.hidden;
 
     /// <summary>
     /// Executes the prepared operation and publishes only a completed result.

@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
+
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Testing.Editor.Native;
@@ -57,16 +58,24 @@ public static unsafe class NativePanelInput
     ) {
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         if (shift)
+        {
             NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModShift, 1);
+        }
         if (primary)
+        {
             NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModCtrl, 1);
+        }
         NativeImGui.Raw.AddKeyEvent(io, key, 1);
         host.DrawPanel(panel);
         NativeImGui.Raw.AddKeyEvent(io, key, 0);
         if (shift)
+        {
             NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModShift, 0);
+        }
         if (primary)
+        {
             NativeImGui.Raw.AddKeyEvent(io, ImGuiKey.ImGuiModCtrl, 0);
+        }
         host.DrawPanel(panel);
     }
 }

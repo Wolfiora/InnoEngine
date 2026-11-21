@@ -19,7 +19,9 @@ public readonly struct ReferenceKindId : IEquatable<ReferenceKindId>
     public ReferenceKindId(string value)
     {
         if (string.IsNullOrWhiteSpace(value) || !string.Equals(value, value.Trim(), StringComparison.Ordinal))
+        {
             throw new ArgumentException("A reference kind identifier must be non-empty and trimmed.", nameof(value));
+        }
         this.value = value;
     }
 

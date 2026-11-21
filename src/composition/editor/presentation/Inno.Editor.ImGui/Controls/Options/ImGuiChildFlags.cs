@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported child flags choices at the Editor presentation boundary.
 /// </summary>
@@ -46,5 +47,5 @@ public enum ImGuiChildFlags : int
     /// <summary>
     /// Share focus scope, allow keyboard/gamepad navigation to cross over parent border to this child or between sibling child windows.
     /// </summary>
-    NavFlattened = (int)Inno.Native.ImGui.ImGuiChildFlags.NavFlattened,
+    NavFlattened = (int)Inno.Native.ImGui.ImGuiChildFlags.NavFlattened
 }

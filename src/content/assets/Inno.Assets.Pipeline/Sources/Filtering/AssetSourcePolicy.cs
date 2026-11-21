@@ -34,6 +34,7 @@ public sealed class AssetSourcePolicy
     ];
 
     private static readonly string[] S_DEFAULT_PREFIXES = [".#", "._", "~$"];
+
     private static readonly string[] S_DEFAULT_SUFFIXES =
         [".bak", ".deps.json", ".orig", ".pdb", ".swo", ".swp", ".temp", ".tmp", "~"];
 
@@ -46,9 +47,7 @@ public sealed class AssetSourcePolicy
     /// Creates a source policy using the engine's default noise filters.
     /// </summary>
     public AssetSourcePolicy()
-        : this(null, null, null, null)
-    {
-    }
+        : this(null, null, null, null) {}
 
     /// <summary>
     /// Creates a source policy with additional ignored names and affixes.
@@ -102,20 +101,30 @@ public sealed class AssetSourcePolicy
     ) {
         string name = Path.GetFileName(relativePath);
         if (string.IsNullOrEmpty(name))
+        {
             return false;
+        }
         if (isDirectory && m_directoryNames.Contains(name))
+        {
             return true;
+        }
         if (!isDirectory && (m_fileNames.Contains(name) || IsGeneratedPath(name) || AtomicFile.IsCandidatePath(name)))
+        {
             return true;
+        }
         for (int i = 0; i < m_prefixes.Length; i++)
         {
             if (name.StartsWith(m_prefixes[i], StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
         }
         for (int i = 0; i < m_suffixes.Length; i++)
         {
             if (name.EndsWith(m_suffixes[i], StringComparison.OrdinalIgnoreCase))
+            {
                 return true;
+            }
         }
         return false;
     }
@@ -130,19 +139,23 @@ public sealed class AssetSourcePolicy
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     public static bool IsGeneratedPath(string relativePath)
-        => relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase) ||
-           relativePath.EndsWith(".abin", StringComparison.OrdinalIgnoreCase);
+        => relativePath.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
+           || relativePath.EndsWith(".abin", StringComparison.OrdinalIgnoreCase);
 
     private static void AddNonEmpty(
         HashSet<string> target,
         IEnumerable<string>? values
     ) {
         if (values is null)
+        {
             return;
+        }
         foreach (string value in values)
         {
             if (!string.IsNullOrWhiteSpace(value))
+            {
                 target.Add(value.Trim());
+            }
         }
     }
 
@@ -156,7 +169,9 @@ public sealed class AssetSourcePolicy
             foreach (string value in additional)
             {
                 if (!string.IsNullOrWhiteSpace(value))
+                {
                     values.Add(value.Trim());
+                }
             }
         }
         return values.ToArray();

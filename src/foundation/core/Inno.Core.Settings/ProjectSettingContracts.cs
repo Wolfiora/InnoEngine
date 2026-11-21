@@ -99,9 +99,13 @@ public struct ProjectSettingRecord
         ReadOnlySpan<byte> propertyData
     ) {
         if (!id.isValid)
+        {
             throw new ArgumentException("A project setting ID must be valid.", nameof(id));
+        }
         if (stableTypeId == Guid.Empty)
+        {
             throw new ArgumentException("A project setting requires a stable type ID.", nameof(stableTypeId));
+        }
         this.id = id;
         this.stableTypeId = stableTypeId;
         this.propertyData = propertyData.ToArray();
@@ -195,9 +199,9 @@ public sealed class ProjectSettingsContributor
 
     private static ProjectSettingRecord Clone(ProjectSettingRecord record)
         => new()
-        {
-            id = record.id,
-            stableTypeId = record.stableTypeId,
-            propertyData = record.propertyData?.ToArray()!
-        };
+    {
+        id = record.id,
+        stableTypeId = record.stableTypeId,
+        propertyData = record.propertyData?.ToArray()!
+    };
 }

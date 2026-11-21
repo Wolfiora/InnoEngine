@@ -1,22 +1,21 @@
-using Inno.Extensibility.Reload;
 using System;
-using Inno.References;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
 using Inno.Core.Identity;
 using Inno.Core.Logging;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
+using Inno.References;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scene.Components;
@@ -26,7 +25,6 @@ namespace Inno.Editor.Scene;
 internal sealed partial class EditorSceneWorkspace
 
 {
-
     IDisposable IEditorScenePlayMode.BeginPlayMode(RuntimeSession runtimeSession)
     {
         ArgumentNullException.ThrowIfNull(runtimeSession);
@@ -34,13 +32,18 @@ internal sealed partial class EditorSceneWorkspace
         {
             throw new ArgumentException(
                 "An editor Play Mode scene session requires a Play runtime session.",
-                nameof(runtimeSession));
+                nameof(runtimeSession)
+            );
         }
         SceneWorld runtimeWorld = runtimeSession.scenes;
         if (m_isPreparingPlayMode || m_playModeSession is not null)
+        {
             throw new InvalidOperationException("An editor Play Mode scene session is already active.");
+        }
         if (runtimeWorld.loadedScenes.Count != 0)
+        {
             throw new InvalidOperationException("A Play Mode scene snapshot requires an empty runtime world.");
+        }
 
         m_isPreparingPlayMode = true;
         try
@@ -58,13 +61,16 @@ internal sealed partial class EditorSceneWorkspace
                 snapshots,
                 activeSceneId,
                 selectedSceneObjectId,
-                m_selection?.RegisterIdentityDomain(runtimeSession.identities));
+                m_selection?.RegisterIdentityDomain(runtimeSession.identities)
+            );
             try
             {
                 MaterializeRuntimeSceneSet(session);
                 m_playModeSession = session;
                 if (selectedSceneObjectId is not null)
+                {
                     RestoreSelection(selectedSceneObjectId);
+                }
                 return session;
             }
             catch (Exception startupFailure)
@@ -75,7 +81,11 @@ internal sealed partial class EditorSceneWorkspace
                 }
                 catch (Exception cleanupFailure)
                 {
-                    throw new AggregateException("Play scene preparation and identity routing retirement failed.", startupFailure, cleanupFailure);
+                    throw new AggregateException(
+                        "Play scene preparation and identity routing retirement failed.",
+                        startupFailure,
+                        cleanupFailure
+                    );
                 }
                 throw;
             }
@@ -89,20 +99,24 @@ internal sealed partial class EditorSceneWorkspace
     private void ReleasePlayModeLease(PlayModeLease session)
     {
         if (!ReferenceEquals(m_playModeSession, session))
+        {
             return;
+        }
         object? runtimeSelection = m_selection?.selectedTarget;
         Guid? runtimeSelectionId = runtimeSelection is EngineObject { isDestroyed: false } selected
-            ? selected.identity.persistentId
-            : null;
+                                   ? selected.identity.persistentId
+                                   : null;
         m_playModeSession = null;
-        Guid? editSelectionId = runtimeSelectionId is Guid currentId &&
-                                m_runtimeSession.scenes.Find<EngineObject>(currentId) is not null
-            ? currentId
-            : session.editSelectionId;
+        Guid? editSelectionId = runtimeSelectionId is Guid currentId
+                                && m_runtimeSession.scenes.Find<EngineObject>(currentId) is not null
+                                ? currentId
+                                : session.editSelectionId;
         try
         {
             if (runtimeSelection is EngineObject || runtimeSelection is null && session.editSelectionId is not null)
+            {
                 RestoreSelection(editSelectionId, selectActiveSceneWhenMissing: false);
+            }
         }
         catch
         {
@@ -123,18 +137,19 @@ internal sealed partial class EditorSceneWorkspace
             for (int i = 0; i < snapshots.Count; i++)
             {
                 SceneDocumentSnapshot snapshot = snapshots[i];
-                GameScene runtimeScene = m_serialization.Deserialize<GameScene>(
-                    snapshot.payload,
-                    serializationContext);
+                GameScene runtimeScene = m_serialization.Deserialize<GameScene>(snapshot.payload, serializationContext);
                 runtimeWorld.LoadSceneAdditive(runtimeScene, makeActive: false);
                 runtimeWorld.SetSceneIndex(runtimeScene, snapshot.sceneIndex);
             }
             if (session.activeSceneId is Guid activeSceneId)
             {
                 GameScene? activeScene = runtimeWorld.loadedScenes.FirstOrDefault(
-                    scene => scene.identity.persistentId == activeSceneId);
+                    scene => scene.identity.persistentId == activeSceneId
+                );
                 if (activeScene is not null)
+                {
                     runtimeWorld.SetActiveScene(activeScene);
+                }
             }
         }
         catch (Exception exception)
@@ -148,11 +163,13 @@ internal sealed partial class EditorSceneWorkspace
                 throw new AggregateException(
                     "The Play Mode scene set could not be constructed and its partial state could not be released.",
                     exception,
-                    cleanupFailure);
+                    cleanupFailure
+                );
             }
             throw new InvalidOperationException(
                 "The Play Mode start snapshot could not be materialized in its isolated runtime world.",
-                exception);
+                exception
+            );
         }
     }
 
@@ -186,7 +203,9 @@ internal sealed partial class EditorSceneWorkspace
         public void Dispose()
         {
             if (m_disposed)
+            {
                 return;
+            }
             workspace.ReleasePlayModeLease(this);
             identityDomain?.Dispose();
             m_disposed = true;
@@ -199,19 +218,18 @@ internal sealed partial class EditorSceneWorkspace
                 sceneSnapshots
                     .Select(static snapshot => snapshot.sourcePath)
                     .Where(static path => !string.IsNullOrEmpty(path))
-                    .ToArray());
-            string activePath = activeSceneId is Guid activeId &&
-                                m_snapshotBySceneId.TryGetValue(activeId, out SceneDocumentSnapshot? active)
-                ? active.sourcePath
-                : string.Empty;
+                    .ToArray()
+            );
+            string activePath = activeSceneId is Guid activeId
+                                && m_snapshotBySceneId.TryGetValue(activeId, out SceneDocumentSnapshot? active)
+                                ? active.sourcePath
+                                : string.Empty;
             state.Set("activeScene", activePath);
         }
 
         internal bool TryGetSnapshot(
             Guid sceneId,
             out SceneDocumentSnapshot snapshot
-        )
-            => m_snapshotBySceneId.TryGetValue(sceneId, out snapshot!);
+        ) => m_snapshotBySceneId.TryGetValue(sceneId, out snapshot!);
     }
-
 }

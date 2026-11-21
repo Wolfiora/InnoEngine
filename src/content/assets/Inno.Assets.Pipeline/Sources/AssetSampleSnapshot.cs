@@ -21,7 +21,9 @@ internal static class AssetSampleSnapshot
         List<string> copied = CopyDirectory(source, target, targetLocalPath, sourcePolicy, cancellationToken);
         string sourceMeta = source + ".imeta";
         if (File.Exists(sourceMeta))
+        {
             CopyStableFile(sourceMeta, target + ".imeta", cancellationToken);
+        }
         return copied;
     }
 
@@ -38,42 +40,62 @@ internal static class AssetSampleSnapshot
         var sourceIdentities = new Dictionary<string, (Guid oldId, Guid newId)>(StringComparer.Ordinal);
         string[] metadata = Directory.GetFiles(stagedSource, "*.imeta", SearchOption.AllDirectories);
         if (File.Exists(stagedSource + ".imeta"))
+        {
             metadata = [.. metadata, stagedSource + ".imeta"];
+        }
         foreach (string path in metadata.Order(StringComparer.Ordinal))
         {
             cancellationToken.ThrowIfCancellationRequested();
             AssetSourceMeta meta = serialization.Deserialize<AssetSourceMeta>(File.ReadAllBytes(path));
             if (meta.persistentId == Guid.Empty)
+            {
                 throw new InvalidDataException($"Sample metadata '{path}' has no persistent identity.");
+            }
             if (!identities.TryAdd(meta.persistentId, Guid.NewGuid()))
+            {
                 throw new InvalidDataException($"Sample contains duplicate persistent identity '{meta.persistentId:D}'.");
+            }
             Guid oldId = meta.persistentId;
             meta.persistentId = identities[oldId];
             File.WriteAllBytes(path, serialization.Serialize(meta));
             string relative = Path.GetRelativePath(stagedSource, path);
             string suffix = string.Equals(path, stagedSource + ".imeta", StringComparison.Ordinal)
-                ? string.Empty
-                : relative[..^".imeta".Length].Replace('\\', '/');
+                            ? string.Empty
+                            : relative[..^".imeta".Length].Replace('\\', '/');
             sourceIdentities.Add(suffix, (oldId, meta.persistentId));
             string oldLocal = string.IsNullOrEmpty(suffix)
-                ? source.localPath : source.localPath + "/" + suffix;
+                              ? source.localPath
+                              : source.localPath + "/" + suffix;
             string newLocal = string.IsNullOrEmpty(suffix)
-                ? target.localPath : target.localPath + "/" + suffix;
+                              ? target.localPath
+                              : target.localPath + "/" + suffix;
             paths[new AssetPath(source.source, oldLocal).ToString()] = newLocal;
             paths[oldLocal] = newLocal;
         }
-        transform(new AssetSampleTransformContext(
-            stagedSource, source, target, identities, sourceIdentities, cancellationToken));
+        transform(
+            new AssetSampleTransformContext(
+                stagedSource,
+                source,
+                target,
+                identities,
+                sourceIdentities,
+                cancellationToken
+            )
+        );
         IEnumerable<string> stagedFiles = Directory.GetFiles(stagedSource, "*", SearchOption.AllDirectories);
         if (File.Exists(stagedSource + ".imeta"))
+        {
             stagedFiles = stagedFiles.Append(stagedSource + ".imeta");
+        }
         foreach (string path in stagedFiles)
         {
             cancellationToken.ThrowIfCancellationRequested();
             byte[] original = File.ReadAllBytes(path);
             byte[] rewritten = SerializedIdentityRemapper.Rewrite(original, identities, paths);
             if (!original.AsSpan().SequenceEqual(rewritten))
+            {
                 File.WriteAllBytes(path, rewritten);
+            }
         }
     }
 
@@ -101,19 +123,24 @@ internal static class AssetSampleSnapshot
             string name = Path.GetFileName(directories[index]);
             string childLocalPath = targetLocalPath + "/" + name;
             copied.Add(childLocalPath);
-            copied.AddRange(CopyDirectory(
-                directories[index],
-                Path.Combine(target, name),
-                childLocalPath,
-                sourcePolicy,
-                cancellationToken));
+            copied.AddRange(
+                CopyDirectory(
+                    directories[index],
+                    Path.Combine(target, name),
+                    childLocalPath,
+                    sourcePolicy,
+                    cancellationToken
+                )
+            );
         }
         for (int index = 0; index < files.Length; index++)
         {
             string name = Path.GetFileName(files[index]);
             CopyStableFile(files[index], Path.Combine(target, name), cancellationToken);
             if (!AssetSourcePolicy.IsGeneratedPath(name))
+            {
                 copied.Add(targetLocalPath + "/" + name);
+            }
         }
 
         string[] currentDirectories = Directory.GetDirectories(source)
@@ -124,9 +151,9 @@ internal static class AssetSampleSnapshot
             .Where(path => ShouldCopyFile(path, sourcePolicy))
             .Order(StringComparer.Ordinal)
             .ToArray();
-        if (!directories.SequenceEqual(currentDirectories, StringComparer.Ordinal) ||
-            !files.SequenceEqual(currentFiles, StringComparer.Ordinal))
-        {
+        if (!directories.SequenceEqual(currentDirectories, StringComparer.Ordinal)
+            || !files.SequenceEqual(currentFiles, StringComparer.Ordinal)
+        ) {
             throw new IOException($"Sample source '{source}' changed while it was being imported.");
         }
         return copied;
@@ -138,9 +165,13 @@ internal static class AssetSampleSnapshot
     ) {
         string name = Path.GetFileName(path);
         if (name.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase))
+        {
             return true;
+        }
         if (name.EndsWith(".abin", StringComparison.OrdinalIgnoreCase))
+        {
             return false;
+        }
         return !sourcePolicy.IsIgnored(name, isDirectory: false);
     }
 
@@ -168,11 +199,15 @@ internal static class AssetSampleSnapshot
         EnsureRegularFile(source);
         FileInfo after = new(source);
         if (after.Length != beforeLength || after.LastWriteTimeUtc != beforeWriteTime)
+        {
             throw new IOException($"Sample source file '{source}' changed while it was being imported.");
+        }
         byte[] sourceHash = HashFile(source, cancellationToken);
         byte[] targetHash = HashFile(target, cancellationToken);
         if (!sourceHash.AsSpan().SequenceEqual(targetHash))
+        {
             throw new IOException($"Sample source file '{source}' changed while it was being imported.");
+        }
     }
 
     private static byte[] HashFile(
@@ -194,16 +229,24 @@ internal static class AssetSampleSnapshot
     private static void EnsureRegularDirectory(string path)
     {
         if (!Directory.Exists(path))
+        {
             throw new DirectoryNotFoundException($"Sample directory '{path}' does not exist.");
+        }
         if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+        {
             throw new IOException($"Sample directory '{path}' cannot be a symbolic link.");
+        }
     }
 
     private static void EnsureRegularFile(string path)
     {
         if (!File.Exists(path))
+        {
             throw new FileNotFoundException("Sample source file does not exist.", path);
+        }
         if ((File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+        {
             throw new IOException($"Sample source file '{path}' cannot be a symbolic link.");
+        }
     }
 }

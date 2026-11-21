@@ -30,7 +30,9 @@ public sealed class TextBackendCatalog : ITextBackendFactory
         foreach (TextBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<TextBackendId>(new List<TextBackendId>(m_providers.Keys));
     }
@@ -42,11 +44,13 @@ public sealed class TextBackendCatalog : ITextBackendFactory
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
-    public ITextBackend CreateBackend(TextBackendId backend) {
+    public ITextBackend CreateBackend(TextBackendId backend)
+    {
         if (!m_providers.TryGetValue(backend, out TextBackendProvider? provider))
+        {
             throw new NotSupportedException("Text backend '" + backend + "' is not registered.");
+        }
         return provider.CreateBackend()
-            ?? throw new InvalidOperationException("Text provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Text provider '" + backend + "' returned no service.");
     }
 }
-

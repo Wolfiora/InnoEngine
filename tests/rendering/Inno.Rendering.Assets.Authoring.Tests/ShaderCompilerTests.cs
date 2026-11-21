@@ -1,28 +1,31 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Diagnostics;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using Inno.Rendering.Shaders;
-using Xunit;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
+using Inno.Rendering.Shaders;
 
 namespace Inno.Rendering.Assets.Authoring.Tests;
 
 [Collection("Rendering assets serialization")]
 public sealed class ShaderCompilerTests : IDisposable
 {
-    private readonly ModuleHost m_modules = new(new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderCompilerTests).Assembly)});
+    private readonly ModuleHost m_modules = new(
+        new() { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderCompilerTests).Assembly)}
+    );
+
     private readonly TypeCatalog m_types;
     private readonly SerializationRegistry m_serialization;
     private readonly ShaderNodeCompilerRegistry m_nodes;
@@ -36,8 +39,11 @@ public sealed class ShaderCompilerTests : IDisposable
 
     [Fact]
     public void FailedToolResultsCannotCarrySuccessfulBinaryBytes()
-        => Assert.Throws<ArgumentException>(() => new ShaderStageToolResult([1], [],
-            [new("TEST_ERROR", DiagnosticSeverity.Error, "The adapter rejected its binary.", new("test", 1, 1))]));
+        => Assert.Throws<ArgumentException>(() => new ShaderStageToolResult(
+            [1],
+            [],
+            [new("TEST_ERROR", DiagnosticSeverity.Error, "The adapter rejected its binary.", new("test", 1, 1))]
+        ));
 
     [Fact]
     public void ToolResultsCopyAdapterOwnedBytesBindingsAndDiagnostics()
@@ -85,26 +91,69 @@ public sealed class ShaderCompilerTests : IDisposable
         foreach (GraphNodeRecord original in alternate.nodes)
         {
             var node = new GraphNodeRecord(new("alternate." + original.id.value), original.definitionId);
-            foreach ((string key, GraphSerializedValue value) in original.values) node.SetValue(key, value.Clone());
+            foreach ((string key, GraphSerializedValue value) in original.values)
+            {
+                node.SetValue(key, value.Clone());
+            }
             if (node.definitionId == ShaderGraphDocument.outputDefinitionId)
             {
-                ShaderGraphStageSettings settings = ShaderGraphDocument.Read<ShaderGraphStageSettings>(node, "settings", null!, m_serialization, SerializationContext.empty);
+                ShaderGraphStageSettings settings = ShaderGraphDocument.Read<ShaderGraphStageSettings>(
+                    node,
+                    "settings",
+                    null!,
+                    m_serialization,
+                    SerializationContext.empty
+                );
                 node.SetValue("settings", ShaderGraphDocument.Encode(settings, m_serialization, SerializationContext.empty));
             }
-            else node.SetValue("stage", ShaderGraphDocument.Encode("alternate." + ShaderGraphDocument.Read(node, "stage", "", m_serialization, SerializationContext.empty), m_serialization, SerializationContext.empty));
+            else
+            {
+                node.SetValue(
+                    "stage",
+                    ShaderGraphDocument.Encode(
+                        "alternate." + ShaderGraphDocument.Read(node, "stage", "", m_serialization, SerializationContext.empty),
+                        m_serialization,
+                        SerializationContext.empty
+                    )
+                );
+            }
             graph.AddNode(node);
         }
         foreach (GraphEdgeRecord edge in alternate.edges)
-            graph.AddEdge(new(new("alternate." + edge.id.value), new(new("alternate." + edge.output.nodeId.value), edge.output.portId), new(new("alternate." + edge.input.nodeId.value), edge.input.portId)));
-        definition.passes = [new("Clustered", ShaderProgramKind.Raster, requiredFeatures: GraphicsCapability.Compute | GraphicsCapability.StorageBuffer), definition.passes[0]];
-        graph.SetMetadata(ShaderGraphDocument.definitionKey, ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty));
-        graph = ShaderGraphPrograms.Bind(graph, "Clustered", [new("alternate.vertex"), new("alternate.fragment")], m_serialization, SerializationContext.empty);
+        {
+            graph.AddEdge(
+                new(
+                    new("alternate." + edge.id.value),
+                    new(new("alternate." + edge.output.nodeId.value), edge.output.portId),
+                    new(new("alternate." + edge.input.nodeId.value), edge.input.portId)
+                )
+            );
+        }
+        definition.passes =
+        [
+            new("Clustered", ShaderProgramKind.Raster, requiredFeatures: GraphicsCapability.Compute | GraphicsCapability.StorageBuffer),
+            definition.passes[0]
+        ];
+        graph.SetMetadata(
+            ShaderGraphDocument.definitionKey,
+            ShaderGraphDocument.Encode(m_serialization.Serialize(definition), m_serialization, SerializationContext.empty)
+        );
+        graph = ShaderGraphPrograms.Bind(
+            graph,
+            "Clustered",
+            [new("alternate.vertex"), new("alternate.fragment")],
+            m_serialization,
+            SerializationContext.empty
+        );
         var toolchain = new FakeToolchain();
         ShaderCompilationResult result = await Compile(new(toolchain), graph);
         Assert.True(result.succeeded, Diagnostics(result));
         Assert.Equal("Main", Assert.Single(result.artifact!.passes).definition.name);
         Assert.Equal(2, toolchain.requests.Count);
-        Assert.Contains(result.diagnostics, static value => value.code == "SHADER_CAPABILITY_UNAVAILABLE" && value.severity == DiagnosticSeverity.Warning);
+        Assert.Contains(
+            result.diagnostics,
+            static value => value.code == "SHADER_CAPABILITY_UNAVAILABLE" && value.severity == DiagnosticSeverity.Warning
+        );
     }
 
     [Fact]
@@ -123,18 +172,53 @@ public sealed class ShaderCompilerTests : IDisposable
     }
 
     private GraphDocument Template() => ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
-    private ShaderDefinition Definition(GraphDocument graph) => ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty);
-    private ValueTask<ShaderCompilationResult> Compile(ShaderCompiler compiler, GraphDocument graph)
-    {
-        ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(m_nodes).Lower(graph, "tests.fake", new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(), m_serialization, SerializationContext.empty);
-        RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
-        var capabilities = new GraphicsCapabilities(GraphicsApi.Metal, GraphicsCapability.None, new(256, 8, 8192, 16), formats, formats, formats, formats, false, false);
-        return compiler.CompileAsync(Definition(graph), program, compiler.CreateTarget(capabilities), RenderShaderVariant.empty,
-            m_serialization, SerializationContext.empty);
-    }
-    private static string Diagnostics(ShaderCompilationResult result) => string.Join("\n", result.diagnostics.Select(static value => value.message));
 
-    public void Dispose() { m_nodes.Dispose(); m_serialization.Dispose(); m_types.Dispose(); m_modules.Dispose(); }
+    private ShaderDefinition Definition(GraphDocument graph)
+        => ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty);
+
+    private ValueTask<ShaderCompilationResult> Compile(
+        ShaderCompiler compiler,
+        GraphDocument graph
+    ) {
+        ShaderGraphProgramResult program = new ShaderGraphProgramCompiler(m_nodes).Lower(
+            graph,
+            "tests.fake",
+            new Dictionary<GraphNodeId, ShaderSourceModuleAnalysis>(),
+            m_serialization,
+            SerializationContext.empty
+        );
+        RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
+        var capabilities = new GraphicsCapabilities(
+            GraphicsApi.Metal,
+            GraphicsCapability.None,
+            new(256, 8, 8192, 16),
+            formats,
+            formats,
+            formats,
+            formats,
+            false,
+            false
+        );
+        return compiler.CompileAsync(
+            Definition(graph),
+            program,
+            compiler.CreateTarget(capabilities),
+            RenderShaderVariant.empty,
+            m_serialization,
+            SerializationContext.empty
+        );
+    }
+
+    private static string Diagnostics(ShaderCompilationResult result)
+        => string.Join("\n", result.diagnostics.Select(static value => value.message));
+
+    public void Dispose()
+    {
+        m_nodes.Dispose();
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
+    }
 
     private sealed class FakeToolchain : IShaderCompilerToolchain
     {
@@ -142,17 +226,34 @@ public sealed class ShaderCompilerTests : IDisposable
         internal bool reportError { get; init; }
         public IReadOnlyList<string> supportedSourceLanguages => [];
         internal List<ShaderStageToolRequest> requests { get; } = [];
-        public ShaderCompileTarget CreateTarget(GraphicsCapabilities capabilities, bool optimize = true, bool debugInformation = false)
-            => new("tests:fake", capabilities, optimize, debugInformation);
-        public ValueTask<ShaderStageToolResult> CompileAsync(ShaderStageToolRequest request, CancellationToken cancellationToken)
-        {
+
+        public ShaderCompileTarget CreateTarget(
+            GraphicsCapabilities capabilities,
+            bool optimize = true,
+            bool debugInformation = false
+        ) => new("tests:fake", capabilities, optimize, debugInformation);
+
+        public ValueTask<ShaderStageToolResult> CompileAsync(
+            ShaderStageToolRequest request,
+            CancellationToken cancellationToken
+        ) {
             cancellationToken.ThrowIfCancellationRequested();
             requests.Add(request);
-            return ValueTask.FromResult(reportError
-                ? new ShaderStageToolResult([], [], [new("TEST_ERROR", DiagnosticSeverity.Error, "Opaque compiler failure", new("Shaders/function.ishadersource", 2, 3))])
-                : new ShaderStageToolResult([1, 2, 3], request.stage.inputs.Where(static input => input.kind == ShaderIrInputKind.Uniform)
-                    .Select(static input => new ShaderStageBinding(input.id, "native_" + input.id, 0)), []));
+            return ValueTask.FromResult(
+                reportError
+                ? new ShaderStageToolResult(
+                    [],
+                    [],
+                    [new("TEST_ERROR", DiagnosticSeverity.Error, "Opaque compiler failure", new("Shaders/function.ishadersource", 2, 3))]
+                )
+                : new ShaderStageToolResult(
+                    [1, 2, 3],
+                    request.stage.inputs
+                        .Where(static input => input.kind == ShaderIrInputKind.Uniform)
+                        .Select(static input => new ShaderStageBinding(input.id, "native_" + input.id, 0)),
+                    []
+                )
+            );
         }
-
     }
 }

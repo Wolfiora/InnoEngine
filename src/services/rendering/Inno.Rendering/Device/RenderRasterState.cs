@@ -85,9 +85,7 @@ public sealed class RenderRasterState
     /// <summary>
     /// Creates the default opaque raster state.
     /// </summary>
-    public RenderRasterState()
-    {
-    }
+    public RenderRasterState() {}
 
     /// <summary>
     /// Creates a complete immutable raster configuration without relying on init-only setters.
@@ -181,4 +179,3 @@ public sealed class RenderRasterState
     /// </summary>
     public RenderPrimitiveTopology topology { get; init; } = RenderPrimitiveTopology.TriangleList;
 }
-

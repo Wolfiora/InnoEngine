@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using Inno.Core.IO;
 
 namespace Inno.Assets;
@@ -29,8 +29,7 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     public ArtifactLease Retain(
         AssetArtifactInfo artifact,
         Func<Stream> openRead
-    )
-    {
+    ) {
         ArgumentNullException.ThrowIfNull(artifact);
         ArgumentNullException.ThrowIfNull(openRead);
         AddPin(artifact.key);
@@ -55,7 +54,9 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     public IReadOnlyList<AssetArtifactKey> GetRetainedKeys()
     {
         lock (m_sync)
+        {
             return Array.AsReadOnly(m_counts.Keys.ToArray());
+        }
     }
 
     private Stream OpenPinned(
@@ -80,9 +81,13 @@ public sealed class ArtifactRetention : AssetResidencyProvider
         {
             int remaining = m_counts[key] - 1;
             if (remaining == 0)
+            {
                 m_counts.Remove(key);
+            }
             else
+            {
                 m_counts[key] = remaining;
+            }
         }
     }
 

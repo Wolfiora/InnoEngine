@@ -1,4 +1,3 @@
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,16 +5,15 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
-using System.Runtime.Loader;
 using System.Runtime.InteropServices;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Extensibility.Reload;
-
-using Inno.Extensibility.Modules;
-using Inno.Extensibility.Types;
-
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
+using Inno.Extensibility.Types;
 
 namespace Inno.Extensibility.Modules.Tests;
 
@@ -91,10 +89,21 @@ public sealed class ModuleHostTests : IDisposable
             case "thread":
                 var stop = new ManualResetEventSlim();
                 var started = new ManualResetEventSlim();
-                var thread = new Thread(() => { started.Set(); stop.Wait(); GC.KeepAlive(type); });
+                var thread = new Thread(() =>
+                {
+                    started.Set();
+                    stop.Wait();
+                    GC.KeepAlive(type);
+                });
                 thread.Start();
                 started.Wait();
-                return new Retention(() => { stop.Set(); thread.Join(); stop.Dispose(); started.Dispose(); });
+                return new Retention(() =>
+                {
+                    stop.Set();
+                    thread.Join();
+                    stop.Dispose();
+                    started.Dispose();
+                });
             case "handle":
                 GCHandle handle = GCHandle.Alloc(type);
                 return new Retention(handle.Free);
@@ -109,8 +118,7 @@ public sealed class ModuleHostTests : IDisposable
         }
     }
 
-    private static unsafe void InvokeNativeCallback(IntPtr pointer)
-        => ((delegate* unmanaged[Cdecl]<void>)pointer)();
+    private static unsafe void InvokeNativeCallback(IntPtr pointer) => ((delegate* unmanaged[Cdecl]<void>)pointer)();
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     private delegate void NativeCallback();
@@ -118,6 +126,7 @@ public sealed class ModuleHostTests : IDisposable
     private sealed class Retention(Action release) : IDisposable
     {
         private Action? m_release = release;
+
         public void Dispose() => Interlocked.Exchange(ref m_release, null)?.Invoke();
     }
 
@@ -127,13 +136,17 @@ public sealed class ModuleHostTests : IDisposable
     private readonly string m_cacheDirectory = Path.Combine(
         Path.GetTempPath(),
         "InnoModuleHostTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private readonly ModuleHost m_modules;
     private readonly TypeCatalog m_types;
 
     public ModuleHostTests()
     {
-        m_modules = new ModuleHost(new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly)});
+        m_modules = new ModuleHost(
+            new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(ModuleHostTests).Assembly)}
+        );
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
     }
 
@@ -143,7 +156,9 @@ public sealed class ModuleHostTests : IDisposable
         m_modules.Dispose();
         ForceCollection();
         if (Directory.Exists(m_cacheDirectory))
+        {
             Directory.Delete(m_cacheDirectory, recursive: true);
+        }
     }
 
     [Fact]
@@ -199,8 +214,7 @@ public sealed class ModuleHostTests : IDisposable
         AssemblyModuleHandle handle = LoadVersion("V1");
         Type previous = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
 
-        Assert.Throws<InvalidOperationException>(
-            () => m_modules.BeginReload(handle, CreateRequest("Invalid")));
+        Assert.Throws<InvalidOperationException>(() => m_modules.BeginReload(handle, CreateRequest("Invalid")));
 
         Assert.Same(previous, new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types));
         Assert.Equal(1, m_modules.modules.Single().generation);
@@ -269,27 +283,21 @@ public sealed class ModuleHostTests : IDisposable
             _ = addition.Complete();
         }
 
-        AssemblyModuleInfo consumerInfo = m_modules.modules.Single(module =>
-            module.moduleName == consumer.moduleName);
+        AssemblyModuleInfo consumerInfo = m_modules.modules.Single(module => module.moduleName == consumer.moduleName);
         Assert.Equal([dependency.moduleName], consumerInfo.upstreamModuleNames);
         Type consumerType = new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(m_types);
         Assert.Equal(1, ReadVersion(consumerType));
-        Assembly dependencyAssembly = AppDomain.CurrentDomain.GetAssemblies().Single(assembly =>
-            string.Equals(
-                assembly.GetName().Name,
-                "Reloadable.PrivateDependency",
-                StringComparison.Ordinal) &&
-            AssemblyLoadContext.GetLoadContext(assembly)?.IsCollectible == true);
+        Assembly dependencyAssembly = AppDomain.CurrentDomain.GetAssemblies().Single(assembly => (
+            string.Equals(assembly.GetName().Name, "Reloadable.PrivateDependency", StringComparison.Ordinal)
+            && AssemblyLoadContext.GetLoadContext(assembly)?.IsCollectible == true
+        ));
         Assert.NotSame(
             AssemblyLoadContext.GetLoadContext(consumerType.Assembly),
-            AssemblyLoadContext.GetLoadContext(dependencyAssembly));
+            AssemblyLoadContext.GetLoadContext(dependencyAssembly)
+        );
 
-        Assert.Throws<InvalidOperationException>(() => m_modules.BeginReload(
-            [],
-            [dependency.moduleName]));
-        using (AssemblyReloadSession removal = m_modules.BeginReload(
-                   [],
-                   [consumer.moduleName, dependency.moduleName]))
+        Assert.Throws<InvalidOperationException>(() => m_modules.BeginReload([], [dependency.moduleName]));
+        using (AssemblyReloadSession removal = m_modules.BeginReload([], [consumer.moduleName, dependency.moduleName]))
         {
             removal.Activate();
             _ = removal.Complete();
@@ -350,14 +358,17 @@ public sealed class ModuleHostTests : IDisposable
         int previousRuntimeId = m_types.GetTypeRef(previous).runtimeId;
 
         using (AssemblyReloadSession failed = m_modules.BeginReload(handle, CreateRequest("V2")))
+        {
             Assert.Throws<InvalidOperationException>(failed.Activate);
+        }
         int rejectedRuntimeId = registry.lastBuiltRef.runtimeId;
 
         registry.failActivation = false;
         using AssemblyReloadSession accepted = m_modules.BeginReload(handle, CreateRequest("V2"));
         TypeCacheReloadContext context = accepted.context.GetContext<TypeCacheReloadContext>();
         TypeRef acceptedRef = context.candidate.GetTypeRef(
-            new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(context.candidate));
+            new TypeRef(S_RELOADABLE_TYPE_ID).Resolve(context.candidate)
+        );
         Assert.NotEqual(previousRuntimeId, rejectedRuntimeId);
         Assert.NotEqual(rejectedRuntimeId, acceptedRef.runtimeId);
         accepted.Activate();
@@ -397,7 +408,9 @@ public sealed class ModuleHostTests : IDisposable
         Assert.Throws<InvalidOperationException>(m_modules.Rebuild);
         Assert.Same(previous, m_types.current);
         _ = AssemblyBuilder.DefineDynamicAssembly(
-            new AssemblyName("Ignored.Dynamic." + Guid.NewGuid().ToString("N")), AssemblyBuilderAccess.RunAndCollect);
+            new AssemblyName("Ignored.Dynamic." + Guid.NewGuid().ToString("N")),
+            AssemblyBuilderAccess.RunAndCollect
+        );
         m_modules.Refresh();
         Assert.Same(previous, m_types.current);
         rejecting.throwOnActivate = false;
@@ -423,7 +436,8 @@ public sealed class ModuleHostTests : IDisposable
 
         using AssemblyReloadSession reload = m_modules.BeginReload(
             m_modules.modules.Single().handle,
-            CreateRequest("V2"));
+            CreateRequest("V2")
+        );
         Assert.Throws<AggregateException>(reload.Activate);
         activationFailure.throwOnActivate = false;
         throwing.throwOnRollback = false;
@@ -437,9 +451,7 @@ public sealed class ModuleHostTests : IDisposable
     [Fact]
     public void ExternalRegistrationIsNonOwningAndImmediatelyUnloadable()
     {
-        AssemblyModuleHandle handle = m_modules.Register(
-            "ExternalTests",
-            [typeof(ModuleHostTests).Assembly]);
+        AssemblyModuleHandle handle = m_modules.Register("ExternalTests", [typeof(ModuleHostTests).Assembly]);
 
         AssemblyModuleInfo info = Assert.Single(m_modules.modules);
         Assert.True(info.externallyOwned);
@@ -466,34 +478,36 @@ public sealed class ModuleHostTests : IDisposable
     private static void ClearStrongTypeHolder(StrongTypeHolder holder)
         => holder.type = null;
 
-    private AssemblyModuleHandle LoadVersion(string version)
-        => m_modules.Load(CreateRequest(version));
+    private AssemblyModuleHandle LoadVersion(string version) => m_modules.Load(CreateRequest(version));
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     private WeakReference CaptureRejectedCandidateContext(AssemblyModuleHandle handle)
     {
         WeakReference? candidateContext = null;
-        AssemblyLoadEventHandler capture = (_, args) =>
+        AssemblyLoadEventHandler capture = (
+            _,
+            args
+        ) =>
         {
             AssemblyLoadContext? context = AssemblyLoadContext.GetLoadContext(args.LoadedAssembly);
-            if (context is { IsCollectible: true } &&
-                context.Name?.StartsWith("ReloadableTests#2", StringComparison.Ordinal) == true)
-            {
+            if (context is { IsCollectible: true }
+                && context.Name?.StartsWith("ReloadableTests#2", StringComparison.Ordinal) == true
+            ) {
                 candidateContext = new WeakReference(context);
             }
         };
         AppDomain.CurrentDomain.AssemblyLoad += capture;
         try
         {
-            Assert.Throws<InvalidOperationException>(
-                () => m_modules.BeginReload(handle, CreateRequest("Invalid")));
+            Assert.Throws<InvalidOperationException>(() => m_modules.BeginReload(handle, CreateRequest("Invalid")));
         }
         finally
         {
             AppDomain.CurrentDomain.AssemblyLoad -= capture;
         }
         return candidateContext ?? throw new InvalidOperationException(
-            "The rejected candidate load context was not observed.");
+            "The rejected candidate load context was not observed."
+        );
     }
 
     private DotNetModuleSource CreateRequest(string version)
@@ -534,21 +548,29 @@ public sealed class ModuleHostTests : IDisposable
 
         protected override Type[] Build(TypeCacheSnapshot types)
         {
-            TypeRef[] matches = types.types.Where(type =>
-                    string.Equals(
-                        type.Resolve(types).FullName,
-                        "Inno.Extensibility.Modules.TestModule.ReloadableExtension",
-                        StringComparison.Ordinal))
+            TypeRef[] matches = types.types
+                .Where(type =>
+                        string.Equals(
+                            type.Resolve(types).FullName,
+                            "Inno.Extensibility.Modules.TestModule.ReloadableExtension",
+                            StringComparison.Ordinal
+                        ))
                 .ToArray();
             if (matches.Length == 1)
+            {
                 lastBuiltRef = matches[0];
+            }
             return matches.Select(type => type.Resolve(types)).ToArray();
         }
 
-        protected override void OnActivating(Type[]? previous, Type[] candidate)
-        {
+        protected override void OnActivating(
+            Type[]? previous,
+            Type[] candidate
+        ) {
             if (failActivation)
+            {
                 throw new InvalidOperationException("Injected assembly registry activation failure.");
+            }
         }
     }
 
@@ -565,8 +587,7 @@ public sealed class ModuleHostTests : IDisposable
         internal int completeCount;
         internal int rollbackCount;
 
-        public IAssemblyCatalogTransaction Prepare(AssemblyCatalogSnapshot catalog)
-            => new Transaction(this);
+        public IAssemblyCatalogTransaction Prepare(AssemblyCatalogSnapshot catalog) => new Transaction(this);
 
         internal void Reset()
         {
@@ -581,21 +602,27 @@ public sealed class ModuleHostTests : IDisposable
             public void Activate()
             {
                 if (owner.throwOnActivate)
+                {
                     throw new InvalidOperationException("Injected participant activation failure.");
+                }
             }
 
             public void Complete()
             {
                 owner.completeCount++;
                 if (owner.throwOnComplete)
+                {
                     throw new InvalidOperationException("Injected participant completion failure.");
+                }
             }
 
             public void Rollback()
             {
                 owner.rollbackCount++;
                 if (owner.throwOnRollback)
+                {
                     throw new InvalidOperationException("Injected participant rollback failure.");
+                }
             }
         }
     }

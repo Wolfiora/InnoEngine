@@ -1,6 +1,6 @@
-using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Rendering;
 
@@ -10,33 +10,33 @@ internal static partial class RenderGraphCompiler
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderPassRecord> passes,
         IReadOnlyDictionary<int, int> schedulePositions
-    )
-        => AllocateSlots(
-            textures.Count,
-            index => textures[index].imported,
-            (
-                left,
-                right
-            ) => textures[left].descriptor.Equals(textures[right].descriptor),
-            new RenderResourceKey(true, 0),
-            passes,
-            schedulePositions);
+    ) => AllocateSlots(
+        textures.Count,
+        index => textures[index].imported,
+        (
+            left,
+            right
+        ) => textures[left].descriptor.Equals(textures[right].descriptor),
+        new RenderResourceKey(true, 0),
+        passes,
+        schedulePositions
+    );
 
     private static int[] AllocateBufferSlots(
         IReadOnlyList<RenderBufferRecord> buffers,
         IReadOnlyList<RenderPassRecord> passes,
         IReadOnlyDictionary<int, int> schedulePositions
-    )
-        => AllocateSlots(
-            buffers.Count,
-            index => buffers[index].imported,
-            (
-                left,
-                right
-            ) => buffers[left].descriptor.Equals(buffers[right].descriptor),
-            new RenderResourceKey(false, 0),
-            passes,
-            schedulePositions);
+    ) => AllocateSlots(
+        buffers.Count,
+        index => buffers[index].imported,
+        (
+            left,
+            right
+        ) => buffers[left].descriptor.Equals(buffers[right].descriptor),
+        new RenderResourceKey(false, 0),
+        passes,
+        schedulePositions
+    );
 
     private static int[] AllocateSlots(
         int resourceCount,
@@ -88,8 +88,8 @@ internal static partial class RenderGraphCompiler
             {
                 (int representative, int lastUse) allocation = allocations[slot];
                 if (allocation.lastUse < firstUses[resource]
-                    && descriptorsEqual(allocation.representative, resource))
-                {
+                    && descriptorsEqual(allocation.representative, resource)
+                ) {
                     selected = slot;
                     allocations[slot] = (allocation.representative, lastUses[resource]);
                     break;

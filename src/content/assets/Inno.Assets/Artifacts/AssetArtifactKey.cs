@@ -22,15 +22,21 @@ public readonly struct AssetArtifactKey : IEquatable<AssetArtifactKey>
     public AssetArtifactKey(string value)
     {
         string normalized = string.IsNullOrWhiteSpace(value)
-            ? string.Empty
-            : value.Trim().ToUpperInvariant();
+                            ? string.Empty
+                            : value.Trim().ToUpperInvariant();
         if (normalized.Length != 0)
         {
             if (normalized.Length != C_SHA256_HEX_LENGTH)
+            {
                 throw new ArgumentException("An artifact key must be a complete SHA-256 hexadecimal fingerprint.", nameof(value));
+            }
             foreach (char digit in normalized)
+            {
                 if (digit is not (>= '0' and <= '9') and not (>= 'A' and <= 'F'))
+                {
                     throw new ArgumentException("An artifact key cannot contain non-hexadecimal characters.", nameof(value));
+                }
+            }
         }
         m_value = normalized;
     }

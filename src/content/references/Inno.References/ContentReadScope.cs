@@ -36,11 +36,17 @@ public sealed class ContentReadScope : IDisposable
         ArgumentNullException.ThrowIfNull(contents);
         Identity[] snapshot = contents.ToArray();
         if (snapshot.Any(static identity => identity.runtimeIdentity is null))
+        {
             throw new ArgumentException("Content roots must belong to live identity domains.", nameof(contents));
+        }
         if (snapshot.Select(static identity => identity.persistentId).Distinct().Count() != snapshot.Length)
+        {
             throw new ArgumentException("Content root persistent identities must be unique.", nameof(contents));
+        }
         if (activeContent is Guid active && !snapshot.Any(identity => identity.persistentId == active))
+        {
             throw new ArgumentException("The active content must belong to this scope.", nameof(activeContent));
+        }
         m_contents = Array.AsReadOnly(snapshot);
         this.activeContent = activeContent;
     }
@@ -75,11 +81,15 @@ public sealed class ContentReadScope : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Lookup occurs off the owning control thread.
     /// </exception>
-    public IReadOnlyList<TValue> GetValues<TValue>() where TValue : IdentityObject
+    public IReadOnlyList<TValue> GetValues<TValue>()
+        where TValue : IdentityObject
     {
         EnsureActive();
-        return Array.AsReadOnly(m_contents.Select(static identity => identity.Resolve<TValue>())
-            .OfType<TValue>().ToArray());
+        return Array.AsReadOnly(
+            m_contents.Select(static identity => identity.Resolve<TValue>())
+                .OfType<TValue>()
+                .ToArray()
+        );
     }
 
     /// <summary>
@@ -112,7 +122,9 @@ public sealed class ContentReadScope : IDisposable
         foreach (Identity identity in m_contents)
         {
             if (identity.persistentId != id)
+            {
                 continue;
+            }
             value = identity.Resolve<TValue>();
             return value is not null;
         }
@@ -129,6 +141,8 @@ public sealed class ContentReadScope : IDisposable
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (Environment.CurrentManagedThreadId != m_ownerThread)
+        {
             throw new InvalidOperationException("Content lookup requires its owning control thread.");
+        }
     }
 }

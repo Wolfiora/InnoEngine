@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Scene;
 
 namespace Inno.Scene;
@@ -17,7 +16,8 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
         GameScene scene,
         IReadOnlyDictionary<EngineObject, Guid>? sourceIds = null,
         GameObject? captureRoot = null
-    ) : base(scene, captureRoot) {
+    ) : base(scene, captureRoot)
+    {
         // Capture callers own the complete map and keep it fixed for this synchronous scope.
         m_sourceIdByObject = sourceIds;
     }
@@ -26,9 +26,9 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
         Guid sourceId,
         EngineObject engineObject
     ) {
-        if (!m_objectBySourceId.TryAdd(sourceId, engineObject) &&
-            !ReferenceEquals(m_objectBySourceId[sourceId], engineObject))
-        {
+        if (!m_objectBySourceId.TryAdd(sourceId, engineObject)
+            && !ReferenceEquals(m_objectBySourceId[sourceId], engineObject)
+        ) {
             throw new InvalidOperationException($"Duplicate scene graph local identity '{sourceId}'.");
         }
     }
@@ -40,16 +40,19 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
         {
             Guid persistentId = engineObject.identity.persistentId;
             if (sourceId != persistentId)
+            {
                 aliases.Add(sourceId, persistentId);
+            }
         }
         return aliases;
     }
 
     internal EngineObject GetRegistered(Guid sourceId)
         => m_objectBySourceId.TryGetValue(sourceId, out EngineObject? engineObject)
-            ? engineObject
-            : throw new InvalidOperationException(
-                $"Scene graph reference alias target '{sourceId}' could not be resolved.");
+           ? engineObject
+           : throw new InvalidOperationException(
+               $"Scene graph reference alias target '{sourceId}' could not be resolved."
+           );
 
     /// <inheritdoc />
     protected override bool TryGetSourceId(

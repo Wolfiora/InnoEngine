@@ -1,9 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
-
 using Inno.Core.Serialization;
-using Inno.Scripting.Api;
 using Inno.Core.Settings;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Settings;
 
@@ -102,7 +101,8 @@ public abstract class ProjectSettingEditor
 
     internal SerializationRegistry serialization
         => m_serialization ?? throw new InvalidOperationException(
-            $"Project setting editor '{GetType().FullName}' has not been bound to a serialization registry.");
+            $"Project setting editor '{GetType().FullName}' has not been bound to a serialization registry."
+        );
 
     internal void BindSerialization(SerializationRegistry serializationRegistry)
     {
@@ -110,7 +110,8 @@ public abstract class ProjectSettingEditor
         if (m_serialization is not null && !ReferenceEquals(m_serialization, serializationRegistry))
         {
             throw new InvalidOperationException(
-                $"Project setting editor '{GetType().FullName}' cannot be bound to more than one serialization registry.");
+                $"Project setting editor '{GetType().FullName}' cannot be bound to more than one serialization registry."
+            );
         }
         m_serialization = serializationRegistry;
     }
@@ -118,11 +119,14 @@ public abstract class ProjectSettingEditor
     internal void BindSettingId(ProjectSettingId id)
     {
         if (!id.isValid)
+        {
             throw new ArgumentException("A project setting Editor requires a valid setting ID.", nameof(id));
+        }
         if (m_settingId.isValid && m_settingId != id)
         {
             throw new InvalidOperationException(
-                $"Project setting editor '{GetType().FullName}' cannot be bound to more than one setting protocol.");
+                $"Project setting editor '{GetType().FullName}' cannot be bound to more than one setting protocol."
+            );
         }
         m_settingId = id;
     }
@@ -132,20 +136,24 @@ public abstract class ProjectSettingEditor
         int placementOrder
     ) {
         string normalized = EditorSettingsPathUtility.Normalize(placementPath);
-        if (m_path is not null &&
-            (!string.Equals(m_path, normalized, StringComparison.Ordinal) || m_order != placementOrder))
-        {
+        if (m_path is not null
+            && (!string.Equals(m_path, normalized, StringComparison.Ordinal) || m_order != placementOrder)
+        ) {
             throw new InvalidOperationException(
-                $"Project setting editor '{GetType().FullName}' was registered at more than one path.");
+                $"Project setting editor '{GetType().FullName}' was registered at more than one path."
+            );
         }
         if (!settingId.isValid)
         {
             throw new InvalidOperationException(
-                $"Project setting editor '{GetType().FullName}' returned an invalid setting ID.");
+                $"Project setting editor '{GetType().FullName}' returned an invalid setting ID."
+            );
         }
         (string path, string parentPath, string label) = EditorSettingsPathUtility.Parse(normalized);
         if (parentPath.Length == 0)
+        {
             throw new InvalidOperationException($"Project setting editor '{path}' requires a parent page.");
+        }
         m_path = path;
         m_pagePath = parentPath;
         m_label = label;
@@ -159,7 +167,8 @@ public abstract class ProjectSettingEditor
         {
             throw new ArgumentException(
                 $"Project setting '{settingId}' requires '{valueType.FullName}', not '{value.GetType().FullName}'.",
-                nameof(value));
+                nameof(value)
+            );
         }
     }
 }
@@ -191,10 +200,10 @@ public abstract class ProjectSettingEditor<TSetting> : ProjectSettingEditor
         var setting = (TSetting)value;
         Baseline baseline = m_baselines.GetValue(
             setting,
-            candidate => new Baseline(serialization.CapturePropertiesData(candidate)));
+            candidate => new Baseline(serialization.CapturePropertiesData(candidate))
+        );
         OnDraw(setting);
-        return !baseline.propertyData.AsSpan().SequenceEqual(
-            serialization.CapturePropertiesData(setting));
+        return !baseline.propertyData.AsSpan().SequenceEqual(serialization.CapturePropertiesData(setting));
     }
 
     internal sealed override bool ValueEquals(
@@ -204,7 +213,8 @@ public abstract class ProjectSettingEditor<TSetting> : ProjectSettingEditor
         ValidateValue(left);
         ValidateValue(right);
         return serialization.CapturePropertiesData(left).AsSpan().SequenceEqual(
-            serialization.CapturePropertiesData(right));
+            serialization.CapturePropertiesData(right)
+        );
     }
 
     private sealed record Baseline(byte[] propertyData);

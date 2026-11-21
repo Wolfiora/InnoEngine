@@ -1,5 +1,3 @@
-using Inno.Core.IO;
-using Inno.Content;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,30 +6,33 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Adapter;
 using Inno.Adapter.Audio;
-using Inno.Assets;
 using Inno.Animation;
 using Inno.Animation.Runtime;
+using Inno.Assets;
 using Inno.Audio;
 using Inno.Audio.Runtime;
-using Inno.Core.Events;
+using Inno.Content;
 using Inno.Core.Diagnostics;
+using Inno.Core.Events;
 using Inno.Core.Execution;
+using Inno.Core.IO;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using Inno.Extensibility.Modules;
 using Inno.Engine.Default;
+using Inno.Extensibility.Modules;
 using Inno.Input.Runtime;
-using Inno.Runtime;
-using Inno.Runtime.Contracts;
-using Inno.Scene;
 using Inno.Platform;
 using Inno.Rendering;
 using Inno.Rendering.Runtime;
+using Inno.Runtime;
+using Inno.Runtime.Contracts;
+using Inno.Scene;
 using Inno.Shell;
-using Inno.Storage.Runtime;
 using Inno.Storage;
+using Inno.Storage.Runtime;
 using Inno.UI.Runtime;
+
 using ShellHost = Inno.Shell.Shell;
 
 namespace Inno.Player.Runtime;
@@ -51,8 +52,7 @@ internal sealed class GamePlayerHost : ShellHost
         ShellOptions shellOptions,
         EngineHost engine,
         PlayerLaunchOptions options
-    )
-        : base(adapterCatalog, shellOptions)
+    ) : base(adapterCatalog, shellOptions)
     {
         m_engine = engine;
         m_engine.logs.RegisterSink(new ConsoleLogSink(options.consoleColors));
@@ -77,21 +77,29 @@ internal sealed class GamePlayerHost : ShellHost
             RuntimeContentCatalog catalog = serialization.Deserialize<RuntimeContentCatalog>(metadata.catalog.Span);
             catalog.Validate();
             if (catalog.runtimeAssemblyCount != manifest.modules.Sum(static module => module.assemblies.Length))
+            {
                 throw new InvalidDataException("The content catalog and runtime manifest have different code closures.");
+            }
             ActivateRuntimeModules(
                 options.moduleActivator,
                 engine.modules,
-                GameCodeDeployment.FromManifest(manifest.modules));
+                GameCodeDeployment.FromManifest(manifest.modules)
+            );
             var pack = new ContentPackDescriptor(catalog.contentHash, catalog.packFileName);
             content = await options.contentSource.PrepareAsync(
                 pack,
                 new StorageScope(manifest.applicationId),
                 serialization,
-                cancellationToken);
+                cancellationToken
+            );
             if (content is null)
+            {
                 throw new InvalidOperationException("The Player content source returned no prepared store.");
+            }
             if (content.descriptor != pack)
+            {
                 throw new InvalidDataException("The prepared Player content store differs from the selected deployment pack.");
+            }
             cancellationToken.ThrowIfCancellationRequested();
             host = new GamePlayerHost(
                 options.adapters,
@@ -113,7 +121,9 @@ internal sealed class GamePlayerHost : ShellHost
                     forceSingleThreadedRendering = options.renderOnCallingThread,
                     suspendWhenHidden = options.windowVisible
                 },
-                engine, options);
+                engine,
+                options
+            );
             host.m_content = content;
             content = null;
             host.InitializeRuntime(manifest, options);
@@ -160,7 +170,9 @@ internal sealed class GamePlayerHost : ShellHost
     protected override void OnEvent(Event evnt)
     {
         if (evnt is not ApplicationSuspensionChangedEvent)
+        {
             session.events.Enqueue(evnt);
+        }
     }
 
     /// <inheritdoc />
@@ -187,16 +199,23 @@ internal sealed class GamePlayerHost : ShellHost
         m_engine.diagnostics.RegisterSink(diagnostics);
         m_engine.diagnostics.UnregisterSink(diagnostics);
         if (diagnostics.errors.Count != 0)
-            throw new InvalidOperationException("Player smoke completed with active errors:" + Environment.NewLine
-                + string.Join(Environment.NewLine, diagnostics.errors));
+        {
+            throw new InvalidOperationException(
+                "Player smoke completed with active errors:" + Environment.NewLine
+                + string.Join(Environment.NewLine, diagnostics.errors)
+            );
+        }
         RenderFrameStatistics? statistics;
         using (rendering.EnterExecutionScope())
+        {
             statistics = GraphicsSettings.frameStatistics;
+        }
         Console.WriteLine(
             $"INNO-SMOKE frames={frameCount} "
             + $"views={statistics?.viewCount ?? 0} "
             + $"draws={statistics?.drawCount ?? 0} "
-            + $"dispatches={statistics?.dispatchCount ?? 0}");
+            + $"dispatches={statistics?.dispatchCount ?? 0}"
+        );
     }
 
     /// <summary>
@@ -218,7 +237,9 @@ internal sealed class GamePlayerHost : ShellHost
         Attempt(() => m_diagnosticLogs?.Dispose());
         m_diagnosticLogs = null;
         if (failures.Count > 0)
+        {
             throw new AggregateException("Player retirement failed after all available owners were attempted.", failures);
+        }
 
         void Attempt(Action cleanup)
         {
@@ -275,16 +296,28 @@ internal sealed class GamePlayerHost : ShellHost
                 documentStream.ReadExactly(documentBytes);
                 m_settings = new ProjectSettingsStore(
                     new ReadOnlyByteDocumentStore(document.entry.key.value!, documentBytes),
-                    m_engine.types, m_engine.serialization, new ProjectId(manifest.applicationId),
-                    AssetSerializationContext.Create(owner.assets));
+                    m_engine.types,
+                    m_engine.serialization,
+                    new ProjectId(manifest.applicationId),
+                    AssetSerializationContext.Create(owner.assets)
+                );
                 settings.SetContributors(manifest.CreateSettingContributors());
                 settings.RebuildCurrent();
                 if (!string.Equals(settings.projectId.value, manifest.applicationId, StringComparison.Ordinal))
+                {
                     throw new InvalidDataException("Runtime manifest and Project Settings identities do not match.");
-                return DefaultEngine.CreateSessionSubsystems(new EngineSessionComposition(
-                    owner, adapters, adapterSelection, inputSource, owner.assets,
-                    () => settings.Get<AudioProjectSettings>(AudioProjectSettings.settingId),
-                    () => options.createStorage(manifest)));
+                }
+                return DefaultEngine.CreateSessionSubsystems(
+                    new EngineSessionComposition(
+                        owner,
+                        adapters,
+                        adapterSelection,
+                        inputSource,
+                        owner.assets,
+                        () => settings.Get<AudioProjectSettings>(AudioProjectSettings.settingId),
+                        () => options.createStorage(manifest)
+                    )
+                );
             }
         });
         GamePresentationSettings presentation = settings.Get<GamePresentationSettings>(GamePresentationSettings.settingId);
@@ -294,16 +327,25 @@ internal sealed class GamePlayerHost : ShellHost
             .GetRequiredSubsystem<AnimationRuntime>();
         InputRuntime inputRuntime = session.subsystems
             .GetRequiredSubsystem<InputRuntime>();
-        m_rendering = new RenderRuntime(m_engine.types, renderDevice, m_renderDiagnostics,
-            targetArtifacts: new ContentRenderTargetArtifactProvider(m_content!, m_engine.serialization,
-                AssetSerializationContext.Create(session.assets)),
+        m_rendering = new RenderRuntime(
+            m_engine.types,
+            renderDevice,
+            m_renderDiagnostics,
+            targetArtifacts: new ContentRenderTargetArtifactProvider(
+                m_content!,
+                m_engine.serialization,
+                AssetSerializationContext.Create(session.assets)
+            ),
             contentScopeProvider: () => SceneContentSource.CreateScope(session.scenes),
             primaryPresentationViewportProvider: size => CreatePresentationViewport(presentation, size),
             inputSnapshotProvider: () => inputRuntime.snapshot,
-            primaryInputSurfaceSizeProvider: () => primaryWindow.width > 0 && primaryWindow.height > 0
-                ? new RenderPresentationSize(primaryWindow.width, primaryWindow.height) : null,
-            compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(
-                adapterSelection.rendering));
+            primaryInputSurfaceSizeProvider: () => (
+                primaryWindow.width > 0 && primaryWindow.height > 0
+                ? new RenderPresentationSize(primaryWindow.width, primaryWindow.height)
+                : null
+            ),
+            compositionProgramProvider: adapters.rendering.CreateCompositionProgramProvider(adapterSelection.rendering)
+        );
         UseHostPipeline(m_engine.CreateHostPipeline(DefaultEngine.CreateHostSubsystems(m_rendering)));
         using (settings.EnterExecutionScope())
         using (AnimationExecutionContext.EnterScope(animation))
@@ -311,11 +353,8 @@ internal sealed class GamePlayerHost : ShellHost
         using (rendering.EnterExecutionScope())
         using (session.EnterExecutionScope())
         {
-            SceneAsset startupAsset = session.assets.Load<SceneAsset>(
-                AssetPath.Parse(manifest.startupScene));
-            session.scenes.LoadScene(startupAsset.Instantiate(
-                m_engine.serialization,
-                session.assets));
+            SceneAsset startupAsset = session.assets.Load<SceneAsset>(AssetPath.Parse(manifest.startupScene));
+            session.scenes.LoadScene(startupAsset.Instantiate(m_engine.serialization, session.assets));
         }
     }
 
@@ -329,16 +368,21 @@ internal sealed class GamePlayerHost : ShellHost
         ArgumentNullException.ThrowIfNull(deployment);
         activator.Activate(modules, deployment);
         string[] activeNames = modules.modules.Select(static module => module.moduleName)
-            .Order(StringComparer.Ordinal).ToArray();
+            .Order(StringComparer.Ordinal)
+            .ToArray();
         string[] expectedNames = deployment.modules.Select(static module => module.name)
-            .Order(StringComparer.Ordinal).ToArray();
+            .Order(StringComparer.Ordinal)
+            .ToArray();
         if (!activeNames.SequenceEqual(expectedNames, StringComparer.Ordinal))
+        {
             throw new InvalidOperationException("The frozen runtime code generation was not activated completely.");
+        }
     }
 
     private sealed class SmokeDiagnostics : IDiagnosticSink
     {
         internal readonly List<string> errors = [];
+
         /// <summary>
         /// Records errors from the current diagnostic report.
         /// </summary>
@@ -348,15 +392,20 @@ internal sealed class GamePlayerHost : ShellHost
         public void Replace(DiagnosticReport report)
         {
             foreach (Diagnostic diagnostic in report.diagnostics)
+            {
                 if (diagnostic.severity == DiagnosticSeverity.Error)
+                {
                     errors.Add(report.source.id + "/" + diagnostic.code + ": " + diagnostic.message);
+                }
+            }
         }
+
         /// <summary>
         /// Removes all retained entries and returns the instance to an empty reusable state.
         /// </summary>
         /// <param name="source">
         /// The source value or location read by this operation.
         /// </param>
-        public void Clear(DiagnosticSource source) { }
+        public void Clear(DiagnosticSource source) {}
     }
 }

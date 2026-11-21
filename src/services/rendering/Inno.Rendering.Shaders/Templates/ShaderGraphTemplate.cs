@@ -24,11 +24,11 @@ public sealed class ShaderGraphTemplateAttribute : Attribute
         string displayName
     ) {
         this.id = string.IsNullOrWhiteSpace(id)
-            ? throw new ArgumentException("Shader graph template identity cannot be empty.", nameof(id))
-            : id;
+                  ? throw new ArgumentException("Shader graph template identity cannot be empty.", nameof(id))
+                  : id;
         this.displayName = string.IsNullOrWhiteSpace(displayName)
-            ? throw new ArgumentException("Shader graph template display name cannot be empty.", nameof(displayName))
-            : displayName;
+                           ? throw new ArgumentException("Shader graph template display name cannot be empty.", nameof(displayName))
+                           : displayName;
     }
 
     /// <summary>
@@ -83,8 +83,7 @@ internal sealed class RasterShaderGraphTemplate : ShaderGraphTemplate
 public override GraphDocument Create(
     SerializationRegistry serialization,
     SerializationContext context
-)
-        => ShaderGraphTemplates.CreateRaster(serialization, context);
+) => ShaderGraphTemplates.CreateRaster(serialization, context);
 }
 
 [ShaderGraphTemplate(ShaderBuiltInIds.nodeTemplate, "Reusable Node")]
@@ -112,18 +111,24 @@ internal sealed class ReusableShaderGraphNodeTemplate : ShaderGraphTemplate
         {
             position = new(40, 120)
         };
-        input.SetValue(ShaderGraphDocument.settingsKey, ShaderGraphDocument.Encode(new ShaderGraphNodeInputSettings
-        {
-            ports = [new() { id = "value", type = new() { id = "float" } }]
-        }, serialization, context));
+        input.SetValue(
+            ShaderGraphDocument.settingsKey,
+            ShaderGraphDocument.Encode(new ShaderGraphNodeInputSettings
+            {
+                ports = [new() { id = "value", type = new() { id = "float" } }]
+            }, serialization, context)
+        );
         var output = new GraphNodeRecord(new("node-outputs"), ShaderGraphNodes.outputDefinitionId)
         {
             position = new(620, 120)
         };
-        output.SetValue(ShaderGraphDocument.settingsKey, ShaderGraphDocument.Encode(new ShaderGraphNodeOutputSettings
-        {
-            ports = [new() { id = "value", type = new() { id = "float" } }]
-        }, serialization, context));
+        output.SetValue(
+            ShaderGraphDocument.settingsKey,
+            ShaderGraphDocument.Encode(new ShaderGraphNodeOutputSettings
+            {
+                ports = [new() { id = "value", type = new() { id = "float" } }]
+            }, serialization, context)
+        );
         graph.AddNode(input);
         graph.AddNode(output);
         graph.AddEdge(new(new("node-value"), new(input.id, new("value")), new(output.id, new("value"))));

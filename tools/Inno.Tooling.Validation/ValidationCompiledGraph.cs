@@ -15,14 +15,17 @@ internal static class ValidationCompiledGraph
         JsonElement[] snapshots = plan.contexts[check.context ?? "managed"].sdkGraph.EnumerateArray().ToArray();
         var instances = snapshots.SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
             .ToDictionary(static instance => instance.GetProperty("Identity").GetString()!, StringComparer.Ordinal);
-        string[] roots = check.kind is "build" or "test" ? [check.owner]
+        string[] roots = check.kind is "build" or "test"
+            ? [check.owner]
             : check.projects ?? check.inputs.Where(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"))
-                .Select(static input => input[1..]).ToArray();
+                .Select(static input => input[1..])
+                .ToArray();
         var pending = new Queue<string>();
         foreach (string root in roots)
         {
-            JsonElement snapshot = snapshots.Single(snapshot =>
-                Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == root);
+            JsonElement snapshot = snapshots.Single(snapshot => (
+                Path.GetRelativePath(plan.root, snapshot.GetProperty("Path").GetString()!).Replace('\\', '/') == root
+            ));
             JsonElement entry = Entry(snapshot);
             pending.Enqueue(entry.GetProperty("Identity").GetString()!);
         }
@@ -30,12 +33,18 @@ internal static class ValidationCompiledGraph
         while (pending.TryDequeue(out string? identity))
         {
             if (!visited.Add(identity))
+            {
                 continue;
+            }
             if (!instances.TryGetValue(identity, out JsonElement instance))
+            {
                 throw new InvalidDataException("An actual compiled project instance has no captured owner: " + identity);
+            }
             yield return instance;
             foreach (JsonElement reference in instance.GetProperty("References").EnumerateArray())
+            {
                 pending.Enqueue(reference.GetString()!);
+            }
         }
     }
 
@@ -49,9 +58,9 @@ internal static class ValidationCompiledGraph
     internal static bool SameProperties(
         JsonElement left,
         JsonElement right
-    )
-        => left.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
-            == right.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
-            && right.EnumerateObject().Where(static pair => pair.Name != "IsGraphBuild")
-                .All(pair => left.TryGetProperty(pair.Name, out JsonElement value) && value.GetString() == pair.Value.GetString());
+    ) => left.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
+         == right.EnumerateObject().Count(static pair => pair.Name != "IsGraphBuild")
+         && right.EnumerateObject()
+             .Where(static pair => pair.Name != "IsGraphBuild")
+             .All(pair => left.TryGetProperty(pair.Name, out JsonElement value) && value.GetString() == pair.Value.GetString());
 }

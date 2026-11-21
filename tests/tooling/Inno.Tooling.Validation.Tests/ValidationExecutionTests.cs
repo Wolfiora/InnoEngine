@@ -1,12 +1,12 @@
-using Inno.Testing.Validation;
 using System;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
-using Inno.Tooling.Validation;
 using Xunit;
+using Inno.Testing.Validation;
+using Inno.Tooling.Validation;
 
 namespace Inno.Tooling.Validation.Tests;
 
@@ -16,8 +16,10 @@ public sealed class ValidationExecutionTests
     public async Task UnrelatedCliPayloadDoesNotInvalidateTheValidationToolEnvironment()
     {
         using var repository = new ValidationRepository();
-        string unrelated = Path.Combine(Path.GetDirectoryName(typeof(ValidationCommand).Assembly.Location)!,
-            "UnrelatedDocumentationPayload-" + Guid.NewGuid().ToString("N") + ".dll");
+        string unrelated = Path.Combine(
+            Path.GetDirectoryName(typeof(ValidationCommand).Assembly.Location)!,
+            "UnrelatedDocumentationPayload-" + Guid.NewGuid().ToString("N") + ".dll"
+        );
         try
         {
             File.WriteAllText(unrelated, "first");
@@ -26,7 +28,10 @@ public sealed class ValidationExecutionTests
             File.WriteAllText(unrelated, "other");
             File.SetLastWriteTimeUtc(unrelated, timestamp);
             using JsonDocument changed = await repository.PlanAsync();
-            Assert.Equal(initial.RootElement.GetProperty("environment").GetString(), changed.RootElement.GetProperty("environment").GetString());
+            Assert.Equal(
+                initial.RootElement.GetProperty("environment").GetString(),
+                changed.RootElement.GetProperty("environment").GetString()
+            );
         }
         finally
         {
@@ -42,7 +47,10 @@ public sealed class ValidationExecutionTests
         const string C_DEPENDENCY = "src/Example/ToolDependency.cs";
         const string C_UNRELATED = "tools/Inno.Unrelated/Unrelated.cs";
         const string C_RULE = ".agents/rulebook/domains/example.md";
-        repository.Write(C_TOOL, ValidationRepository.Project("<ItemGroup><ProjectReference Include=\"../../src/Example/Example.csproj\" /></ItemGroup>"));
+        repository.Write(
+            C_TOOL,
+            ValidationRepository.Project("<ItemGroup><ProjectReference Include=\"../../src/Example/Example.csproj\" /></ItemGroup>")
+        );
         repository.Write(C_DEPENDENCY, "namespace Example; internal class ToolDependency { }");
         repository.Write("tools/Inno.Unrelated/Inno.Unrelated.csproj", ValidationRepository.Project());
         repository.Write(C_UNRELATED, "namespace Unrelated; internal class Unrelated { }");
@@ -50,13 +58,19 @@ public sealed class ValidationExecutionTests
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare actual tooling dependencies");
         using JsonDocument plan = await repository.PlanAsync();
-        string?[] inputs = plan.RootElement.GetProperty("inputSets").GetProperty("tooling").EnumerateArray()
-            .Select(static value => value.GetString()).ToArray();
+        string?[] inputs = plan.RootElement.GetProperty("inputSets")
+            .GetProperty("tooling")
+            .EnumerateArray()
+            .Select(static value => value.GetString())
+            .ToArray();
         Assert.Contains(C_TOOL, inputs);
         Assert.Contains(C_DEPENDENCY, inputs);
         Assert.DoesNotContain(C_UNRELATED, inputs);
         Assert.DoesNotContain(C_RULE, inputs);
-        JsonElement policy = plan.RootElement.GetProperty("checks").EnumerateArray().Single(check => check.GetProperty("id").GetString() == "instructions");
+        JsonElement policy = plan.RootElement
+            .GetProperty("checks")
+            .EnumerateArray()
+            .Single(check => check.GetProperty("id").GetString() == "instructions");
         Assert.Contains(C_RULE, policy.GetProperty("inputs").EnumerateArray().Select(static value => value.GetString()));
     }
 
@@ -66,12 +80,18 @@ public sealed class ValidationExecutionTests
         using var repository = new ValidationRepository();
         repository.Write("src/Example/Changed.cs", "namespace Example; public sealed class Changed { }");
         using JsonDocument plan = await repository.PlanAsync();
-        JsonElement[] builds = plan.RootElement.GetProperty("checks").EnumerateArray()
-            .Where(check => check.GetProperty("kind").GetString() == "build").ToArray();
+        JsonElement[] builds = plan.RootElement.GetProperty("checks")
+            .EnumerateArray()
+            .Where(check => check.GetProperty("kind").GetString() == "build")
+            .ToArray();
         Assert.NotEmpty(builds);
         foreach (JsonElement build in builds)
         {
-            string?[] prerequisites = build.GetProperty("prerequisites").EnumerateArray().Select(static value => value.GetString()).ToArray();
+            string?[] prerequisites = build
+                .GetProperty("prerequisites")
+                .EnumerateArray()
+                .Select(static value => value.GetString())
+                .ToArray();
             Assert.Contains("instructions", prerequisites);
             Assert.Contains("architecture", prerequisites);
             Assert.DoesNotContain("documentation", prerequisites);

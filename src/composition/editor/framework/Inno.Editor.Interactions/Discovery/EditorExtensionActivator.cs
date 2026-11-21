@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
@@ -31,15 +30,18 @@ internal sealed class EditorExtensionActivator
             .OrderBy(static type => type.FullName, StringComparer.Ordinal)
             .ToArray();
         m_hostServices = (hostServices ?? throw new ArgumentNullException(nameof(hostServices))).ToArray();
-        var activeTypeSet = new HashSet<Type>(
-            activeTypes ?? throw new ArgumentNullException(nameof(activeTypes)));
+        var activeTypeSet = new HashSet<Type>(activeTypes ?? throw new ArgumentNullException(nameof(activeTypes)));
         if (retainedInstances is null)
+        {
             return;
+        }
         foreach (object instance in retainedInstances)
         {
             Type instanceType = instance.GetType();
             if (activeTypeSet.Contains(instanceType))
+            {
                 m_instances.TryAdd(instanceType, instance);
+            }
         }
     }
 
@@ -55,7 +57,7 @@ internal sealed class EditorExtensionActivator
 
     internal TExtension CreateExtension<TExtension>(Type type)
         where TExtension : class
-        => (TExtension)Create(type, typeof(TExtension));
+            => (TExtension)Create(type, typeof(TExtension));
 
     private bool CanCreate(
         Type type,
@@ -72,7 +74,8 @@ internal sealed class EditorExtensionActivator
         }
 
         ConstructorInfo[] constructors = type.GetConstructors(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
         if (constructors.Length != 1 || !visiting.Add(type))
         {
             return true;
@@ -84,8 +87,8 @@ internal sealed class EditorExtensionActivator
             Type parameterType = parameter.ParameterType;
             if (parameterType == typeof(EditorContext)
                 || IsInteractionContract(parameterType)
-                || parameterType == typeof(IEditorDocumentService))
-            {
+                || parameterType == typeof(IEditorDocumentService)
+            ) {
                 continue;
             }
 
@@ -99,8 +102,8 @@ internal sealed class EditorExtensionActivator
                 .Where(parameterType.IsAssignableFrom)
                 .ToArray();
             if (matches.Length == 0
-                || matches.Length == 1 && !CanCreate(matches[0], visiting))
-            {
+                || matches.Length == 1 && !CanCreate(matches[0], visiting)
+            ) {
                 result = false;
                 break;
             }
@@ -118,14 +121,21 @@ internal sealed class EditorExtensionActivator
         if (m_instances.TryGetValue(type, out object? existing))
         {
             if (!contract.IsInstanceOfType(existing))
+            {
                 throw CreateContractException(type, contract);
+            }
             return existing;
         }
         if (type.IsAbstract || !contract.IsAssignableFrom(type))
+        {
             throw CreateContractException(type, contract);
+        }
         if (!m_constructing.Add(type))
+        {
             throw new InvalidOperationException(
-                $"Editor extension constructor dependency cycle contains '{type.FullName}'.");
+                $"Editor extension constructor dependency cycle contains '{type.FullName}'."
+            );
+        }
 
         try
         {
@@ -133,7 +143,9 @@ internal sealed class EditorExtensionActivator
             ParameterInfo[] parameters = constructor.GetParameters();
             var arguments = new object?[parameters.Length];
             for (int i = 0; i < parameters.Length; i++)
+            {
                 arguments[i] = Resolve(parameters[i].ParameterType, type);
+            }
             object instance;
             try
             {
@@ -143,7 +155,8 @@ internal sealed class EditorExtensionActivator
             {
                 throw new InvalidOperationException(
                     $"Editor extension '{type.FullName}' constructor failed.",
-                    exception.InnerException ?? exception);
+                    exception.InnerException ?? exception
+                );
             }
             m_instances.Add(type, instance);
             return instance;
@@ -159,51 +172,68 @@ internal sealed class EditorExtensionActivator
         Type ownerType
     ) {
         if (parameterType == typeof(EditorContext))
+        {
             return m_context;
+        }
         if (IsInteractionContract(parameterType))
+        {
             return m_interactions;
+        }
         if (parameterType == typeof(IEditorDocumentService))
+        {
             return m_interactions.documents;
+        }
 
         object[] services = m_hostServices
             .Where(parameterType.IsInstanceOfType)
             .ToArray();
         if (services.Length == 1)
+        {
             return services[0];
+        }
         if (services.Length > 1)
         {
             throw new InvalidOperationException(
-                $"Editor extension '{ownerType.FullName}' has ambiguous host service dependency " +
-                $"'{parameterType.FullName}'.");
+                $"Editor extension '{ownerType.FullName}' has ambiguous host service dependency "
+                + $"'{parameterType.FullName}'."
+            );
         }
 
         Type[] matches = m_moduleTypes
             .Where(parameterType.IsAssignableFrom)
             .ToArray();
         if (matches.Length == 1)
+        {
             return CreateModule(matches[0]);
+        }
         if (matches.Length == 0)
         {
             throw new InvalidOperationException(
-                $"Editor extension '{ownerType.FullName}' requests unsupported constructor dependency " +
-                $"'{parameterType.FullName}'. Only EditorContext, EditorInteractions, and discovered " +
-                "EditorModule types or explicit host services are injectable.");
+                $"Editor extension '{ownerType.FullName}' requests unsupported constructor dependency "
+                + $"'{parameterType.FullName}'. Only EditorContext, EditorInteractions, and discovered "
+                + "EditorModule types or explicit host services are injectable."
+            );
         }
         throw new InvalidOperationException(
-            $"Editor extension '{ownerType.FullName}' has ambiguous module dependency " +
-            $"'{parameterType.FullName}': {string.Join(", ", matches.Select(static type => type.FullName))}.");
+            $"Editor extension '{ownerType.FullName}' has ambiguous module dependency "
+            + $"'{parameterType.FullName}': {string.Join(", ", matches.Select(static type => type.FullName))}."
+        );
     }
 
     private static ConstructorInfo SelectConstructor(Type type)
     {
         ConstructorInfo[] constructors = type.GetConstructors(
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+        );
         if (constructors.Length == 0)
+        {
             throw new InvalidOperationException($"Editor extension '{type.FullName}' has no instance constructor.");
+        }
         if (constructors.Length > 1)
         {
             throw new InvalidOperationException(
-                $"Editor extension '{type.FullName}' must declare exactly one constructor.");
+                $"Editor extension '{type.FullName}' must declare exactly one constructor."
+            );
         }
         return constructors[0];
     }
@@ -213,6 +243,5 @@ internal sealed class EditorExtensionActivator
     private static InvalidOperationException CreateContractException(
         Type type,
         Type contract
-    )
-        => new($"Editor extension '{type.FullName}' must be a non-abstract '{contract.FullName}'.");
+    ) => new($"Editor extension '{type.FullName}' must be a non-abstract '{contract.FullName}'.");
 }

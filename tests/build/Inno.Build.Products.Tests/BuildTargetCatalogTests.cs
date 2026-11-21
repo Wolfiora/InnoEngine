@@ -9,7 +9,6 @@ namespace Inno.Build.Products.Tests;
 
 public sealed class BuildTargetCatalogTests : BuildPipelineFixture
 {
-
     [Fact]
     public void ProjectSettingsUseTheHostSuppliedInitialIdentity()
     {
@@ -17,21 +16,20 @@ public sealed class BuildTargetCatalogTests : BuildPipelineFixture
         Assert.False(m_settings.HasProjectOverride(ProjectIdentitySettings.settingId));
     }
 
-
-
     [Fact]
     public void BuildTargetsAreOpenIdsOwnedByTheRegisteredAdapterCatalog()
     {
         Assert.Equal(
             [new BuildTargetId("macos-arm64"), new BuildTargetId("windows-x64")],
-            m_pipeline.availableGameTargets);
-        Assert.True(m_pipeline.TryGetGameTargetDisplayName(
-            new BuildTargetId("macos-arm64"),
-            out string macOSDisplayName));
+            m_pipeline.availableGameTargets
+        );
+        Assert.True(
+            m_pipeline.TryGetGameTargetDisplayName(new BuildTargetId("macos-arm64"), out string macOSDisplayName)
+        );
         Assert.Equal("macOS (Apple silicon)", macOSDisplayName);
-        Assert.False(m_pipeline.TryGetGameTargetDisplayName(
-            new BuildTargetId("linux-x64"),
-            out string missingDisplayName));
+        Assert.False(
+            m_pipeline.TryGetGameTargetDisplayName(new BuildTargetId("linux-x64"), out string missingDisplayName)
+        );
         Assert.Empty(missingDisplayName);
 
         var profile = new BuildProfile
@@ -44,8 +42,6 @@ public sealed class BuildTargetCatalogTests : BuildPipelineFixture
         profile.Validate();
     }
 
-
-
     [Fact]
     public void BuildTargetInventoryCannotBeMutatedThroughItsCollectionView()
     {
@@ -55,5 +51,4 @@ public sealed class BuildTargetCatalogTests : BuildPipelineFixture
         Assert.Throws<NotSupportedException>(() => targets[0] = new BuildTargetId("unknown-target"));
         Assert.Equal([new BuildTargetId("macos-arm64"), new BuildTargetId("windows-x64")], m_pipeline.availableGameTargets);
     }
-
 }

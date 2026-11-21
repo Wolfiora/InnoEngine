@@ -29,8 +29,18 @@ public sealed class FileProductPublicationTests : IDisposable
         string projectRoot = Path.Combine(m_root, new string('p', 70), new string('p', 70), "PlayerLink");
         Directory.CreateDirectory(projectRoot);
         string project = Path.Combine(projectRoot, "Player.csproj");
-        File.Copy(Path.Combine(engine, "platforms", platform, "build", "Inno.Build." + platform,
-            "Templates", platform + "Player.project.xml"), project);
+        File.Copy(
+            Path.Combine(
+                engine,
+                "platforms",
+                platform,
+                "build",
+                "Inno.Build." + platform,
+                "Templates",
+                platform + "Player.project.xml"
+            ),
+            project
+        );
         File.Copy(Path.Combine(engine, "global.json"), Path.Combine(m_root, "global.json"));
         File.WriteAllText(Path.Combine(projectRoot, "Program.cs"), "using System; Console.WriteLine(\"Published\");");
         File.WriteAllText(Path.Combine(projectRoot, "PlayerDeploymentDefinition.g.cs"), "// The fixture has no game registrations.");
@@ -45,21 +55,32 @@ public sealed class FileProductPublicationTests : IDisposable
 
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         IToolchainWorkspaceProvider workspaces = OperatingSystem.IsWindows()
-            ? new WindowsToolchainWorkspaceProvider() : new PhysicalToolchainWorkspaceProvider();
+                                                 ? new WindowsToolchainWorkspaceProvider()
+                                                 : new PhysicalToolchainWorkspaceProvider();
         CoreClrDeploymentCompiler compiler = new(host, [RuntimeInformation.RuntimeIdentifier], workspaces);
         using CancellationTokenSource timeout = new(TimeSpan.FromMinutes(3));
         DotNetSdkDescriptor selectedSdk = await DotNetSdkResolver.ResolveAsync(host, project, timeout.Token);
         XDocument definition = XDocument.Load(project);
-        definition.Root!.Add(new XElement("Target",
-            new XAttribute("Name", "VerifySelectedSdk"),
-            new XAttribute("BeforeTargets", "PrepareForBuild"),
-            new XElement("Error",
-                new XAttribute("Condition", $"'$(NETCoreSdkVersion)' != '{selectedSdk.sdkIdentity}'"),
-                new XAttribute("Text", "Publication changed the project-selected SDK."))));
+        definition.Root!.Add(
+            new XElement(
+                "Target",
+                new XAttribute("Name", "VerifySelectedSdk"),
+                new XAttribute("BeforeTargets", "PrepareForBuild"),
+                new XElement(
+                    "Error",
+                    new XAttribute("Condition", $"'$(NETCoreSdkVersion)' != '{selectedSdk.sdkIdentity}'"),
+                    new XAttribute("Text", "Publication changed the project-selected SDK.")
+                )
+            )
+        );
         definition.Save(project);
-        string evaluated = await ToolchainEnvironment.CaptureOutputAsync(selectedSdk.hostPath,
+        string evaluated = await ToolchainEnvironment.CaptureOutputAsync(
+            selectedSdk.hostPath,
             [selectedSdk.cliPath, "msbuild", project, "-getItem:Content", "-nologo"],
-            projectRoot, timeout.Token, DotNetSdkEnvironment.Create(selectedSdk.hostPath));
+            projectRoot,
+            timeout.Token,
+            DotNetSdkEnvironment.Create(selectedSdk.hostPath)
+        );
         using (JsonDocument items = JsonDocument.Parse(evaluated))
         {
             JsonElement content = Assert.Single(items.RootElement.GetProperty("Items").GetProperty("Content").EnumerateArray());
@@ -69,14 +90,22 @@ public sealed class FileProductPublicationTests : IDisposable
         ManagedDeploymentResult result;
         try
         {
-            result = await compiler.CompileAsync(new ManagedDeploymentRequest(
-                project, RuntimeInformation.RuntimeIdentifier, code, output, Path.Combine(m_root, "Logs")), timeout.Token);
+            result = await compiler.CompileAsync(
+                new ManagedDeploymentRequest(
+                    project,
+                    RuntimeInformation.RuntimeIdentifier,
+                    code,
+                    output,
+                    Path.Combine(m_root, "Logs")
+                ),
+                timeout.Token
+            );
         }
         catch (InvalidOperationException exception)
         {
             string[] observed = Directory.Exists(output)
-                ? Directory.GetFiles(output, "*", SearchOption.AllDirectories)
-                : [];
+                                ? Directory.GetFiles(output, "*", SearchOption.AllDirectories)
+                                : [];
             string layout = string.Join(", ", Array.ConvertAll(observed, file => Path.GetRelativePath(output, file)));
             throw new InvalidOperationException($"Publication output '{output}' contained [{layout}].", exception);
         }
@@ -84,10 +113,22 @@ public sealed class FileProductPublicationTests : IDisposable
         Assert.Contains(nativeRelative, result.files);
         Assert.Equal(File.ReadAllBytes(nativeInput), File.ReadAllBytes(deployed));
         // PublishDir is also supplied by external SDK callers without a trailing separator.
-        await ToolchainEnvironment.RunAsync(selectedSdk.hostPath,
-            [selectedSdk.cliPath, "msbuild", project, "-target:ValidateNativePublicationOutput",
-                "-p:PublishDir=" + output, "-nologo", "-m:1", "-nodeReuse:false"],
-            projectRoot, timeout.Token, DotNetSdkEnvironment.Create(selectedSdk.hostPath));
+        await ToolchainEnvironment.RunAsync(
+            selectedSdk.hostPath,
+            [
+                selectedSdk.cliPath,
+                "msbuild",
+                project,
+                "-target:ValidateNativePublicationOutput",
+                "-p:PublishDir=" + output,
+                "-nologo",
+                "-m:1",
+                "-nodeReuse:false"
+            ],
+            projectRoot,
+            timeout.Token,
+            DotNetSdkEnvironment.Create(selectedSdk.hostPath)
+        );
         string[] executionPaths = File.ReadAllLines(Path.Combine(m_root, "Logs", "managed-working-directory.txt"));
         Assert.Equal(projectRoot, executionPaths[0]);
         if (OperatingSystem.IsWindows())
@@ -98,8 +139,16 @@ public sealed class FileProductPublicationTests : IDisposable
 
         File.Delete(nativeInput);
         InvalidOperationException failure = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await compiler.CompileAsync(new ManagedDeploymentRequest(project, RuntimeInformation.RuntimeIdentifier,
-                code, Path.Combine(m_root, "Rejected"), Path.Combine(m_root, "RejectedLogs")), timeout.Token));
+            await compiler.CompileAsync(
+                new ManagedDeploymentRequest(
+                    project,
+                    RuntimeInformation.RuntimeIdentifier,
+                    code,
+                    Path.Combine(m_root, "Rejected"),
+                    Path.Combine(m_root, "RejectedLogs")
+                ),
+                timeout.Token
+            ));
         Assert.Contains("explicitly deployed native runtime closure", failure.Message);
         Assert.True(File.Exists(deployed));
     }
@@ -107,6 +156,8 @@ public sealed class FileProductPublicationTests : IDisposable
     public void Dispose()
     {
         if (Directory.Exists(m_root))
+        {
             Directory.Delete(m_root, recursive: true);
+        }
     }
 }

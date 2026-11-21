@@ -1,48 +1,40 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Xunit;
 using Inno.Adapter.Content.FileSystem;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
-using Inno.Build.Managed;
-using Inno.Content;
-using Inno.Core.IO;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Build.MacOSArm64;
+using Inno.Build.Managed;
 using Inno.Build.WindowsX64;
-using Inno.Core.Identity;
+using Inno.Content;
 using Inno.Core.Execution;
+using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
-
-
-
-
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scripting.Compiler;
-
-using Xunit;
-using Inno.Build;
 using Inno.Testing.Build;
 
 namespace Inno.Build.Products.Tests;
 
 public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 {
-
     [Theory]
     [InlineData("macos-arm64")]
     [InlineData("windows-x64")]
@@ -65,30 +57,45 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         string outputPath = Assert.IsType<string>(result.outputPath);
         string contentHash = Assert.IsType<string>(result.contentHash);
         string packagedContent = target == new BuildTargetId("macos-arm64")
-            ? Path.Combine(outputPath, "Contents", "Resources", "Content")
-            : Path.Combine(outputPath, "Content");
+                                 ? Path.Combine(outputPath, "Contents", "Resources", "Content")
+                                 : Path.Combine(outputPath, "Content");
         string executable = target == new BuildTargetId("macos-arm64")
-            ? Path.Combine(outputPath, "Contents", "MacOS", "Test Game")
-            : Path.Combine(outputPath, "Test Game.exe");
+                            ? Path.Combine(outputPath, "Contents", "MacOS", "Test Game")
+                            : Path.Combine(outputPath, "Test Game.exe");
         Assert.True(File.Exists(executable));
         string playerRoot = target == new BuildTargetId("macos-arm64")
-            ? Path.Combine(outputPath, "Contents", "MacOS")
-            : outputPath;
+                            ? Path.Combine(outputPath, "Contents", "MacOS")
+                            : outputPath;
         Assert.False(Directory.Exists(Path.Combine(playerRoot, "References")));
         string deployedNative = target == new BuildTargetId("macos-arm64")
-            ? Path.Combine(outputPath, "Contents", "MacOS", "native")
-            : Path.Combine(outputPath, "native");
-        Assert.True(File.Exists(Path.Combine(deployedNative, target == new BuildTargetId("macos-arm64")
-            ? "libinno-text-release.dylib"
-            : "inno-text-release.dll")));
-        Assert.True(File.Exists(Path.Combine(deployedNative, target == new BuildTargetId("macos-arm64")
-            ? "libinno-ui-release.dylib"
-            : "inno-ui-release.dll")));
+                                ? Path.Combine(outputPath, "Contents", "MacOS", "native")
+                                : Path.Combine(outputPath, "native");
+        Assert.True(
+            File.Exists(
+                Path.Combine(
+                    deployedNative,
+                    target == new BuildTargetId("macos-arm64")
+                    ? "libinno-text-release.dylib"
+                    : "inno-text-release.dll"
+                )
+            )
+        );
+        Assert.True(
+            File.Exists(
+                Path.Combine(
+                    deployedNative,
+                    target == new BuildTargetId("macos-arm64")
+                    ? "libinno-ui-release.dylib"
+                    : "inno-ui-release.dll"
+                )
+            )
+        );
         Assert.Equal(
             ["catalog.inno", $"content-{contentHash}.pack", "runtime.manifest"],
             Directory.EnumerateFiles(packagedContent)
                 .Select(Path.GetFileName)
-                .Order(StringComparer.Ordinal));
+                .Order(StringComparer.Ordinal)
+        );
 
         byte[] envelope = File.ReadAllBytes(Path.Combine(packagedContent, "runtime.manifest"));
         Assert.Equal("tests.game", RuntimeManifestEnvelope.ReadApplicationId(envelope));
@@ -103,63 +110,91 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 
         string persistentRoot = Path.Combine(m_root, "Persistent", manifest.applicationId);
         RuntimeContentCatalog contentCatalog = serialization.Deserialize<RuntimeContentCatalog>(
-            File.ReadAllBytes(Path.Combine(packagedContent, "catalog.inno")));
+            File.ReadAllBytes(Path.Combine(packagedContent, "catalog.inno"))
+        );
         contentCatalog.Validate();
         using PackContentStore packStore = ContentPackReader.Open(
             File.OpenRead(Path.Combine(packagedContent, contentCatalog.packFileName)),
-            new ContentPackDescriptor(contentCatalog.contentHash, contentCatalog.packFileName), serialization);
-        using FileContentStore contentStore = await FileContentPreparation.PrepareAsync(packStore,
-            new FileContentCacheOptions(persistentRoot));
+            new ContentPackDescriptor(contentCatalog.contentHash, contentCatalog.packFileName),
+            serialization
+        );
+        using FileContentStore contentStore = await FileContentPreparation.PrepareAsync(
+            packStore,
+            new FileContentCacheOptions(persistentRoot)
+        );
         using var runtimeAssets = new AssetDatabase(
             contentStore,
             serialization,
             runtimeTypes,
             new IdentityAllocator(),
-            residencyBudgetBytes: 0);
+            residencyBudgetBytes: 0
+        );
         Task<AssetLease<SceneAsset>> coldLoad = runtimeAssets.AcquireAsync<SceneAsset>(
-            AssetPath.Project("Scenes/Startup.iscene")).AsTask();
+            AssetPath.Project("Scenes/Startup.iscene")
+        ).AsTask();
         long preparingBytes = runtimeAssets.preparingBytes;
         Assert.True(preparingBytes > 0);
         using var coalescedCancellation = new CancellationTokenSource();
         Task<AssetLease<SceneAsset>> coalesced = runtimeAssets.AcquireAsync<SceneAsset>(
-            AssetPath.Project("Scenes/Startup.iscene"), coalescedCancellation.Token).AsTask();
+            AssetPath.Project("Scenes/Startup.iscene"),
+            coalescedCancellation.Token
+        ).AsTask();
         Assert.Equal(preparingBytes, runtimeAssets.preparingBytes);
         coalescedCancellation.Cancel();
         Assert.False(coldLoad.IsCompleted);
-        Assert.True(SpinWait.SpinUntil(() =>
-        {
-            runtimeAssets.CompletePendingLoads();
-            return coldLoad.IsCompleted;
-        }, TimeSpan.FromSeconds(5)));
+        Assert.True(
+            SpinWait.SpinUntil(() =>
+            {
+                runtimeAssets.CompletePendingLoads();
+                return coldLoad.IsCompleted;
+            }, TimeSpan.FromSeconds(5))
+        );
         using (AssetLease<SceneAsset> lease = await coldLoad)
+        {
             Assert.NotNull(lease.asset);
+        }
         Assert.True(coalesced.IsCanceled);
         Assert.Equal(0, runtimeAssets.preparingBytes);
         Assert.Equal(0, runtimeAssets.residencyStatistics.residentAssetCount);
-        using (var limited = new AssetDatabase(contentStore, serialization, runtimeTypes,
-                   new IdentityAllocator(), preparationBudgetBytes: 1))
-        {
+        using (var limited = new AssetDatabase(
+            contentStore,
+            serialization,
+            runtimeTypes,
+            new IdentityAllocator(),
+            preparationBudgetBytes: 1
+        )) {
             Assert.Throws<InvalidOperationException>(() => limited.AcquireAsync<SceneAsset>(
-                AssetPath.Project("Scenes/Startup.iscene")));
+                AssetPath.Project("Scenes/Startup.iscene")
+            ));
             Assert.Equal(0, limited.preparingBytes);
         }
         using var loadCancellation = new CancellationTokenSource();
         Task<AssetLease<SceneAsset>> canceledLoad = runtimeAssets.AcquireAsync<SceneAsset>(
-            AssetPath.Project("Scenes/Startup.iscene"), loadCancellation.Token).AsTask();
+            AssetPath.Project("Scenes/Startup.iscene"),
+            loadCancellation.Token
+        ).AsTask();
         loadCancellation.Cancel();
-        Assert.True(SpinWait.SpinUntil(() =>
-        {
-            runtimeAssets.CompletePendingLoads();
-            return canceledLoad.IsCompleted;
-        }, TimeSpan.FromSeconds(5)));
+        Assert.True(
+            SpinWait.SpinUntil(() =>
+            {
+                runtimeAssets.CompletePendingLoads();
+                return canceledLoad.IsCompleted;
+            }, TimeSpan.FromSeconds(5))
+        );
         Assert.True(canceledLoad.IsCanceled);
         Assert.True(contentStore.index.TryGetEntry(new ContentKey("AssetDatabase/Catalog.snapshot"), out _));
-        Assert.DoesNotContain(contentStore.index.entries, static entry => entry.key.value!.StartsWith("Managed/", StringComparison.Ordinal));
         Assert.DoesNotContain(
             contentStore.index.entries,
-            static entry => entry.key.value!.EndsWith(".iscene", StringComparison.OrdinalIgnoreCase)
-                            || entry.key.value.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
-                            || entry.key.value.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
+            static entry => entry.key.value!.StartsWith("Managed/", StringComparison.Ordinal)
+        );
+        Assert.DoesNotContain(
+            contentStore.index.entries,
+            static entry => (
+                entry.key.value!.EndsWith(".iscene", StringComparison.OrdinalIgnoreCase)
+                || entry.key.value.EndsWith(".imeta", StringComparison.OrdinalIgnoreCase)
+                || entry.key.value.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
+            )
+        );
         Assert.Equal(1, result.assetCount);
         Assert.Equal(1, result.runtimeAssemblyCount);
     }
@@ -170,9 +205,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         AssetPath stagedPath = AssetPath.Project("Staged/Startup.iscene");
         var scene = new GameScene("Startup");
         scene.CreateObject("Player");
-        Assert.True(m_assets.Save(
-            stagedPath,
-            SceneAsset.Capture(scene, m_engine.serialization, m_assets)));
+        Assert.True(m_assets.Save(stagedPath, SceneAsset.Capture(scene, m_engine.serialization, m_assets)));
         string stagedSource = Path.Combine(m_projectRoot, "Assets", "Staged", "Startup.iscene");
         string destinationDirectory = Path.Combine(m_projectRoot, "Assets", "Scenes");
         string destinationSource = Path.Combine(destinationDirectory, "Startup.iscene");
@@ -207,10 +240,9 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
     public async Task BackgroundArtifactExportRejectsACorruptCurrentFormatManifest()
     {
         SaveStartupScene();
-        string manifest = Assert.Single(Directory.EnumerateFiles(
-            m_assets.artifactRoot,
-            "manifest",
-            SearchOption.AllDirectories));
+        string manifest = Assert.Single(
+            Directory.EnumerateFiles(m_assets.artifactRoot, "manifest", SearchOption.AllDirectories)
+        );
         File.WriteAllBytes(manifest, [0x42, 0x41, 0x44]);
 
         InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(() =>
@@ -233,7 +265,8 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
             m_compiler,
             m_supportPackRoot,
             [new GameBuildTargetBinding(target, target)],
-            CreateManagedDeployments());
+            CreateManagedDeployments()
+        );
         string outputRoot = Path.Combine(m_root, "Builds", "MixedGeneration");
 
         Task<BuildResult> build = pipeline.BuildGameAsync(new GameBuildRequest
@@ -241,9 +274,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
             profile = CreateProfile(new BuildTargetId("macos-arm64")),
             outputDirectory = outputRoot
         }).AsTask();
-        Assert.True(SpinWait.SpinUntil(
-            () => target.started.Task.IsCompleted,
-            TimeSpan.FromSeconds(2)));
+        Assert.True(SpinWait.SpinUntil(() => target.started.Task.IsCompleted, TimeSpan.FromSeconds(2)));
         Assert.True(m_assets.Save(AssetPath.Project("Changed.txt"), new TextAsset("new generation")));
         target.release.SetResult();
 
@@ -271,15 +302,11 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
 
         Assert.False(result.succeeded);
         Assert.Null(result.outputPath);
-        Assert.Contains(result.diagnostics, static diagnostic =>
-            diagnostic.severity == BuildDiagnosticSeverity.Error);
+        Assert.Contains(result.diagnostics, static diagnostic => diagnostic.severity == BuildDiagnosticSeverity.Error);
         Assert.False(Directory.Exists(Path.Combine(outputRoot, "Test Game.app")));
         if (Directory.Exists(outputRoot))
         {
-            Assert.Empty(Directory.EnumerateDirectories(
-                outputRoot,
-                ".inno-build-*",
-                SearchOption.TopDirectoryOnly));
+            Assert.Empty(Directory.EnumerateDirectories(outputRoot, ".inno-build-*", SearchOption.TopDirectoryOnly));
         }
     }
 
@@ -288,7 +315,9 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
     public async Task CommittedGameReportsBackupCleanupAsAWarningWithoutLosingSuccess()
     {
         if (!OperatingSystem.IsWindows())
+        {
             return;
+        }
         SaveStartupScene();
         var request = new GameBuildRequest
         {
@@ -307,13 +336,20 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
             Assert.Equal(previous, current.outputPath);
             Assert.True(File.Exists(Path.Combine(current.outputPath!, "Test Game.exe")));
             Assert.False(File.Exists(locked));
-            Assert.Contains(current.diagnostics, static diagnostic => diagnostic.code == "INNO-BUILD-CLEANUP"
-                && diagnostic.severity == BuildDiagnosticSeverity.Warning);
+            Assert.Contains(current.diagnostics, static diagnostic => (
+                diagnostic.code == "INNO-BUILD-CLEANUP"
+                && diagnostic.severity == BuildDiagnosticSeverity.Warning
+            ));
         }
         finally
         {
-            foreach (string retained in Directory.EnumerateFiles(request.outputDirectory, "retained-readonly.txt", SearchOption.AllDirectories))
+            foreach (string retained in Directory.EnumerateFiles(
+                request.outputDirectory,
+                "retained-readonly.txt",
+                SearchOption.AllDirectories
+            )) {
                 File.SetAttributes(retained, FileAttributes.Normal);
+            }
         }
     }
 
@@ -328,8 +364,10 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         }, new CommitFailingProgress());
         Assert.True(result.succeeded);
         Assert.True(File.Exists(Path.Combine(result.outputPath!, "Test Game.exe")));
-        Assert.Contains(result.diagnostics, static diagnostic => diagnostic.code == "INNO-BUILD-PROGRESS"
-            && diagnostic.severity == BuildDiagnosticSeverity.Warning);
+        Assert.Contains(result.diagnostics, static diagnostic => (
+            diagnostic.code == "INNO-BUILD-PROGRESS"
+            && diagnostic.severity == BuildDiagnosticSeverity.Warning
+        ));
     }
 
     [Fact]
@@ -347,15 +385,13 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
                     profile = CreateProfile(new BuildTargetId("macos-arm64")),
                     outputDirectory = outputRoot
                 },
-                cancellationToken: cancellation.Token).AsTask());
+                cancellationToken: cancellation.Token
+            ).AsTask());
 
         Assert.False(Directory.Exists(Path.Combine(outputRoot, "Test Game.app")));
         if (Directory.Exists(outputRoot))
         {
-            Assert.Empty(Directory.EnumerateDirectories(
-                outputRoot,
-                ".inno-build-*",
-                SearchOption.TopDirectoryOnly));
+            Assert.Empty(Directory.EnumerateDirectories(outputRoot, ".inno-build-*", SearchOption.TopDirectoryOnly));
         }
     }
 
@@ -380,9 +416,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
     public async Task PluginBuildIsDeterministicSourceOnlyAndUsesTheInstallContract()
     {
         m_assets.CreateDirectory(AssetPath.Project("Content"));
-        Assert.True(m_assets.Save(
-            AssetPath.Project("Content/value.txt"),
-            new TextAsset("deterministic")));
+        Assert.True(m_assets.Save(AssetPath.Project("Content/value.txt"), new TextAsset("deterministic")));
         string firstPath = Path.Combine(m_root, "first.iplugin");
         string secondPath = Path.Combine(m_root, "second.iplugin");
 
@@ -421,7 +455,8 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         PluginScanResult scan = new PluginSourceService(
             m_engine.serialization,
             installRoot,
-            Path.Combine(m_root, "InstallLibrary")).Scan();
+            Path.Combine(m_root, "InstallLibrary")
+        ).Scan();
         Assert.Empty(scan.diagnostics);
         PluginCandidate candidate = Assert.Single(scan.candidates);
         Assert.Equal("tests.export", candidate.manifest.pluginId);
@@ -445,7 +480,8 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
                     displayName = "Canceled",
                     outputPath = output
                 },
-                cancellationToken: cancellation.Token).AsTask());
+                cancellationToken: cancellation.Token
+            ).AsTask());
 
         Assert.False(File.Exists(output));
         Assert.Empty(Directory.EnumerateFiles(m_root, "Canceled.iplugin.staging-*", SearchOption.TopDirectoryOnly));

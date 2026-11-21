@@ -13,7 +13,6 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
 {
     private readonly IPlayerSupportPackValidator m_supportPackValidator;
 
-
     /// <summary>
     /// Creates a site packager bound to the selected native closure validator.
     /// </summary>
@@ -56,8 +55,6 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     /// </summary>
     public string displayName => "Web (WebGL 2)";
 
-
-
     /// <summary>
     /// Composes an independently hostable site from a verified browser Support Pack and content pack.
     /// </summary>
@@ -79,14 +76,19 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
         await CopyDirectoryAsync(
             Path.Combine(context.managedDeployment.outputDirectory, "wwwroot"),
             site,
-            cancellationToken);
+            cancellationToken
+        );
         if (!File.Exists(Path.Combine(site, "index.html")))
+        {
             throw new InvalidDataException("The browser Support Pack has no index.html entry point.");
+        }
         string contentDirectory = Path.Combine(site, "Content");
         await CopyDirectoryAsync(context.contentDirectory, contentDirectory, cancellationToken);
         string[] packs = Directory.GetFiles(contentDirectory, "content-*.pack", SearchOption.TopDirectoryOnly);
         if (packs.Length != 1)
+        {
             throw new InvalidDataException("The browser deployment must contain exactly one content pack.");
+        }
         return site;
     }
 

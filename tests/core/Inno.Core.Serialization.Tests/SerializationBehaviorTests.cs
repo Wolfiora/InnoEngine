@@ -1,16 +1,14 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
+using Inno.Core.Serialization.Converters;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
-using Inno.Core.Serialization.Converters;
-
-using Xunit;
 
 namespace Inno.Core.Serialization.Tests;
 
@@ -19,7 +17,9 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     private readonly string m_testRoot = Path.Combine(
         Path.GetTempPath(),
         "InnoSerializationTests",
-        Guid.NewGuid().ToString("N"));
+        Guid.NewGuid().ToString("N")
+    );
+
     private ModuleHost m_modules;
     private TypeCatalog m_types;
     private SerializationRegistry m_serialization;
@@ -27,7 +27,9 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     public SerializationBehaviorTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -38,7 +40,9 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         m_types.Dispose();
         m_modules.Dispose();
         if (Directory.Exists(m_testRoot))
+        {
             Directory.Delete(m_testRoot, recursive: true);
+        }
     }
 
     [Fact]
@@ -58,9 +62,11 @@ public sealed partial class SerializationBehaviorTests : IDisposable
             bytes = nested
         });
 
-        byte[] rewritten = SerializedIdentityRemapper.Rewrite(source,
+        byte[] rewritten = SerializedIdentityRemapper.Rewrite(
+            source,
             new Dictionary<Guid, Guid> { [oldId] = newId },
-            new Dictionary<string, string> { ["plugin::~Samples/Document.rml"] = "plugin-Samples/Document.rml" });
+            new Dictionary<string, string> { ["plugin::~Samples/Document.rml"] = "plugin-Samples/Document.rml" }
+        );
         DefaultSample outer = m_serialization.Deserialize<DefaultSample>(rewritten);
         DefaultSample inner = m_serialization.Deserialize<DefaultSample>(outer.bytes);
 
@@ -82,8 +88,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     {
         m_serialization.Dispose();
 
-        Assert.Throws<ObjectDisposedException>(
-            () => m_serialization.Serialize(new DefaultSample()));
+        Assert.Throws<ObjectDisposedException>(() => m_serialization.Serialize(new DefaultSample()));
 
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         Assert.NotEmpty(m_serialization.Serialize(new DefaultSample()));
@@ -115,7 +120,9 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => new TypeCatalog(m_modules, new ReflectionTypeCatalogSource()));
 
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(SerializationBehaviorTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -211,7 +218,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         SerializationPropertyRestoreResult result = m_serialization.RestoreProperties(
             current,
             snapshots,
-            SerializationPropertyRestoreMode.CollectFailures);
+            SerializationPropertyRestoreMode.CollectFailures
+        );
 
         Assert.False(result.success);
         Assert.Equal(1, result.restoredCount);
@@ -236,7 +244,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => m_serialization.RestoreProperties(
             current,
             snapshots,
-            SerializationPropertyRestoreMode.Strict));
+            SerializationPropertyRestoreMode.Strict
+        ));
 
         Assert.Equal("default", current.changed);
         Assert.Equal(0, current.restoreCount);
@@ -291,16 +300,16 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     {
         byte[] data = m_serialization.CapturePropertyData(
             new DefaultSample { count = 12 },
-            nameof(DefaultSample.count));
+            nameof(DefaultSample.count)
+        );
         byte[] trailing = new byte[data.Length + 1];
         data.CopyTo(trailing, 0);
 
-        Assert.Throws<InvalidDataException>(() => m_serialization.RestorePropertiesData(
-            new DefaultSample(),
-            trailing));
+        Assert.Throws<InvalidDataException>(() => m_serialization.RestorePropertiesData(new DefaultSample(), trailing));
         Assert.ThrowsAny<Exception>(() => m_serialization.RestorePropertiesData(
             new DefaultSample(),
-            new byte[] { 1, 2, 3 }));
+            new byte[] { 1, 2, 3 }
+        ));
     }
 
     [Fact]
@@ -320,7 +329,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         byte[] bytes = m_serialization.Encode(static writer => writer.Write("value", 5));
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Deserialize<MissingConstructorSample>(bytes));
+            () => m_serialization.Deserialize<MissingConstructorSample>(bytes)
+        );
 
         Assert.Contains(typeof(MissingConstructorSample).FullName!, exception.Message);
         Assert.Contains("parameterless constructor", exception.Message);
@@ -332,7 +342,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         var source = new ConvertedConstructorSample(31);
 
         ConvertedConstructorSample restored = m_serialization.Deserialize<ConvertedConstructorSample>(
-            m_serialization.Serialize(source));
+            m_serialization.Serialize(source)
+        );
 
         Assert.Equal(31, restored.value);
     }
@@ -340,10 +351,11 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     [Fact]
     public void Deserialize_PreservesConstructorFailureAsInnerException()
     {
-        byte[] bytes = m_serialization.Encode(static _ => { });
+        byte[] bytes = m_serialization.Encode(static _ => {});
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Deserialize<ThrowingConstructorSample>(bytes));
+            () => m_serialization.Deserialize<ThrowingConstructorSample>(bytes)
+        );
 
         Assert.IsType<ApplicationException>(exception.InnerException);
         Assert.Equal("constructor failure", exception.InnerException!.Message);
@@ -353,7 +365,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     public void RequiredConverter_Missing_ThrowsClearError()
     {
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Serialize(new MissingRequiredConverterSample()));
+            () => m_serialization.Serialize(new MissingRequiredConverterSample())
+        );
 
         Assert.Contains(typeof(MissingRequiredConverterSample).FullName!, exception.Message);
         Assert.Contains("requires an explicit serialization converter", exception.Message);
@@ -410,10 +423,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     [Fact]
     public void MetadataValidation_RejectsInvalidMembersAndDuplicateKeys()
     {
-        Assert.Throws<InvalidOperationException>(
-            () => m_serialization.GetProperties(new MissingSetterSample()));
-        Assert.Throws<InvalidOperationException>(
-            () => m_serialization.GetProperties(new DuplicateKeyDerivedSample()));
+        Assert.Throws<InvalidOperationException>(() => m_serialization.GetProperties(new MissingSetterSample()));
+        Assert.Throws<InvalidOperationException>(() => m_serialization.GetProperties(new DuplicateKeyDerivedSample()));
     }
 
     [Fact]
@@ -422,7 +433,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         var source = new MissingClassHost { child = new MissingChild { value = 1 } };
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Serialize(source));
+            () => m_serialization.Serialize(source)
+        );
 
         Assert.Contains("$.child", exception.Message);
         Assert.Contains("SerializationConverter", exception.Message);
@@ -437,7 +449,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         };
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Serialize(source));
+            () => m_serialization.Serialize(source)
+        );
 
         Assert.Contains("$.children[0]", exception.Message);
     }
@@ -451,7 +464,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         };
 
         ConvertedChildHost restored = m_serialization.Deserialize<ConvertedChildHost>(
-            m_serialization.Serialize(source));
+            m_serialization.Serialize(source)
+        );
 
         Assert.NotNull(restored.child);
         Assert.Equal(14, restored.child!.value);
@@ -465,7 +479,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         var source = new CycleHost { value = cycle };
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Serialize(source));
+            () => m_serialization.Serialize(source)
+        );
 
         Assert.Contains("Serialization cycle detected", exception.Message);
         Assert.Contains("$.value", exception.Message);
@@ -497,8 +512,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
             Assert.Throws<ArgumentNullException>(() => reader.Read("number", null!));
             return true;
         });
-        Assert.Throws<ArgumentNullException>(() =>
-            m_serialization.Encode(writer => writer.Write("value", 1, null!)));
+        Assert.Throws<ArgumentNullException>(() => m_serialization.Encode(writer => writer.Write("value", 1, null!)));
     }
 
     [Fact]
@@ -532,7 +546,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         var source = new AmbiguousHost { item = new AmbiguousValue() };
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
-            () => m_serialization.Serialize(source));
+            () => m_serialization.Serialize(source)
+        );
 
         Assert.Contains("ambiguous converters", exception.Message);
         Assert.Contains(typeof(AmbiguousValue).FullName!, exception.Message);
@@ -585,7 +600,10 @@ public sealed partial class SerializationBehaviorTests : IDisposable
         Assert.Contains("value", duplicate.Message);
 
         byte[] arrayBytes = m_serialization.Encode(writer =>
-            writer.WriteObjectArray("items", new[] { 1 }, static (_, _) => { }));
+            writer.WriteObjectArray("items", new[] { 1 }, static (
+                _,
+                _
+            ) => {}));
         InvalidOperationException missing = Assert.Throws<InvalidOperationException>(() =>
             m_serialization.Decode(arrayBytes, static reader =>
                 reader.ReadObjectArray("items")[0].Read<int>("missing")));
@@ -634,7 +652,8 @@ public sealed partial class SerializationBehaviorTests : IDisposable
 
         var converted = new ConvertedHookSample { value = 8 };
         ConvertedHookSample restored = m_serialization.Deserialize<ConvertedHookSample>(
-            m_serialization.Serialize(converted));
+            m_serialization.Serialize(converted)
+        );
         Assert.Equal(1, restored.hookCount);
 
         var existing = new ConvertedHookSample();
@@ -680,10 +699,13 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     {
         using var stream = new MemoryStream();
         using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, leaveOpen: true))
+        {
             writer.Write("FOREIGN");
+        }
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => m_serialization.Decode(stream.ToArray(), static _ => true));
+            () => m_serialization.Decode(stream.ToArray(), static _ => true)
+        );
         Assert.Contains("Invalid serialization magic", exception.Message);
     }
 }
@@ -738,15 +760,22 @@ internal struct StructSample
     public readonly int computed => x + m_hidden;
     public readonly int hidden => m_hidden;
 
-    private StructSample(int x, int y, int hidden)
-    {
+    private StructSample(
+        int x,
+        int y,
+        int hidden
+    ) {
         this.x = x;
         this.y = y;
         readOnly = 99;
         m_hidden = hidden;
     }
 
-    internal static StructSample Create(int x, int y, int hidden) => new(x, y, hidden);
+    internal static StructSample Create(
+        int x,
+        int y,
+        int hidden
+    ) => new(x, y, hidden);
 }
 
 internal sealed class PrivateConstructorSample : ISerializable
@@ -782,14 +811,17 @@ internal sealed class ConvertedConstructorSample : ISerializable
 
 internal sealed class ConvertedConstructorSampleConverter : SerializationConverter<ConvertedConstructorSample>
 {
-    public override void Write(SerializationWriter writer, ConvertedConstructorSample value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        ConvertedConstructorSample value
+    ) => writer.Write("value", value.value);
 
-    public override ConvertedConstructorSample Read(SerializationReader reader)
-        => new(reader.Read<int>("value"));
+    public override ConvertedConstructorSample Read(SerializationReader reader) => new(reader.Read<int>("value"));
 
-    public override void Restore(SerializationReader reader, ConvertedConstructorSample target)
-        => target.value = reader.Read<int>("value");
+    public override void Restore(
+        SerializationReader reader,
+        ConvertedConstructorSample target
+    ) => target.value = reader.Read<int>("value");
 }
 
 internal sealed class ThrowingConstructorSample : ISerializable
@@ -868,20 +900,22 @@ internal sealed class CycleHost : ISerializable
 
 internal sealed class CycleValueConverter : SerializationConverter<CycleValue>
 {
-    public override void Write(SerializationWriter writer, CycleValue value)
-        => writer.Write("next", value.next);
+    public override void Write(
+        SerializationWriter writer,
+        CycleValue value
+    ) => writer.Write("next", value.next);
 
-    public override CycleValue Read(SerializationReader reader)
-        => new() { next = reader.Read<CycleValue?>("next") };
+    public override CycleValue Read(SerializationReader reader) => new() { next = reader.Read<CycleValue?>("next") };
 }
 
 internal sealed class ConvertedChildConverter : SerializationConverter<ConvertedChild>
 {
-    public override void Write(SerializationWriter writer, ConvertedChild value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        ConvertedChild value
+    ) => writer.Write("value", value.value);
 
-    public override ConvertedChild Read(SerializationReader reader)
-        => new() { value = reader.Read<int>("value") };
+    public override ConvertedChild Read(SerializationReader reader) => new() { value = reader.Read<int>("value") };
 }
 
 internal class NearestBase
@@ -901,8 +935,10 @@ internal sealed class NearestHost : ISerializable
 
 internal sealed class NearestBaseConverter : SerializationConverter<NearestBase>
 {
-    public override void Write(SerializationWriter writer, NearestBase value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        NearestBase value
+    ) => writer.Write("value", value.value);
 
     public override NearestBase Read(SerializationReader reader)
         => new NearestLeaf { value = reader.Read<int>("value"), selectedBy = "base" };
@@ -910,8 +946,10 @@ internal sealed class NearestBaseConverter : SerializationConverter<NearestBase>
 
 internal sealed class NearestMidConverter : SerializationConverter<NearestMid>
 {
-    public override void Write(SerializationWriter writer, NearestMid value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        NearestMid value
+    ) => writer.Write("value", value.value);
 
     public override NearestMid Read(SerializationReader reader)
         => new NearestLeaf { value = reader.Read<int>("value"), selectedBy = "mid" };
@@ -932,8 +970,10 @@ internal sealed class ExactHost : ISerializable
 
 internal sealed class ExactBaseConverter : SerializationConverter<ExactBase>
 {
-    public override void Write(SerializationWriter writer, ExactBase value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        ExactBase value
+    ) => writer.Write("value", value.value);
 
     public override ExactBase Read(SerializationReader reader)
         => new ExactLeaf { value = reader.Read<int>("value"), selectedBy = "base" };
@@ -941,8 +981,10 @@ internal sealed class ExactBaseConverter : SerializationConverter<ExactBase>
 
 internal sealed class ExactLeafConverter : SerializationConverter<ExactLeaf>
 {
-    public override void Write(SerializationWriter writer, ExactLeaf value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        ExactLeaf value
+    ) => writer.Write("value", value.value);
 
     public override ExactLeaf Read(SerializationReader reader)
         => new() { value = reader.Read<int>("value"), selectedBy = "exact" };
@@ -961,13 +1003,21 @@ internal sealed class AmbiguousHost : ISerializable
 
 internal sealed class AmbiguousLeftConverter : SerializationConverter<IAmbiguousLeft>
 {
-    public override void Write(SerializationWriter writer, IAmbiguousLeft value) { }
+    public override void Write(
+        SerializationWriter writer,
+        IAmbiguousLeft value
+    ) {}
+
     public override IAmbiguousLeft Read(SerializationReader reader) => new AmbiguousValue();
 }
 
 internal sealed class AmbiguousRightConverter : SerializationConverter<IAmbiguousRight>
 {
-    public override void Write(SerializationWriter writer, IAmbiguousRight value) { }
+    public override void Write(
+        SerializationWriter writer,
+        IAmbiguousRight value
+    ) {}
+
     public override IAmbiguousRight Read(SerializationReader reader) => new AmbiguousValue();
 }
 
@@ -988,11 +1038,12 @@ internal sealed class GenericBoxHost : ISerializable
 
 internal sealed class GenericBoxConverter<T> : SerializationConverter<GenericBox<T>>
 {
-    public override void Write(SerializationWriter writer, GenericBox<T> value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        GenericBox<T> value
+    ) => writer.Write("value", value.value);
 
-    public override GenericBox<T> Read(SerializationReader reader)
-        => new(reader.Read<T>("value"));
+    public override GenericBox<T> Read(SerializationReader reader) => new(reader.Read<T>("value"));
 }
 
 internal interface IVariantValue<out T>
@@ -1046,14 +1097,17 @@ internal sealed class ConvertedHookSample : ISerializable
 
 internal sealed class ConvertedHookSampleConverter : SerializationConverter<ConvertedHookSample>
 {
-    public override void Write(SerializationWriter writer, ConvertedHookSample value)
-        => writer.Write("value", value.value);
+    public override void Write(
+        SerializationWriter writer,
+        ConvertedHookSample value
+    ) => writer.Write("value", value.value);
 
-    public override ConvertedHookSample Read(SerializationReader reader)
-        => new() { value = reader.Read<int>("value") };
+    public override ConvertedHookSample Read(SerializationReader reader) => new() { value = reader.Read<int>("value") };
 
-    public override void Restore(SerializationReader reader, ConvertedHookSample target)
-        => target.value = reader.Read<int>("value");
+    public override void Restore(
+        SerializationReader reader,
+        ConvertedHookSample target
+    ) => target.value = reader.Read<int>("value");
 }
 
 internal sealed class MapHost : ISerializable

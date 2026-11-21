@@ -1,13 +1,15 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Numerics;
-using Inno.Editor.Inspection;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
+
 /// <summary>
 /// Draws the persistent identity header shared by every Inspector target type.
 /// </summary>
@@ -15,6 +17,7 @@ internal sealed class InspectorTargetHeader
 {
     private const int C_NAME_BUFFER_SIZE = 512;
     private readonly InspectorLockControl m_lock = new();
+
     /// <summary>
     /// Resolves the target that should be presented after applying Inspector lock state.
     /// </summary>
@@ -31,6 +34,7 @@ internal sealed class InspectorTargetHeader
         EditorInteractions interactions,
         object? selectedTarget
     ) => m_lock.Resolve(interactions, selectedTarget);
+
     /// <summary>
     /// Draws the common framed header for a resolved Inspector target.
     /// </summary>
@@ -67,7 +71,9 @@ internal sealed class InspectorTargetHeader
             }
 
             if (notice is null)
+            {
                 return;
+            }
             Ui.Spacing();
             EditorUI.current.widgets.HelpBox(notice, ImGuiIcon.CircleInfo, new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque));
         }, spanWindowPadding: true);
@@ -116,8 +122,12 @@ internal sealed class InspectorTargetHeader
         if (nameSetter is not null)
         {
             Ui.SetNextItemWidth(nameWidth);
-            if (Ui.InputText($"##inspector_target_name_{GetTargetId(context.target)}", ref name, C_NAME_BUFFER_SIZE, ImGuiInputTextFlags.None))
-            {
+            if (Ui.InputText(
+                $"##inspector_target_name_{GetTargetId(context.target)}",
+                ref name,
+                C_NAME_BUFFER_SIZE,
+                ImGuiInputTextFlags.None
+            )) {
                 nameSetter(name);
             }
 
@@ -145,7 +155,9 @@ internal sealed class InspectorTargetHeader
         string lockIcon = m_lock.isLocked ? ImGuiIcon.Lock : ImGuiIcon.LockOpen;
         string tooltip = m_lock.isLocked ? "Unlock Inspector" : "Lock Inspector";
         if (EditorUI.current.widgets.ClickableIcon("inspector_target_lock", lockIcon, tooltip))
+        {
             m_lock.Toggle(context.interactions, context.target);
+        }
     }
 
     private static void DrawIcon(
@@ -168,11 +180,18 @@ internal sealed class InspectorTargetHeader
         float rowHeight
     ) {
         ImGuiWindowFlags flags = ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoSavedSettings;
-        bool visible = Ui.BeginChild($"##inspector_target_custom_{GetTargetId(context.target)}", new Vector2(0f, rowHeight), ImGuiChildFlags.None, flags);
+        bool visible = Ui.BeginChild(
+            $"##inspector_target_custom_{GetTargetId(context.target)}",
+            new Vector2(0f, rowHeight),
+            ImGuiChildFlags.None,
+            flags
+        );
         try
         {
             if (visible)
+            {
                 drawer.DrawHeader(context);
+            }
         }
         finally
         {
@@ -180,5 +199,6 @@ internal sealed class InspectorTargetHeader
         }
     }
 
-    private static string GetTargetId(object target) => $"{target.GetType().FullName}_{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(target)}";
+    private static string GetTargetId(object target)
+        => $"{target.GetType().FullName}_{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(target)}";
 }

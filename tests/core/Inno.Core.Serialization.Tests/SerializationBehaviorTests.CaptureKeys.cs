@@ -5,10 +5,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Identity;
 using Inno.Core.Serialization.Converters;
-using Xunit;
 
 namespace Inno.Core.Serialization.Tests;
 
@@ -383,14 +383,20 @@ internal sealed class CaptureKeyRootConverter : SerializationConverter<CaptureKe
         value.writeCalls++;
         value.onWrite?.Invoke();
         if (value.failWrite)
+        {
             throw new InvalidOperationException("Capture writer failure.");
+        }
         writer.Write("number", value.number);
         writer.Write("text", value.text);
         writer.Write("context", writer.context.TryGet(out CaptureKeyContext? context) ? context!.value : 0UL);
         if (value.properties is not null)
+        {
             writer.WritePropertiesData("properties", value.properties);
+        }
         if (value.converted.HasValue)
+        {
             writer.Write("converted", value.converted.Value);
+        }
     }
 
     public override CaptureKeyRoot Read(SerializationReader reader) => throw new NotSupportedException();
@@ -402,14 +408,20 @@ internal sealed class CaptureKeyRootConverter : SerializationConverter<CaptureKe
         value.keyCalls++;
         value.savedBuilder = key;
         if (value.failKey)
+        {
             throw new InvalidOperationException("Capture key failure.");
+        }
         if (!value.allowKey)
+        {
             return false;
+        }
         key.EnsureCapacity(5);
         bool complete = key.TryAddOwner(value, value.revision);
         key.AddValue(key.context.TryGet(out CaptureKeyContext? context) ? context!.value : 0UL);
         if (value.properties is not null)
+        {
             complete &= key.TryAddProperties(value.properties);
+        }
         value.onKey?.Invoke(key);
         return complete || value.ignoreDecline;
     }
@@ -427,7 +439,7 @@ public sealed class CaptureRevisionProperties : IdentityObject, ISerializable
     /// <summary>
     /// Creates an initially empty tracked property source.
     /// </summary>
-    public CaptureRevisionProperties() { }
+    public CaptureRevisionProperties() {}
 
     /// <summary>
     /// Gets or sets the serialized number, advancing its complete source-owned revision before mutation.
@@ -439,7 +451,9 @@ public sealed class CaptureRevisionProperties : IdentityObject, ISerializable
         set
         {
             if (m_revision is { } revision)
+            {
                 m_revision = revision == ulong.MaxValue ? null : revision + 1;
+            }
             m_number = value;
         }
     }
@@ -498,7 +512,7 @@ internal struct CaptureGetterStruct
             calls++;
             return 1;
         }
-        set { }
+        set {}
     }
 }
 

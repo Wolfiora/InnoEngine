@@ -9,7 +9,10 @@ namespace Inno.Testing.Processes.Tests;
 public sealed class NativeProcessTestHostTests
 {
     [Fact]
-    public void SuccessfulContractDrainsItsOutput() => NativeProcessTestHost.Run(typeof(NativeProcessHostFixture).Assembly.Location, "success");
+    public void SuccessfulContractDrainsItsOutput() => NativeProcessTestHost.Run(
+        typeof(NativeProcessHostFixture).Assembly.Location,
+        "success"
+    );
 
     [Fact]
     public void FailedContractRetainsBothStreamsAndIdentity()
@@ -42,7 +45,9 @@ public sealed class NativeProcessTestHostTests
     public void RelativeAssemblyAndInvalidBudgetFailBeforeStarting()
     {
         Assert.Throws<ArgumentException>(() => NativeProcessTestHost.Run("relative.dll", "success"));
-        Assert.Throws<ArgumentOutOfRangeException>(() => NativeProcessTestHost.Run(typeof(NativeProcessHostFixture).Assembly.Location, "success", 0));
+        Assert.Throws<ArgumentOutOfRangeException>(
+            () => NativeProcessTestHost.Run(typeof(NativeProcessHostFixture).Assembly.Location, "success", 0)
+        );
     }
 
     private static bool HasExited(int processId)

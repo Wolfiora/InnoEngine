@@ -1,11 +1,10 @@
 using System;
 using System.Threading.Tasks;
-
+using Xunit;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
-using RuntimeSettings = Inno.Core.Settings.Settings;
 
-using Xunit;
+using RuntimeSettings = Inno.Core.Settings.Settings;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -32,7 +31,9 @@ public sealed class ProjectSettingsExecutionContextTests
         {
             Assert.Equal(11, RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value);
             using (ProjectSettingsExecutionContext.EnterScope(inner))
+            {
                 Assert.Equal(22, RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value);
+            }
             Assert.Equal(11, RuntimeSettings.Get<TestSetting>(S_SETTING_ID).value);
         }
     }
@@ -83,12 +84,16 @@ public sealed class ProjectSettingsExecutionContextTests
             where TSetting : class, ISerializable
         {
             if (typeof(TSetting) != typeof(TestSetting))
+            {
                 throw new InvalidOperationException("The requested test setting type is unsupported.");
+            }
             return (TSetting)(object)new TestSetting { value = value };
         }
 
-        public bool TryGet<TSetting>(ProjectSettingId id, out TSetting? setting)
-            where TSetting : class, ISerializable
+        public bool TryGet<TSetting>(
+            ProjectSettingId id,
+            out TSetting? setting
+        ) where TSetting : class, ISerializable
         {
             setting = Get<TSetting>(id);
             return true;

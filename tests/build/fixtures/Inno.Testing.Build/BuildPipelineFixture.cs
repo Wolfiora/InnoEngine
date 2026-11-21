@@ -1,43 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.Versioning;
 using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Xunit;
 using Inno.Adapter.Content.FileSystem;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
-using Inno.Build.Managed;
-using Inno.Content;
-using Inno.Core.IO;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Build.MacOSArm64;
+using Inno.Build.Managed;
 using Inno.Build.WindowsX64;
-using Inno.Core.Identity;
+using Inno.Content;
 using Inno.Core.Execution;
+using Inno.Core.IO;
+using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
-
-
-
-
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scripting.Compiler;
-
-using Xunit;
-using Inno.Build;
 using Inno.Testing.SupportPacks;
-
 
 namespace Inno.Testing.Build;
 
@@ -54,8 +46,12 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
     protected readonly SceneWorld m_sceneWorld;
     protected readonly IDisposable m_sceneWorldScope;
 
-    protected BuildPipelineFixture() : base(Directory.EnumerateFiles(AppContext.BaseDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly)
-        .Where(static path => !IsAuthoringAssembly(Path.GetFileName(path))).ToArray())
+    protected BuildPipelineFixture()
+        : base(
+            Directory.EnumerateFiles(AppContext.BaseDirectory, "Inno.*.dll", SearchOption.TopDirectoryOnly)
+                .Where(static path => !IsAuthoringAssembly(Path.GetFileName(path)))
+                .ToArray()
+        )
     {
         m_projectRoot = Path.Combine(m_root, "Project");
         string assetRoot = Path.Combine(m_projectRoot, "Assets");
@@ -65,8 +61,11 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         Directory.CreateDirectory(pluginRoot);
 
         m_engine = new EngineHostBuilder()
-                .UseMetadataSources(new DotNetAssemblyCatalogSource(typeof(BuildPipelineFixture).Assembly, GetType().Assembly),
-                    new ReflectionTypeCatalogSource(), new ReflectionSerializationMetadataSource())
+            .UseMetadataSources(
+                new DotNetAssemblyCatalogSource(typeof(BuildPipelineFixture).Assembly, GetType().Assembly),
+                new ReflectionTypeCatalogSource(),
+                new ReflectionSerializationMetadataSource()
+            )
             .Build();
         m_sceneWorld = new SceneWorld(m_identities, m_engine.types);
         m_sceneWorldScope = m_sceneWorld.EnterScope();
@@ -82,13 +81,15 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
             AssetPipelineOptions.Create(assetRoot, libraryRoot) with
             {
                 enableFileSystemWatcher = false
-            });
+            }
+        );
         m_settings = new ProjectSettingsStore(
             new FileByteDocumentStore(Path.GetFullPath(Path.Combine(m_projectRoot, "Settings.Project.inno"))),
             m_engine.types,
             m_engine.serialization,
             new ProjectId("tests.build"),
-            AssetSerializationContext.Create(m_assets));
+            AssetSerializationContext.Create(m_assets)
+        );
         m_plugins = new PluginEnvironment(
             m_assets,
             m_settings,
@@ -96,15 +97,23 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
             pluginRoot,
             libraryRoot,
             scan,
-            m_engine.modules.generations);
+            m_engine.modules.generations
+        );
         m_compiler = new ScriptCompiler(
             new ScriptCompilerOptions
             {
                 projectRootDirectory = m_projectRoot,
-                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(Path.Combine(Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()), OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"), m_projectRoot)
+                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(
+                    Path.Combine(
+                        Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+                        OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+                    ),
+                    m_projectRoot
+                )
             },
             m_assets,
-            m_plugins);
+            m_plugins
+        );
         m_pipeline = CreatePipeline();
     }
 
@@ -122,46 +131,69 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
     protected static BuildProfile CreateProfile(
         BuildTargetId target,
         string productName = "Test Game"
-    )
-        => new()
-        {
-            applicationId = "tests.game",
-            productName = productName,
-            startupScene = "Scenes/Startup.iscene",
-            target = target
-        };
+    ) => new()
+    {
+        applicationId = "tests.game",
+        productName = productName,
+        startupScene = "Scenes/Startup.iscene",
+        target = target
+    };
 
     protected void SaveStartupScene()
     {
         var scene = new GameScene("Startup");
         scene.CreateObject("Player");
-        Assert.True(m_assets.Save(
-            AssetPath.Project("Scenes/Startup.iscene"),
-            SceneAsset.Capture(scene, m_engine.serialization, m_assets)));
+        Assert.True(
+            m_assets.Save(
+                AssetPath.Project("Scenes/Startup.iscene"),
+                SceneAsset.Capture(scene, m_engine.serialization, m_assets)
+            )
+        );
     }
 
     protected BuildPipeline CreatePipeline(
         IPlayerSupportPackProvisioner? provisioner = null,
         ManagedDeploymentCatalog? managedDeployments = null
-    )
-        => new(
-            m_assets,
-            m_plugins,
-            m_settings,
-            m_engine.serialization,
-            m_engine.generations,
-            m_compiler,
-            m_supportPackRoot,
-            [
-                new GameBuildTargetBinding(new MacOSArm64GameBuildTarget(new MacOSArm64SupportPackValidator()),
-                    new Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler(m_assets, m_engine.serialization, m_engine.types,
-                        Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.shaderProfile, [Inno.Rendering.GraphicsApi.Metal], new Inno.Build.Toolchains.Bgfx.Tools.ToolRunner())),
-                new GameBuildTargetBinding(new WindowsX64GameBuildTarget(new WindowsX64SupportPackValidator()),
-                    new Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler(m_assets, m_engine.serialization, m_engine.types,
-                        Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.shaderProfile, [Inno.Rendering.GraphicsApi.Direct3D11, Inno.Rendering.GraphicsApi.Direct3D12, Inno.Rendering.GraphicsApi.Vulkan, Inno.Rendering.GraphicsApi.OpenGL], new Inno.Build.Toolchains.Bgfx.Tools.ToolRunner()))
-            ],
-            managedDeployments ?? CreateManagedDeployments(),
-            provisioner);
+    ) => new(
+        m_assets,
+        m_plugins,
+        m_settings,
+        m_engine.serialization,
+        m_engine.generations,
+        m_compiler,
+        m_supportPackRoot,
+        [
+            new GameBuildTargetBinding(
+                new MacOSArm64GameBuildTarget(new MacOSArm64SupportPackValidator()),
+                new Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler(
+                    m_assets,
+                    m_engine.serialization,
+                    m_engine.types,
+                    Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.shaderProfile,
+                    [Inno.Rendering.GraphicsApi.Metal],
+                    new Inno.Build.Toolchains.Bgfx.Tools.ToolRunner()
+                )
+            ),
+            new GameBuildTargetBinding(
+                new WindowsX64GameBuildTarget(new WindowsX64SupportPackValidator()),
+                new Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler(
+                    m_assets,
+                    m_engine.serialization,
+                    m_engine.types,
+                    Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.shaderProfile,
+                    [
+                        Inno.Rendering.GraphicsApi.Direct3D11,
+                        Inno.Rendering.GraphicsApi.Direct3D12,
+                        Inno.Rendering.GraphicsApi.Vulkan,
+                        Inno.Rendering.GraphicsApi.OpenGL
+                    ],
+                    new Inno.Build.Toolchains.Bgfx.Tools.ToolRunner()
+                )
+            )
+        ],
+        managedDeployments ?? CreateManagedDeployments(),
+        provisioner
+    );
 
     protected static ManagedDeploymentCatalog CreateManagedDeployments()
         => new([new FixtureManagedDeploymentCompiler()]);
@@ -171,7 +203,9 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         public void Report(BuildProgress value)
         {
             if (value.stage == "commit")
+            {
                 throw new InvalidOperationException("Fixture commit observer failed after publication.");
+            }
         }
     }
 
@@ -181,7 +215,10 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         {
             capabilities = new ManagedDeploymentCapabilities(
                 runtimeIdentifiers ?? ["win-x64", "osx-arm64"],
-                dynamicCode: true, aheadOfTime: false, nativeStaticLinking: false);
+                dynamicCode: true,
+                aheadOfTime: false,
+                nativeStaticLinking: false
+            );
         }
 
         public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
@@ -205,9 +242,16 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
                 Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
                 File.Copy(native, destination);
             }
-            return ValueTask.FromResult(new ManagedDeploymentResult(id, request.outputDirectory, "fixture-sdk",
-                Directory.EnumerateFiles(request.outputDirectory, "*", SearchOption.AllDirectories)
-                    .Select(file => Path.GetRelativePath(request.outputDirectory, file)).ToArray()));
+            return ValueTask.FromResult(
+                new ManagedDeploymentResult(
+                    id,
+                    request.outputDirectory,
+                    "fixture-sdk",
+                    Directory.EnumerateFiles(request.outputDirectory, "*", SearchOption.AllDirectories)
+                        .Select(file => Path.GetRelativePath(request.outputDirectory, file))
+                        .ToArray()
+                )
+            );
         }
     }
 
@@ -242,8 +286,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         }
     }
 
-    protected sealed class TestSupportPackProvisioner(Action<BuildTargetId> provision)
-        : IPlayerSupportPackProvisioner
+    protected sealed class TestSupportPackProvisioner(Action<BuildTargetId> provision) : IPlayerSupportPackProvisioner
     {
         public int callCount { get; private set; }
 
@@ -262,10 +305,9 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
 
     protected sealed class BlockingBuildTarget : IGameBuildTarget, IGameContentCompiler
     {
-        public TaskCompletionSource started { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
-        public TaskCompletionSource release { get; } = new(
-            TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource started { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskCompletionSource release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public void Validate(string directory) => new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator().Validate(directory);
 
@@ -277,7 +319,6 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         public string runtimeIdentifier => "osx-arm64";
 
         public string displayName => "Blocking test target";
-
 
         public async ValueTask CompileAsync(
             GameBuildContentContext context,

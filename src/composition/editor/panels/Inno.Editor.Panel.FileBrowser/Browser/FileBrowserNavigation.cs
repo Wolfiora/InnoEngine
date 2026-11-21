@@ -1,14 +1,16 @@
-using Inno.Editor.Assets;
-using Inno.Editor.Assets.ImGui;
 using System;
 using System.Collections.Generic;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
 namespace Inno.Editor.Panel.FileBrowser;
+
 internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
 {
     private readonly Stack<BrowserLocation> m_backHistory = [];
@@ -23,15 +25,21 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         string? selectedPathAfterNavigation = null
     ) {
         directory = NormalizePath(directory);
-        AssetBrowserRoot root = string.IsNullOrEmpty(directory) ? assets.browser.root : AssetPath.Parse(directory).source == AssetSourceId.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
+        AssetBrowserRoot root = string.IsNullOrEmpty(directory)
+            ? assets.browser.root
+            : AssetPath.Parse(directory).source == AssetSourceId.project ? AssetBrowserRoot.Assets : AssetBrowserRoot.Plugins;
         var target = new BrowserLocation(root, directory);
         if (CurrentLocation == target)
+        {
             return;
+        }
         m_backHistory.Push(CurrentLocation);
         m_forwardHistory.Clear();
         ApplyLocation(context, target);
         if (selectedPathAfterNavigation is not null)
+        {
             assets.browser.Select(context, selectedPathAfterNavigation);
+        }
     }
 
     internal void NavigateToRoot(
@@ -40,7 +48,9 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     ) {
         var target = new BrowserLocation(root, string.Empty);
         if (CurrentLocation == target)
+        {
             return;
+        }
         m_backHistory.Push(CurrentLocation);
         m_forwardHistory.Clear();
         ApplyLocation(context, target);
@@ -51,7 +61,9 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
         AssetBrowserRoot root
     ) {
         if (assets.browser.root == root)
+        {
             return;
+        }
         m_backHistory.Clear();
         m_forwardHistory.Clear();
         ApplyLocation(context, new BrowserLocation(root, assets.browser.GetDirectory(root)));
@@ -60,7 +72,9 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     internal void GoBack(EditorContext context)
     {
         if (m_backHistory.Count == 0)
+        {
             return;
+        }
         m_forwardHistory.Push(CurrentLocation);
         ApplyLocation(context, m_backHistory.Pop());
     }
@@ -68,7 +82,9 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     internal void GoForward(EditorContext context)
     {
         if (m_forwardHistory.Count == 0)
+        {
             return;
+        }
         m_backHistory.Push(CurrentLocation);
         ApplyLocation(context, m_forwardHistory.Pop());
     }
@@ -103,7 +119,9 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     ) {
         var location = new BrowserLocation(root, NormalizePath(directory));
         if (m_historyCurrent == location)
+        {
             return;
+        }
         m_historyCurrent = location;
         m_backHistory.Clear();
         m_forwardHistory.Clear();
@@ -114,8 +132,7 @@ internal sealed class FileBrowserNavigation(AssetBrowserModule assets)
     private readonly record struct BrowserLocation(
         AssetBrowserRoot root,
         string directory
-    )
-    {
+    ) {
         internal static BrowserLocation AssetsRoot { get; } = new(AssetBrowserRoot.Assets, string.Empty);
     }
 }

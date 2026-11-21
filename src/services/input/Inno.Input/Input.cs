@@ -1,7 +1,6 @@
-using Inno.Core.Execution;
 using System;
 using System.Threading;
-
+using Inno.Core.Execution;
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 
@@ -47,7 +46,6 @@ public static class InputExecutionContext
         ArgumentNullException.ThrowIfNull(input);
         return S_CURRENT_SCOPE.Enter(input);
     }
-
 }
 
 /// <summary>

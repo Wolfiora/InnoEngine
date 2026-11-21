@@ -30,7 +30,9 @@ public sealed class AudioBackendCatalog : IAudioBackendFactory
         foreach (AudioBackendProvider provider in providers)
         {
             if (provider is null || !provider.id.isValid || !m_providers.TryAdd(provider.id, provider))
+            {
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
+            }
         }
         supportedBackends = new ReadOnlyCollection<AudioBackendId>(new List<AudioBackendId>(m_providers.Keys));
     }
@@ -47,9 +49,10 @@ public sealed class AudioBackendCatalog : IAudioBackendFactory
         AudioBackendOptions options
     ) {
         if (!m_providers.TryGetValue(backend, out AudioBackendProvider? provider))
+        {
             throw new NotSupportedException("Audio backend '" + backend + "' is not registered.");
+        }
         return provider.CreateDevice(options)
-            ?? throw new InvalidOperationException("Audio provider '" + backend + "' returned no service.");
+               ?? throw new InvalidOperationException("Audio provider '" + backend + "' returned no service.");
     }
 }
-

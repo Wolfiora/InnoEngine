@@ -21,10 +21,12 @@ internal interface ISceneLifecycleObject
     /// Gets or sets whether the one-time Awake callback has already been dispatched.
     /// </summary>
     bool lifecycleAwakeCalled { get; set; }
+
     /// <summary>
     /// Gets or sets whether the one-time Start callback has already been dispatched.
     /// </summary>
     bool lifecycleStartCalled { get; set; }
+
     /// <summary>
     /// Gets or sets whether the terminal destruction callback has already been dispatched.
     /// </summary>

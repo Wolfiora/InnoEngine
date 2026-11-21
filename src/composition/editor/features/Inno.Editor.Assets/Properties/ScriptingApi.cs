@@ -1,5 +1,5 @@
-using Inno.Editor.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
 using Inno.Scripting.Api;
 
 [assembly: ScriptingApiNamespace("InnoEditor.Assets", "Inno.Editor.Assets", ScriptingApiScope.Editor)]

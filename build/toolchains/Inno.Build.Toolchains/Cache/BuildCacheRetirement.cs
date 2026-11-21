@@ -36,11 +36,15 @@ internal static class BuildCacheRetirement
             {
                 cancellation.ThrowIfCancellationRequested();
                 if (elapsed.Elapsed >= policy.timeBudget)
+                {
                     return new([], proposed.Keys, failures, 0, true);
+                }
                 try
                 {
                     BuildCacheCleanupPlan.RequireChild(owner.directory, owner.coordinationPath);
-                    ownerLeases.Add(await FileLease.AcquireAsync(owner.coordinationPath, TimeSpan.Zero, cancellation).ConfigureAwait(false));
+                    ownerLeases.Add(
+                        await FileLease.AcquireAsync(owner.coordinationPath, TimeSpan.Zero, cancellation).ConfigureAwait(false)
+                    );
                 }
                 catch (TimeoutException)
                 {
@@ -52,16 +56,26 @@ internal static class BuildCacheRetirement
             HashSet<string> protectedPaths = fresh.Protect(fresh.roots);
             protectedPaths.UnionWith(fresh.Protect(fresh.artifacts.Keys.Except(proposed.Keys, BuildCacheInventory.pathComparer)));
             var active = new List<string>();
-            foreach (string path in fresh.artifacts.Keys.Where(path => proposed.ContainsKey(path) && !protectedPaths.Contains(path)).Order(StringComparer.Ordinal))
-            {
+            foreach (string path in fresh.artifacts.Keys
+                .Where(path => proposed.ContainsKey(path) && !protectedPaths.Contains(path))
+                .Order(StringComparer.Ordinal)
+            ) {
                 cancellation.ThrowIfCancellationRequested();
                 if (elapsed.Elapsed >= policy.timeBudget)
+                {
                     return new([], proposed.Keys, failures, 0, true);
+                }
                 try
                 {
                     BuildCacheCleanupPlan.RequireChild(fresh.artifacts[path].owner.directory, path);
-                    artifactLeases.Add(path, await FileLease.AcquireAsync(fresh.artifacts[path].artifact.leasePath,
-                        TimeSpan.Zero, cancellation).ConfigureAwait(false));
+                    artifactLeases.Add(
+                        path,
+                        await FileLease.AcquireAsync(
+                            fresh.artifacts[path].artifact.leasePath,
+                            TimeSpan.Zero,
+                            cancellation
+                        ).ConfigureAwait(false)
+                    );
                 }
                 catch (TimeoutException)
                 {
@@ -76,8 +90,12 @@ internal static class BuildCacheRetirement
             protectedPaths.UnionWith(fresh.Protect(active));
             // An active parent keeps its dependencies available to the original owner.
             foreach (string path in protectedPaths)
+            {
                 if (artifactLeases.Remove(path, out FileLease? lease))
+                {
                     lease.Dispose();
+                }
+            }
             foreach (string path in fresh.retirementOrder.Where(proposed.ContainsKey))
             {
                 cancellation.ThrowIfCancellationRequested();
@@ -92,8 +110,8 @@ internal static class BuildCacheRetirement
                     || original.bytes != current.artifact.bytes || original.lastUseUtc != current.artifact.lastUseUtc
                     || original.targetId != current.artifact.targetId || original.role != current.artifact.role
                     || !BuildCacheInventory.pathComparer.Equals(original.leasePath, current.artifact.leasePath)
-                    || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.pathComparer))
-                {
+                    || !original.dependencies.SequenceEqual(current.artifact.dependencies, BuildCacheInventory.pathComparer)
+                ) {
                     skipped.Add(path);
                     continue;
                 }
@@ -120,23 +138,31 @@ internal static class BuildCacheRetirement
             }
             // Close leaf handles before unlinking them, while every owner gate remains exclusive.
             foreach (FileLease lease in artifactLeases.Values)
+            {
                 lease.Dispose();
+            }
             artifactLeases.Clear();
             foreach (BuildCacheOwnerDescriptor owner in owners.OrderBy(static owner => owner.coordinationPath, StringComparer.Ordinal))
             {
                 bounded.Token.ThrowIfCancellationRequested();
-                try { owner.RetireMetadata(bounded.Token); }
+                try
+                {
+                    owner.RetireMetadata(bounded.Token);
+                }
                 catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException
-                    or InvalidDataException or JsonException)
+                                                or InvalidDataException or JsonException)
                 {
                     // Payload retirement has already committed. Keep invalid metadata and report
                     // the failure without losing completed work or another owner's cleanup result.
                     failures[owner.directory] = failure.Message;
                 }
             }
-            try { BuildCacheInventoryProgress.PruneRetired(workspace, owners, bounded.Token); }
+            try
+            {
+                BuildCacheInventoryProgress.PruneRetired(workspace, owners, bounded.Token);
+            }
             catch (Exception failure) when (failure is IOException or UnauthorizedAccessException or TimeoutException
-                or InvalidDataException or JsonException)
+                                            or InvalidDataException or JsonException)
             {
                 failures[Path.Combine(workspace, "artifacts", "cache-owners", "inventory")] = failure.Message;
             }
@@ -150,9 +176,13 @@ internal static class BuildCacheRetirement
         finally
         {
             foreach (FileLease lease in artifactLeases.Values.Reverse())
+            {
                 lease.Dispose();
+            }
             for (int index = ownerLeases.Count - 1; index >= 0; index--)
+            {
                 ownerLeases[index].Dispose();
+            }
         }
     }
 }

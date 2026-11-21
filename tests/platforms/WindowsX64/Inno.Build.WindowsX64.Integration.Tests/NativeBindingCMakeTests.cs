@@ -8,9 +8,9 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Build.WindowsX64;
-using Xunit;
 
 namespace Inno.Build.WindowsX64.Integration.Tests;
 
@@ -83,32 +83,62 @@ public sealed class NativeBindingCMakeTests
                 roots = [new("generated", "", true, true), new("user", headerRoot, false, true)],
                 files = [Input("generated", "binding.c", unit, true), Input("user", "api.h", header, false)],
                 includeDirectories = [new("user", "", false, false)],
-                defines = ["INNO_BINDING_ONLY=1"], compilerDefines = [], cxxStandard = 0, cStandard = 17,
-                requiredExports = ["value", "upstream"], staticExportSymbols = [], staticExportAbi = "", staticExportNames = []
+                defines = ["INNO_BINDING_ONLY=1"],
+                compilerDefines = [],
+                cxxStandard = 0,
+                cStandard = 17,
+                requiredExports = ["value", "upstream"],
+                staticExportSymbols = [],
+                staticExportAbi = "",
+                staticExportNames = []
             };
             File.WriteAllBytes(Path.Combine(native, "compilation.json"), JsonSerializer.SerializeToUtf8Bytes(compilation));
-            var owner = new NativeComponentDescriptor("fixture", "native/fixture.csproj", "build/fixture.csproj",
-                bindingDefinition: "native/Bindings/bindings.props");
+            var owner = new NativeComponentDescriptor(
+                "fixture",
+                "native/fixture.csproj",
+                "build/fixture.csproj",
+                bindingDefinition: "native/Bindings/bindings.props"
+            );
             var descriptor = new NativeBindingGenerationDescriptor
             {
-                fingerprint = new string('a', 64), artifactDirectory = artifact, artifactOwnerDirectory = root,
-                bindingsPath = managed, nativeDirectory = native,
-                usesRuntimeImports = false,
+                fingerprint = new string('a', 64),
+                artifactDirectory = artifact,
+                artifactOwnerDirectory = root,
+                bindingsPath = managed,
+                nativeDirectory = native,
+                usesRuntimeImports = false
             };
             using var bindings = new NativeBindingGenerationResult(
-                new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor }, []);
+                new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor },
+                []
+            );
             var tools = await new WindowsX64NativeToolchainProvider(ToolchainEnvironment.ResolveExecutable("dotnet"))
-                .ResolveAsync(new(root, "release"), (new WindowsBuildHostProvider().TryCapture() ?? throw new PlatformNotSupportedException("A Windows build host is required.")), "windows-x64", CancellationToken.None);
-            NativeBuildContext context = new NativeBuildContext(sourceAlias.toolPath, "release").WithToolchain(tools).WithBindings(bindings)
+                .ResolveAsync(
+                    new(root, "release"),
+                    (new WindowsBuildHostProvider().TryCapture()
+                     ?? throw new PlatformNotSupportedException("A Windows build host is required.")),
+                    "windows-x64",
+                    CancellationToken.None
+                );
+            NativeBuildContext context = new NativeBuildContext(sourceAlias.toolPath, "release").WithToolchain(tools)
+                .WithBindings(bindings)
                 .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
-            var recipe = new NativeBuildRecipe(owner, "fixture", "windows-x64",
-                new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(root, path)), tools.declarations);
-            using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(context, recipe,
+            var recipe = new NativeBuildRecipe(
+                owner,
+                "fixture",
+                "windows-x64",
+                new[] { source }.Concat(tools.inputPaths).Select(path => NativeBuildInput.FromPath(root, path)),
+                tools.declarations
+            );
+            using NativeBuildProduct product = await NativeArtifactPublisher.PublishAsync(
+                context,
+                recipe,
                 async (
                     operation,
                     output,
                     cancellation
-                ) => {
+                ) =>
+                {
                     NativeCMakeSource inputs = await NativeCMakeExecutor.PrepareSourceAsync(operation, owner, cancellation);
                     string frozenHeader = inputs.ResolvePath(header);
                     Assert.NotEqual(header, frozenHeader);
@@ -124,7 +154,8 @@ public sealed class NativeBindingCMakeTests
                         throw new Xunit.Sdk.XunitException(exception + Environment.NewLine + File.ReadAllText(requirements));
                     }
                     File.Copy(NativeCMakeExecutor.FindOutput(operation, build, "fixture.dll"), Path.Combine(output, "fixture.dll"));
-                });
+                }
+            );
             Assert.True(File.Exists(header));
             Assert.False(File.Exists(hidden));
             nint library = NativeLibrary.Load(Assert.Single(product.files));
@@ -141,7 +172,9 @@ public sealed class NativeBindingCMakeTests
         finally
         {
             if (File.Exists(hidden))
+            {
                 File.Move(hidden, header, overwrite: true);
+            }
             Directory.Delete(root, recursive: true);
             Directory.Delete(headerRoot, recursive: true);
         }
@@ -162,7 +195,9 @@ public sealed class NativeBindingCMakeTests
         public WindowsCompilerFactAttribute()
         {
             if (!OperatingSystem.IsWindows())
+            {
                 Skip = "Requires the Windows MSVC toolchain and its path-length contract.";
+            }
         }
     }
 }

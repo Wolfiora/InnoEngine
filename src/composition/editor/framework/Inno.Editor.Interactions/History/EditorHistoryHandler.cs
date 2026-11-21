@@ -88,20 +88,17 @@ public abstract class EditorHistoryHandler
         EditorHistoryContext context,
         EditorHistoryChange change,
         EditorHistoryDirection direction
-    )
-        => Query(context, change, direction);
+    ) => Query(context, change, direction);
 
     internal EditorHistoryResult ApplyInternal(
         EditorHistoryContext context,
         EditorHistoryChange change,
         EditorHistoryDirection direction
-    )
-        => Apply(context, change, direction);
+    ) => Apply(context, change, direction);
 
     internal bool TryMergeInternal(
         EditorHistoryChange older,
         EditorHistoryChange newer,
         out EditorHistoryChange? merged
-    )
-        => TryMerge(older, newer, out merged);
+    ) => TryMerge(older, newer, out merged);
 }

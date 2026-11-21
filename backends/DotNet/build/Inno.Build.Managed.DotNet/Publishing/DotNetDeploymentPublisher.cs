@@ -20,10 +20,17 @@ internal static class DotNetDeploymentPublisher
     ) {
         ArgumentNullException.ThrowIfNull(request);
         if (!capabilities.runtimeIdentifiers.Contains(request.runtimeIdentifier, StringComparer.Ordinal))
+        {
             throw new InvalidOperationException($"Managed deployment '{id}' does not support '{request.runtimeIdentifier}'.");
-        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(hostPath,
-            request.projectPath, cancellationToken).ConfigureAwait(false);
-        return await DotNetPublishExecutor.PublishAsync(new DotNetPublishRequest(sdk,
-            id, request, properties, workspaces), cancellationToken).ConfigureAwait(false);
+        }
+        DotNetSdkDescriptor sdk = await DotNetSdkResolver.ResolveAsync(
+            hostPath,
+            request.projectPath,
+            cancellationToken
+        ).ConfigureAwait(false);
+        return await DotNetPublishExecutor.PublishAsync(
+            new DotNetPublishRequest(sdk, id, request, properties, workspaces),
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 }

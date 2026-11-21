@@ -15,7 +15,9 @@ internal static class PlayerSupportPackPreparationIndex
     ) {
         string path = GetPath(root, target, preparation);
         if (!File.Exists(path))
+        {
             return null;
+        }
         string fingerprint = File.ReadAllText(path);
         return IsIdentity(fingerprint) ? fingerprint : null;
     }
@@ -27,12 +29,16 @@ internal static class PlayerSupportPackPreparationIndex
         string content
     ) {
         if (!IsIdentity(content))
+        {
             throw new InvalidDataException("A prepared Pack index requires a complete content identity.");
+        }
         string path = GetPath(root, target, preparation);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         PathBoundary.RequireUnlinkedPath(root, path);
         if (!File.Exists(path) || File.ReadAllText(path) != content)
+        {
             AtomicFile.WriteAllBytes(path, Encoding.UTF8.GetBytes(content));
+        }
         new BuildCachePublisher(Path.GetFullPath(root), BuildCacheArtifactRole.ImmutableArtifact)
             .RecordIndex(path, [PathBoundary.Resolve(root, target + "/" + content)]);
     }
@@ -43,10 +49,13 @@ internal static class PlayerSupportPackPreparationIndex
         string preparation
     ) {
         if (!IsIdentity(preparation))
+        {
             throw new InvalidDataException("A prepared Pack index requires a complete source identity.");
+        }
         return PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, target + "/.preparations/" + preparation));
     }
 
-    private static bool IsIdentity(string identity) => identity.Length == 64
-        && !System.Linq.Enumerable.Any(identity, static character => !char.IsAsciiHexDigitLower(character));
+    private static bool IsIdentity(string identity)
+        => identity.Length == 64
+           && !System.Linq.Enumerable.Any(identity, static character => !char.IsAsciiHexDigitLower(character));
 }

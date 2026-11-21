@@ -2,10 +2,11 @@ using System;
 using System.Reflection;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
-using Inno.Editor.Interactions;
 using Inno.Editor.ImGui;
+using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Inspection;
+
 /// <summary>
 /// Encapsulates one editable property path and its drawing services.
 /// </summary>
@@ -18,50 +19,62 @@ public sealed class PropertyDrawContext
     private readonly object m_owner;
     private readonly string m_rootPropertyName;
     private readonly bool m_isReadOnly;
+
     /// <summary>
     /// Gets the shared editor context.
     /// </summary>
     public EditorContext editorContext { get; }
+
     /// <summary>
     /// Gets the active editor interaction entry point.
     /// </summary>
     public EditorInteractions interactions { get; }
+
     /// <summary>
     /// Gets the stable control path.
     /// </summary>
     public string path { get; }
+
     /// <summary>
     /// Gets the display label.
     /// </summary>
     public string label { get; }
+
     /// <summary>
     /// Gets the declared property type.
     /// </summary>
     public Type propertyType { get; }
+
     /// <summary>
     /// Gets the serialization visibility flags.
     /// </summary>
     public PropertyVisibility visibility { get; }
+
     /// <summary>
     /// Gets whether assignments are disabled.
     /// </summary>
     public bool isReadOnly => m_isReadOnly;
+
     /// <summary>
     /// Gets the optional inclusive numeric lower bound supplied by Inspector metadata.
     /// </summary>
     public double? minimum { get; }
+
     /// <summary>
     /// Gets the optional inclusive numeric upper bound supplied by Inspector metadata.
     /// </summary>
     public double? maximum { get; }
+
     /// <summary>
     /// Gets optional hover help supplied by Inspector metadata.
     /// </summary>
     public string? tooltip { get; }
+
     /// <summary>
     /// Gets whether Color values are unclamped linear floating-point channels.
     /// </summary>
     public bool hdrColor { get; }
+
     internal object owner => m_owner;
 
     internal PropertyDrawContext(
@@ -87,10 +100,12 @@ public sealed class PropertyDrawContext
         this.interactions = interactions ?? throw new ArgumentNullException(nameof(interactions));
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
         m_owner = owner ?? throw new ArgumentNullException(nameof(owner));
-        m_rootPropertyName = string.IsNullOrWhiteSpace(rootPropertyName) ? throw new ArgumentException(
-            "The root property name is required.",
-            nameof(rootPropertyName)
-        ) : rootPropertyName;
+        m_rootPropertyName = string.IsNullOrWhiteSpace(rootPropertyName)
+                             ? throw new ArgumentException(
+                                 "The root property name is required.",
+                                 nameof(rootPropertyName)
+                             )
+                             : rootPropertyName;
         this.path = path;
         this.label = label;
         this.propertyType = propertyType;
@@ -112,6 +127,7 @@ public sealed class PropertyDrawContext
     /// The latest value returned by the serialized property's getter.
     /// </returns>
     public object? GetValue() => m_getter();
+
     /// <summary>
     /// Tries to read text-edit state scoped to this renderer, inspected owner, and property path.
     /// </summary>
@@ -128,6 +144,7 @@ public sealed class PropertyDrawContext
         string key,
         out string? value
     ) => m_renderer.TryGetTextState(m_owner, path, key, out value);
+
     /// <summary>
     /// Stores text-edit state scoped to this renderer, inspected owner, and property path.
     /// </summary>
@@ -141,6 +158,7 @@ public sealed class PropertyDrawContext
         string key,
         string value
     ) => m_renderer.SetTextState(m_owner, path, key, value);
+
     /// <summary>
     /// Removes text-edit state for this renderer, inspected owner, and property path.
     /// </summary>
@@ -148,6 +166,7 @@ public sealed class PropertyDrawContext
     /// Drawer-local state identity within the current property path.
     /// </param>
     public void ClearTextState(string key) => m_renderer.ClearTextState(m_owner, path, key);
+
     /// <summary>
     /// Assigns a value when the property is writable.
     /// </summary>
@@ -162,14 +181,25 @@ public sealed class PropertyDrawContext
         string? componentName = null
     ) {
         if (isReadOnly)
+        {
             return;
+        }
         EditorUiSession ui = EditorUiSession.current;
         if (Equals(m_getter(), value) && !ui.widgets.isMixedValue)
+        {
             return;
+        }
         ui.widgets.BeginPropertyEdit(interactions.history, path, $"Change {label}");
         try
         {
-            _ = m_edits.ChangeProperty(m_owner, m_rootPropertyName, () => m_setter(value), $"Change {label}", ui.widgets.editMergeKey, componentName);
+            _ = m_edits.ChangeProperty(
+                m_owner,
+                m_rootPropertyName,
+                () => m_setter(value),
+                $"Change {label}",
+                ui.widgets.editMergeKey,
+                componentName
+            );
         }
         catch
         {
@@ -204,7 +234,21 @@ public sealed class PropertyDrawContext
         bool readOnly = false
     ) {
         PropertyVisibility childVisibility = readOnly || isReadOnly ? PropertyVisibility.Readonly : PropertyVisibility.Show;
-        m_renderer.Draw(editorContext, m_owner, m_owner, null, null, m_rootPropertyName, $"{path}.{childName}", childName, childType, childVisibility, getter, setter, m_edits);
+        m_renderer.Draw(
+            editorContext,
+            m_owner,
+            m_owner,
+            null,
+            null,
+            m_rootPropertyName,
+            $"{path}.{childName}",
+            childName,
+            childType,
+            childVisibility,
+            getter,
+            setter,
+            m_edits
+        );
     }
 
     /// <summary>
@@ -214,6 +258,7 @@ public sealed class PropertyDrawContext
     /// Nested property.
     /// </param>
     public void DrawChild(SerializedProperty property) => DrawChild(GetValue() ?? m_owner, property);
+
     /// <summary>
     /// Draws a nested serialized property with presentation metadata resolved from its immediate owner.
     /// </summary>
@@ -300,6 +345,19 @@ public sealed class PropertyDrawContext
         bool readOnly = false
     ) {
         PropertyVisibility childVisibility = readOnly || isReadOnly ? PropertyVisibility.Readonly : PropertyVisibility.Show;
-        m_renderer.DrawInline(editorContext, m_owner, m_owner, null, m_rootPropertyName, $"{path}.{childName}", childName, childType, childVisibility, getter, setter, m_edits);
+        m_renderer.DrawInline(
+            editorContext,
+            m_owner,
+            m_owner,
+            null,
+            m_rootPropertyName,
+            $"{path}.{childName}",
+            childName,
+            childType,
+            childVisibility,
+            getter,
+            setter,
+            m_edits
+        );
     }
 }

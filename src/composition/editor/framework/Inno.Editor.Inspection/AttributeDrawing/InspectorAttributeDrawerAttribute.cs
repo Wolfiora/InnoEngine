@@ -27,7 +27,9 @@ public sealed class InspectorAttributeDrawerAttribute : Attribute
     ) {
         ArgumentNullException.ThrowIfNull(targetType);
         if (!typeof(Attribute).IsAssignableFrom(targetType))
+        {
             throw new ArgumentException($"'{targetType.FullName}' is not an attribute type.", nameof(targetType));
+        }
         this.targetType = targetType;
         this.useForChildren = useForChildren;
         this.priority = priority;

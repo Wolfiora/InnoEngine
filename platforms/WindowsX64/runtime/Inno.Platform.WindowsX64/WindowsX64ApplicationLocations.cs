@@ -22,10 +22,14 @@ public static class WindowsX64ApplicationLocations
         get
         {
             if (!OperatingSystem.IsWindows())
+            {
                 throw new PlatformNotSupportedException("This product requires Windows.");
+            }
             string location = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             if (string.IsNullOrWhiteSpace(location) || !Path.IsPathFullyQualified(location))
+            {
                 throw new InvalidOperationException("The system did not provide a usable application data root.");
+            }
             return location;
         }
     }
@@ -46,7 +50,9 @@ public static class WindowsX64ApplicationLocations
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(applicationDirectory);
         if (!Path.IsPathFullyQualified(applicationDirectory))
+        {
             throw new ArgumentException("An application directory must be absolute.", nameof(applicationDirectory));
+        }
         return Path.Combine(applicationDirectory, "Content");
     }
 }

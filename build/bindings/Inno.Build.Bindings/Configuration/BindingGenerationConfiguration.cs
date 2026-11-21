@@ -36,30 +36,59 @@ internal sealed class BindingGenerationConfiguration
         CancellationToken cancellation
     ) {
         if (context.toolchain is NativeToolchainSelection selected && selected.targetId != request.targetId)
-            throw new InvalidOperationException("The selected SDK does not match the binding target.");
-        using HostServices host = BindingHostFactory.CreateHostServices(context.engineRoot);
-        GenerationRequest captured = GenerationRequest.FromFile(configPath).MaterializeAsync(host.paths, cancellation)
-            .AsTask().GetAwaiter().GetResult();
-        if (captured.configuration.targets.Length != 1)
-            throw new InvalidDataException("A component binding request must select exactly one native target.");
-        if (captured.configuration.output.layout != "singleFile" || captured.configuration.output.singleFileName != "Bindings.cs"
-            || captured.configuration.runtime.mode != "package")
-            throw new InvalidDataException("Native components require one Bindings.cs source and the package Runtime.");
-        captured = captured.WithConfiguration(captured.configuration with
         {
-            cache = captured.configuration.cache with
+            throw new InvalidOperationException("The selected SDK does not match the binding target.");
+        }
+        using HostServices host = BindingHostFactory.CreateHostServices(context.engineRoot);
+        GenerationRequest captured = GenerationRequest.FromFile(configPath)
+            .MaterializeAsync(host.paths, cancellation)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
+        if (captured.configuration.targets.Length != 1)
+        {
+            throw new InvalidDataException("A component binding request must select exactly one native target.");
+        }
+        if (captured.configuration.output.layout != "singleFile" || captured.configuration.output.singleFileName != "Bindings.cs"
+            || captured.configuration.runtime.mode != "package"
+        ) {
+            throw new InvalidDataException("Native components require one Bindings.cs source and the package Runtime.");
+        }
+        captured = captured.WithConfiguration(
+            captured.configuration with
             {
-                directory = Path.Combine(context.engineRoot, "artifacts", "build-tools", "bindings", "sdk-workspaces", component.id, request.targetId)
+                cache = captured.configuration.cache with
+                {
+                    directory = Path.Combine(
+                        context.engineRoot,
+                        "artifacts",
+                        "build-tools",
+                        "bindings",
+                        "sdk-workspaces",
+                        component.id,
+                        request.targetId
+                    )
+                }
             }
-        });
-        return profile.Apply(captured, context.toolchain?.compilerInputs,
-            request.componentOptions.GetValueOrDefault(component.nativeProject), context.engineRoot)
-            .MaterializeAsync(host.paths, cancellation).AsTask().GetAwaiter().GetResult();
+        );
+        return profile
+            .Apply(
+                captured,
+                context.toolchain?.compilerInputs,
+                request.componentOptions.GetValueOrDefault(component.nativeProject),
+                context.engineRoot
+            )
+            .MaterializeAsync(host.paths, cancellation)
+            .AsTask()
+            .GetAwaiter()
+            .GetResult();
     }
 
-    internal string GetOutputRoot(NativeBuildContext context) => request.outputMode == NativeBindingOutputMode.TargetArtifacts
-        ? Path.Combine(context.engineRoot, "artifacts", "bindings", component.id, request.targetId)
-        : Path.Combine(component.GetNativeRoot(context.engineRoot), "Generated");
+    internal string GetOutputRoot(NativeBuildContext context)
+        => request.outputMode == NativeBindingOutputMode.TargetArtifacts
+           ? Path.Combine(context.engineRoot, "artifacts", "bindings", component.id, request.targetId)
+           : Path.Combine(component.GetNativeRoot(context.engineRoot), "Generated");
 
-    internal string GetHostNativeRoot(NativeBuildContext context) => Path.Combine(component.GetNativeRoot(context.engineRoot), "Native", "Generated");
+    internal string GetHostNativeRoot(NativeBuildContext context)
+        => Path.Combine(component.GetNativeRoot(context.engineRoot), "Native", "Generated");
 }

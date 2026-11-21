@@ -33,13 +33,28 @@ internal static class ValidationEnvironment
             ["sdk"] = sdk.sdkIdentity,
             ["host"] = sdk.hostPath
         };
-        foreach (string name in new[] { "MSBuildSDKsPath", "DOTNET_ROLL_FORWARD", "DOTNET_ROOT", "NUGET_PACKAGES", "CC", "CXX", "CMAKE_GENERATOR", "SDKROOT", "MACOSX_DEPLOYMENT_TARGET", "ImageOS", "ImageVersion" })
+        foreach (string name in new[] {
+            "MSBuildSDKsPath",
+            "DOTNET_ROLL_FORWARD",
+            "DOTNET_ROOT",
+            "NUGET_PACKAGES",
+            "CC",
+            "CXX",
+            "CMAKE_GENERATOR",
+            "SDKROOT",
+            "MACOSX_DEPLOYMENT_TARGET",
+            "ImageOS",
+            "ImageVersion"
+        }) {
             inputs.Add(name, Environment.GetEnvironmentVariable(name) ?? string.Empty);
+        }
         string sdkRoot = Path.GetDirectoryName(sdk.cliPath)!;
         string hostRoot = Path.GetDirectoryName(sdk.hostPath)!;
         var files = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal)
         {
-            sdk.hostPath, sdkRoot, RuntimeEnvironment.GetRuntimeDirectory()
+            sdk.hostPath,
+            sdkRoot,
+            RuntimeEnvironment.GetRuntimeDirectory()
         };
         // The CLI output directory can also contain Editor, backend and documentation assemblies.
         // Only this tool's actual assembly-reference closure is an execution-environment input.
@@ -50,24 +65,36 @@ internal static class ValidationEnvironment
         {
             cancellation.ThrowIfCancellationRequested();
             if (!examined.Add(assembly))
+            {
                 continue;
+            }
             if (assembly.IsDynamic || string.IsNullOrWhiteSpace(assembly.Location))
+            {
                 throw new InvalidDataException("Validation requires file-backed tool dependencies: " + assembly.FullName);
+            }
             files.Add(assembly.Location);
             AssemblyLoadContext context = AssemblyLoadContext.GetLoadContext(assembly)
                 ?? throw new InvalidDataException("Validation dependency has no loading context: " + assembly.FullName);
             foreach (AssemblyName dependency in assembly.GetReferencedAssemblies())
+            {
                 pending.Enqueue(context.LoadFromAssemblyName(dependency));
+            }
         }
         foreach (string directory in new[] { "shared", "host" })
+        {
             if (Directory.Exists(Path.Combine(hostRoot, directory)))
+            {
                 files.Add(Path.Combine(hostRoot, directory));
+            }
+        }
         string shell = ToolchainEnvironment.ResolveExecutable("pwsh");
         shell = File.ResolveLinkTarget(shell, returnFinalTarget: true)?.FullName ?? shell;
         files.Add(shell);
         string automation = Path.Combine(Path.GetDirectoryName(shell)!, "System.Management.Automation.dll");
         if (File.Exists(automation))
+        {
             files.Add(automation);
+        }
         return new(sdk, inputs, CaptureContents(root, sdk.hostPath, files, cancellation));
     }
 
@@ -81,49 +108,86 @@ internal static class ValidationEnvironment
         tools ??= await CaptureToolsAsync(root, dotnet, cancellation).ConfigureAwait(false);
         var inputs = new Dictionary<string, string>(tools.inputs, StringComparer.Ordinal);
         foreach (var content in tools.contents)
+        {
             inputs.Add("tool-content:" + content.Key, content.Value);
+        }
         var files = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
         var examined = new HashSet<string>(files.Comparer);
         ValidationContext[] selectedContexts = contexts?.ToArray() ?? [];
         string[] packageOwners = ValidationDependencyInputs.RestoredPackageDirectories(selectedContexts, cancellation);
         foreach (ValidationContext context in selectedContexts)
+        {
         foreach (JsonElement snapshot in context.sdkGraph.EnumerateArray())
+        {
         foreach (JsonElement variant in snapshot.GetProperty("Variants").EnumerateArray().Append(snapshot))
         {
             foreach (JsonElement pack in variant.GetProperty("FrameworkPacks").EnumerateArray())
+            {
                 IncludeExternal(pack.GetString()!);
+            }
             foreach (JsonElement import in variant.GetProperty("Imports").EnumerateArray())
+            {
                 IncludeExternal(import.GetString()!);
+            }
             foreach (JsonProperty group in variant.GetProperty("Items").EnumerateObject())
+            {
             foreach (JsonElement item in group.Value.EnumerateArray())
+            {
                 if (item.TryGetProperty("FullPath", out JsonElement fullPath) && !string.IsNullOrWhiteSpace(fullPath.GetString()))
+                {
                     IncludeExternal(fullPath.GetString()!);
+                }
+            }
+            }
+        }
+        }
         }
         foreach (var content in CaptureContents(root, dotnet, files, cancellation))
+        {
             inputs.Add("external-content:" + content.Key, content.Value);
-        return ValidationInputs.Identity(inputs.Select(pair => new KeyValuePair<string, string>(
-            ValidationPlanTransport.Logical(root, dotnet, pair.Key), ValidationPlanTransport.Logical(root, dotnet, pair.Value))));
+        }
+        return ValidationInputs.Identity(
+            inputs.Select(pair => new KeyValuePair<string, string>(
+                ValidationPlanTransport.Logical(root, dotnet, pair.Key),
+                ValidationPlanTransport.Logical(root, dotnet, pair.Value)
+            ))
+        );
 
         void IncludeExternal(string declared)
         {
             string path = Path.GetFullPath(declared);
             if (!examined.Add(path))
+            {
                 return;
+            }
             string relative = Path.GetRelativePath(root, path);
-            if (!Path.IsPathRooted(relative) && relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            if (!Path.IsPathRooted(relative)
+                && relative != ".."
+                && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            ) {
                 return;
+            }
             if (tools.contents.Keys.Any(parent => Covers(parent, path)))
+            {
                 return;
+            }
             // Restore exposes package imports and content items after the cold graph was captured.
             // Their complete bytes belong to each consuming check's restored dependency identity.
             StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-            if (packageOwners.Any(package => path.Equals(package, comparison)
-                || path.StartsWith(package.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, comparison)))
+            if (packageOwners.Any(package => (
+                path.Equals(package, comparison)
+                || path.StartsWith(package.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, comparison)
+            ))) {
                 return;
+            }
             if (File.Exists(path) || Directory.Exists(path))
+            {
                 files.Add(path);
+            }
             else
+            {
                 inputs["absent-external:" + path] = "missing";
+            }
         }
     }
 
@@ -134,16 +198,36 @@ internal static class ValidationEnvironment
         CancellationToken cancellation
     ) {
         var roots = new List<string>();
-        foreach (string path in files.Select(Path.GetFullPath).OrderBy(static path => path.Length).ThenBy(static path => path, StringComparer.Ordinal))
+        foreach (string path in files
+            .Select(Path.GetFullPath)
+            .OrderBy(static path => path.Length)
+            .ThenBy(static path => path, StringComparer.Ordinal)
+        ) {
             if (!roots.Any(parent => Covers(parent, path)))
+            {
                 roots.Add(path);
+            }
+        }
         var identities = new string[roots.Count];
         // Each worker owns its input snapshot. All bytes and inventories are read again at the closing freshness check.
-        Parallel.For(0, roots.Count, new ParallelOptions { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4), CancellationToken = cancellation },
-            index => identities[index] = NativeBuildFingerprint.Create([], [new NativeBuildInput("validation/" + ValidationPlanTransport.Logical(root, dotnet, roots[index]).Replace('\\', '/').TrimStart('/'), roots[index])], cancellation));
+        Parallel.For(
+            0,
+            roots.Count,
+            new ParallelOptions { MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4), CancellationToken = cancellation },
+            index => identities[index] = NativeBuildFingerprint.Create(
+                [],
+                [new NativeBuildInput(
+                    "validation/" + ValidationPlanTransport.Logical(root, dotnet, roots[index]).Replace('\\', '/').TrimStart('/'),
+                    roots[index]
+                )],
+                cancellation
+            )
+        );
         var contents = new Dictionary<string, string>(StringComparer.Ordinal);
         for (int index = 0; index < roots.Count; index++)
+        {
             contents.Add(roots[index], identities[index]);
+        }
         return contents;
     }
 

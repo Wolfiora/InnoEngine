@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported hovered flags choices at the Editor presentation boundary.
 /// </summary>
@@ -90,5 +91,5 @@ public enum ImGuiHoveredFlags : int
     /// <summary>
     /// IsItemHovered() only: Disable shared delay system where moving from one item to the next keeps the previous timer for a short time (standard for tooltips with long delays)
     /// </summary>
-    NoSharedDelay = (int)Inno.Native.ImGui.ImGuiHoveredFlags.NoSharedDelay,
+    NoSharedDelay = (int)Inno.Native.ImGui.ImGuiHoveredFlags.NoSharedDelay
 }

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using Xunit;
 using Inno.Editor.Interactions;
 using Inno.Scene;
 using Inno.Testing.Editor.Native;
-using Xunit;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -24,7 +24,9 @@ public sealed class SceneDocumentLifecycleNativeTests
         EditorPanelExtension panel = host.native.GetPanel("scene.hierarchy");
         var retired = new List<WeakReference<GameScene>>();
         for (int iteration = 0; iteration < 100; iteration++)
+        {
             retired.Add(OpenDrawAndClose(host, panel, path));
+        }
         Assert.Empty(host.workspace.scenes);
         Assert.True(host.runtime.interactions.history.canUndo);
         Assert.Equal(source, File.ReadAllBytes(Path.Combine(host.projectRoot, "Assets", path)));

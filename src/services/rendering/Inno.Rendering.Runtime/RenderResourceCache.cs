@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
-using System.Diagnostics.CodeAnalysis;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Inno.Core.Execution;
 
@@ -10,8 +10,9 @@ namespace Inno.Rendering.Runtime;
 internal sealed class RenderResourceCache<TKey, TEntry>(
     Action<TEntry> release,
     int capacity
-)
-    : IEnumerable<KeyValuePair<TKey, TEntry>>, IDisposable where TKey : notnull where TEntry : class
+) : IEnumerable<KeyValuePair<TKey, TEntry>>, IDisposable
+    where TKey : notnull
+    where TEntry : class
 {
     private readonly Dictionary<TKey, TEntry> m_entries = [];
     private readonly Queue<TEntry> m_retiring = [];
@@ -48,7 +49,9 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
         TEntry candidate
     ) {
         if (m_entries.TryGetValue(key, out TEntry? previous))
+        {
             m_retiring.Enqueue(previous);
+        }
         m_entries[key] = candidate;
         m_peak = Math.Max(m_peak, m_entries.Count);
     }
@@ -56,7 +59,9 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
     internal void Release(TKey key)
     {
         if (m_entries.Remove(key, out TEntry? entry))
+        {
             m_retiring.Enqueue(entry);
+        }
         Drain();
     }
 
@@ -64,7 +69,9 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
     {
         Drain();
         foreach (TKey key in m_entries.Where(pair => unused(pair.Value)).Select(pair => pair.Key).ToArray())
+        {
             Release(key);
+        }
     }
 
     internal void Drain()
@@ -76,12 +83,16 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
             try
             {
                 if (!m_barrier.TryComplete(() => release(entry)))
+                {
                     throw new RetirementPendingException("A retired GPU resource still owns unfinished work.");
+                }
             }
             catch (Exception pending) when (RetirementPendingException.Find(pending) is not null)
             {
                 if (failures.Count != 0)
+                {
                     throw new AggregateException("GPU retirement is pending after completed failures.", [.. failures, pending]);
+                }
                 throw;
             }
             catch (Exception failure)
@@ -108,7 +119,9 @@ internal sealed class RenderResourceCache<TKey, TEntry>(
         {
             m_stopping = true;
             foreach (TEntry entry in m_entries.Values)
+            {
                 m_retiring.Enqueue(entry);
+            }
             m_entries.Clear();
         }
         Drain();

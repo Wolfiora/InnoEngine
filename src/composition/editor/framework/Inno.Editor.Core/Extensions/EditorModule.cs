@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Execution;
 using Inno.Scripting.Api;
 
@@ -48,7 +47,9 @@ public abstract class EditorModule : IDisposable
         ArgumentNullException.ThrowIfNull(context);
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (m_started)
+        {
             throw new InvalidOperationException($"Editor module '{GetType().FullName}' is already started.");
+        }
         m_context = context;
         m_started = true;
         OnStart(context);
@@ -76,7 +77,9 @@ public abstract class EditorModule : IDisposable
         ArgumentNullException.ThrowIfNull(context);
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_active)
+        {
             throw new InvalidOperationException($"Editor module '{GetType().FullName}' is not started.");
+        }
         OnUpdate(context);
     }
 
@@ -104,7 +107,9 @@ public abstract class EditorModule : IDisposable
         ArgumentNullException.ThrowIfNull(context);
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_started)
+        {
             return;
+        }
         m_active = false;
         try
         {
@@ -130,9 +135,7 @@ public abstract class EditorModule : IDisposable
     /// <param name="context">
     /// The shared editor context for the active runtime.
     /// </param>
-    protected virtual void OnStart(EditorContext context)
-    {
-    }
+    protected virtual void OnStart(EditorContext context) {}
 
     /// <summary>
     /// Runs once per editor frame before views are drawn.
@@ -140,9 +143,7 @@ public abstract class EditorModule : IDisposable
     /// <param name="context">
     /// The shared editor context containing the current frame state.
     /// </param>
-    protected virtual void OnUpdate(EditorContext context)
-    {
-    }
+    protected virtual void OnUpdate(EditorContext context) {}
 
     /// <summary>
     /// Runs before the module generation is released and its disposable instances are destroyed.
@@ -154,9 +155,7 @@ public abstract class EditorModule : IDisposable
     /// <param name="context">
     /// The shared editor context for the runtime being stopped.
     /// </param>
-    protected virtual void OnStop(EditorContext context)
-    {
-    }
+    protected virtual void OnStop(EditorContext context) {}
 
     /// <summary>
     /// Captures readable project state owned by this module.
@@ -169,9 +168,7 @@ public abstract class EditorModule : IDisposable
     /// <param name="state">
     /// The writable parameter that receives the complete readable state for this module.
     /// </param>
-    protected virtual void Capture(EditorState state)
-    {
-    }
+    protected virtual void Capture(EditorState state) {}
 
     /// <summary>
     /// Restores readable project state owned by this module.
@@ -184,22 +181,20 @@ public abstract class EditorModule : IDisposable
     /// The read-only state parameter for this module. Missing or incompatible values return the
     /// fallback supplied to <see cref="EditorState.Get{T}(string, T)"/>.
     /// </param>
-    protected virtual void Restore(EditorState state)
-    {
-    }
+    protected virtual void Restore(EditorState state) {}
 
     /// <summary>
     /// Releases resources owned by this module after it has stopped and left the active extension
     /// generation.
     /// </summary>
-    protected virtual void OnDispose()
-    {
-    }
+    protected virtual void OnDispose() {}
 
     void IDisposable.Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         if (m_context is not null)
         {
             try

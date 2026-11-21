@@ -24,10 +24,17 @@ public sealed class ContentTestStore : IRuntimeContentStore
     public ContentTestStore(IEnumerable<KeyValuePair<ContentKey, byte[]>> payloads)
     {
         m_payloads = payloads.ToDictionary(static pair => pair.Key, static pair => (byte[])pair.Value.Clone());
-        index = new ContentPackIndex(m_payloads.Select(static pair => new ContentEntry(
-            pair.Key, pair.Value.LongLength, Convert.ToHexString(SHA256.HashData(pair.Value)))));
-        string identity = string.Join('\n', index.entries.Select(static entry =>
-            entry.key + ":" + entry.length + ":" + entry.contentHash));
+        index = new ContentPackIndex(
+            m_payloads.Select(static pair => new ContentEntry(
+                pair.Key,
+                pair.Value.LongLength,
+                Convert.ToHexString(SHA256.HashData(pair.Value))
+            ))
+        );
+        string identity = string.Join(
+            '\n',
+            index.entries.Select(static entry => (entry.key + ":" + entry.length + ":" + entry.contentHash))
+        );
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)));
         descriptor = new ContentPackDescriptor(hash, $"content-{hash}.pack");
     }
@@ -48,9 +55,13 @@ public sealed class ContentTestStore : IRuntimeContentStore
     /// A caller-owned memory provider usable after the directory has been removed.
     /// </returns>
     public static ContentTestStore FromDirectory(string directory)
-        => new(Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Select(path =>
-            new KeyValuePair<ContentKey, byte[]>(new ContentKey(Path.GetRelativePath(directory, path)
-                .Replace('\\', '/')), File.ReadAllBytes(path))));
+        => new(
+            Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Select(path =>
+                new KeyValuePair<ContentKey, byte[]>(
+                    new ContentKey(Path.GetRelativePath(directory, path).Replace('\\', '/')),
+                    File.ReadAllBytes(path)
+                ))
+        );
 
     /// <summary>
     /// Injects a provider corruption while preserving its previously declared inventory.
@@ -67,7 +78,9 @@ public sealed class ContentTestStore : IRuntimeContentStore
     ) {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!m_payloads.ContainsKey(key))
+        {
             throw new KeyNotFoundException(key.ToString());
+        }
         m_payloads[key] = bytes.ToArray();
     }
 
@@ -76,9 +89,11 @@ public sealed class ContentTestStore : IRuntimeContentStore
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
         if (!index.TryGetEntry(key, out ContentEntry? entry))
+        {
             throw new KeyNotFoundException(key.ToString());
+        }
         byte[] bytes = m_payloads[key];
-        return new ContentReadLease(entry!, () => new MemoryStream(bytes, writable: false), static () => { });
+        return new ContentReadLease(entry!, () => new MemoryStream(bytes, writable: false), static () => {});
     }
 
     /// <inheritdoc />

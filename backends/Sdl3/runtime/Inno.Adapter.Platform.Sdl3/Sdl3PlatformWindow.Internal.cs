@@ -1,5 +1,5 @@
-using Inno.Adapter.Platform;
 using System;
+using Inno.Adapter.Platform;
 using Inno.Native.Sdl3;
 using Inno.Platform;
 
@@ -50,7 +50,9 @@ public sealed unsafe partial class Sdl3PlatformWindow
         var currentWidth = 0;
         var currentHeight = 0;
         if (SDL.Raw.GetWindowSize(m_window, &currentWidth, &currentHeight) == 0)
+        {
             throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSize failed.");
+        }
         m_width = currentWidth;
         m_height = currentHeight;
         RefreshPixelSize();
@@ -114,7 +116,9 @@ public sealed unsafe partial class Sdl3PlatformWindow
         var pixelWidth = 0;
         var pixelHeight = 0;
         if (SDL.Raw.GetWindowSizeInPixels(m_window, &pixelWidth, &pixelHeight) == 0)
+        {
             throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSizeInPixels failed.");
+        }
         UpdatePixelSize(pixelWidth, pixelHeight);
     }
 
@@ -132,7 +136,9 @@ public sealed unsafe partial class Sdl3PlatformWindow
     public partial void Dispose()
     {
         if (Environment.CurrentManagedThreadId != m_ownerThreadId)
+        {
             throw new InvalidOperationException("SDL window disposal must run on its owner thread.");
+        }
         if (m_disposed)
         {
             return;
@@ -149,5 +155,4 @@ public sealed unsafe partial class Sdl3PlatformWindow
         m_disposed = true;
         m_onDisposed(this);
     }
-
 }

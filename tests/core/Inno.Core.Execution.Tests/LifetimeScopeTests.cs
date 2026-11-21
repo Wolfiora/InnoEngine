@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using Xunit;
 
 namespace Inno.Core.Execution.Tests;
@@ -14,12 +13,22 @@ public sealed class LifetimeScopeTests
         bool ready = false;
         int failingReleaseCount = 0;
         var lifetime = new LifetimeScope();
-        lifetime.Own(new Resource(() =>
-        {
-            if (!ready)
-                throw new RetirementPendingException("pending");
-        }));
-        lifetime.Own(new Resource(() => { failingReleaseCount++; throw new InvalidOperationException("release failed"); }));
+        lifetime.Own(
+            new Resource(() =>
+            {
+                if (!ready)
+                {
+                    throw new RetirementPendingException("pending");
+                }
+            })
+        );
+        lifetime.Own(
+            new Resource(() =>
+            {
+                failingReleaseCount++;
+                throw new InvalidOperationException("release failed");
+            })
+        );
         Assert.Throws<RetirementPendingException>(lifetime.Dispose);
         ready = true;
         AggregateException error = Assert.Throws<AggregateException>(lifetime.Dispose);
@@ -33,10 +42,12 @@ public sealed class LifetimeScopeTests
     {
         var barrier = new RetirementBarrier("test owner", TimeSpan.FromTicks(1));
         Assert.Throws<RetirementTimeoutException>(() => barrier.TryComplete(
-            () => throw new RetirementPendingException("worker still running")));
+            () => throw new RetirementPendingException("worker still running")
+        ));
         bool released = false;
         RetirementTimeoutException error = Assert.Throws<RetirementTimeoutException>(
-            () => barrier.TryComplete(() => released = true));
+            () => barrier.TryComplete(() => released = true)
+        );
         Assert.Contains("test owner", error.Message);
         Assert.False(released);
     }
@@ -46,7 +57,7 @@ public sealed class LifetimeScopeTests
     {
         var barrier = new RetirementBarrier("test owner");
         Assert.False(barrier.TryComplete(() => throw new RetirementPendingException("pending")));
-        Assert.True(barrier.TryComplete(() => { }));
+        Assert.True(barrier.TryComplete(() => {}));
         Assert.True(barrier.TryComplete(() => throw new InvalidOperationException("must not run")));
     }
 
@@ -56,7 +67,13 @@ public sealed class LifetimeScopeTests
         List<int> released = [];
         var lifetime = new LifetimeScope();
         lifetime.Own(new Resource(() => released.Add(1)));
-        lifetime.Own(new Resource(() => { released.Add(2); throw new InvalidOperationException("expected"); }));
+        lifetime.Own(
+            new Resource(() =>
+            {
+                released.Add(2);
+                throw new InvalidOperationException("expected");
+            })
+        );
         lifetime.Own(new Resource(() => released.Add(3)));
         Assert.Throws<AggregateException>(lifetime.Dispose);
         Assert.Equal(new[] { 3, 2, 1 }, released);

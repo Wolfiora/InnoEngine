@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     /// <summary>
     /// Binds a vertex buffer and its first vertex for subsequent draws.
     /// </summary>
@@ -20,8 +19,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     public override void BindVertexBuffer(
         RenderBufferHandle buffer,
         int firstVertex = 0
-    )
-        => BindVertexBuffer(m_device.ResolveBuffer(buffer), firstVertex);
+    ) => BindVertexBuffer(m_device.ResolveBuffer(buffer), firstVertex);
 
     /// <summary>
     /// Binds a vertex buffer and its first vertex for subsequent draws.
@@ -35,8 +33,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     public override void BindVertexBuffer(
         PersistentBufferHandle buffer,
         int firstVertex = 0
-    )
-        => BindVertexBuffer(m_device.ResolveBuffer(buffer), firstVertex);
+    ) => BindVertexBuffer(m_device.ResolveBuffer(buffer), firstVertex);
 
     /// <summary>
     /// Binds an index buffer and its first index for subsequent indexed draws.
@@ -50,8 +47,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     public override void BindIndexBuffer(
         RenderBufferHandle buffer,
         int firstIndex = 0
-    )
-        => BindIndexBuffer(m_device.ResolveBuffer(buffer), firstIndex);
+    ) => BindIndexBuffer(m_device.ResolveBuffer(buffer), firstIndex);
 
     /// <summary>
     /// Binds an index buffer and its first index for subsequent indexed draws.
@@ -65,8 +61,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     public override void BindIndexBuffer(
         PersistentBufferHandle buffer,
         int firstIndex = 0
-    )
-        => BindIndexBuffer(m_device.ResolveBuffer(buffer), firstIndex);
+    ) => BindIndexBuffer(m_device.ResolveBuffer(buffer), firstIndex);
 
     /// <summary>
     /// Binds per-instance data for subsequent instanced draws.
@@ -84,8 +79,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBufferHandle buffer,
         int firstInstance,
         int instanceCount
-    )
-        => BindInstanceBuffer(m_device.ResolveBuffer(buffer), firstInstance, instanceCount);
+    ) => BindInstanceBuffer(m_device.ResolveBuffer(buffer), firstInstance, instanceCount);
 
     /// <summary>
     /// Binds per-instance data for subsequent instanced draws.
@@ -103,8 +97,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         PersistentBufferHandle buffer,
         int firstInstance,
         int instanceCount
-    )
-        => BindInstanceBuffer(m_device.ResolveBuffer(buffer), firstInstance, instanceCount);
+    ) => BindInstanceBuffer(m_device.ResolveBuffer(buffer), firstInstance, instanceCount);
 
     private void BindVertexBuffer(
         BgfxBufferResource buffer,
@@ -150,7 +143,9 @@ internal sealed unsafe partial class BgfxCommandEncoder
         int instanceCount
     ) {
         if (!m_device.capabilities.Supports(GraphicsCapability.Instancing))
+        {
             throw new NotSupportedException("The active graphics backend does not support instancing.");
+        }
         ArgumentOutOfRangeException.ThrowIfNegative(firstInstance);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(instanceCount);
         ValidateRange(firstInstance, instanceCount, buffer.descriptor.elementCount, nameof(instanceCount));
@@ -161,14 +156,16 @@ internal sealed unsafe partial class BgfxCommandEncoder
                     m_encoder,
                     new bgfx.VertexBufferHandle { idx = buffer.nativeIndex },
                     checked((uint)firstInstance),
-                    checked((uint)instanceCount));
+                    checked((uint)instanceCount)
+                );
                 break;
             case BgfxBufferKind.DynamicVertex:
                 BgfxNativeCalls.EncoderSetInstanceDataFromDynamicVertexBuffer(
                     m_encoder,
                     new bgfx.DynamicVertexBufferHandle { idx = buffer.nativeIndex },
                     checked((uint)firstInstance),
-                    checked((uint)instanceCount));
+                    checked((uint)instanceCount)
+                );
                 break;
             default:
                 throw new ArgumentException("Instance data requires a vertex-compatible buffer.", nameof(buffer));
@@ -186,7 +183,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         if (pipeline.vertexLayout is null || !pipeline.vertexLayoutHandle.Valid)
         {
             throw new InvalidOperationException(
-                "A graphics pipeline with procedural vertices cannot bind a vertex buffer.");
+                "A graphics pipeline with procedural vertices cannot bind a vertex buffer."
+            );
         }
 
         if (buffer.vertexLayout is not null && !buffer.vertexLayout.Equals(pipeline.vertexLayout))
@@ -207,7 +205,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
                     handle,
                     first,
                     count,
-                    pipeline.vertexLayoutHandle);
+                    pipeline.vertexLayoutHandle
+                );
             }
             else
             {
@@ -228,7 +227,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
                     handle,
                     first,
                     count,
-                    pipeline.vertexLayoutHandle);
+                    pipeline.vertexLayoutHandle
+                );
             }
             else
             {
@@ -255,7 +255,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 m_encoder,
                 new bgfx.IndexBufferHandle { idx = buffer.nativeIndex },
                 first,
-                count);
+                count
+            );
             return;
         }
 
@@ -265,11 +266,11 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 m_encoder,
                 new bgfx.DynamicIndexBufferHandle { idx = buffer.nativeIndex },
                 first,
-                count);
+                count
+            );
             return;
         }
 
         throw new InvalidOperationException("The bound resource is not an index buffer.");
     }
-
 }

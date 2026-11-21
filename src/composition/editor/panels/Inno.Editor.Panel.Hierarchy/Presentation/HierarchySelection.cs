@@ -1,14 +1,16 @@
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System.Collections.Generic;
+using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Editor.Settings;
-using Inno.Editor.ImGui;
-using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Scene;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Hierarchy;
+
 internal sealed class HierarchySelection(
     IEditorSceneWorkspace workspace,
     EditorInteractions interactions,
@@ -16,14 +18,18 @@ internal sealed class HierarchySelection(
 ) {
     internal void Prune()
     {
-        if (interactions.selection.TryGet(out GameScene? selectedScene) && (!selectedScene.isLoaded || !ContainsScene(workspace.scenes, selectedScene)))
-        {
+        if (interactions.selection.TryGet(out GameScene? selectedScene)
+            && (!selectedScene.isLoaded || !ContainsScene(workspace.scenes, selectedScene))
+        ) {
             _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
             return;
         }
 
-        if (interactions.selection.TryGet(out GameObject? gameObject) && (!gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene)))
+        if (interactions.selection.TryGet(out GameObject? gameObject)
+            && (!gameObject.isRuntimeValid || !ContainsScene(workspace.scenes, gameObject.scene))
+        ) {
             _ = interactions.For(HierarchyInteractionIds.C_AREA).Select();
+        }
     }
 
     internal IReadOnlyList<GameObject> GetRootObjects(GameScene scene)
@@ -33,7 +39,9 @@ internal sealed class HierarchySelection(
         for (int i = 0; i < objects.Count; i++)
         {
             if (objects[i].transform.parent is null)
+            {
                 roots.Add(objects[i]);
+            }
         }
 
         roots.Sort(static (
@@ -51,7 +59,9 @@ internal sealed class HierarchySelection(
             ReferenceEquals(scene, workspace.activeScene)
         );
         if (!workspace.IsDirty(scene))
+        {
             return;
+        }
         Ui.SameLine(0f, 0f);
         using ImGuiFontScope font = ImGuiFont.PushStyle(ImGuiFontStyle.Italic);
         Ui.Text(" *");
@@ -64,7 +74,9 @@ internal sealed class HierarchySelection(
         for (int i = 0; i < scenes.Count; i++)
         {
             if (ReferenceEquals(scenes[i], scene))
+            {
                 return true;
+            }
         }
 
         return false;

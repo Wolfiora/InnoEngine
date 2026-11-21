@@ -1,6 +1,4 @@
 using System;
-using Inno.Build.Managed;
-using Inno.Extensibility.Reload;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,9 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Plugins.Authoring;
+using Inno.Build.Managed;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Extensibility.Reload;
+using Inno.Plugins.Authoring;
 using Inno.Scripting.Compiler;
 
 namespace Inno.Build;
@@ -89,22 +89,34 @@ public sealed class BuildPipeline
         m_managedDeployments = managedDeployments;
         GameBuildTargetBinding[] targets = gameTargets.ToArray();
         if (targets.Any(static value => value is null))
+        {
             throw new ArgumentException("Game target collection cannot contain null values.", nameof(gameTargets));
+        }
         if (targets.Length == 0)
+        {
             throw new ArgumentException("At least one game build target is required.", nameof(gameTargets));
+        }
         if (targets.Any(static value => string.IsNullOrWhiteSpace(value.packager.id.value)))
+        {
             throw new ArgumentException("Every game build target requires a valid identity.", nameof(gameTargets));
+        }
         if (targets.Any(static value => string.IsNullOrWhiteSpace(value.packager.displayName)))
+        {
             throw new ArgumentException("Every game build target requires a display name.", nameof(gameTargets));
+        }
         IGrouping<BuildTargetId, GameBuildTargetBinding>? duplicate = targets
             .GroupBy(static value => value.packager.id)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
+        {
             throw new ArgumentException($"Game target '{duplicate.Key}' is registered more than once.", nameof(gameTargets));
-        m_availableGameTargets = Array.AsReadOnly(targets
-            .Select(static target => target.packager.id)
-            .OrderBy(static id => id.value, StringComparer.Ordinal)
-            .ToArray());
+        }
+        m_availableGameTargets = Array.AsReadOnly(
+            targets
+                .Select(static target => target.packager.id)
+                .OrderBy(static id => id.value, StringComparer.Ordinal)
+                .ToArray()
+        );
         m_gameTargets = targets.ToDictionary(static value => value.packager.id);
         m_supportPacks = new PlayerSupportPackCatalog(supportPackRoot);
         m_supportPackProvisioner = supportPackProvisioner;
@@ -116,12 +128,9 @@ public sealed class BuildPipeline
             compiler,
             m_gameTargets,
             m_supportPacks,
-            managedDeployments);
-        m_plugins = new PluginPackageBuilder(
-            assets,
-            plugins,
-            settings,
-            serialization);
+            managedDeployments
+        );
+        m_plugins = new PluginPackageBuilder(assets, plugins, settings, serialization);
     }
 
     /// <summary>
@@ -143,8 +152,8 @@ public sealed class BuildPipeline
     /// </exception>
     public IReadOnlyList<ManagedDeploymentId> GetManagedDeployments(BuildTargetId target)
         => m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? gameTarget)
-            ? m_managedDeployments.GetSupportedDeployments(gameTarget.packager.runtimeIdentifier)
-            : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
+           ? m_managedDeployments.GetSupportedDeployments(gameTarget.packager.runtimeIdentifier)
+           : throw new ArgumentException($"Game target '{target}' is not registered.", nameof(target));
 
     /// <summary>
     /// Tries to get the adapter-owned display name for a registered game target.
@@ -206,12 +215,18 @@ public sealed class BuildPipeline
         CancellationToken cancellationToken = default
     ) {
         if (!m_gameTargets.TryGetValue(target, out GameBuildTargetBinding? binding))
+        {
             throw new NotSupportedException($"Game target '{target}' is not registered.");
+        }
         IGameBuildTarget packager = binding.packager;
         _ = m_managedDeployments.Resolve(deployment ?? packager.defaultManagedDeployment, packager.runtimeIdentifier);
         cancellationToken.ThrowIfCancellationRequested();
         return await m_supportPacks.ResolveOrProvisionAsync(
-            target, packager, m_supportPackProvisioner, cancellationToken).ConfigureAwait(false);
+            target,
+            packager,
+            m_supportPackProvisioner,
+            cancellationToken
+        ).ConfigureAwait(false);
     }
 
     /// <summary>

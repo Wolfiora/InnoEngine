@@ -1,18 +1,21 @@
-using Inno.Editor.ImGui;
-using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using System;
 using System.Collections.Generic;
-using Inno.Extensibility.Types;
 using Inno.Core.Serialization;
+using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Extensibility.Types;
+
+using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Inspection;
+
 [PropertyDrawer(typeof(ISerializable), useForChildren: true, priority: 20)]
 internal sealed class SerializableObjectPropertyDrawer : IPropertyDrawer
 {
     private readonly SerializationRegistry m_serialization;
     private readonly TypeCacheSnapshot m_types;
+
     internal SerializableObjectPropertyDrawer(
         TypeCacheSnapshot types,
         SerializationRegistry serialization

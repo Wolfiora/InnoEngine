@@ -20,9 +20,9 @@ internal sealed class OpenPrefabAssetAction(
     /// The validated editor action state that represents the completed operation.
     /// </returns>
 protected override EditorActionState Query(EditorActionContext<PrefabAsset, string> context)
-        => workspace.canPersist && workspace.activeScene is not null
-            ? EditorActionState.enabled
-            : EditorActionState.disabled;
+    => workspace.canPersist && workspace.activeScene is not null
+       ? EditorActionState.enabled
+       : EditorActionState.disabled;
 
     /// <summary>
     /// Applies the editor action to the supplied interaction context.
@@ -34,7 +34,9 @@ protected override void Execute(EditorActionContext<PrefabAsset, string> context
     {
         GameScene? scene = workspace.activeScene;
         if (scene is null)
+        {
             return;
+        }
         GameObject instance = edits.InstantiatePrefab(context.target, scene);
         _ = context.interactions.For(HierarchyInteractionIds.C_AREA, instance).Select();
     }

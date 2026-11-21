@@ -1,6 +1,6 @@
-using Inno.Core.Diagnostics;
 using System;
 using System.Collections.Generic;
+using Inno.Core.Diagnostics;
 
 namespace Inno.Rendering;
 
@@ -39,18 +39,23 @@ internal static partial class RenderGraphValidator
             foreach (RenderResourceUse use in pass.resources)
             {
                 if (!analysis.uniqueUses.Add(use.key))
+                {
                     continue;
+                }
                 bool reads = use.access is RenderResourceAccess.Read or RenderResourceAccess.ReadWrite;
                 bool writes = use.access is RenderResourceAccess.Write or RenderResourceAccess.ReadWrite;
 
                 if (reads && !initialized.Contains(use.key))
                 {
-                    diagnostics.Add(new RenderGraphDiagnostic(
-                        "RENDER_GRAPH_UNINITIALIZED_READ",
-                        $"Pass '{passes[passIndex].name}' reads '{GetResourceName(use.key, textures, buffers)}' before it is initialized.",
-                        DiagnosticSeverity.Error,
-                        passes[passIndex].name,
-                        GetResourceName(use.key, textures, buffers)));
+                    diagnostics.Add(
+                        new RenderGraphDiagnostic(
+                            "RENDER_GRAPH_UNINITIALIZED_READ",
+                            $"Pass '{passes[passIndex].name}' reads '{GetResourceName(use.key, textures, buffers)}' before it is initialized.",
+                            DiagnosticSeverity.Error,
+                            passes[passIndex].name,
+                            GetResourceName(use.key, textures, buffers)
+                        )
+                    );
                 }
 
                 if (lastWriters.TryGetValue(use.key, out int writer))
@@ -102,7 +107,6 @@ internal static partial class RenderGraphValidator
                 }
             }
         }
-
     }
 
     private static bool StoresResult(
@@ -113,8 +117,8 @@ internal static partial class RenderGraphValidator
         {
             if (key.isTexture
                 && attachment.texture.index == key.index
-                && attachment.storeAction == RenderStoreAction.Discard)
-            {
+                && attachment.storeAction == RenderStoreAction.Discard
+            ) {
                 return false;
             }
         }
@@ -155,15 +159,13 @@ internal static partial class RenderGraphValidator
         RenderResourceKey key,
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers
-    )
-        => key.isTexture ? textures[key.index].imported : buffers[key.index].imported;
+    ) => key.isTexture ? textures[key.index].imported : buffers[key.index].imported;
 
     private static string GetResourceName(
         RenderResourceKey key,
         IReadOnlyList<RenderTextureRecord> textures,
         IReadOnlyList<RenderBufferRecord> buffers
-    )
-        => key.isTexture ? textures[key.index].name : buffers[key.index].name;
+    ) => key.isTexture ? textures[key.index].name : buffers[key.index].name;
 
     private static void AddDependency(
         int dependency,

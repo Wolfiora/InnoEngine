@@ -7,7 +7,6 @@ namespace Inno.Adapter.Rendering.Bgfx;
 internal sealed unsafe partial class BgfxCommandEncoder
 
 {
-
     /// <summary>
     /// Binds the graphics pipeline used by subsequent draw commands.
     /// </summary>
@@ -61,8 +60,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBindingId binding,
         RenderTextureHandle texture,
         RenderSamplerState sampler
-    )
-        => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
+    ) => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
 
     /// <summary>
     /// Binds a texture resource to the requested shader binding.
@@ -80,8 +78,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBindingId binding,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
-    )
-        => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
+    ) => BindTexture(binding, m_device.ResolveTexture(texture), sampler);
 
     /// <summary>
     /// Binds a writable texture resource to the requested shader binding.
@@ -99,12 +96,12 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBindingId binding,
         RenderTextureHandle texture,
         int mipLevel = 0
-    )
-        => BindStorageTexture(
-            binding,
-            m_device.ResolveTexture(texture),
-            m_device.ResolveTextureDescriptor(texture),
-            mipLevel);
+    ) => BindStorageTexture(
+        binding,
+        m_device.ResolveTexture(texture),
+        m_device.ResolveTextureDescriptor(texture),
+        mipLevel
+    );
 
     /// <summary>
     /// Binds a writable texture resource to the requested shader binding.
@@ -122,12 +119,12 @@ internal sealed unsafe partial class BgfxCommandEncoder
         RenderBindingId binding,
         PersistentTextureHandle texture,
         int mipLevel = 0
-    )
-        => BindStorageTexture(
-            binding,
-            m_device.ResolveTexture(texture),
-            m_device.ResolveTextureDescriptor(texture),
-            mipLevel);
+    ) => BindStorageTexture(
+        binding,
+        m_device.ResolveTexture(texture),
+        m_device.ResolveTextureDescriptor(texture),
+        mipLevel
+    );
 
     /// <summary>
     /// Binds a buffer resource to the requested shader binding.
@@ -141,8 +138,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     public override void BindBuffer(
         RenderBindingId binding,
         RenderBufferHandle buffer
-    )
-        => BindBuffer(binding, m_device.ResolveBuffer(buffer));
+    ) => BindBuffer(binding, m_device.ResolveBuffer(buffer));
 
     /// <summary>
     /// Binds a buffer resource to the requested shader binding.
@@ -156,8 +152,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
     public override void BindBuffer(
         RenderBindingId binding,
         PersistentBufferHandle buffer
-    )
-        => BindBuffer(binding, m_device.ResolveBuffer(buffer));
+    ) => BindBuffer(binding, m_device.ResolveBuffer(buffer));
 
     /// <summary>
     /// Updates the uniform state and applies the resulting invariants.
@@ -185,7 +180,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         {
             throw new ArgumentException(
                 $"Uniform '{binding.value}' requires exactly {expectedSize} bytes.",
-                nameof(value));
+                nameof(value)
+            );
         }
 
         fixed (byte* data = value)
@@ -194,7 +190,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
                 m_encoder,
                 resource.uniform,
                 data,
-                checked((ushort)resource.descriptor.count));
+                checked((ushort)resource.descriptor.count)
+            );
         }
     }
 
@@ -209,7 +206,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             checked((byte)resource.descriptor.slot),
             resource.uniform,
             texture,
-            SamplerFlags(sampler));
+            SamplerFlags(sampler)
+        );
     }
 
     private void BindStorageTexture(
@@ -221,22 +219,25 @@ internal sealed unsafe partial class BgfxCommandEncoder
         BgfxShaderBindingResource resource = ResolveBinding(binding, RenderShaderBindingKind.StorageTexture);
         if (!m_device.capabilities.Supports(GraphicsCapability.StorageTexture))
         {
-            throw new NotSupportedException(
-                "The active graphics backend does not support shader storage textures.");
+            throw new NotSupportedException("The active graphics backend does not support shader storage textures.");
         }
         if ((descriptor.usage & RenderTextureUsage.Storage) == 0)
         {
             throw new ArgumentException(
                 $"Texture bound to '{binding.value}' was not created for storage access.",
-                nameof(descriptor));
+                nameof(descriptor)
+            );
         }
         ArgumentOutOfRangeException.ThrowIfNegative(mipLevel);
         if (mipLevel >= descriptor.mipCount)
+        {
             throw new ArgumentOutOfRangeException(nameof(mipLevel));
+        }
         if (!m_device.capabilities.SupportsStorage(descriptor.format, resource.descriptor.storageAccess))
         {
             throw new NotSupportedException(
-                $"Texture format '{descriptor.format}' does not support {resource.descriptor.storageAccess} storage access.");
+                $"Texture format '{descriptor.format}' does not support {resource.descriptor.storageAccess} storage access."
+            );
         }
 
         BgfxNativeCalls.EncoderSetImage(
@@ -245,7 +246,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
             texture,
             checked((byte)mipLevel),
             StorageAccess(resource.descriptor.storageAccess),
-            BgfxCapabilityMapper.ToNativeFormat(descriptor.format));
+            BgfxCapabilityMapper.ToNativeFormat(descriptor.format)
+        );
     }
 
     private void BindBuffer(
@@ -257,7 +259,8 @@ internal sealed unsafe partial class BgfxCommandEncoder
         {
             throw new ArgumentException(
                 $"Buffer bound to '{binding.value}' was not created for storage access.",
-                nameof(buffer));
+                nameof(buffer)
+            );
         }
 
         byte slot = checked((byte)resource.descriptor.slot);
@@ -269,35 +272,40 @@ internal sealed unsafe partial class BgfxCommandEncoder
                     m_encoder,
                     slot,
                     new bgfx.VertexBufferHandle { idx = buffer.nativeIndex },
-                    access);
+                    access
+                );
                 break;
             case BgfxBufferKind.Index:
                 BgfxNativeCalls.EncoderSetComputeIndexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.IndexBufferHandle { idx = buffer.nativeIndex },
-                    access);
+                    access
+                );
                 break;
             case BgfxBufferKind.DynamicVertex:
                 BgfxNativeCalls.EncoderSetComputeDynamicVertexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.DynamicVertexBufferHandle { idx = buffer.nativeIndex },
-                    access);
+                    access
+                );
                 break;
             case BgfxBufferKind.DynamicIndex:
                 BgfxNativeCalls.EncoderSetComputeDynamicIndexBuffer(
                     m_encoder,
                     slot,
                     new bgfx.DynamicIndexBufferHandle { idx = buffer.nativeIndex },
-                    access);
+                    access
+                );
                 break;
             case BgfxBufferKind.Indirect:
                 BgfxNativeCalls.EncoderSetComputeIndirectBuffer(
                     m_encoder,
                     slot,
                     new bgfx.IndirectBufferHandle { idx = buffer.nativeIndex },
-                    access);
+                    access
+                );
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(buffer));
@@ -314,22 +322,23 @@ internal sealed unsafe partial class BgfxCommandEncoder
         }
 
         BgfxPipelineResource pipeline = m_pipeline
-            ?? throw new InvalidOperationException("A pipeline must be bound before shader resources.");
+                                        ?? throw new InvalidOperationException("A pipeline must be bound before shader resources.");
         if (!pipeline.bindings.TryGetValue(binding.value, out BgfxShaderBindingResource? resource))
         {
             throw new ArgumentException(
                 $"Pipeline does not declare shader binding '{binding.value}'.",
-                nameof(binding));
+                nameof(binding)
+            );
         }
 
         if (resource.descriptor.kind != requiredKind)
         {
             throw new ArgumentException(
                 $"Shader binding '{binding.value}' is {resource.descriptor.kind}, not {requiredKind}.",
-                nameof(binding));
+                nameof(binding)
+            );
         }
 
         return resource;
     }
-
 }

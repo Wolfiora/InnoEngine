@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Tooling.Validation;
+
 internal enum ValidationProfile
 {
     Fast,
@@ -13,7 +14,8 @@ internal enum ValidationProfile
 
 internal static class ValidationProfiles
 {
-    internal static ValidationProfile Parse(string value) => value switch
+    internal static ValidationProfile Parse(string value)
+        => value switch
     {
         "fast" => ValidationProfile.Fast,
         "pull-request" => ValidationProfile.PullRequest,
@@ -21,5 +23,6 @@ internal static class ValidationProfiles
         "full" => ValidationProfile.Full,
         "performance" => ValidationProfile.Performance,
         "native-producer" => ValidationProfile.NativeProducer,
-        _ => throw new ArgumentException("Unknown validation profile: " + value)};
+        _ => throw new ArgumentException("Unknown validation profile: " + value)
+    };
 }

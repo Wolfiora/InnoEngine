@@ -49,24 +49,34 @@ internal static class PropertySnapshotBinaryFormat
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
         string magic = reader.ReadString();
         if (!string.Equals(magic, C_MAGIC, StringComparison.Ordinal))
+        {
             throw new InvalidDataException($"Invalid property snapshot magic '{magic}'.");
+        }
         int count = reader.ReadInt32();
         if (count < 0)
+        {
             throw new InvalidDataException("Property snapshot count cannot be negative.");
+        }
         var snapshots = new SerializationPropertySnapshot[count];
         for (int i = 0; i < count; i++)
         {
             string name = reader.ReadString();
             int length = reader.ReadInt32();
             if (length < 0 || length > stream.Length - stream.Position)
+            {
                 throw new InvalidDataException($"Property snapshot '{name}' length is invalid.");
+            }
             byte[] data = reader.ReadBytes(length);
             if (data.Length != length)
+            {
                 throw new EndOfStreamException($"Property snapshot '{name}' is truncated.");
+            }
             snapshots[i] = new SerializationPropertySnapshot(name, typeof(object), data);
         }
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Property snapshot data contains trailing bytes.");
+        }
         return snapshots;
     }
 }

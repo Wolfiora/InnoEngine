@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Inno.Assets;
 using Inno.Extensibility.Types;
 
@@ -20,6 +19,7 @@ public sealed class MissingGameSystem : GameSystem
 {
     private byte[] m_serializedState;
     private AssetDependency[] m_dependencies;
+
     private IReadOnlyDictionary<Guid, Guid> m_referenceAliases =
         new Dictionary<Guid, Guid>();
 
@@ -30,11 +30,13 @@ public sealed class MissingGameSystem : GameSystem
         IReadOnlyList<AssetDependency>? dependencies = null
     ) {
         if (missingType.stableId == Guid.Empty)
+        {
             throw new ArgumentException("The missing system type identity cannot be empty.", nameof(missingType));
+        }
         this.missingType = missingType;
         this.missingTypeName = string.IsNullOrWhiteSpace(missingTypeName)
-            ? missingType.stableId.ToString("D")
-            : missingTypeName;
+                               ? missingType.stableId.ToString("D")
+                               : missingTypeName;
         m_serializedState = serializedState.ToArray();
         m_dependencies = dependencies?.ToArray() ?? [];
         enabled = false;

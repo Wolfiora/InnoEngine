@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Core.Events;
 using Inno.Input;
 
@@ -72,13 +71,17 @@ public sealed class EventInputSource : IInputEventSource
     public void Dispose()
     {
         if (m_disposed)
+        {
             return;
+        }
         m_disposed = true;
         m_inputHub.Dispose();
         EventInputBackend[] snapshot = m_backends.ToArray();
         m_backends.Clear();
         foreach (EventInputBackend backend in snapshot)
+        {
             backend.DisconnectSource();
+        }
     }
 
     private void RemoveBackend(EventInputBackend backend) => m_backends.Remove(backend);

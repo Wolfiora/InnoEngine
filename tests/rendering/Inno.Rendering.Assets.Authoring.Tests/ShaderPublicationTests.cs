@@ -1,18 +1,18 @@
-using Inno.Adapter.Serialization.DotNet;
-using Inno.Adapter.Modules.DotNet;
 using System;
-using System.IO;
 using System.Collections.Generic;
+using System.IO;
+using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Graphs;
-using Inno.Rendering.Shaders;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
-using Xunit;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Runtime;
+using Inno.Rendering.Shaders;
 
 namespace Inno.Rendering.Assets.Authoring.Tests;
 
@@ -26,7 +26,9 @@ public sealed class ShaderPublicationTests : IDisposable
     public ShaderPublicationTests()
     {
         m_modules = new ModuleHost(new ModuleHostOptions
-        { catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderPublicationTests).Assembly)        });
+        {
+            catalogSource = new DotNetAssemblyCatalogSource(typeof(ShaderPublicationTests).Assembly)
+        });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
     }
@@ -112,14 +114,27 @@ public sealed class ShaderPublicationTests : IDisposable
     }
 
     private static ShaderDefinition CreateDefinition()
-        => new("Original",
-            [new ShaderPropertyDefinition(new ShaderPropertyId("value"), "Value", ShaderPropertyType.Float,
-                ShaderStage.Fragment, MaterialValue.FromFloat(1))],
+        => new(
+            "Original",
+            [new ShaderPropertyDefinition(
+                new ShaderPropertyId("value"),
+                "Value",
+                ShaderPropertyType.Float,
+                ShaderStage.Fragment,
+                MaterialValue.FromFloat(1)
+            )],
             [new ShaderKeywordDefinition("quality", ["high"])],
-            [new ShaderPassDefinition("main", ShaderProgramKind.Raster,
-                metadata: [new ShaderMetadataEntry("sort", "opaque")])],
-            [new ShaderTechniqueDefinition(new ShaderTechniqueId("default"), new ShaderContractId("test.draw"),
-                [new ShaderTechniquePass(new ShaderPassRoleId("draw"), "main")])]);
+            [new ShaderPassDefinition(
+                "main",
+                ShaderProgramKind.Raster,
+                metadata: [new ShaderMetadataEntry("sort", "opaque")]
+            )],
+            [new ShaderTechniqueDefinition(
+                new ShaderTechniqueId("default"),
+                new ShaderContractId("test.draw"),
+                [new ShaderTechniquePass(new ShaderPassRoleId("draw"), "main")]
+            )]
+        );
 
     private static void Mutate(ShaderDefinition definition)
     {

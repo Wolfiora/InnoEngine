@@ -1,4 +1,3 @@
-using Inno.Testing.Source;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,9 +6,10 @@ using System.Security;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Xunit;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
-using Xunit;
+using Inno.Testing.Source;
 
 namespace Inno.Build.ProductProfiles.Integration.Tests;
 
@@ -37,11 +37,21 @@ public sealed class StaticGraphRestoreTests
         string root = TestRepository.GetRoot(typeof(StaticGraphRestoreTests).Assembly);
         string host = ToolchainEnvironment.ResolveExecutable("dotnet");
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        string output = await ToolchainEnvironment.CaptureOutputAsync(host,
-            ["msbuild", Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj"),
+        string output = await ToolchainEnvironment.CaptureOutputAsync(
+            host,
+            [
+                "msbuild",
+                Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj"),
                 "-p:NETCoreSdkRuntimeIdentifier=" + sdkHost,
-                "-getProperty:InnoNativeTarget,InnoProductBuildProperties", "-getItem:ProjectReference", "-nologo", "-nr:false"],
-            root, cancellation.Token, DotNetSdkEnvironment.Create(host));
+                "-getProperty:InnoNativeTarget,InnoProductBuildProperties",
+                "-getItem:ProjectReference",
+                "-nologo",
+                "-nr:false"
+            ],
+            root,
+            cancellation.Token,
+            DotNetSdkEnvironment.Create(host)
+        );
         using JsonDocument evaluation = JsonDocument.Parse(output);
         JsonElement properties = evaluation.RootElement.GetProperty("Properties");
         Assert.Equal(expectedTarget, properties.GetProperty("InnoNativeTarget").GetString());
@@ -50,7 +60,9 @@ public sealed class StaticGraphRestoreTests
         foreach (JsonElement reference in evaluation.RootElement.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
         {
             if (reference.TryGetProperty("OutputItemType", out JsonElement role) && role.GetString() == "Analyzer")
+            {
                 continue;
+            }
             string context = reference.GetProperty("AdditionalProperties").GetString()!;
             Assert.Contains("InnoNativeTarget=" + expectedTarget, context);
             Assert.Contains("InnoProductBuildProperties=" + product, context);
@@ -67,7 +79,7 @@ public sealed class StaticGraphRestoreTests
         try
         {
             string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-                ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+                          ?? ToolchainEnvironment.ResolveExecutable("dotnet");
             string entry = Path.Combine(root, "entry", "InnoEngine.Editor", "InnoEngine.Editor.csproj");
             string artifacts = Path.Combine(fixture, "managed");
             string[] common = ["-p:Configuration=Debug", "-p:ArtifactsPath=" + artifacts, "-nodeReuse:false"];
@@ -75,23 +87,38 @@ public sealed class StaticGraphRestoreTests
             JsonElement properties = route.RootElement.GetProperty("Properties");
             string product = properties.GetProperty("InnoProductRestoreProject").GetString()!;
             Assert.True(File.Exists(product));
-            string[] productProperties = [.. common,
+            string[] productProperties =
+            [
+                .. common,
                 "-p:InnoNativeTarget=" + properties.GetProperty("InnoNativeTarget").GetString(),
                 "-p:InnoToolTarget=" + properties.GetProperty("InnoToolTarget").GetString(),
-                "-p:InnoProductBuildProperties=" + properties.GetProperty("InnoProductBuildProperties").GetString()];
+                "-p:InnoProductBuildProperties=" + properties.GetProperty("InnoProductBuildProperties").GetString()
+            ];
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-            await ToolchainEnvironment.RunAsync(host,
+            await ToolchainEnvironment.RunAsync(
+                host,
                 ["msbuild", entry, "-t:RestoreProductTargetGraph", "-v:quiet", .. common],
-                root, cancellation.Token, DotNetSdkEnvironment.Create(host));
+                root,
+                cancellation.Token,
+                DotNetSdkEnvironment.Create(host)
+            );
 
             var references = new HashSet<string>(StringComparer.Ordinal);
             foreach (JsonElement reference in route.RootElement.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
-                references.Add(reference.GetProperty("FullPath").GetString()!);
-            using JsonDocument selectedProduct = await EvaluateAsync(host, product, productProperties);
-            foreach (JsonElement reference in selectedProduct.RootElement.GetProperty("Items").GetProperty("ProjectReference").EnumerateArray())
             {
-                if (!reference.TryGetProperty("PrivateAssets", out JsonElement privateAssets) || string.IsNullOrEmpty(privateAssets.GetString()))
+                references.Add(reference.GetProperty("FullPath").GetString()!);
+            }
+            using JsonDocument selectedProduct = await EvaluateAsync(host, product, productProperties);
+            foreach (JsonElement reference in selectedProduct.RootElement
+                .GetProperty("Items")
+                .GetProperty("ProjectReference")
+                .EnumerateArray()
+            ) {
+                if (!reference.TryGetProperty("PrivateAssets", out JsonElement privateAssets)
+                    || string.IsNullOrEmpty(privateAssets.GetString())
+                ) {
                     references.Add(reference.GetProperty("FullPath").GetString()!);
+                }
             }
             Assert.NotEmpty(references);
             foreach (string reference in references)
@@ -115,7 +142,7 @@ public sealed class StaticGraphRestoreTests
     {
         string root = TestRepository.GetRoot(typeof(StaticGraphRestoreTests).Assembly);
         string host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-            ?? ToolchainEnvironment.ResolveExecutable("dotnet");
+                      ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         IReadOnlyDictionary<string, string?> environment = DotNetSdkEnvironment.Create(host);
         string owner = Path.Combine(Path.GetTempPath(), "InnoStaticGraphRestoreTests");
         string fixture = PathBoundary.Resolve(owner, Guid.NewGuid().ToString("N"));
@@ -136,9 +163,13 @@ public sealed class StaticGraphRestoreTests
                 </Project>
                 """);
             using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-            await ToolchainEnvironment.RunAsync(host,
+            await ToolchainEnvironment.RunAsync(
+                host,
                 ["msbuild", driver, "-t:Verify", "-m:1", "-nodeReuse:false", "-nologo", "-v:minimal"],
-                root, cancellation.Token, environment);
+                root,
+                cancellation.Token,
+                environment
+            );
         }
         finally
         {
@@ -154,11 +185,22 @@ public sealed class StaticGraphRestoreTests
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(1));
         using var output = new StringWriter();
         using var error = new StringWriter();
-        await ToolchainEnvironment.RunAsync(host,
-            ["msbuild", project, "-nologo", .. properties,
+        await ToolchainEnvironment.RunAsync(
+            host,
+            [
+                "msbuild",
+                project,
+                "-nologo",
+                .. properties,
                 "-getProperty:ProjectAssetsFile,InnoProductRestoreProject,InnoNativeTarget,InnoToolTarget,InnoProductBuildProperties",
-                "-getItem:ProjectReference"],
-            Path.GetDirectoryName(project)!, cancellation.Token, DotNetSdkEnvironment.Create(host), output, error);
+                "-getItem:ProjectReference"
+            ],
+            Path.GetDirectoryName(project)!,
+            cancellation.Token,
+            DotNetSdkEnvironment.Create(host),
+            output,
+            error
+        );
         return JsonDocument.Parse(output.ToString());
     }
 }

@@ -98,7 +98,8 @@ public struct RenderBlendState
     /// <summary>
     /// Gets the disabled opaque blend state.
     /// </summary>
-    public static RenderBlendState opaque => new()
+    public static RenderBlendState opaque
+        => new()
     {
         enabled = false,
         colorSource = RenderBlendFactor.One,
@@ -110,7 +111,8 @@ public struct RenderBlendState
     /// <summary>
     /// Gets conventional straight-alpha blending.
     /// </summary>
-    public static RenderBlendState alpha => new()
+    public static RenderBlendState alpha
+        => new()
     {
         enabled = true,
         colorSource = RenderBlendFactor.SourceAlpha,
@@ -122,7 +124,8 @@ public struct RenderBlendState
     /// <summary>
     /// Gets additive source-alpha blending.
     /// </summary>
-    public static RenderBlendState additive => new()
+    public static RenderBlendState additive
+        => new()
     {
         enabled = true,
         colorSource = RenderBlendFactor.SourceAlpha,
@@ -134,7 +137,8 @@ public struct RenderBlendState
     /// <summary>
     /// Gets conventional premultiplied-alpha blending.
     /// </summary>
-    public static RenderBlendState premultiplied => new()
+    public static RenderBlendState premultiplied
+        => new()
     {
         enabled = true,
         colorSource = RenderBlendFactor.One,
@@ -188,4 +192,3 @@ public struct RenderBlendState
     /// </summary>
     public bool alphaToCoverage { get; set; }
 }
-

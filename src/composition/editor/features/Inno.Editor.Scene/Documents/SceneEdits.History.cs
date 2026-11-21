@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.ExceptionServices;
 using System.Linq;
-
-using Inno.Extensibility.Types;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
+using Inno.Extensibility.Types;
 using Inno.Scene;
 using Inno.Scene.Components;
 using Inno.Scene.Layers;
@@ -32,12 +31,12 @@ sealed partial class SceneEdits
             activeBefore,
             activeAfter,
             selectedBefore,
-            selectedAfter);
+            selectedAfter
+        );
         m_interactions.history.RecordApplied(
             name,
-            new EditorHistoryChange(
-                SceneHistoryKinds.Document,
-                EditorHistoryPayload.FromBytes(data.Encode())));
+            new EditorHistoryChange(SceneHistoryKinds.Document, EditorHistoryPayload.FromBytes(data.Encode()))
+        );
     }
 
     private void RecordSubtree(
@@ -60,7 +59,8 @@ sealed partial class SceneEdits
             subtree,
             incoming,
             selectedBefore,
-            selectedAfter);
+            selectedAfter
+        );
         Record(name, SceneHistoryKinds.Subtree, data.Encode());
     }
 
@@ -69,13 +69,10 @@ sealed partial class SceneEdits
         string kind,
         byte[] data,
         string? mergeKey = null
-    )
-        => m_interactions.history.RecordApplied(
-            name,
-            new EditorHistoryChange(
-                kind,
-                EditorHistoryPayload.FromBytes(data),
-                mergeKey));
+    ) => m_interactions.history.RecordApplied(
+        name,
+        new EditorHistoryChange(kind, EditorHistoryPayload.FromBytes(data), mergeKey)
+    );
 
     private void RecordElement(
         string name,
@@ -84,25 +81,24 @@ sealed partial class SceneEdits
 
     private Guid? GetActiveSceneId()
         => m_workspace.activeScene is { isDestroyed: false } scene
-            ? scene.identity.persistentId
-            : null;
+           ? scene.identity.persistentId
+           : null;
 
     private GameScene ResolveOwnerScene(EngineObject target)
         => target switch
-        {
-            GameScene scene => scene,
-            GameObject gameObject => gameObject.scene,
-            GameComponent component => component.gameObject.scene,
-            GameSystem system => m_workspace.scenes.FirstOrDefault(scene =>
-                scene.GetSystems().Contains(system))
-                ?? throw new InvalidOperationException("The system has no loaded scene."),
-            _ => throw new InvalidOperationException("The object has no loaded scene.")
-        };
+    {
+        GameScene scene => scene,
+        GameObject gameObject => gameObject.scene,
+        GameComponent component => component.gameObject.scene,
+        GameSystem system => m_workspace.scenes.FirstOrDefault(scene => scene.GetSystems().Contains(system))
+                             ?? throw new InvalidOperationException("The system has no loaded scene."),
+        _ => throw new InvalidOperationException("The object has no loaded scene.")
+    };
 
     private Guid? GetSelectionId()
         => m_interactions.selection.selectedTarget is EngineObject { isDestroyed: false } target
-            ? target.identity.persistentId
-            : null;
+           ? target.identity.persistentId
+           : null;
 
     private static void RecordWithRollback(
         Action record,
@@ -131,15 +127,16 @@ sealed partial class SceneEdits
             throw new AggregateException(
                 "An editor mutation could not be recorded and its compensation also failed.",
                 failure,
-                rollbackException);
+                rollbackException
+            );
         }
         ExceptionDispatchInfo.Capture(failure).Throw();
     }
 
     private TypeRef GetTypeRef(Type type)
         => m_workspace.types.TryGetTypeRef(type, out TypeRef typeRef)
-            ? typeRef
-            : throw new InvalidOperationException(
-                $"Scene element type '{type.FullName}' does not have an active StableTypeId.");
-
+           ? typeRef
+           : throw new InvalidOperationException(
+               $"Scene element type '{type.FullName}' does not have an active StableTypeId."
+           );
 }

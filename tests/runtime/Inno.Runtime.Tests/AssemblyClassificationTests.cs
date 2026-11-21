@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Inno.Extensibility.Modules;
 using Xunit;
+using Inno.Extensibility.Modules;
 
 namespace Inno.Runtime.Tests;
 
@@ -16,8 +16,13 @@ public sealed class AssemblyClassificationTests
     {
         // A separate linked instance keeps the test host's own classification unchanged.
         Assembly assembly = Assembly.Load(File.ReadAllBytes(typeof(AssemblyClassificationTests).Assembly.Location));
-        var source = new StaticModuleSource("Shared", AssemblyDomain.InnoScripting,
-            AssemblyScope.Runtime, [assembly], []);
+        var source = new StaticModuleSource(
+            "Shared",
+            AssemblyDomain.InnoScripting,
+            AssemblyScope.Runtime,
+            [assembly],
+            []
+        );
         const int workerCount = 8;
         using var ready = new Barrier(workerCount);
         Task[] workers = Enumerable.Range(0, workerCount).Select(workerIndex => Task.Factory.StartNew(
@@ -40,7 +45,8 @@ public sealed class AssemblyClassificationTests
             },
             CancellationToken.None,
             TaskCreationOptions.LongRunning,
-            TaskScheduler.Default)).ToArray();
+            TaskScheduler.Default
+        )).ToArray();
         await Task.WhenAll(workers).WaitAsync(TimeSpan.FromSeconds(30));
     }
 }

@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Inno.Assets;
 using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Scripting.Api;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Inno.Rendering.Assets;
 
@@ -18,12 +18,11 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
 {
     private static readonly RenderTextureArtifactSlot[] S_linearTextureArtifacts =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Linear)];
+
     private static readonly RenderTextureArtifactSlot[] S_sRgbTextureArtifacts =
         [new RenderTextureArtifactSlot("main", "source", TextureColorSpace.Srgb)];
 
-    internal TextureAsset()
-    {
-    }
+    internal TextureAsset() {}
 
     /// <summary>
     /// Creates an immutable imported texture description.
@@ -90,8 +89,8 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     /// </summary>
     public IReadOnlyList<RenderTextureArtifactSlot> textureArtifacts
         => colorSpace == TextureColorSpace.Srgb
-            ? S_sRgbTextureArtifacts
-            : S_linearTextureArtifacts;
+           ? S_sRgbTextureArtifacts
+           : S_linearTextureArtifacts;
 
     /// <summary>
     /// Creates a stable reference to this texture's current imported content.
@@ -106,8 +105,9 @@ public sealed class TextureAsset : AssetObject, IRenderTextureArtifactSource
     {
         Guid id = identity.persistentId;
         if (id == Guid.Empty)
+        {
             throw new InvalidOperationException("Texture must have a persistent asset identity.");
+        }
         return new RenderTextureArtifactReference(id, contentVersion, textureArtifacts[0]);
     }
 }
-

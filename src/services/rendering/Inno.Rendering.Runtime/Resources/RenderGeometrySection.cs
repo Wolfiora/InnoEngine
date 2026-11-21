@@ -1,11 +1,11 @@
-using Inno.Core.Diagnostics;
-using Inno.Rendering;
-using Inno.Rendering.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.Diagnostics;
+using Inno.Rendering;
+using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
@@ -44,4 +44,3 @@ public readonly record struct RenderGeometrySection
     /// </summary>
     public int indexCount { get; }
 }
-

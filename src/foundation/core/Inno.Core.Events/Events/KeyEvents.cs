@@ -1,5 +1,4 @@
 using System;
-
 using Inno.Core.Input;
 
 namespace Inno.Core.Events;
@@ -20,8 +19,7 @@ public abstract class KeyEvent(
     uint windowId,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None
-)
-    : Event
+) : Event
 {
     /// <summary>
     /// Gets the source window id for this event.
@@ -59,8 +57,7 @@ public class KeyPressedEvent(
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None,
     bool repeat = false
-)
-    : KeyEvent(windowId, key, modifiers)
+) : KeyEvent(windowId, key, modifiers)
 {
     /// <summary>
     /// Gets whether this key press is an auto-repeat event.
@@ -84,10 +81,7 @@ public class KeyReleasedEvent(
     uint windowId,
     KeyCode key,
     KeyModifier modifiers = KeyModifier.None
-)
-    : KeyEvent(windowId, key, modifiers)
-{
-}
+) : KeyEvent(windowId, key, modifiers);
 
 /// <summary>
 /// Raised when the platform commits UTF-8 text through keyboard, IME, or virtual-keyboard input.
@@ -112,6 +106,6 @@ public sealed class TextInputEvent(
     /// Gets the committed Unicode text.
     /// </summary>
     public string text { get; } = string.IsNullOrEmpty(text)
-        ? throw new ArgumentException("Committed text cannot be empty.", nameof(text))
-        : text;
+                                  ? throw new ArgumentException("Committed text cannot be empty.", nameof(text))
+                                  : text;
 }

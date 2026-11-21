@@ -1,8 +1,8 @@
 using System;
 using System.IO;
+using Xunit;
 using Inno.Extensibility.Modules;
 using Inno.Runtime;
-using Xunit;
 
 namespace Inno.Runtime.Tests;
 
@@ -15,8 +15,10 @@ public sealed class StaticDeploymentTests
         string[] dependencies = [];
         var module = new GameRuntimeModule
         {
-            name = "Game", domain = AssemblyDomain.InnoScripting,
-            assemblies = [assembly], dependencies = dependencies
+            name = "Game",
+            domain = AssemblyDomain.InnoScripting,
+            assemblies = [assembly],
+            dependencies = dependencies
         };
         GameCodeDeployment frozen = GameCodeDeployment.FromManifest([module]);
         assembly.name = "Different.Code";
@@ -41,10 +43,15 @@ public sealed class StaticDeploymentTests
     public void ClosureRejectsSharedAssemblyOwnersAndMissingUpstreamModules()
     {
         Assert.Throws<InvalidDataException>(() => new GameCodeDeployment([
-            CreateModule("One", "Shared.Code", 'a'), CreateModule("Two", "Shared.Code", 'a')
+            CreateModule("One", "Shared.Code", 'a'),
+            CreateModule("Two", "Shared.Code", 'a')
         ]));
-        var missing = new GameCodeModule("Game", AssemblyDomain.InnoScripting,
-            [new GameCodeAssembly("Game.Code", new string('a', 64))], ["Absent"]);
+        var missing = new GameCodeModule(
+            "Game",
+            AssemblyDomain.InnoScripting,
+            [new GameCodeAssembly("Game.Code", new string('a', 64))],
+            ["Absent"]
+        );
         Assert.Throws<InvalidDataException>(() => new GameCodeDeployment([missing]));
     }
 
@@ -61,6 +68,5 @@ public sealed class StaticDeploymentTests
         string name,
         string assembly,
         char fingerprint
-    ) => new(name, AssemblyDomain.InnoScripting,
-        [new GameCodeAssembly(assembly, new string(fingerprint, 64))], []);
+    ) => new(name, AssemblyDomain.InnoScripting, [new GameCodeAssembly(assembly, new string(fingerprint, 64))], []);
 }

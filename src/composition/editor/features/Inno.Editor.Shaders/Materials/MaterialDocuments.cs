@@ -4,18 +4,20 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Core.Serialization;
 using Inno.Core.Graphs;
+using Inno.Core.Serialization;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Rendering;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
-using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
 using Inno.Rendering.Assets.Authoring;
 
+using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
+
 namespace Inno.Editor.Shaders;
+
 /// <summary>
 /// Owns Material authoring sessions; native source editing uses the shared asset draft lifecycle.
 /// </summary>
@@ -26,6 +28,7 @@ public sealed class MaterialDocuments : EditorModule
     private readonly AssetDraftDocuments<MaterialAsset> m_documents;
     private readonly SerializationRegistry m_serialization;
     private readonly ConditionalWeakTable<ShaderAsset, PresentationCache> m_presentations = new();
+
     /// <summary>
     /// Gets the authoritative asset catalog used by source-aware inspectors.
     /// </summary>
@@ -33,6 +36,7 @@ public sealed class MaterialDocuments : EditorModule
     public AssetPipeline assets { get; }
 
     internal readonly EditorInteractions interactions;
+
     /// <summary>
     /// Gets the generation-scoped preview service shared by material presentations.
     /// </summary>
@@ -62,6 +66,7 @@ public sealed class MaterialDocuments : EditorModule
     /// The persistent identity used for subsequent draft operations.
     /// </returns>
     public Guid Open(AssetPath path) => m_documents.Open(path);
+
     /// <summary>
     /// Reads a detached current-generation Material; referenced assets remain canonical read-only inputs.
     /// </summary>
@@ -72,6 +77,7 @@ public sealed class MaterialDocuments : EditorModule
     /// The current unsaved Material value.
     /// </returns>
     public MaterialAsset Read(Guid assetId) => m_documents.Read(assetId);
+
     /// <summary>
     /// Changes a draft through shared History without modifying its source or Scene/Game.
     /// </summary>
@@ -89,6 +95,7 @@ public sealed class MaterialDocuments : EditorModule
         MaterialAsset candidate,
         string? mergeKey = null
     ) => m_documents.Replace(assetId, candidate, mergeKey);
+
     /// <summary>
     /// Changes compatible selected drafts within one shared gesture.
     /// </summary>
@@ -102,6 +109,7 @@ public sealed class MaterialDocuments : EditorModule
         IReadOnlyDictionary<Guid, MaterialAsset> candidates,
         string? mergeKey = null
     ) => m_documents.ReplaceMany(candidates, mergeKey);
+
     /// <summary>
     /// Opens the current source draft without publishing it.
     /// </summary>
@@ -113,6 +121,7 @@ public sealed class MaterialDocuments : EditorModule
     /// </returns>
     [Inno.Scripting.Api.ScriptingApiIgnore]
     public Draft OpenDraft(AssetPath path) => m_documents.GetDraft(Open(path));
+
     /// <summary>
     /// Resolves the source draft for a canonical Material identity.
     /// </summary>
@@ -126,7 +135,9 @@ public sealed class MaterialDocuments : EditorModule
     public Draft Open(MaterialAsset material)
     {
         if (!assets.TryGetInfo(material.identity.persistentId, out AssetInfo? info) || info is null)
+        {
             throw new IOException("The Material source identity is unavailable.");
+        }
         return OpenDraft(info.assetPath);
     }
 
@@ -168,24 +179,31 @@ public sealed class MaterialDocuments : EditorModule
         }
 
         error = cache.error;
-        return cache.graph is null ? new() : ShaderParameterPresentation.Read(cache.graph, propertyId, m_serialization, AssetSerializationContext.Create(assets));
+        return cache.graph is null
+               ? new()
+               : ShaderParameterPresentation.Read(cache.graph, propertyId, m_serialization, AssetSerializationContext.Create(assets));
     }
 
     internal void ValidateHistory(
         EditorHistoryChange change,
         EditorHistoryDirection direction
     ) => m_documents.ValidateHistory(change, direction);
+
     internal void ApplyHistory(
         EditorHistoryChange change,
         EditorHistoryDirection direction
     ) => m_documents.ApplyHistory(change, direction);
+
     internal bool TryMergeHistory(
         EditorHistoryChange older,
         EditorHistoryChange newer,
         out EditorHistoryChange? merged
     ) => m_documents.TryMergeHistory(older, newer, out merged);
-    internal static bool Recoverable(Exception error) => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-        && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+
+    internal static bool Recoverable(Exception error)
+        => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
+           && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
     /// </summary>
@@ -193,6 +211,7 @@ public sealed class MaterialDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnStart(EditorContext context) => m_documents.Start();
+
     /// <summary>
     /// Advances this feature using the current runtime state.
     /// </summary>
@@ -200,6 +219,7 @@ public sealed class MaterialDocuments : EditorModule
     /// The context that supplies state and services for this operation.
     /// </param>
     protected override void OnUpdate(EditorContext context) => m_documents.Update();
+
     /// <summary>
     /// Stops this feature before its owning runtime releases the active generation.
     /// </summary>

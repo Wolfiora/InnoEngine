@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Inno.Assets;
 using Inno.Assets.Pipeline;
-using Inno.Extensibility.Modules;
-using Inno.Core.Identity;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
+using Inno.Core.Identity;
 using Inno.Core.Logging;
+using Inno.Core.Serialization;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
 using Inno.Scripting.Api;
-using Inno.Core.Serialization;
-using Inno.Core.Execution;
-using Inno.Extensibility.Reload;
 
 namespace Inno.Assets.Pipeline;
 
@@ -40,7 +39,9 @@ sealed partial class AssetPipeline
     {
         EnsureInitializationThread();
         if (m_sampleImport is not null)
+        {
             return;
+        }
         using IDisposable operationScope = AcquireOperation();
         PruneRetiredObservers();
         AssetFileSystem fileSystem = GetFileSystem();
@@ -108,7 +109,9 @@ sealed partial class AssetPipeline
     ) {
         AssetLoader? loader = m_loader;
         if (loader is null)
+        {
             return;
+        }
         Dictionary<string, Guid> previousIds = CapturePreviousIds(loader, changes);
         try
         {
@@ -118,7 +121,9 @@ sealed partial class AssetPipeline
                 GetFileSystem().Refresh();
             }
             else
+            {
                 loader.ApplySourceChanges(changes);
+            }
             m_diagnostics.ResolveSourceDatabase();
         }
         catch (Exception exception)
@@ -131,17 +136,17 @@ sealed partial class AssetPipeline
                 m_log.Write(
                     LogLevel.Warn,
                     "Asset source refresh failed and was recovered by a full rescan: {0}",
-                    [exception]);
+                    [exception]
+                );
             }
             catch (Exception recoveryException)
             {
                 m_log.Write(
                     LogLevel.Error,
                     "Asset source refresh and recovery rescan both failed. Refresh: {0} Recovery: {1}",
-                    [exception, recoveryException]);
-                m_diagnostics.PublishSourceDatabaseFailure(
-                    exception,
-                    recoveryException);
+                    [exception, recoveryException]
+                );
+                m_diagnostics.PublishSourceDatabaseFailure(exception, recoveryException);
             }
         }
         AssetChange[] committed = CreateCommittedChanges(loader, changes, previousIds, requiresFullRescan);
@@ -151,10 +156,14 @@ sealed partial class AssetPipeline
     private void DrainPendingChanges(AssetFileSystem fileSystem)
     {
         if (!fileSystem.isWatching)
+        {
             return;
+        }
         IReadOnlyList<AssetChangedEvent> pending = fileSystem.WaitForIdle(out bool requiresFullRescan);
         if (pending.Count > 0 || requiresFullRescan)
+        {
             ApplySourceChanges(pending, requiresFullRescan);
+        }
     }
 
     private AssetChangedEvent[] CreateDeletionEvents(
@@ -163,9 +172,10 @@ sealed partial class AssetPipeline
     ) {
         string prefix = sourcePath + "/";
         return fileSystem.GetEntries()
-            .Where(entry =>
-                string.Equals(entry.assetPath.ToString(), sourcePath, StringComparison.OrdinalIgnoreCase) ||
-                entry.assetPath.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            .Where(entry => (
+                string.Equals(entry.assetPath.ToString(), sourcePath, StringComparison.OrdinalIgnoreCase)
+                || entry.assetPath.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ))
             .OrderBy(static entry => entry.assetPath.ToString().Length)
             .Select(static entry => new AssetChangedEvent(entry.assetPath.ToString(), WatcherChangeTypes.Deleted))
             .DefaultIfEmpty(new AssetChangedEvent(sourcePath, WatcherChangeTypes.Deleted))
@@ -179,7 +189,9 @@ sealed partial class AssetPipeline
         T value
     ) {
         if (handlers is null)
+        {
             return;
+        }
         foreach (Delegate handler in handlers.GetInvocationList())
         {
             try
@@ -196,7 +208,9 @@ sealed partial class AssetPipeline
     private void InvokeObservers(Action? handlers)
     {
         if (handlers is null)
+        {
             return;
+        }
         foreach (Delegate handler in handlers.GetInvocationList())
         {
             try
@@ -214,8 +228,8 @@ sealed partial class AssetPipeline
     {
         EnsureAccess();
         return isInitialized && m_fileSystem is not null
-            ? m_fileSystem
-            : throw new InvalidOperationException("AssetPipeline is not initialized.");
+               ? m_fileSystem
+               : throw new InvalidOperationException("AssetPipeline is not initialized.");
     }
 
     private Dictionary<string, Guid> CapturePreviousIds(
@@ -227,10 +241,12 @@ sealed partial class AssetPipeline
         {
             AssetChangedEvent change = changes[i];
             string path = string.IsNullOrWhiteSpace(change.oldRelativePath)
-                ? change.relativePath
-                : change.oldRelativePath;
+                          ? change.relativePath
+                          : change.oldRelativePath;
             if (loader.TryGetPersistentId(AssetPath.Parse(path), out Guid id))
+            {
                 result[path] = id;
+            }
         }
         return result;
     }
@@ -242,7 +258,9 @@ sealed partial class AssetPipeline
         bool requiresFullRescan
     ) {
         if (requiresFullRescan && changes.Count == 0)
+        {
             return [new AssetChange(AssetChangeKind.StatusChanged, Guid.Empty, AssetPath.Project(string.Empty))];
+        }
 
         var result = new List<AssetChange>(changes.Count);
         for (int i = 0; i < changes.Count; i++)
@@ -257,28 +275,28 @@ sealed partial class AssetPipeline
                 _ = previousIds.TryGetValue(previousPath, out id);
             }
             AssetChangeKind kind = moved
-                ? AssetChangeKind.Moved
-                : deleted
-                    ? System.IO.File.Exists(Path.Combine(assetRoot, change.relativePath + ".imeta"))
-                        ? AssetChangeKind.Missing
-                        : AssetChangeKind.Removed
-                    : change.changeType.HasFlag(WatcherChangeTypes.Created)
-                        ? AssetChangeKind.Added
-                        : AssetChangeKind.Modified;
-            result.Add(new AssetChange(
-                kind,
-                id,
-                AssetPath.Parse(change.relativePath),
-                string.IsNullOrWhiteSpace(change.oldRelativePath)
+                                   ? AssetChangeKind.Moved
+                                   : deleted
+                                     ? System.IO.File.Exists(Path.Combine(assetRoot, change.relativePath + ".imeta"))
+                                       ? AssetChangeKind.Missing
+                                       : AssetChangeKind.Removed
+                                     : change.changeType.HasFlag(WatcherChangeTypes.Created)
+                                       ? AssetChangeKind.Added
+                                       : AssetChangeKind.Modified;
+            result.Add(
+                new AssetChange(
+                    kind,
+                    id,
+                    AssetPath.Parse(change.relativePath),
+                    string.IsNullOrWhiteSpace(change.oldRelativePath)
                     ? null
-                    : AssetPath.Parse(change.oldRelativePath)));
+                    : AssetPath.Parse(change.oldRelativePath)
+                )
+            );
         }
         return result.ToArray();
     }
 
     private void PublishMutation(AssetChange change)
-        => InvokeObservers(
-            Changed,
-            new AssetChangeSet(Interlocked.Increment(ref m_revision), [change]));
-
+        => InvokeObservers(Changed, new AssetChangeSet(Interlocked.Increment(ref m_revision), [change]));
 }

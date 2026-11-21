@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Xunit;
 
 namespace Inno.Core.Execution.Tests;
@@ -48,7 +47,9 @@ public sealed class ExecutionSlotTests
         object value = new();
         using IDisposable outer = slot.Enter(value);
         using (slot.Suspend())
+        {
             Assert.False(slot.TryGet(out _));
+        }
         Assert.Same(value, slot.current);
     }
 

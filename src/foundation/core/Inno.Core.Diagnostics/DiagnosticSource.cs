@@ -24,9 +24,13 @@ public readonly struct DiagnosticSource : IEquatable<DiagnosticSource>
         string displayName
     ) {
         if (string.IsNullOrWhiteSpace(id))
+        {
             throw new ArgumentException("A diagnostic source identifier is required.", nameof(id));
+        }
         if (string.IsNullOrWhiteSpace(displayName))
+        {
             throw new ArgumentException("A diagnostic source display name is required.", nameof(displayName));
+        }
         this.id = id;
         this.displayName = displayName;
     }

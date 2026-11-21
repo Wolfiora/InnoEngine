@@ -13,10 +13,12 @@ public interface IUiBackend : IDisposable
     /// Gets the stable implementation identity used by imported document artifacts.
     /// </summary>
     string implementationId { get; }
+
     /// <summary>
     /// Gets optional behavior and accepted document languages for this generation.
     /// </summary>
     UiBackendCapabilities capabilities { get; }
+
     /// <summary>
     /// Creates one independent UI context.
     /// </summary>
@@ -27,6 +29,7 @@ public interface IUiBackend : IDisposable
     /// A handle owned by the caller until destruction.
     /// </returns>
     UiContextHandle CreateContext(UiContextOptions options);
+
     /// <summary>
     /// Destroys one UI context and all of its documents.
     /// </summary>
@@ -34,6 +37,7 @@ public interface IUiBackend : IDisposable
     /// The context that owns the requested document or state.
     /// </param>
     void DestroyContext(UiContextHandle context);
+
     /// <summary>
     /// Changes one UI context's pixel dimensions and density.
     /// </summary>
@@ -55,6 +59,7 @@ public interface IUiBackend : IDisposable
         int height,
         float density
     );
+
     /// <summary>
     /// Loads one explicitly tagged in-memory document.
     /// </summary>
@@ -71,6 +76,7 @@ public interface IUiBackend : IDisposable
         UiContextHandle context,
         UiDocumentSource source
     );
+
     /// <summary>
     /// Shows one document.
     /// </summary>
@@ -84,6 +90,7 @@ public interface IUiBackend : IDisposable
         UiContextHandle context,
         UiDocumentHandle document
     );
+
     /// <summary>
     /// Hides one document.
     /// </summary>
@@ -97,6 +104,7 @@ public interface IUiBackend : IDisposable
         UiContextHandle context,
         UiDocumentHandle document
     );
+
     /// <summary>
     /// Closes one document.
     /// </summary>
@@ -110,6 +118,7 @@ public interface IUiBackend : IDisposable
         UiContextHandle context,
         UiDocumentHandle document
     );
+
     /// <summary>
     /// Replaces an element's children with plain Unicode text.
     /// </summary>
@@ -135,6 +144,7 @@ public interface IUiBackend : IDisposable
         string elementId,
         string text
     );
+
     /// <summary>
     /// Replaces an element's children with an explicitly tagged source-language fragment.
     /// </summary>
@@ -160,6 +170,7 @@ public interface IUiBackend : IDisposable
         string elementId,
         UiDocumentFragment fragment
     );
+
     /// <summary>
     /// Sets one element attribute.
     /// </summary>
@@ -189,6 +200,7 @@ public interface IUiBackend : IDisposable
         string name,
         string value
     );
+
     /// <summary>
     /// Activates or deactivates one element class.
     /// </summary>
@@ -218,6 +230,7 @@ public interface IUiBackend : IDisposable
         string className,
         bool active
     );
+
     /// <summary>
     /// Registers an encoded font face in the document engine.
     /// </summary>
@@ -225,6 +238,7 @@ public interface IUiBackend : IDisposable
     /// Font bytes and family metadata to register.
     /// </param>
     void RegisterFont(UiFontRegistration registration);
+
     /// <summary>
     /// Registers a named RGBA8 texture source.
     /// </summary>
@@ -242,6 +256,7 @@ public interface IUiBackend : IDisposable
         string source,
         UiTextureData texture
     );
+
     /// <summary>
     /// Tests whether a visible document element receives pointer events at a pixel location.
     /// </summary>
@@ -258,6 +273,7 @@ public interface IUiBackend : IDisposable
         UiContextHandle context,
         Vector2 position
     );
+
     /// <summary>
     /// Processes input and advances document state.
     /// </summary>
@@ -271,6 +287,7 @@ public interface IUiBackend : IDisposable
         UiContextHandle context,
         UiInputSnapshot input
     );
+
     /// <summary>
     /// Builds an immutable frame of incremental resources and ordered draws.
     /// </summary>
@@ -281,6 +298,7 @@ public interface IUiBackend : IDisposable
     /// An immutable frame of ordered UI draws and resources.
     /// </returns>
     UiRenderFrame Render(UiContextHandle context);
+
     /// <summary>
     /// Drains document events queued by the preceding updates.
     /// </summary>

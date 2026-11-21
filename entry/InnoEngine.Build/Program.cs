@@ -43,17 +43,23 @@ internal static class Program
     private static string[] CreateArguments(string[] arguments)
     {
         if (arguments.Length > 0 && arguments[0] is "help" or "--help" or "-h")
+        {
             return arguments;
+        }
         bool implicitSupport = arguments.Length == 0 || arguments[0].StartsWith("--", StringComparison.Ordinal);
         var result = new List<string> { implicitSupport ? "support" : arguments[0] };
         result.AddRange(implicitSupport ? arguments : arguments[1..]);
         if (result[0] is not ("support" or "editor" or "clean" or "bindings" or "support-pack" or "shader"))
+        {
             return result.ToArray();
+        }
         string target = ReadDevelopmentTarget();
         int scope = result.IndexOf("--scope");
         bool allCaches = result[0] == "clean" && scope >= 0 && scope + 1 < result.Count && result[scope + 1] == "cache";
         if (!allCaches)
+        {
             AddDefault(result, "--target", target);
+        }
         AddDefault(result, "--tools-target", target);
         string configuration = typeof(Program).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration;
         AddDefault(result, "--configuration", result[0] is "support" or "editor" or "clean" ? configuration : "Release");
@@ -63,8 +69,12 @@ internal static class Program
     private static string ReadDevelopmentTarget()
     {
         foreach (AssemblyMetadataAttribute metadata in typeof(Program).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
+        {
             if (metadata.Key == "Inno.Build.DevelopmentTarget" && !string.IsNullOrWhiteSpace(metadata.Value))
+            {
                 return metadata.Value;
+            }
+        }
         throw new PlatformNotSupportedException("No build host is registered for the selected SDK.");
     }
 
@@ -74,7 +84,9 @@ internal static class Program
         string value
     ) {
         if (arguments.Contains(name))
+        {
             return;
+        }
         arguments.Add(name);
         arguments.Add(value);
     }

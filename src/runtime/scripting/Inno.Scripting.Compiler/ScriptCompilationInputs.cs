@@ -38,10 +38,14 @@ public sealed class ScriptCompilationInputs
         ArgumentNullException.ThrowIfNull(predefinedSymbols);
         string[] references = frameworkReferences.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         if (references.Length == 0 || references.Any(static path => !Path.IsPathFullyQualified(path)))
+        {
             throw new ArgumentException("SDK framework references must be a nonempty set of absolute paths.", nameof(frameworkReferences));
+        }
         this.sdkIdentity = sdkIdentity;
         this.frameworkReferences = Array.AsReadOnly(references);
-        this.predefinedSymbols = Array.AsReadOnly(predefinedSymbols.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray());
+        this.predefinedSymbols = Array.AsReadOnly(
+            predefinedSymbols.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray()
+        );
     }
 
     /// <summary>

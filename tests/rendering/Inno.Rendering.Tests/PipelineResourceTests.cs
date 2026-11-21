@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Tests;
 
@@ -18,8 +18,12 @@ public sealed class PipelineResourceTests
         input[0] = changed;
         Assert.Same(binding, graphics.bindings[0]);
         Assert.Same(binding, compute.bindings[0]);
-        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<RenderShaderBindingDescriptor>)graphics.bindings)[0] = changed);
-        Assert.Throws<NotSupportedException>(() => ((System.Collections.Generic.IList<RenderShaderBindingDescriptor>)compute.bindings)[0] = changed);
+        Assert.Throws<NotSupportedException>(
+            () => ((System.Collections.Generic.IList<RenderShaderBindingDescriptor>)graphics.bindings)[0] = changed
+        );
+        Assert.Throws<NotSupportedException>(
+            () => ((System.Collections.Generic.IList<RenderShaderBindingDescriptor>)compute.bindings)[0] = changed
+        );
     }
 
     [Fact]
@@ -28,7 +32,8 @@ public sealed class PipelineResourceTests
         RenderVertexSemantic[] semantics = Enum.GetValues<RenderVertexSemantic>();
         var layout = new RenderVertexLayout(
             semantics.Select(static semantic =>
-                new RenderVertexAttribute(semantic, RenderVertexFormat.Float4)).ToArray());
+                new RenderVertexAttribute(semantic, RenderVertexFormat.Float4)).ToArray()
+        );
 
         Assert.Equal(semantics.Length, layout.attributes.Count);
         Assert.Equal(semantics.Length * 16, layout.stride);
@@ -40,21 +45,24 @@ public sealed class PipelineResourceTests
     public void VertexLayout_RejectsDuplicateSemantic()
     {
         Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
-        [
-            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3),
-            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2)
-        ]));
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3),
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2)
+            ]
+        ));
     }
 
     [Fact]
     public void VertexLayout_PreservesExplicitOffsetsAndTrailingPadding()
     {
         var layout = new RenderVertexLayout(
-        [
-            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
-            new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 16),
-            new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Half2)
-        ], stride: 32);
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
+                new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 16),
+                new RenderVertexAttribute(RenderVertexSemantic.TextureCoordinate0, RenderVertexFormat.Half2)
+            ],
+            stride: 32
+        );
 
         Assert.Equal([0, 16, 20], layout.attributes.Select(static attribute => attribute.byteOffset));
         Assert.Equal(32, layout.stride);
@@ -78,14 +86,17 @@ public sealed class PipelineResourceTests
     public void VertexLayout_RejectsOverlappingAttributesAndShortStride()
     {
         Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
-        [
-            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
-            new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 8)
-        ]));
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
+                new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 8)
+            ]
+        ));
         Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
-        [
-            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
-        ], stride: 8));
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
+            ],
+            stride: 8
+        ));
     }
 
     [Fact]
@@ -93,9 +104,10 @@ public sealed class PipelineResourceTests
     {
         RenderBufferDescriptor buffer = new(3, 12, RenderBufferUsage.Vertex);
         RenderVertexLayout mismatched = new(
-        [
-            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float4)
-        ]);
+            [
+                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float4)
+            ]
+        );
 
         Assert.Throws<ArgumentException>(() => new PersistentBufferDescriptor(buffer, mismatched));
     }
@@ -110,26 +122,24 @@ public sealed class PipelineResourceTests
             RenderTextureUsage.Sampled,
             mipCount: 3,
             dimension: RenderTextureDimension.Texture3D,
-            depth: 8);
+            depth: 8
+        );
         var cubemapArray = new RenderTextureDescriptor(
             32,
             32,
             RenderTextureFormat.RGBA16Float,
             RenderTextureUsage.Sampled,
             arrayLayers: 2,
-            dimension: RenderTextureDimension.Cube);
+            dimension: RenderTextureDimension.Cube
+        );
 
         Assert.Equal(8, volume.GetSubresourceLayerCount(0));
         Assert.Equal(2, volume.GetSubresourceLayerCount(2));
         Assert.Equal(12, cubemapArray.GetSubresourceLayerCount(0));
         Assert.NotEqual(
             volume,
-            new RenderTextureDescriptor(
-                16,
-                8,
-                RenderTextureFormat.RGBA8,
-                RenderTextureUsage.Sampled,
-                mipCount: 3));
+            new RenderTextureDescriptor(16, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled, mipCount: 3)
+        );
     }
 
     [Fact]
@@ -140,7 +150,8 @@ public sealed class PipelineResourceTests
             8,
             RenderTextureFormat.RGBA8,
             RenderTextureUsage.Sampled,
-            dimension: RenderTextureDimension.Cube));
+            dimension: RenderTextureDimension.Cube
+        ));
         Assert.Throws<ArgumentException>(() => new RenderTextureDescriptor(
             16,
             16,
@@ -148,7 +159,8 @@ public sealed class PipelineResourceTests
             RenderTextureUsage.Sampled,
             arrayLayers: 2,
             dimension: RenderTextureDimension.Texture3D,
-            depth: 4));
+            depth: 4
+        ));
         Assert.Throws<ArgumentException>(() => new RenderTextureDescriptor(
             16,
             16,
@@ -156,7 +168,8 @@ public sealed class PipelineResourceTests
             RenderTextureUsage.Sampled,
             sampleCount: 4,
             dimension: RenderTextureDimension.Texture3D,
-            depth: 4));
+            depth: 4
+        ));
     }
 
     [Fact]
@@ -189,14 +202,9 @@ public sealed class PipelineResourceTests
             RenderStencilCompare.NotEqual,
             RenderStencilOperation.Zero,
             RenderStencilOperation.IncrementWrap,
-            RenderStencilOperation.Replace);
-        var stencil = new RenderStencilState(
-            true,
-            7,
-            0x7f,
-            0x3f,
-            face,
-            face);
+            RenderStencilOperation.Replace
+        );
+        var stencil = new RenderStencilState(true, 7, 0x7f, 0x3f, face, face);
         var raster = new RenderRasterState(
             RenderCullMode.Front,
             RenderFrontFace.Clockwise,
@@ -205,7 +213,8 @@ public sealed class PipelineResourceTests
             RenderBlendState.premultiplied,
             0x07,
             false,
-            RenderPrimitiveTopology.LineList);
+            RenderPrimitiveTopology.LineList
+        );
 
         Assert.True(stencil.enabled);
         Assert.Equal((byte)7, stencil.reference);
@@ -228,7 +237,8 @@ public sealed class PipelineResourceTests
     {
         Assert.Throws<ArgumentException>(() => new RenderShaderBindingDescriptor(
             default,
-            RenderShaderBindingKind.Uniform));
+            RenderShaderBindingKind.Uniform
+        ));
     }
 
     [Fact]
@@ -238,7 +248,8 @@ public sealed class PipelineResourceTests
             new RenderBindingId("u_output"),
             RenderShaderBindingKind.StorageTexture,
             slot: 3,
-            storageAccess: RenderStorageAccess.ReadWrite);
+            storageAccess: RenderStorageAccess.ReadWrite
+        );
 
         Assert.Equal(RenderShaderBindingKind.StorageTexture, binding.kind);
         Assert.Equal(RenderStorageAccess.ReadWrite, binding.storageAccess);

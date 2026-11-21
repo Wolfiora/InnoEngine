@@ -28,15 +28,21 @@ internal static class BuildCacheFileInventory
                 if ((attributes & FileAttributes.ReparsePoint) != 0)
                 {
                     if (role != BuildCacheArtifactRole.ReusableWorkspace || (attributes & FileAttributes.Directory) != 0)
+                    {
                         throw new IOException($"Cache entry '{entry}' cannot contain this filesystem link.");
+                    }
                     ValidateFileLink(directory, entry, cancellation);
                     // A compiler's library-name alias owns no second copy of its target's bytes.
                     continue;
                 }
                 if ((attributes & FileAttributes.Directory) != 0)
+                {
                     pending.Push(entry);
+                }
                 else
+                {
                     bytes = checked(bytes + new FileInfo(entry).Length);
+                }
             }
         }
         return bytes;
@@ -54,14 +60,18 @@ internal static class BuildCacheFileInventory
             entry = PathBoundary.RequireContained(directory, entry);
             PathBoundary.RequireUnlinkedPath(directory, Path.GetDirectoryName(entry)!);
             if (!visited.Add(entry))
+            {
                 throw new IOException($"Workspace file link '{entry}' forms a cycle.");
+            }
             var file = new FileInfo(entry);
             string? target = file.LinkTarget;
             if (target is null)
             {
                 PathBoundary.RequireUnlinkedPath(directory, entry);
                 if (!file.Exists || (file.Attributes & FileAttributes.Directory) != 0)
+                {
                     throw new IOException($"Workspace file link '{entry}' has no regular owned target.");
+                }
                 return;
             }
             entry = Path.GetFullPath(target, Path.GetDirectoryName(entry)!);

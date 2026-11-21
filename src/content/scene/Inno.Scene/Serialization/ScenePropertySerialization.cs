@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Scene;
@@ -55,11 +54,15 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
+        {
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
+        }
         ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
+        {
             return serialization.CapturePropertyData(serializable, propertyName, context);
+        }
     }
 
     /// <summary>
@@ -92,11 +95,15 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
+        {
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
+        }
         ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
+        {
             return serialization.CapturePropertiesData(serializable, context);
+        }
     }
 
     /// <summary>
@@ -123,11 +130,15 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
+        {
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
+        }
         ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
+        {
             return serialization.CaptureProperties(serializable, context);
+        }
     }
 
     /// <summary>
@@ -168,11 +179,15 @@ public static class ScenePropertySerialization
         ArgumentNullException.ThrowIfNull(serialization);
         ArgumentNullException.ThrowIfNull(assets);
         if (target is not ISerializable serializable)
+        {
             throw new ArgumentException($"Scene object '{target.GetType().FullName}' is not serializable.", nameof(target));
+        }
         ScenePropertyReferenceScope references = CreateReferences(ResolveScene(target));
         SerializationContext context = AssetSerializationContext.Create(assets);
         using (references.Enter())
+        {
             return serialization.RestorePropertiesData(serializable, data, mode, context);
+        }
     }
 
     internal static ScenePropertyReferenceScope CreateReferences(
@@ -183,7 +198,9 @@ public static class ScenePropertySerialization
     internal static GameScene ResolveScene(EngineObject target)
     {
         if (target.isDestroyed)
+        {
             throw new InvalidOperationException($"Destroyed scene object '{target.identity.persistentId}' cannot be serialized.");
+        }
         return target switch
         {
             GameScene scene when scene.isLoaded => scene,
@@ -191,8 +208,8 @@ public static class ScenePropertySerialization
             GameComponent component when !component.isDestroyed => component.gameObject.scene,
             GameSystem system when system.ownerScene is { isLoaded: true } owner => owner,
             _ => throw new InvalidOperationException(
-                $"Scene object '{target.identity.persistentId}' is not owned by a loaded scene.")
+                $"Scene object '{target.identity.persistentId}' is not owned by a loaded scene."
+            )
         };
     }
-
 }

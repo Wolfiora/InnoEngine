@@ -40,7 +40,9 @@ internal sealed record SceneDocumentHistoryData(
         Guid? selectedAfter = ReadGuid(reader);
         EditorSceneWorkspace.SceneDocumentSnapshot snapshot = ReadSnapshot(reader);
         if (stream.Position != stream.Length)
+        {
             throw new InvalidDataException("Scene document history payload contains trailing data.");
+        }
         return new SceneDocumentHistoryData(
             existsBefore,
             existsAfter,
@@ -48,7 +50,8 @@ internal sealed record SceneDocumentHistoryData(
             activeBefore,
             activeAfter,
             selectedBefore,
-            selectedAfter);
+            selectedAfter
+        );
     }
 
     private static void WriteSnapshot(
@@ -82,7 +85,8 @@ internal sealed record SceneDocumentHistoryData(
             sourceAssetId,
             savedHash,
             isDirty,
-            sceneIndex);
+            sceneIndex
+        );
     }
 
     private static byte[] ReadBytes(
@@ -91,10 +95,14 @@ internal sealed record SceneDocumentHistoryData(
     ) {
         int length = reader.ReadInt32();
         if (length < 0 || length > reader.BaseStream.Length - reader.BaseStream.Position)
+        {
             throw new InvalidDataException($"Scene document history {name} length is invalid.");
+        }
         byte[] bytes = reader.ReadBytes(length);
         if (bytes.Length != length)
+        {
             throw new EndOfStreamException($"Scene document history {name} is truncated.");
+        }
         return bytes;
     }
 
@@ -104,7 +112,9 @@ internal sealed record SceneDocumentHistoryData(
     ) {
         writer.Write(value.HasValue);
         if (value.HasValue)
+        {
             writer.Write(value.Value.ToByteArray());
+        }
     }
 
     private static Guid? ReadGuid(BinaryReader reader) => reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;

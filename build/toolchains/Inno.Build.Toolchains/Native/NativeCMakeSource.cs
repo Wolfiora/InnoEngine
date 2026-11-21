@@ -33,13 +33,17 @@ public sealed class NativeCMakeSource
         {
             string path = Path.GetFullPath(entry.physicalPath);
             while (GetSourceRelative(m_engineRoot, bindings, resolver, path) is string relative
-                && m_paths.TryAdd(path, relative))
-            {
+                   && m_paths.TryAdd(path, relative)
+            ) {
                 // Keep the source spelling for verification and also accept its declared physical counterpart.
                 if (!IsCheckoutPath(m_engineRoot, path) && bindings.ResolveRelative(path) is null)
+                {
                     m_paths.TryAdd(resolver.Resolve(path), relative);
+                }
                 if (relative == ".")
+                {
                     break;
+                }
                 path = Path.GetDirectoryName(path)!;
             }
         }
@@ -70,12 +74,18 @@ public sealed class NativeCMakeSource
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         if (!Path.IsPathFullyQualified(path))
+        {
             throw new ArgumentException("A CMake input path must be absolute.", nameof(path));
+        }
         string absolute = Path.GetFullPath(path);
         if (m_paths.TryGetValue(absolute, out string? relative))
+        {
             return PathBoundary.Resolve(root, relative);
+        }
         if (!IsCheckoutPath(m_engineRoot, absolute) && m_bindings.ResolveRelative(absolute) is null)
+        {
             return absolute;
+        }
         throw new InvalidOperationException("A CMake source was not declared by the native recipe: " + absolute);
     }
 
@@ -96,13 +106,17 @@ public sealed class NativeCMakeSource
         ArgumentNullException.ThrowIfNull(argument);
         int separator = argument.IndexOf('=');
         if (!argument.StartsWith("-D", StringComparison.Ordinal) || separator < 0)
+        {
             return argument;
+        }
         string[] values = argument[(separator + 1)..].Split(';');
         for (int index = 0; index < values.Length; index++)
         {
             string value = values[index];
             if (Path.IsPathFullyQualified(value) && m_paths.ContainsKey(Path.GetFullPath(value)))
+            {
                 values[index] = ResolvePath(value);
+            }
         }
         return argument[..(separator + 1)] + string.Join(';', values);
     }
@@ -121,21 +135,30 @@ public sealed class NativeCMakeSource
             .GroupBy(static entry => entry.physicalPath, comparer)
             .Select(group => new NativeInputSnapshot.Entry(
                 "engine/" + GetSourceRelative(context.engineRoot, bindings, resolver, group.Key)!.Replace('\\', '/'),
-                group.Key, group.First().hash))
-            .OrderBy(static entry => entry.logicalPath, StringComparer.Ordinal).ToArray();
+                group.Key,
+                group.First().hash
+            ))
+            .OrderBy(static entry => entry.logicalPath, StringComparer.Ordinal)
+            .ToArray();
         NativeInputSnapshot.Entry[] entries = declared.GroupBy(static entry => entry.logicalPath, comparer).Select(group =>
         {
             NativeInputSnapshot.Entry first = group.First();
             string physical = resolver.Resolve(first.physicalPath);
             if (group.Any(entry => resolver.Resolve(entry.physicalPath) != physical || !entry.hash.AsSpan().SequenceEqual(first.hash)))
+            {
                 throw new InvalidOperationException("Native source aliases disagree about one copied workspace location.");
+            }
             return first;
         }).ToArray();
         if (entries.Length == 0)
+        {
             throw new InvalidOperationException("The native recipe declares no checkout or selected binding inputs.");
+        }
         string root = Path.Combine(context.GetNativeBuildRoot(component), "Sources");
         if (Directory.Exists(root) && IsComplete(context, root, entries, cancellationToken))
+        {
             return new(context.engineRoot, root, declared, bindings, resolver);
+        }
         Directory.CreateDirectory(root);
         var expected = new HashSet<string>(entries.Select(static entry => entry.logicalPath["engine/".Length..]), comparer);
         foreach (string file in PathBoundary.EnumerateFiles(root))
@@ -143,7 +166,9 @@ public sealed class NativeCMakeSource
             cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(root, file).Replace('\\', '/');
             if (!expected.Contains(relative))
+            {
                 File.Delete(file);
+            }
         }
         foreach (NativeInputSnapshot.Entry entry in entries)
         {
@@ -163,12 +188,16 @@ public sealed class NativeCMakeSource
     ) {
         string? binding = bindings.ResolveRelative(path);
         if (binding is not null)
+        {
             return binding;
+        }
         if (IsCheckoutPath(engineRoot, path))
+        {
             return Path.GetRelativePath(engineRoot, path);
+        }
         string physical = resolver.Resolve(path);
         return bindings.ResolveRelative(physical)
-            ?? (IsCheckoutPath(engineRoot, physical) ? Path.GetRelativePath(engineRoot, physical) : null);
+               ?? (IsCheckoutPath(engineRoot, physical) ? Path.GetRelativePath(engineRoot, physical) : null);
     }
 
     private static bool IsCheckoutPath(
@@ -177,7 +206,7 @@ public sealed class NativeCMakeSource
     ) {
         string relative = Path.GetRelativePath(engineRoot, path);
         return relative != ".." && !relative.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-            && !Path.IsPathRooted(relative);
+               && !Path.IsPathRooted(relative);
     }
 
     private static bool IsComplete(
@@ -188,17 +217,25 @@ public sealed class NativeCMakeSource
     ) {
         string[] files = PathBoundary.EnumerateFiles(root).ToArray();
         if (files.Length != expected.Count)
+        {
             return false;
-        NativeInputSnapshot actual = context.inputState.CaptureVerification(files.Select(path =>
-            new NativeBuildInput("engine/" + Path.GetRelativePath(root, path).Replace('\\', '/'), path)), cancellationToken);
+        }
+        NativeInputSnapshot actual = context.inputState.CaptureVerification(
+            files.Select(path =>
+                new NativeBuildInput("engine/" + Path.GetRelativePath(root, path).Replace('\\', '/'), path)),
+            cancellationToken
+        );
         for (int index = 0; index < expected.Count; index++)
         {
             if (actual.entries[index].logicalPath != expected[index].logicalPath
-                || !actual.entries[index].hash.AsSpan().SequenceEqual(expected[index].hash))
+                || !actual.entries[index].hash.AsSpan().SequenceEqual(expected[index].hash)
+            ) {
                 return false;
+            }
         }
         return true;
     }
+
     internal sealed class Preparation
     {
         private readonly object m_gate = new();
@@ -213,7 +250,9 @@ public sealed class NativeCMakeSource
             CancellationToken cancellationToken
         ) {
             lock (m_gate)
+            {
                 return m_task ??= CreateAsync(context, component, m_inputs, cancellationToken);
+            }
         }
     }
 }

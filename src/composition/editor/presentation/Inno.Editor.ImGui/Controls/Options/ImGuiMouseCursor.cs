@@ -1,6 +1,7 @@
 using System;
 
 namespace Inno.Editor.ImGui;
+
 /// <summary>
 /// Defines the supported mouse cursor choices at the Editor presentation boundary.
 /// </summary>
@@ -57,5 +58,5 @@ public enum ImGuiMouseCursor : int
     /// <summary>
     /// Marks the exclusive end of the valid option range.
     /// </summary>
-    Count = (int)Inno.Native.ImGui.ImGuiMouseCursor.Count,
+    Count = (int)Inno.Native.ImGui.ImGuiMouseCursor.Count
 }

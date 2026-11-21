@@ -1,8 +1,8 @@
-using Inno.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
@@ -53,16 +53,22 @@ public sealed class RenderShaderArtifact
         ArgumentNullException.ThrowIfNull(passes);
         RenderShaderPassArtifact[] passSnapshot = passes.ToArray();
         if (passSnapshot.Length == 0)
+        {
             throw new ArgumentException("A deployed shader artifact must contain at least one pass.", nameof(passes));
+        }
         if (passSnapshot.Select(static pass => pass.name).Distinct(StringComparer.Ordinal).Count() != passSnapshot.Length)
+        {
             throw new ArgumentException("A deployed shader artifact cannot repeat a pass name.", nameof(passes));
+        }
         this.shaderName = shaderName;
         this.targetKey = targetKey;
         this.variant = variant;
         this.shaderInterface = RenderShaderPassArtifact.CloneInterface(shaderInterface);
         m_passes = Array.AsReadOnly(passSnapshot);
         if (definitionData.IsEmpty)
+        {
             throw new ArgumentException("A shader publication requires its captured runtime contract.", nameof(definitionData));
+        }
         m_definitionData = definitionData.ToArray();
         contentHash = Convert.ToHexString(SHA256.HashData(RenderShaderArtifactCodec.Encode(this)));
     }
@@ -102,4 +108,3 @@ public sealed class RenderShaderArtifact
     /// </summary>
     public IReadOnlyList<RenderShaderPassArtifact> passes => m_passes;
 }
-

@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Tests;
 
@@ -70,22 +70,31 @@ public sealed class RenderGraphValidationTests
             context
         ) => calls++).HasSideEffect();
         for (int index = 0; index < 32; index++)
+        {
             Assert.True(graph.Validate().isValid);
+        }
         Assert.True(graph.Compile().succeeded);
         Assert.Equal(0, calls);
     }
 
     private static RenderGraphBuilder CreateGraph(int maxViews = 64)
-        => new(1, new GraphicsCapabilities(
-            GraphicsApi.Noop,
-            GraphicsCapability.None,
-            new GraphicsLimits(maxViews, 8, 16384, 16),
-            Enum.GetValues<RenderTextureFormat>(),
-            Enum.GetValues<RenderTextureFormat>(),
-            [], [], false, false));
+        => new(
+            1,
+            new GraphicsCapabilities(
+                GraphicsApi.Noop,
+                GraphicsCapability.None,
+                new GraphicsLimits(maxViews, 8, 16384, 16),
+                Enum.GetValues<RenderTextureFormat>(),
+                Enum.GetValues<RenderTextureFormat>(),
+                [],
+                [],
+                false,
+                false
+            )
+        );
 
     private static void Execute(
         int payload,
         RenderPassContext context
-    ) { }
+    ) {}
 }

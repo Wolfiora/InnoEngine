@@ -47,8 +47,12 @@ public sealed class MonoWasmDeploymentCompiler : IManagedDeploymentCompiler
         m_hostPath = hostPath;
         m_workspaces = workspaces;
         m_aheadOfTime = aheadOfTime;
-        capabilities = new ManagedDeploymentCapabilities(runtimeIdentifiers,
-            dynamicCode: false, aheadOfTime: aheadOfTime, nativeStaticLinking: true);
+        capabilities = new ManagedDeploymentCapabilities(
+            runtimeIdentifiers,
+            dynamicCode: false,
+            aheadOfTime: aheadOfTime,
+            nativeStaticLinking: true
+        );
     }
 
     /// <inheritdoc />
@@ -61,7 +65,18 @@ public sealed class MonoWasmDeploymentCompiler : IManagedDeploymentCompiler
     public ValueTask<ManagedDeploymentResult> CompileAsync(
         ManagedDeploymentRequest request,
         CancellationToken cancellationToken = default
-    ) => DotNetDeploymentPublisher.PublishAsync(id, capabilities, m_hostPath, m_workspaces, request,
-        ["WasmBuildNative=true", "PublishTrimmed=true", "TrimMode=full",
-            "RunAOTCompilation=" + (m_aheadOfTime ? "true" : "false")], cancellationToken);
+    ) => DotNetDeploymentPublisher.PublishAsync(
+        id,
+        capabilities,
+        m_hostPath,
+        m_workspaces,
+        request,
+        [
+            "WasmBuildNative=true",
+            "PublishTrimmed=true",
+            "TrimMode=full",
+            "RunAOTCompilation=" + (m_aheadOfTime ? "true" : "false")
+        ],
+        cancellationToken
+    );
 }

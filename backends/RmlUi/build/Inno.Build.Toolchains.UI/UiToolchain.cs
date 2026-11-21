@@ -21,10 +21,19 @@ public static class UiToolchain
         "backends/RmlUi/build/Inno.Build.Toolchains.UI/Inno.Build.Toolchains.UI.csproj",
         new NativeStaticBuildDefinition(
             "backends/RmlUi/build/Inno.Build.Toolchains.UI/Native/StaticLibraries.cmake",
-            ["extern/freetype", "extern/harfbuzz", "extern/RmlUi", "backends/RmlUi/native/Inno.Native.UI/Native/include", "backends/RmlUi/native/Inno.Native.UI/Native/src", "backends/RmlUi/native/Inno.Native.UI/Native/CMakeLists.txt"],
+            [
+                "extern/freetype",
+                "extern/harfbuzz",
+                "extern/RmlUi",
+                "backends/RmlUi/native/Inno.Native.UI/Native/include",
+                "backends/RmlUi/native/Inno.Native.UI/Native/src",
+                "backends/RmlUi/native/Inno.Native.UI/Native/CMakeLists.txt"
+            ],
             ["libinno-ui", "librmlui"],
-            nativeSourceDirectory: "backends/RmlUi/native/Inno.Native.UI"),
-        bindingDefinition: "backends/RmlUi/native/Inno.Native.UI/Bindings/bindings.props");
+            nativeSourceDirectory: "backends/RmlUi/native/Inno.Native.UI"
+        ),
+        bindingDefinition: "backends/RmlUi/native/Inno.Native.UI/Bindings/bindings.props"
+    );
 
     /// <summary>
     /// Builds the component using the explicitly selected target SDK and validates the complete native product.
@@ -52,26 +61,41 @@ public static class UiToolchain
         NativeToolchainSelection selection = context.RequireToolchain();
         string source = Path.Combine(componentDescriptor.GetNativeRoot(context.engineRoot), "Native");
         NativeBuildRecipe recipe = CreateRecipe(context);
-        return await NativeArtifactPublisher.PublishAsync(context, recipe,
+        return await NativeArtifactPublisher.PublishAsync(
+            context,
+            recipe,
             async (
                 @scoped,
                 output,
                 token
-            ) => {
-                string build = await NativeCMakeExecutor.BuildAsync(scoped, componentDescriptor,
-                    source, "inno-ui", [], token).ConfigureAwait(false);
+            ) =>
+            {
+                string build = await NativeCMakeExecutor.BuildAsync(
+                    scoped,
+                    componentDescriptor,
+                    source,
+                    "inno-ui",
+                    [],
+                    token
+                ).ConfigureAwait(false);
                 string library = NativeCMakeExecutor.FindOutput(scoped, build, "*inno-ui" + selection.sharedLibraryExtension);
                 string name = ToolchainEnvironment.NormalizeOutputName(Path.GetFileName(library), scoped.configuration);
                 File.Copy(library, Path.Combine(output, name));
-
-            }, cancellationToken, describeOutputs: static (
+            },
+            cancellationToken,
+            describeOutputs: static (
                 @scoped,
                 output
             ) =>
                 Directory.EnumerateFiles(output, "*", SearchOption.AllDirectories).Select(file =>
-                    new NativeArtifact(Path.GetRelativePath(output, file), file,
+                    new NativeArtifact(
+                        Path.GetRelativePath(output, file),
+                        file,
                         Path.GetRelativePath(output, file).StartsWith("Link" + Path.DirectorySeparatorChar, StringComparison.Ordinal)
-                            ? NativeArtifactRole.ImportLibrary : NativeArtifactRole.SharedLibrary)).ToArray()).ConfigureAwait(false);
+                        ? NativeArtifactRole.ImportLibrary
+                        : NativeArtifactRole.SharedLibrary
+                    )).ToArray()
+        ).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -100,9 +124,19 @@ public static class UiToolchain
         ArgumentNullException.ThrowIfNull(context);
         NativeToolchainSelection selection = context.RequireToolchain();
         if (context.RequireComponentOptions(componentDescriptor).libraryKind != NativeLibraryKind.Shared)
-            throw new NotSupportedException("This standalone producer requires shared linkage; static products use the declared aggregate recipe.");
-        return NativeBuildRecipe.CreateForComponent(context, componentDescriptor, "ui", selection.targetId,
+        {
+            throw new NotSupportedException(
+                "This standalone producer requires shared linkage; static products use the declared aggregate recipe."
+            );
+        }
+        return NativeBuildRecipe.CreateForComponent(
+            context,
+            componentDescriptor,
+            "ui",
+            selection.targetId,
             componentDescriptor.staticBuild!.inputPaths.Select(path => Path.GetFullPath(path, context.engineRoot)),
-            [], [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UiToolchain.cs")]);
+            [],
+            [Path.Combine(componentDescriptor.GetToolchainRoot(context.engineRoot), "UiToolchain.cs")]
+        );
     }
 }

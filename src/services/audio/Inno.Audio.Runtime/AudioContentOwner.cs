@@ -45,15 +45,21 @@ internal sealed class AudioContentOwner : IDisposable
     public void Dispose()
     {
         if (m_listener.isValid)
+        {
             _ = m_device.DestroyListener(m_listener);
+        }
         m_listener = default;
         m_listenerId = Guid.Empty;
         m_emitters.Clear();
         foreach (string id in m_providerDiagnosticIds)
+        {
             m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", id);
+        }
         m_providerDiagnosticIds.Clear();
         if (m_listenerDiagnosticId != Guid.Empty)
+        {
             m_diagnostics.Resolve("AUDIO_LISTENER_PRIORITY_TIE", m_listenerDiagnosticId.ToString("D"));
+        }
         m_listenerDiagnosticId = Guid.Empty;
     }
 
@@ -77,7 +83,8 @@ internal sealed class AudioContentOwner : IDisposable
                 "AUDIO_CONTENT_SCOPE_FAILED",
                 $"The host audio content scope failed; an empty scope is used for this update: {exception.Message}",
                 DiagnosticSeverity.Error,
-                "AudioRuntime");
+                "AudioRuntime"
+            );
             content = ContentReadScope.empty;
         }
         using ContentReadScope contentScope = content;
@@ -86,8 +93,9 @@ internal sealed class AudioContentOwner : IDisposable
         var ids = new HashSet<Guid>();
         int rejectedProviders = 0;
         foreach (string retiredId in m_providerDiagnosticIds
-                     .Where(id => !providers.providers.Any(entry => entry.id == id)).ToArray())
-        {
+            .Where(id => !providers.providers.Any(entry => entry.id == id))
+            .ToArray()
+        ) {
             m_diagnostics.Resolve("AUDIO_CONTENT_PROVIDER_FAILED", retiredId);
             m_providerDiagnosticIds.Remove(retiredId);
         }
@@ -99,9 +107,11 @@ internal sealed class AudioContentOwner : IDisposable
                 entry.provider.Submit(context);
                 IReadOnlyList<AudioEmitterSnapshot> contributionEmitters = context.emitters;
                 IReadOnlyList<AudioListenerSnapshot> contributionListeners = context.listeners;
-                if (contributionEmitters.Any(emitter => ids.Contains(emitter.id)) ||
-                    contributionListeners.Any(listener => ids.Contains(listener.id)))
+                if (contributionEmitters.Any(emitter => ids.Contains(emitter.id))
+                    || contributionListeners.Any(listener => ids.Contains(listener.id))
+                ) {
                     throw new ArgumentException("The contribution repeats an identity already accepted from another provider.");
+                }
                 foreach (AudioEmitterSnapshot emitter in contributionEmitters)
                 {
                     ids.Add(emitter.id);
@@ -127,7 +137,8 @@ internal sealed class AudioContentOwner : IDisposable
                     "AUDIO_CONTENT_PROVIDER_FAILED",
                     $"Audio content provider '{entry.id}' was isolated for this update: {exception.Message}",
                     DiagnosticSeverity.Error,
-                    entry.id);
+                    entry.id
+                );
             }
         }
         statistics = new AudioContentStatistics(m_capacity, ids.Count, rejectedProviders);
@@ -144,20 +155,23 @@ internal sealed class AudioContentOwner : IDisposable
             if (!snapshot.shouldPlay)
             {
                 if (m_emitters.Remove(snapshot.id, out EmitterRecord? inactive))
+                {
                     _ = m_voices.Stop(inactive.voice);
+                }
                 continue;
             }
             if (m_emitters.TryGetValue(snapshot.id, out EmitterRecord? current))
             {
-                if (current.clipId != snapshot.clip.identity.persistentId ||
-                    current.contentVersion != snapshot.clip.contentVersion ||
-                    current.playbackRevision != snapshot.playbackRevision)
-                {
+                if (current.clipId != snapshot.clip.identity.persistentId
+                    || current.contentVersion != snapshot.clip.contentVersion
+                    || current.playbackRevision != snapshot.playbackRevision
+                ) {
                     _ = m_voices.Stop(current.voice);
                     current = new EmitterRecord(
                         snapshot.clip,
                         snapshot.playbackRevision,
-                        m_voices.Play(snapshot.clip, snapshot.options));
+                        m_voices.Play(snapshot.clip, snapshot.options)
+                    );
                     m_emitters[snapshot.id] = current;
                 }
                 else
@@ -168,13 +182,16 @@ internal sealed class AudioContentOwner : IDisposable
                             snapshot.options.volume,
                             snapshot.options.pitch,
                             snapshot.options.pan,
-                            snapshot.options.spatial));
+                            snapshot.options.spatial
+                        )
+                    );
                 }
                 continue;
             }
             m_emitters.Add(
                 snapshot.id,
-                new EmitterRecord(snapshot.clip, snapshot.playbackRevision, m_voices.Play(snapshot.clip, snapshot.options)));
+                new EmitterRecord(snapshot.clip, snapshot.playbackRevision, m_voices.Play(snapshot.clip, snapshot.options))
+            );
         }
         foreach (Guid id in m_emitters.Keys.Where(id => !seen.Contains(id)).ToArray())
         {
@@ -198,7 +215,9 @@ internal sealed class AudioContentOwner : IDisposable
         if (active.Length == 0)
         {
             if (m_listener.isValid)
+            {
                 _ = m_device.DestroyListener(m_listener);
+            }
             m_listener = default;
             m_listenerId = Guid.Empty;
             return;
@@ -211,12 +230,15 @@ internal sealed class AudioContentOwner : IDisposable
                 "AUDIO_LISTENER_PRIORITY_TIE",
                 "Multiple active listeners share the highest priority; stable identity selected the winner.",
                 DiagnosticSeverity.Warning,
-                selected.id.ToString("D"));
+                selected.id.ToString("D")
+            );
         }
         if (!m_listener.isValid || m_listenerId != selected.id)
         {
             if (m_listener.isValid)
+            {
                 _ = m_device.DestroyListener(m_listener);
+            }
             m_listener = m_device.CreateListener(selected.state);
             m_listenerId = selected.id;
             return;
@@ -240,6 +262,5 @@ internal sealed class AudioContentOwner : IDisposable
         string message,
         DiagnosticSeverity severity,
         string? source
-    )
-        => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
+    ) => m_diagnostics.Publish(new Diagnostic(code, message, severity, source));
 }

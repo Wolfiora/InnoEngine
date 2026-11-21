@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Inno.Rendering;
 using Xunit;
+using Inno.Rendering;
 
 namespace Inno.Rendering.Tests;
 
@@ -12,8 +12,12 @@ public sealed class ParallelCommandRecordingTests
     public void EveryCommandReplaysTheSameArgumentsAfterBufferGrowthAndSourceReuse()
     {
         RenderGraphBuilder builder = CreateGraph();
-        var texture = new RenderTextureDescriptor(32, 32, RenderTextureFormat.RGBA8,
-            RenderTextureUsage.Sampled | RenderTextureUsage.ColorAttachment);
+        var texture = new RenderTextureDescriptor(
+            32,
+            32,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.Sampled | RenderTextureUsage.ColorAttachment
+        );
         var buffer = new RenderBufferDescriptor(32, 16, RenderBufferUsage.Vertex | RenderBufferUsage.Storage);
         var data = new CommandInputs
         {
@@ -22,11 +26,16 @@ public sealed class ParallelCommandRecordingTests
             buffer = builder.ImportBuffer("buffer", DeviceHandles.buffer, buffer),
             otherBuffer = builder.ImportBuffer("other-buffer", DeviceHandles.otherBuffer, buffer)
         };
-        builder.AddRasterPass("Commands", new RenderPhaseId("tests.commands"), data,
-            static (
-                inputs,
-                context
-            ) => IssueCommands(inputs, context.commands))
+        builder
+            .AddRasterPass(
+                "Commands",
+                new RenderPhaseId("tests.commands"),
+                data,
+                static (
+                    inputs,
+                    context
+                ) => IssueCommands(inputs, context.commands)
+            )
             .AllowParallelRecording()
             .ReadTexture(data.source)
             .ReadTexture(data.destination)
@@ -53,7 +62,9 @@ public sealed class ParallelCommandRecordingTests
         graph.Execute(backend, 43);
         Assert.Equal(expected.calls.Count, backend.encoder.calls.Count);
         for (int index = 0; index < expected.calls.Count; index++)
+        {
             Assert.Equal(expected.calls[index].arguments, backend.encoder.calls[index].arguments);
+        }
     }
 
     [Theory]
@@ -75,14 +86,20 @@ public sealed class ParallelCommandRecordingTests
         CompiledRenderGraph graph = builder.Compile().graph!;
         var backend = new ProbeBackend(phase, capture: false);
         if (phase == "success")
+        {
             graph.Execute(backend, 1);
+        }
         else
         {
             Exception failure = Assert.ThrowsAny<Exception>(() => graph.Execute(backend, 1));
             foreach (string expected in phase.Split(','))
+            {
                 Assert.Contains(expected, failure.ToString(), StringComparison.Ordinal);
+            }
             if (phase.Contains(',', StringComparison.Ordinal))
+            {
                 Assert.Equal(phase.Split(',').Length, Assert.IsType<AggregateException>(failure).Flatten().InnerExceptions.Count);
+            }
         }
 
         Assert.True(backend.ended);
@@ -96,13 +113,21 @@ public sealed class ParallelCommandRecordingTests
         GC.KeepAlive(data.borrowedCommands);
     }
 
-    private static RenderGraphBuilder CreateGraph() => new(1, new GraphicsCapabilities(
-        GraphicsApi.Noop,
-        GraphicsCapability.Compute | GraphicsCapability.StorageBuffer | GraphicsCapability.StorageTexture,
-        new GraphicsLimits(16, 8, 16384, 16),
-        [RenderTextureFormat.RGBA8], [RenderTextureFormat.RGBA8],
-        [RenderTextureFormat.RGBA8], [RenderTextureFormat.RGBA8],
-        originBottomLeft: false, homogeneousDepth: false));
+    private static RenderGraphBuilder CreateGraph()
+        => new(
+            1,
+            new GraphicsCapabilities(
+                GraphicsApi.Noop,
+                GraphicsCapability.Compute | GraphicsCapability.StorageBuffer | GraphicsCapability.StorageTexture,
+                new GraphicsLimits(16, 8, 16384, 16),
+                [RenderTextureFormat.RGBA8],
+                [RenderTextureFormat.RGBA8],
+                [RenderTextureFormat.RGBA8],
+                [RenderTextureFormat.RGBA8],
+                originBottomLeft: false,
+                homogeneousDepth: false
+            )
+        );
 
     private static void IssueCommands(
         CommandInputs data,
@@ -113,10 +138,14 @@ public sealed class ParallelCommandRecordingTests
         {
             byte[] uniform = new byte[4097];
             for (int offset = 0; offset < uniform.Length; offset++)
+            {
                 uniform[offset] = unchecked((byte)(offset + index));
+            }
             float[] transform = new float[16];
             for (int element = 0; element < transform.Length; element++)
+            {
                 transform[element] = index + element * 0.25f;
+            }
             var sampler = RenderSamplerState.linearClamp;
             var sourceRegion = new RenderTextureRegion(0, 1, 2, 0, 3, 4);
             var destinationRegion = new RenderTextureRegion(0, 5, 6, 0, 3, 4);
@@ -167,9 +196,13 @@ public sealed class ParallelCommandRecordingTests
         data.borrowedCommands = context.commands;
         context.commands.SetRasterState(state);
         for (int index = 0; index < 32; index++)
+        {
             context.commands.SetUniform(new RenderBindingId("lifetime"), new byte[257]);
+        }
         if (data.phase.Contains("record", StringComparison.Ordinal))
+        {
             throw new InvalidOperationException("record");
+        }
     }
 
     private sealed class CommandInputs
@@ -213,26 +246,32 @@ public sealed class ParallelCommandRecordingTests
             encoder = new ProbeEncoder(phase, capture);
         }
 
-        public void BeginGraph(CompiledRenderGraph graph) { }
+        public void BeginGraph(CompiledRenderGraph graph) {}
 
         public RenderCommandEncoder BeginPass(CompiledRenderPass pass)
         {
             if (m_phase == "begin-pass")
+            {
                 throw new InvalidOperationException(m_phase);
+            }
             return encoder;
         }
 
         public void EndPass(CompiledRenderPass pass)
         {
             if (m_phase.Contains("end-pass", StringComparison.Ordinal))
+            {
                 throw new InvalidOperationException("end-pass");
+            }
         }
 
         public void EndGraph(CompiledRenderGraph graph)
         {
             ended = true;
             if (m_phase.Contains("end-graph", StringComparison.Ordinal))
+            {
                 throw new InvalidOperationException("end-graph");
+            }
         }
     }
 
@@ -294,7 +333,8 @@ public sealed class ParallelCommandRecordingTests
             ReadOnlySpan<byte> value
         ) => Record("SetUniform", binding, Convert.ToHexString(value));
 
-        public override void SetTransform(ReadOnlySpan<float> columnMajorMatrix) => Record("SetTransform", Convert.ToHexString(MemoryMarshal.AsBytes(columnMajorMatrix)));
+        public override void SetTransform(ReadOnlySpan<float> columnMajorMatrix)
+            => Record("SetTransform", Convert.ToHexString(MemoryMarshal.AsBytes(columnMajorMatrix)));
 
         public override void SetRasterState(RenderRasterState state) => Record("SetRasterState", state);
 
@@ -413,9 +453,13 @@ public sealed class ParallelCommandRecordingTests
             params object?[] arguments
         ) {
             if (m_phase.Contains("replay", StringComparison.Ordinal))
+            {
                 throw new InvalidOperationException("replay");
+            }
             if (m_capture)
+            {
                 calls.Add(new ObservedCommand(operation, arguments));
+            }
         }
     }
 
