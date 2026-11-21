@@ -1,6 +1,6 @@
 # Human commit attribution
 
-[Decisions](README.md) · [Rule authority](../../rulebook/delivery.md#delivery)
+[Decisions](README.md) · [Rule authority](../../rulebook/delivery.md)
 
 On 2026-11-21 the user replaced the delivery clause that named one person as the required Git author and committer. The requirement is a principle, not an identity: a human vouches for every commit.
 

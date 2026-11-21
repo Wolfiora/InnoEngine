@@ -3,7 +3,7 @@ name: inno-verify
 description: Plan and execute bounded InnoEngine validation; diagnose failures and reconcile evidence with current inputs.
 ---
 
-Load applicable units from the [validation rules](../../rulebook/validation.md) through the rule selector. Use Build `validate plan/run/full/evidence`; inspect owners, reasons, environments, prerequisite artifacts and exclusions. The planner owns the check inventory.
+Load the [validation rules](../../rulebook/validation.md) through the rule script. Use Build `validate plan/run/full/evidence`; inspect owners, reasons, environments, prerequisite artifacts and exclusions. The planner owns the check inventory.
 
 Check evidence identities before executing missing or invalid work. Commits, pushes, report edits and session recovery are not reasons to repeat valid checks. Record the exact invalidating input. Preserve the first failure and retry reason; do not rerun until a run happens to turn green. Unknown owners, empty required discovery, skipped jobs and unavailable environments are not passes. Device, performance, stress and lifecycle checks follow their actual obligations.
 

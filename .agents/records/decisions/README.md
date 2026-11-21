@@ -6,6 +6,7 @@ Record durable reasons, constraints and tradeoffs, with links to the current aut
 
 ## Rule authority
 
+- [Plain Markdown rules](PLAIN_MARKDOWN_RULES.md): rule files declare their own paths and tags; the hash registry is retired and a human merges every rule change.
 - [English rule preservation](ENGLISH_RULE_PRESERVATION.md): original rule identities, clause correspondence, reviewed meaning and explicitly approved ownership/language changes.
 - [C# code style rulebook](CSHARP_STYLE_RULEBOOK.md): the detailed style authority, its registration and the coding clauses it replaced.
 - [Root test ownership](ROOT_TEST_OWNERSHIP.md): one root tests boundary replacing backend-local test ownership.

@@ -325,7 +325,7 @@ internal static partial class ValidationPlanner
         }
 
         string[] policyInputs = inputs.Keys.Where(static path => path == "AGENTS.md" || path.StartsWith(".agents/rulebook/", StringComparison.Ordinal)
-            || path == ValidationCiContracts.C_RULE_LOADER).Concat(RuleReviewInputs()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+            || path is ValidationCiContracts.C_RULE_LOADER or ValidationCiContracts.C_RULE_EXAMPLES).Order(StringComparer.Ordinal).ToArray();
         var inputSets = projects.ToDictionary(static project => project.path,
             project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)), StringComparer.Ordinal);
         var entryInputs = contexts.ToDictionary(static pair => pair.Key,
@@ -345,7 +345,7 @@ internal static partial class ValidationPlanner
         inputSets.Add("native-sources", submoduleInputs);
         var checks = new List<ValidationCheck>
         {
-            new("instructions", "instructions", "AGENTS.md", "Rule preservation, discoverability, budgets and links.", "any", [], policyInputs, true, null),
+            new("instructions", "instructions", "AGENTS.md", "Rule front matter, size limits and routing examples.", "any", [], policyInputs, true, null),
             new("architecture", "architecture", "tools/Inno.Tooling.Architecture", "Cheap repository-wide source, ownership and architecture invariants.", "any", [],
                 inputs.Keys.Where(static path => path.Split('/')[0] is "src" or "entry" or "backends" or "platforms" or "build" or "tools"
                     || path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase)
@@ -746,47 +746,6 @@ internal static partial class ValidationPlanner
 
         Task<string> GitAsync(params string[] arguments) => ValidationProcess.RunAsync("git", arguments, root, null, cancellation);
 
-        IEnumerable<string> RuleReviewInputs()
-        {
-            const string C_REGISTRY = ".agents/rulebook/coverage.json";
-            if (!inputs.ContainsKey(C_REGISTRY) || inputs[C_REGISTRY] == "missing")
-                yield break;
-            using JsonDocument registry = ReadRegistry();
-            foreach (JsonElement unit in registry.RootElement.GetProperty("units").EnumerateArray())
-            {
-                if (unit.TryGetProperty("translation", out JsonElement translation))
-                {
-                    yield return ReviewPath(translation);
-                    if (translation.TryGetProperty("amendments", out JsonElement amendments))
-                        foreach (JsonElement amendment in amendments.EnumerateArray())
-                            yield return ReviewPath(amendment);
-                }
-                if (unit.TryGetProperty("approvedAddition", out JsonElement addition)
-                    && addition.TryGetProperty("translation", out translation))
-                    yield return ReviewPath(translation);
-            }
-
-            string ReviewPath(JsonElement translation)
-            {
-                string path = translation.GetProperty("review").GetString()!.Split('#', 2)[0];
-                ValidationInputs.Resolve(root, path);
-                return path;
-            }
-
-            JsonDocument ReadRegistry()
-            {
-                try
-                {
-                    return JsonDocument.Parse(File.ReadAllBytes(ValidationInputs.Resolve(root, C_REGISTRY)));
-                }
-                catch (JsonException failure)
-                {
-                    throw new InvalidDataException("Rule registry is invalid: " + C_REGISTRY, failure);
-                }
-            }
-        }
-
-
         string[] CapturedInputs(IEnumerable<string> declared)
         {
             string[] paths = declared.ToArray();
@@ -827,7 +786,6 @@ internal static partial class ValidationPlanner
 
     private static bool IsDocumentation(string path)
         => path.EndsWith(".md", StringComparison.OrdinalIgnoreCase)
-            || path == ".agents/rulebook/coverage.json"
             || (path.StartsWith("docs/", StringComparison.Ordinal) || path.StartsWith(".agents/records/", StringComparison.Ordinal))
                 && (Path.GetExtension(path) is ".json" or ".csv" or ".png" or ".jpg" or ".svg" || path.EndsWith(".cs.txt", StringComparison.Ordinal));
 }

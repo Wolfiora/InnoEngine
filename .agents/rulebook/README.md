@@ -2,29 +2,47 @@
 
 This directory owns requirements for changing the engine. Product design, mechanisms, usage and contracts belong to [InnoEngine.Docs](https://github.com/Wolfiora/InnoEngine.Docs). Task progress and historical evidence belong to [records](../records/README.md). Humans and agents follow the same requirements.
 
-Run `tests/ci/Test-AgentRules.ps1 -Paths <repository-relative paths> -ShowInstructions` from the engine root to discover complete units. Add explicit units with `-Rules`, behavior tags with `-Behaviors`, and read stages with `-Stage`. [coverage.json](coverage.json) is the sole registry of authorities, sources, applicability and required relationships.
+## Read the rules for a change
 
-Behavior tags describe the work: for example, `new-boundary`, `public-api`, `ownership`, `serialization`, `reload`, `native`, `documentation`, `rules`, `skills`, `records` and `delivery`. Multiple paths, tags and dependencies may select one unit. Its complete body appears once with all selection reasons.
+Run `pwsh tests/ci/Test-AgentRules.ps1 -Paths <repository-relative paths>` from the engine root. It lists the rule files that apply to those paths; read each listed file completely. Add `-Tags` for the kind of work and `-Rules` for a specific file. A rule ID is the file path under this directory without `.md`, for example `coding` or `csharp-style/03-naming`.
 
-| Responsibility | Authority |
+Tags describe the work: for example, `new-boundary`, `public-api`, `ownership`, `serialization`, `reload`, `native`, `documentation`, `rules`, `skills`, `records` and `delivery`.
+
+| Responsibility | Rules |
 | --- | --- |
-| Architecture, boundaries, reuse and project ownership | [Architecture](architecture.md) |
+| Architecture, boundaries, reuse and ownership | [Architecture](architecture.md) |
+| Retired compatibility layers and schema versions | [No legacy compatibility](no-legacy.md) |
+| Directories, solutions and project files | [Solutions and projects](projects.md) |
 | Naming, XML, formatting, exceptions and concurrency | [Coding](coding.md) |
-| C# names, layout, line breaks and idioms, with examples | [C# code style](csharp-style.md) |
-| Documentation, API, examples and content ownership | [Docs authority](https://github.com/Wolfiora/InnoEngine.Docs/blob/main/.agents/rulebook/documentation.md) on `main`, the published branch; [`draft`](https://github.com/Wolfiora/InnoEngine.Docs/blob/draft/.agents/rulebook/documentation.md) holds unpublished changes. Load with an explicit `-DocsRoot` |
+| C# names, layout, line breaks and idioms, with examples | [C# code style](csharp-style/README.md) |
+| Documentation, API, examples and content ownership | [Documentation](documentation.md), owned by InnoEngine.Docs |
 | Tests, compilation, completion and review | [Validation](validation.md) |
 | Commits, PRs and notifications | [Delivery](delivery.md) |
-| Editor | [Editor](domains/editor.md) |
+| Editor | [Projects](domains/editor/projects.md), [state](domains/editor/state.md) and [UI](domains/editor/ui.md) |
 | Identity, Missing and reload | [Identity and reload](domains/identity-reload.md) |
 | Scripting | [Scripting](domains/scripting.md) |
 | Plugins | [Plugins](domains/plugins.md) |
 | Rendering and frames | [Rendering](domains/rendering.md) |
-| Builds, Native and platforms | [Build and Native](domains/build-native.md) |
+| Builds, Native and platforms | [Hosts](domains/build-native/hosts.md), [platform products](domains/build-native/platform-products.md) and [backend integration](domains/build-native/backend-integration.md) |
 
-Load complete sections. Combining units into a file does not require every task to load that whole file. The checker retains all 241 original rule mappings and supplemental source requirements. Updating a target hash is not semantic preservation.
+## Add or change a rule
 
-English translations retain their original Git source identities and register every nonblank source/target line, including headings, examples and nested requirements. Original numbered clauses link to their English targets. The [translation review](../records/decisions/ENGLISH_RULE_PRESERVATION.md) records reviewed obligations and any interpretation. Automated coverage detects omissions and unregistered changes; the implementing owner remains responsible for semantic equivalence. Units not yet translated retain exact source-text verification.
+Rules are plain Markdown. Edit a file or add a new one, then open a pull request; a human merges it. Record a lasting decision in [decisions](../records/decisions/README.md) when its reason will matter later.
 
-Explicitly approved additional requirements may follow `<!-- approved-addition -->` in an existing unit. Register the approval and the addition's SHA-256 in `approvedAddition`, using LF line endings and trimmed outer whitespace. The loader checks the original body or its reviewed translation separately, checks the addition, then emits both completely. This mechanism permits additions only; it does not authorize deleting or weakening existing rules.
+Every rule file starts with front matter that states when it applies:
 
-Explicit user-approved clause replacements use `translation.amendments`, each identifying the ordinal, original translated hash, new active hash, approval and decision record. Original provenance and translation mappings remain intact. The loader rejects unmapped, duplicate, altered or undocumented amendments; this mechanism does not infer approval from a hash update.
+```markdown
+---
+paths: ["src/services/rendering/**", "tests/rendering/**"]
+tags: [rendering]
+---
+# Rendering
+```
+
+- `paths` lists repository-relative globs that match the whole path. `**/` spans directories and `*` stays inside one name. Matching is case-sensitive.
+- `tags` lists the work tags that select the file.
+- Declare at least one of the two, each as a one-line list.
+- Keep one topic per file and every file within 16 KiB. Split a larger topic into a directory.
+- When routing changes, add a path that must select the file and one that must not to the [routing examples](../../tests/ci/Test-AgentRules.examples.json).
+
+Run the script without arguments to check every rule file, the root instruction size and the routing examples.

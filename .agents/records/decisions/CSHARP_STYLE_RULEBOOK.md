@@ -1,8 +1,8 @@
 # C# code style rulebook
 
-[Decisions](README.md) · [Rule authority](../../rulebook/csharp-style.md)
+[Decisions](README.md) · [Rule authority](../../rulebook/csharp-style/README.md)
 
-The user reviewed a complete audit of the handwritten C# source, revised the proposed rules on 2026-11-21 and approved one detailed style authority for humans and agents. The [C# code style rulebook](../../rulebook/csharp-style.md) is that authority for names and layout. The [coding rules](../../rulebook/coding.md) keep design, error-handling, resource and change-management requirements.
+The user reviewed a complete audit of the handwritten C# source, revised the proposed rules on 2026-11-21 and approved one detailed style authority for humans and agents. The [C# code style rulebook](../../rulebook/csharp-style/README.md) is that authority for names and layout. The [coding rules](../../rulebook/coding.md) keep design, error-handling, resource and change-management requirements.
 
 ## Registration
 
