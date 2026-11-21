@@ -1,2 +1,4 @@
 # style(csharp): apply the rulebook layout to all handwritten C#
 9a88abf2030410838978c6a1be82c7612e99d9d8
+# style(csharp): apply the rulebook typing, null-check and qualification rules
+29c9414af2d944067c9875f9400a2b0ea14464c0
