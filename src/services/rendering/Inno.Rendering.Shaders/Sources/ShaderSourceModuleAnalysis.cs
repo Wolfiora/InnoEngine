@@ -82,19 +82,19 @@ public sealed class ShaderSourceImplementationAnalysis
         IEnumerable<ShaderSourceFile> files,
         IEnumerable<ShaderSourceInclude> includes
     ) {
-        implementationId = request.implementationId;
-        languageId = request.languageId;
-        sourcePath = request.source.source.assetPath;
-        entryPoint = request.source.entryPoint;
-        defines = request.source.defines;
+        this.implementationId = request.implementationId;
+        this.languageId = request.languageId;
+        this.sourcePath = request.source.source.assetPath;
+        this.entryPoint = request.source.entryPoint;
+        this.defines = request.source.defines;
         this.analysis = analysis;
-        sources = Array.AsReadOnly(files.OrderBy(static file => file.assetPath, StringComparer.Ordinal).ToArray());
+        this.sources = Array.AsReadOnly(files.OrderBy(static file => file.assetPath, StringComparer.Ordinal).ToArray());
         this.includes = Array.AsReadOnly(
             includes.OrderBy(static edge => edge.includingFile, StringComparer.Ordinal)
                 .ThenBy(static edge => edge.include, StringComparer.Ordinal)
                 .ToArray()
         );
-        contentHash = ComputeContentHash();
+        this.contentHash = ComputeContentHash();
     }
 
     /// <summary>
@@ -223,9 +223,9 @@ public sealed class ShaderSourceModuleAnalysis
     ) {
         this.implementations = Array.AsReadOnly(implementations.ToArray());
         this.diagnostics = Array.AsReadOnly(diagnostics.ToArray());
-        succeeded = this.implementations.Count != 0 && this.implementations.All(static item => item.analysis.succeeded)
-                    && this.diagnostics.All(static item => item.severity != DiagnosticSeverity.Error);
-        function = succeeded ? this.implementations[0].analysis.function : null;
+        this.succeeded = this.implementations.Count != 0 && this.implementations.All(static item => item.analysis.succeeded)
+                         && this.diagnostics.All(static item => item.severity != DiagnosticSeverity.Error);
+        this.function = succeeded ? this.implementations[0].analysis.function : null;
     }
 
     /// <summary>

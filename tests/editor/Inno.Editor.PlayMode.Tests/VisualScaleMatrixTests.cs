@@ -4,11 +4,14 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using Xunit;
 using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
 
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeVector = Inno.Native.ImGui.ImVec2C;
+using UiCond = Inno.Editor.ImGui.ImGuiCond;
+using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -16,9 +19,9 @@ public sealed unsafe class VisualScaleMatrixTests
 {
     public static IEnumerable<object[]> Metrics()
     {
-        foreach (float zoom in new[] { 0.75f, 0.85f, 0.90f, 1f, 1.10f, 1.25f, 1.50f })
+        foreach (float zoom in new[] { 0.75f, 0.85f, 0.9f, 1f, 1.1f, 1.25f, 1.5f })
         {
-            foreach (float density in new[] { 1f, 1.25f, 1.50f, 2f })
+            foreach (float density in new[] { 1f, 1.25f, 1.5f, 2f })
             {
                 foreach (Vector2 size in new[] { new Vector2(1280f, 720f), new Vector2(1920f, 1080f) })
                 {
@@ -48,13 +51,13 @@ public sealed unsafe class VisualScaleMatrixTests
         {
             host.Frame(() =>
             {
-                NativeGui.SetNextWindowPos(new Vector2(20f, 20f), (int)Inno.Editor.ImGui.ImGuiCond.Always);
-                NativeGui.SetNextWindowSize(new Vector2(320f, 500f), (int)Inno.Editor.ImGui.ImGuiCond.Always);
+                NativeGui.SetNextWindowPos(new Vector2(20f, 20f), (int)UiCond.Always);
+                NativeGui.SetNextWindowSize(new Vector2(320f, 500f), (int)UiCond.Always);
                 bool open = true;
-                _ = NativeGui.Begin("Narrow inspector matrix", ref open, (int)Inno.Editor.ImGui.ImGuiWindowFlags.NoSavedSettings);
+                _ = NativeGui.Begin("Narrow inspector matrix", ref open, (int)UiWindowFlags.NoSavedSettings);
                 try
                 {
-                    var widgets = host.ui.widgets;
+                    ImGuiWidget widgets = host.ui.widgets;
                     widgets.PropertyRow(
                         "reference",
                         () =>

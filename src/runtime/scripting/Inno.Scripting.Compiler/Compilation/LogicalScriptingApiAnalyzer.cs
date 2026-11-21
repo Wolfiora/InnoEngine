@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -13,7 +14,7 @@ namespace Inno.Scripting.Compiler;
 /// Enforces logical scripting namespaces and rejects direct implementation namespace access.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
-[System.Diagnostics.CodeAnalysis.SuppressMessage(
+[SuppressMessage(
     "MicrosoftCodeAnalysisCorrectness",
     "RS1041",
     Justification = "This analyzer is loaded only by the .NET 10 SDK compiler shared by authoring and generated IDE projects."
@@ -66,7 +67,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
     /// Gets the complete compiler diagnostic set enforced by this analyzer.
     /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-        => ImmutableArray.Create(s_directImplementationNamespace, s_missingLogicalNamespace, s_compilationWideUsing);
+        => [s_directImplementationNamespace, s_missingLogicalNamespace, s_compilationWideUsing];
 
     /// <summary>
     /// Initializes owned resources and establishes the instance's active lifetime.
@@ -105,7 +106,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
 
     private static void AnalyzeCompilationWideUsing(SyntaxNodeAnalysisContext context)
     {
-        var usingDirective = (UsingDirectiveSyntax)context.Node;
+        UsingDirectiveSyntax usingDirective = (UsingDirectiveSyntax)context.Node;
         if (usingDirective.GlobalKeyword == default)
         {
             return;
@@ -117,7 +118,7 @@ public sealed class LogicalScriptingApiAnalyzer : DiagnosticAnalyzer
         SyntaxNodeAnalysisContext context,
         ScriptApiMap map
     ) {
-        var usingDirective = (UsingDirectiveSyntax)context.Node;
+        UsingDirectiveSyntax usingDirective = (UsingDirectiveSyntax)context.Node;
         if (usingDirective.Name is null)
         {
             return;

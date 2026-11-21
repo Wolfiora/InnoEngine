@@ -416,7 +416,10 @@ public sealed partial class AssetPipeline
             }
             if (failures.Count > 1)
             {
-                var aggregate = new AggregateException("Asset identity publication could not restore its previous domain.", failures);
+                var aggregate = new AggregateException(
+                    "Asset identity publication could not restore its previous domain.",
+                    failures
+                );
                 m_generations.Fault(aggregate);
                 throw aggregate;
             }

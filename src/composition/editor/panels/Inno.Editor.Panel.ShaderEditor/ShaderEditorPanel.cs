@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Numerics;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Interactions;
@@ -66,8 +68,8 @@ internal sealed class ShaderEditorPanel(ShaderEditorDocuments documents) : Edito
         {
             new ShaderEditorCanvas(documents, documents.Open(entry)).Draw();
         }
-        catch (Exception failure) when ((failure is System.IO.IOException or InvalidOperationException or FormatException)
-                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when ((failure is IOException or InvalidOperationException or FormatException)
+                                        && RetirementPendingException.Find(failure) is null)
         {
             EditorUI.current.widgets.WrappedText(failure.Message);
         }

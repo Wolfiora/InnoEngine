@@ -29,26 +29,26 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
         m_path = Path.GetFullPath(path);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string documentName => m_path;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool canWrite => true;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool exists => File.Exists(m_path);
 
-    /// <inheritdoc />
-    /// <remarks>
-    /// One rename-compatible handle pins the selected complete publication until its owned bytes are read.
-    /// Writers must atomically replace the document rather than modify the selected file in place.
-    /// </remarks>
     /// <exception cref="IOException">
     /// The document cannot be read completely or exceeds the maximum supported byte-array size.
     /// </exception>
     /// <exception cref="UnauthorizedAccessException">
     /// The selected location denies reading or names a directory instead of a document.
     /// </exception>
+    /// <remarks>
+    /// One rename-compatible handle pins the selected complete publication until its owned bytes are read.
+    /// Writers must atomically replace the document rather than modify the selected file in place.
+    /// </remarks>
+    /// <inheritdoc/>
     public byte[]? Read()
     {
         try
@@ -73,6 +73,6 @@ public sealed class FileByteDocumentStore : IByteDocumentStore
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Write(ReadOnlySpan<byte> data) => AtomicFile.WriteAllBytes(m_path, data);
 }

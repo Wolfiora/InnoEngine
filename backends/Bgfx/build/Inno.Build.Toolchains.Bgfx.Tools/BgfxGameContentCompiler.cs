@@ -87,7 +87,7 @@ public sealed class BgfxGameContentCompiler : IGameContentCompiler
         m_backends = snapshot;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public BuildTargetId target => new(m_platform.id);
 
     /// <summary>

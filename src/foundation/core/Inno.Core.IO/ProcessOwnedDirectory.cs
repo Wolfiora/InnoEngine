@@ -28,7 +28,7 @@ public sealed class ProcessOwnedDirectory : IDisposable
         CoordinatedFileLease lease
     ) {
         m_root = root;
-        directory = path;
+        this.directory = path;
         m_record = record;
         m_owner = owner;
         m_lease = lease;

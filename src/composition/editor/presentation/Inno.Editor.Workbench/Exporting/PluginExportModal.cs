@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Inno.Editor.Core;
+using Inno.Editor.Exporting;
 using Inno.Editor.ImGui;
 
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -24,21 +25,21 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
     private long m_operation;
     private float m_wrapWidth;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool isVisible => window.isPluginVisible;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool canMove => true;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override Vector2 initialSize => new(680f, 0f);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
     ) {
-        var progress = window.progress;
+        EditorExportProgress progress = window.progress;
         m_operation = progress.operationId;
         m_identity = $"{window.pluginId} (from Project ID)";
         m_name = window.pluginDisplayName;
@@ -61,7 +62,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         return new Vector2(MathF.Max(width, checkboxWidth), height);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDraw(EditorContext context) => Present(true, m_wrapWidth);
 
     private float Present(
@@ -75,7 +76,7 @@ internal sealed class PluginExportModal(ExportWindowModule window) : EditorModal
         {
             m_rows.Clear();
         }
-        var layout = Ui.GetLayout();
+        EditorUiLayout layout = Ui.GetLayout();
         float gap = layout.itemSpacing.Y;
         float frame = Ui.MeasureText("M").Y + layout.framePadding.Y * 2f;
         Text(C_DESCRIPTION, true);

@@ -24,7 +24,7 @@ public sealed class ContentTestStore : IRuntimeContentStore
     public ContentTestStore(IEnumerable<KeyValuePair<ContentKey, byte[]>> payloads)
     {
         m_payloads = payloads.ToDictionary(static pair => pair.Key, static pair => (byte[])pair.Value.Clone());
-        index = new ContentPackIndex(
+        this.index = new ContentPackIndex(
             m_payloads.Select(static pair => new ContentEntry(
                 pair.Key,
                 pair.Value.LongLength,
@@ -36,13 +36,13 @@ public sealed class ContentTestStore : IRuntimeContentStore
             index.entries.Select(static entry => (entry.key + ":" + entry.length + ":" + entry.contentHash))
         );
         string hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)));
-        descriptor = new ContentPackDescriptor(hash, $"content-{hash}.pack");
+        this.descriptor = new ContentPackDescriptor(hash, $"content-{hash}.pack");
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackDescriptor descriptor { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackIndex index { get; }
 
     /// <summary>
@@ -84,7 +84,7 @@ public sealed class ContentTestStore : IRuntimeContentStore
         m_payloads[key] = bytes.ToArray();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentReadLease Acquire(ContentKey key)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -96,7 +96,7 @@ public sealed class ContentTestStore : IRuntimeContentStore
         return new ContentReadLease(entry!, () => new MemoryStream(bytes, writable: false), static () => {});
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         m_disposed = true;

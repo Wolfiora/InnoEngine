@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Declares one static shader keyword that may produce compiled variants.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("551868bd-dbca-5da5-9dd8-d7e6e2ca7983")]
+[StableTypeId("551868bd-dbca-5da5-9dd8-d7e6e2ca7983")]
 public struct ShaderKeywordDefinition
 {
     /// <summary>

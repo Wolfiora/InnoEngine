@@ -139,9 +139,9 @@ public sealed class UiServiceTests : IDisposable
         );
         backend.ShowDocument(context, document);
         backend.Update(context, EmptyInput());
-        Assert.True(backend.HasElementAtPoint(context, new Inno.Core.Mathematics.Vector2(30f, 30f)));
-        Assert.False(backend.HasElementAtPoint(context, new Inno.Core.Mathematics.Vector2(120f, 30f)));
-        Assert.False(backend.HasElementAtPoint(context, new Inno.Core.Mathematics.Vector2(200f, 100f)));
+        Assert.True(backend.HasElementAtPoint(context, new Vector2(30f, 30f)));
+        Assert.False(backend.HasElementAtPoint(context, new Vector2(120f, 30f)));
+        Assert.False(backend.HasElementAtPoint(context, new Vector2(200f, 100f)));
     }
 
     [Fact]

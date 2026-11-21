@@ -12,12 +12,14 @@ public sealed class ShaderGraphLiteral : ISerializable
     /// <summary>
     /// Gets or sets the complete value type, including named aggregates and fixed arrays.
     /// </summary>
-    [SerializableProperty] public ShaderGraphType type { get; set; } = new() { id = "float" };
+    [SerializableProperty]
+    public ShaderGraphType type { get; set; } = new() { id = "float" };
 
     /// <summary>
     /// Gets or sets scalar bit patterns in declaration order; matrices use column-major order.
     /// </summary>
-    [SerializableProperty] public uint[] scalarBits { get; set; } = [0];
+    [SerializableProperty]
+    public uint[] scalarBits { get; set; } = [0];
 
     /// <summary>
     /// Creates an explicit zero value for a supported scalar, vector, matrix, structure or array.
@@ -158,7 +160,8 @@ public sealed class ShaderGraphLiteral : ISerializable
                 throw new NotSupportedException("An input literal array is too large.");
             }
             var elements = new ShaderSourceType[type.elementCount];
-            Array.Fill(elements, type.elementType); return elements;
+            Array.Fill(elements, type.elementType);
+            return elements;
         }
         if (type.fields.Count != 0)
         {
@@ -171,7 +174,7 @@ public sealed class ShaderGraphLiteral : ISerializable
         }
         foreach (string scalar in new[] { "float", "int", "uint", "bool" })
         {
-            string shape = type.id.StartsWith(scalar, StringComparison.Ordinal) ? type.id[scalar.Length..] : "";
+            string shape = type.id.StartsWith(scalar, StringComparison.Ordinal) ? type.id[scalar.Length..] : string.Empty;
             int count = shape.Length == 1 && shape[0] is >= '2' and <= '4'
                         ? shape[0] - '0'
                         : scalar == "float"
@@ -185,7 +188,9 @@ public sealed class ShaderGraphLiteral : ISerializable
             {
                 continue;
             }
-            var result = new ShaderSourceType[count]; Array.Fill(result, ShaderSourceType.Atomic(scalar)); return result;
+            var result = new ShaderSourceType[count];
+            Array.Fill(result, ShaderSourceType.Atomic(scalar));
+            return result;
         }
         throw new NotSupportedException($"Input type '{type.id}' has no literal representation.");
     }

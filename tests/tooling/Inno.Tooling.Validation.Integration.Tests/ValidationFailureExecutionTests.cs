@@ -53,7 +53,7 @@ public sealed class ValidationFailureExecutionTests
         Assert.True(detail.Length < 5000, "An owner receipt must not duplicate the complete process log.");
         string log = repository.PathOf("artifacts/run/Failure.Tests.log");
         Assert.Contains(log, detail);
-        Assert.Contains(new string('x', 20000), File.ReadAllText(log));
+        Assert.Contains(new string('x', 20_000), File.ReadAllText(log));
         Assert.Equal(
             "Passed",
             results.Single(result => result.GetProperty("id").GetString() == "independent-policy").GetProperty("status").GetString()

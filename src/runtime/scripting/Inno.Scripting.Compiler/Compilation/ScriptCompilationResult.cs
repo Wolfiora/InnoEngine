@@ -24,7 +24,7 @@ public sealed class ScriptCompilationResult
         this.diagnostics = diagnostics;
         this.outputDirectory = outputDirectory;
         this.moduleDeployments = Array.AsReadOnly((moduleDeployments ?? []).ToArray());
-        runtimeAssemblyPaths = this.moduleDeployments
+        this.runtimeAssemblyPaths = this.moduleDeployments
             .SelectMany(static request =>
                 new[] { request.mainAssemblyPath }.Concat(request.preloadAssemblyPaths)
                     .Where(path => (

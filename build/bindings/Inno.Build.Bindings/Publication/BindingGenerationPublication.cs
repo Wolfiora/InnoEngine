@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
 namespace Inno.Build.Bindings;
@@ -22,8 +23,8 @@ internal sealed class BindingGenerationPublication : IDisposable
         bool target,
         CancellationToken cancellation
     ) {
-        managedDestination = destination;
-        nativeDestination = native;
+        this.managedDestination = destination;
+        this.nativeDestination = native;
         m_owner = ProcessOwnedDirectory.CreateAsync(workingRoot, cancellation).AsTask().GetAwaiter().GetResult();
         m_workingRoot = workingRoot;
         m_target = target;
@@ -75,7 +76,7 @@ internal sealed class BindingGenerationPublication : IDisposable
         var installed = new List<string>();
         try
         {
-            foreach (var candidate in m_candidates)
+            foreach (KeyValuePair<string, string> candidate in m_candidates)
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(candidate.Key)!);
                 if (Directory.Exists(candidate.Key))
@@ -112,7 +113,7 @@ internal sealed class BindingGenerationPublication : IDisposable
             if (failures.Count > 1)
             {
                 m_preserveRecovery = true;
-                new Inno.Build.Toolchains.BuildCachePublisher(m_workingRoot, Inno.Build.Toolchains.BuildCacheArtifactRole.ImmutableArtifact)
+                new BuildCachePublisher(m_workingRoot, BuildCacheArtifactRole.ImmutableArtifact)
                     .Record(
                         m_owner.directory,
                         m_owner.directory + ".work.lock",

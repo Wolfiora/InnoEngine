@@ -19,7 +19,7 @@ internal sealed partial class ShaderEditorDocuments
         if (draft.pendingMove is { } positions)
         {
             bool changed = false;
-            foreach (var entry in positions)
+            foreach (KeyValuePair<GraphNodeId, GraphPosition> entry in positions)
             {
                 changed |= controller.document.FindNode(entry.Key) is not { } current || current.position != entry.Value;
             }

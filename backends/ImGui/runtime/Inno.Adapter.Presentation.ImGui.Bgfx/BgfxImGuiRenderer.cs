@@ -109,7 +109,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// </summary>
     public bool supportsViewports => m_bgfxDevice.supportsAdditionalSurfaces;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool supportsVertexOffsets => true;
 
     /// <summary>
@@ -291,10 +291,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    public void PresentViewport(PlatformImGuiViewportTarget target)
-    {
-        ArgumentNullException.ThrowIfNull(target);
-    }
+    public void PresentViewport(PlatformImGuiViewportTarget target) => ArgumentNullException.ThrowIfNull(target);
 
     /// <summary>
     /// Destroys the auxiliary viewport and releases its rendering resources.
@@ -323,7 +320,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void DrainViewportRetirements() => m_bgfxDevice.DrainWindowSurfaceRetirements();
 
     /// <summary>
@@ -640,8 +637,8 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         }
 
         EnsureDynamicBuffers(vertexCount, indexCount);
-        byte[] vertices = new byte[checked(vertexCount * C_VERTEX_STRIDE)];
-        byte[] indices = new byte[checked(indexCount * C_INDEX_STRIDE)];
+        var vertices = new byte[checked(vertexCount * C_VERTEX_STRIDE)];
+        var indices = new byte[checked(indexCount * C_INDEX_STRIDE)];
         List<PreparedPacket> prepared = [];
         int vertexBase = 0;
         int indexBase = 0;
@@ -704,7 +701,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     new RenderBufferDescriptor(capacity, C_VERTEX_STRIDE, RenderBufferUsage.Vertex | RenderBufferUsage.Dynamic),
                     S_VERTEX_LAYOUT
                 ),
-                ReadOnlySpan<byte>.Empty,
+                [],
                 "ImGui Vertices"
             );
             if (m_vertexBuffer.isValid)
@@ -724,7 +721,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
                     new RenderBufferDescriptor(capacity, C_INDEX_STRIDE, RenderBufferUsage.Index | RenderBufferUsage.Dynamic),
                     indexFormat: RenderIndexFormat.UInt16
                 ),
-                ReadOnlySpan<byte>.Empty,
+                [],
                 "ImGui Indices"
             );
             if (m_indexBuffer.isValid)
@@ -747,13 +744,13 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             return null;
         }
 
-        var drawData = (ImDrawData*)address;
+        ImDrawData* drawData = (ImDrawData*)address;
         if (drawData->Valid == 0 || drawData->TotalVtxCount <= 0 || drawData->TotalIdxCount <= 0)
         {
             return null;
         }
 
-        Vector2 clipScale = new(drawData->FramebufferScale.X, drawData->FramebufferScale.Y);
+        var clipScale = new Vector2(drawData->FramebufferScale.X, drawData->FramebufferScale.Y);
         int pixelWidth = checked((int)MathF.Round(drawData->DisplaySize.X * clipScale.X));
         int pixelHeight = checked((int)MathF.Round(drawData->DisplaySize.Y * clipScale.Y));
         if (pixelWidth <= 0 || pixelHeight <= 0)
@@ -761,12 +758,12 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             return null;
         }
         ProcessTextureRequests(drawData);
-        byte[] vertices = new byte[checked(drawData->TotalVtxCount * C_VERTEX_STRIDE)];
-        byte[] indices = new byte[checked(drawData->TotalIdxCount * C_INDEX_STRIDE)];
+        var vertices = new byte[checked(drawData->TotalVtxCount * C_VERTEX_STRIDE)];
+        var indices = new byte[checked(drawData->TotalIdxCount * C_INDEX_STRIDE)];
         List<CapturedDrawCommand> commands = [];
         int vertexBase = 0;
         int indexBase = 0;
-        Vector2 clipOffset = new(drawData->DisplayPos.X, drawData->DisplayPos.Y);
+        var clipOffset = new Vector2(drawData->DisplayPos.X, drawData->DisplayPos.Y);
         for (int listIndex = 0; listIndex < drawData->CmdListsCount; listIndex++)
         {
             ImDrawList* drawList = drawData->CmdLists.Data[listIndex];
@@ -780,7 +777,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             for (int commandIndex = 0; commandIndex < drawList->CmdBuffer.Size; commandIndex++)
             {
                 ImDrawCmd command = drawList->CmdBuffer.Data[commandIndex];
-                if (command.UserCallback != null || command.ElemCount == 0)
+                if (command.UserCallback is not null || command.ElemCount == 0)
                 {
                     continue;
                 }
@@ -828,7 +825,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
     private void ProcessTextureRequests(ImDrawData* drawData)
     {
-        var textures = drawData->Textures;
+        ImVectorImTextureDataPtr* textures = drawData->Textures;
         if (textures is null)
         {
             return;
@@ -837,7 +834,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         for (int index = 0; index < textures->Size; index++)
         {
             ImTextureData* textureData = textures->Data[index];
-            if (textureData == null)
+            if (textureData is null)
             {
                 continue;
             }
@@ -886,7 +883,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         if (textureData->Format == ImTextureFormat.Rgba32)
         {
             int rowBytes = checked(textureData->Width * 4);
-            byte[] result = new byte[checked(rowBytes * textureData->Height)];
+            var result = new byte[checked(rowBytes * textureData->Height)];
             for (int y = 0; y < textureData->Height; y++)
             {
                 new ReadOnlySpan<byte>(textureData->Pixels + (y * sourcePitch), rowBytes)
@@ -896,7 +893,7 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
             return result;
         }
 
-        byte[] expanded = new byte[checked(textureData->Width * textureData->Height * 4)];
+        var expanded = new byte[checked(textureData->Width * textureData->Height * 4)];
         for (int y = 0; y < textureData->Height; y++)
         {
             byte* source = textureData->Pixels + (y * sourcePitch);
@@ -1032,14 +1029,14 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
 
     private static byte[] CreateOutputEncoding()
     {
-        byte[] data = new byte[16];
+        var data = new byte[16];
         BinaryPrimitives.WriteSingleLittleEndian(data, 1f);
         return data;
     }
 
     private static byte[] CreatePresentationVertices(bool originBottomLeft)
     {
-        byte[] data = new byte[4 * C_VERTEX_STRIDE];
+        var data = new byte[4 * C_VERTEX_STRIDE];
         float top = originBottomLeft ? 1f : 0f;
         float bottom = originBottomLeft ? 0f : 1f;
         WriteVertex(0, -1f, 1f, 0f, top);
@@ -1114,7 +1111,10 @@ public sealed unsafe class BgfxImGuiRenderer : IPlatformImGuiRenderer, IRenderFr
         /// <param name="target">
         /// The existing target that receives the validated result.
         /// </param>
-        public ViewportState(PlatformImGuiViewportTarget target) => this.target = target;
+        public ViewportState(PlatformImGuiViewportTarget target)
+        {
+            this.target = target;
+        }
 
         /// <summary>
         /// Gets the platform viewport whose render resources are tracked by this state.

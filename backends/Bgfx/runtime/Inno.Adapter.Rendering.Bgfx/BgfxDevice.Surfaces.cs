@@ -176,17 +176,17 @@ public sealed unsafe partial class BgfxDevice
     /// <summary>
     /// Advances complete discard frames until all requested window retirements have been acknowledged.
     /// </summary>
-    /// <remarks>
-    /// Call only on the API thread with no open frame, graph, encoder or native UI callback.
-    /// A failed drain retains the device and the borrowed native windows.
-    /// Presentation may advance while the primary window remains borrowed by the device.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// The caller is not at a closed-frame API-thread safety point.
     /// </exception>
     /// <exception cref="RetirementTimeoutException">
     /// The bounded retirement deadline expired; dependent owners must remain alive.
     /// </exception>
+    /// <remarks>
+    /// Call only on the API thread with no open frame, graph, encoder or native UI callback.
+    /// A failed drain retains the device and the borrowed native windows.
+    /// Presentation may advance while the primary window remains borrowed by the device.
+    /// </remarks>
     public void DrainWindowSurfaceRetirements()
     {
         EnsureSurfaceSafetyPoint();
@@ -225,12 +225,10 @@ public sealed unsafe partial class BgfxDevice
         return false;
     }
 
-    private void SubmitRetirementFrame()
-    {
+    private void SubmitRetirementFrame() =>
         // Complete the backend frame, including command-buffer submission and frame-credit return.
         // A nonpresenting flush does not provide that completion boundary on every renderer.
         SubmitNativeFrame(bgfx.FrameFlags.Discard);
-    }
 
     private uint SubmitNativeFrame(bgfx.FrameFlags flags)
     {
@@ -323,7 +321,7 @@ public sealed unsafe partial class BgfxDevice
     {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (m_activeGraph is not null || m_activeEncoder != null)
+        if (m_activeGraph is not null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException(
                 "Window surface changes require an API-thread point outside graph execution."

@@ -7,6 +7,7 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Shaders;
@@ -14,7 +15,7 @@ using Inno.Rendering.Shaders;
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.shader")]
-[Inno.Extensibility.Types.StableTypeId("8e87052c-6ea6-52d3-9201-8544c4f75013")]
+[StableTypeId("8e87052c-6ea6-52d3-9201-8544c4f75013")]
 internal sealed class ShaderAssetImporter : AssetImporter<ShaderAsset>
 {
     /// <summary>

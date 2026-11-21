@@ -1,12 +1,15 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using Markdig;
 using Xunit;
 using Inno.Core.IO;
 
@@ -18,7 +21,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     private const string C_TYPE = "T:Inno.Probe.Value";
     private const string C_MEMBER = "P:Inno.Probe.Value.count";
 
-    public DocumentationApiSynchronizationTests() => Bind();
+    public DocumentationApiSynchronizationTests()
+    {
+        Bind();
+    }
 
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
@@ -51,8 +57,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         Assert.Equal(manual, File.ReadAllText(path));
         string cache = Path.Combine(m_root, "artifacts/project-query");
-        var initial = await DocumentationStore.IndexAsync(m_root, m_root, cache);
-        using (var initialSnapshot = await DocumentationStore.OpenAsync(cache, initial.snapshot))
+        DocumentationResult initial = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using (DocumentationSnapshot initialSnapshot = await DocumentationStore.OpenAsync(cache, initial.snapshot))
         {
             Assert.Contains(
                 "[!AUTHORED]",
@@ -70,9 +76,9 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
         File.AppendAllText(path, "\nUpdated explanation.\n");
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
-        var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
-        using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        var page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe");
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationPageInfo page = (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.probe");
         Assert.Contains("[!AUTHORED]", page.markdown);
         Assert.Contains("Independent lifetime guidance.", page.markdown);
         Assert.Contains("src/Inno.Probe.csproj", page.markdown);
@@ -131,8 +137,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         );
         Assert.Equal(0, await DocumentationCommand.ExecuteAsync(["api-check", "--docs-root", m_root]));
         string cache = Path.Combine(m_root, "artifacts/project-query");
-        var indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
-        using var snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
+        DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
+        using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         Assert.Contains(
             "[!SYNCED]",
             (await snapshot.ExportCatalogAsync()).pages.Single(page => page.id == "project.inno-probe-tests").markdown
@@ -207,7 +213,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
         DocumentationPageInfo page = Assert.Single((await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api"));
         Assert.Equal(expected, page.title);
-        Assert.Contains("<h1>" + System.Net.WebUtility.HtmlEncode(expected) + "</h1>", Markdig.Markdown.ToHtml(page.markdown));
+        Assert.Contains("<h1>" + WebUtility.HtmlEncode(expected) + "</h1>", Markdown.ToHtml(page.markdown));
         Assert.Contains(expected, (await snapshot.QueryAsync(new("symbol", id, "Inno.Probe"))).hits.Single().text);
     }
 
@@ -310,8 +316,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string path = Path.Combine(m_root, "artifacts/query");
         async Task AssertStatus(string status)
         {
-            var index = await DocumentationStore.IndexAsync(m_root, m_root, path);
-            using var snapshot = await DocumentationStore.OpenAsync(path, index.snapshot);
+            DocumentationResult index = await DocumentationStore.IndexAsync(m_root, m_root, path);
+            using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(path, index.snapshot);
             Assert.Contains("> [!" + status + "]", (await snapshot.QueryAsync(new("symbol", C_MEMBER, "Inno.Probe"))).hits.Single().text);
         }
         await AssertStatus("OUTDATED");
@@ -364,7 +370,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
     {
         await Sync();
         string member = Fragment(C_MEMBER);
-        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml\n", "", StringComparison.Ordinal));
+        File.WriteAllText(member, File.ReadAllText(member).Replace("source: xml\n", string.Empty, StringComparison.Ordinal));
         Bind(description: "A fresh description.");
         await Sync();
         Assert.Contains("source: xml", File.ReadAllText(member));
@@ -636,7 +642,10 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         await Sync();
         string member = Fragment(C_MEMBER);
         string original = File.ReadAllText(member);
-        File.WriteAllText(member, original.Replace("source: xml", source.Length == 0 ? "" : "source: " + source, StringComparison.Ordinal));
+        File.WriteAllText(
+            member,
+            original.Replace("source: xml", source.Length == 0 ? string.Empty : "source: " + source, StringComparison.Ordinal)
+        );
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
@@ -679,7 +688,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/query");
         DocumentationResult indexed = await DocumentationStore.IndexAsync(m_root, m_root, cache);
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache, indexed.snapshot);
-        var pages = (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api").ToArray();
+        DocumentationPageInfo[] pages = (await snapshot.ExportCatalogAsync()).pages.Where(page => page.kind == "api").ToArray();
         Assert.Equal(7, pages.Length);
         Assert.All(pages, page => Assert.Single(page.symbols));
         DocumentationPageInfo outer = pages.Single(page => page.symbols.ContainsKey(C_TYPE));
@@ -703,8 +712,11 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             string parent
         ) {
             JsonNode symbol = symbols[0]!.DeepClone();
-            symbol["id"] = id; symbol["kind"] = kind; symbol["signature"] = signature;
-            symbol["signatureHash"] = Hash(signature); symbol["containingType"] = parent;
+            symbol["id"] = id;
+            symbol["kind"] = kind;
+            symbol["signature"] = signature;
+            symbol["signatureHash"] = Hash(signature);
+            symbol["containingType"] = parent;
             symbols.Add(symbol);
         }
     }
@@ -1094,7 +1106,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
             "> - First declaration.\n>   \n>   Still the first summary.\n> \n> - Second declaration with `Value`.",
             page.markdown
         );
-        string html = Markdig.Markdown.ToHtml(page.markdown);
+        string html = Markdown.ToHtml(page.markdown);
         string summaryHtml = html[html.IndexOf("<blockquote>\n<ul>", StringComparison.Ordinal)..];
         summaryHtml = summaryHtml[..summaryHtml.IndexOf("</blockquote>", StringComparison.Ordinal)];
         Assert.Equal(2, summaryHtml.Split("<li>", StringSplitOptions.None).Length - 1);
@@ -1166,7 +1178,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         SetTypeDocumentation(xml);
         Exception? failure = await Record.ExceptionAsync(Sync);
         Assert.NotNull(failure);
-        Assert.True(failure is InvalidDataException or System.Xml.XmlException);
+        Assert.True(failure is InvalidDataException or XmlException);
         Assert.Equal(previous, File.ReadAllText(Fragment(C_TYPE)));
     }
 
@@ -1230,7 +1242,7 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
         JsonNode prototype = facts["projects"]![0]!["symbols"]![0]!.DeepClone();
         var symbols = new JsonArray();
-        foreach (var type in types)
+        foreach ((string id, string signature) type in types)
         {
             JsonNode symbol = prototype.DeepClone();
             symbol["id"] = type.id;

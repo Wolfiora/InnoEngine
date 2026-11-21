@@ -419,7 +419,7 @@ internal sealed class AudioVoiceOwner
             this.options = options;
             this.scheduledDspTime = scheduledDspTime;
             this.sequence = sequence;
-            parameters = new AudioVoiceParameters(options.volume, options.pitch, options.pan, options.spatial);
+            this.parameters = new AudioVoiceParameters(options.volume, options.pitch, options.pan, options.spatial);
         }
 
         internal AudioVoiceHandle handle { get; }

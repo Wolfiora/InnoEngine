@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
@@ -75,7 +76,7 @@ internal sealed class StatsPanel : EditorPanel
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDetach(EditorContext context)
     {
         m_statistics.Reset();
@@ -89,20 +90,20 @@ internal sealed class StatsPanel : EditorPanel
         ReadOnlySpan<(string label, string value)> values
     ) {
         EditorUI.current.widgets.CollectionSectionHeader(title);
-        System.Numerics.Vector2 padding = EditorUI.current.widgets.style.sectionPadding;
+        Vector2 padding = EditorUI.current.widgets.style.sectionPadding;
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp
                                 | ImGuiTableFlags.RowBg
                                 | ImGuiTableFlags.NoSavedSettings
                                 | ImGuiTableFlags.PadOuterX;
         Ui.PushStyleVar(
             (ImGuiStyleVar.CellPadding),
-            new System.Numerics.Vector2(padding.X, C_ROW_PADDING * EditorUI.current.widgets.style.zoom)
+            new Vector2(padding.X, C_ROW_PADDING * EditorUI.current.widgets.style.zoom)
         );
         Ui.PushStyleColor((ImGuiCol.TableRowBg), EditorPalette.collectionRow);
         Ui.PushStyleColor((ImGuiCol.TableRowBgAlt), EditorPalette.collectionRowAlternate);
         try
         {
-            if (!Ui.BeginTable($"##stats_{title}", 2, flags, default(System.Numerics.Vector2), 0f))
+            if (!Ui.BeginTable($"##stats_{title}", 2, flags, default, 0f))
             {
                 return;
             }
@@ -114,7 +115,7 @@ internal sealed class StatsPanel : EditorPanel
                 {
                     Ui.TableNextRow();
                     Ui.TableSetColumnIndex(0);
-                    EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
+                    EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, label);
                     Ui.TableSetColumnIndex(1);
                     EditorUI.current.widgets.WrappedText(value);
                 }

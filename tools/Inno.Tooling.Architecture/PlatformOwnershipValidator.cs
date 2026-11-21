@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -14,7 +15,7 @@ internal static class PlatformOwnershipValidator
         string root,
         ICollection<string> failures
     ) {
-        var projects = RepositorySourceInventory.Projects(root)
+        Dictionary<string, string> projects = RepositorySourceInventory.Projects(root)
             .ToDictionary(path => Path.GetFullPath(path), StringComparer.OrdinalIgnoreCase);
         foreach (string script in RepositorySourceInventory.Files(root, "*.Tests.ps1"))
         {
@@ -76,7 +77,7 @@ internal static class PlatformOwnershipValidator
             ) {
                 continue;
             }
-            var syntax = CSharpSyntaxTree.ParseText(File.ReadAllText(source)).GetRoot();
+            SyntaxNode syntax = CSharpSyntaxTree.ParseText(File.ReadAllText(source)).GetRoot();
             foreach (InvocationExpressionSyntax call in syntax.DescendantNodes().OfType<InvocationExpressionSyntax>())
             {
                 if (call.Expression is MemberAccessExpressionSyntax access

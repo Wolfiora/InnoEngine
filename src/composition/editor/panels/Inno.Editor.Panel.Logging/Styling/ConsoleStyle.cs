@@ -7,32 +7,35 @@ internal readonly struct ConsoleStyle
 {
     private readonly float m_zoom;
 
-    internal ConsoleStyle(EditorStyleMetrics metrics) => m_zoom = metrics.zoom;
+    internal ConsoleStyle(EditorStyleMetrics metrics)
+    {
+        m_zoom = metrics.zoom;
+    }
 
     /// <summary>
     /// Gets debug log color.
     /// </summary>
-    internal static Vector4 debug { get; } = new(0.80f, 0.90f, 0.85f, EditorPalette.opacityOpaque);
+    internal static Vector4 debug { get; } = new(0.8f, 0.9f, 0.85f, EditorPalette.opacityOpaque);
 
     /// <summary>
     /// Gets informational log color.
     /// </summary>
-    internal static Vector4 info { get; } = new(0.20f, 1f, 0.20f, EditorPalette.opacityOpaque);
+    internal static Vector4 info { get; } = new(0.2f, 1f, 0.2f, EditorPalette.opacityOpaque);
 
     /// <summary>
     /// Gets warning log color.
     /// </summary>
-    internal static Vector4 warning { get; } = new(1f, 1f, 0.20f, EditorPalette.opacityOpaque);
+    internal static Vector4 warning { get; } = new(1f, 1f, 0.2f, EditorPalette.opacityOpaque);
 
     /// <summary>
     /// Gets error log color.
     /// </summary>
-    internal static Vector4 error { get; } = new(1f, 0.20f, 0.20f, EditorPalette.opacityOpaque);
+    internal static Vector4 error { get; } = new(1f, 0.2f, 0.2f, EditorPalette.opacityOpaque);
 
     /// <summary>
     /// Gets fatal log color.
     /// </summary>
-    internal static Vector4 fatal { get; } = new(1f, 0.20f, 1f, EditorPalette.opacityOpaque);
+    internal static Vector4 fatal { get; } = new(1f, 0.2f, 1f, EditorPalette.opacityOpaque);
 
     /// <summary>
     /// Gets collapsed log card background.
@@ -47,7 +50,7 @@ internal readonly struct ConsoleStyle
     /// <summary>
     /// Gets the base expanded log card background.
     /// </summary>
-    internal static Vector4 expandedBase { get; } = new(0.10f, 0.10f, 0.10f, EditorPalette.opacityOpaque);
+    internal static Vector4 expandedBase { get; } = new(0.1f, 0.1f, 0.1f, EditorPalette.opacityOpaque);
 
     /// <summary>
     /// Gets the base expanded log card border.
@@ -89,7 +92,7 @@ internal readonly struct ConsoleStyle
     /// <returns>
     /// The standard expanded-border base blended with the severity color.
     /// </returns>
-    internal static Vector4 GetExpandedBorder(Vector4 severityColor) => EditorPalette.Lerp(expandedBorderBase, severityColor, 0.20f);
+    internal static Vector4 GetExpandedBorder(Vector4 severityColor) => EditorPalette.Lerp(expandedBorderBase, severityColor, 0.2f);
 
     /// <summary>
     /// Gets the separator color used inside an expanded log card.

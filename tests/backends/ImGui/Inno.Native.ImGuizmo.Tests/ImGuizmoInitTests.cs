@@ -25,9 +25,9 @@ public sealed class ImGuizmoInitTests
     public unsafe void OwnedStyleCanRetireWithoutReleasingTheGlobalBorrow()
     {
         Style* borrowed = ImGuizmo.Raw.GetStyle();
-        Assert.True(borrowed != null);
+        Assert.True(borrowed is not null);
         Style* owned = ImGuizmo.Raw.StyleStyle();
-        Assert.True(owned != null);
+        Assert.True(owned is not null);
         Assert.True(owned != borrowed);
         try
         {

@@ -64,7 +64,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
                                 | ImGuiTableFlags.NoPadOuterX
                                 | ImGuiTableFlags.NoSavedSettings;
         Ui.PushStyleVar(ImGuiStyleVar.CellPadding, EditorUI.current.widgets.style.cellPadding);
-        if (!Ui.BeginTable("##game_layer_definitions", 3, flags, default(System.Numerics.Vector2), 0f))
+        if (!Ui.BeginTable("##game_layer_definitions", 3, flags, default, 0f))
         {
             Ui.PopStyleVar();
             return;
@@ -133,7 +133,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
             }
             _ = Ui.TableSetColumnIndex(2);
             InsetPlainCell();
-            Vector2 removeSize = new(Ui.MeasureText("Remove").X, Ui.GetFrameHeight());
+            var removeSize = new Vector2(Ui.MeasureText("Remove").X, Ui.GetFrameHeight());
             if (EditorUI.current.widgets.ClickableText(
                 $"remove_layer_{index}",
                 "Remove",
@@ -190,7 +190,7 @@ internal sealed class GameLayersSetting : ProjectSettingEditor<GameLayerCatalog>
     ) {
         EditorUiLayout style = Ui.GetLayout();
         Vector2 minimum = Ui.GetCursorScreenPosition();
-        Vector2 size = new(MathF.Max(1f, width), Ui.GetFrameHeight());
+        var size = new Vector2(MathF.Max(1f, width), Ui.GetFrameHeight());
         Ui.Dummy(size);
         Vector2 maximum = minimum + size;
         Ui.DrawFilledRectangle(minimum, maximum, Ui.GetStyleColor(ImGuiCol.FrameBg), style.frameRounding);

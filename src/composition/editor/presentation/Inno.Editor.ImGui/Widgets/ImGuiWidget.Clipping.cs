@@ -73,7 +73,7 @@ public sealed unsafe partial class ImGuiWidget
             return;
         }
         ImGuiListClipper* clipper = NativeImGui.Raw.ImGuiListClipper();
-        if (clipper == null)
+        if (clipper is null)
         {
             throw new OutOfMemoryException("The native row clipper could not be allocated.");
         }

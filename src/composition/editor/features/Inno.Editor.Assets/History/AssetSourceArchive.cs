@@ -80,7 +80,7 @@ internal static class AssetSourceArchive
         ZipArchiveEntry entry = archive.CreateEntry(entryName, CompressionLevel.Fastest);
         using Stream output = entry.Open();
         using FileStream input = File.OpenRead(source);
-        byte[] buffer = new byte[81920];
+        var buffer = new byte[81_920];
         int count;
         while ((count = input.Read(buffer)) != 0)
         {

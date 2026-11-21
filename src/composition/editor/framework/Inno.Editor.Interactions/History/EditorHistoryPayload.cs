@@ -16,7 +16,7 @@ public sealed class EditorHistoryPayload : IDisposable
     private EditorHistoryPayload(byte[] bytes)
     {
         m_inlineBytes = bytes;
-        length = bytes.LongLength;
+        this.length = bytes.LongLength;
     }
 
     private EditorHistoryPayload(

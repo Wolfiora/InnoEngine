@@ -143,10 +143,20 @@ public sealed class ShaderPreviews : EditorModule
             }
 
             int pixels = Math.Clamp((int)MathF.Ceiling(logicalSize * ImGuiApi.GetWindowDpiScale()), 1, 2048);
-            var context = new ShaderPreviewContext(new(state.viewportId), material, artifact, definition, state, pixels, pixels);
+            var context = new ShaderPreviewContext(
+                new(state.viewportId),
+                material,
+                artifact,
+                definition,
+                state,
+                pixels,
+                pixels
+            );
             EditorViewportLayer layer = m_registry.providers[contracts[0]].CreateLayer(context);
-            if (m_previews.TryRender(new(state.viewportId, pixels, pixels, RenderTextureFormat.RGBA8, [layer]), out var handle))
-            {
+            if (m_previews.TryRender(
+                new(state.viewportId, pixels, pixels, RenderTextureFormat.RGBA8, [layer]),
+                out EditorPreviewHandle handle
+            )) {
                 m_previews.Draw(handle, new(logicalSize, logicalSize));
             }
             else

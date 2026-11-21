@@ -55,18 +55,18 @@ internal static unsafe class EditorModalRenderer
         // The runtime established this session; revalidate below after invoking extension preparation.
         string popupId = $"{title}##{id}";
         ImGuiViewport* viewport = NativeImGui.Raw.GetMainViewport();
-        var style = NativeImGui.Raw.GetStyle();
+        ImGuiStyle* style = NativeImGui.Raw.GetStyle();
         Vector2 workSize = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize));
         Vector2 padding = ImGui.FromNative(style->WindowPadding);
         Vector2 bounds = Vector2.Max(Vector2.One, workSize - padding * 2f);
-        Vector2 maximumSize = new(MathF.Floor(bounds.X), MathF.Floor(bounds.Y));
+        var maximumSize = new Vector2(MathF.Floor(bounds.X), MathF.Floor(bounds.Y));
         Vector2 minimumSize = Vector2.Min(presentation.minimumSize * EditorUI.current.widgets.style.zoom, maximumSize);
         Vector2 initialSize = presentation.initialSize * EditorUI.current.widgets.style.zoom;
         if (presentation.canResize && initialSize.Y <= 0f)
         {
             using NativeStringLease nativeTitle = Utf8Codec.EncodeNullTerminated(popupId, allowsNull: false);
             ImGuiWindow* existing = NativeImGui.Raw.FindWindowByName((sbyte*)nativeTitle.pointer);
-            if (existing != null && existing->WasActive != 0)
+            if (existing is not null && existing->WasActive != 0)
             {
                 initialSize = ImGui.FromNative(existing->SizeFull);
             }
@@ -79,7 +79,7 @@ internal static unsafe class EditorModalRenderer
             )
         );
         float decorations = NativeImGui.GetFrameHeight();
-        Vector2 available = new(
+        var available = new Vector2(
             MathF.Max(1f, width - padding.X * 2f),
             MathF.Max(1f, (initialSize.Y > 0f ? MathF.Min(initialSize.Y, maximumSize.Y) : maximumSize.Y) - padding.Y * 2f - decorations)
         );
@@ -108,7 +108,7 @@ internal static unsafe class EditorModalRenderer
         {
             height += style->ScrollbarSize;
         }
-        Vector2 windowSize = new(width, MathF.Ceiling(Math.Clamp(height, MathF.Max(1f, minimumSize.Y), maximumSize.Y)));
+        var windowSize = new Vector2(width, MathF.Ceiling(Math.Clamp(height, MathF.Max(1f, minimumSize.Y), maximumSize.Y)));
         Vector2 center = ImGui.FromNative(viewport->WorkPos) + workSize * 0.5f;
         if (presentation.blocksInteraction)
         {

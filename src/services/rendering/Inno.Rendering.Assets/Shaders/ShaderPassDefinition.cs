@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Defines one backend-neutral raster or compute shader pass.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("0f50b92b-4d4b-55f8-a954-953630083303")]
+[StableTypeId("0f50b92b-4d4b-55f8-a954-953630083303")]
 public struct ShaderPassDefinition
 {
     /// <summary>

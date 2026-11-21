@@ -177,7 +177,7 @@ public sealed class EditorExportService : EditorModule
     /// </param>
     protected override void OnUpdate(EditorContext context)
     {
-        while (m_progress.TryDequeue(out var update))
+        while (m_progress.TryDequeue(out (long operation, BuildProgress value) update))
         {
             if (update.operation != m_operation || m_cancellation is null || m_cancellation.IsCancellationRequested)
             {
@@ -202,18 +202,12 @@ public sealed class EditorExportService : EditorModule
     /// <param name="context">
     /// The active Editor context being stopped.
     /// </param>
-    protected override void OnStop(EditorContext context)
-    {
-        RetireExports();
-    }
+    protected override void OnStop(EditorContext context) => RetireExports();
 
     /// <summary>
     /// Drains export cleanup before releasing cancellation resources owned by this module.
     /// </summary>
-    protected override void OnDispose()
-    {
-        RetireExports();
-    }
+    protected override void OnDispose() => RetireExports();
 
     private void RetireExports()
     {

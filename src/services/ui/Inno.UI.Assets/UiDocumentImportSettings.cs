@@ -12,10 +12,12 @@ public sealed class UiDocumentImportSettings : ISerializable
     /// <summary>
     /// Gets or sets the registered source-language identity.
     /// </summary>
-    [SerializableProperty] public string languageId { get; set; } = string.Empty;
+    [SerializableProperty]
+    public string languageId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the exact runtime implementation identity.
     /// </summary>
-    [SerializableProperty] public string implementationId { get; set; } = string.Empty;
+    [SerializableProperty]
+    public string implementationId { get; set; } = string.Empty;
 }

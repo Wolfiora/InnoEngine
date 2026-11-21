@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one open metadata key and value.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("239d558b-cead-5efc-82d8-aee339c78f59")]
+[StableTypeId("239d558b-cead-5efc-82d8-aee339c78f59")]
 public struct ShaderMetadataEntry
 {
     /// <summary>

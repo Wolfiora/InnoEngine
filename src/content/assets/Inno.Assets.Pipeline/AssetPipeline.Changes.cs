@@ -18,7 +18,7 @@ using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetPipeline
+public sealed partial class AssetPipeline
 {
     /// <summary>
     /// Reconciles source files, generated files and the persistent catalog.
@@ -99,9 +99,7 @@ sealed partial class AssetPipeline
     public bool TryGetFileSystemEntry(
         AssetPath path,
         out AssetFileEntry entry
-    ) {
-        return GetFileSystem().TryGetEntry(path, out entry);
-    }
+    ) => GetFileSystem().TryGetEntry(path, out entry);
 
     private void ApplySourceChanges(
         IReadOnlyList<AssetChangedEvent> changes,
@@ -277,7 +275,7 @@ sealed partial class AssetPipeline
             AssetChangeKind kind = moved
                                    ? AssetChangeKind.Moved
                                    : deleted
-                                     ? System.IO.File.Exists(Path.Combine(assetRoot, change.relativePath + ".imeta"))
+                                     ? File.Exists(Path.Combine(assetRoot, change.relativePath + ".imeta"))
                                        ? AssetChangeKind.Missing
                                        : AssetChangeKind.Removed
                                      : change.changeType.HasFlag(WatcherChangeTypes.Created)

@@ -20,7 +20,7 @@ internal static class ManagedInputEvaluatorPreparation
         internal string directory { get; } = directory;
         internal string fingerprint { get; } = fingerprint;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose() => reading.Dispose();
     }
 

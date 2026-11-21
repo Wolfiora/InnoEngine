@@ -24,15 +24,15 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
     /// <param name="content">
     /// The verified immutable content store, borrowed for this provider's lifetime.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// A required content or serialization service is null.
-    /// </exception>
     /// <param name="serialization">
     /// The runtime owner serialization registry.
     /// </param>
     /// <param name="context">
     /// Complete runtime asset/reference context used to resolve captured texture defaults.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// A required content or serialization service is null.
+    /// </exception>
     public ContentRenderTargetArtifactProvider(
         IRuntimeContentStore content,
         SerializationRegistry serialization,
@@ -172,7 +172,7 @@ public sealed class ContentRenderTargetArtifactProvider : IRenderTargetArtifactP
             throw new InvalidDataException($"Target artifact '{key}' exceeds the managed payload limit.");
         }
         using Stream stream = lease.OpenRead();
-        byte[] bytes = new byte[checked((int)lease.entry.length)];
+        var bytes = new byte[checked((int)lease.entry.length)];
         stream.ReadExactly(bytes);
         if (stream.ReadByte() != -1)
         {

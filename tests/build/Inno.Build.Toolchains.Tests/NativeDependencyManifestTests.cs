@@ -24,7 +24,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [Fact]
     public async Task ExactPublishedPayloadImportsWithoutAConsumerCompilerAndIsAdoptedByItsOwner()
     {
-        var fixture = await PrepareAsync();
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
         using ProductNativeBuildResult result = await NativeDependencyManifest.AcquireAsync(
             fixture.consumer,
             fixture.selection,
@@ -49,7 +49,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [Fact]
     public async Task AggregateProductsRetainTheirExplicitLayoutWithoutPlatformBranches()
     {
-        var fixture = await PrepareAsync(aggregate: true);
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync(aggregate: true);
         using ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
             fixture.consumer,
             fixture.selection,
@@ -68,7 +68,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [InlineData(true)]
     public async Task SelectionIsReadOnlyAndRequiresNoArchive(bool aggregate)
     {
-        var fixture = await PrepareAsync(aggregate);
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync(aggregate);
         string downloads = Path.Combine(fixture.consumer, "artifacts", "fixture-target", "native");
         foreach (string archive in Directory.GetFiles(downloads))
         {
@@ -92,7 +92,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [InlineData("{\"assets\": [null], \"aggregates\": []}")]
     public async Task MalformedSelectionFailsBeforeTouchingArtifacts(string json)
     {
-        var fixture = await PrepareAsync();
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
         File.WriteAllText(fixture.selection, json);
         await Assert.ThrowsAsync<InvalidDataException>(
             () => NativeDependencyManifest.SelectAsync(fixture.consumer, fixture.selection, "fixture-target", "release", fixture.plan)
@@ -110,7 +110,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [InlineData("added-recipe")]
     public async Task MissingOrChangedDependencyCannotInvokeTheProducer(string damage)
     {
-        var fixture = await PrepareAsync();
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
         JsonObject selection = JsonNode.Parse(File.ReadAllText(fixture.selection))!.AsObject();
         JsonObject asset = selection["assets"]![0]!.AsObject();
         string archive = Path.Combine(
@@ -163,7 +163,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [Fact]
     public async Task ModifiedInstalledArtifactFailsWithoutRepairOrProduction()
     {
-        var fixture = await PrepareAsync();
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
         string output;
         using (ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
             fixture.consumer,
@@ -185,7 +185,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [Fact]
     public async Task ForeignDependencyClosureIsRejectedBeforeDownloadOrInstallation()
     {
-        var fixture = await PrepareAsync();
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
         JsonObject selection = JsonNode.Parse(File.ReadAllText(fixture.selection))!.AsObject();
         selection["assets"]![0]!["dependencies"] = new JsonObject { ["foreign"] = new string('a', 64) };
         File.WriteAllText(fixture.selection, selection.ToJsonString());
@@ -210,7 +210,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [Fact]
     public async Task IndexFlagsCannotHideChangedConsumerSourceBytes()
     {
-        var fixture = await PrepareAsync();
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync();
         const string relative = "component/Source/source.h";
         await Git(fixture.consumer, "update-index", "--assume-unchanged", relative);
         string source = Path.Combine(fixture.consumer, relative);
@@ -232,7 +232,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
     [Fact]
     public async Task PinnedSubmoduleNeedsNoConsumerCheckoutButMutableCheckoutCannotHideChanges()
     {
-        var fixture = await PrepareAsync(submodule: true);
+        (string consumer, string selection, ProductNativeBuildPlan plan) fixture = await PrepareAsync(submodule: true);
         using (ProductNativeBuildResult imported = await NativeDependencyManifest.AcquireAsync(
             fixture.consumer,
             fixture.selection,
@@ -292,7 +292,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
             new NativeLinkPlan(staticLibraryExtension: ".data"),
             false
         );
-        var context = new NativeBuildContext(producer, "release").WithToolchain(tools);
+        NativeBuildContext context = new NativeBuildContext(producer, "release").WithToolchain(tools);
         var plan = new ProductNativeBuildPlan("fixture", [new ProductNativeBuildStep(
             "fixture",
             m_component,
@@ -322,7 +322,7 @@ public sealed class NativeDependencyManifestTests : IDisposable
             products,
             Path.Combine(producer, "artifacts", "export")
         );
-        var asset = JsonNode.Parse(File.ReadAllText(selection))![aggregate ? "aggregates" : "assets"]![0]!;
+        JsonNode asset = JsonNode.Parse(File.ReadAllText(selection))![aggregate ? "aggregates" : "assets"]![0]!;
         string downloads = Path.Combine(consumer, "artifacts", "fixture-target", "native");
         Directory.CreateDirectory(downloads);
         File.Copy(

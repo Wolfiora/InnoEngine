@@ -6,10 +6,11 @@ using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
 using Inno.Scene;
+using Inno.Scene.Components;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Deletes selected subtrees atomically, omitting descendants already covered by a selected ancestor.
@@ -34,7 +35,7 @@ sealed partial class SceneEdits
             }
         }
 
-        var selected = unique.Select(value => value.identity.persistentId).ToHashSet();
+        HashSet<Guid> selected = unique.Select(value => value.identity.persistentId).ToHashSet();
         GameObject[] roots = unique.Where(value => !HasSelectedAncestor(value, selected)).ToArray();
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Delete GameObjects");
         foreach (GameObject target in roots)
@@ -224,13 +225,13 @@ sealed partial class SceneEdits
             }
         }
 
-        var selected = unique.Select(value => value.identity.persistentId).ToHashSet();
+        HashSet<Guid> selected = unique.Select(value => value.identity.persistentId).ToHashSet();
         GameObject[] roots = unique.Where(value => !HasSelectedAncestor(value, selected)).ToArray();
         if (roots.Length == 0)
         {
             return;
         }
-        for (var ancestor = parent?.transform; ancestor is not null; ancestor = ancestor.parent)
+        for (Transform? ancestor = parent?.transform; ancestor is not null; ancestor = ancestor.parent)
         {
             if (selected.Contains(ancestor.gameObject.identity.persistentId))
             {
@@ -293,9 +294,15 @@ sealed partial class SceneEdits
             Vector3 value = existing.ToEulerAnglesXYZDegrees();
             switch (componentName)
             {
-                case "euler.x": value.x = next.x; break;
-                case "euler.y": value.y = next.y; break;
-                case "euler.z": value.z = next.z; break;
+                case "euler.x":
+                    value.x = next.x;
+                    break;
+                case "euler.y":
+                    value.y = next.y;
+                    break;
+                case "euler.z":
+                    value.z = next.z;
+                    break;
             }
             return Quaternion.FromEulerAnglesXYZDegrees(value).normalized;
         }
@@ -309,7 +316,7 @@ sealed partial class SceneEdits
         GameObject target,
         ISet<Guid> selected
     ) {
-        for (var parent = target.transform.parent; parent is not null; parent = parent.parent)
+        for (Transform? parent = target.transform.parent; parent is not null; parent = parent.parent)
         {
             if (selected.Contains(parent.gameObject.identity.persistentId))
             {

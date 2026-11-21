@@ -302,9 +302,9 @@ internal sealed class SettingsModal(
 
         Vector2 minimum = Ui.GetItemMinimum();
         Vector2 maximum = Ui.GetItemMaximum();
-        System.Numerics.Vector4 color = active
-                                        ? EditorPalette.contentAccent
-                                        : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
+        Vector4 color = active
+                        ? EditorPalette.contentAccent
+                        : hovered ? EditorPalette.contentBorder : EditorPalette.contentBorderSoft;
         float centerX = (minimum.X + maximum.X) * 0.5f;
         Ui.DrawLine(
             new Vector2(centerX, minimum.Y),
@@ -403,7 +403,7 @@ internal sealed class SettingsModal(
         float frameHeight = Ui.GetFrameHeight();
         var buttonSize = new Vector2(frameHeight, frameHeight);
         Ui.BeginDisabled(!m_navigation.canGoBack);
-        if (Ui.Button($"{Inno.Editor.ImGui.ImGuiIcon.AngleLeft}##SettingsBack", buttonSize))
+        if (Ui.Button($"{ImGuiIcon.AngleLeft}##SettingsBack", buttonSize))
         {
             m_navigation.GoBack();
         }
@@ -411,7 +411,7 @@ internal sealed class SettingsModal(
         Ui.EndDisabled();
         Ui.SameLine(0f, EditorUiSession.current.widgets.style.toolbarTightSpacing);
         Ui.BeginDisabled(!m_navigation.canGoForward);
-        if (Ui.Button($"{Inno.Editor.ImGui.ImGuiIcon.AngleRight}##SettingsForward", buttonSize))
+        if (Ui.Button($"{ImGuiIcon.AngleRight}##SettingsForward", buttonSize))
         {
             m_navigation.GoForward();
         }

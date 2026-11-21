@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
@@ -59,9 +60,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     protected override void OnCleanupFailed(
         string phase,
         Exception exception
-    ) {
-        m_retirementFailure ??= exception;
-    }
+    ) => m_retirementFailure ??= exception;
 
     /// <summary>
     /// Builds a validated result from the current immutable input snapshot.
@@ -110,8 +109,8 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     internal static string GetConfigurationFingerprint(RenderPipelineAsset asset)
     {
         ArgumentNullException.ThrowIfNull(asset);
-        using var stream = new System.IO.MemoryStream();
-        using var writer = new System.IO.BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write(asset.pipelineTypeId ?? string.Empty);
         WriteState(writer, asset.pipelineState);
         foreach (RenderFeatureConfiguration feature in asset.features)
@@ -125,7 +124,7 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
     }
 
     private static void WriteState(
-        System.IO.BinaryWriter writer,
+        BinaryWriter writer,
         SerializedRenderExtensionState state
     ) {
         writer.Write(state.stableTypeId.ToByteArray());
@@ -195,16 +194,16 @@ internal sealed class RenderExtensionRegistry : TypeRegistry<RenderExtensionRegi
             Action<IDisposable> retire
         ) {
             m_types = types;
-            typeCacheVersion = types.version;
+            this.typeCacheVersion = types.version;
             m_pipelines = pipelines;
             m_features = features;
             m_requestProviders = requestProviders;
             m_contentSources = contentSources;
             m_renderModels = renderModels;
             m_retire = retire;
-            providers = CreateRequestProviders(createProvider);
-            sources = CreateContentSources(createSource);
-            models = CreateRenderModels(createModel);
+            this.providers = CreateRequestProviders(createProvider);
+            this.sources = CreateContentSources(createSource);
+            this.models = CreateRenderModels(createModel);
         }
 
         internal long typeCacheVersion { get; }

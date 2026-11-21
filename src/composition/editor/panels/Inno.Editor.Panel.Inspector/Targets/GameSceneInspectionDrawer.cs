@@ -139,7 +139,7 @@ internal sealed class GameSceneInspectionDrawer : InspectionDrawer<GameScene>
                                                            ? m_serialization.GetProperties(system)
                                                            : Array.Empty<SerializedProperty>();
             string systemId = system.identity.persistentId.ToString("N");
-            var editorTarget = system;
+            GameSystem editorTarget = system;
             string title = missing?.missingTypeName ?? system.GetType().Name;
             bool dimmed = !system.enabled;
             Vector2 cardMinimum = default;

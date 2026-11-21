@@ -18,15 +18,15 @@ internal sealed class MiniAudioClipPreparation : IDisposable
         string path,
         SemaphoreSlim slots
     ) {
-        contentHash = source.contentHash.ToUpperInvariant();
-        length = source.length;
+        this.contentHash = source.contentHash.ToUpperInvariant();
+        this.length = source.length;
         this.path = path;
         try
         {
             using AsyncFlowControl? suppression = ExecutionContext.IsFlowSuppressed()
                                                   ? null
                                                   : ExecutionContext.SuppressFlow();
-            completion = Task.Run(() => PrepareAsync(source, slots), CancellationToken.None);
+            this.completion = Task.Run(() => PrepareAsync(source, slots), CancellationToken.None);
         }
         catch
         {
@@ -43,7 +43,7 @@ internal sealed class MiniAudioClipPreparation : IDisposable
 
     internal void Cancel() => m_cancellation.Cancel();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (!completion.IsCompleted)

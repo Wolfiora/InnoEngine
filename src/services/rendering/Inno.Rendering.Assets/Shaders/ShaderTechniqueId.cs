@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies one material-selectable technique in a shader.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("250032b9-5391-5f1c-a220-c66baf0d15d0")]
+[StableTypeId("250032b9-5391-5f1c-a220-c66baf0d15d0")]
 public record struct ShaderTechniqueId
 {
     /// <summary>
@@ -44,5 +44,5 @@ public record struct ShaderTechniqueId
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public readonly override string ToString() => value ?? string.Empty;
+    public override readonly string ToString() => value ?? string.Empty;
 }

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Sdk;
 using Inno.Build.Bindings;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
@@ -27,8 +29,10 @@ public sealed class PlatformOwnershipContractTests
         using JsonDocument packages = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, ".github", "native-targets.json")));
         using JsonDocument hosts = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(root, ".github", "validation-hosts.json")));
         JsonElement[] targets = packages.RootElement.EnumerateArray().ToArray();
-        var runners = hosts.RootElement.EnumerateArray().ToDictionary(host => host.GetProperty("runner").GetString()!);
-        var distribution = BuildTestProducts.Distribution();
+        Dictionary<string, JsonElement> runners = hosts.RootElement
+            .EnumerateArray()
+            .ToDictionary(host => host.GetProperty("runner").GetString()!);
+        BuildDistribution distribution = BuildTestProducts.Distribution();
         Assert.Equal(
             distribution.availableTargets.Select(id => id.value),
             targets.Select(target => target.GetProperty("target").GetString()).Order(StringComparer.Ordinal)
@@ -74,9 +78,9 @@ public sealed class PlatformOwnershipContractTests
     {
         string output = Path.Combine(Path.GetTempPath(), "InnoPlatformPreflight", Guid.NewGuid().ToString("N"));
         string sdk = Path.Combine(output, "unavailable-dotnet.exe");
-        var host = unsupportedHost
-                   ? new BuildHostDescriptor("MacOS", "arm64")
-                   : new BuildHostDescriptor("Windows", "x64");
+        BuildHostDescriptor host = unsupportedHost
+                                   ? new BuildHostDescriptor("MacOS", "arm64")
+                                   : new BuildHostDescriptor("Windows", "x64");
         var source = new WindowsX64PlayerSupportPackSource(
             BuildTestProducts.Distribution().ResolveNativeProduct("windows-x64", "player"),
             host,
@@ -280,8 +284,8 @@ public sealed class PlatformOwnershipContractTests
             context,
             completed,
             cancellation
-        ) => throw new Xunit.Sdk.XunitException("Preflight must not execute a component producer."),
-        static context => throw new Xunit.Sdk.XunitException("Preflight must reject missing tools before source declaration."),
+        ) => throw new XunitException("Preflight must not execute a component producer."),
+        static context => throw new XunitException("Preflight must reject missing tools before source declaration."),
         static (
             relative,
             target

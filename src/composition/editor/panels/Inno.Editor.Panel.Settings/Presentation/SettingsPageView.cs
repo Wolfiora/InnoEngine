@@ -23,11 +23,11 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         PushDisabledText();
         EditorUI.current.widgets.WrappedText(page.description);
         Ui.PopStyleColor();
-        Ui.Dummy(new System.Numerics.Vector2(0f, 16f * EditorUI.current.widgets.style.zoom));
+        Ui.Dummy(new Vector2(0f, 16f * EditorUI.current.widgets.style.zoom));
         if (page.children.Count != 0)
         {
             DrawOverview(page.children, navigate);
-            Ui.Dummy(new System.Numerics.Vector2(0f, 8f * EditorUI.current.widgets.style.zoom));
+            Ui.Dummy(new Vector2(0f, 8f * EditorUI.current.widgets.style.zoom));
         }
 
         if (!page.hasSettings)
@@ -56,7 +56,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
     private void DrawPageHeader(SettingsPage page)
     {
         ImGuiTableFlags flags = ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX;
-        if (!Ui.BeginTable("##settings_page_header", 2, flags, default(System.Numerics.Vector2), 0f))
+        if (!Ui.BeginTable("##settings_page_header", 2, flags, default, 0f))
         {
             return;
         }
@@ -124,7 +124,7 @@ internal sealed class SettingsPageView(SettingsEditSession session)
         bool tableStarted = false;
         try
         {
-            tableStarted = Ui.BeginTable("##settings_section", 3, flags, new System.Numerics.Vector2(tableWidth, 0f));
+            tableStarted = Ui.BeginTable("##settings_section", 3, flags, new Vector2(tableWidth, 0f));
             if (!tableStarted)
             {
                 return;
@@ -194,8 +194,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
 
     private static void DrawFieldBackgroundGutters(uint background)
     {
-        var table = Ui.GetTableBounds();
-        var window = Ui.GetWindowBounds();
+        (float minimumX, float maximumX, float rowMinimum, float rowMaximum) table = Ui.GetTableBounds();
+        (float minimumX, float maximumX, Vector2 workMaximum, Vector2 padding) window = Ui.GetWindowBounds();
         float tableMinimumX = table.minimumX;
         float tableMaximumX = table.maximumX;
         float rowMinimumY = table.rowMinimum;
@@ -213,8 +213,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             if (tableMinimumX > windowMinimumX)
             {
                 Ui.DrawFilledRectangle(
-                    new System.Numerics.Vector2(windowMinimumX, rowMinimumY),
-                    new System.Numerics.Vector2(tableMinimumX, rowMaximumY),
+                    new Vector2(windowMinimumX, rowMinimumY),
+                    new Vector2(tableMinimumX, rowMaximumY),
                     background,
                     0
                 );
@@ -223,8 +223,8 @@ internal sealed class SettingsPageView(SettingsEditSession session)
             if (tableMaximumX < windowMaximumX)
             {
                 Ui.DrawFilledRectangle(
-                    new System.Numerics.Vector2(tableMaximumX, rowMinimumY),
-                    new System.Numerics.Vector2(windowMaximumX, rowMaximumY),
+                    new Vector2(tableMaximumX, rowMinimumY),
+                    new Vector2(windowMaximumX, rowMaximumY),
                     background,
                     0
                 );

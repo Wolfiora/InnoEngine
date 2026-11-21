@@ -12,62 +12,74 @@ public sealed class ShaderGraphType : ISerializable
     /// <summary>
     /// Gets or sets the atomic or nominal structure type identity.
     /// </summary>
-    [SerializableProperty] public string id { get; set; } = "float4";
+    [SerializableProperty]
+    public string id { get; set; } = "float4";
 
     /// <summary>
     /// Gets or sets the fixed array element type, or null for a non-array.
     /// </summary>
-    [SerializableProperty] public ShaderGraphType? element { get; set; }
+    [SerializableProperty]
+    public ShaderGraphType? element { get; set; }
 
     /// <summary>
     /// Gets or sets the fixed array length.
     /// </summary>
-    [SerializableProperty] public int length { get; set; }
+    [SerializableProperty]
+    public int length { get; set; }
 
     /// <summary>
     /// Gets or sets ordered structure member names.
     /// </summary>
-    [SerializableProperty] public string[] fieldNames { get; set; } = [];
+    [SerializableProperty]
+    public string[] fieldNames { get; set; } = [];
 
     /// <summary>
     /// Gets or sets ordered structure member types.
     /// </summary>
-    [SerializableProperty] public ShaderGraphType[] fieldTypes { get; set; } = [];
+    [SerializableProperty]
+    public ShaderGraphType[] fieldTypes { get; set; } = [];
 
     /// <summary>
     /// Gets or sets whether the descriptor represents a storage binding.
     /// </summary>
-    [SerializableProperty] public bool isStorage { get; set; }
+    [SerializableProperty]
+    public bool isStorage { get; set; }
 
     /// <summary>
     /// Gets or sets whether storage is an image instead of a buffer.
     /// </summary>
-    [SerializableProperty] public bool isImage { get; set; }
+    [SerializableProperty]
+    public bool isImage { get; set; }
 
     /// <summary>
     /// Gets or sets the complete buffer element type.
     /// </summary>
-    [SerializableProperty] public ShaderGraphType? storageElement { get; set; }
+    [SerializableProperty]
+    public ShaderGraphType? storageElement { get; set; }
 
     /// <summary>
     /// Gets or sets storage access.
     /// </summary>
-    [SerializableProperty] public RenderStorageAccess access { get; set; }
+    [SerializableProperty]
+    public RenderStorageAccess access { get; set; }
 
     /// <summary>
     /// Gets or sets the image texel format.
     /// </summary>
-    [SerializableProperty] public RenderTextureFormat format { get; set; }
+    [SerializableProperty]
+    public RenderTextureFormat format { get; set; }
 
     /// <summary>
     /// Gets or sets the image spatial dimension.
     /// </summary>
-    [SerializableProperty] public RenderTextureDimension dimension { get; set; } = RenderTextureDimension.Texture2D;
+    [SerializableProperty]
+    public RenderTextureDimension dimension { get; set; } = RenderTextureDimension.Texture2D;
 
     /// <summary>
     /// Gets or sets whether an image has array layers.
     /// </summary>
-    [SerializableProperty] public bool isArray { get; set; }
+    [SerializableProperty]
+    public bool isArray { get; set; }
 
     /// <summary>
     /// Captures a full immutable source type as reload-safe authoring data.

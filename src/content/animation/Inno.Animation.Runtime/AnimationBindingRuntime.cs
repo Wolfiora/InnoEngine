@@ -150,7 +150,7 @@ public sealed class AnimationBindingRuntime : IAnimationBindingSink, IDisposable
                             $"Animation provider '{declaration.id}' requires a concrete public parameterless implementation."
                         );
                     }
-                    var key = (declaration.bindingId, declaration.kind);
+                    (AnimationBindingId bindingId, AnimationValueKind kind) key = (declaration.bindingId, declaration.kind);
                     if (!ids.Add(declaration.id) || result.providers.ContainsKey(key))
                     {
                         throw new InvalidOperationException(

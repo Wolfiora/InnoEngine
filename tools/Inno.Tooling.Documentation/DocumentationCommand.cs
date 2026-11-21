@@ -149,7 +149,7 @@ public static class DocumentationCommand
                     {
                         Console.WriteLine($"{page.id}: {page.path} ({page.kind}; {page.sections.Count} sections)");
                     }
-                    foreach (var project in catalog.projects)
+                    foreach (KeyValuePair<string, string?> project in catalog.projects)
                     {
                         if (project.Value is null)
                         {
@@ -196,7 +196,7 @@ public static class DocumentationCommand
             foreach (DocumentationContinuation next in result.continuations)
             {
                 Console.WriteLine(
-                    $"Continue: docs read --page {next.pageId}" + (next.section is null ? "" : " --section " + next.section)
+                    $"Continue: docs read --page {next.pageId}" + (next.section is null ? string.Empty : " --section " + next.section)
                     + $" --offset {next.offset} — {next.reason}"
                 );
             }

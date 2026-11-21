@@ -82,7 +82,7 @@ internal static partial class ValidationPlanner
                 throw new InvalidDataException("The native selection changed after installation: " + receipt.target);
             }
             JsonNode catalog = JsonNode.Parse(native) ?? throw new InvalidDataException("Missing native selection.");
-            foreach (var family in new[] { ("assets", assets), ("aggregates", aggregates), ("requests", coverage) })
+            foreach ((string, JsonArray) family in new[] { ("assets", assets), ("aggregates", aggregates), ("requests", coverage) })
             {
             foreach (JsonNode? item in catalog[family.Item1]!.AsArray())
             {
@@ -97,7 +97,10 @@ internal static partial class ValidationPlanner
                                  + item["configuration"]!.GetValue<string>().ToLowerInvariant()
                                  + "/"
                                  + item["product"]!.GetValue<string>();
-                    var digests = item["digests"]!.AsArray().Select(static node => node!.GetValue<string>()).Order(StringComparer.Ordinal);
+                    IOrderedEnumerable<string> digests = item["digests"]!
+                        .AsArray()
+                        .Select(static node => node!.GetValue<string>())
+                        .Order(StringComparer.Ordinal);
                     if (!productPayloads.TryAdd(
                         key,
                         ValidationInputs.Identity(digests.Select(static digest => KeyValuePair.Create(digest, digest)))
@@ -118,7 +121,7 @@ internal static partial class ValidationPlanner
             ) {
                 string owner = file.GetProperty("owner").GetString()!;
                 string input = file.GetProperty("input").GetString()!;
-                var variant = (receipt.target, file.GetProperty("configuration").GetString()!, owner);
+                (string target, string, string owner) variant = (receipt.target, file.GetProperty("configuration").GetString()!, owner);
                 if (managed.TryGetValue(variant, out string? prior) && prior != input)
                 {
                     throw new InvalidDataException("A backend owner has conflicting compiler inputs: " + owner);
@@ -136,18 +139,18 @@ internal static partial class ValidationPlanner
         byte[] selectionBytes = JsonSerializer.SerializeToUtf8Bytes(
             new { layout = "platform-packages", assets, aggregates, requests = coverage }
         );
-        string host = plan.backendHost ?? "";
-        var requests = plan.nativeRequests ?? [];
+        string host = plan.backendHost ?? string.Empty;
+        ValidationNativeRequest[] requests = plan.nativeRequests ?? [];
         if (!plan.backendRequired && receipts.Length != 0)
         {
             throw new InvalidDataException("An independent managed plan must not acquire backend packages.");
         }
-        var contexts = requests.Select(static request => (request.target, request.configuration))
+        IEnumerable<(string, string)> contexts = requests.Select(static request => (request.target, request.configuration))
             .Concat(
                 plan.contexts.Values.Select(context => (host, context.properties.GetValueOrDefault("Configuration", plan.configuration)))
             )
             .Distinct();
-        foreach (var (target, configuration) in contexts.Where(_ => plan.backendRequired))
+        foreach ((string target, string configuration) in contexts.Where(_ => plan.backendRequired))
         {
             BackendInputPlan expected = await BackendInputsAsync(
                 plan,
@@ -170,7 +173,7 @@ internal static partial class ValidationPlanner
                 }
             }
         }
-        var bound = plan with
+        ValidationPlan bound = plan with
         {
             backendPackages = receipts.OrderBy(static receipt => receipt.target, StringComparer.Ordinal).ToArray(),
             backendProductPayloads = productPayloads,
@@ -182,8 +185,8 @@ internal static partial class ValidationPlanner
         };
         if (evidence is not null)
         {
-            var certificates = JsonSerializer.Deserialize<ValidationResult[]>(File.ReadAllBytes(evidence))
-                               ?? throw new InvalidDataException("Missing backend test certification inventory.");
+            ValidationResult[] certificates = JsonSerializer.Deserialize<ValidationResult[]>(File.ReadAllBytes(evidence))
+                                              ?? throw new InvalidDataException("Missing backend test certification inventory.");
             var selected = new List<ValidationResult>();
             foreach (ValidationCheck check in bound.checks.Where(static check => (
                 check.kind == "test"
@@ -362,15 +365,15 @@ internal static partial class ValidationPlanner
             {
             foreach (JsonElement asset in dependencies.RootElement.GetProperty(family).EnumerateArray())
             {
-                var product = new BackendNativeProduct(
-                    asset.GetProperty("product").GetString()!,
-                    asset.GetProperty("target").GetString()!,
-                    asset.GetProperty("configuration").GetString()!.ToLowerInvariant()
-                );
-                var consumers = tools
-                    .Where(pair => pair.Value.Contains(product))
-                    .Select(static pair => pair.Key)
-                    .ToHashSet(StringComparer.Ordinal);
+                    var product = new BackendNativeProduct(
+                        asset.GetProperty("product").GetString()!,
+                        asset.GetProperty("target").GetString()!,
+                        asset.GetProperty("configuration").GetString()!.ToLowerInvariant()
+                    );
+                    HashSet<string> consumers = tools
+                        .Where(pair => pair.Value.Contains(product))
+                        .Select(static pair => pair.Key)
+                        .ToHashSet(StringComparer.Ordinal);
                 if (product.target == target && string.Equals(product.configuration, configuration, StringComparison.OrdinalIgnoreCase))
                 {
                     consumers.UnionWith(
@@ -416,7 +419,7 @@ internal static partial class ValidationPlanner
             using FileStream file = File.OpenRead(Path.Combine(sdkRoot, compiler));
             common[compiler] = Convert.ToHexStringLower(await SHA256.HashDataAsync(file, cancellation).ConfigureAwait(false));
         }
-        foreach (var pair in plan.inputs.Where(static pair => (
+        foreach (KeyValuePair<string, string> pair in plan.inputs.Where(static pair => (
             pair.Key is "global.json" or ".editorconfig" or "Directory.Packages.props"
             || pair.Key.Equals("NuGet.Config", StringComparison.OrdinalIgnoreCase)
         ))) {
@@ -426,7 +429,7 @@ internal static partial class ValidationPlanner
         string[] submodules = plan.inputSets["native-sources"];
         var direct = new Dictionary<string, string>(StringComparer.Ordinal);
         var references = new Dictionary<string, string[]>(StringComparer.Ordinal);
-        foreach (var pair in owners)
+        foreach (KeyValuePair<string, HashSet<string>> pair in owners)
         {
             cancellation.ThrowIfCancellationRequested();
             var current = new Dictionary<string, string>(StringComparer.Ordinal);
@@ -444,7 +447,7 @@ internal static partial class ValidationPlanner
             }
             foreach (string property in properties[pair.Key])
             {
-                current["@" + property] = "";
+                current["@" + property] = string.Empty;
             }
             direct[pair.Key] = ValidationInputs.Identity(current);
             references[pair.Key] = pair.Value.Where(owners.ContainsKey).ToArray();
@@ -502,7 +505,7 @@ internal static partial class ValidationPlanner
             {
                 proofInputs[project] = direct[project];
             }
-            foreach (var input in plan.inputs.Where(static pair => (
+            foreach (KeyValuePair<string, string> input in plan.inputs.Where(static pair => (
                 pair.Key is "tests/ci/Build-BackendPrebuilt.ps1" or "tests/ci/New-BackendPrebuiltPackage.ps1"
                 or "tests/ci/Initialize-BackendProduction.ps1" or "tests/ci/Prepare-BackendNativeInputs.ps1"
                 or ".github/workflows/backend-prebuilts.yml"

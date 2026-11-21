@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Xunit;
+using Xunit.Sdk;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
@@ -30,7 +31,7 @@ public sealed unsafe class SettingsApplyNativeTests
         AtomicEditorSetting.throwOnDraw = true;
         try
         {
-            Assert.ThrowsAny<Xunit.Sdk.XunitException>(() => driver.Search("Atomic Editor"));
+            Assert.ThrowsAny<XunitException>(() => driver.Search("Atomic Editor"));
         }
         finally
         {
@@ -59,7 +60,10 @@ public sealed unsafe class SettingsApplyNativeTests
         AtomicEditorSetting.observe = true;
         try
         {
-            using var host = new NativeProjectPanelHost(typeof(SettingsApplyNativeTests).Assembly, includeSettings: true);
+            using var host = new NativeProjectPanelHost(
+                typeof(SettingsApplyNativeTests).Assembly,
+                includeSettings: true
+            );
             for (int cycle = 0; cycle < 100; cycle++)
             {
                 OpenAndClose(host);
@@ -101,13 +105,15 @@ public sealed unsafe class SettingsApplyNativeTests
         Directory.CreateDirectory(directory);
         try
         {
-            var document = new FailingSettingsDocument(new FileByteDocumentStore(Path.Combine(directory, "Project.inno")));
+            var document = new FailingSettingsDocument(
+                new FileByteDocumentStore(Path.Combine(directory, "Project.inno"))
+            );
             using var host = new NativeProjectPanelHost(
                 typeof(SettingsApplyNativeTests).Assembly,
                 includeSettings: true,
                 settingsDocument: document
             );
-            Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out var editor));
+            Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out EditorSettings? editor));
             var driver = new SettingsInput(host);
             Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
             driver.Draw();
@@ -179,13 +185,15 @@ public sealed unsafe class SettingsApplyNativeTests
         Directory.CreateDirectory(directory);
         try
         {
-            var document = new FailingSettingsDocument(new FileByteDocumentStore(Path.Combine(directory, "Project.inno")));
+            var document = new FailingSettingsDocument(
+                new FileByteDocumentStore(Path.Combine(directory, "Project.inno"))
+            );
             using var host = new NativeProjectPanelHost(
                 typeof(SettingsApplyNativeTests).Assembly,
                 includeSettings: true,
                 settingsDocument: document
             );
-            Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out var editor));
+            Assert.True(host.runtime.interactions.TryGetModule<EditorSettings>(out EditorSettings? editor));
             var driver = new SettingsInput(host);
             Assert.True(host.runtime.interactions.For("editor/main-menu").Execute("editor.settings.open"));
             driver.Draw();
@@ -249,8 +257,7 @@ public sealed unsafe class SettingsApplyNativeTests
         internal string diagnostic => $"Apply={m_apply}; Cancel={m_cancel}; Search={m_search}";
 
         internal void Draw()
-        {
-            host.native.Frame(() =>
+            => host.native.Frame(() =>
             {
                 NativeGui.SetNextWindowPos(new Vector2(20f), (int)ImGuiCond.Always);
                 NativeGui.SetNextWindowSize(new Vector2(1000f, 800f), (int)ImGuiCond.Always);
@@ -261,7 +268,7 @@ public sealed unsafe class SettingsApplyNativeTests
                     Vector2 content = NativeGui.GetCursorScreenPos();
                     m_search = content + new Vector2(115f, NativeGui.GetFrameHeight() * 0.5f + 3f);
                     EditorModalExtension modal = Assert.Single(host.runtime.modals, modal => modal.id == "editor.settings");
-                    Assert.True(modal.TryGetPresentation(out var presentation));
+                    Assert.True(modal.TryGetPresentation(out EditorModalExtension.Presentation presentation));
                     isVisible = presentation.isVisible;
                     if (!isVisible)
                     {
@@ -269,7 +276,7 @@ public sealed unsafe class SettingsApplyNativeTests
                     }
                     Assert.True(modal.Draw(host.runtime.context), "The operational Settings failure must not quarantine the modal.");
                     m_apply = (NativeGui.GetItemRectMin() + NativeGui.GetItemRectMax()) * 0.5f;
-                    var style = NativeGui.Raw.GetStyle();
+                    ImGuiStyle* style = NativeGui.Raw.GetStyle();
                     m_cancel = new Vector2(
                         NativeGui.GetItemRectMin().X - style->ItemSpacing.X
                         - NativeGui.CalcTextSize("Cancel").X * 0.5f - style->FramePadding.X,
@@ -281,7 +288,6 @@ public sealed unsafe class SettingsApplyNativeTests
                     NativeGui.End();
                 }
             });
-        }
 
         internal void Search(string text)
         {
@@ -345,8 +351,9 @@ public sealed class AtomicEditorSetting : EditorSetting
         {
             throw new InvalidOperationException("Controlled Settings drawer failure.");
         }
-        if (observe && (snapshots.Count == 0 || !snapshots[^1].TryGetTarget(out var last) || !ReferenceEquals(last, setting)))
-        {
+        if (observe
+            && (snapshots.Count == 0 || !snapshots[^1].TryGetTarget(out EditorSettingObject? last) || !ReferenceEquals(last, setting))
+        ) {
             snapshots.Add(new WeakReference<EditorSettingObject>(setting));
         }
         if (!stage)

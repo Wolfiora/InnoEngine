@@ -8,9 +8,9 @@ internal sealed class WorkerRuntime
         int workerId,
         ThreadStart loopBody
     ) {
-        id = workerId;
-        localQueue = new WorkStealingDeque<int>();
-        thread = new Thread(loopBody)
+        this.id = workerId;
+        this.localQueue = new WorkStealingDeque<int>();
+        this.thread = new Thread(loopBody)
         {
             IsBackground = true,
             Name = $"Inno.JobWorker.{workerId}"

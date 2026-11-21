@@ -44,10 +44,7 @@ public static class AssetSample
     /// segment starts with <c>~</c>. A Project directory with the same name remains normal writable
     /// authoring content.
     /// </returns>
-    public static bool IsRoot(AssetPath path)
-    {
-        return path.source != AssetSourceId.project && HasSampleDirectoryName(path);
-    }
+    public static bool IsRoot(AssetPath path) => path.source != AssetSourceId.project && HasSampleDirectoryName(path);
 
     /// <summary>
     /// Determines whether a source path is a sample directory or is contained by one.
@@ -65,9 +62,7 @@ public static class AssetSample
     public static bool Contains(
         AssetPath path,
         bool isDirectory
-    ) {
-        return path.source != AssetSourceId.project && ContainsTildeDirectory(path, isDirectory);
-    }
+    ) => path.source != AssetSourceId.project && ContainsTildeDirectory(path, isDirectory);
 
     /// <summary>
     /// Gets the original sample directory name for a writable Project copy.

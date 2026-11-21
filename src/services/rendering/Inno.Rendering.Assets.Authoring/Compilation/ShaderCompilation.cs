@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -12,7 +13,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Selects one renderer profile and compilation policy.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("29e9c0f0-cb34-5b98-a6d6-356f744f3049")]
+[StableTypeId("29e9c0f0-cb34-5b98-a6d6-356f744f3049")]
 public sealed class ShaderCompileTarget
 {
     /// <summary>
@@ -73,7 +74,7 @@ public sealed class ShaderCompileTarget
 /// <summary>
 /// Stores one immutable target stage binary.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("7de46626-7dd7-5112-b098-ef3eb53a0cda")]
+[StableTypeId("7de46626-7dd7-5112-b098-ef3eb53a0cda")]
 public sealed class ShaderStageArtifact
 {
     private readonly byte[] m_bytes;
@@ -124,7 +125,7 @@ public sealed class ShaderStageArtifact
 /// <summary>
 /// Stores all compiled stages and state for one shader pass.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("6a66aac0-d44d-5d90-a801-d92605a92c91")]
+[StableTypeId("6a66aac0-d44d-5d90-a801-d92605a92c91")]
 public sealed class CompiledShaderPass
 {
     private readonly ShaderPassDefinition m_definition;
@@ -181,7 +182,7 @@ public sealed class CompiledShaderPass
 /// <summary>
 /// Contains an immutable target shader artifact and expected reflected interface.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("25e556fe-a071-58b2-8e70-0e41bd434d83")]
+[StableTypeId("25e556fe-a071-58b2-8e70-0e41bd434d83")]
 public sealed class CompiledShaderArtifact
 {
     private readonly byte[] m_definitionData;
@@ -315,7 +316,7 @@ public sealed class CompiledShaderArtifact
 /// <summary>
 /// Returns a candidate artifact and structured diagnostics without mutating active state.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("72b304de-8a2b-5c08-b899-b4aef05be149")]
+[StableTypeId("72b304de-8a2b-5c08-b899-b4aef05be149")]
 public sealed class ShaderCompilationResult
 {
     /// <summary>
@@ -357,7 +358,7 @@ public sealed class ShaderCompilationResult
 /// <summary>
 /// Defines a backend-owned target compiler used by the common Shader IR pipeline.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("00437bae-b212-505f-8017-d59fd29fb005")]
+[StableTypeId("00437bae-b212-505f-8017-d59fd29fb005")]
 public interface IShaderCompilerToolchain
 {
     /// <summary>
@@ -412,7 +413,7 @@ public interface IShaderCompilerToolchain
 /// <summary>
 /// Compiles validated Shader IR through one target toolchain.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("85c9086c-63d5-51e6-82ec-548ad39702e2")]
+[StableTypeId("85c9086c-63d5-51e6-82ec-548ad39702e2")]
 public sealed partial class ShaderCompiler
 {
     private readonly IShaderCompilerToolchain m_toolchain;

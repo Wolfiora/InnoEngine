@@ -58,17 +58,17 @@ public static class SceneSubtreeSerialization
     /// <param name="data">
     /// Bytes created by <see cref="Capture"/>.
     /// </param>
-    /// <param name="parent">
-    /// The optional external parent restored after the subtree is created.
-    /// </param>
-    /// <param name="siblingIndex">
-    /// The requested sibling index under <paramref name="parent"/> or at the scene root.
-    /// </param>
     /// <param name="serialization">
     /// The serialization registry that owns the active converter generation.
     /// </param>
     /// <param name="assets">
     /// The asset-reference resolver used to restore referenced asset identities.
+    /// </param>
+    /// <param name="parent">
+    /// The optional external parent restored after the subtree is created.
+    /// </param>
+    /// <param name="siblingIndex">
+    /// The requested sibling index under <paramref name="parent"/> or at the scene root.
     /// </param>
     /// <returns>
     /// The restored subtree root.

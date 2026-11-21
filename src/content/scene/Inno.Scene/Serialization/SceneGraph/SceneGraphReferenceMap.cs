@@ -10,7 +10,7 @@ namespace Inno.Scene;
 internal sealed class SceneGraphReferenceMap : SceneReferenceScope
 {
     private readonly IReadOnlyDictionary<EngineObject, Guid>? m_sourceIdByObject;
-    private readonly Dictionary<Guid, EngineObject> m_objectBySourceId = new();
+    private readonly Dictionary<Guid, EngineObject> m_objectBySourceId = [];
 
     internal SceneGraphReferenceMap(
         GameScene scene,
@@ -54,7 +54,7 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
                $"Scene graph reference alias target '{sourceId}' could not be resolved."
            );
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override bool TryGetSourceId(
         EngineObject engineObject,
         out Guid sourceId
@@ -63,7 +63,7 @@ internal sealed class SceneGraphReferenceMap : SceneReferenceScope
         return m_sourceIdByObject is not null && m_sourceIdByObject.TryGetValue(engineObject, out sourceId);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override bool TryResolve(
         Guid sourceId,
         out EngineObject? engineObject

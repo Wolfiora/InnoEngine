@@ -5,13 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.material")]
-[Inno.Extensibility.Types.StableTypeId("64229f7a-85a7-5d65-9a50-3c8ea5bc3585")]
+[StableTypeId("64229f7a-85a7-5d65-9a50-3c8ea5bc3585")]
 internal sealed class MaterialAssetImporter : AssetImporter<MaterialAsset>
 {
     /// <summary>

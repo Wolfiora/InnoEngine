@@ -15,16 +15,16 @@ public sealed class JobSystemPerformanceTests
 
         const int jobCount = 64;
         const int sleepMilliseconds = 4;
-        var multiWorkerCount = Math.Min(4, Environment.ProcessorCount);
+        int multiWorkerCount = Math.Min(4, Environment.ProcessorCount);
 
-        using var oneWorker = CreateWorkStealing(1);
-        using var multiWorker = CreateWorkStealing(multiWorkerCount);
+        using JobScheduler oneWorker = CreateWorkStealing(1);
+        using JobScheduler multiWorker = CreateWorkStealing(multiWorkerCount);
 
         _ = MeasureScheduleAndCompleteAll(oneWorker, 8, 1);
         _ = MeasureScheduleAndCompleteAll(multiWorker, 8, 1);
 
-        var oneWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(oneWorker, jobCount, sleepMilliseconds));
-        var multiWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multiWorker, jobCount, sleepMilliseconds));
+        TimeSpan oneWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(oneWorker, jobCount, sleepMilliseconds));
+        TimeSpan multiWorkerBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multiWorker, jobCount, sleepMilliseconds));
 
         Assert.True(
             multiWorkerBest < oneWorkerBest,
@@ -39,16 +39,16 @@ public sealed class JobSystemPerformanceTests
 
         const int jobCount = 48;
         const int sleepMilliseconds = 4;
-        var workerCount = Math.Min(4, Environment.ProcessorCount);
+        int workerCount = Math.Min(4, Environment.ProcessorCount);
 
         using var single = new JobScheduler(JobExecutionMode.SingleThread);
-        using var multi = CreateWorkStealing(workerCount);
+        using JobScheduler multi = CreateWorkStealing(workerCount);
 
         _ = MeasureScheduleAndCompleteAll(single, 8, 1);
         _ = MeasureScheduleAndCompleteAll(multi, 8, 1);
 
-        var singleBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(single, jobCount, sleepMilliseconds));
-        var multiBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multi, jobCount, sleepMilliseconds));
+        TimeSpan singleBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(single, jobCount, sleepMilliseconds));
+        TimeSpan multiBest = MeasureBestOf(3, () => MeasureScheduleAndCompleteAll(multi, jobCount, sleepMilliseconds));
 
         Assert.True(
             multiBest < singleBest,
@@ -64,16 +64,16 @@ public sealed class JobSystemPerformanceTests
         const int length = 48;
         const int batchSize = 1;
         const int sleepMilliseconds = 4;
-        var workerCount = Math.Min(4, Environment.ProcessorCount);
+        int workerCount = Math.Min(4, Environment.ProcessorCount);
 
         using var single = new JobScheduler(JobExecutionMode.SingleThread);
-        using var multi = CreateWorkStealing(workerCount);
+        using JobScheduler multi = CreateWorkStealing(workerCount);
 
         _ = MeasureParallelFor(single, 8, 1, 1);
         _ = MeasureParallelFor(multi, 8, 1, 1);
 
-        var singleBest = MeasureBestOf(3, () => MeasureParallelFor(single, length, batchSize, sleepMilliseconds));
-        var multiBest = MeasureBestOf(3, () => MeasureParallelFor(multi, length, batchSize, sleepMilliseconds));
+        TimeSpan singleBest = MeasureBestOf(3, () => MeasureParallelFor(single, length, batchSize, sleepMilliseconds));
+        TimeSpan multiBest = MeasureBestOf(3, () => MeasureParallelFor(multi, length, batchSize, sleepMilliseconds));
 
         Assert.True(
             multiBest < singleBest,
@@ -82,21 +82,19 @@ public sealed class JobSystemPerformanceTests
     }
 
     private static JobScheduler CreateWorkStealing(int workerCount)
-    {
-        return new JobScheduler(JobExecutionMode.WorkerPool, new JobSchedulerOptions
+        => new JobScheduler(JobExecutionMode.WorkerPool, new JobSchedulerOptions
         {
             workerCount = workerCount
         });
-    }
 
     private static TimeSpan MeasureBestOf(
         int runs,
         Func<TimeSpan> measure
     ) {
-        var best = TimeSpan.MaxValue;
-        for (var i = 0; i < runs; i++)
+        TimeSpan best = TimeSpan.MaxValue;
+        for (int i = 0; i < runs; i++)
         {
-            var current = measure();
+            TimeSpan current = measure();
             if (current < best)
             {
                 best = current;
@@ -114,8 +112,8 @@ public sealed class JobSystemPerformanceTests
         jobs.BeginFrame();
 
         var handles = new JobHandle[jobCount];
-        var stopwatch = Stopwatch.StartNew();
-        for (var i = 0; i < jobCount; i++)
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        for (int i = 0; i < jobCount; i++)
         {
             handles[i] = jobs.Schedule(() => Thread.Sleep(sleepMilliseconds));
         }
@@ -135,8 +133,8 @@ public sealed class JobSystemPerformanceTests
     ) {
         jobs.BeginFrame();
 
-        var stopwatch = Stopwatch.StartNew();
-        var handle = jobs.ParallelFor(length, batchSize, (
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        JobHandle handle = jobs.ParallelFor(length, batchSize, (
             _,
             _
         ) => Thread.Sleep(sleepMilliseconds));

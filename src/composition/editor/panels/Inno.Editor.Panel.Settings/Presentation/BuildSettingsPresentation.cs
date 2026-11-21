@@ -36,8 +36,8 @@ internal sealed class BuildSettingsField
     ) {
         this.key = key;
         this.path = path;
-        pagePath = path[..path.LastIndexOf('/')];
-        label = path[(path.LastIndexOf('/') + 1)..];
+        this.pagePath = path[..path.LastIndexOf('/')];
+        this.label = path[(path.LastIndexOf('/') + 1)..];
         this.section = section;
         this.description = description;
     }

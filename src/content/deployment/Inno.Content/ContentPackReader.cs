@@ -73,7 +73,7 @@ public static class ContentPackReader
             pack.Position = 0;
             archive = new ZipArchive(pack, ZipArchiveMode.Read, leaveOpen: false);
             Dictionary<ContentKey, ZipArchiveEntry> payloads = ReadInventory(archive, limits);
-            ContentKey indexKey = new(ContentPackIndex.C_INDEX_KEY);
+            var indexKey = new ContentKey(ContentPackIndex.C_INDEX_KEY);
             if (!payloads.Remove(indexKey, out ZipArchiveEntry? indexEntry))
             {
                 throw new InvalidDataException("The content pack has no inventory document.");
@@ -82,7 +82,7 @@ public static class ContentPackReader
             {
                 throw new InvalidDataException("The content inventory exceeds its reading budget.");
             }
-            byte[] indexBytes = new byte[checked((int)indexEntry.Length)];
+            var indexBytes = new byte[checked((int)indexEntry.Length)];
             using (Stream indexStream = indexEntry.Open())
             {
                 indexStream.ReadExactly(indexBytes);
@@ -136,8 +136,8 @@ public static class ContentPackReader
         {
             throw new InvalidDataException("The archive contains too many entries.");
         }
-        Dictionary<ContentKey, ZipArchiveEntry> entries = new();
-        HashSet<string> folded = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<ContentKey, ZipArchiveEntry> entries = [];
+        var folded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (ZipArchiveEntry entry in archive.Entries)
         {
             int mode = (entry.ExternalAttributes >> 16) & 0xF000;

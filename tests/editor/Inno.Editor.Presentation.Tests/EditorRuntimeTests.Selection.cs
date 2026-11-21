@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Xunit;
+using Inno.Core.Events;
 using Inno.Core.Identity;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
@@ -20,7 +22,7 @@ public sealed partial class EditorRuntimeTests
         m_runtime.interactions.SetSelection(first);
         EditorSelectionSnapshot original = m_runtime.interactions.selection.Capture();
         RuntimeIdentity firstId = first.identity.runtimeIdentity!.Value;
-        RuntimeIdentity missing = new(firstId.domainId, int.MaxValue);
+        var missing = new RuntimeIdentity(firstId.domainId, int.MaxValue);
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SelectRange(
             [firstId, missing, last.identity.runtimeIdentity!.Value],
             last
@@ -99,7 +101,7 @@ public sealed partial class EditorRuntimeTests
         Assert.True(allocator.Register(target));
         using IDisposable registration = m_runtime.interactions.RegisterIdentityDomain(allocator);
         Exception? failure = null;
-        var worker = new System.Threading.Thread(() => failure = Record.Exception(registration.Dispose));
+        var worker = new Thread(() => failure = Record.Exception(registration.Dispose));
         worker.Start();
         Assert.True(worker.Join(TimeSpan.FromSeconds(5)));
         Assert.IsType<InvalidOperationException>(failure);
@@ -144,7 +146,7 @@ public sealed partial class EditorRuntimeTests
         Assert.True(m_identities.Register(first));
         Assert.True(m_identities.Register(second));
         m_runtime.interactions.SetSelection(first);
-        using var hub = m_runtime.interactions.events.CreateHub();
+        using EventHub hub = m_runtime.interactions.events.CreateHub();
         using var gesture = new EditorEditGesture(m_runtime.interactions.history, "Pending Input");
         using (hub.Listen<EditorOperationPreparingEvent>(_ =>
         {
@@ -155,7 +157,7 @@ public sealed partial class EditorRuntimeTests
         }
         Assert.False(gesture.isActive);
         ulong revision = m_runtime.interactions.selection.version;
-        using var rejecting = hub.Listen<EditorOperationPreparingEvent>(
+        using IDisposable rejecting = hub.Listen<EditorOperationPreparingEvent>(
             _ => throw new InvalidOperationException("Pending edit cannot finish.")
         );
         Assert.Throws<InvalidOperationException>(() => m_runtime.interactions.SetSelection(first));

@@ -42,14 +42,14 @@ public sealed class NativeComponentBuildOptions
     /// <param name="inputPaths">
     /// Portable checkout-relative configuration files included in content hashing and stability checks.
     /// </param>
-    /// <param name="linkPlan">
-    /// Component-specific platform link settings, or null for the selected SDK plan.
-    /// </param>
     /// <param name="bindingLibraryName">
     /// The explicit native import identity, or null to retain the component identity.
     /// </param>
     /// <param name="bindingIncludeDirectories">
     /// Additional checkout-relative binding headers owned by an integration.
+    /// </param>
+    /// <param name="linkPlan">
+    /// Component-specific platform link settings, or null for the selected SDK plan.
     /// </param>
     /// <exception cref="ArgumentException">
     /// Linkage is invalid, definitions are ambiguous or override SDK selection, or an input escapes the checkout.

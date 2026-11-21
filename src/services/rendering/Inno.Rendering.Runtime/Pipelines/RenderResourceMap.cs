@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Stores open semantic graph resources for one pipeline request.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f48ab8a3-a1f2-513a-9e4b-396be0f084a8")]
+[StableTypeId("f48ab8a3-a1f2-513a-9e4b-396be0f084a8")]
 public sealed class RenderResourceMap
 {
     private readonly Dictionary<RenderResourceId, RenderTextureHandle> m_textures = [];

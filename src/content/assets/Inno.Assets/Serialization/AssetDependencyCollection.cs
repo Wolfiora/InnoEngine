@@ -45,7 +45,7 @@ public sealed class AssetDependencyCollection
     /// </summary>
     public IReadOnlyList<AssetDependency> dependencies
         => m_dependencies is null || m_dependencies.Count == 0
-           ? Array.Empty<AssetDependency>()
+           ? []
            : m_dependencies.Values.OrderBy(static dependency => dependency.persistentId).ToArray();
 
     internal void Add(

@@ -18,12 +18,12 @@ internal sealed class MoveAssetEntryDropHandler(AssetBrowserModule assets) : Edi
     /// <summary>
     /// Evaluates the operation's current availability and presentation state.
     /// </summary>
-    /// <returns>
-    /// The validated editor drop status that represents the completed operation.
-    /// </returns>
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
+    /// <returns>
+    /// The validated editor drop status that represents the completed operation.
+    /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, string> context)
         => assets.edits.CanMoveSelection(
             SelectedSources(context),

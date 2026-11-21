@@ -20,12 +20,10 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
     /// The compiler's incremental registration boundary.
     /// </param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
-        context.RegisterSourceOutput(context.CompilationProvider, static (
+        => context.RegisterSourceOutput(context.CompilationProvider, static (
             output,
             compilation
         ) => Generate(output, compilation));
-    }
 
     private static void Generate(
         SourceProductionContext output,
@@ -93,7 +91,10 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
                 .Append(factory)
                 .Append(");\n");
         }
-        var constructions = RuntimeTypeCatalogGenerator.Analyze(compilation, output);
+        (
+            IReadOnlyList<INamedTypeSymbol> factories,
+            IReadOnlyList<(INamedTypeSymbol definition, ITypeSymbol[] arguments)> rejected
+        ) constructions = RuntimeTypeCatalogGenerator.Analyze(compilation, output);
         foreach (INamedTypeSymbol type in constructions.factories.Where(static type => (
             !CanConstruct(type)
             && GetBaseTypes(type).Any(static parent => (
@@ -125,7 +126,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
             }
             code.Append("        register.RegisterFactory(typeof(").Append(name).Append("), ").Append(factory).Append(");\n");
         }
-        foreach (var rejection in constructions.rejected)
+        foreach ((INamedTypeSymbol definition, ITypeSymbol[] arguments) rejection in constructions.rejected)
         {
             code.Append("        register.RejectGenericConstruction(typeof(")
                 .Append(GetTypeName(rejection.definition))
@@ -157,7 +158,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
         foreach (INamedTypeSymbol type in types)
         {
             code.Append("        ")
-                .Append(Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(GetMetadataName(type), quote: true))
+                .Append(SymbolDisplay.FormatLiteral(GetMetadataName(type), quote: true))
                 .Append(" => typeof(")
                 .Append(GetTypeName(type))
                 .Append("),\n");
@@ -351,7 +352,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
             && type.ContainingAssembly.Name.StartsWith("Inno.", StringComparison.Ordinal)
         ) {
             return "global::" + type.ContainingAssembly.Name + ".Generated.RuntimeModuleCatalog.ResolveType("
-                   + Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(GetMetadataName(type), quote: true) + ")";
+                   + SymbolDisplay.FormatLiteral(GetMetadataName(type), quote: true) + ")";
         }
         return "typeof(" + GetTypeName(type) + ")";
     }
@@ -383,7 +384,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
                     root = root.OverriddenMethod;
                 }
                 declarations.Add(
-                    "(" + Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(method.Name, quote: true)
+                    "(" + SymbolDisplay.FormatLiteral(method.Name, quote: true)
                     + ", typeof(" + GetTypeName(root.ContainingType) + "))"
                 );
             }
@@ -459,7 +460,7 @@ public sealed class RuntimeModuleCatalogGenerator : IIncrementalGenerator
             return "new " + array.ElementType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + "[] { "
                    + string.Join(", ", constant.Values.Select(FormatConstant)) + " }";
         }
-        string literal = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatPrimitive(
+        string literal = SymbolDisplay.FormatPrimitive(
             constant.Value!,
             quoteStrings: true,
             useHexadecimalNumbers: false

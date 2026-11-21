@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Xunit;
 using Inno.Adapter.Input;
@@ -76,7 +77,7 @@ public sealed class EditorGameInputCaptureTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub ui = dispatcher.CreateHub(100);
-        using System.IDisposable subscription = ui.Listen<KeyPressedEvent>(evnt =>
+        using IDisposable subscription = ui.Listen<KeyPressedEvent>(evnt =>
         {
             if (globalConsumption)
             {
@@ -113,7 +114,7 @@ public sealed class EditorGameInputCaptureTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub ui = dispatcher.CreateHub(100);
-        using System.IDisposable subscription = ui.Listen<KeyReleasedEvent>(evnt => evnt.HandleInGlobal());
+        using IDisposable subscription = ui.Listen<KeyReleasedEvent>(evnt => evnt.HandleInGlobal());
         var capture = new EditorGameInputCapture(_ => 42u);
         capture.BeginFrame();
         capture.Report(9, Vector2.Zero, new Vector2(100f), focused: true, hovered: true);
@@ -173,7 +174,7 @@ public sealed class EditorGameInputCaptureTests
             "button" => new MouseButtonReleasedEvent(42, MouseButton.Left),
             "focus" => new WindowFocusChangedEvent(42, false),
             "close" => new WindowCloseEvent(42),
-            _ => throw new System.ArgumentException("Unknown release kind.", nameof(releaseKind))
+            _ => throw new ArgumentException("Unknown release kind.", nameof(releaseKind))
         };
         release.HandleInGlobal();
 

@@ -18,6 +18,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Editor.Scripting;
+using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Runtime;
@@ -105,8 +106,8 @@ public sealed class EditorPlayModeTests : IDisposable
             new FakeScriptCompilation(EditorScriptCompilationState.Ready),
             new FakeScenePlayMode()
         );
-        using var modules = new Inno.Extensibility.Modules.ModuleHost(
-            new Inno.Extensibility.Modules.ModuleHostOptions
+        using var modules = new ModuleHost(
+            new ModuleHostOptions
             {
                 catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorPlayModeController).Assembly)
             }
@@ -214,7 +215,13 @@ public sealed class EditorPlayModeTests : IDisposable
                 throw new InvalidOperationException("Scene materialization failed");
             }
         });
-        using var harness = new PlayModeHarness(m_projectRoot, m_engineHost, scripting, scenes, new PendingPlayFactory(subsystem));
+        using var harness = new PlayModeHarness(
+            m_projectRoot,
+            m_engineHost,
+            scripting,
+            scenes,
+            new PendingPlayFactory(subsystem)
+        );
         try
         {
             Assert.True(harness.playMode.EnterPlayMode());
@@ -583,10 +590,7 @@ public sealed class EditorPlayModeTests : IDisposable
 
         internal void Simulate(float deltaTime) => m_controller.Tick(deltaTime);
 
-        public void Dispose()
-        {
-            m_controller.Dispose();
-        }
+        public void Dispose() => m_controller.Dispose();
     }
 
     private sealed class FakeScriptCompilation(EditorScriptCompilationState initialState) : IEditorScriptCompilation
@@ -653,14 +657,12 @@ public sealed class EditorPlayModeTests : IDisposable
                or ScriptCompilationTicketState.Superseded;
 
         internal void SetState(EditorScriptCompilationState value)
-        {
-            state = value switch
+            => state = value switch
             {
                 EditorScriptCompilationState.Ready => ScriptCompilationTicketState.Succeeded,
                 EditorScriptCompilationState.Failed => ScriptCompilationTicketState.Failed,
                 _ => ScriptCompilationTicketState.Compiling
             };
-        }
     }
 
     private sealed class FakeScenePlayMode(Action<SceneWorld>? populate = null) : IEditorScenePlayMode
@@ -693,8 +695,7 @@ public sealed class EditorPlayModeTests : IDisposable
 
     private sealed class FakeSelectionCoordinator : IEditorSelectionCoordinator
     {
-        public IDisposable RegisterIdentityDomain(Inno.Core.Identity.IdentityAllocator allocator)
-            => new Inno.Core.Execution.LifetimeScope();
+        public IDisposable RegisterIdentityDomain(IdentityAllocator allocator) => new LifetimeScope();
 
         public object? selectedTarget { get; private set; }
 

@@ -5,13 +5,13 @@ using System.Threading;
 
 namespace Inno.Core.Collections;
 
-sealed partial class IndexedObjectStore<T>
+public sealed partial class IndexedObjectStore<T>
     where T : class
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal bool IsValidItem(T item)
     {
-        if (item == null)
+        if (item is null)
         {
             return false;
         }
@@ -43,7 +43,7 @@ sealed partial class IndexedObjectStore<T>
         T item,
         out IndexedObjectRuntimeHandle handle
     ) {
-        if (item == null)
+        if (item is null)
         {
             handle = default;
             return false;

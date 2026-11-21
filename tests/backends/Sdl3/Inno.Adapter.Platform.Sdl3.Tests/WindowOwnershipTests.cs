@@ -20,7 +20,7 @@ public sealed unsafe class WindowOwnershipTests
 
         using var first = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var second = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = first.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = first.CreateWindow(new PlatformWindowOptions
         {
             title = "Owned surface",
             width = 40,
@@ -31,7 +31,7 @@ public sealed unsafe class WindowOwnershipTests
         Assert.Empty(second.GetWindows());
         window.Dispose();
         Assert.Empty(first.GetWindows());
-        Assert.True(SDL.Raw.GetWindowFromId(window.windowId) == null);
+        Assert.True(SDL.Raw.GetWindowFromId(window.windowId) is null);
     }
 
     [Fact]
@@ -50,11 +50,11 @@ public sealed unsafe class WindowOwnershipTests
         {
             native = SDL.Raw.CreateWindow((sbyte*)bytes, 40, 40, (ulong)SDLWindowFlags.Hidden);
         }
-        Assert.True(native != null);
+        Assert.True(native is not null);
         uint id = SDL.Raw.GetWindowId(native);
         try
         {
-            var borrowed = app.AdoptWindow((nint)native);
+            Sdl3PlatformWindow borrowed = app.AdoptWindow((nint)native);
             Assert.Single(app.GetWindows());
             Assert.Throws<ArgumentException>(() => app.AdoptWindow((nint)native));
             app.ReleaseWindow(borrowed);
@@ -62,15 +62,15 @@ public sealed unsafe class WindowOwnershipTests
             Assert.True(borrowed.isClosed);
             Assert.Equal(0, borrowed.sdlWindowHandle);
             Assert.Throws<ObjectDisposedException>(() => borrowed.nativeHandles);
-            Assert.True(SDL.Raw.GetWindowFromId(id) != null);
+            Assert.True(SDL.Raw.GetWindowFromId(id) is not null);
             borrowed.Dispose();
-            Assert.True(SDL.Raw.GetWindowFromId(id) != null);
+            Assert.True(SDL.Raw.GetWindowFromId(id) is not null);
         }
         finally
         {
             SDL.Raw.DestroyWindow(native);
         }
-        Assert.True(SDL.Raw.GetWindowFromId(id) == null);
+        Assert.True(SDL.Raw.GetWindowFromId(id) is null);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public sealed unsafe class WindowOwnershipTests
 
         using var first = new Sdl3PlatformApplication(NativeHostFixture.Create());
         using var second = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = first.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = first.CreateWindow(new PlatformWindowOptions
         {
             title = "Thread owner",
             width = 40,

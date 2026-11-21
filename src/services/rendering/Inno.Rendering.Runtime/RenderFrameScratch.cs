@@ -4,7 +4,7 @@ using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     private sealed class RenderFrameScratch
     {

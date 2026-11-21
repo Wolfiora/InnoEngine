@@ -4,6 +4,7 @@ using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
+using Inno.Editor.Assets;
 using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
@@ -25,7 +26,7 @@ internal sealed class MaterialSelectionDrawer(
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => Inno.Editor.ImGui.ImGuiIcon.File;
+    public override string icon => ImGuiIcon.File;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -45,7 +46,7 @@ internal sealed class MaterialSelectionDrawer(
     ) {
         Guid id = GetAssetIds(target).FirstOrDefault();
         return id != Guid.Empty
-               && context.interactions.TryGetModule<MaterialDocuments>(out var documents)
+               && context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents)
                && documents is not null
                && documents.assets.TryGetInfo(id, out AssetInfo? info)
                && info is not null
@@ -85,7 +86,7 @@ internal sealed class MaterialSelectionDrawer(
         InspectionDrawContext context,
         EditorSelectionSnapshot target
     ) {
-        if (!TryOpenDrafts(context, target, out MaterialDocuments? documents, out var drafts))
+        if (!TryOpenDrafts(context, target, out MaterialDocuments? documents, out List<AssetDraftDocuments<MaterialAsset>.Draft> drafts))
         {
             return;
         }
@@ -96,7 +97,7 @@ internal sealed class MaterialSelectionDrawer(
             if (ImGuiApi.Button("Save Selected"))
             {
                 EditorUiSession.current.widgets.CommitEdits();
-                foreach (var draft in drafts)
+                foreach (AssetDraftDocuments<MaterialAsset>.Draft draft in drafts)
                 {
                     _ = context.interactions.documents.Save(draft.documentId);
                 }
@@ -106,8 +107,8 @@ internal sealed class MaterialSelectionDrawer(
             if (ImGuiApi.Button("Revert Selected"))
             {
                 EditorUiSession.current.widgets.CommitEdits();
-                using var transaction = context.interactions.history.BeginTransaction("Revert Materials");
-                foreach (var draft in drafts)
+                using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Revert Materials");
+                foreach (AssetDraftDocuments<MaterialAsset>.Draft draft in drafts)
                 {
                     _ = context.interactions.documents.Revert(draft.documentId);
                 }
@@ -133,14 +134,14 @@ internal sealed class MaterialSelectionDrawer(
         InspectionDrawContext context,
         EditorSelectionSnapshot target
     ) {
-        if (!TryOpenDrafts(context, target, out MaterialDocuments? documents, out var drafts))
+        if (!TryOpenDrafts(context, target, out MaterialDocuments? documents, out List<AssetDraftDocuments<MaterialAsset>.Draft> drafts))
         {
             EditorUI.current.widgets.Hint("Select Materials with compatible Shader interfaces to edit their common parameters.");
             return;
         }
 
         MaterialDocuments owner = documents!;
-        var materials = drafts.ToDictionary(value => value.id, value => owner.Read(value.id));
+        Dictionary<Guid, MaterialAsset> materials = drafts.ToDictionary(value => value.id, value => owner.Read(value.id));
         bool readOnly = drafts.Any(value => value.readOnly);
         ImGuiApi.PushId("materials." + string.Join(".", GetAssetIds(target)));
         ImGuiApi.BeginDisabled(readOnly);
@@ -151,7 +152,7 @@ internal sealed class MaterialSelectionDrawer(
             {
                 EditorUI.current.widgets.Hint("Selection includes installed read-only content. Copy it to the project before editing.");
             }
-            foreach (var draft in drafts.Where(value => value.error.Length != 0))
+            foreach (AssetDraftDocuments<MaterialAsset>.Draft draft in drafts.Where(value => value.error.Length != 0))
             {
                 EditorUI.current.widgets.Hint(draft.path.localPath + ": " + draft.error);
             }
@@ -287,7 +288,7 @@ internal sealed class MaterialSelectionDrawer(
                 "Only compatible Material-owned inputs appear here. Unrelated overrides are retained per Material."
             );
             bool groupOpen = parametersOpen;
-            string currentGroup = "";
+            string currentGroup = string.Empty;
             foreach (ShaderPropertyDefinition property in firstDefinition.properties)
             {
                 if (property.bindingOwner != ShaderPropertyBindingOwner.Material
@@ -353,7 +354,9 @@ internal sealed class MaterialSelectionDrawer(
                         }
                     }
 
-                    MaterialValue value = material.TryGet(property.id, out var overridden) ? overridden : declarations[index].defaultValue;
+                    MaterialValue value = material.TryGet(property.id, out MaterialValue overridden)
+                                          ? overridden
+                                          : declarations[index].defaultValue;
                     if (!ShaderPropertyInspector.Compatible(property.type, value.kind))
                     {
                         compatible = false;
@@ -453,7 +456,7 @@ internal sealed class MaterialSelectionDrawer(
 
     private IReadOnlyList<Guid> GetAssetIds(EditorSelectionSnapshot target)
     {
-        if (!interactions.TryGetModule<MaterialDocuments>(out var materials) || materials is null)
+        if (!interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? materials) || materials is null)
         {
             return Array.Empty<Guid>();
         }
@@ -484,7 +487,7 @@ internal sealed class MaterialSelectionDrawer(
         InspectionDrawContext context,
         EditorSelectionSnapshot target,
         out MaterialDocuments? documents,
-        out List<Inno.Editor.Assets.AssetDraftDocuments<MaterialAsset>.Draft> drafts
+        out List<AssetDraftDocuments<MaterialAsset>.Draft> drafts
     ) {
         drafts = [];
         if (!context.interactions.TryGetModule(out documents) || documents is null)
@@ -500,7 +503,7 @@ internal sealed class MaterialSelectionDrawer(
             ) {
                 return false;
             }
-            var draft = documents.OpenDraft(info.assetPath);
+            AssetDraftDocuments<MaterialAsset>.Draft draft = documents.OpenDraft(info.assetPath);
             drafts.Add(draft);
         }
 
@@ -512,7 +515,7 @@ internal sealed class MaterialSelectionDrawer(
         IReadOnlyDictionary<Guid, MaterialAsset> materials
     ) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Xunit;
@@ -12,6 +14,7 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Editor.Graph;
 using Inno.Native.ImGui;
 using Inno.Rendering.Shaders;
 
@@ -74,7 +77,7 @@ public sealed partial class ShaderEditorWorkflowTests
         }
         byte[] original = SHA256.HashData(File.ReadAllBytes(Path.Combine(source, name)));
         SelectAndDraw(entry);
-        var controller = Controller(entry);
+        GraphDocumentController controller = Controller(entry);
         Assert.Equal(2_000, controller.document.nodes.Count);
         Assert.True(controller.document.edges.Count >= 900);
         for (int warmup = 0; warmup < 5; warmup++)
@@ -82,7 +85,7 @@ public sealed partial class ShaderEditorWorkflowTests
             DrawPerformanceCanvas();
         }
         string? requested = Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_REPETITIONS");
-        int repetitions = requested is null ? 5 : int.Parse(requested, System.Globalization.CultureInfo.InvariantCulture);
+        int repetitions = requested is null ? 5 : int.Parse(requested, CultureInfo.InvariantCulture);
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();
         var samples = new List<object>();
@@ -135,7 +138,7 @@ public sealed partial class ShaderEditorWorkflowTests
                     ?.Configuration
                                 ?? throw new InvalidOperationException("The benchmark assembly has no SDK configuration metadata."),
                 samples,
-                framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+                framework = RuntimeInformation.FrameworkDescription,
                 viewport = "1200x800",
                 warmupFrames = 5,
                 measuredFramesPerRepetition = 10,

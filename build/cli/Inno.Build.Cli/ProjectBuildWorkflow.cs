@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -72,7 +73,7 @@ internal static class ProjectBuildWorkflow
         ).ConfigureAwait(false);
         NativeBuildProduct product = products.Single();
         string extension = context.host.services.executableExtension;
-        var executables = Enum.GetValues<BgfxTool>().ToDictionary(
+        Dictionary<BgfxTool, string> executables = Enum.GetValues<BgfxTool>().ToDictionary(
             static tool => tool,
             tool => product.files.Single(file => Path.GetFileName(file) == tool.ToString().ToLowerInvariant() + extension)
         );

@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Sdk;
 using Inno.Build.Toolchains;
 using Inno.Build.WindowsX64;
 
@@ -80,16 +81,16 @@ public sealed class NativeBindingCMakeTests
                 """);
             var compilation = new NativeBindingCompilation
             {
-                roots = [new("generated", "", true, true), new("user", headerRoot, false, true)],
+                roots = [new("generated", string.Empty, true, true), new("user", headerRoot, false, true)],
                 files = [Input("generated", "binding.c", unit, true), Input("user", "api.h", header, false)],
-                includeDirectories = [new("user", "", false, false)],
+                includeDirectories = [new("user", string.Empty, false, false)],
                 defines = ["INNO_BINDING_ONLY=1"],
                 compilerDefines = [],
                 cxxStandard = 0,
                 cStandard = 17,
                 requiredExports = ["value", "upstream"],
                 staticExportSymbols = [],
-                staticExportAbi = "",
+                staticExportAbi = string.Empty,
                 staticExportNames = []
             };
             File.WriteAllBytes(Path.Combine(native, "compilation.json"), JsonSerializer.SerializeToUtf8Bytes(compilation));
@@ -112,7 +113,7 @@ public sealed class NativeBindingCMakeTests
                 new Dictionary<string, NativeBindingGenerationDescriptor> { [owner.nativeProject] = descriptor },
                 []
             );
-            var tools = await new WindowsX64NativeToolchainProvider(ToolchainEnvironment.ResolveExecutable("dotnet"))
+            NativeToolchainSelection tools = await new WindowsX64NativeToolchainProvider(ToolchainEnvironment.ResolveExecutable("dotnet"))
                 .ResolveAsync(
                     new(root, "release"),
                     (new WindowsBuildHostProvider().TryCapture()
@@ -151,7 +152,7 @@ public sealed class NativeBindingCMakeTests
                     catch (InvalidOperationException exception)
                     {
                         string requirements = Path.Combine(operation.GetNativeBuildRoot(owner), "CMake", "BindingInputs.cmake");
-                        throw new Xunit.Sdk.XunitException(exception + Environment.NewLine + File.ReadAllText(requirements));
+                        throw new XunitException(exception + Environment.NewLine + File.ReadAllText(requirements));
                     }
                     File.Copy(NativeCMakeExecutor.FindOutput(operation, build, "fixture.dll"), Path.Combine(output, "fixture.dll"));
                 }
@@ -196,7 +197,7 @@ public sealed class NativeBindingCMakeTests
         {
             if (!OperatingSystem.IsWindows())
             {
-                Skip = "Requires the Windows MSVC toolchain and its path-length contract.";
+                this.Skip = "Requires the Windows MSVC toolchain and its path-length contract.";
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
@@ -252,7 +253,7 @@ public sealed class EditorHistoryTests
     public void LargePayloadUsesTheBoundedSessionDiskStore()
     {
         using var fixture = new HistoryFixture();
-        byte[] payload = new byte[128 * 1024];
+        var payload = new byte[128 * 1024];
         BitConverter.GetBytes(1).CopyTo(payload, 0);
         BitConverter.GetBytes(9).CopyTo(payload, sizeof(int));
         BitConverter.GetBytes(32).CopyTo(payload, sizeof(int) * 2);
@@ -294,9 +295,9 @@ public sealed class EditorHistoryTests
             m_modules = new ModuleHost(
                 new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorHistoryTests).Assembly) }
             );
-            types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
-            runtime = new EditorInteractionRuntime(
-                new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            this.types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+            this.runtime = new EditorInteractionRuntime(
+                new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
                 types,
                 m_logs,
                 [types]
@@ -335,7 +336,7 @@ public sealed class NeutralValueHistoryHandler : EditorHistoryHandler
         int after,
         string? mergeKey = null
     ) {
-        byte[] bytes = new byte[sizeof(int) * 3];
+        var bytes = new byte[sizeof(int) * 3];
         BitConverter.GetBytes(slot).CopyTo(bytes, 0);
         BitConverter.GetBytes(before).CopyTo(bytes, sizeof(int));
         BitConverter.GetBytes(after).CopyTo(bytes, sizeof(int) * 2);

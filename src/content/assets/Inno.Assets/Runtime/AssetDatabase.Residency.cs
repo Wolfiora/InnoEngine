@@ -130,7 +130,7 @@ public sealed partial class AssetDatabase
         {
             // Only immutable paths, hashes and IDs cross into IO; serializers and identities stay here.
             List<PayloadRead> reads = [];
-            CollectPayloadReads(record, new HashSet<Guid>(), reads);
+            CollectPayloadReads(record, [], reads);
             long bytes = reads.Where(read => !m_payloadReads.ContainsKey(read)).Sum(static read => read.length);
             if (bytes > m_preparationBudgetBytes - m_preparingBytes)
             {
@@ -170,7 +170,9 @@ public sealed partial class AssetDatabase
             }
         }
         shared.waiters++;
-        var completion = new TaskCompletionSource<AssetLease<TAsset>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var completion = new TaskCompletionSource<AssetLease<TAsset>>(
+            TaskCreationOptions.RunContinuationsAsynchronously
+        );
         m_pendingLoads.Add(
             new PendingAcquisition(
                 shared.preparation,
@@ -252,7 +254,7 @@ public sealed partial class AssetDatabase
         CancellationToken token
     ) {
         using Stream stream = lease.OpenRead();
-        byte[] bytes = new byte[checked((int)read.length)];
+        var bytes = new byte[checked((int)read.length)];
         await stream.ReadExactlyAsync(bytes, token).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
         if (stream.ReadByte() != -1 || bytes.LongLength != read.length
@@ -363,13 +365,13 @@ public sealed partial class AssetDatabase
             {
                 if (ExecutionContext.IsFlowSuppressed())
                 {
-                    preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
+                    this.preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
                 }
                 else
                 {
                     using (ExecutionContext.SuppressFlow())
                     {
-                        preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
+                        this.preparation = Task.Run(() => PrepareAsync(read, lease, cancellation.Token, slots));
                     }
                 }
             }

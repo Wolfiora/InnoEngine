@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
 
@@ -241,7 +242,7 @@ public enum UiEventType
 /// <summary>
 /// Describes one queued document event after a context update.
 /// </summary>
-public sealed class UiEvent : Inno.Core.Events.Event
+public sealed class UiEvent : Event
 {
     /// <summary>
     /// Creates a document event with its source document and target element.

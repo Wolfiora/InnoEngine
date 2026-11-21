@@ -15,8 +15,8 @@ public sealed class CoroutineScheduler : IDisposable
 {
     private readonly ConcurrentQueue<Command> m_commands = new();
     private readonly ConcurrentDictionary<long, byte> m_liveIds = new();
-    private readonly Dictionary<long, CoroutineState> m_states = new();
-    private readonly List<long> m_active = new();
+    private readonly Dictionary<long, CoroutineState> m_states = [];
+    private readonly List<long> m_active = [];
     private readonly Lock m_tickGate = new();
     private readonly WeakReference<CoroutineScheduler> m_selfRef;
     private long m_nextId;
@@ -46,10 +46,7 @@ public sealed class CoroutineScheduler : IDisposable
     /// <returns>
     /// Coroutine handle.
     /// </returns>
-    public CoroutineHandle StartCoroutine(IEnumerator routine)
-    {
-        return StartCoroutine(null, routine);
-    }
+    public CoroutineHandle StartCoroutine(IEnumerator routine) => StartCoroutine(null, routine);
 
     /// <summary>
     /// Starts a coroutine with an owner token.
@@ -238,10 +235,7 @@ public sealed class CoroutineScheduler : IDisposable
         return handle.isValid;
     }
 
-    internal bool IsHandleValid(long id)
-    {
-        return Volatile.Read(ref m_disposed) == 0 && id > 0 && m_liveIds.ContainsKey(id);
-    }
+    internal bool IsHandleValid(long id) => Volatile.Read(ref m_disposed) == 0 && id > 0 && m_liveIds.ContainsKey(id);
 
     private void ApplyPendingCommands()
     {
@@ -263,7 +257,7 @@ public sealed class CoroutineScheduler : IDisposable
                         {
                             break;
                         }
-                        CoroutineState state = new(cmd.id, cmd.owner, cmd.routine);
+                        var state = new CoroutineState(cmd.id, cmd.owner, cmd.routine);
                         m_states.Add(state.id, state);
                         m_active.Add(state.id);
                         if (Volatile.Read(ref m_disposed) != 0)

@@ -40,6 +40,8 @@ using Inno.Rendering.Assets.Authoring;
 using Inno.Rendering.Shaders;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EngineColor = Inno.Core.Mathematics.Color;
+using EngineVector4 = Inno.Core.Mathematics.Vector4;
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 
@@ -128,7 +130,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             ShaderGraphArtifact.Encode(graph, new Dictionary<GraphNodeId, byte[]>(), m_serialization),
             m_serialization
         );
-        ShaderPropertyId id = new("stable.tint");
+        var id = new ShaderPropertyId("stable.tint");
         Assert.True(ShaderParameterPresentation.Read(graph, id, m_serialization, context).visible);
         ShaderParameterPresentation.Write(
             graph,
@@ -166,7 +168,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         GraphDocument graph = m_source.Read(Create("Range.ishader").assetPath).document;
         byte[] before = GraphDocumentCodec.Encode(graph, m_serialization);
         SerializationContext context = AssetSerializationContext.Create(m_assets);
-        foreach (var range in new[]
+        foreach ((double, double) range in new[]
         {
             (double.NaN, 1d),
             (0d, double.PositiveInfinity),
@@ -236,7 +238,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         AssetPath path = CreateFunction();
         var edits = new AssetImportSettingsEdits(m_assets, m_serialization, m_types, m_runtime.interactions);
         AssetImportSettingsSnapshot before = m_assets.GetImportSettings(path);
-        var settings = Assert.IsType<ShaderSourceImportSettings>(before.value);
+        ShaderSourceImportSettings settings = Assert.IsType<ShaderSourceImportSettings>(before.value);
         settings.exports = ["MissingFunction"];
         Assert.False(edits.Apply(path, settings, before.fingerprint));
         Assert.Equal(
@@ -260,11 +262,11 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         AssetPath path = CreateFunction();
         var edits = new AssetImportSettingsEdits(m_assets, m_serialization, m_types, m_runtime.interactions);
         AssetImportSettingsSnapshot before = m_assets.GetImportSettings(path);
-        var settings = Assert.IsType<ShaderSourceImportSettings>(before.value);
+        ShaderSourceImportSettings settings = Assert.IsType<ShaderSourceImportSettings>(before.value);
         settings.exports = ["MissingFunction"];
         _ = edits.Apply(path, settings, before.fingerprint);
         AssetImportSettingsSnapshot current = m_assets.GetImportSettings(path);
-        var external = Assert.IsType<ShaderSourceImportSettings>(current.value);
+        ShaderSourceImportSettings external = Assert.IsType<ShaderSourceImportSettings>(current.value);
         external.exports = ["ExternalFunction"];
         _ = m_assets.SaveImportSettings(path, external, current.fingerprint);
         Assert.False(m_runtime.interactions.history.Undo().succeeded);
@@ -402,7 +404,8 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     [Fact]
     public void SwitchingSelectionKeepsAnInvalidDraftAndExplicitCloseSavePersistsIt()
     {
-        AssetFileEntry first = Create("Incomplete.ishader"), second = Create("Other.ishader");
+        AssetFileEntry first = Create("Incomplete.ishader");
+        AssetFileEntry second = Create("Other.ishader");
         SelectAndDraw(first);
         GraphNodeId missing = Controller(first).AddNode("tests.uninstalled.node", new(32, 64));
         Tick();
@@ -477,7 +480,13 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
                     .Where(
                         node => (
                             node.id != output.id
-            && ShaderGraphDocument.Read(node, "stage", "", m_serialization, AssetSerializationContext.Create(m_assets)) == output.id.value
+                            && ShaderGraphDocument.Read(
+                                node,
+                                "stage",
+                                string.Empty,
+                                m_serialization,
+                                AssetSerializationContext.Create(m_assets)
+                            ) == output.id.value
                         )
                     )
                     .Max(static node => node.position.x)
@@ -605,7 +614,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     {
         AssetFileEntry entry = Create("Delete.ishader");
         SelectAndDraw(entry);
-        var interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
+        EditorInteraction interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
         Assert.True(interaction.Execute("shader/create-output", "Compute"));
         Assert.False(interaction.Execute("shader/create-output", "Compute"));
         GraphDocumentController controller = Controller(entry);
@@ -673,7 +682,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     {
         AssetFileEntry entry = Create("Clipboard.ishader");
         SelectAndDraw(entry);
-        var interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
+        EditorInteraction interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
         Assert.True(interaction.Execute("shader/create-output", "Compute"));
         GraphDocumentController controller = Controller(entry);
         GraphNodeId stage = controller.document.nodes.Last().id;
@@ -704,7 +713,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
                 ShaderGraphDocument.Read(
                     node,
                     "stage",
-                    "",
+                    string.Empty,
                     m_serialization,
                     AssetSerializationContext.Create(m_assets)
                 ) == pasted.id.value
@@ -738,7 +747,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         AssetPath source = CreateFunction("Evaluate", "Secondary");
         AssetFileEntry entry = Create("Source.ishader");
         SelectAndDraw(entry);
-        var interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
+        EditorInteraction interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
         EditorMenuItem create = interaction.BuildMenu().items.Single(item => item.label == "Create");
         EditorMenuItem functions = create.children.Single(item => item.label == "Functions");
         EditorMenuItem general = Assert.Single(functions.children);
@@ -756,7 +765,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         );
         Assert.Equal(
             "Evaluate",
-            ShaderGraphDocument.Read(node, "function", "", m_serialization, AssetSerializationContext.Create(m_assets))
+            ShaderGraphDocument.Read(node, "function", string.Empty, m_serialization, AssetSerializationContext.Create(m_assets))
         );
         Tick();
         using var nodes = new ShaderNodeCompilerRegistry(m_types);
@@ -913,7 +922,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         controller.ReplaceDocument(graph, "Rename Shader");
         Tick();
         Assert.Equal(before, asset.contentVersion);
-        var interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
+        EditorInteraction interaction = m_runtime.interactions.For("panel/rendering.shader-editor", entry);
         interaction.Focus();
         HotKeyGesture save = HotKeyGesture.Primary(KeyCode.S, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         m_runtime.HandleKeyPressed(new KeyPressedEvent(0, save.key, save.modifiers));
@@ -999,10 +1008,10 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
 
         Assert.NotNull(canonical);
         GraphDocument draft = m_source.Read(entry.assetPath).document;
-        var context = AssetSerializationContext.Create(m_assets);
+        SerializationContext context = AssetSerializationContext.Create(m_assets);
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(draft, m_serialization, context);
         ShaderPropertyDefinition property = definition.properties[0];
-        property.defaultValue = MaterialValue.FromColor(new Inno.Core.Mathematics.Color(0.23f, 1, 1, 1));
+        property.defaultValue = MaterialValue.FromColor(new EngineColor(0.23f, 1, 1, 1));
         definition.properties[0] = property;
         draft.SetMetadata(
             ShaderGraphDocument.definitionKey,
@@ -1021,7 +1030,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             return result;
         }
 
-        var preview = Poll(1);
+        EditorShaderDraftCompilationSnapshot preview = Poll(1);
         Assert.Equal(EditorShaderCompilationState.Succeeded, preview.state);
         Assert.NotNull(preview.artifact);
         Assert.NotEqual(canonical!.contentHash, preview.artifact!.contentHash);
@@ -1029,11 +1038,11 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.Same(preview.artifact, Poll(2).artifact);
         GraphNodeRecord output = draft.nodes.First(value => value.definitionId == ShaderGraphDocument.outputDefinitionId);
         draft.RemoveNode(output.id);
-        var failed = Poll(3);
+        EditorShaderDraftCompilationSnapshot failed = Poll(3);
         Assert.Equal(EditorShaderCompilationState.Failed, failed.state);
         Assert.True(failed.usingLastGood);
         Assert.Same(preview.artifact, failed.artifact);
-        _ = m_artifacts.GetShaderArtifact(shader, RenderShaderVariant.empty, capabilities, out var unchanged);
+        _ = m_artifacts.GetShaderArtifact(shader, RenderShaderVariant.empty, capabilities, out RenderShaderArtifact? unchanged);
         Assert.Same(canonical, unchanged);
         Assert.Equal(disk, File.ReadAllBytes(Path.Combine(m_root, "Assets", entry.assetPath.localPath)));
         compilation.ReleaseDraft(previewId);
@@ -1054,7 +1063,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             false
         );
         var runtime = new EditorInteractionRuntime(
-            new EditorContext(m_root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [
@@ -1086,7 +1095,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             string? mergeKey = null
         ) {
             MaterialAsset candidate = documents.Read(id);
-            candidate.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(value, 1, 1, 1)));
+            candidate.Set(property, MaterialValue.FromColor(new EngineColor(value, 1, 1, 1)));
             documents.Replace(id, candidate, mergeKey);
         }
 
@@ -1134,7 +1143,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.False(m_runtime.interactions.history.canUndo);
         using var gesture = new EditorEditGesture(m_runtime.interactions.history, "Cancelled Material Edit");
         MaterialAsset candidate = documents.Read(id);
-        candidate.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(0.7f, 1, 1, 1)));
+        candidate.Set(property, MaterialValue.FromColor(new EngineColor(0.7f, 1, 1, 1)));
         documents.Replace(id, candidate, gesture.mergeKey);
         Assert.True(Assert.Single(m_runtime.interactions.documents.documents).isDirty);
         Assert.True(gesture.Cancel().succeeded);
@@ -1150,12 +1159,12 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         MaterialDocuments documents = Assert.IsType<MaterialDocuments>(m_sink.materials);
         Guid id = documents.Open(path);
         MaterialAsset candidate = documents.Read(id);
-        candidate.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(0.3f, 1, 1, 1)));
+        candidate.Set(property, MaterialValue.FromColor(new EngineColor(0.3f, 1, 1, 1)));
         documents.Replace(id, candidate);
         AssetSourceStore sources = m_assets.CreateSourceStore();
         AssetSourceSnapshot before = sources.Read(path);
         MaterialAsset external = sources.Decode<MaterialAsset>(before.bytes);
-        external.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(0.9f, 1, 1, 1)));
+        external.Set(property, MaterialValue.FromColor(new EngineColor(0.9f, 1, 1, 1)));
         byte[] externalBytes = sources.Encode(external);
         sources.Save(path, externalBytes, before.contentHash);
         EditorDocumentContext context = Assert.Single(m_runtime.interactions.documents.documents);
@@ -1181,7 +1190,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
             AssetSourceStore sources = m_assets.CreateSourceStore();
             AssetSourceSnapshot captured = sources.Read(path);
             MaterialAsset material = sources.Decode<MaterialAsset>(captured.bytes);
-            material.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(value, 1, 1, 1)));
+            material.Set(property, MaterialValue.FromColor(new EngineColor(value, 1, 1, 1)));
             sources.Save(path, sources.Encode(material), captured.contentHash);
             Assert.True(m_assets.Import(path));
             Tick();
@@ -1192,7 +1201,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         Assert.Equal(0.2f, inherited.vector.x);
         Assert.False(Assert.Single(m_runtime.interactions.documents.documents).isDirty);
         MaterialAsset candidate = documents.Read(id);
-        candidate.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(0.5f, 1, 1, 1)));
+        candidate.Set(property, MaterialValue.FromColor(new EngineColor(0.5f, 1, 1, 1)));
         documents.Replace(id, candidate);
         External(0.8f);
         Assert.True(documents.Read(id).TryGet(property, out MaterialValue draft));
@@ -1210,7 +1219,8 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
         sources.Save(secondPath, sources.Read(firstPath).bytes, null);
         Assert.True(m_assets.Import(secondPath));
         MaterialDocuments documents = Assert.IsType<MaterialDocuments>(m_sink.materials);
-        Guid first = documents.Open(firstPath), second = documents.Open(secondPath);
+        Guid first = documents.Open(firstPath);
+        Guid second = documents.Open(secondPath);
         byte[] original = sources.Read(firstPath).bytes;
         void Sample(
             float value,
@@ -1225,7 +1235,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
 
             ) {
                 MaterialAsset candidate = documents.Read(id);
-                candidate.Set(property, MaterialValue.FromColor(new Inno.Core.Mathematics.Color(value, 1, 1, 1)));
+                candidate.Set(property, MaterialValue.FromColor(new EngineColor(value, 1, 1, 1)));
                 candidates.Add(id, candidate);
             }
 
@@ -1286,11 +1296,11 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     [Fact]
     public void CommonMaterialEditingPreservesUntouchedMixedComponentsAndTextureReferences()
     {
-        var first = MaterialValue.FromVector(new Inno.Core.Mathematics.Vector4(1, 2, 3, 4));
-        var edited = MaterialValue.FromVector(new Inno.Core.Mathematics.Vector4(8, 2, 3, 4));
-        var other = MaterialValue.FromVector(new Inno.Core.Mathematics.Vector4(5, 6, 7, 9));
+        MaterialValue first = MaterialValue.FromVector(new EngineVector4(1, 2, 3, 4));
+        MaterialValue edited = MaterialValue.FromVector(new EngineVector4(8, 2, 3, 4));
+        MaterialValue other = MaterialValue.FromVector(new EngineVector4(5, 6, 7, 9));
         MaterialValue result = ShaderPropertyInspector.ApplyEdit(ShaderPropertyType.Vector4, first, edited, other);
-        Assert.Equal(new Inno.Core.Mathematics.Vector4(8, 6, 7, 9), result.vector);
+        Assert.Equal(new EngineVector4(8, 6, 7, 9), result.vector);
         var firstTexture = new TextureAsset(1, 1, TextureColorSpace.Linear, "first");
         var secondTexture = new TextureAsset(1, 1, TextureColorSpace.Linear, "second");
         first = MaterialValue.FromTexture(firstTexture);
@@ -1362,7 +1372,7 @@ public sealed partial class ShaderEditorWorkflowTests : IDisposable
     [Fact]
     public void PipelineMissingSettingsKeepOpaqueBytesThroughHistoryAndRecovery()
     {
-        var unknown = new SerializedRenderExtensionState(Guid.NewGuid(), new byte[] { 19, 42, 7 });
+        var unknown = new SerializedRenderExtensionState(Guid.NewGuid(), [19, 42, 7]);
         var source = new RenderPipelineAsset
         {
             pipelineTypeId = "tests.missing-pipeline",

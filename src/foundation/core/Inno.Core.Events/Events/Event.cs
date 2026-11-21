@@ -17,7 +17,10 @@ public abstract class Event
     /// <summary>
     /// Creates an event with an independent global consumption lifetime.
     /// </summary>
-    protected Event() => m_consumptionOwner = this;
+    protected Event()
+    {
+        m_consumptionOwner = this;
+    }
 
     /// <summary>
     /// Creates a routed representation that shares global consumption with its source event.
@@ -45,21 +48,18 @@ public abstract class Event
     /// <remarks>
     /// Global handling stops dispatch in the current hub and all following hubs.
     /// </remarks>
-    public void HandleInGlobal()
-    {
-        Volatile.Write(ref m_consumptionOwner.m_globalHandled, 1);
-    }
+    public void HandleInGlobal() => Volatile.Write(ref m_consumptionOwner.m_globalHandled, 1);
 
     /// <summary>
     /// Marks this event as handled in the current hub only.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when called outside a valid hub dispatch context for this event.
+    /// </exception>
     /// <remarks>
     /// Hub handling stops remaining listeners in the current hub
     /// but does not affect following hubs.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when called outside a valid hub dispatch context for this event.
-    /// </exception>
     public void HandleInHub()
     {
         HubFrameStack? frames = t_hubFrames;
@@ -98,10 +98,7 @@ public abstract class Event
         /// <summary>
         /// Releases the resources owned by this instance.
         /// </summary>
-        public void Dispose()
-        {
-            frames.PopIfCurrent(eventRef);
-        }
+        public void Dispose() => frames.PopIfCurrent(eventRef);
     }
 
     internal sealed class HubFrameStack
@@ -145,10 +142,7 @@ public abstract class Event
         /// <returns>
         /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
-        public bool IsCurrent(Event e)
-        {
-            return m_count > 0 && ReferenceEquals(m_events[m_count - 1], e);
-        }
+        public bool IsCurrent(Event e) => m_count > 0 && ReferenceEquals(m_events[m_count - 1], e);
 
         /// <summary>
         /// Marks the current event handled without changing another event context.
@@ -171,11 +165,9 @@ public abstract class Event
         /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
         /// </returns>
         public bool IsCurrentHandled(Event e)
-        {
-            return m_count > 0
-                   && ReferenceEquals(m_events[m_count - 1], e)
-                   && m_handled[m_count - 1];
-        }
+            => m_count > 0
+               && ReferenceEquals(m_events[m_count - 1], e)
+               && m_handled[m_count - 1];
 
         /// <summary>
         /// Removes the supplied event only when it is the current execution context.

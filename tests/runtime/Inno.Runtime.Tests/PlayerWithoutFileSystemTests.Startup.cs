@@ -5,8 +5,16 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Adapter;
+using Inno.Adapter.Audio;
+using Inno.Adapter.Input;
 using Inno.Adapter.Modules.DotNet;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Rendering;
 using Inno.Adapter.Serialization.DotNet;
+using Inno.Adapter.Storage;
+using Inno.Adapter.Text;
+using Inno.Adapter.UI;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Content;
@@ -37,18 +45,18 @@ public sealed partial class PlayerWithoutFileSystemTests
         MemoryPlayerSource source = CreateDeployment(root);
         Assert.False(Directory.Exists(root));
         var modules = new DotNetAssemblyCatalogSource(typeof(PlayerWithoutFileSystemTests).Assembly);
-        var deployment = GameCodeDeployment.FromManifest(source.manifest.modules);
+        GameCodeDeployment deployment = GameCodeDeployment.FromManifest(source.manifest.modules);
         var options = new PlayerLaunchOptions
         {
-            adapterSelection = new Inno.Adapter.AdapterSelection
+            adapterSelection = new AdapterSelection
             {
-                platform = Inno.Adapter.Platform.PlatformBackendId.sdl3,
-                input = Inno.Adapter.Input.InputBackendId.events,
-                rendering = Inno.Adapter.Rendering.RenderingBackendId.bgfx,
-                storage = Inno.Adapter.Storage.StorageBackendId.fileSystem,
-                audio = Inno.Adapter.Audio.AudioBackendId.miniAudio,
-                text = Inno.Adapter.Text.TextBackendId.freeTypeHarfBuzz,
-                ui = Inno.Adapter.UI.UiBackendId.rmlUi
+                platform = PlatformBackendId.sdl3,
+                input = InputBackendId.events,
+                rendering = RenderingBackendId.bgfx,
+                storage = StorageBackendId.fileSystem,
+                audio = AudioBackendId.miniAudio,
+                text = TextBackendId.freeTypeHarfBuzz,
+                ui = UiBackendId.rmlUi
             },
             modules = modules,
             types = new ReflectionTypeCatalogSource(),
@@ -125,7 +133,7 @@ public sealed partial class PlayerWithoutFileSystemTests
             string exported = Path.Combine(root, "Exported");
             assets.ExportRuntimeArtifacts(exported);
             File.WriteAllBytes(Path.Combine(exported, SettingsFileNames.project), settings.CaptureDocument());
-            var content = ContentTestStore.FromDirectory(exported);
+            ContentTestStore content = ContentTestStore.FromDirectory(exported);
             var manifest = new GameRuntimeManifest
             {
                 applicationId = "tests.memory.player",

@@ -98,7 +98,7 @@ public sealed class GraphCanvasPointerController
             }
         }
         Cancel();
-        foreach (var entry in starts)
+        foreach (KeyValuePair<GraphNodeId, GraphPosition> entry in starts)
         {
             m_starts.Add(entry.Key, entry.Value);
         }

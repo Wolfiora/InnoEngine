@@ -21,7 +21,7 @@ public sealed class MetalShaderFactAttribute : FactAttribute
     {
         if (!OperatingSystem.IsMacOS())
         {
-            Skip = "Requires the macOS BGFX Metal compiler; Windows validation is explicitly deferred.";
+            this.Skip = "Requires the macOS BGFX Metal compiler; Windows validation is explicitly deferred.";
         }
     }
 }
@@ -36,7 +36,7 @@ public sealed class ShaderTypedNativeCompilationTests
         {
         for (int rows = 2; rows <= 4; rows++)
         {
-            var builder = new ShaderIrBuilder();
+                var builder = new ShaderIrBuilder();
             ShaderIrValue matrix = builder.Construct(
                 ShaderSourceType.Atomic($"float{columns}x{rows}"),
                 Enumerable.Range(1, columns * rows).Select(value => builder.Constant((float)value)).ToArray()
@@ -201,7 +201,7 @@ public sealed class ShaderTypedNativeCompilationTests
         ShaderIrValue id = builder.Input("invocation", ShaderSourceType.Atomic("uint3"));
         ShaderSourceModuleAnalysis module = Module("Compute.ishadersource", "void Shade(uvec3 gid) { if (gid.x > 0u) return; }");
         _ = builder.Call(module, "metal", new Dictionary<string, ShaderIrValue> { ["gid"] = id });
-        ShaderIrStage stage = new(
+        var stage = new ShaderIrStage(
             ShaderStage.Compute,
             builder.Build(new Dictionary<string, ShaderIrValue>()),
             [new("invocation", id.type, ShaderIrInputKind.Builtin, "global-invocation-id")],
@@ -270,8 +270,8 @@ public sealed class ShaderTypedNativeCompilationTests
     {
         var builder = new ShaderIrBuilder();
         ShaderIrStage stage = Fragment(builder, Color(builder, 1f));
-        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target);
-        var target = toolchain.CreateTarget(Capabilities(GraphicsCapability.None));
+        var toolchain = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
+        ShaderCompileTarget target = toolchain.CreateTarget(Capabilities(GraphicsCapability.None));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await toolchain.CompileAsync(new ShaderStageToolRequest(stage, target), new CancellationToken(true)));
     }
@@ -314,7 +314,7 @@ public sealed class ShaderTypedNativeCompilationTests
                                           | GraphicsCapability.Texture2DArray
                                           | GraphicsCapability.Texture3D
     ) {
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target));
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target));
         return await compiler.CompileAsync(stage, compiler.CreateTarget(Capabilities(capabilities)));
     }
 

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -33,7 +34,7 @@ public sealed partial class ShaderGraphProgramTests
     {
         ShaderGraphProgramResult lowered = Lower(StorageGraph());
         Assert.True(lowered.succeeded, string.Join("\n", lowered.diagnostics.Select(value => value.message)));
-        var compiler = new ShaderCompiler(new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target));
+        var compiler = new ShaderCompiler(new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target));
         RenderTextureFormat[] formats = Enum.GetValues<RenderTextureFormat>();
         var caps = new GraphicsCapabilities(
             GraphicsApi.Metal,
@@ -70,7 +71,7 @@ public sealed partial class ShaderGraphProgramTests
                 "valueType",
                 ShaderGraphDocument.Encode(ShaderGraphType.Capture(type), m_serialization, SerializationContext.empty)
             );
-            var ports = m_nodes.DescribePorts(node, m_serialization, SerializationContext.empty);
+            IReadOnlyList<ShaderNodePort> ports = m_nodes.DescribePorts(node, m_serialization, SerializationContext.empty);
             Assert.Equal(2, ports.Count);
             Assert.All(ports, port => Assert.True(type.IsEquivalentTo(port.type)));
         }
@@ -92,31 +93,32 @@ public sealed partial class ShaderGraphProgramTests
             storageElement = new() { id = "uint" }
         };
         GraphNodeRecord resource = Node("resource", "inno.shader.stage-input");
-        var settings = new ShaderGraphInputSettings { id = "buffer", kind = ShaderIrInputKind.Storage, type = resourceType };
+        var settings = new ShaderGraphInputSettings
+        {
+            id = "buffer",
+            kind = ShaderIrInputKind.Storage,
+            type = resourceType
+        };
         Set(resource, "settings", settings);
-        GraphNodeRecord coordinate = Node(
-            "coordinate",
-            "inno.shader.constant"
-        ); Set(coordinate, "type", "uint"); Set(coordinate, "value", 0u);
-        GraphNodeRecord value = Node("constant", "inno.shader.constant"); Set(value, "type", "uint"); Set(value, "value", 7u);
-        GraphNodeRecord store = Node(
-            "z-store",
-            "inno.shader.storage-store"
-        ), load = Node("m-load", "inno.shader.storage-load"), atomic = Node(
-            "a-atomic",
-            "inno.shader.storage-atomic-add"
-        );
+        GraphNodeRecord coordinate = Node("coordinate", "inno.shader.constant");
+        Set(coordinate, "type", "uint");
+        Set(coordinate, "value", 0u);
+        GraphNodeRecord value = Node("constant", "inno.shader.constant");
+        Set(value, "type", "uint");
+        Set(value, "value", 7u);
+        GraphNodeRecord store = Node("z-store", "inno.shader.storage-store");
+        GraphNodeRecord load = Node("m-load", "inno.shader.storage-load");
+        GraphNodeRecord atomic = Node("a-atomic", "inno.shader.storage-atomic-add");
         foreach (GraphNodeRecord effect in new[] { store, load, atomic })
         {
-            Set(effect, "resource", resourceType); Connect(resource, "value", effect, "resource"); Connect(
-                coordinate,
-                "value",
-                effect,
-                "coordinate"
-            );
+            Set(effect, "resource", resourceType);
+            Connect(resource, "value", effect, "resource");
+            Connect(coordinate, "value", effect, "coordinate");
         }
-        Connect(value, "value", store, "value"); Connect(value, "value", atomic, "value");
-        Connect(store, "then", load, "after"); Connect(load, "then", atomic, "after");
+        Connect(value, "value", store, "value");
+        Connect(value, "value", atomic, "value");
+        Connect(store, "then", load, "after");
+        Connect(load, "then", atomic, "after");
         graph = ShaderGraphPrograms.Bind(graph, "Main", [stage.id], m_serialization, SerializationContext.empty);
         return ShaderGraphBindings.ChangeInput(graph, resource.id, settings, m_serialization, SerializationContext.empty);
 
@@ -126,7 +128,8 @@ public sealed partial class ShaderGraphProgramTests
         ) {
             var node = new GraphNodeRecord(new(id), type);
             if (id != "compute") Set(node, "stage", "compute");
-            graph.AddNode(node); return node;
+            graph.AddNode(node);
+            return node;
         }
         void Set<T>(
             GraphNodeRecord node,

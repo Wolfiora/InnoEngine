@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 
@@ -63,13 +64,13 @@ public sealed class PluginManifest : ISerializable
     {
         try
         {
-            _ = new Inno.Assets.AssetSourceId(pluginId);
+            _ = new AssetSourceId(pluginId);
         }
         catch (ArgumentException exception)
         {
             throw new InvalidDataException("Plugin.inno contains an invalid Plugin ID.", exception);
         }
-        if (string.Equals(pluginId, Inno.Assets.AssetSourceId.project.value, StringComparison.Ordinal))
+        if (string.Equals(pluginId, AssetSourceId.project.value, StringComparison.Ordinal))
         {
             throw new InvalidDataException("Plugin ID 'project' is reserved by the writable project source.");
         }
@@ -127,7 +128,7 @@ public sealed class PluginManifest : ISerializable
         }
         foreach (string value in values)
         {
-            _ = new Inno.Assets.AssetSourceId(value);
+            _ = new AssetSourceId(value);
         }
     }
 

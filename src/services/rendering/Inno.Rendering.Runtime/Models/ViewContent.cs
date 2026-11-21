@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Inno.Core.Identity;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 
@@ -10,7 +11,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Describes one backend-neutral view produced by a rendering model.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("eb2ef876-46a8-5155-8c45-c96b14ad2043")]
+[StableTypeId("eb2ef876-46a8-5155-8c45-c96b14ad2043")]
 public readonly record struct RenderView
 {
     /// <summary>
@@ -75,7 +76,7 @@ public readonly record struct RenderView
 /// <summary>
 /// Supplies one content source with the host-selected scene roots and an exact view.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("733a6b3a-4cec-5734-83c3-261f0e34b6f8")]
+[StableTypeId("733a6b3a-4cec-5734-83c3-261f0e34b6f8")]
 public sealed class ViewContentContext
 {
     /// <summary>
@@ -170,7 +171,7 @@ public sealed class ViewContentContext
 /// <summary>
 /// Prepares one model-independent drawable for a specific render pass.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("796c6186-c301-5cb2-a634-d03f8156a039")]
+[StableTypeId("796c6186-c301-5cb2-a634-d03f8156a039")]
 public interface IViewDrawable
 {
     /// <summary>
@@ -198,7 +199,7 @@ public interface IViewDrawable
 /// <summary>
 /// Encodes a resource-ready draw into the owning model's scene pass.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("d17ebef7-c2f5-543e-ad05-c38c6396ac3b")]
+[StableTypeId("d17ebef7-c2f5-543e-ad05-c38c6396ac3b")]
 public interface IPreparedViewDrawable
 {
     /// <summary>
@@ -213,7 +214,7 @@ public interface IPreparedViewDrawable
 /// <summary>
 /// Receives pointer input after the rendering model resolves visible draw order.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("8d770d54-025c-591a-b49e-9c12c4bde162")]
+[StableTypeId("8d770d54-025c-591a-b49e-9c12c4bde162")]
 public interface IViewPointerTarget
 {
     /// <summary>
@@ -278,7 +279,7 @@ public interface IViewPointerTarget
 /// <summary>
 /// One world item supplied to a rendering model without choosing its sort policy.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("4aecd31e-d107-56b4-bc92-e07bc89c125b")]
+[StableTypeId("4aecd31e-d107-56b4-bc92-e07bc89c125b")]
 public sealed class ViewContentItem
 {
     /// <summary>
@@ -352,7 +353,7 @@ public sealed class ViewContentItem
 /// <summary>
 /// Receives world items without imposing a rendering-model sort key.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("ee4aa3b7-c773-5f05-9655-5a3cfd457c26")]
+[StableTypeId("ee4aa3b7-c773-5f05-9655-5a3cfd457c26")]
 public interface IViewContentSink
 {
     /// <summary>
@@ -367,7 +368,7 @@ public interface IViewContentSink
 /// <summary>
 /// Contributes model-independent world items to selected views.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("638698ee-7dd9-5d75-92aa-84a2457ed3f0")]
+[StableTypeId("638698ee-7dd9-5d75-92aa-84a2457ed3f0")]
 public interface IViewContentSource : IDisposable
 {
     /// <summary>
@@ -388,7 +389,7 @@ public interface IViewContentSource : IDisposable
 /// <summary>
 /// Completes frame-local input after every output has routed its views.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("9242bf1f-a6dc-555f-ab73-494c7a7acc70")]
+[StableTypeId("9242bf1f-a6dc-555f-ab73-494c7a7acc70")]
 public interface IViewContentFrameSource
 {
     /// <summary>
@@ -404,7 +405,7 @@ public interface IViewContentFrameSource
 /// Discovers an independently reloadable world-content source.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-[Inno.Extensibility.Types.StableTypeId("9e766605-2b84-5040-858e-ae84b6a5e7c3")]
+[StableTypeId("9e766605-2b84-5040-858e-ae84b6a5e7c3")]
 public sealed class ViewContentSourceExtensionAttribute : Attribute
 {
     /// <summary>
@@ -428,7 +429,7 @@ public sealed class ViewContentSourceExtensionAttribute : Attribute
 /// <summary>
 /// Collects all active world-content sources for one exact view.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("b8d46505-dda2-52b6-b3c8-133e48641fed")]
+[StableTypeId("b8d46505-dda2-52b6-b3c8-133e48641fed")]
 public interface IViewContentCollector
 {
     /// <summary>
@@ -446,7 +447,7 @@ public interface IViewContentCollector
 /// <summary>
 /// Restricts a neutral world-content collector to an output layer's source IDs.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f4217ba1-0650-58be-8e76-d6f2c2c303c5")]
+[StableTypeId("f4217ba1-0650-58be-8e76-d6f2c2c303c5")]
 public sealed class SelectedViewContentCollector : IViewContentCollector
 {
     private readonly IViewContentCollector m_inner;

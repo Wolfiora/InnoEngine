@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -32,7 +33,10 @@ public sealed partial class LargePanelPerformanceTests
     [Trait("Acceptance", "Performance")]
     public unsafe void LargeViewsMeasureActualInputAndContinuousEditWork(string scenario)
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
         bool hierarchy = scenario.StartsWith("hierarchy", StringComparison.Ordinal);
         GameScene? scene = hierarchy ? LoadInteractionHierarchy(host) : null;
         if (!hierarchy)
@@ -200,7 +204,7 @@ public sealed partial class LargePanelPerformanceTests
         }
         int repetitions = int.Parse(
             Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_REPETITIONS") ?? "5",
-            System.Globalization.CultureInfo.InvariantCulture
+            CultureInfo.InvariantCulture
         );
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();

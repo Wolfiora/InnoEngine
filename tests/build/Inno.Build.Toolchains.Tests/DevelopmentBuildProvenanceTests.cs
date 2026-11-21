@@ -164,7 +164,7 @@ public sealed class DevelopmentBuildProvenanceTests
         string symbols,
         string fileName
     ) {
-        using var stream = File.OpenRead(symbols);
+        using FileStream stream = File.OpenRead(symbols);
         using MetadataReaderProvider provider = MetadataReaderProvider.FromPortablePdbStream(stream);
         MetadataReader reader = provider.GetMetadataReader();
         DocumentHandle document = Assert.Single(
@@ -190,7 +190,7 @@ public sealed class DevelopmentBuildProvenanceTests
 
     private static string ReadSourceLink(string symbols)
     {
-        using var stream = File.OpenRead(symbols);
+        using FileStream stream = File.OpenRead(symbols);
         using MetadataReaderProvider provider = MetadataReaderProvider.FromPortablePdbStream(stream);
         MetadataReader reader = provider.GetMetadataReader();
         CustomDebugInformation source = Assert.Single(

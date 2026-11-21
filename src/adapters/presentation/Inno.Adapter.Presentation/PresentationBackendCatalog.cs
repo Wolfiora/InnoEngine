@@ -33,16 +33,16 @@ public sealed class PresentationBackendCatalog : IPresentationBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<PresentationBackendId>(new List<PresentationBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<PresentationBackendId>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<PresentationBackendId> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IPresentationContext CreateContext(
         PresentationBackendId backend,
         PresentationBackendOptions options

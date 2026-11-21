@@ -22,7 +22,7 @@ internal sealed class DotNetModuleLifetime : IModuleLifetime
         m_description = description;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IAssemblyUnloadProbe BeginRetirement()
     {
         if (m_retirement is not null)

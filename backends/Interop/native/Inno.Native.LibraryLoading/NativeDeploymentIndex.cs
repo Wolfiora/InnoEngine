@@ -101,7 +101,7 @@ public sealed class NativeDeploymentIndex
             using JsonDocument document = JsonDocument.Parse(bytes.ToArray());
             JsonElement root = document.RootElement;
             string[] names = root.EnumerateObject().Select(static entry => entry.Name).Order(StringComparer.Ordinal).ToArray();
-            if (!names.SequenceEqual(new[] { "files", "libraries", "targetId" }, StringComparer.Ordinal))
+            if (!names.SequenceEqual(["files", "libraries", "targetId"], StringComparer.Ordinal))
             {
                 throw new InvalidDataException("The native deployment index must contain its exact current fields.");
             }

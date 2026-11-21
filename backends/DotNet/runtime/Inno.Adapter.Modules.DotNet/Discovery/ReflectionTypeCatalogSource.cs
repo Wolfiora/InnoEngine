@@ -13,14 +13,14 @@ namespace Inno.Adapter.Modules.DotNet;
 /// </summary>
 public sealed class ReflectionTypeCatalogSource : ITypeCatalogSource
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Type> GetTypes(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
         return assembly.GetTypes();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public TypeCatalogMetadata GetMetadata(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -45,7 +45,7 @@ public sealed class ReflectionTypeCatalogSource : ITypeCatalogSource
         );
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Type? ConstructGenericType(
         Type definition,
         IReadOnlyList<Type> arguments
@@ -71,7 +71,7 @@ public sealed class ReflectionTypeCatalogSource : ITypeCatalogSource
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool CanCreateInstance(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
@@ -84,7 +84,7 @@ public sealed class ReflectionTypeCatalogSource : ITypeCatalogSource
                ) is not null);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public object CreateInstance(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);

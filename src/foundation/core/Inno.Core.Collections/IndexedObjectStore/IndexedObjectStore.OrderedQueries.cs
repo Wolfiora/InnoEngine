@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Inno.Core.Collections;
 
-sealed partial class IndexedObjectStore<T>
+public sealed partial class IndexedObjectStore<T>
     where T : class
 {
     internal IEnumerable<T> ExecuteOrderedQueryFast<TKey>(
@@ -22,7 +22,7 @@ sealed partial class IndexedObjectStore<T>
         m_lock.EnterReadLock();
         try
         {
-            var index = GetIndex(orderKey);
+            IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
             if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
             {
                 throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
@@ -46,8 +46,8 @@ sealed partial class IndexedObjectStore<T>
         List<IIndexedObjectQueryCondition<T>> conditions
     ) where TKey : notnull
     {
-        var version = Volatile.Read(ref m_version);
-        var index = GetIndex(orderKey);
+        int version = Volatile.Read(ref m_version);
+        IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
         if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
         {
             throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");
@@ -63,10 +63,10 @@ sealed partial class IndexedObjectStore<T>
             yield break;
         }
 
-        foreach (var key in index.EnumerateOrderedKeys())
+        foreach (TKey key in index.EnumerateOrderedKeys())
         {
             EnsureVersion(version);
-            if (index.TryGetSingle(key, out var single) && single != null)
+            if (index.TryGetSingle(key, out T? single) && single is not null)
             {
                 bool ok = true;
                 for (int i = 0; i < conditions.Count; i++)
@@ -86,13 +86,13 @@ sealed partial class IndexedObjectStore<T>
                 continue;
             }
 
-            var set = index.FindUnsafe(key);
-            if (set == null || set.Count == 0)
+            HashSet<T>? set = index.FindUnsafe(key);
+            if (set is null || set.Count == 0)
             {
                 continue;
             }
 
-            foreach (var item in set)
+            foreach (T item in set)
             {
                 bool ok = true;
                 for (int i = 0; i < conditions.Count; i++)
@@ -121,7 +121,7 @@ sealed partial class IndexedObjectStore<T>
         m_lock.EnterReadLock();
         try
         {
-            var index = GetIndex(orderKey);
+            IndexedObjectIndex<T, TKey> index = GetIndex(orderKey);
             if ((index.flags & IndexedObjectKeyFlags.Ordered) == 0)
             {
                 throw new InvalidOperationException($"Key '{orderKey.name}' is not ordered.");

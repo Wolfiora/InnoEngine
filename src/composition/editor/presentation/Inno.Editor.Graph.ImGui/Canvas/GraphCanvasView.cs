@@ -170,7 +170,7 @@ public readonly partial struct GraphCanvasView
         {
             throw new ArgumentOutOfRangeException(nameof(input), "Connection controls exceed finite screen coordinates.");
         }
-        var clip = CanvasDrawing.GetClipBounds();
+        (Vector2 minimum, Vector2 maximum) clip = CanvasDrawing.GetClipBounds();
         Vector2 minimum = Vector2.Min(Vector2.Min(output, input), Vector2.Min(first, second)) - new Vector2(thickness);
         Vector2 maximum = Vector2.Max(Vector2.Max(output, input), Vector2.Max(first, second)) + new Vector2(thickness);
         if (maximum.X < MathF.Max(m_origin.X, clip.minimum.X) || minimum.X > MathF.Min(m_origin.X + m_size.X, clip.maximum.X)

@@ -87,7 +87,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var count = 0;
+        int count = 0;
 
         IDisposable token = hub.Listen<ProbeEvent>(_ => count++);
         dispatcher.Emit(new ProbeEvent(1));
@@ -102,7 +102,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var count = 0;
+        int count = 0;
 
         IDisposable token = hub.Listen<ProbeEvent>(_ => Interlocked.Increment(ref count));
         Parallel.For(0, 64, _ => token.Dispose());
@@ -116,7 +116,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var count = 0;
+        int count = 0;
 
         hub.ListenOnce<ProbeEvent>(_ => count++);
 
@@ -132,7 +132,7 @@ public sealed class EventDispatcherBehaviorTests
         const int iterations = 10_000;
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var count = 0;
+        int count = 0;
 
         hub.ListenOnce<ProbeEvent>(_ => Interlocked.Increment(ref count));
         Parallel.For(0, iterations, i =>
@@ -205,8 +205,8 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub firstHub = dispatcher.CreateHub(order: 10);
         using EventHub secondHub = dispatcher.CreateHub(order: 0);
-        var firstHubSecondListenerCalled = false;
-        var secondHubCalled = false;
+        bool firstHubSecondListenerCalled = false;
+        bool secondHubCalled = false;
 
         firstHub.Listen<ProbeEvent>(e => e.HandleInGlobal());
         firstHub.Listen<ProbeEvent>(_ => firstHubSecondListenerCalled = true);
@@ -223,7 +223,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var called = false;
+        bool called = false;
 
         hub.Listen<ProbeEvent>(_ => called = true);
 
@@ -240,8 +240,8 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub firstHub = dispatcher.CreateHub(order: 10);
         using EventHub secondHub = dispatcher.CreateHub(order: 0);
-        var firstHubSecondListenerCalled = false;
-        var secondHubCalled = false;
+        bool firstHubSecondListenerCalled = false;
+        bool secondHubCalled = false;
 
         firstHub.Listen<ProbeEvent>(e => e.HandleInHub());
         firstHub.Listen<ProbeEvent>(_ => firstHubSecondListenerCalled = true);
@@ -259,8 +259,8 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub firstHub = dispatcher.CreateHub(order: 10);
         using EventHub secondHub = dispatcher.CreateHub(order: 0);
-        var secondHubFirstListenerCalled = false;
-        var secondHubSecondListenerCalled = false;
+        bool secondHubFirstListenerCalled = false;
+        bool secondHubSecondListenerCalled = false;
 
         firstHub.Listen<ProbeEvent>(e => e.HandleInHub());
         secondHub.Listen<ProbeEvent>(_ => secondHubFirstListenerCalled = true);
@@ -279,8 +279,8 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
-        var countA = 0;
-        var countB = 0;
+        int countA = 0;
+        int countB = 0;
 
         hubA.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countA));
         hubB.Listen<ProbeEvent>(_ => Interlocked.Increment(ref countB));
@@ -301,9 +301,9 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
-        var hubAFirst = 0;
-        var hubASecond = 0;
-        var hubBCount = 0;
+        int hubAFirst = 0;
+        int hubASecond = 0;
+        int hubBCount = 0;
 
         hubA.Listen<ProbeEvent>(e =>
         {
@@ -333,9 +333,9 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
-        var hubAFirst = 0;
-        var hubASecond = 0;
-        var hubBCount = 0;
+        int hubAFirst = 0;
+        int hubASecond = 0;
+        int hubBCount = 0;
 
         hubA.Listen<ProbeEvent>(e =>
         {
@@ -364,8 +364,8 @@ public sealed class EventDispatcherBehaviorTests
         var dispatcher = new EventDispatcher();
         using EventHub hubA = dispatcher.CreateHub(order: 10);
         using EventHub hubB = dispatcher.CreateHub(order: 0);
-        var hubACalled = false;
-        var hubBCalled = false;
+        bool hubACalled = false;
+        bool hubBCalled = false;
 
         hubA.Listen<ProbeEvent>(_ => hubACalled = true);
         hubB.Listen<ProbeEvent>(_ => hubBCalled = true);
@@ -381,7 +381,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         using EventHub hub = dispatcher.CreateHub();
-        var secondCalled = false;
+        bool secondCalled = false;
 
         hub.Listen<ProbeEvent>(e => e.HandleInHub());
         hub.Listen<ProbeEvent>(_ => secondCalled = true);
@@ -396,7 +396,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         EventHub hub = dispatcher.CreateHub();
-        var secondCalled = false;
+        bool secondCalled = false;
 
         hub.Listen<ProbeEvent>(_ => hub.Dispose());
         hub.Listen<ProbeEvent>(_ => secondCalled = true);
@@ -412,7 +412,7 @@ public sealed class EventDispatcherBehaviorTests
     {
         var dispatcher = new EventDispatcher();
         EventHub hub = dispatcher.CreateHub();
-        var secondCalled = false;
+        bool secondCalled = false;
 
         hub.Listen<ProbeEvent>(_ => hub.Dispose());
         hub.Listen<ProbeEvent>(_ => secondCalled = true);

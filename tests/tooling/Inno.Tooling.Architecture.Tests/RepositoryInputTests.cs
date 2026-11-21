@@ -11,7 +11,10 @@ public sealed class RepositoryInputTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoRepositoryInputs", Guid.NewGuid().ToString("N"));
 
-    public RepositoryInputTests() => Directory.CreateDirectory(m_root);
+    public RepositoryInputTests()
+    {
+        Directory.CreateDirectory(m_root);
+    }
 
     [Fact]
     public void EachAssemblyUsesItsOwnDeclaredSource()
@@ -25,10 +28,7 @@ public sealed class RepositoryInputTests : IDisposable
     }
 
     [Fact]
-    public void NullAssemblyIsRejectedBeforeReadingMetadata()
-    {
-        Assert.Throws<ArgumentNullException>(() => TestRepository.GetRoot(null!));
-    }
+    public void NullAssemblyIsRejectedBeforeReadingMetadata() => Assert.Throws<ArgumentNullException>(() => TestRepository.GetRoot(null!));
 
     [Fact]
     public void MissingRelativeAndUnavailableDeclarationsAreRejected()

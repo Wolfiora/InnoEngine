@@ -64,7 +64,7 @@ public sealed record DocumentationPageInfo(
     /// <summary>
     /// Gets canonical composed Markdown shared by website rendering and snapshot reads.
     /// </summary>
-    public string markdown { get; init; } = "";
+    public string markdown { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets the declared scripting scope, independent of the compilation surface.

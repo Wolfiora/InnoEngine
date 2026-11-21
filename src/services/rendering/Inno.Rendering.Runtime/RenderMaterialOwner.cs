@@ -50,7 +50,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         get
         {
             int result = 0;
-            foreach (var pair in m_programs)
+            foreach (KeyValuePair<PublicationKey, ProgramPublication> pair in m_programs)
             {
                 result += pair.Value.programs.Count;
             }
@@ -280,7 +280,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
 
     internal bool HasScope(string scope)
     {
-        foreach (var pair in m_programs)
+        foreach (KeyValuePair<PublicationKey, ProgramPublication> pair in m_programs)
         {
             if (pair.Key.scope == scope)
             {
@@ -294,7 +294,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         ShaderAsset shader,
         RenderShaderVariant variant
     ) {
-        var key = new LookupKey(shader.identity.persistentId, variant.value, "");
+        var key = new LookupKey(shader.identity.persistentId, variant.value, string.Empty);
         if (m_frameArtifacts.TryGetValue(key, out ArtifactResult result))
         {
             return result;
@@ -562,7 +562,9 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
                 throw new InvalidOperationException(diagnostic.message);
             }
         }
-        var properties = definition.properties.ToDictionary(static property => property.id);
+        Dictionary<ShaderPropertyId, ShaderPropertyDefinition> properties = definition.properties.ToDictionary(
+            static property => property.id
+        );
         foreach (RenderShaderPassArtifact pass in artifact.passes)
         {
             ShaderPassDefinition declared = definition.passes.SingleOrDefault(value => value.name == pass.name);
@@ -602,7 +604,10 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         }
         if (m_failedCleanupFailures.Count != 0)
         {
-            var failure = new AggregateException("Rejected shader publications retired with completed failures.", m_failedCleanupFailures);
+            var failure = new AggregateException(
+                "Rejected shader publications retired with completed failures.",
+                m_failedCleanupFailures
+            );
             m_failedCleanupFailures.Clear();
             throw failure;
         }
@@ -739,7 +744,7 @@ internal sealed class RenderMaterialOwner : RenderResourceProvider, IDisposable
         }
         foreach (ShaderInterfaceBinding binding in shaderInterface.bindings)
         {
-            RenderBindingId id = new(binding.id.value);
+            var id = new RenderBindingId(binding.id.value);
             switch (binding.bindingKind)
             {
                 case ShaderPropertyBindingKind.Uniform:

@@ -165,10 +165,14 @@ public sealed class ManagedBuildExecution : IDisposable
             string sourceRoot = Path.Combine(workspace, "Sources");
             string metadata = Path.Combine(workspace, "inputs.json");
             NativeInputSnapshot captured = context.inputState.CaptureRecordedInputs(context.engineRoot);
-            var selected = captured.entries.Where(static input => input.logicalPath.StartsWith("engine/", StringComparison.Ordinal))
+            NativeInputSnapshot.Entry[] selected = captured.entries
+                .Where(static input => input.logicalPath.StartsWith("engine/", StringComparison.Ordinal))
                 .Where(input => IsSource(context.engineRoot, input.logicalPath["engine/".Length..]))
                 .ToArray();
-            var paths = new HashSet<string>(selected.Select(static input => input.logicalPath["engine/".Length..]), StringComparer.Ordinal);
+            var paths = new HashSet<string>(
+                selected.Select(static input => input.logicalPath["engine/".Length..]),
+                StringComparer.Ordinal
+            );
             if (File.Exists(metadata))
             {
                 string[] previous = JsonSerializer.Deserialize<string[]>(File.ReadAllText(metadata))

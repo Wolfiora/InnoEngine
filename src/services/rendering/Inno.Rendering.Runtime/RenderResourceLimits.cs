@@ -10,7 +10,7 @@ public sealed class RenderResourceLimits
     /// <summary>
     /// Gets the maximum active entries in each buffer, texture or pipeline cache.
     /// </summary>
-    public int resourcesPerKind { get; init; } = 16384;
+    public int resourcesPerKind { get; init; } = 16_384;
 
     /// <summary>
     /// Gets the maximum readbacks that can retain GPU resources before owner-thread completion.

@@ -25,21 +25,21 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         void* registration = null;
         try
         {
-            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(null, &SetPosition, &SetSize) == null);
-            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, null, &SetSize) == null);
+            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(null, &SetPosition, &SetSize) is null);
+            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, null, &SetSize) is null);
             ImGui.Raw.GetIO()->BackendPlatformUserData = (void*)1;
-            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize) == null);
+            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize) is null);
             Assert.Equal((nint)1, (nint)ImGui.Raw.GetIO()->BackendPlatformUserData);
             ImGui.Raw.GetIO()->BackendPlatformUserData = null;
 
             registration = ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize);
-            Assert.True(registration != null);
+            Assert.True(registration is not null);
             Assert.Equal((nint)registration, (nint)ImGui.Raw.GetIO()->BackendPlatformUserData);
-            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize) == null);
+            Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize) is null);
             Assert.Equal(1, ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(registration));
             nint address = (nint)registration;
             int foreignThreadResult = -1;
-            Thread worker = new(() => foreignThreadResult = ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks((void*)address))
+            var worker = new Thread(() => foreignThreadResult = ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks((void*)address))
             {
                 IsBackground = true
             };
@@ -52,12 +52,12 @@ public sealed unsafe class ImGuiPlatformCallbackTests
             {
                 ImGui.Raw.SetCurrentContext(second);
                 Assert.Equal(0, ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(registration));
-                Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize) == null);
+                Assert.True(ImGui.Raw.InnoCreatePlatformWindowCallbacks(first, &SetPosition, &SetSize) is null);
                 void* other = ImGui.Raw.InnoCreatePlatformWindowCallbacks(second, &SetPosition, &SetSize);
-                Assert.True(other != null);
+                Assert.True(other is not null);
                 Assert.NotEqual((nint)registration, (nint)other);
                 ImGui.Raw.InnoDestroyPlatformWindowCallbacks(other);
-                Assert.True(ImGui.Raw.GetIO()->BackendPlatformUserData == null);
+                Assert.True(ImGui.Raw.GetIO()->BackendPlatformUserData is null);
             }
             finally
             {
@@ -69,7 +69,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         {
             ImGui.Raw.SetCurrentContext(first);
             ImGui.Raw.InnoDestroyPlatformWindowCallbacks(registration);
-            Assert.True(ImGui.Raw.GetIO()->BackendPlatformUserData == null);
+            Assert.True(ImGui.Raw.GetIO()->BackendPlatformUserData is null);
             ImGui.Raw.DestroyContext(first);
         }
     }
@@ -100,8 +100,8 @@ public sealed unsafe class ImGuiPlatformCallbackTests
             platform->PlatformSetWindowTitle = &SetTitle;
             ImGui.Raw.PlatformIOSetPlatformGetWindowPos(platform, &GetPosition);
             ImGui.Raw.PlatformIOSetPlatformGetWindowSize(platform, &GetSize);
-            var monitor = (ImGuiPlatformMonitor*)ImGui.Raw.MemAlloc((nuint)sizeof(ImGuiPlatformMonitor));
-            Assert.True(monitor != null);
+            ImGuiPlatformMonitor* monitor = (ImGuiPlatformMonitor*)ImGui.Raw.MemAlloc((nuint)sizeof(ImGuiPlatformMonitor));
+            Assert.True(monitor is not null);
             *monitor = new ImGuiPlatformMonitor
             {
                 MainSize = new ImVec2C { X = 1920, Y = 1080 },
@@ -110,7 +110,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
             };
             platform->Monitors = new ImVectorImGuiPlatformMonitor { Data = monitor, Size = 1, Capacity = 1 };
             state.registration = ImGui.Raw.InnoCreatePlatformWindowCallbacks(context, &SetPosition, &SetSize);
-            Assert.True(state.registration != null);
+            Assert.True(state.registration is not null);
 
             for (int frame = 0; frame < 4; frame++)
             {
@@ -144,7 +144,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         float x,
         float y
     ) {
-        var state = (CallbackState*)viewport->PlatformUserData;
+        CallbackState* state = (CallbackState*)viewport->PlatformUserData;
         state->positions++;
         state->invalid |= x != viewport->Pos.X || y != viewport->Pos.Y
                           || ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(state->registration) != 0;
@@ -156,7 +156,7 @@ public sealed unsafe class ImGuiPlatformCallbackTests
         float width,
         float height
     ) {
-        var state = (CallbackState*)viewport->PlatformUserData;
+        CallbackState* state = (CallbackState*)viewport->PlatformUserData;
         state->sizes++;
         state->invalid |= width != viewport->Size.X || height != viewport->Size.Y
                           || ImGui.Raw.InnoCanDestroyPlatformWindowCallbacks(state->registration) != 0;

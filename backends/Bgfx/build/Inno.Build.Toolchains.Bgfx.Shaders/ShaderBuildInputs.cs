@@ -31,7 +31,7 @@ public sealed class ShaderBuildInputs
         m_sourceRoot = sourceRoot;
         m_files = inventory.files;
         m_directories = inventory.directories;
-        fingerprint = ComputeFingerprint(inventory, cancellationToken);
+        this.fingerprint = ComputeFingerprint(inventory, cancellationToken);
     }
 
     /// <summary>

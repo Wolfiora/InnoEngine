@@ -46,6 +46,12 @@ public static class ShaderArtifactBuilder
     /// <param name="outputFile">
     /// The artifact destination, replaced atomically after successful compilation.
     /// </param>
+    /// <param name="tools">
+    /// The host-selected executable distribution, or null for the application's deployed tools.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels import and native compilation before replacing the destination artifact.
+    /// </param>
     /// <exception cref="InvalidDataException">
     /// Import or shader compilation fails.
     /// </exception>
@@ -61,12 +67,6 @@ public static class ShaderArtifactBuilder
     /// <exception cref="OperationCanceledException">
     /// Import, copying, verification or compilation was canceled before publication.
     /// </exception>
-    /// <param name="tools">
-    /// The host-selected executable distribution, or null for the application's deployed tools.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels import and native compilation before replacing the destination artifact.
-    /// </param>
     public static void Compile(
         ShaderBuildInputs inputs,
         ProcessOwnedDirectory workspace,
@@ -105,6 +105,12 @@ public static class ShaderArtifactBuilder
     /// <param name="outputFile">
     /// The device artifact destination, atomically replaced after successful compilation.
     /// </param>
+    /// <param name="tools">
+    /// The host-selected executable distribution, or null for the application's deployed tools.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels import and native compilation before replacing the destination artifact.
+    /// </param>
     /// <exception cref="ArgumentException">
     /// A required shader path or output path is blank.
     /// </exception>
@@ -120,12 +126,6 @@ public static class ShaderArtifactBuilder
     /// <exception cref="OperationCanceledException">
     /// Import, copying, verification or compilation was canceled before publication.
     /// </exception>
-    /// <param name="tools">
-    /// The host-selected executable distribution, or null for the application's deployed tools.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels import and native compilation before replacing the destination artifact.
-    /// </param>
     public static void CompileGraphicsProgram(
         ShaderBuildInputs inputs,
         ProcessOwnedDirectory workspace,

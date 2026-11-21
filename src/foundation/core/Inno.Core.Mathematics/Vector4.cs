@@ -5,6 +5,8 @@ using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
 using System.Runtime.Serialization;
 
+using NumericsVector4 = System.Numerics.Vector4;
+
 namespace Inno.Core.Mathematics;
 
 /// <summary>
@@ -16,22 +18,26 @@ public struct Vector4 : IEquatable<Vector4>
     /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public float x;
+    [DataMember]
+    public float x;
 
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public float y;
+    [DataMember]
+    public float y;
 
     /// <summary>
     /// The depth or third component.
     /// </summary>
-    [DataMember] public float z;
+    [DataMember]
+    public float z;
 
     /// <summary>
     /// The homogeneous or fourth component.
     /// </summary>
-    [DataMember] public float w;
+    [DataMember]
+    public float w;
 
     /// <summary>
     /// Creates a vector from explicit component values.
@@ -209,11 +215,11 @@ public struct Vector4 : IEquatable<Vector4>
     ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
-            var vec = Vector128.Create(v.x, v.y, v.z, v.w);
-            var row1 = Vector128.Create(m.m11, m.m12, m.m13, m.m14);
-            var row2 = Vector128.Create(m.m21, m.m22, m.m23, m.m24);
-            var row3 = Vector128.Create(m.m31, m.m32, m.m33, m.m34);
-            var row4 = Vector128.Create(m.m41, m.m42, m.m43, m.m44);
+            Vector128<float> vec = Vector128.Create(v.x, v.y, v.z, v.w);
+            Vector128<float> row1 = Vector128.Create(m.m11, m.m12, m.m13, m.m14);
+            Vector128<float> row2 = Vector128.Create(m.m21, m.m22, m.m23, m.m24);
+            Vector128<float> row3 = Vector128.Create(m.m31, m.m32, m.m33, m.m34);
+            Vector128<float> row4 = Vector128.Create(m.m41, m.m42, m.m43, m.m44);
 
             float tx = SimdMath.Dot4(row1, vec);
             float ty = SimdMath.Dot4(row2, vec);
@@ -242,7 +248,8 @@ public struct Vector4 : IEquatable<Vector4>
     {
         if (w == 0f)
         {
-            return new Vector3(x, y, z); // Avoid division by zero
+            // Avoid division by zero
+            return new Vector3(x, y, z);
         }
         return new Vector3(x / w, y / w, z / w);
     }
@@ -349,14 +356,12 @@ public struct Vector4 : IEquatable<Vector4>
     public static Vector4 operator *(
         Matrix m,
         Vector4 v
-    ) {
-        return new Vector4(
-            m.m11 * v.x + m.m12 * v.y + m.m13 * v.z + m.m14 * v.w,
-            m.m21 * v.x + m.m22 * v.y + m.m23 * v.z + m.m24 * v.w,
-            m.m31 * v.x + m.m32 * v.y + m.m33 * v.z + m.m34 * v.w,
-            m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44 * v.w
-        );
-    }
+    ) => new Vector4(
+        m.m11 * v.x + m.m12 * v.y + m.m13 * v.z + m.m14 * v.w,
+        m.m21 * v.x + m.m22 * v.y + m.m23 * v.z + m.m24 * v.w,
+        m.m31 * v.x + m.m32 * v.y + m.m33 * v.z + m.m34 * v.w,
+        m.m41 * v.x + m.m42 * v.y + m.m43 * v.z + m.m44 * v.w
+    );
 
     /// <summary>
     /// Divides the supplied value by the scalar divisor component by component.
@@ -424,7 +429,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// <returns>
     /// The validated system.numerics.vector4 that represents the completed operation.
     /// </returns>
-    public static implicit operator System.Numerics.Vector4(Vector4 v) => new(v.x, v.y, v.z, v.w);
+    public static implicit operator NumericsVector4(Vector4 v) => new(v.x, v.y, v.z, v.w);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Vector4"/>.
@@ -435,7 +440,7 @@ public struct Vector4 : IEquatable<Vector4>
     /// <returns>
     /// The validated vector4 that represents the completed operation.
     /// </returns>
-    public static implicit operator Vector4(System.Numerics.Vector4 v) => new(v.X, v.Y, v.Z, v.W);
+    public static implicit operator Vector4(NumericsVector4 v) => new(v.X, v.Y, v.Z, v.W);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

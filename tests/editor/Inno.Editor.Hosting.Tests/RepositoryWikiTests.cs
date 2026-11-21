@@ -2,13 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Build.Cli;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
@@ -95,7 +98,7 @@ public sealed class RepositoryWikiTests
 
     private static void GenerateReferences(
         string project,
-        params System.Reflection.Assembly[] roots
+        params Assembly[] roots
     ) {
         string assetsRoot = Path.Combine(project, "Assets");
         string pluginsRoot = Path.Combine(project, "Plugins");
@@ -140,14 +143,14 @@ public sealed class RepositoryWikiTests
             host.modules.generations
         );
         string dotnetHost = Path.Combine(
-            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
         );
         var compiler = new ScriptCompiler(
             new ScriptCompilerOptions
             {
                 projectRootDirectory = project,
-                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, project)
+                compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, project)
             },
             assets,
             plugins

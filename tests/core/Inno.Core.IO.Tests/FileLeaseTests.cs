@@ -45,7 +45,7 @@ public sealed class FileLeaseTests : IDisposable
         string path = Path.Combine(m_root, "output.lock");
         using FileLease owner = await FileLease.AcquireAsync(path, TimeSpan.Zero);
         await Assert.ThrowsAsync<TimeoutException>(() => FileLease.AcquireAsync(path, TimeSpan.Zero).AsTask());
-        using CancellationTokenSource cancellation = new();
+        using var cancellation = new CancellationTokenSource();
         Task<FileLease> waiting = FileLease.AcquireAsync(path, Timeout.InfiniteTimeSpan, cancellation.Token).AsTask();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => waiting);
@@ -58,7 +58,7 @@ public sealed class FileLeaseTests : IDisposable
         await Assert.ThrowsAsync<ArgumentException>(() => FileLease.AcquireAsync("relative.lock", TimeSpan.Zero).AsTask());
         string path = Path.Combine(m_root, "output.lock");
         await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => FileLease.AcquireAsync(path, TimeSpan.FromSeconds(-2)).AsTask());
-        using CancellationTokenSource cancellation = new();
+        using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => FileLease.AcquireAsync(path, TimeSpan.Zero, cancellation.Token).AsTask()

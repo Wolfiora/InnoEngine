@@ -43,7 +43,9 @@ public sealed class ProductNativeCostTests
             .ToArray();
         var plan = new ProductNativeBuildPlan("presentation-acceptance", steps);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(15));
-        var context = new NativeBuildContext(root, "debug").WithBindingGenerator(m_distribution.ResolveBindingGenerator("windows-x64"));
+        NativeBuildContext context = new NativeBuildContext(root, "debug").WithBindingGenerator(
+            m_distribution.ResolveBindingGenerator("windows-x64")
+        );
         NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(
             context,
             m_host,
@@ -69,7 +71,9 @@ public sealed class ProductNativeCostTests
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));
         async Task<NativeBuildContext> Context()
         {
-            var context = new NativeBuildContext(root, "debug").WithBindingGenerator(m_distribution.ResolveBindingGenerator("windows-x64"));
+            NativeBuildContext context = new NativeBuildContext(root, "debug").WithBindingGenerator(
+                m_distribution.ResolveBindingGenerator("windows-x64")
+            );
             NativeToolchainSelection sdk = await new WindowsX64NativeToolchainProvider("dotnet").ResolveAsync(
                 context,
                 m_host,

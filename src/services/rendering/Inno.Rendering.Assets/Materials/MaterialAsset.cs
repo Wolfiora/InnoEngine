@@ -141,7 +141,7 @@ public class MaterialAsset : AssetObject
         bool enabled
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(keyword);
-        var values = m_keywords.ToHashSet(StringComparer.Ordinal);
+        HashSet<string> values = m_keywords.ToHashSet(StringComparer.Ordinal);
         if (enabled)
         {
             values.Add(keyword);

@@ -30,7 +30,7 @@ internal sealed class ManagedInputEvaluation : IDisposable
         m_targetId = targetId;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose() => m_ownership?.Dispose();
 
     internal IReadOnlyDictionary<string, string> properties { get; }
@@ -78,7 +78,11 @@ internal sealed class ManagedInputEvaluation : IDisposable
         {
             string? target = properties.TryGetValue("InnoNativeTarget", out string? selected) ? selected : context.toolchain?.targetId;
             cache.BeginWorkingDirectory(directory, directory + ".lock", target, cancellation);
-            var isolated = properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> isolated = properties.ToDictionary(
+                static pair => pair.Key,
+                static pair => pair.Value,
+                StringComparer.OrdinalIgnoreCase
+            );
             isolated.Add("ArtifactsPath", directory);
             return new(new ReadOnlyDictionary<string, string>(isolated), ownership, cache, directory, target);
         }

@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Editor.Graph;
+using Inno.Rendering;
 using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Panel.ShaderEditor;
@@ -28,7 +30,8 @@ internal sealed partial class ShaderEditorDocuments
     ) {
         GraphDocument destination = Controller(draft).document;
         GraphDocument fragment = GraphDocumentCodec.Decode(data.graph, serialization);
-        var existingStages = destination.nodes.Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+        HashSet<ShaderStage> existingStages = destination.nodes
+            .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
             .Select(node => ShaderGraphDocument.Read(node, "settings", new ShaderGraphStageSettings(), serialization, context).stage)
             .ToHashSet();
         return !fragment.nodes.Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)

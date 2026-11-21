@@ -31,7 +31,7 @@ public sealed class RenderingBackendCatalog : IRenderingBackendFactory
                 throw new ArgumentException("Rendering providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<RenderingBackendId>(new List<RenderingBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<RenderingBackendId>([.. m_providers.Keys]);
     }
 
     /// <summary>

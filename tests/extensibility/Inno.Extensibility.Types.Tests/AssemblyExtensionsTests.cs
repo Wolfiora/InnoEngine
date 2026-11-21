@@ -12,7 +12,7 @@ public sealed class AssemblyExtensionsTests
     [Fact]
     public void AssemblyClassificationReadsBothMetadataDimensions()
     {
-        var asm = BuildDynamicAssembly("InnoPlugin", "Editor");
+        Assembly asm = BuildDynamicAssembly("InnoPlugin", "Editor");
         Assert.Equal(AssemblyDomain.InnoPlugin, asm.GetInnoAssemblyDomain());
         Assert.Equal(AssemblyScope.Editor, asm.GetInnoAssemblyScope());
     }
@@ -20,7 +20,7 @@ public sealed class AssemblyExtensionsTests
     [Fact]
     public void MissingClassificationIsRejected()
     {
-        var asm = BuildDynamicAssembly(null, null);
+        Assembly asm = BuildDynamicAssembly(null, null);
         Assert.Throws<InvalidOperationException>(() => asm.GetInnoAssemblyDomain());
         Assert.Throws<InvalidOperationException>(() => asm.GetInnoAssemblyScope());
     }
@@ -30,21 +30,17 @@ public sealed class AssemblyExtensionsTests
         string? scopeName
     ) {
         var asmName = new AssemblyName("Inno.Dynamic." + Guid.NewGuid().ToString("N"));
-        var asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
+        AssemblyBuilder asmBuilder = AssemblyBuilder.DefineDynamicAssembly(asmName, AssemblyBuilderAccess.Run);
 
         if (domainName is not null && scopeName is not null)
         {
-            var ctor = typeof(AssemblyMetadataAttribute).GetConstructor(new[] { typeof(string), typeof(string) })!;
-            asmBuilder.SetCustomAttribute(
-                new CustomAttributeBuilder(ctor, new object[] { "Inno.AssemblyDomain", domainName })
-            );
-            asmBuilder.SetCustomAttribute(
-                new CustomAttributeBuilder(ctor, new object[] { "Inno.AssemblyScope", scopeName })
-            );
+            ConstructorInfo ctor = typeof(AssemblyMetadataAttribute).GetConstructor([typeof(string), typeof(string)])!;
+            asmBuilder.SetCustomAttribute(new CustomAttributeBuilder(ctor, ["Inno.AssemblyDomain", domainName]));
+            asmBuilder.SetCustomAttribute(new CustomAttributeBuilder(ctor, ["Inno.AssemblyScope", scopeName]));
         }
 
-        var module = asmBuilder.DefineDynamicModule("main");
-        var type = module.DefineType("Inno.Dynamic.Placeholder", TypeAttributes.Public | TypeAttributes.Class);
+        ModuleBuilder module = asmBuilder.DefineDynamicModule("main");
+        TypeBuilder type = module.DefineType("Inno.Dynamic.Placeholder", TypeAttributes.Public | TypeAttributes.Class);
         _ = type.CreateType();
 
         return asmBuilder;

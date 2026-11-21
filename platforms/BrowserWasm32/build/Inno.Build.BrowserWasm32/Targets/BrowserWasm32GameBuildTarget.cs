@@ -42,12 +42,12 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the browser WebAssembly target identity.
     /// </summary>
-    public BuildTargetId id => Inno.Build.BrowserWasm32.BrowserWasm32BuildModule.target.id;
+    public BuildTargetId id => BrowserWasm32BuildModule.target.id;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.monoWasm;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string runtimeIdentifier => "browser-wasm";
 
     /// <summary>
@@ -104,8 +104,8 @@ public sealed class BrowserWasm32GameBuildTarget : IGameBuildTarget
             string relativePath = Path.GetRelativePath(source, file);
             string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
-            await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
+            await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true);
+            await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131_072, true);
             await input.CopyToAsync(output, cancellationToken);
         }
     }

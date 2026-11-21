@@ -57,8 +57,8 @@ public sealed class FileProductPublicationTests : IDisposable
         IToolchainWorkspaceProvider workspaces = OperatingSystem.IsWindows()
                                                  ? new WindowsToolchainWorkspaceProvider()
                                                  : new PhysicalToolchainWorkspaceProvider();
-        CoreClrDeploymentCompiler compiler = new(host, [RuntimeInformation.RuntimeIdentifier], workspaces);
-        using CancellationTokenSource timeout = new(TimeSpan.FromMinutes(3));
+        var compiler = new CoreClrDeploymentCompiler(host, [RuntimeInformation.RuntimeIdentifier], workspaces);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         DotNetSdkDescriptor selectedSdk = await DotNetSdkResolver.ResolveAsync(host, project, timeout.Token);
         XDocument definition = XDocument.Load(project);
         definition.Root!.Add(

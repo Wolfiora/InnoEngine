@@ -59,13 +59,13 @@ public static class BuildArtifactCopier
         string config,
         BuildArtifactOptions options
     ) {
-        var buildDir = Path.Combine(buildRoot, options.buildDirName);
+        string buildDir = Path.Combine(buildRoot, options.buildDirName);
         if (!Directory.Exists(buildDir))
         {
             throw new DirectoryNotFoundException($"Native artifact directory not found: {buildDir}");
         }
 
-        var candidates = Directory.EnumerateFiles(buildDir, "*", SearchOption.AllDirectories)
+        List<string> candidates = Directory.EnumerateFiles(buildDir, "*", SearchOption.AllDirectories)
             .Where(path =>
             {
                 if (path.Contains(DSYM_TOKEN, StringComparison.OrdinalIgnoreCase))
@@ -73,25 +73,25 @@ public static class BuildArtifactCopier
                     return false;
                 }
 
-                var ext = Path.GetExtension(path);
+                string ext = Path.GetExtension(path);
                 if (!options.extensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
                 {
                     return false;
                 }
 
-                var fileName = Path.GetFileName(path);
+                string fileName = Path.GetFileName(path);
                 if (!ToolchainEnvironment.ContainsAny(fileName, options.libraryTokens.ToArray())
                     || !MatchesConfiguration(Path.GetRelativePath(buildDir, path), config)
                 ) {
                     return false;
                 }
 
-                if (options.requiredPathTokens == null || options.requiredPathTokens.Count == 0)
+                if (options.requiredPathTokens is null || options.requiredPathTokens.Count == 0)
                 {
                     return true;
                 }
 
-                var normalized = path.Replace('\\', '/');
+                string normalized = path.Replace('\\', '/');
                 return ToolchainEnvironment.ContainsAny(normalized, options.requiredPathTokens.ToArray());
             })
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -102,10 +102,11 @@ public static class BuildArtifactCopier
             throw new FileNotFoundException($"No {config} native artifacts found under {buildDir}.");
         }
 
-        var artifacts = candidates.Select(source => (
+        (string source, string name)[] artifacts = candidates.Select(source => (
             source,
             name: options.normalizeOutputName(Path.GetFileName(source), config))).ToArray();
-        var duplicate = artifacts.GroupBy(static artifact => artifact.name, StringComparer.OrdinalIgnoreCase)
+        IGrouping<string, (string source, string name)>? duplicate = artifacts
+            .GroupBy(static artifact => artifact.name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault(static group => group.Count() > 1);
         if (duplicate is not null)
         {
@@ -113,7 +114,7 @@ public static class BuildArtifactCopier
         }
 
         Directory.CreateDirectory(outputDir);
-        foreach (var artifact in artifacts)
+        foreach ((string source, string name) artifact in artifacts)
         {
             File.Copy(artifact.source, Path.Combine(outputDir, artifact.name), overwrite: true);
         }

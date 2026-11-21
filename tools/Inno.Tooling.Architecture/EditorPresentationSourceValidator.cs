@@ -33,7 +33,7 @@ internal static class EditorPresentationSourceValidator
                 Report(relativePath, tree, group.First(), "one type cannot have multiple presentation aliases in the same file", failures);
             }
         }
-        var facadeAliases = aliases.Where(static directive => directive.Name!.ToString() == C_FACADE)
+        HashSet<string> facadeAliases = aliases.Where(static directive => directive.Name!.ToString() == C_FACADE)
             .Select(static directive => directive.Alias!.Name.Identifier.ValueText)
             .ToHashSet(StringComparer.Ordinal);
         facadeAliases.Add(C_FACADE);

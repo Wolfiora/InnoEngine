@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -101,7 +102,7 @@ public sealed class ValidationDocumentationTests
                 configuration = "Debug",
                 sourceRevision = new string('a', 40),
                 sourceTree = new string('b', 40),
-                sha256 = ""
+                sha256 = string.Empty
             })
         );
         BindProjection("before");
@@ -293,7 +294,7 @@ public sealed class ValidationDocumentationTests
                     .GetString()
             );
         }
-        var preceding = new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
+        var preceding = new HashSet<string>(StringComparer.Ordinal);
         foreach (JsonElement check in checks)
         {
             if (check.GetProperty("exclusion").ValueKind == JsonValueKind.Null)
@@ -455,7 +456,7 @@ public sealed class ValidationDocumentationTests
             // Exercise the real executor and compiler with a finite fixture policy. Repository-wide
             // architecture and test discovery are separate contracts, not inputs to this capture test.
             JsonNode execution = JsonNode.Parse(plan.RootElement.GetRawText())!;
-            JsonArray selected = new();
+            var selected = new JsonArray();
             foreach (JsonElement check in checks.Where(
                 check => new[]
                 {

@@ -196,7 +196,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
         uint count = checked((uint)vertexCount);
         if (buffer.kind == BgfxBufferKind.Vertex)
         {
-            bgfx.VertexBufferHandle handle = new() { idx = buffer.nativeIndex };
+            var handle = new bgfx.VertexBufferHandle() { idx = buffer.nativeIndex };
             if (buffer.vertexLayout is null)
             {
                 BgfxNativeCalls.EncoderSetVertexBufferWithLayout(
@@ -218,7 +218,7 @@ internal sealed unsafe partial class BgfxCommandEncoder
 
         if (buffer.kind == BgfxBufferKind.DynamicVertex)
         {
-            bgfx.DynamicVertexBufferHandle handle = new() { idx = buffer.nativeIndex };
+            var handle = new bgfx.DynamicVertexBufferHandle() { idx = buffer.nativeIndex };
             if (buffer.vertexLayout is null)
             {
                 BgfxNativeCalls.EncoderSetDynamicVertexBufferWithLayout(

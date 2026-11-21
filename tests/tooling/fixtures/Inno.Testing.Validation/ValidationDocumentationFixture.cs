@@ -42,8 +42,8 @@ public sealed class ValidationDocumentationFixture(ValidationRepository reposito
         });
         Write("reference/projects/catalog.json", Encoding.UTF8.GetString(inventory));
         Write("reference/api/facts.json", Encoding.UTF8.GetString(facts));
-        string revision = new('a', 40);
-        string tree = new('b', 40);
+        var revision = new string('a', 40);
+        var tree = new string('b', 40);
         Write(
             "reference/engine.lock.json",
             JsonSerializer.Serialize(new

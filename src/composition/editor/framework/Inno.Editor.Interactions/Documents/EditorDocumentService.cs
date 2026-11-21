@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Inno.Core.Events;
 
@@ -11,7 +12,10 @@ internal sealed class EditorDocumentService : IEditorDocumentService
     private readonly Dictionary<string, EditorDocumentProvider> m_providers = new(StringComparer.Ordinal);
     private readonly EventDispatcher m_events;
 
-    internal EditorDocumentService(EventDispatcher events) => m_events = events;
+    internal EditorDocumentService(EventDispatcher events)
+    {
+        m_events = events;
+    }
 
     /// <summary>
     /// Gets an immutable snapshot of currently owned source documents.
@@ -148,11 +152,11 @@ internal sealed class EditorDocumentService : IEditorDocumentService
         {
             RetireStalePathOwner(pathOwner, path);
         }
-        bool defaultTitle = document.title == System.IO.Path.GetFileName(document.assetPath);
+        bool defaultTitle = document.title == Path.GetFileName(document.assetPath);
         document.assetPath = path;
         if (defaultTitle)
         {
-            document.title = System.IO.Path.GetFileName(path);
+            document.title = Path.GetFileName(path);
         }
         return true;
     }

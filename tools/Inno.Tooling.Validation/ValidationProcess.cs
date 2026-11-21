@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -41,7 +42,7 @@ internal static class ValidationProcess
         }
         if (Path.GetFileNameWithoutExtension(executable).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
         {
-            foreach (var pair in DotNetSdkEnvironment.Create(executable))
+            foreach (KeyValuePair<string, string?> pair in DotNetSdkEnvironment.Create(executable))
             {
                 if (pair.Value is null)
                 {
@@ -57,12 +58,12 @@ internal static class ValidationProcess
             new FileStream(log, FileMode.CreateNew, FileAccess.Write, FileShare.Read),
             new UTF8Encoding(false)
         ) { AutoFlush = true });
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("Validation process did not start.");
-        var elapsed = Stopwatch.StartNew();
+        using Process process = Process.Start(start) ?? throw new InvalidOperationException("Validation process did not start.");
+        Stopwatch elapsed = Stopwatch.StartNew();
         long characters = 0;
         long lastOutput = Stopwatch.GetTimestamp();
         string excerpt = string.Empty;
-        object progressSync = new();
+        var progressSync = new object();
         using var progressStop = new CancellationTokenSource();
         Task progress = log is null ? Task.CompletedTask : ReportProgressAsync();
         Task<string> output = DrainAsync(process.StandardOutput);
@@ -122,7 +123,7 @@ internal static class ValidationProcess
         async Task<string> DrainAsync(StreamReader reader)
         {
             var content = new StringBuilder();
-            char[] buffer = new char[4096];
+            var buffer = new char[4096];
             int count;
             while ((count = await reader.ReadAsync(buffer, CancellationToken.None).ConfigureAwait(false)) != 0)
             {
@@ -168,7 +169,7 @@ internal static class ValidationProcess
                     try
                     {
                         process.Refresh();
-                        cpu = process.TotalProcessorTime.TotalSeconds.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)
+                        cpu = process.TotalProcessorTime.TotalSeconds.ToString("F1", CultureInfo.InvariantCulture)
                               + "s";
                     }
                     catch (Exception failure) when (failure is InvalidOperationException or Win32Exception or NotSupportedException)

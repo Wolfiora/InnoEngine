@@ -20,7 +20,7 @@ internal static class FrameworkReferenceResolver
         ScriptCompilationInputs inputs = provider.Capture(cancellationToken);
         var references = new List<MetadataReference>();
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "System.Private.CoreLib" };
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string identity in new[]
                  {
                      ScriptCompilationEnvironment.C_TARGET_FRAMEWORK,

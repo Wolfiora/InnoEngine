@@ -67,7 +67,7 @@ internal sealed class EditorPlayModeModule : EditorModule, IEditorPlayMode
     /// </summary>
     public LogSessionId activeSessionId => m_controller.activeSessionId;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_controller.ListenStateChanges(listener);
 
     /// <summary>

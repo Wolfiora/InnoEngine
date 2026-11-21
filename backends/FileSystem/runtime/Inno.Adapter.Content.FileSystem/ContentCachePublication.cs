@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -28,7 +29,7 @@ internal static class ContentCachePublication
                 Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                 using ContentReadLease lease = source.Acquire(entry.key);
                 using Stream input = lease.OpenRead();
-                await using FileStream destination = new(
+                await using var destination = new FileStream(
                     output,
                     FileMode.CreateNew,
                     FileAccess.Write,
@@ -37,7 +38,7 @@ internal static class ContentCachePublication
                     FileOptions.Asynchronous | FileOptions.SequentialScan
                 );
                 long remaining = entry.length;
-                byte[] buffer = System.Buffers.ArrayPool<byte>.Shared.Rent(128 * 1024);
+                byte[] buffer = ArrayPool<byte>.Shared.Rent(128 * 1024);
                 try
                 {
                     while (remaining > 0)
@@ -62,7 +63,7 @@ internal static class ContentCachePublication
                 }
                 finally
                 {
-                    System.Buffers.ArrayPool<byte>.Shared.Return(buffer);
+                    ArrayPool<byte>.Shared.Return(buffer);
                 }
             }
             if (!ContentCacheValidator.Validate(candidate, source.index, cancellationToken))

@@ -26,7 +26,7 @@ public sealed class ImGuiPresentationProvider : PresentationBackendProvider
         m_interaction = interaction;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IPresentationContext CreateContext(PresentationBackendOptions options)
         => new ImGuiPresentationContext(options, m_interaction);
 }

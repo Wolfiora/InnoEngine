@@ -366,8 +366,8 @@ public static class ToolchainEnvironment
     {
         string location = typeof(ToolchainEnvironment).Assembly.Location;
         string outputRoot = string.IsNullOrEmpty(location) ? AppContext.BaseDirectory : Path.GetDirectoryName(location)!;
-        var dir = new DirectoryInfo(outputRoot);
-        while (dir != null)
+        DirectoryInfo? dir = new DirectoryInfo(outputRoot);
+        while (dir is not null)
         {
             if (File.Exists(Path.Combine(dir.FullName, ToolchainLayout.C_REPOSITORY_MARKER_FILE)))
             {
@@ -438,7 +438,7 @@ public static class ToolchainEnvironment
         string value,
         params string[] needles
     ) {
-        foreach (var needle in needles)
+        foreach (string needle in needles)
         {
             if (value.Contains(needle, StringComparison.OrdinalIgnoreCase))
             {
@@ -465,9 +465,9 @@ public static class ToolchainEnvironment
         string fileName,
         string config
     ) {
-        var ext = Path.GetExtension(fileName);
-        var baseName = Path.GetFileNameWithoutExtension(fileName);
-        var trimmed = TrimConfigSuffix(baseName);
+        string ext = Path.GetExtension(fileName);
+        string baseName = Path.GetFileNameWithoutExtension(fileName);
+        string trimmed = TrimConfigSuffix(baseName);
         return $"{trimmed}-{config}{ext}";
     }
 

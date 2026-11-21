@@ -47,7 +47,7 @@ public readonly struct IndexedObjectKey<TKey>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
-            if (storeRef == null || !storeRef.TryGetTarget(out var store))
+            if (storeRef is null || !storeRef.TryGetTarget(out IIndexedObjectStore? store))
             {
                 return false;
             }

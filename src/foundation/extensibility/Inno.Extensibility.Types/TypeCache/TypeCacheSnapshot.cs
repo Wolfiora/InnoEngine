@@ -94,6 +94,9 @@ public sealed class TypeCacheSnapshot
     /// <summary>
     /// Gets the reference for a CLR type in this snapshot.
     /// </summary>
+    /// <param name="type">
+    /// The type consumed by get type ref; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
     /// <returns>
     /// The logical and generation-local identity of <paramref name="type"/>.
     /// </returns>
@@ -103,9 +106,6 @@ public sealed class TypeCacheSnapshot
     /// <exception cref="InvalidOperationException">
     /// Thrown when the type does not belong to this snapshot.
     /// </exception>
-    /// <param name="type">
-    /// The type consumed by get type ref; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
     public TypeRef GetTypeRef(Type type) => m_identityRegistry.GetTypeRef(type);
 
     /// <summary>
@@ -312,6 +312,6 @@ public sealed class TypeCacheSnapshot
         identities.Rebuild([], previous: null);
         var queries = new TypeQueryRegistry();
         queries.Rebuild([], identities);
-        return new TypeCacheSnapshot(0, null, [], [], new Dictionary<Assembly, Type[]>(), identities, queries);
+        return new TypeCacheSnapshot(0, null, [], [], [], identities, queries);
     }
 }

@@ -29,7 +29,7 @@ internal static class Program
             {
                 return 3;
             }
-            byte[] bytes = new byte[checked((int)lease.entry.length)];
+            var bytes = new byte[checked((int)lease.entry.length)];
             reader.ReadExactly(bytes);
             Console.WriteLine(Convert.ToHexString(bytes));
             return 0;

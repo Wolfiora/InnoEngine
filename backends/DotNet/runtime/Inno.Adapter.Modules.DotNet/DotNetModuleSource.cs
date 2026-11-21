@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -68,7 +69,7 @@ public sealed class DotNetModuleSource : IModuleSource
     public IReadOnlyDictionary<string, AssemblyScope> assemblyScopes { get; init; } =
         new Dictionary<string, AssemblyScope>(StringComparer.OrdinalIgnoreCase);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<string> GetAssemblyNames()
     {
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -93,7 +94,7 @@ public sealed class DotNetModuleSource : IModuleSource
         AssemblyScope requestedScope
     ) => assembly.GetInnoAssemblyDomain() == domain && assembly.GetInnoAssemblyScope() == requestedScope;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ModuleCatalogContribution Prepare(ModuleSourceContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -108,7 +109,7 @@ public sealed class DotNetModuleSource : IModuleSource
         string generationDirectory = Path.Combine(
             artifactRootDirectory,
             SanitizePathSegment(request.moduleName),
-            context.generation.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N")
+            context.generation.ToString(CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N")
         );
         Directory.CreateDirectory(generationDirectory);
 
@@ -226,7 +227,7 @@ public sealed class DotNetModuleSource : IModuleSource
         ModuleSourceContext context,
         IEnumerable<string> ownedNames
     ) {
-        var result = context.host.GetSharedAssemblies()
+        Dictionary<string, Assembly> result = context.host.GetSharedAssemblies()
             .GroupBy(static assembly => assembly.GetName().Name!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
         var owned = new HashSet<string>(ownedNames, StringComparer.OrdinalIgnoreCase);
@@ -268,12 +269,12 @@ public sealed class DotNetModuleSource : IModuleSource
         IReadOnlyList<ModuleCatalogContribution> upstreamModules,
         IReadOnlyDictionary<string, ModuleAssemblyDescriptor> plannedAssemblies
     ) {
-        var ownByName = assemblies.ToDictionary(
+        Dictionary<string, Assembly> ownByName = assemblies.ToDictionary(
             static assembly => assembly.GetName().Name ?? string.Empty,
             StringComparer.OrdinalIgnoreCase
         );
         ValidateOwnedDependencyGraph(ownByName);
-        var forbiddenDownstreamNames = context.activeModules
+        HashSet<string> forbiddenDownstreamNames = context.activeModules
             .Where(module => (
                 request.domain == AssemblyDomain.InnoPlugin
                 ? module.domain == AssemblyDomain.InnoScripting
@@ -282,7 +283,7 @@ public sealed class DotNetModuleSource : IModuleSource
             .SelectMany(static module => module.assemblies)
             .Select(static assembly => assembly.GetName().Name ?? string.Empty)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var upstreamByName = upstreamModules
+        Dictionary<string, (ModuleCatalogContribution module, Assembly assembly)> upstreamByName = upstreamModules
             .SelectMany(module => module.assemblies.Select(assembly => (module, assembly)))
             .ToDictionary(
                 static pair => pair.assembly.GetName().Name ?? string.Empty,
@@ -313,7 +314,7 @@ public sealed class DotNetModuleSource : IModuleSource
                         $"Assembly '{assembly.GetName().Name}' has a forbidden downstream reference to '{name}'."
                     );
                 }
-                if (upstreamByName.TryGetValue(name, out var upstream))
+                if (upstreamByName.TryGetValue(name, out (ModuleCatalogContribution module, Assembly assembly) upstream))
                 {
                     if (sourceScope == AssemblyScope.Runtime
                         && upstream.module.assemblyScopes[upstream.assembly] == AssemblyScope.Editor

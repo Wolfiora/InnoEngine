@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace Inno.Build.Toolchains;
 
@@ -36,7 +37,7 @@ public sealed class BuildCachePolicy
             throw new ArgumentOutOfRangeException(nameof(minimumFreeBytes));
         }
         TimeSpan duration = timeBudget ?? TimeSpan.FromSeconds(5);
-        if (duration <= TimeSpan.Zero || duration == System.Threading.Timeout.InfiniteTimeSpan)
+        if (duration <= TimeSpan.Zero || duration == Timeout.InfiniteTimeSpan)
         {
             throw new ArgumentOutOfRangeException(nameof(timeBudget));
         }

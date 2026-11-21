@@ -342,7 +342,7 @@ public sealed class EditorReloadCoordinator : IScriptReloadCoordinator
 
         internal Guid id { get; } = id;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             IEditorReloadGuard? retained = m_guard;

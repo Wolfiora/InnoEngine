@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Rendering;
@@ -32,7 +33,7 @@ public static class BgfxImGuiShaderArtifacts
         using var bytes = new MemoryStream();
         source.CopyTo(bytes);
         GraphicsPipelineDescriptor program = GraphicsProgramArtifactCodec.Decode(bytes.ToArray(), BgfxImGuiRenderer.vertexLayout);
-        var bindings = program.bindings;
+        IReadOnlyList<RenderShaderBindingDescriptor> bindings = program.bindings;
         RenderShaderBindingDescriptor? texture = bindings.SingleOrDefault(static binding => binding.id.value == "s_tex");
         RenderShaderBindingDescriptor? outputEncoding = bindings.SingleOrDefault(static binding => binding.id.value == "outputEncoding");
         if (bindings.Count != 2 || texture is null || texture.kind != RenderShaderBindingKind.Texture

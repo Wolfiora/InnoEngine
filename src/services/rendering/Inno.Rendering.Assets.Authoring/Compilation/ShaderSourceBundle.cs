@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Assets;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
 
@@ -10,7 +12,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Persists only frozen function compilation inputs, never a parser, live asset, resolver or generated main function.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("3387d371-94f4-5f59-a571-aa552e7eef0a")]
+[StableTypeId("3387d371-94f4-5f59-a571-aa552e7eef0a")]
 public static partial class ShaderSourceBundle
 {
     /// <summary>
@@ -32,11 +34,11 @@ public static partial class ShaderSourceBundle
     /// </returns>
     public static byte[] Read(
         ShaderFunctionAsset function,
-        Inno.Assets.IAssetArtifactLookup artifacts
+        IAssetArtifactLookup artifacts
     ) {
         ArgumentNullException.ThrowIfNull(function);
         ArgumentNullException.ThrowIfNull(artifacts);
-        using Inno.Assets.ArtifactLease lease = artifacts.AcquireArtifact(function.identity.persistentId, outputName);
+        using ArtifactLease lease = artifacts.AcquireArtifact(function.identity.persistentId, outputName);
         return lease.ReadAllBytes();
     }
 
@@ -130,17 +132,17 @@ public static partial class ShaderSourceBundle
                 ) {
                     throw new InvalidOperationException("The frozen shader source bundle has inconsistent collection lengths.");
                 }
-                var files = value.paths.Select((
+                Dictionary<string, ShaderSourceFile> files = value.paths.Select((
                     path,
                     index
                 ) => new ShaderSourceFile(path, value.texts[index])).ToDictionary(static file => file.assetPath, StringComparer.Ordinal);
-                var edges = value.includeOwners
+                Dictionary<(string includingFile, string include), ShaderSourceInclude> edges = value.includeOwners
                     .Select((
                         owner,
                         index
                     ) => new ShaderSourceInclude(owner, value.includeNames[index], value.includePaths[index]))
                     .ToDictionary(static edge => (edge.includingFile, edge.include));
-                var macros = value.defineNames.Select((
+                Dictionary<string, string> macros = value.defineNames.Select((
                     name,
                     index
                 ) => new KeyValuePair<string, string>(name, value.defineValues[index])).ToDictionary(StringComparer.Ordinal);
@@ -187,16 +189,17 @@ public static partial class ShaderSourceBundle
              : throw new InvalidOperationException($"Source dependency '{include}' from '{includingFile}' was not captured by import.");
     }
 
-    [Inno.Extensibility.Types.StableTypeId("0e035881-9850-5f9c-8037-283168890d0d")]
+    [StableTypeId("0e035881-9850-5f9c-8037-283168890d0d")]
     private sealed class BundleData : ISerializable
     {
         /// <summary>
         /// Gets the ordered shader functions in this source bundle.
         /// </summary>
-        [SerializableProperty] public FunctionData[] functions { get; set; } = [];
+        [SerializableProperty]
+        public FunctionData[] functions { get; set; } = [];
     }
 
-    [Inno.Extensibility.Types.StableTypeId("3c78ad4e-deb3-547b-984e-18de97667641")]
+    [StableTypeId("3c78ad4e-deb3-547b-984e-18de97667641")]
     private struct FunctionData
     {
         /// <summary>
@@ -210,7 +213,7 @@ public static partial class ShaderSourceBundle
         public ImplementationData[] implementations { get; set; }
     }
 
-    [Inno.Extensibility.Types.StableTypeId("4f51d0e8-599b-5fd7-b4cc-4694fe18e922")]
+    [StableTypeId("4f51d0e8-599b-5fd7-b4cc-4694fe18e922")]
     private struct ImplementationData
     {
         /// <summary>

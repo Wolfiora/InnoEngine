@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Builds view requests from host output sessions without owning a host window.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("52f335d4-64e4-5a11-96f3-c52e44295830")]
+[StableTypeId("52f335d4-64e4-5a11-96f3-c52e44295830")]
 public interface IRenderModel : IDisposable
 {
     /// <summary>

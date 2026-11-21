@@ -265,7 +265,14 @@ public sealed class SerializedPropertyRenderer
         {
             return (true, readOnly);
         }
-        var context = new InspectorAttributeDrawContext(owner, member, property, property.name, property.name, readOnly);
+        var context = new InspectorAttributeDrawContext(
+            owner,
+            member,
+            property,
+            property.name,
+            property.name,
+            readOnly
+        );
         m_attributes.Update(context, InspectorMemberMetadata.GetAttributes(member));
         return (context.isVisible, context.isReadOnly);
     }

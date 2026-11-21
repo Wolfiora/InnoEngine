@@ -41,7 +41,7 @@ internal static class DocumentationApiFacts
             throw new InvalidDataException("API project inventory identity differs from its binding.");
         }
         using JsonDocument inventory = JsonDocument.Parse(inventoryBytes);
-        var eligible = inventory.RootElement.EnumerateArray().Where(project =>
+        Dictionary<string, string> eligible = inventory.RootElement.EnumerateArray().Where(project =>
         {
             string path = project.GetProperty("path").GetString()!;
             return (path.StartsWith("src/", StringComparison.Ordinal) || path.StartsWith("build/", StringComparison.Ordinal))
@@ -145,7 +145,7 @@ internal static class DocumentationApiFacts
                         symbol.GetProperty("kind").GetString()!,
                         signature,
                         signatureHash,
-                        String(symbol, "documentation") ?? "",
+                        String(symbol, "documentation") ?? string.Empty,
                         source,
                         symbol.GetProperty("line").GetInt32(),
                         capture.sourceRevision,

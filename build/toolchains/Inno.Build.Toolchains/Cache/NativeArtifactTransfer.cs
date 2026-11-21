@@ -171,7 +171,7 @@ public static class NativeArtifactTransfer
         using (ZipArchive zip = ZipFile.OpenRead(archivePath))
         {
             long expanded = 0;
-            if (zip.Entries.Count == 0 || zip.Entries.Count > 200000)
+            if (zip.Entries.Count == 0 || zip.Entries.Count > 200_000)
             {
                 throw new InvalidDataException("Native transfer contains an empty or excessive file inventory.");
             }
@@ -180,7 +180,7 @@ public static class NativeArtifactTransfer
                 cancellationToken.ThrowIfCancellationRequested();
                 string[] parts = entry.FullName.Split('/');
                 if (parts.Length < 5 || parts.Any(static part => part is "" or "." or ".." || part.Contains('\\') || part.Contains(':'))
-                    || !names.Add(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xf000) is not (0 or 0x8000)
+                    || !names.Add(entry.FullName) || ((entry.ExternalAttributes >> 16) & 0xF000) is not (0 or 0x8000)
                     || (expanded = checked(expanded + entry.Length)) > 32L * 1024 * 1024 * 1024
                 ) {
                     throw new InvalidDataException("Native transfer contains an invalid, linked, duplicate or excessive entry.");
@@ -197,7 +197,7 @@ public static class NativeArtifactTransfer
                 }
                 if (!OperatingSystem.IsWindows() && entry.ExternalAttributes != 0)
                 {
-                    File.SetUnixFileMode(output, (UnixFileMode)((entry.ExternalAttributes >> 16) & 0x1ff));
+                    File.SetUnixFileMode(output, (UnixFileMode)((entry.ExternalAttributes >> 16) & 0x1FF));
                 }
             }
         }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading;
 using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
@@ -70,7 +71,7 @@ public sealed class NativeBuildContext
         string fingerprint
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
     {
-        sourcePreparation = origin.sourcePreparation;
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = origin.m_component;
@@ -78,7 +79,7 @@ public sealed class NativeBuildContext
         m_buildOwner = buildOwner;
         m_targetId = targetId;
         m_fingerprint = fingerprint;
-        toolchain = origin.toolchain;
+        this.toolchain = origin.toolchain;
         m_bindings = origin.m_bindings;
     }
 
@@ -87,7 +88,7 @@ public sealed class NativeBuildContext
         NativeToolchainSelection toolchain
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
     {
-        sourcePreparation = origin.sourcePreparation;
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = origin.m_component;
@@ -106,7 +107,7 @@ public sealed class NativeBuildContext
         NativeToolchainSelection? toolchain
     ) : this(origin.engineRoot, configuration, origin.m_inputState)
     {
-        sourcePreparation = origin.sourcePreparation;
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = origin.m_component;
@@ -121,7 +122,7 @@ public sealed class NativeBuildContext
         NativeComponentBuildOptions options
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
     {
-        sourcePreparation = origin.sourcePreparation;
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = component;
@@ -130,7 +131,7 @@ public sealed class NativeBuildContext
         m_targetId = origin.m_targetId;
         m_fingerprint = origin.m_fingerprint;
         m_toolDirectory = origin.m_toolDirectory;
-        toolchain = origin.toolchain;
+        this.toolchain = origin.toolchain;
         m_bindings = origin.m_bindings;
     }
 
@@ -139,7 +140,7 @@ public sealed class NativeBuildContext
         string? toolDirectory
     ) : this(origin.engineRoot, origin.configuration, origin.m_inputState)
     {
-        sourcePreparation = origin.sourcePreparation;
+        this.sourcePreparation = origin.sourcePreparation;
         m_bindingGenerator = origin.m_bindingGenerator;
         m_verification = origin.m_verification;
         m_component = origin.m_component;
@@ -147,7 +148,7 @@ public sealed class NativeBuildContext
         m_buildOwner = origin.m_buildOwner;
         m_targetId = origin.m_targetId;
         m_fingerprint = origin.m_fingerprint;
-        toolchain = origin.toolchain;
+        this.toolchain = origin.toolchain;
         m_toolDirectory = toolDirectory;
         m_bindings = origin.m_bindings;
     }
@@ -425,7 +426,7 @@ public sealed class NativeBuildContext
 
     internal NativeInputSnapshot CaptureInputs(
         IEnumerable<NativeBuildInput> inputs,
-        System.Threading.CancellationToken cancellationToken
+        CancellationToken cancellationToken
     ) => m_verification?.Capture(inputs, cancellationToken)
          ?? m_inputState.CaptureInitial(inputs, cancellationToken);
 

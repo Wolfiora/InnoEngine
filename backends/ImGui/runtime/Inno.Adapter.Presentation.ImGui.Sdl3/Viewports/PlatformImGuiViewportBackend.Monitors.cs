@@ -18,7 +18,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
         try
         {
             uint primary = SDL.GetPrimaryDisplay();
-            if (displays != null && displayCount > 0)
+            if (displays is not null && displayCount > 0)
             {
                 if (primary != 0)
                 {
@@ -33,7 +33,7 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
                     }
                 }
             }
-            if (monitors.Count == 0 && fallbackWindow != null)
+            if (monitors.Count == 0 && fallbackWindow is not null)
             {
                 uint fallback = SDL.Raw.GetDisplayForWindow(fallbackWindow);
                 if (fallback != 0)
@@ -52,8 +52,8 @@ internal sealed unsafe partial class PlatformImGuiViewportBackend
         if (monitors.Count > storage.Capacity)
         {
             uint bytes = checked((uint)monitors.Count * (uint)sizeof(ImGuiPlatformMonitor));
-            var replacement = (ImGuiPlatformMonitor*)ImGuiNative.Raw.MemAlloc(bytes);
-            if (replacement == null)
+            ImGuiPlatformMonitor* replacement = (ImGuiPlatformMonitor*)ImGuiNative.Raw.MemAlloc(bytes);
+            if (replacement is null)
             {
                 throw new OutOfMemoryException("Cannot allocate the ImGui monitor snapshot.");
             }

@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Inno.Scripting.Api;
 
@@ -58,7 +59,7 @@ public abstract class EditorModal
     [ScriptingApiIgnore]
     public void Draw(EditorContext context)
     {
-        System.ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(context);
         OnDraw(context);
     }
 
@@ -86,11 +87,11 @@ public abstract class EditorModal
         EditorContext context,
         Vector2 availableContentSize
     ) {
-        System.ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(context);
         if (!float.IsFinite(availableContentSize.X) || !float.IsFinite(availableContentSize.Y)
             || availableContentSize.X <= 0f || availableContentSize.Y <= 0f
         ) {
-            throw new System.ArgumentOutOfRangeException(nameof(availableContentSize));
+            throw new ArgumentOutOfRangeException(nameof(availableContentSize));
         }
         return OnPrepare(context, availableContentSize);
     }

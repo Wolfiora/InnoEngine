@@ -135,7 +135,7 @@ public sealed class ShaderSourceModuleTests
     public void DuplicateOrEmptyImplementationSetsAreRejectedBeforeProvidersRun()
     {
         var catalog = new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]);
-        var request = Request("same", "float Shade(float value) { return value; }");
+        ShaderSourceImplementationRequest request = Request("same", "float Shade(float value) { return value; }");
         Assert.Throws<ArgumentException>(() => catalog.AnalyzeModule([]));
         Assert.Throws<ArgumentException>(() => catalog.AnalyzeModule([request, request]));
     }
@@ -143,7 +143,7 @@ public sealed class ShaderSourceModuleTests
     [Fact]
     public void IncludeReadsCannotMixDifferentContentsForTheSameSourcePath()
     {
-        var request = Request(
+        ShaderSourceImplementationRequest request = Request(
             "first",
             "#include \"data.inc\"\n#include \"data.inc\"\nfloat Shade(float value) { return value; }",
             new ChangingIncludes()
@@ -157,7 +157,11 @@ public sealed class ShaderSourceModuleTests
     public void SourceErrorsCannotSwallowTheSharedRetirementBarrier()
     {
         var failure = new IOException("Source candidate is retiring.", new RetirementPendingException("Pending source owner."));
-        var request = Request("first", "#include \"data.inc\"\nfloat Shade(float value) { return value; }", new FailingIncludes(failure));
+        ShaderSourceImplementationRequest request = Request(
+            "first",
+            "#include \"data.inc\"\nfloat Shade(float value) { return value; }",
+            new FailingIncludes(failure)
+        );
         IOException actual = Assert.Throws<IOException>(
             () => new ShaderSourceFrontendCatalog([new BgfxShaderSourceFrontend()]).AnalyzeModule([request])
         );

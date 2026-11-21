@@ -70,10 +70,7 @@ public sealed class AssetCatalogCandidate : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    private void EnsureOpen()
-    {
-        ObjectDisposedException.ThrowIf(m_disposed, this);
-    }
+    private void EnsureOpen() => ObjectDisposedException.ThrowIf(m_disposed, this);
 
     private static void DeleteCandidateRoot(string candidateLibraryRoot)
     {

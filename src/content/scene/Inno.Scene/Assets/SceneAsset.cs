@@ -76,15 +76,15 @@ public sealed class SceneAsset : AssetObject
     /// <summary>
     /// Creates an unloaded runtime scene and acquires its hard asset dependencies.
     /// </summary>
-    /// <returns>
-    /// A newly allocated scene.
-    /// </returns>
     /// <param name="serialization">
     /// The serialization registry that owns the active scene converter generation.
     /// </param>
     /// <param name="assets">
     /// The runtime asset generation used to resolve persistent references in the scene graph.
     /// </param>
+    /// <returns>
+    /// A newly allocated scene.
+    /// </returns>
     [ScriptingApiIgnore]
     public GameScene Instantiate(
         SerializationRegistry serialization,
@@ -165,7 +165,5 @@ public sealed class SceneAsset : AssetObject
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
         ReadOnlyMemory<byte> currentPayload
-    ) {
-        m_pendingPayload = [];
-    }
+    ) => m_pendingPayload = [];
 }

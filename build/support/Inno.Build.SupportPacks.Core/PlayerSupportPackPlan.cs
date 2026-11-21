@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
@@ -28,7 +29,7 @@ public abstract class PlayerSupportPackPlan
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(target.value);
         if (preparationIdentity is null || preparationIdentity.Length != 64
-            || System.Linq.Enumerable.Any(preparationIdentity, static character => !char.IsAsciiHexDigitLower(character))
+            || Enumerable.Any(preparationIdentity, static character => !char.IsAsciiHexDigitLower(character))
         ) {
             throw new ArgumentException("A Support Pack requires a complete lowercase source input identity.", nameof(preparationIdentity));
         }

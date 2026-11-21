@@ -14,16 +14,19 @@ public sealed class BuildArtifactReadLease : IDisposable
 {
     private CoordinatedFileLease? m_lease;
 
-    private BuildArtifactReadLease(CoordinatedFileLease lease) => m_lease = lease;
+    private BuildArtifactReadLease(CoordinatedFileLease lease)
+    {
+        m_lease = lease;
+    }
 
     /// <summary>
     /// Acquires reading ownership and verifies the complete artifact before exposing it to a consumer.
     /// </summary>
-    /// <param name="ownerDirectory">
-    /// The exact publisher root retaining the persistent owner.lock gate.
-    /// </param>
     /// <param name="directory">
     /// The absolute artifact directory owned by its publisher; its persistent lease is stored alongside it.
+    /// </param>
+    /// <param name="ownerDirectory">
+    /// The exact publisher root retaining the persistent owner.lock gate.
     /// </param>
     /// <param name="fingerprint">
     /// The exact input identity required by the consumer.

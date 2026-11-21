@@ -29,16 +29,16 @@ public sealed unsafe class ConsoleSearchNativeTests
         using var host = new NativePanelHost(typeof(ConsoleSearchNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.SetDisplayMetrics(new(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
-        var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
+        Logger logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)
         {
             logger.Write(LogLevel.Info, "Needle message");
         }
         logger.Write(LogLevel.Warn, "Unrelated message");
-        string longMessage = new('x', 300);
+        var longMessage = new string('x', 300);
         logger.Write(LogLevel.Info, longMessage);
         host.logs.Flush();
-        using var reporter = host.diagnostics.CreateReporter(new("search-source", "SOURCE-NAME"));
+        using DiagnosticReporter reporter = host.diagnostics.CreateReporter(new("search-source", "SOURCE-NAME"));
         reporter.Publish(
             new("SEARCH_CODE", "A diagnostic", DiagnosticSeverity.Error, location: new DiagnosticLocation("Assets/漢字.shader", 42, 3))
         );
@@ -70,7 +70,7 @@ public sealed unsafe class ConsoleSearchNativeTests
         using var host = new NativePanelHost(typeof(ConsoleSearchNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.SetDisplayMetrics(new(width, height), density, zoom);
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
-        var logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
+        Logger logger = host.logs.CreateLogger<ConsoleSearchNativeTests>();
         for (int occurrence = 0; occurrence < 2; occurrence++)
         {
             logger.Write(LogLevel.Info, "Needle message");
@@ -94,7 +94,10 @@ public sealed unsafe class ConsoleSearchNativeTests
         Assert.True(card->Size.Y > collapsedHeight + 1f);
         host.DrawPanel(panel, () =>
         {
-            var context = host.runtime.interactions.For(host.runtime.interactions.focusedArea, host.runtime.interactions.focusedTarget);
+            EditorInteraction context = host.runtime.interactions.For(
+                host.runtime.interactions.focusedArea,
+                host.runtime.interactions.focusedTarget
+            );
             Assert.True(context.Execute("console/copy-message"));
             Assert.Equal("Needle message", Marshal.PtrToStringUTF8((nint)NativeImGui.Raw.GetClipboardText()));
             Assert.True(context.Execute("console/copy-details"));

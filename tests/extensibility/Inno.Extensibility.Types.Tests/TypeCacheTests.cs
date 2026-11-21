@@ -80,8 +80,8 @@ public sealed class TypeCacheTests : IDisposable
 
         protected override object[] Build(TypeCacheSnapshot types)
         {
-            var first = OwnCandidateExtension(new Resource(this, ++m_nextId));
-            var second = OwnCandidateExtension(new Resource(this, ++m_nextId));
+            Resource first = OwnCandidateExtension(new Resource(this, ++m_nextId));
+            Resource second = OwnCandidateExtension(new Resource(this, ++m_nextId));
             if (failBuild)
             {
                 throw new InvalidOperationException("Expected candidate validation failure.");
@@ -187,7 +187,7 @@ public sealed class TypeCacheTests : IDisposable
     public void UnknownAndEmptyReferencesFailAgainstExplicitCatalog()
     {
         TypeRef empty = default;
-        TypeRef unknown = new(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
+        var unknown = new TypeRef(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"));
 
         Assert.False(empty.IsValid(m_types));
         Assert.False(unknown.IsValid(m_types));

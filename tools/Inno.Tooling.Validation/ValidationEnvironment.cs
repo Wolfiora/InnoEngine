@@ -107,11 +107,13 @@ internal static class ValidationEnvironment
     ) {
         tools ??= await CaptureToolsAsync(root, dotnet, cancellation).ConfigureAwait(false);
         var inputs = new Dictionary<string, string>(tools.inputs, StringComparer.Ordinal);
-        foreach (var content in tools.contents)
+        foreach (KeyValuePair<string, string> content in tools.contents)
         {
             inputs.Add("tool-content:" + content.Key, content.Value);
         }
-        var files = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var files = new HashSet<string>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+        );
         var examined = new HashSet<string>(files.Comparer);
         ValidationContext[] selectedContexts = contexts?.ToArray() ?? [];
         string[] packageOwners = ValidationDependencyInputs.RestoredPackageDirectories(selectedContexts, cancellation);
@@ -142,7 +144,7 @@ internal static class ValidationEnvironment
         }
         }
         }
-        foreach (var content in CaptureContents(root, dotnet, files, cancellation))
+        foreach (KeyValuePair<string, string> content in CaptureContents(root, dotnet, files, cancellation))
         {
             inputs.Add("external-content:" + content.Key, content.Value);
         }

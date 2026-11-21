@@ -11,8 +11,8 @@ public sealed class ExecutionSlotTests
     public void RetirementIsLifoAndRestoresParent()
     {
         var slot = new ExecutionSlot<object>("service");
-        object first = new();
-        object second = new();
+        var first = new object();
+        var second = new object();
         using IDisposable outer = slot.Enter(first);
         IDisposable inner = slot.Enter(second);
         Assert.Throws<InvalidOperationException>(outer.Dispose);
@@ -44,7 +44,7 @@ public sealed class ExecutionSlotTests
     public void SuspensionMasksAndRestoresParent()
     {
         var slot = new ExecutionSlot<object>("service");
-        object value = new();
+        var value = new object();
         using IDisposable outer = slot.Enter(value);
         using (slot.Suspend())
         {

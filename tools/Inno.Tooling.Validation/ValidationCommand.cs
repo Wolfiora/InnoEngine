@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Inno.Tooling.Documentation;
 
 namespace Inno.Tooling.Validation;
@@ -141,7 +142,7 @@ public static class ValidationCommand
                     cancellationToken,
                     options.GetValueOrDefault("--test-evidence")
                 ).ConfigureAwait(false);
-                Inno.Core.IO.AtomicFile.WriteAllBytes(options["--output"], ValidationPlanTransport.Write(bound));
+                AtomicFile.WriteAllBytes(options["--output"], ValidationPlanTransport.Write(bound));
             }
             else if (arguments[0] == "backend-inputs")
             {
@@ -150,14 +151,14 @@ public static class ValidationCommand
                 byte[]? native = options.TryGetValue("--selection", out string? selected)
                                  ? await File.ReadAllBytesAsync(selected, cancellationToken).ConfigureAwait(false)
                                  : null;
-                var selection = await ValidationPlanner.BackendInputsAsync(
+                BackendInputPlan selection = await ValidationPlanner.BackendInputsAsync(
                     frozen,
                     options["--target"],
                     cancellationToken,
                     native,
                     options.GetValueOrDefault("--configuration")
                 ).ConfigureAwait(false);
-                Inno.Core.IO.AtomicFile.WriteAllBytes(options["--output"], JsonSerializer.SerializeToUtf8Bytes(selection));
+                AtomicFile.WriteAllBytes(options["--output"], JsonSerializer.SerializeToUtf8Bytes(selection));
             }
             else if (arguments[0] == "pack-backends")
             {
@@ -395,9 +396,9 @@ public static class ValidationCommand
             {
                 _ = await ValidationDocumentation.ReadCatalogAsync(plan, documentation, cancellationToken).ConfigureAwait(false);
             }
-            using var outputOwnership = plan.checks.Any(static check => check.kind == "build" && check.exclusion is null)
-                                        ? await ValidationWorkspace.AcquireReadAsync(plan, cancellationToken).ConfigureAwait(false)
-                                        : null;
+            using CoordinatedFileLease? outputOwnership = plan.checks.Any(static check => check.kind == "build" && check.exclusion is null)
+                ? await ValidationWorkspace.AcquireReadAsync(plan, cancellationToken).ConfigureAwait(false)
+                : null;
             Dictionary<string, string> current = await ValidationInputs.CaptureAsync(root, cancellationToken).ConfigureAwait(false);
             if (ValidationInputs.Identity(current) != plan.tree || previous.tree != plan.tree || previous.environment != plan.environment)
             {

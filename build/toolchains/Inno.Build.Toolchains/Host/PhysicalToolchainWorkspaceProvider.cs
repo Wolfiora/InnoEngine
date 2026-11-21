@@ -10,10 +10,10 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class PhysicalToolchainWorkspaceProvider : IToolchainWorkspaceProvider
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string identity => "physical";
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ValueTask<ToolchainWorkingDirectory> OpenAsync(
         string physicalPath,
         CancellationToken cancellationToken = default

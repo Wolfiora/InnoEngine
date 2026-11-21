@@ -44,12 +44,12 @@ public interface ITypeCatalogRegistrar
     /// <exception cref="ArgumentException">
     /// The type is not a fully closed generic construction.
     /// </exception>
-    /// <remarks>
-    /// Repeated registrations of the same closed construction are idempotent; the first factory is retained.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// The caller runs on another thread or retained this registrar after catalog composition completed.
     /// </exception>
+    /// <remarks>
+    /// Repeated registrations of the same closed construction are idempotent; the first factory is retained.
+    /// </remarks>
     void RegisterFactory(
         Type type,
         Func<object> factory
@@ -64,10 +64,6 @@ public interface ITypeCatalogRegistrar
     /// <param name="arguments">
     /// The complete closed argument set. The registrar copies this collection during registration.
     /// </param>
-    /// <remarks>
-    /// This fact lets static resolution skip an inapplicable converter without attempting dynamic generic creation.
-    /// Unknown constructions remain explicit deployment errors. Repeated rejections are idempotent.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// The declaration or argument set is incomplete, open, or conflicts with a registered factory.
     /// </exception>
@@ -77,6 +73,10 @@ public interface ITypeCatalogRegistrar
     /// <exception cref="InvalidOperationException">
     /// The caller runs on another thread or retained this registrar after catalog composition completed.
     /// </exception>
+    /// <remarks>
+    /// This fact lets static resolution skip an inapplicable converter without attempting dynamic generic creation.
+    /// Unknown constructions remain explicit deployment errors. Repeated rejections are idempotent.
+    /// </remarks>
     void RejectGenericConstruction(
         Type definition,
         IReadOnlyList<Type> arguments

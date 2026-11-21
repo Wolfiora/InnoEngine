@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -130,6 +131,12 @@ public sealed class PlayerSupportPackCatalog
     /// <param name="target">
     /// The platform and architecture identity of the required Support Pack.
     /// </param>
+    /// <param name="validator">
+    /// The target-owned validator for runtime or linker inputs.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels ownership acquisition or complete content validation before returning a lease.
+    /// </param>
     /// <returns>
     /// Reading ownership of the complete pack; dispose it after its final consumer finishes.
     /// </returns>
@@ -139,12 +146,6 @@ public sealed class PlayerSupportPackCatalog
     /// <exception cref="InvalidDataException">
     /// Thrown when the pack is empty, contains build-time payload, or lacks its Player executable or native runtimes.
     /// </exception>
-    /// <param name="validator">
-    /// The target-owned validator for runtime or linker inputs.
-    /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels ownership acquisition or complete content validation before returning a lease.
-    /// </param>
     /// <exception cref="OperationCanceledException">
     /// Acquisition or validation was canceled; no reading ownership is transferred.
     /// </exception>
@@ -430,7 +431,7 @@ public sealed class PlayerSupportPackCatalog
             cancellationToken.ThrowIfCancellationRequested();
             string relative = Path.GetRelativePath(directory, file).Replace('\\', '/');
             byte[] path = Encoding.UTF8.GetBytes(relative);
-            System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(length, path.Length);
+            BinaryPrimitives.WriteInt32LittleEndian(length, path.Length);
             hash.AppendData(length);
             hash.AppendData(path);
             using FileStream input = File.OpenRead(file);

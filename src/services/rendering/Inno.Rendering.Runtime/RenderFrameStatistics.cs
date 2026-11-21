@@ -1,4 +1,5 @@
 using System;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
@@ -6,7 +7,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Reports read-only statistics for the most recently completed render frame.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f3924117-1829-5885-9f93-9010066fed48")]
+[StableTypeId("f3924117-1829-5885-9f93-9010066fed48")]
 public sealed class RenderFrameStatistics
 {
     /// <summary>

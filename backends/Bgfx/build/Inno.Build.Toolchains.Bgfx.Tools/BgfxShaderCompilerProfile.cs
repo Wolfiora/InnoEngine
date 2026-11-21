@@ -65,7 +65,7 @@ public sealed class BgfxShaderCompilerProfile
         this.fragmentProfile = fragmentProfile;
         this.computeProfile = computeProfile;
         this.defines = Array.AsReadOnly(snapshot);
-        key = CreateKey(capabilities);
+        this.key = CreateKey(capabilities);
     }
 
     /// <summary>

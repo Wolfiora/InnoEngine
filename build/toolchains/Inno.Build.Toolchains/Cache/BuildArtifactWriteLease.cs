@@ -13,16 +13,19 @@ public sealed class BuildArtifactWriteLease : IDisposable
 {
     private CoordinatedFileLease? m_lease;
 
-    private BuildArtifactWriteLease(CoordinatedFileLease lease) => m_lease = lease;
+    private BuildArtifactWriteLease(CoordinatedFileLease lease)
+    {
+        m_lease = lease;
+    }
 
     /// <summary>
     /// Waits for all readers before allowing mutation of one immutable artifact directory.
     /// </summary>
-    /// <param name="ownerDirectory">
-    /// The exact publisher root retaining the persistent owner.lock gate.
-    /// </param>
     /// <param name="directory">
     /// The absolute artifact location controlled by the publisher.
+    /// </param>
+    /// <param name="ownerDirectory">
+    /// The exact publisher root retaining the persistent owner.lock gate.
     /// </param>
     /// <param name="cancellationToken">
     /// Cancels this waiter without disturbing existing readers.

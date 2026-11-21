@@ -19,10 +19,10 @@ public sealed unsafe class ImGuiInitTests
     [Fact]
     public void CreateAndDestroyContext_ShouldSucceed()
     {
-        var context = ImGui.Raw.CreateContext(null);
-        Assert.True(context != null);
+        ImGuiNativeContext* context = ImGui.Raw.CreateContext(null);
+        Assert.True(context is not null);
 
-        var version = Marshal.PtrToStringUTF8((nint)ImGui.Raw.GetVersion());
+        string? version = Marshal.PtrToStringUTF8((nint)ImGui.Raw.GetVersion());
         output.WriteLine($"ImGui.GetVersion: {version}");
         Assert.False(string.IsNullOrWhiteSpace(version));
 
@@ -32,7 +32,7 @@ public sealed unsafe class ImGuiInitTests
     [Fact]
     public void TextDisabled_UsesTheLoadedCimguiSymbol()
     {
-        var context = ImGui.Raw.CreateContext(null);
+        ImGuiNativeContext* context = ImGui.Raw.CreateContext(null);
         try
         {
             ImGuiIO* io = ImGui.Raw.GetIO();

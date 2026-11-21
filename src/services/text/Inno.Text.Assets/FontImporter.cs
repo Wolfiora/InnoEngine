@@ -57,16 +57,16 @@ public sealed class FontImporter : AssetImporter<FontAsset>
         }
         uint signature = BinaryPrimitives.ReadUInt32BigEndian(source);
         int faceCount;
-        if (signature == 0x74746366)
+        if (signature == 0x7474_6366)
         {
             uint count = BinaryPrimitives.ReadUInt32BigEndian(source[8..]);
-            if (count is 0 or > 65535 || source.Length < checked(12 + ((int)count * 4)))
+            if (count is 0 or > 65_535 || source.Length < checked(12 + ((int)count * 4)))
             {
                 throw new InvalidDataException("The OpenType collection header is invalid.");
             }
             faceCount = (int)count;
         }
-        else if (signature is 0x00010000 or 0x4f54544f or 0x74727565 or 0x74797031)
+        else if (signature is 0x0001_0000 or 0x4F54_544F or 0x7472_7565 or 0x7479_7031)
         {
             faceCount = 1;
         }

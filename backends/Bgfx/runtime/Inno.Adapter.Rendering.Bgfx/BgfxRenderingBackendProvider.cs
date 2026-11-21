@@ -26,7 +26,7 @@ public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
         m_surfaceIntegration = surfaceIntegration;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IRenderDevice CreateDevice(RenderingBackendOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -41,7 +41,7 @@ public sealed class BgfxRenderingBackendProvider : RenderingBackendProvider
         });
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IRenderLayerCompositionProgramProvider CreateCompositionProgramProvider()
         => new BgfxCompositionProgramProvider();
 }

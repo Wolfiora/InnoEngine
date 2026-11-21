@@ -147,7 +147,7 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
             m_serialization,
             SerializationContext.empty
         );
-        input.id = "";
+        input.id = string.Empty;
         GraphDocument changed = ShaderGraphBindings.ChangeInput(graph, new("color"), input, m_serialization, SerializationContext.empty);
         Assert.Equal(graph.nodes.Count, changed.nodes.Count);
         Assert.Equal(graph.edges.Count, changed.edges.Count);
@@ -183,7 +183,12 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
         var node = new GraphNodeRecord(new("vertex-color"), "inno.shader.stage-input");
         node.SetValue("stage", ShaderGraphDocument.Encode("vertex", m_serialization, SerializationContext.empty));
         graph.AddNode(node);
-        var settings = new ShaderGraphInputSettings { id = "color", kind = ShaderIrInputKind.Uniform, type = new() { id = "float4" } };
+        var settings = new ShaderGraphInputSettings
+        {
+            id = "color",
+            kind = ShaderIrInputKind.Uniform,
+            type = new() { id = "float4" }
+        };
         graph = ShaderGraphBindings.ChangeInput(graph, node.id, settings, m_serialization, SerializationContext.empty);
         ShaderPropertyDefinition original = Assert.Single(
             ShaderGraphDocument.ReadDefinition(graph, m_serialization, SerializationContext.empty).properties
@@ -210,7 +215,10 @@ public sealed partial class ShaderGraphProgramTests : IDisposable
 
     public void Dispose()
     {
-        m_nodes.Dispose(); m_serialization.Dispose(); m_types.Dispose(); m_modules.Dispose();
+        m_nodes.Dispose();
+        m_serialization.Dispose();
+        m_types.Dispose();
+        m_modules.Dispose();
         if (Directory.Exists(m_root)) Directory.Delete(m_root, true);
     }
 }

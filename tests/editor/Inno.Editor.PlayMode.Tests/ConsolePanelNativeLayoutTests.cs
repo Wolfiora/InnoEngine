@@ -9,6 +9,8 @@ using BGCS.Runtime;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
+using Inno.Core.Events;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
 using Inno.Editor.Diagnostics;
@@ -20,6 +22,7 @@ using Inno.Native.ImGui;
 
 using ImGuiApi = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -50,7 +53,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             using IDisposable diagnosticScope = diagnostics.EnterScope();
             using var ui = new EditorUiSession();
             using var runtime = new EditorInteractionRuntime(
-                new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+                new EditorContext(root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
                 types,
                 logs,
                 [new RejectedConsole()]
@@ -72,7 +75,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                     Assert.False(panel.isOpen);
                 }
                 Assert.Equal(parent, (nint)ImGuiApi.Raw.GetCurrentWindow());
-                Inno.Editor.ImGui.ImGui.Text("Following valid drawing");
+                Ui.Text("Following valid drawing");
                 ImGuiApi.End();
                 ImGuiApi.Render();
             }
@@ -113,10 +116,10 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
             var hub = new DiagnosticHub();
             using var console = new EditorConsole(logs, hub, new InactivePlayMode());
             console.Start();
-            using var reporter = hub.CreateReporter(new("shader", "Rendering"));
+            using DiagnosticReporter reporter = hub.CreateReporter(new("shader", "Rendering"));
             using var ui = new EditorUiSession();
             using var runtime = new EditorInteractionRuntime(
-                new EditorContext(root, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+                new EditorContext(root, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
                 types,
                 logs,
                 [console]
@@ -148,7 +151,8 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                 ImGuiApi.Render();
                 Assert.Single(console.Capture().occurrences);
             }
-            Draw(960); Draw(960);
+            Draw(960);
+            Draw(960);
             ImGuiWindow* card = default;
             for (int i = 0; i < context->Windows.Size; i++)
             {
@@ -158,29 +162,32 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
                     card = window;
                 }
             }
-            Assert.True(card != null);
+            Assert.True(card is not null);
             ImGuiTable* header = FindActiveTable(card, 3);
-            Assert.True(header != null);
-            Vector2 toggle = new(header->Columns.Data[0].WorkMinX + 6, header->RowPosY1 + ImGuiApi.GetFontSize() / 2);
+            Assert.True(header is not null);
+            var toggle = new Vector2(header->Columns.Data[0].WorkMinX + 6, header->RowPosY1 + ImGuiApi.GetFontSize() / 2);
             ImGuiApi.Raw.AddMousePosEvent(ImGuiApi.Raw.GetIO(), toggle.X, toggle.Y);
             Draw(960);
             Assert.True(
                 context->HoveredId != 0,
                 $"No toggle hovered: {toggle}; window {Marshal.PtrToStringUTF8((nint)context->HoveredWindow->Name)}"
             );
-            ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0)); Draw(960);
+            ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (true ? (byte)1 : (byte)0));
+            Draw(960);
             Assert.True(context->ActiveId != 0, "Toggle did not activate.");
-            ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (false ? (byte)1 : (byte)0)); Draw(960);
+            ImGuiApi.Raw.AddMouseButtonEvent(ImGuiApi.Raw.GetIO(), 0, (false ? (byte)1 : (byte)0));
+            Draw(960);
             // Switching from fixed height to AutoResizeY uses a native measurement frame.
             Draw(960);
             foreach (float width in new[] { 960f, 500f, 260f, 140f, 960f })
             {
                 Draw(width);
                 ImGuiTable* table = FindActiveTable(card, 2);
-                bool details = table != null && table->LastFrameActive == ImGuiApi.GetFrameCount();
+                bool details = table is not null && table->LastFrameActive == ImGuiApi.GetFrameCount();
                 if (details)
                 {
-                    ImGuiTableColumn label = table->Columns.Data[0], value = table->Columns.Data[1];
+                    ImGuiTableColumn label = table->Columns.Data[0];
+                    ImGuiTableColumn value = table->Columns.Data[1];
                     Assert.True(label.WidthGiven >= ImGuiApi.CalcTextSize("Session:").X - 1);
                     Assert.True(value.MinX > label.MinX + ImGuiApi.CalcTextSize("Source:").X);
                     Assert.True(label.ClipRect.Max.X >= label.WorkMinX + ImGuiApi.CalcTextSize("Source:").X);
@@ -231,7 +238,7 @@ public sealed unsafe class ConsolePanelNativeLayoutTests
         public bool isPlaying => false;
         public string? lastFailure => null;
         public LogSessionId activeSessionId => LogSessionId.none;
-        private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
+        private readonly EventDispatcher m_stateDispatcher = new();
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 

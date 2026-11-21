@@ -31,7 +31,7 @@ public sealed class GraphCanvasViewTests
         var state = new GraphCanvasState();
         state.SetViewport(new(-172f, 38f), zoom);
         var view = new GraphCanvasView(state, new(100f, 200f), new(800f, 600f));
-        GraphPosition point = new(-21.25f, 90f);
+        var point = new GraphPosition(-21.25f, 90f);
         GraphPosition actual = view.ToGraph(view.ToScreen(point));
         Assert.Equal(point.x, actual.x, 3);
         Assert.Equal(point.y, actual.y, 3);

@@ -19,9 +19,9 @@ namespace Inno.Adapter.Presentation.ImGui;
 public sealed unsafe partial class PlatformImGuiContext
 {
     private const float DEFAULT_KEY_REPEAT_DELAY_SECONDS = 0.275f;
-    private const float DEFAULT_KEY_REPEAT_RATE_SECONDS = 0.050f;
-    private const float DEFAULT_FONT_SIZE_PIXELS = 16.0f;
-    private const float DEFAULT_ICON_SIZE_PIXELS = 14.0f;
+    private const float DEFAULT_KEY_REPEAT_RATE_SECONDS = 0.05f;
+    private const float DEFAULT_FONT_SIZE_PIXELS = 16f;
+    private const float DEFAULT_ICON_SIZE_PIXELS = 14f;
     private const float DEFAULT_MOUSE_SCROLLING_UNITS = 0.3f;
     private const string DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH = "BuiltIn/Fonts";
     private const string DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH = "BuiltIn/Icons";
@@ -64,8 +64,8 @@ public sealed unsafe partial class PlatformImGuiContext
         Action<PlatformImGuiContext> releaseRegistration
     ) {
         m_releaseRegistration = releaseRegistration ?? throw new ArgumentNullException(nameof(releaseRegistration));
-        var enableViewports = (contextFlags & ImGuiContextFlags.EnableViewports) != 0;
-        var enableDocking = (contextFlags & ImGuiContextFlags.EnableDocking) != 0;
+        bool enableViewports = (contextFlags & ImGuiContextFlags.EnableViewports) != 0;
+        bool enableDocking = (contextFlags & ImGuiContextFlags.EnableDocking) != 0;
         m_enableSmoothResize = (contextFlags & ImGuiContextFlags.EnableSmoothResize) != 0;
 
         m_interaction = interaction;
@@ -75,7 +75,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
         try
         {
-            var io = ImGuiNative.Raw.GetIO();
+            ImGuiIO* io = ImGuiNative.Raw.GetIO();
             // SDL cannot reliably identify the viewport beneath a transient NoInputs viewport while
             // docking, and the official SDL backend disables this capability on macOS. Let Dear ImGui
             // use its viewport heuristic instead of publishing incorrect hovered viewport identities.
@@ -175,7 +175,7 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
-        var io = ImGuiNative.Raw.GetIO();
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
         if (m_iniFilename != IntPtr.Zero)
         {
             Marshal.FreeCoTaskMem(m_iniFilename);
@@ -332,7 +332,7 @@ public sealed unsafe partial class PlatformImGuiContext
         ImGuiNative.Raw.SetCurrentContext(m_context);
         ImGuiIO* io = ImGuiNative.Raw.GetIO();
         ImFont* loadedFont = LoadFont(io->Fonts, fullPath, fontSizePixels);
-        if (loadedFont == null)
+        if (loadedFont is null)
         {
             throw new InvalidOperationException($"Could not load the font '{fullPath}'.");
         }
@@ -350,17 +350,17 @@ public sealed unsafe partial class PlatformImGuiContext
         ImGuiNativeContext* context,
         ImGuiIO* io
     ) {
-        var fonts = io->Fonts;
+        ImFontAtlas* fonts = io->Fonts;
         ImGuiNative.Raw.Clear(fonts);
 
-        ResolveFontPaths(out var fontPaths, out var iconFontPaths);
+        ResolveFontPaths(out List<string> fontPaths, out List<string> iconFontPaths);
         var styleFonts = new Dictionary<ImGuiFontStyle, nint>();
         ImFont* defaultFont = null;
-        var preferredIndex = FindPreferredFontIndex(fontPaths);
-        for (var i = 0; i < fontPaths.Count; i++)
+        int preferredIndex = FindPreferredFontIndex(fontPaths);
+        for (int i = 0; i < fontPaths.Count; i++)
         {
             ImFont* loadedFont = LoadFont(fonts, fontPaths[i], DEFAULT_FONT_SIZE_PIXELS);
-            if (loadedFont == null)
+            if (loadedFont is null)
             {
                 continue;
             }
@@ -371,23 +371,23 @@ public sealed unsafe partial class PlatformImGuiContext
             {
                 defaultFont = loadedFont;
             }
-            else if (defaultFont == null)
+            else if (defaultFont is null)
             {
                 defaultFont = loadedFont;
             }
         }
 
-        if (defaultFont == null)
+        if (defaultFont is null)
         {
             defaultFont = LoadDefaultFont(fonts);
-            if (defaultFont != null)
+            if (defaultFont is not null)
             {
                 MergeIconFontsIntoCurrentBaseFont(fonts, iconFontPaths);
             }
         }
 
         io->FontDefault = defaultFont;
-        if (defaultFont != null && !styleFonts.ContainsKey(ImGuiFontStyle.Regular))
+        if (defaultFont is not null && !styleFonts.ContainsKey(ImGuiFontStyle.Regular))
         {
             styleFonts[ImGuiFontStyle.Regular] = (nint)defaultFont;
         }
@@ -410,9 +410,9 @@ public sealed unsafe partial class PlatformImGuiContext
             return -1;
         }
 
-        for (var i = 0; i < fontPaths.Count; i++)
+        for (int i = 0; i < fontPaths.Count; i++)
         {
-            var fileName = Path.GetFileName(fontPaths[i]);
+            string fileName = Path.GetFileName(fontPaths[i]);
             if (fileName.Equals(DEFAULT_FONT_FILE_NAME, StringComparison.OrdinalIgnoreCase))
             {
                 return i;
@@ -426,16 +426,16 @@ public sealed unsafe partial class PlatformImGuiContext
         out List<string> baseFonts,
         out List<string> iconFonts
     ) {
-        baseFonts = new List<string>();
-        iconFonts = new List<string>();
+        baseFonts = [];
+        iconFonts = [];
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var fontDirectory in ResolveAssetDirectories(DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH))
+        foreach (string fontDirectory in ResolveAssetDirectories(DEFAULT_FONTS_DIRECTORY_RELATIVE_PATH))
         {
             CollectFontFiles(fontDirectory, baseFonts, seen, includeSubdirectories: false);
         }
 
-        foreach (var iconDirectory in ResolveAssetDirectories(DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH))
+        foreach (string iconDirectory in ResolveAssetDirectories(DEFAULT_ICONS_DIRECTORY_RELATIVE_PATH))
         {
             CollectFontFiles(iconDirectory, iconFonts, seen, includeSubdirectories: false);
         }
@@ -448,20 +448,20 @@ public sealed unsafe partial class PlatformImGuiContext
     {
         var directories = new List<string>();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        var candidates = new[]
+        string[] candidates = new[]
         {
             Path.Combine(AppContext.BaseDirectory, relativePath),
             Path.Combine(Path.GetDirectoryName(typeof(PlatformImGuiContext).Assembly.Location) ?? string.Empty, relativePath)
         };
 
-        foreach (var candidate in candidates)
+        foreach (string candidate in candidates)
         {
             if (string.IsNullOrWhiteSpace(candidate))
             {
                 continue;
             }
 
-            var fullPath = Path.GetFullPath(candidate);
+            string fullPath = Path.GetFullPath(candidate);
             if (Directory.Exists(fullPath) && seen.Add(fullPath))
             {
                 directories.Add(fullPath);
@@ -477,18 +477,18 @@ public sealed unsafe partial class PlatformImGuiContext
         HashSet<string> seen,
         bool includeSubdirectories
     ) {
-        var searchOption = includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
-        var fontFiles = Directory.GetFiles(directory, "*.*", searchOption);
-        foreach (var fontFile in fontFiles)
+        SearchOption searchOption = includeSubdirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+        string[] fontFiles = Directory.GetFiles(directory, "*.*", searchOption);
+        foreach (string fontFile in fontFiles)
         {
-            var extension = Path.GetExtension(fontFile);
+            string extension = Path.GetExtension(fontFile);
             if (!extension.Equals(".ttf", StringComparison.OrdinalIgnoreCase)
                 && !extension.Equals(".otf", StringComparison.OrdinalIgnoreCase)
             ) {
                 continue;
             }
 
-            var fullPath = Path.GetFullPath(fontFile);
+            string fullPath = Path.GetFullPath(fontFile);
             if (seen.Add(fullPath))
             {
                 output.Add(fullPath);
@@ -505,7 +505,7 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        for (var index = 0; index < iconFontPaths.Count; index++)
+        for (int index = 0; index < iconFontPaths.Count; index++)
         {
             ImFontConfig* mergeConfig = ImGuiNative.Raw.ImFontConfig();
             mergeConfig->MergeMode = 1;
@@ -529,16 +529,16 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
-        var io = ImGuiNative.Raw.GetIO();
-        var eventType = (SDLEventType)sdlEvent.Type;
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
+        SDLEventType eventType = (SDLEventType)sdlEvent.Type;
 
-        if (!TryGetWindowId(ref sdlEvent, out var eventWindowId))
+        if (!TryGetWindowId(ref sdlEvent, out uint eventWindowId))
         {
             m_viewports?.ProcessEvent(ref sdlEvent, 0);
             return;
         }
 
-        if (eventWindowId != m_window.windowId && (m_viewports == null || !m_viewports.OwnsWindow(eventWindowId)))
+        if (eventWindowId != m_window.windowId && (m_viewports is null || !m_viewports.OwnsWindow(eventWindowId)))
         {
             return;
         }
@@ -555,7 +555,7 @@ public sealed unsafe partial class PlatformImGuiContext
             case SDLEventType.KeyDown:
             case SDLEventType.KeyUp:
             {
-                var down = eventType == SDLEventType.KeyDown;
+                bool down = eventType == SDLEventType.KeyDown;
                 if (down && sdlEvent.Key.Repeat != 0)
                 {
                     // Keep key-repeat timing driven by ImGui (io->KeyRepeatDelay/KeyRepeatRate).
@@ -564,7 +564,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
                 UpdateKeyModifiers(io, (SDLKeymod)sdlEvent.Key.Mod);
 
-                var key = TranslateKey(sdlEvent.Key.Scancode);
+                ImGuiKey key = TranslateKey(sdlEvent.Key.Scancode);
                 if (key != ImGuiKey.None)
                 {
                     ImGuiNative.Raw.AddKeyEvent(io, key, down ? (byte)1 : (byte)0);
@@ -581,7 +581,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
             case SDLEventType.TextInput:
             {
-                if (sdlEvent.Text.Text != null)
+                if (sdlEvent.Text.Text is not null)
                 {
                     ImGuiNative.Raw.AddInputCharactersUTF8(io, sdlEvent.Text.Text);
                 }
@@ -623,8 +623,8 @@ public sealed unsafe partial class PlatformImGuiContext
 
             case SDLEventType.MouseWheel:
             {
-                var wheelX = sdlEvent.Wheel.X;
-                var wheelY = sdlEvent.Wheel.Y;
+                float wheelX = sdlEvent.Wheel.X;
+                float wheelY = sdlEvent.Wheel.Y;
 
                 wheelX *= m_interaction.horizontalWheelDirection;
 
@@ -681,15 +681,15 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        var ownsMainWindow = windowId == m_window.windowId;
-        var ownsViewportWindow = m_viewports?.OwnsWindow(windowId) == true;
+        bool ownsMainWindow = windowId == m_window.windowId;
+        bool ownsViewportWindow = m_viewports?.OwnsWindow(windowId) == true;
         if (!ownsMainWindow && !ownsViewportWindow)
         {
             return;
         }
 
         m_pendingLiveResizeWindowIds.Add(windowId);
-        var now = m_frameTimer.Elapsed;
+        TimeSpan now = m_frameTimer.Elapsed;
         m_liveResizeLockedWindowId = windowId;
         m_lastLiveResizeLockTime = now;
     }
@@ -717,8 +717,8 @@ public sealed unsafe partial class PlatformImGuiContext
             throw new InvalidOperationException("An ImGui frame cannot be reentered.");
         }
 
-        var now = m_frameTimer.Elapsed;
-        var deltaSeconds = (float)(now - m_lastFrameTime).TotalSeconds;
+        TimeSpan now = m_frameTimer.Elapsed;
+        float deltaSeconds = (float)(now - m_lastFrameTime).TotalSeconds;
         m_lastFrameTime = now;
 
         m_isFrameOperationActive = true;
@@ -782,7 +782,7 @@ public sealed unsafe partial class PlatformImGuiContext
         m_viewports?.ProcessRetirements();
         m_hasStartedFrame = true;
 
-        var io = ImGuiNative.Raw.GetIO();
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
         io->MouseDrawCursor = 0;
         UpdateDisplayMetrics(io);
         io->DeltaTime = deltaTimeSeconds > 0f ? deltaTimeSeconds : (1f / 60f);
@@ -798,10 +798,10 @@ public sealed unsafe partial class PlatformImGuiContext
         ImGuiNative.NewFrame();
 
         // During live resize, prevent the main viewport from hosting other windows.
-        var mainViewport = ImGuiNative.Raw.GetMainViewport();
+        ImGuiViewport* mainViewport = ImGuiNative.Raw.GetMainViewport();
         if (m_liveResizeLockedWindowId != 0
             && (io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0
-            && mainViewport != null
+            && mainViewport is not null
         ) {
             mainViewport->Flags &= ~(int)ImGuiViewportFlags.CanHostOtherWindows;
         }
@@ -814,7 +814,7 @@ public sealed unsafe partial class PlatformImGuiContext
             throw new ObjectDisposedException(nameof(PlatformImGuiContext));
         }
 
-        var io = ImGuiNative.Raw.GetIO();
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
 
         try
         {
@@ -824,7 +824,7 @@ public sealed unsafe partial class PlatformImGuiContext
             ImGuiNative.Render();
 
             io->MouseDrawCursor = 0;
-            var drawData = ImGuiNative.Raw.GetDrawData();
+            ImDrawData* drawData = ImGuiNative.Raw.GetDrawData();
             m_renderer.RenderMain(GetDrawDataAddress(drawData));
             if ((io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) != 0)
             {
@@ -853,14 +853,14 @@ public sealed unsafe partial class PlatformImGuiContext
 
         float mouseX = 0f;
         float mouseY = 0f;
-        var mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
+        SDLMouseButtonFlags mouseButtons = ((SDLMouseButtonFlags)SDL.Raw.GetMouseState(&mouseX, &mouseY));
         if ((mouseButtons & SDLMouseButtonFlags.Left) == 0)
         {
             m_liveResizeLockedWindowId = 0;
             return;
         }
 
-        var now = m_frameTimer.Elapsed;
+        TimeSpan now = m_frameTimer.Elapsed;
         if (eventType == SDLEventType.WindowExposed && eventWindowId == m_liveResizeLockedWindowId)
         {
             m_lastLiveResizeLockTime = now;
@@ -889,13 +889,13 @@ public sealed unsafe partial class PlatformImGuiContext
     /// <summary>
     /// Retires the context and its owned resources after the current frame operation has completed.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// A frame operation still owns the context; the caller must retry after that operation completes.
+    /// </exception>
     /// <remarks>
     /// Successful retirement removes this context's application registration and releases its borrowed font data.
     /// Pending or failed retirement preserves both registration and ownership for a subsequent retry.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// A frame operation still owns the context; the caller must retry after that operation completes.
-    /// </exception>
     public partial void Dispose()
     {
         if (m_disposed)
@@ -909,11 +909,11 @@ public sealed unsafe partial class PlatformImGuiContext
         }
 
         ImGuiNative.Raw.SetCurrentContext(m_context);
-        var io = ImGuiNative.Raw.GetIO();
+        ImGuiIO* io = ImGuiNative.Raw.GetIO();
         UnregisterClipboardCallbacks();
         if (m_textInputActive)
         {
-            var textInputWindow = m_textInputWindow == null ? m_window.GetSdlWindow() : m_textInputWindow;
+            SDLWindow* textInputWindow = m_textInputWindow is null ? m_window.GetSdlWindow() : m_textInputWindow;
             _ = SDL.Raw.StopTextInput(textInputWindow);
             m_textInputWindow = null;
             m_textInputActive = false;
@@ -933,7 +933,7 @@ public sealed unsafe partial class PlatformImGuiContext
         m_viewports?.Dispose();
         m_renderer.DrainViewportRetirements();
 
-        foreach (var cursor in m_cursors.Values)
+        foreach (nint cursor in m_cursors.Values)
         {
             if (cursor != 0)
             {
@@ -958,13 +958,13 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private void UpdateDisplayMetrics(ImGuiIO* io)
     {
-        var windowWidth = 0;
-        var windowHeight = 0;
+        int windowWidth = 0;
+        int windowHeight = 0;
         SDLWindow* sdlWindow = m_window.GetSdlWindow();
         SDL.Raw.GetWindowSize(sdlWindow, &windowWidth, &windowHeight);
 
-        var pixelWidth = 0;
-        var pixelHeight = 0;
+        int pixelWidth = 0;
+        int pixelHeight = 0;
         SDL.Raw.GetWindowSizeInPixels(sdlWindow, &pixelWidth, &pixelHeight);
 
         io->DisplaySize = new ImVec2C { X = windowWidth, Y = windowHeight };
@@ -985,12 +985,12 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private void UpdateTextInputState(ImGuiIO* io)
     {
-        var targetWindow = ResolveTextInputWindow();
+        SDLWindow* targetWindow = ResolveTextInputWindow();
         if (io->WantTextInput != 0)
         {
             if (!m_textInputActive || m_textInputWindow != targetWindow)
             {
-                if (m_textInputActive && m_textInputWindow != null)
+                if (m_textInputActive && m_textInputWindow is not null)
                 {
                     _ = SDL.Raw.StopTextInput(m_textInputWindow);
                 }
@@ -1002,7 +1002,7 @@ public sealed unsafe partial class PlatformImGuiContext
         }
         else if (m_textInputActive)
         {
-            var textInputWindow = m_textInputWindow == null ? targetWindow : m_textInputWindow;
+            SDLWindow* textInputWindow = m_textInputWindow is null ? targetWindow : m_textInputWindow;
             _ = SDL.Raw.StopTextInput(textInputWindow);
             m_textInputWindow = null;
             m_textInputActive = false;
@@ -1012,9 +1012,7 @@ public sealed unsafe partial class PlatformImGuiContext
     private static unsafe void SetIniFilename(
         ImGuiIO* io,
         IntPtr fileName
-    ) {
-        io->IniFilename = (sbyte*)fileName;
-    }
+    ) => io->IniFilename = (sbyte*)fileName;
 
     private static unsafe ImFont* LoadFont(
         ImFontAtlas* fonts,
@@ -1038,14 +1036,14 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private SDLWindow* ResolveTextInputWindow()
     {
-        var keyboardFocus = SDL.Raw.GetKeyboardFocus();
-        if (keyboardFocus == null)
+        SDLWindow* keyboardFocus = SDL.Raw.GetKeyboardFocus();
+        if (keyboardFocus is null)
         {
             return m_window.GetSdlWindow();
         }
 
-        var focusedWindowId = SDL.Raw.GetWindowId(keyboardFocus);
-        if (focusedWindowId == m_window.windowId || (m_viewports != null && m_viewports.OwnsWindow(focusedWindowId)))
+        uint focusedWindowId = SDL.Raw.GetWindowId(keyboardFocus);
+        if (focusedWindowId == m_window.windowId || (m_viewports is not null && m_viewports.OwnsWindow(focusedWindowId)))
         {
             return keyboardFocus;
         }
@@ -1140,20 +1138,20 @@ public sealed unsafe partial class PlatformImGuiContext
         float localX,
         float localY
     ) {
-        Vector2 position = new(localX, localY);
+        var position = new Vector2(localX, localY);
         if ((io->ConfigFlags & (int)ImGuiConfigFlags.ViewportsEnable) == 0)
         {
             return position;
         }
 
         SDLWindow* window = SDL.Raw.GetWindowFromId(windowId);
-        if (window == null)
+        if (window is null)
         {
             return position;
         }
 
-        var windowX = 0;
-        var windowY = 0;
+        int windowX = 0;
+        int windowY = 0;
         _ = SDL.Raw.GetWindowPosition(window, &windowX, &windowY);
         return position + new Vector2(windowX, windowY);
     }
@@ -1216,7 +1214,7 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        var imguiCursor = (ImGuiMouseCursor)ImGuiNative.GetMouseCursor();
+        ImGuiMouseCursor imguiCursor = (ImGuiMouseCursor)ImGuiNative.GetMouseCursor();
         if (imguiCursor == ImGuiMouseCursor.None || io->MouseDrawCursor != 0)
         {
             _ = SDL.HideCursor();
@@ -1224,8 +1222,8 @@ public sealed unsafe partial class PlatformImGuiContext
             return;
         }
 
-        var sdlCursor = GetOrCreateCursor(imguiCursor);
-        if (sdlCursor != null && m_currentCursor != imguiCursor)
+        SDLCursor* sdlCursor = GetOrCreateCursor(imguiCursor);
+        if (sdlCursor is not null && m_currentCursor != imguiCursor)
         {
             _ = SDL.Raw.SetCursor(sdlCursor);
             m_currentCursor = imguiCursor;
@@ -1236,12 +1234,12 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private SDLCursor* GetOrCreateCursor(ImGuiMouseCursor cursor)
     {
-        if (m_cursors.TryGetValue(cursor, out var cachedCursor))
+        if (m_cursors.TryGetValue(cursor, out nint cachedCursor))
         {
             return (SDLCursor*)cachedCursor;
         }
 
-        var sdlCursorType = cursor switch
+        SDLSystemCursor sdlCursorType = cursor switch
         {
             ImGuiMouseCursor.Arrow => SDLSystemCursor.Default,
             ImGuiMouseCursor.TextInput => SDLSystemCursor.Text,
@@ -1257,7 +1255,7 @@ public sealed unsafe partial class PlatformImGuiContext
             _ => SDLSystemCursor.Default
         };
 
-        var createdCursor = SDL.Raw.CreateSystemCursor(sdlCursorType);
+        SDLCursor* createdCursor = SDL.Raw.CreateSystemCursor(sdlCursorType);
         m_cursors[cursor] = (nint)createdCursor;
         return createdCursor;
     }
@@ -1300,123 +1298,121 @@ public sealed unsafe partial class PlatformImGuiContext
     }
 
     private static ImGuiKey TranslateKey(SDLScancode scancode)
+        => scancode switch
     {
-        return scancode switch
-        {
-            SDLScancode.Tab => ImGuiKey.Tab,
-            SDLScancode.Left => ImGuiKey.LeftArrow,
-            SDLScancode.Right => ImGuiKey.RightArrow,
-            SDLScancode.Up => ImGuiKey.UpArrow,
-            SDLScancode.Down => ImGuiKey.DownArrow,
-            SDLScancode.Pageup => ImGuiKey.PageUp,
-            SDLScancode.Pagedown => ImGuiKey.PageDown,
-            SDLScancode.Home => ImGuiKey.Home,
-            SDLScancode.End => ImGuiKey.End,
-            SDLScancode.Insert => ImGuiKey.Insert,
-            SDLScancode.Delete => ImGuiKey.Delete,
-            SDLScancode.Backspace => ImGuiKey.Backspace,
-            SDLScancode.Space => ImGuiKey.Space,
-            SDLScancode.Return => ImGuiKey.Enter,
-            SDLScancode.Escape => ImGuiKey.Escape,
-            SDLScancode.Apostrophe => ImGuiKey.Apostrophe,
-            SDLScancode.Comma => ImGuiKey.Comma,
-            SDLScancode.Minus => ImGuiKey.Minus,
-            SDLScancode.Period => ImGuiKey.Period,
-            SDLScancode.Slash => ImGuiKey.Slash,
-            SDLScancode.Semicolon => ImGuiKey.Semicolon,
-            SDLScancode.Equals => ImGuiKey.Equal,
-            SDLScancode.Leftbracket => ImGuiKey.LeftBracket,
-            SDLScancode.Backslash => ImGuiKey.Backslash,
-            SDLScancode.Rightbracket => ImGuiKey.RightBracket,
-            SDLScancode.Grave => ImGuiKey.GraveAccent,
-            SDLScancode.Capslock => ImGuiKey.CapsLock,
-            SDLScancode.Scrolllock => ImGuiKey.ScrollLock,
-            SDLScancode.Numlockclear => ImGuiKey.NumLock,
-            SDLScancode.Printscreen => ImGuiKey.PrintScreen,
-            SDLScancode.Pause => ImGuiKey.Pause,
-            SDLScancode.Kp0 => ImGuiKey.Keypad0,
-            SDLScancode.Kp1 => ImGuiKey.Keypad1,
-            SDLScancode.Kp2 => ImGuiKey.Keypad2,
-            SDLScancode.Kp3 => ImGuiKey.Keypad3,
-            SDLScancode.Kp4 => ImGuiKey.Keypad4,
-            SDLScancode.Kp5 => ImGuiKey.Keypad5,
-            SDLScancode.Kp6 => ImGuiKey.Keypad6,
-            SDLScancode.Kp7 => ImGuiKey.Keypad7,
-            SDLScancode.Kp8 => ImGuiKey.Keypad8,
-            SDLScancode.Kp9 => ImGuiKey.Keypad9,
-            SDLScancode.KpPeriod => ImGuiKey.KeypadDecimal,
-            SDLScancode.KpDivide => ImGuiKey.KeypadDivide,
-            SDLScancode.KpMultiply => ImGuiKey.KeypadMultiply,
-            SDLScancode.KpMinus => ImGuiKey.KeypadSubtract,
-            SDLScancode.KpPlus => ImGuiKey.KeypadAdd,
-            SDLScancode.KpEnter => ImGuiKey.KeypadEnter,
-            SDLScancode.KpEquals => ImGuiKey.KeypadEqual,
-            SDLScancode.Lctrl => ImGuiKey.LeftCtrl,
-            SDLScancode.Lshift => ImGuiKey.LeftShift,
-            SDLScancode.Lalt => ImGuiKey.LeftAlt,
-            SDLScancode.Lgui => ImGuiKey.LeftSuper,
-            SDLScancode.Rctrl => ImGuiKey.RightCtrl,
-            SDLScancode.Rshift => ImGuiKey.RightShift,
-            SDLScancode.Ralt => ImGuiKey.RightAlt,
-            SDLScancode.Rgui => ImGuiKey.RightSuper,
-            SDLScancode.Menu => ImGuiKey.Menu,
-            SDLScancode._0 => ImGuiKey._0,
-            SDLScancode._1 => ImGuiKey._1,
-            SDLScancode._2 => ImGuiKey._2,
-            SDLScancode._3 => ImGuiKey._3,
-            SDLScancode._4 => ImGuiKey._4,
-            SDLScancode._5 => ImGuiKey._5,
-            SDLScancode._6 => ImGuiKey._6,
-            SDLScancode._7 => ImGuiKey._7,
-            SDLScancode._8 => ImGuiKey._8,
-            SDLScancode._9 => ImGuiKey._9,
-            SDLScancode.A => ImGuiKey.A,
-            SDLScancode.B => ImGuiKey.B,
-            SDLScancode.C => ImGuiKey.C,
-            SDLScancode.D => ImGuiKey.D,
-            SDLScancode.E => ImGuiKey.E,
-            SDLScancode.F => ImGuiKey.F,
-            SDLScancode.G => ImGuiKey.G,
-            SDLScancode.H => ImGuiKey.H,
-            SDLScancode.I => ImGuiKey.I,
-            SDLScancode.J => ImGuiKey.J,
-            SDLScancode.K => ImGuiKey.K,
-            SDLScancode.L => ImGuiKey.L,
-            SDLScancode.M => ImGuiKey.M,
-            SDLScancode.N => ImGuiKey.N,
-            SDLScancode.O => ImGuiKey.O,
-            SDLScancode.P => ImGuiKey.P,
-            SDLScancode.Q => ImGuiKey.Q,
-            SDLScancode.R => ImGuiKey.R,
-            SDLScancode.S => ImGuiKey.S,
-            SDLScancode.T => ImGuiKey.T,
-            SDLScancode.U => ImGuiKey.U,
-            SDLScancode.V => ImGuiKey.V,
-            SDLScancode.W => ImGuiKey.W,
-            SDLScancode.X => ImGuiKey.X,
-            SDLScancode.Y => ImGuiKey.Y,
-            SDLScancode.Z => ImGuiKey.Z,
-            SDLScancode.F1 => ImGuiKey.F1,
-            SDLScancode.F2 => ImGuiKey.F2,
-            SDLScancode.F3 => ImGuiKey.F3,
-            SDLScancode.F4 => ImGuiKey.F4,
-            SDLScancode.F5 => ImGuiKey.F5,
-            SDLScancode.F6 => ImGuiKey.F6,
-            SDLScancode.F7 => ImGuiKey.F7,
-            SDLScancode.F8 => ImGuiKey.F8,
-            SDLScancode.F9 => ImGuiKey.F9,
-            SDLScancode.F10 => ImGuiKey.F10,
-            SDLScancode.F11 => ImGuiKey.F11,
-            SDLScancode.F12 => ImGuiKey.F12,
-            _ => ImGuiKey.None
-        };
-    }
+        SDLScancode.Tab => ImGuiKey.Tab,
+        SDLScancode.Left => ImGuiKey.LeftArrow,
+        SDLScancode.Right => ImGuiKey.RightArrow,
+        SDLScancode.Up => ImGuiKey.UpArrow,
+        SDLScancode.Down => ImGuiKey.DownArrow,
+        SDLScancode.Pageup => ImGuiKey.PageUp,
+        SDLScancode.Pagedown => ImGuiKey.PageDown,
+        SDLScancode.Home => ImGuiKey.Home,
+        SDLScancode.End => ImGuiKey.End,
+        SDLScancode.Insert => ImGuiKey.Insert,
+        SDLScancode.Delete => ImGuiKey.Delete,
+        SDLScancode.Backspace => ImGuiKey.Backspace,
+        SDLScancode.Space => ImGuiKey.Space,
+        SDLScancode.Return => ImGuiKey.Enter,
+        SDLScancode.Escape => ImGuiKey.Escape,
+        SDLScancode.Apostrophe => ImGuiKey.Apostrophe,
+        SDLScancode.Comma => ImGuiKey.Comma,
+        SDLScancode.Minus => ImGuiKey.Minus,
+        SDLScancode.Period => ImGuiKey.Period,
+        SDLScancode.Slash => ImGuiKey.Slash,
+        SDLScancode.Semicolon => ImGuiKey.Semicolon,
+        SDLScancode.Equals => ImGuiKey.Equal,
+        SDLScancode.Leftbracket => ImGuiKey.LeftBracket,
+        SDLScancode.Backslash => ImGuiKey.Backslash,
+        SDLScancode.Rightbracket => ImGuiKey.RightBracket,
+        SDLScancode.Grave => ImGuiKey.GraveAccent,
+        SDLScancode.Capslock => ImGuiKey.CapsLock,
+        SDLScancode.Scrolllock => ImGuiKey.ScrollLock,
+        SDLScancode.Numlockclear => ImGuiKey.NumLock,
+        SDLScancode.Printscreen => ImGuiKey.PrintScreen,
+        SDLScancode.Pause => ImGuiKey.Pause,
+        SDLScancode.Kp0 => ImGuiKey.Keypad0,
+        SDLScancode.Kp1 => ImGuiKey.Keypad1,
+        SDLScancode.Kp2 => ImGuiKey.Keypad2,
+        SDLScancode.Kp3 => ImGuiKey.Keypad3,
+        SDLScancode.Kp4 => ImGuiKey.Keypad4,
+        SDLScancode.Kp5 => ImGuiKey.Keypad5,
+        SDLScancode.Kp6 => ImGuiKey.Keypad6,
+        SDLScancode.Kp7 => ImGuiKey.Keypad7,
+        SDLScancode.Kp8 => ImGuiKey.Keypad8,
+        SDLScancode.Kp9 => ImGuiKey.Keypad9,
+        SDLScancode.KpPeriod => ImGuiKey.KeypadDecimal,
+        SDLScancode.KpDivide => ImGuiKey.KeypadDivide,
+        SDLScancode.KpMultiply => ImGuiKey.KeypadMultiply,
+        SDLScancode.KpMinus => ImGuiKey.KeypadSubtract,
+        SDLScancode.KpPlus => ImGuiKey.KeypadAdd,
+        SDLScancode.KpEnter => ImGuiKey.KeypadEnter,
+        SDLScancode.KpEquals => ImGuiKey.KeypadEqual,
+        SDLScancode.Lctrl => ImGuiKey.LeftCtrl,
+        SDLScancode.Lshift => ImGuiKey.LeftShift,
+        SDLScancode.Lalt => ImGuiKey.LeftAlt,
+        SDLScancode.Lgui => ImGuiKey.LeftSuper,
+        SDLScancode.Rctrl => ImGuiKey.RightCtrl,
+        SDLScancode.Rshift => ImGuiKey.RightShift,
+        SDLScancode.Ralt => ImGuiKey.RightAlt,
+        SDLScancode.Rgui => ImGuiKey.RightSuper,
+        SDLScancode.Menu => ImGuiKey.Menu,
+        SDLScancode._0 => ImGuiKey._0,
+        SDLScancode._1 => ImGuiKey._1,
+        SDLScancode._2 => ImGuiKey._2,
+        SDLScancode._3 => ImGuiKey._3,
+        SDLScancode._4 => ImGuiKey._4,
+        SDLScancode._5 => ImGuiKey._5,
+        SDLScancode._6 => ImGuiKey._6,
+        SDLScancode._7 => ImGuiKey._7,
+        SDLScancode._8 => ImGuiKey._8,
+        SDLScancode._9 => ImGuiKey._9,
+        SDLScancode.A => ImGuiKey.A,
+        SDLScancode.B => ImGuiKey.B,
+        SDLScancode.C => ImGuiKey.C,
+        SDLScancode.D => ImGuiKey.D,
+        SDLScancode.E => ImGuiKey.E,
+        SDLScancode.F => ImGuiKey.F,
+        SDLScancode.G => ImGuiKey.G,
+        SDLScancode.H => ImGuiKey.H,
+        SDLScancode.I => ImGuiKey.I,
+        SDLScancode.J => ImGuiKey.J,
+        SDLScancode.K => ImGuiKey.K,
+        SDLScancode.L => ImGuiKey.L,
+        SDLScancode.M => ImGuiKey.M,
+        SDLScancode.N => ImGuiKey.N,
+        SDLScancode.O => ImGuiKey.O,
+        SDLScancode.P => ImGuiKey.P,
+        SDLScancode.Q => ImGuiKey.Q,
+        SDLScancode.R => ImGuiKey.R,
+        SDLScancode.S => ImGuiKey.S,
+        SDLScancode.T => ImGuiKey.T,
+        SDLScancode.U => ImGuiKey.U,
+        SDLScancode.V => ImGuiKey.V,
+        SDLScancode.W => ImGuiKey.W,
+        SDLScancode.X => ImGuiKey.X,
+        SDLScancode.Y => ImGuiKey.Y,
+        SDLScancode.Z => ImGuiKey.Z,
+        SDLScancode.F1 => ImGuiKey.F1,
+        SDLScancode.F2 => ImGuiKey.F2,
+        SDLScancode.F3 => ImGuiKey.F3,
+        SDLScancode.F4 => ImGuiKey.F4,
+        SDLScancode.F5 => ImGuiKey.F5,
+        SDLScancode.F6 => ImGuiKey.F6,
+        SDLScancode.F7 => ImGuiKey.F7,
+        SDLScancode.F8 => ImGuiKey.F8,
+        SDLScancode.F9 => ImGuiKey.F9,
+        SDLScancode.F10 => ImGuiKey.F10,
+        SDLScancode.F11 => ImGuiKey.F11,
+        SDLScancode.F12 => ImGuiKey.F12,
+        _ => ImGuiKey.None
+    };
 
     private static bool TryGetWindowId(
         ref SDLEvent sdlEvent,
         out uint windowId
     ) {
-        var eventType = (SDLEventType)sdlEvent.Type;
+        SDLEventType eventType = (SDLEventType)sdlEvent.Type;
         switch (eventType)
         {
             case SDLEventType.KeyDown:

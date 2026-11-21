@@ -32,7 +32,7 @@ internal sealed class AudioContentOwner : IDisposable
         m_diagnostics = diagnostics;
         m_contentScopeProvider = contentScopeProvider;
         m_capacity = capacity;
-        statistics = new AudioContentStatistics(capacity, 0, 0);
+        this.statistics = new AudioContentStatistics(capacity, 0, 0);
     }
 
     internal AudioContentStatistics statistics { get; private set; }

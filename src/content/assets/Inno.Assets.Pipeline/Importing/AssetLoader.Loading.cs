@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Loads a canonical asset by isolated source path.
@@ -333,8 +333,12 @@ sealed partial class AssetLoader
     ) {
         if (string.IsNullOrEmpty(record.meta.artifactKey) && record.meta.assetStateBytes.Length == 0)
         {
-            if (m_activeImports.Count != 0 && m_unavailableImports.TryGetValue(record.relativePath, out var unavailable))
-            {
+            if (m_activeImports.Count != 0
+                && m_unavailableImports.TryGetValue(
+                    record.relativePath,
+                    out (long generation, AssetSourceFileStamp source, AssetSourceFileStamp metadata, string kind, string id) unavailable
+                )
+            ) {
                 throw new AssetImportExtensionUnavailableException(unavailable.kind, unavailable.id);
             }
             return null;

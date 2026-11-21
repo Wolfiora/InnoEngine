@@ -26,8 +26,7 @@ internal sealed class ReloadableRenderPipeline : RenderPipeline
     /// The active pipeline context that owns the frame graph mutation.
     /// </param>
     public override void Build(RenderPipelineContext context)
-    {
-        context.graph
+        => context.graph
             .AddRasterPass(
                 "Reloadable Plugin Pass",
                 new RenderPhaseId("tests.runtime.reloadable-plugin.visible"),
@@ -38,7 +37,6 @@ internal sealed class ReloadableRenderPipeline : RenderPipeline
                 ) => {}
             )
             .HasSideEffect();
-    }
 }
 
 [RenderFeatureExtension(extensionId)]
@@ -53,8 +51,7 @@ internal sealed class ReloadableRenderFeature : RenderPipelineFeature
     /// The active feature context that owns the frame graph mutation.
     /// </param>
     public override void AddRenderPasses(RenderFeatureContext context)
-    {
-        context.graph
+        => context.graph
             .AddRasterPass(
                 "Reloadable Plugin Feature Pass",
                 new RenderPhaseId("tests.runtime.reloadable-plugin-feature.visible"),
@@ -65,5 +62,4 @@ internal sealed class ReloadableRenderFeature : RenderPipelineFeature
                 ) => {}
             )
             .HasSideEffect();
-    }
 }

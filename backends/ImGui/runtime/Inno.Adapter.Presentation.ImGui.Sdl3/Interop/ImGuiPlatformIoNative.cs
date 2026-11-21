@@ -15,7 +15,7 @@ internal static unsafe class ImGuiPlatformIoNative
         delegate* unmanaged[Cdecl]<ImGuiViewport*, float, float, void> setSize
     ) {
         void* registration = ImGuiNative.Raw.InnoCreatePlatformWindowCallbacks(context, setPosition, setSize);
-        if (registration == null)
+        if (registration is null)
         {
             throw new InvalidOperationException("The current ImGui context cannot own platform window callbacks.");
         }
@@ -24,7 +24,7 @@ internal static unsafe class ImGuiPlatformIoNative
 
     internal static void DestroyWindowCallbacks(void* registration)
     {
-        if (registration == null)
+        if (registration is null)
         {
             return;
         }
@@ -51,8 +51,9 @@ internal static unsafe class ImGuiPlatformIoNative
         ImGuiPlatformIO* platformIo,
         PlatformGetWindowPosCallback callback
     ) {
-        var callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
-        var setterArg = (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
+        nint callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
+        delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void> setterArg =
+            (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
         ImGuiNative.Raw.PlatformIOSetPlatformGetWindowPos(platformIo, setterArg);
     }
 
@@ -60,8 +61,9 @@ internal static unsafe class ImGuiPlatformIoNative
         ImGuiPlatformIO* platformIo,
         PlatformGetWindowSizeCallback callback
     ) {
-        var callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
-        var setterArg = (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
+        nint callbackPtr = Marshal.GetFunctionPointerForDelegate(callback);
+        delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void> setterArg =
+            (delegate* unmanaged[Cdecl]<ImGuiViewport*, ImVec2C*, void>)callbackPtr;
         ImGuiNative.Raw.PlatformIOSetPlatformGetWindowSize(platformIo, setterArg);
     }
 }

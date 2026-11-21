@@ -14,7 +14,7 @@ public sealed class NativeArtifactIdentityTests : IDisposable
     {
         string script = Write("sdk/compiler.py", "print('one')");
         string compiler = Write("sdk/bin/clang", "compiler-one");
-        var inputs = new[]
+        NativeBuildInput[] inputs = new[]
         {
             new NativeBuildInput("sdk", Path.GetDirectoryName(script)!),
             new NativeBuildInput("sdk/bin", Path.GetDirectoryName(compiler)!)
@@ -41,7 +41,7 @@ public sealed class NativeArtifactIdentityTests : IDisposable
             Path.GetRelativePath(m_root, project),
             Path.GetRelativePath(m_root, project)
         );
-        var context = new NativeBuildContext(m_root, "release").WithComponentOptions(owner, new(NativeLibraryKind.Shared));
+        NativeBuildContext context = new NativeBuildContext(m_root, "release").WithComponentOptions(owner, new(NativeLibraryKind.Shared));
         NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
             context,
             owner,

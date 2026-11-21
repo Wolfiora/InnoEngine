@@ -96,7 +96,7 @@ public sealed partial class BgfxShadercToolchain
             throw new InvalidDataException($"The compiled GLSL uniform '{nativeName}' exceeds the BGFX binary limits.");
         }
         int registerCount = count * (type == ShaderUniformType.Mat3 ? 3 : type == ShaderUniformType.Mat4 ? 4 : 1);
-        byte[] record = new byte[1 + name.Length + C_SHADER_UNIFORM_METADATA_SIZE];
+        var record = new byte[1 + name.Length + C_SHADER_UNIFORM_METADATA_SIZE];
         record[0] = (byte)name.Length;
         name.CopyTo(record, 1);
         Span<byte> metadata = record.AsSpan(1 + name.Length);

@@ -62,15 +62,9 @@ public class ShaderAsset : AssetObject
     }
 
     [OnSerializableRestored]
-    private void OnSerializableRestored(SerializationContext context)
-    {
-        m_definition = m_definitionData.Length == 0
-                       ? null
-                       : new ShaderDefinitionSnapshot(
-                           context.GetRequired<SerializationRegistry>().Deserialize<ShaderDefinition>(
-                               m_definitionData,
-                               context
-                           )
-                       );
-    }
+    private void OnSerializableRestored(SerializationContext context) => m_definition = m_definitionData.Length == 0
+        ? null
+        : new ShaderDefinitionSnapshot(
+            context.GetRequired<SerializationRegistry>().Deserialize<ShaderDefinition>(m_definitionData, context)
+        );
 }

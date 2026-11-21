@@ -82,9 +82,9 @@ public sealed class SettingsReferenceTests
         using var database = new AssetDatabase(contentStore, serialization, fixture.types.current, identities);
         Assert.Null(identities.Get<AssetObject>(clip.identity.persistentId));
 
-        using ContentReadLease settingsLease = contentStore.Acquire(new Inno.Content.ContentKey("Settings.Project.inno"));
+        using ContentReadLease settingsLease = contentStore.Acquire(new ContentKey("Settings.Project.inno"));
         using Stream settingsInput = settingsLease.OpenRead();
-        byte[] settingsBytes = new byte[checked((int)settingsLease.entry.length)];
+        var settingsBytes = new byte[checked((int)settingsLease.entry.length)];
         settingsInput.ReadExactly(settingsBytes);
         using var settings = new ProjectSettingsStore(
             new ReadOnlyByteDocumentStore("Settings.Project.inno", settingsBytes),
@@ -198,16 +198,16 @@ public sealed class SettingsReferenceTests
 
         internal Fixture()
         {
-            root = Path.Combine(Path.GetTempPath(), "InnoSettingsReferences", Guid.NewGuid().ToString("N"));
-            assetRoot = Path.Combine(root, "Assets");
+            this.root = Path.Combine(Path.GetTempPath(), "InnoSettingsReferences", Guid.NewGuid().ToString("N"));
+            this.assetRoot = Path.Combine(root, "Assets");
             Directory.CreateDirectory(assetRoot);
             m_identityScope = m_identities.EnterScope();
             m_modules = new ModuleHost(
                 new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(SettingsReferenceTests).Assembly)}
             );
-            types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
-            serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-            assets = new AssetPipeline(
+            this.types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
+            this.serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
+            this.assets = new AssetPipeline(
                 m_modules,
                 types,
                 serialization,
@@ -216,8 +216,8 @@ public sealed class SettingsReferenceTests
                 m_logs,
                 AssetPipelineOptions.Create(assetRoot, Path.Combine(root, "Library")) with { enableFileSystemWatcher = false }
             );
-            context = AssetSerializationContext.Create(assets);
-            settings = new ProjectSettingsStore(
+            this.context = AssetSerializationContext.Create(assets);
+            this.settings = new ProjectSettingsStore(
                 new FileByteDocumentStore(Path.GetFullPath(Path.Combine(root, "Settings.Project.inno"))),
                 types,
                 serialization,
@@ -250,8 +250,11 @@ public sealed class SettingsReferenceTests
 
 internal abstract class ClipSettingsBase : ISerializable
 {
-    [SerializableProperty] public TextAsset? clip { get; set; }
-    [SerializableProperty] public string[] labels { get; set; } = [];
+    [SerializableProperty]
+    public TextAsset? clip { get; set; }
+
+    [SerializableProperty]
+    public string[] labels { get; set; } = [];
 }
 
 [StableTypeId("2c7288db-eb9e-43a5-9894-bf9d10b22a2d")]
@@ -271,7 +274,8 @@ internal sealed class ComposedClipSettings : ClipSettingsBase
 
 internal sealed class ClipContribution : ISerializable
 {
-    [SerializableProperty] public TextAsset? clip { get; set; }
+    [SerializableProperty]
+    public TextAsset? clip { get; set; }
 }
 
 [ProjectSettingComposer("tests.settings.composed-clip")]

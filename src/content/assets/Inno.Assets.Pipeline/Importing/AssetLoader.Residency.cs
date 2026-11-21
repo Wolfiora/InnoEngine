@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Collects unreachable content-addressed artifacts.
@@ -40,22 +40,20 @@ sealed partial class AssetLoader
     public int CollectArtifacts(
         TimeSpan gracePeriod,
         long maximumSizeBytes
-    ) {
-        return Execute(() =>
+    ) => Execute(() =>
+    {
+        HashSet<string> reachable = [];
+        foreach (AssetArtifactKey retained in m_artifactRetention.GetRetainedKeys())
         {
-            HashSet<string> reachable = [];
-            foreach (AssetArtifactKey retained in m_artifactRetention.GetRetainedKeys())
-            {
-                AddArtifactKey(reachable, retained.value);
-            }
-            foreach (AssetRecord record in m_recordsByPath.Values)
-            {
-                AddArtifactKey(reachable, record.meta.artifactKey);
-                AddArtifactKey(reachable, record.meta.lastSuccessfulArtifactKey);
-            }
-            return m_artifacts.Collect(reachable, gracePeriod, maximumSizeBytes);
-        });
-    }
+            AddArtifactKey(reachable, retained.value);
+        }
+        foreach (AssetRecord record in m_recordsByPath.Values)
+        {
+            AddArtifactKey(reachable, record.meta.artifactKey);
+            AddArtifactKey(reachable, record.meta.lastSuccessfulArtifactKey);
+        }
+        return m_artifacts.Collect(reachable, gracePeriod, maximumSizeBytes);
+    });
 
     /// <summary>
     /// Tries to resolve a named output from the current artifact bundle.

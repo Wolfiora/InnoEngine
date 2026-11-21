@@ -34,16 +34,16 @@ public sealed class TextBackendCatalog : ITextBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<TextBackendId>(new List<TextBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<TextBackendId>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<TextBackendId> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public ITextBackend CreateBackend(TextBackendId backend)
     {
         if (!m_providers.TryGetValue(backend, out TextBackendProvider? provider))

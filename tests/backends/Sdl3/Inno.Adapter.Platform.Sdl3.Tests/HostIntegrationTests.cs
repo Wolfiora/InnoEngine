@@ -36,7 +36,7 @@ public sealed unsafe class HostIntegrationTests
             visible = false
         }));
         Assert.Empty(app.GetWindows());
-        Assert.True(SDL.Raw.GetWindowFromId(host.lastId) == null);
+        Assert.True(SDL.Raw.GetWindowFromId(host.lastId) is null);
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public sealed unsafe class HostIntegrationTests
 
         var host = new FailingHost { failSurface = false };
         using var app = new Sdl3PlatformApplication(host);
-        using var window = app.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = app.CreateWindow(new PlatformWindowOptions
         {
             title = "Single surface",
             width = 40,

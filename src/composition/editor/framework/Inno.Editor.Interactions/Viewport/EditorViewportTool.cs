@@ -233,9 +233,7 @@ public abstract class EditorViewportTool
     public virtual void OnPointerDown(
         EditorViewportToolContext context,
         EditorViewportPointerEvent pointer
-    ) {
-        ArgumentNullException.ThrowIfNull(context);
-    }
+    ) => ArgumentNullException.ThrowIfNull(context);
 
     /// <summary>
     /// Handles pointer movement or hover.
@@ -249,9 +247,7 @@ public abstract class EditorViewportTool
     public virtual void OnPointerMove(
         EditorViewportToolContext context,
         EditorViewportPointerEvent pointer
-    ) {
-        ArgumentNullException.ThrowIfNull(context);
-    }
+    ) => ArgumentNullException.ThrowIfNull(context);
 
     /// <summary>
     /// Handles a pointer release.
@@ -265,9 +261,7 @@ public abstract class EditorViewportTool
     public virtual void OnPointerUp(
         EditorViewportToolContext context,
         EditorViewportPointerEvent pointer
-    ) {
-        ArgumentNullException.ThrowIfNull(context);
-    }
+    ) => ArgumentNullException.ThrowIfNull(context);
 
     /// <summary>
     /// Handles platform cancellation of an active gesture.

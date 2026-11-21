@@ -145,11 +145,8 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
     /// </summary>
     public double dspTime => m_device.dspTime;
 
-    /// <inheritdoc />
-    protected override void OnStart()
-    {
-        m_events.dispatched += OnEventDispatched;
-    }
+    /// <inheritdoc/>
+    protected override void OnStart() => m_events.dispatched += OnEventDispatched;
 
     /// <summary>
     /// Captures snapshots and binds service façades.
@@ -568,7 +565,10 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
                 failures.Add(error);
             }
             m_candidateRetirement = null;
-            var failure = new AggregateException("Audio device retirement failed; the previous generation cannot resume.", failures);
+            var failure = new AggregateException(
+                "Audio device retirement failed; the previous generation cannot resume.",
+                failures
+            );
             m_extensions.Fault(failure);
             throw failure;
         }
@@ -795,11 +795,21 @@ public sealed class AudioRuntime : RuntimeSubsystem, IAudioService
             {
                 switch (m_retirementStage)
                 {
-                    case 0: m_voices.CompleteAll(reason); break;
-                    case 1: m_content.Dispose(); break;
-                    case 2: m_clipCache.Dispose(); break;
-                    case 3: m_mixer.Dispose(); break;
-                    case 4: m_device.Dispose(); break;
+                    case 0:
+                        m_voices.CompleteAll(reason);
+                        break;
+                    case 1:
+                        m_content.Dispose();
+                        break;
+                    case 2:
+                        m_clipCache.Dispose();
+                        break;
+                    case 3:
+                        m_mixer.Dispose();
+                        break;
+                    case 4:
+                        m_device.Dispose();
+                        break;
                 }
             }
             catch (Exception pendingRetirement) when (RetirementPendingException.Find(pendingRetirement) is not null)

@@ -25,9 +25,6 @@ public sealed class ProjectSettingsEditor : EditorModule
     /// <param name="interactions">
     /// The Editor interaction service that owns Undo and Redo.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="interactions"/> is <see langword="null"/>.
-    /// </exception>
     /// <param name="types">
     /// The host-owned type catalog used to discover setting presentations.
     /// </param>
@@ -37,6 +34,9 @@ public sealed class ProjectSettingsEditor : EditorModule
     /// <param name="serialization">
     /// The serialization registry used to compare staged setting values.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="interactions"/> is <see langword="null"/>.
+    /// </exception>
     internal ProjectSettingsEditor(
         EditorInteractions interactions,
         TypeCatalog types,

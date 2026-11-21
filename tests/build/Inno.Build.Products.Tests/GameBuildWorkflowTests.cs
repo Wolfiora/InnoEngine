@@ -24,6 +24,7 @@ using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
+using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Plugins.Authoring;
 using Inno.Runtime;
@@ -42,7 +43,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
     {
         SaveStartupScene();
         TypeCacheSnapshot runtimeTypes = m_engine.types.current;
-        BuildTargetId target = new(targetValue);
+        var target = new BuildTargetId(targetValue);
         using SerializationGeneration serialization = m_engine.serialization.CaptureGeneration();
         BuildProfile profile = CreateProfile(target);
         profile.persistentDataPath = "studio/testgame";
@@ -106,7 +107,7 @@ public sealed class GameBuildWorkflowTests : BuildPipelineFixture
         GameRuntimeModule runtimeModule = Assert.Single(manifest.modules);
         Assert.Equal("RuntimeScripts", runtimeModule.name);
         Assert.Equal("Inno.GameScripts", Assert.Single(runtimeModule.assemblies).name);
-        Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoScripting, runtimeModule.domain);
+        Assert.Equal(AssemblyDomain.InnoScripting, runtimeModule.domain);
 
         string persistentRoot = Path.Combine(m_root, "Persistent", manifest.applicationId);
         RuntimeContentCatalog contentCatalog = serialization.Deserialize<RuntimeContentCatalog>(

@@ -24,7 +24,7 @@ public sealed class Sdl3InitTests
     [Fact]
     public unsafe void InitAndQuit_ShouldSucceed()
     {
-        var initResult = SDL.Init(SDLInitFlags.Events);
+        bool initResult = SDL.Init(SDLInitFlags.Events);
         if (!initResult)
         {
             string message = Marshal.PtrToStringUTF8((nint)SDL.Raw.GetError()) ?? "SDL.Init returned false.";
@@ -35,10 +35,10 @@ public sealed class Sdl3InitTests
         output.WriteLine($"SDL.GetPlatform: {platform}");
         Assert.False(string.IsNullOrWhiteSpace(platform));
 
-        var version = SDL.GetVersion();
-        var major = version / 1000000;
-        var minor = (version / 1000) % 1000;
-        var patch = version % 1000;
+        int version = SDL.GetVersion();
+        int major = version / 1_000_000;
+        int minor = (version / 1000) % 1000;
+        int patch = version % 1000;
         output.WriteLine($"SDL.GetVersion: {major}.{minor}.{patch} ({version})");
         Assert.True(version > 0);
 

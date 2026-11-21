@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Inno.Core.IO;
 using Inno.Tooling.Documentation;
@@ -286,7 +287,7 @@ public static class DocumentationReferences
         string? configuration = null;
         string? target = null;
         var expected = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
-        foreach (var reference in references)
+        foreach (KeyValuePair<string, byte[]> reference in references)
         {
             cancellationToken.ThrowIfCancellationRequested();
             using JsonDocument manifest = JsonDocument.Parse(reference.Value);
@@ -380,7 +381,7 @@ public static class DocumentationReferences
             {
                 symbols.Add(symbol.GetProperty("id").GetString()!, symbol);
             }
-            foreach (var symbol in project.symbols)
+            foreach (DocumentationApiExtractor.DocumentationApiEntry symbol in project.symbols)
             {
                 if (!symbols.Remove(symbol.id, out JsonElement prior))
                 {
@@ -407,7 +408,7 @@ public static class DocumentationReferences
         }
         if (snapshot is null)
         {
-            foreach (var reference in references)
+            foreach (KeyValuePair<string, byte[]> reference in references)
             {
                 if (!File.ReadAllBytes(reference.Key).AsSpan().SequenceEqual(reference.Value))
                 {
@@ -566,15 +567,22 @@ public static class DocumentationReferences
             {
                 throw new InvalidDataException("Selected API project is outside the requested product target: " + project);
             }
-            var compilation = models.GetCompilation(directory)
-                              ?? throw new InvalidDataException(
-                                  "Selected API compilation is unavailable: " + project
-                                  + (failures.Count == 0 ? string.Empty : "\n" + string.Join('\n', failures))
-                              );
+            CSharpCompilation compilation = models.GetCompilation(directory)
+                                            ?? throw new InvalidDataException(
+                                                "Selected API compilation is unavailable: " + project
+                                                + (failures.Count == 0 ? string.Empty : "\n" + string.Join('\n', failures))
+                                            );
             string owner = Path.GetRelativePath(root, project).Replace('\\', '/');
             ApiProject Capture()
             {
-                var symbols = DocumentationApiExtractor.Capture(root, project, null, compilation, failures, cancellationToken);
+                IReadOnlyList<DocumentationApiExtractor.DocumentationApiEntry> symbols = DocumentationApiExtractor.Capture(
+                    root,
+                    project,
+                    null,
+                    compilation,
+                    failures,
+                    cancellationToken
+                );
                 if (failures.Count != 0)
                 {
                     throw new InvalidDataException(

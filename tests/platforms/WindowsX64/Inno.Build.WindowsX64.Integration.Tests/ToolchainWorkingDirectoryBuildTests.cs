@@ -96,7 +96,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                 File.WriteAllText(args[2], execution ?? "cache");
                 return 0;
                 """);
-            var environment = DotNetSdkEnvironment.Create(dotnet);
+            IReadOnlyDictionary<string, string?> environment = DotNetSdkEnvironment.Create(dotnet);
             await ToolchainEnvironment.RunAsync(
                 dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],
@@ -113,7 +113,7 @@ public sealed class ToolchainWorkingDirectoryBuildTests
                 ("third", "first-temp", false),
                 ("third", "second-temp", true)
             ];
-            foreach (var call in calls)
+            foreach ((string value, string temporary, bool hit) call in calls)
             {
                 string temporary = Path.Combine(root, call.temporary);
                 Directory.CreateDirectory(temporary);

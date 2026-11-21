@@ -50,8 +50,8 @@ public sealed class UiDocumentImporter : AssetImporter<UiDocumentAsset>
         AssetImportWriter<UiDocumentAsset> output,
         CancellationToken cancellationToken
     ) {
-        var settings = context.importSettings as UiDocumentImportSettings
-                       ?? throw new InvalidOperationException("UI source requires its standard import settings.");
+        UiDocumentImportSettings settings = context.importSettings as UiDocumentImportSettings
+                                            ?? throw new InvalidOperationException("UI source requires its standard import settings.");
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.languageId);
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.implementationId);
         await UiDocumentImportPipeline.ImportAsync(

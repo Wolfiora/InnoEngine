@@ -50,7 +50,7 @@ public sealed class SerializationContext
             {
                 return new SerializationContext(m_values);
             }
-            var updated = (KeyValuePair<Type, object>[])m_values.Clone();
+            KeyValuePair<Type, object>[] updated = (KeyValuePair<Type, object>[])m_values.Clone();
             updated[index] = new(key, value);
             return new SerializationContext(updated);
         }

@@ -118,7 +118,7 @@ internal sealed class FileBrowserChangeTracker(AssetBrowserModule assets)
         }
         string fallback = FileBrowserUtility.GetParentDirectory(removedPath);
         while (!string.Equals(fallback, FileBrowserUtility.GetParentDirectory(fallback), StringComparison.Ordinal)
-               && (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(fallback), out var entry)
+               && (!assets.edits.pipeline.TryGetFileSystemEntry(AssetPath.Parse(fallback), out AssetFileEntry entry)
                    || !entry.isDirectory)
         ) {
             fallback = FileBrowserUtility.GetParentDirectory(fallback);

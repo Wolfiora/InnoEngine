@@ -10,7 +10,10 @@ namespace Inno.Editor.Hosting;
 /// </summary>
 public sealed class EditorCommandLineOptions
 {
-    private EditorCommandLineOptions(string projectDirectory) => this.projectDirectory = projectDirectory;
+    private EditorCommandLineOptions(string projectDirectory)
+    {
+        this.projectDirectory = projectDirectory;
+    }
 
     /// <summary>
     /// Gets the caller-selected authoring project.

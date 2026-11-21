@@ -1,7 +1,8 @@
 using System;
 using System.Numerics;
+using Inno.Native.ImGuizmo;
 
-using Matrix = Inno.Core.Mathematics.Matrix;
+using EngineMatrix = Inno.Core.Mathematics.Matrix;
 using NativeGizmo = Inno.Native.ImGuizmo.ImGuizmo;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeOperation = Inno.Native.ImGuizmo.ImGuizmoOperation;
@@ -74,12 +75,12 @@ public readonly record struct TransformGizmoOptions
     /// <summary>
     /// Gets the column-vector view matrix.
     /// </summary>
-    public Matrix view { get; init; }
+    public EngineMatrix view { get; init; }
 
     /// <summary>
     /// Gets the projection matrix supplied by the viewport owner.
     /// </summary>
-    public Matrix projection { get; init; }
+    public EngineMatrix projection { get; init; }
 
     /// <summary>
     /// Gets whether this viewport uses an orthographic projection.
@@ -133,7 +134,7 @@ public readonly record struct TransformGizmoOptions
 /// Whether the pointer is over a handle.
 /// </param>
 public readonly record struct TransformGizmoResult(
-    Matrix matrix,
+    EngineMatrix matrix,
     bool changed,
     bool isUsing,
     bool isOver
@@ -157,7 +158,7 @@ public sealed unsafe partial class ImGuiWidget
     /// Copied output with no native pointer or domain object.
     /// </returns>
     public TransformGizmoResult TransformGizmo(
-        Matrix world,
+        EngineMatrix world,
         TransformGizmoOptions options
     ) {
         m_session.EnsureDrawing();
@@ -169,7 +170,7 @@ public sealed unsafe partial class ImGuiWidget
         WriteColumnMajor(world, model);
         NativeOperation operation = ToNativeOperation(options.operation);
         NativeGizmo.BeginFrame();
-        NativeGizmo.Raw.SetDrawlist((Inno.Native.ImGuizmo.ImDrawList*)(nint)NativeImGui.Raw.GetWindowDrawList());
+        NativeGizmo.Raw.SetDrawlist((ImDrawList*)(nint)NativeImGui.Raw.GetWindowDrawList());
         NativeGizmo.SetRect(
             options.minimum.X,
             options.minimum.Y,
@@ -178,8 +179,8 @@ public sealed unsafe partial class ImGuiWidget
         );
         NativeGizmo.SetOrthographic(options.orthographic);
         NativeGizmo.SetGizmoSizeClipSpace(0.21f);
-        var style = NativeGizmo.Raw.GetStyle();
-        var previousStyle = *style;
+        Style* style = NativeGizmo.Raw.GetStyle();
+        Style previousStyle = *style;
         try
         {
             style->TranslationLineThickness = 3.5f;
@@ -245,7 +246,7 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     private static unsafe void WriteColumnMajor(
-        Matrix matrix,
+        EngineMatrix matrix,
         float* destination
     ) {
         destination[0] = matrix.m11;
@@ -266,7 +267,7 @@ public sealed unsafe partial class ImGuiWidget
         destination[15] = matrix.m44;
     }
 
-    private static unsafe Matrix ReadColumnMajor(float* source)
+    private static unsafe EngineMatrix ReadColumnMajor(float* source)
         => new(
             source[0],
             source[4],

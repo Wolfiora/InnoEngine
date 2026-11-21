@@ -6,7 +6,9 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 
+using NativeFocusedFlags = Inno.Native.ImGui.ImGuiFocusedFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
 
@@ -96,7 +98,7 @@ public sealed unsafe partial class ImGuiWidget
         ImGuiIO* io = NativeImGui.Raw.GetIO();
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
         bool ownsActiveRow = RouteTreeNavigationKeys(context);
-        if (!NativeImGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.ChildWindows)
+        if (!NativeImGui.IsWindowFocused((int)NativeFocusedFlags.ChildWindows)
             || io->WantTextInput != 0 || (context->ActiveId != 0 && !ownsActiveRow) || ImGui.IsAnyPopupOpen()
         ) {
             return new(focusedIndex, false, false, false, false, false, false, false);
@@ -106,27 +108,27 @@ public sealed unsafe partial class ImGuiWidget
         if (itemCount > 0)
         {
             navigation = true;
-            if (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.DownArrow))
+            if (NativeImGui.IsKeyPressed(NativeKey.DownArrow))
             {
                 next = focusedIndex < 0 ? 0 : Math.Min(itemCount - 1, focusedIndex + 1);
             }
-            else if (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.UpArrow))
+            else if (NativeImGui.IsKeyPressed(NativeKey.UpArrow))
             {
                 next = focusedIndex < 0 ? itemCount - 1 : Math.Max(0, focusedIndex - 1);
             }
-            else if (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Home))
+            else if (NativeImGui.IsKeyPressed(NativeKey.Home))
             {
                 next = 0;
             }
-            else if (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.End))
+            else if (NativeImGui.IsKeyPressed(NativeKey.End))
             {
                 next = itemCount - 1;
             }
-            else if (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.PageDown))
+            else if (NativeImGui.IsKeyPressed(NativeKey.PageDown))
             {
                 next = focusedIndex < 0 ? 0 : (int)Math.Min(itemCount - 1L, (long)focusedIndex + pageSize);
             }
-            else if (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.PageUp))
+            else if (NativeImGui.IsKeyPressed(NativeKey.PageUp))
             {
                 next = focusedIndex < 0 ? 0 : Math.Max(0, focusedIndex - pageSize);
             }
@@ -137,10 +139,10 @@ public sealed unsafe partial class ImGuiWidget
         }
         bool primary = HasPrimaryModifier(interactions.keyboard, io);
         bool extend = io->KeyShift != 0;
-        bool space = itemCount > 0 && NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Space, false);
-        bool activate = itemCount > 0 && (NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Enter, false)
-                                          || NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.KeypadEnter, false));
-        bool cancel = NativeImGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Escape, false);
+        bool space = itemCount > 0 && NativeImGui.IsKeyPressed(NativeKey.Space, false);
+        bool activate = itemCount > 0 && (NativeImGui.IsKeyPressed(NativeKey.Enter, false)
+                                          || NativeImGui.IsKeyPressed(NativeKey.KeypadEnter, false));
+        bool cancel = NativeImGui.IsKeyPressed(NativeKey.Escape, false);
         if ((space || activate) && next < 0)
         {
             next = 0;
@@ -162,7 +164,7 @@ public sealed unsafe partial class ImGuiWidget
         uint window = NativeImGui.Raw.GetCurrentWindow()->ID;
         if (!m_treeStatesByWindow.TryGetValue((m_session.owner, window), out TreeWidgetWindowState? state)
             || state.lastFrame != NativeImGui.GetFrameCount()
-            || !NativeImGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.ChildWindows)
+            || !NativeImGui.IsWindowFocused((int)NativeFocusedFlags.ChildWindows)
             || NativeImGui.Raw.GetIO()->WantTextInput != 0 || ImGui.IsAnyPopupOpen()
         ) {
             return false;
@@ -174,9 +176,9 @@ public sealed unsafe partial class ImGuiWidget
             // Native navigation must not activate the disclosure while the list owns selection/activation.
             // A distinct owner preserves text fields and overlay buttons, including their native navigation.
             uint owner = NativeImGui.GetID("##inno_list_navigation");
-            NativeImGui.SetKeyOwner(Inno.Native.ImGui.ImGuiKey.Space, owner, 0);
-            NativeImGui.SetKeyOwner(Inno.Native.ImGui.ImGuiKey.Enter, owner, 0);
-            NativeImGui.SetKeyOwner(Inno.Native.ImGui.ImGuiKey.KeypadEnter, owner, 0);
+            NativeImGui.SetKeyOwner(NativeKey.Space, owner, 0);
+            NativeImGui.SetKeyOwner(NativeKey.Enter, owner, 0);
+            NativeImGui.SetKeyOwner(NativeKey.KeypadEnter, owner, 0);
         }
         return ownsActiveRow;
     }

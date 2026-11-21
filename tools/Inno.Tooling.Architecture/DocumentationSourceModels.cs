@@ -215,7 +215,7 @@ internal sealed class DocumentationSourceModels
 
     private IEnumerable<MetadataReference> GetReferences(string projectDirectory)
     {
-        var references = m_references.ToDictionary(
+        Dictionary<string, MetadataReference> references = m_references.ToDictionary(
             static reference => Path.GetFileNameWithoutExtension(reference.Display)!,
             StringComparer.OrdinalIgnoreCase
         );

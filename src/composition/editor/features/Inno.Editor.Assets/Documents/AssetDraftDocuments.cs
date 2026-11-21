@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
@@ -175,7 +176,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(candidates);
         var encoded = new Dictionary<Guid, byte[]>();
-        foreach (var pair in candidates)
+        foreach (KeyValuePair<Guid, TAsset> pair in candidates)
         {
             if (m_drafts[pair.Key].readOnly)
             {
@@ -185,7 +186,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         }
 
         using EditorHistoryTransaction transaction = m_interactions.history.BeginTransaction("Edit " + m_label + " Selection");
-        foreach (var pair in encoded)
+        foreach (KeyValuePair<Guid, byte[]> pair in encoded)
         {
             RecordReplace(m_drafts[pair.Key], pair.Value, mergeKey);
         }
@@ -208,7 +209,11 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             before = before,
             after = next
         };
-        var change = new EditorHistoryChange(m_historyKind, EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)), mergeKey);
+        var change = new EditorHistoryChange(
+            m_historyKind,
+            EditorHistoryPayload.FromBytes(m_serialization.Serialize(payload)),
+            mergeKey
+        );
         draft.bytes = next;
         try
         {
@@ -343,7 +348,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             );
             if (draft.error.StartsWith("Recovery write failed:", StringComparison.Ordinal))
             {
-                draft.error = "";
+                draft.error = string.Empty;
             }
         }
         catch (Exception error) when (Recoverable(error))
@@ -359,7 +364,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             RefreshPath(draft);
             draft.hash = m_sources.Save(draft.path, draft.bytes, draft.hash);
             draft.baseline = draft.bytes;
-            draft.error = "";
+            draft.error = string.Empty;
             m_imports.Add(draft.path);
             DeleteRecovery(draft.id);
             return true;
@@ -381,7 +386,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             draft.hash = source.contentHash;
             draft.baseline = draft.bytes;
             draft.readOnly = source.isReadOnly;
-            draft.error = "";
+            draft.error = string.Empty;
             DeleteRecovery(draft.id);
             return true;
         }
@@ -522,7 +527,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
             draft.bytes = source.bytes;
             draft.baseline = source.bytes;
             draft.hash = source.contentHash;
-            draft.error = "";
+            draft.error = string.Empty;
             Changed(draft);
         }
         catch (Exception error) when (Recoverable(error))
@@ -562,7 +567,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
 
     private static bool Recoverable(Exception error)
         => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-           && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+           && RetirementPendingException.Find(error) is null;
 
     private sealed class Provider(AssetDraftDocuments<TAsset> owner) : EditorDocumentProvider
     {
@@ -675,7 +680,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         /// <summary>
         /// Gets the latest source, save or import diagnostic.
         /// </summary>
-        public string error { get; internal set; } = "";
+        public string error { get; internal set; } = string.Empty;
 
         /// <summary>
         /// Gets whether detached bytes differ from the saved baseline.
@@ -689,7 +694,7 @@ public sealed class AssetDraftDocuments<TAsset> : IDisposable
         internal Guid assetId { get; set; }
 
         [SerializableProperty]
-        internal string hash { get; set; } = "";
+        internal string hash { get; set; } = string.Empty;
 
         [SerializableProperty]
         internal byte[] baseline { get; set; } = [];

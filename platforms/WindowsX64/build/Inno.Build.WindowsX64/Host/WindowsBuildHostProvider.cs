@@ -9,7 +9,7 @@ namespace Inno.Build.WindowsX64;
 /// </summary>
 public sealed class WindowsBuildHostProvider : IBuildHostProvider
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public BuildHostDescriptor? TryCapture()
         => !OperatingSystem.IsWindows()
            ? null

@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
@@ -28,7 +30,7 @@ internal sealed class CompilerFixture : IDisposable
         Action<string, SerializationRegistry>? configure = null,
         IScriptCompilationEnvironmentProvider? compilationEnvironment = null
     ) {
-        projectRoot = Path.Combine(Path.GetTempPath(), "InnoCompilerTests", Guid.NewGuid().ToString("N"));
+        this.projectRoot = Path.Combine(Path.GetTempPath(), "InnoCompilerTests", Guid.NewGuid().ToString("N"));
         string assetsRoot = Path.Combine(projectRoot, "Assets");
         string pluginsRoot = Path.Combine(projectRoot, "Plugins");
         string libraryRoot = Path.Combine(projectRoot, "Library");
@@ -80,14 +82,14 @@ internal sealed class CompilerFixture : IDisposable
             m_host.modules.generations
         );
         string dotnetHost = Path.Combine(
-            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
         );
-        compiler = new ScriptCompiler(
+        this.compiler = new ScriptCompiler(
             new ScriptCompilerOptions
             {
                 projectRootDirectory = projectRoot,
-                compilationEnvironment = compilationEnvironment ?? new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
+                compilationEnvironment = compilationEnvironment ?? new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
             },
             m_assets,
             m_plugins
@@ -98,7 +100,7 @@ internal sealed class CompilerFixture : IDisposable
 
     internal ScriptCompiler compiler { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         m_plugins.Dispose();

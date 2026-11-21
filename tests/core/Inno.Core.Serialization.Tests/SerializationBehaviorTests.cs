@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
@@ -302,14 +303,11 @@ public sealed partial class SerializationBehaviorTests : IDisposable
             new DefaultSample { count = 12 },
             nameof(DefaultSample.count)
         );
-        byte[] trailing = new byte[data.Length + 1];
+        var trailing = new byte[data.Length + 1];
         data.CopyTo(trailing, 0);
 
         Assert.Throws<InvalidDataException>(() => m_serialization.RestorePropertiesData(new DefaultSample(), trailing));
-        Assert.ThrowsAny<Exception>(() => m_serialization.RestorePropertiesData(
-            new DefaultSample(),
-            new byte[] { 1, 2, 3 }
-        ));
+        Assert.ThrowsAny<Exception>(() => m_serialization.RestorePropertiesData(new DefaultSample(), [1, 2, 3]));
     }
 
     [Fact]
@@ -698,7 +696,7 @@ public sealed partial class SerializationBehaviorTests : IDisposable
     public void ForeignFormatHeader_IsRejected()
     {
         using var stream = new MemoryStream();
-        using (var writer = new BinaryWriter(stream, System.Text.Encoding.UTF8, leaveOpen: true))
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
         {
             writer.Write("FOREIGN");
         }
@@ -718,16 +716,27 @@ internal enum SampleMode
 
 internal sealed class PreviousSchemaSample : ISerializable
 {
-    [SerializableProperty] public int changed { get; set; }
-    [SerializableProperty(PropertyVisibility.Hide)] public string compatible { get; set; } = string.Empty;
-    [SerializableProperty] public int removed { get; set; }
+    [SerializableProperty]
+    public int changed { get; set; }
+
+    [SerializableProperty(PropertyVisibility.Hide)]
+    public string compatible { get; set; } = string.Empty;
+
+    [SerializableProperty]
+    public int removed { get; set; }
 }
 
 internal sealed class CurrentSchemaSample : ISerializable
 {
-    [SerializableProperty] public string changed { get; set; } = "default";
-    [SerializableProperty(PropertyVisibility.Hide)] public string compatible { get; set; } = "new";
-    [SerializableProperty] public int added { get; set; } = 17;
+    [SerializableProperty]
+    public string changed { get; set; } = "default";
+
+    [SerializableProperty(PropertyVisibility.Hide)]
+    public string compatible { get; set; } = "new";
+
+    [SerializableProperty]
+    public int added { get; set; } = 17;
+
     public int restoreCount { get; private set; }
 
     [OnSerializableRestored]
@@ -736,19 +745,44 @@ internal sealed class CurrentSchemaSample : ISerializable
 
 internal sealed class DefaultSample : ISerializable
 {
-    [SerializableProperty] public bool enabled { get; set; }
-    [SerializableProperty] public int count { get; set; }
-    [SerializableProperty] public float ratio { get; set; }
-    [SerializableProperty] public decimal price { get; set; }
-    [SerializableProperty] public string name { get; set; } = string.Empty;
-    [SerializableProperty] public Guid identity { get; set; }
-    [SerializableProperty] public SampleMode mode { get; set; }
-    [SerializableProperty] public int? optional { get; set; }
-    [SerializableProperty] public byte[] bytes { get; set; } = [];
-    [SerializableProperty] public int[] numbers { get; set; } = [];
-    [SerializableProperty] public List<int> values { get; set; } = [];
-    [SerializableProperty] public Dictionary<int, string> map { get; set; } = [];
-    [SerializableProperty] public StructSample data { get; set; }
+    [SerializableProperty]
+    public bool enabled { get; set; }
+
+    [SerializableProperty]
+    public int count { get; set; }
+
+    [SerializableProperty]
+    public float ratio { get; set; }
+
+    [SerializableProperty]
+    public decimal price { get; set; }
+
+    [SerializableProperty]
+    public string name { get; set; } = string.Empty;
+
+    [SerializableProperty]
+    public Guid identity { get; set; }
+
+    [SerializableProperty]
+    public SampleMode mode { get; set; }
+
+    [SerializableProperty]
+    public int? optional { get; set; }
+
+    [SerializableProperty]
+    public byte[] bytes { get; set; } = [];
+
+    [SerializableProperty]
+    public int[] numbers { get; set; } = [];
+
+    [SerializableProperty]
+    public List<int> values { get; set; } = [];
+
+    [SerializableProperty]
+    public Dictionary<int, string> map { get; set; } = [];
+
+    [SerializableProperty]
+    public StructSample data { get; set; }
 }
 
 internal struct StructSample
@@ -756,7 +790,10 @@ internal struct StructSample
     public int x;
     public int y { get; set; }
     public readonly int readOnly;
-    [SerializableProperty] private int m_hidden;
+
+    [SerializableProperty]
+    private int m_hidden;
+
     public readonly int computed => x + m_hidden;
     public readonly int hidden => m_hidden;
 
@@ -767,7 +804,7 @@ internal struct StructSample
     ) {
         this.x = x;
         this.y = y;
-        readOnly = 99;
+        this.readOnly = 99;
         m_hidden = hidden;
     }
 
@@ -780,18 +817,21 @@ internal struct StructSample
 
 internal sealed class PrivateConstructorSample : ISerializable
 {
-    [SerializableProperty] public int value { get; set; }
+    [SerializableProperty]
+    public int value { get; set; }
+
     public bool wasConstructed { get; }
 
     private PrivateConstructorSample()
     {
-        wasConstructed = true;
+        this.wasConstructed = true;
     }
 }
 
 internal sealed class MissingConstructorSample : ISerializable
 {
-    [SerializableProperty] public int value { get; set; }
+    [SerializableProperty]
+    public int value { get; set; }
 
     public MissingConstructorSample(int value)
     {
@@ -837,12 +877,23 @@ internal sealed class MissingRequiredConverterSample : ISerializable;
 
 internal sealed class VisibilitySample : ISerializable
 {
-    [SerializableProperty] public int shown { get; set; }
-    [SerializableProperty(PropertyVisibility.Hide)] public int hidden { get; set; }
-    [SerializableProperty(PropertyVisibility.Readonly)] public int readOnly { get; set; }
-    [SerializableProperty(PropertyVisibility.Transient)] public int transient { get; set; }
-    [SerializableProperty(PropertyVisibility.SerializeOnly)] public int serializeOnly { get; set; }
-    [SerializableProperty(PropertyVisibility.DeserializeOnly)] public int deserializeOnly { get; set; }
+    [SerializableProperty]
+    public int shown { get; set; }
+
+    [SerializableProperty(PropertyVisibility.Hide)]
+    public int hidden { get; set; }
+
+    [SerializableProperty(PropertyVisibility.Readonly)]
+    public int readOnly { get; set; }
+
+    [SerializableProperty(PropertyVisibility.Transient)]
+    public int transient { get; set; }
+
+    [SerializableProperty(PropertyVisibility.SerializeOnly)]
+    public int serializeOnly { get; set; }
+
+    [SerializableProperty(PropertyVisibility.DeserializeOnly)]
+    public int deserializeOnly { get; set; }
 }
 
 internal sealed class MissingSetterSample : ISerializable
@@ -870,12 +921,14 @@ internal sealed class MissingChild
 
 internal sealed class MissingClassHost : ISerializable
 {
-    [SerializableProperty] public MissingChild? child { get; set; }
+    [SerializableProperty]
+    public MissingChild? child { get; set; }
 }
 
 internal sealed class MissingClassCollectionHost : ISerializable
 {
-    [SerializableProperty] public List<MissingChild> children { get; set; } = [];
+    [SerializableProperty]
+    public List<MissingChild> children { get; set; } = [];
 }
 
 internal sealed class ConvertedChild
@@ -885,7 +938,8 @@ internal sealed class ConvertedChild
 
 internal sealed class ConvertedChildHost : ISerializable
 {
-    [SerializableProperty] public ConvertedChild? child { get; set; }
+    [SerializableProperty]
+    public ConvertedChild? child { get; set; }
 }
 
 internal sealed class CycleValue
@@ -895,7 +949,8 @@ internal sealed class CycleValue
 
 internal sealed class CycleHost : ISerializable
 {
-    [SerializableProperty] public CycleValue? value { get; set; }
+    [SerializableProperty]
+    public CycleValue? value { get; set; }
 }
 
 internal sealed class CycleValueConverter : SerializationConverter<CycleValue>
@@ -930,7 +985,8 @@ internal sealed class NearestLeaf : NearestMid;
 
 internal sealed class NearestHost : ISerializable
 {
-    [SerializableProperty] public NearestLeaf? item { get; set; }
+    [SerializableProperty]
+    public NearestLeaf? item { get; set; }
 }
 
 internal sealed class NearestBaseConverter : SerializationConverter<NearestBase>
@@ -965,7 +1021,8 @@ internal sealed class ExactLeaf : ExactBase;
 
 internal sealed class ExactHost : ISerializable
 {
-    [SerializableProperty] public ExactLeaf? item { get; set; }
+    [SerializableProperty]
+    public ExactLeaf? item { get; set; }
 }
 
 internal sealed class ExactBaseConverter : SerializationConverter<ExactBase>
@@ -998,7 +1055,8 @@ internal sealed class AmbiguousValue : IAmbiguousLeft, IAmbiguousRight;
 
 internal sealed class AmbiguousHost : ISerializable
 {
-    [SerializableProperty] public AmbiguousValue? item { get; set; }
+    [SerializableProperty]
+    public AmbiguousValue? item { get; set; }
 }
 
 internal sealed class AmbiguousLeftConverter : SerializationConverter<IAmbiguousLeft>
@@ -1033,7 +1091,8 @@ internal sealed class GenericBox<T>
 
 internal sealed class GenericBoxHost : ISerializable
 {
-    [SerializableProperty] public GenericBox<int>? box { get; set; }
+    [SerializableProperty]
+    public GenericBox<int>? box { get; set; }
 }
 
 internal sealed class GenericBoxConverter<T> : SerializationConverter<GenericBox<T>>
@@ -1073,7 +1132,9 @@ internal sealed class SampleContext : ISampleContext;
 
 internal class HookBaseSample : ISerializable
 {
-    [SerializableProperty] public int value { get; set; }
+    [SerializableProperty]
+    public int value { get; set; }
+
     public List<string> calls { get; } = [];
 
     [OnSerializableRestored]

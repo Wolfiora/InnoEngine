@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Resolves materials through open provider-owned shader contracts and roles.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("dcf92cc9-04c6-52cd-8fd3-b2dc48f73b5a")]
+[StableTypeId("dcf92cc9-04c6-52cd-8fd3-b2dc48f73b5a")]
 public static class MaterialPassResolver
 {
     /// <summary>

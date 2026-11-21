@@ -73,7 +73,7 @@ internal sealed class NativeVerificationOptions
         }
         string[] knownKeys = ["engine-root", "configuration", "dotnet", "target"];
         string? unknownKey = values.Keys.FirstOrDefault(key => !knownKeys.Contains(key, StringComparer.Ordinal));
-        if (unknownKey != null)
+        if (unknownKey is not null)
         {
             throw new ArgumentException($"Unknown argument '--{unknownKey}'.{Environment.NewLine}{usage}");
         }

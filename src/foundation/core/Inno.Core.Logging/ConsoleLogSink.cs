@@ -15,7 +15,10 @@ public class ConsoleLogSink : ILogSink
     /// <param name="useColors">
     /// Whether the host supports console colors; redirected output always uses plain text.
     /// </param>
-    public ConsoleLogSink(bool useColors = false) => m_useColors = useColors;
+    public ConsoleLogSink(bool useColors = false)
+    {
+        m_useColors = useColors;
+    }
 
     /// <summary>
     /// Writes the specified entry to standard output.

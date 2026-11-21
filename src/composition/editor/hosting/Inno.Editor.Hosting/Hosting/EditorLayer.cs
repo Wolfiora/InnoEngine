@@ -36,7 +36,7 @@ internal sealed class EditorLayer : Layer
         EditorContext context,
         TypeCatalog types,
         LogRouter logs,
-        System.Collections.Generic.IEnumerable<object>? hostServices = null
+        IEnumerable<object>? hostServices = null
     ) {
         m_presentation = presentation ?? throw new ArgumentNullException(nameof(presentation));
         m_context = context;
@@ -55,10 +55,7 @@ internal sealed class EditorLayer : Layer
         set => m_totalTime = value;
     }
 
-    internal void DisposeUnattached()
-    {
-        m_resources.Dispose();
-    }
+    internal void DisposeUnattached() => m_resources.Dispose();
 
     internal void QuiescePlayMode() => m_playModeLoop.Quiesce();
 
@@ -101,10 +98,7 @@ internal sealed class EditorLayer : Layer
         SaveLayoutIfChanged();
     }
 
-    private void HandleKeyPressed(KeyPressedEvent keyEvent)
-    {
-        m_runtime.HandleKeyPressed(keyEvent);
-    }
+    private void HandleKeyPressed(KeyPressedEvent keyEvent) => m_runtime.HandleKeyPressed(keyEvent);
 
     internal bool PrepareShutdown()
     {
@@ -172,7 +166,7 @@ internal sealed class EditorLayer : Layer
         IEnumerable<object>? hostServices,
         EditorPlayModeLoop playModeLoop
     ) {
-        List<object> services = hostServices is null ? [] : new List<object>(hostServices);
+        List<object> services = hostServices is null ? [] : [.. hostServices];
         services.Add(playModeLoop);
         return services;
     }

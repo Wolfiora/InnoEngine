@@ -47,7 +47,7 @@ public sealed partial class ScriptingPipelineTests
     private static (SerializationSnapshot, WeakReference) CaptureScriptSnapshot(ScriptingFixture fixture)
     {
         Type type = fixture.ResolveActiveType("SnapshotPayload");
-        var payload = (ISerializable)Activator.CreateInstance(type)!;
+        ISerializable payload = (ISerializable)Activator.CreateInstance(type)!;
         return (fixture.host.serialization.CaptureSnapshot(new CapturedScriptPayload(payload)), new WeakReference(type));
     }
 
@@ -92,8 +92,7 @@ public sealed partial class ScriptingPipelineTests
         GC.KeepAlive(retainedMenu);
 
         void WriteAction(int version)
-        {
-            m_fixture.Write("Editor/LifecycleAction.editor.cs", $$"""
+            => m_fixture.Write("Editor/LifecycleAction.editor.cs", $$"""
                 using InnoEditor.Interactions;
 
                 [EditorAction("tests.lifecycle.action", "tests/menu-lifecycle")]
@@ -106,7 +105,6 @@ public sealed partial class ScriptingPipelineTests
                     protected override void Execute(EditorActionContext context) { }
                 }
                 """);
-        }
     }
 
     private static void AssertMenu(

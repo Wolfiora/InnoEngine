@@ -28,10 +28,10 @@ public sealed class EditorDragData
         string label
     ) {
         ArgumentNullException.ThrowIfNull(source);
-        sourceIdentity = source.identity.runtimeIdentity
-                         ?? throw new InvalidOperationException(
-                             "An editor drag source must be registered in a live identity domain."
-                         );
+        this.sourceIdentity = source.identity.runtimeIdentity
+                              ?? throw new InvalidOperationException(
+                                  "An editor drag source must be registered in a live identity domain."
+                              );
         this.label = label ?? string.Empty;
     }
 

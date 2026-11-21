@@ -48,17 +48,20 @@ internal sealed class ConcurrentCaptureConverter : SerializationConverter<Concur
     /// <summary>
     /// Records construction of the converter owned by the captured generation.
     /// </summary>
-    public ConcurrentCaptureConverter() => Interlocked.Increment(ref constructions);
+    public ConcurrentCaptureConverter()
+    {
+        Interlocked.Increment(ref constructions);
+    }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override void Write(
         SerializationWriter writer,
         ConcurrentCaptureValue value
     ) => writer.Write("count", value.count);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override ConcurrentCaptureValue Read(SerializationReader reader) => new(reader.Read<int>("count"));
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose() => Interlocked.Increment(ref disposals);
 }

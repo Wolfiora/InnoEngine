@@ -21,7 +21,7 @@ internal sealed class ScriptArtifactCache
 
     internal int Collect(IEnumerable<string?> protectedDirectories)
     {
-        var protectedPaths = protectedDirectories
+        HashSet<string> protectedPaths = protectedDirectories
             .Where(static value => !string.IsNullOrWhiteSpace(value))
             .Select(static value => Path.GetFullPath(value!))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);

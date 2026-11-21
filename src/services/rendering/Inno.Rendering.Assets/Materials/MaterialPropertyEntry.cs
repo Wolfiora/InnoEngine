@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one persistent material property entry.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f4c298ba-cda4-5155-a050-d33f70175c7c")]
+[StableTypeId("f4c298ba-cda4-5155-a050-d33f70175c7c")]
 public struct MaterialPropertyEntry
 {
     /// <summary>

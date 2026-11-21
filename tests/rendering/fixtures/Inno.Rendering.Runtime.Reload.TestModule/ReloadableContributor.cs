@@ -28,10 +28,10 @@ public sealed class ReloadableContributor : IRenderFrameGraphContributor
         m_rejectGraph = rejectGraph;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void PrepareFrame(ulong frameIndex) => m_unregister(this);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void AddRenderPasses(
         RenderGraphBuilder graph,
         ulong frameIndex
@@ -51,7 +51,5 @@ public sealed class ReloadableContributor : IRenderFrameGraphContributor
     private void Encode(
         int payload,
         RenderPassContext context
-    ) {
-        GC.KeepAlive(this);
-    }
+    ) => GC.KeepAlive(this);
 }

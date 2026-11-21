@@ -39,7 +39,9 @@ public sealed class LifetimeAdmissionTests
     {
         using var owner = new LifetimeScope();
         WeakReference result = Complete(owner);
-        GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
         Assert.False(result.IsAlive);
         Assert.Equal(0, owner.trackedWorkCount);
     }

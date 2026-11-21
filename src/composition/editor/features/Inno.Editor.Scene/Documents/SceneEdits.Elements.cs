@@ -12,7 +12,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Adds one component and records its identity, stable type, index, and persistent properties.

@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Core.Serialization;
@@ -73,19 +74,25 @@ public sealed class PackContentStoreTests
     {
         using EngineHost host = CreateHost();
         using SerializationGeneration generation = host.serialization.CaptureGeneration();
-        var (pack, descriptor) = CreatePack(generation, new Dictionary<string, byte[]> { ["a"] = [1, 2, 3] });
+        (MemoryStream pack, ContentPackDescriptor descriptor) = CreatePack(
+            generation,
+            new Dictionary<string, byte[]> { ["a"] = [1, 2, 3] }
+        );
         Assert.Throws<InvalidDataException>(() => ContentPackReader.Open(
             pack,
             descriptor,
             generation,
             new ContentReadLimits(entryBytes: 2)
         ));
-        var (canceled, canceledDescriptor) = CreatePack(generation, new Dictionary<string, byte[]> { ["a"] = [] });
+        (MemoryStream canceled, ContentPackDescriptor canceledDescriptor) = CreatePack(
+            generation,
+            new Dictionary<string, byte[]> { ["a"] = [] }
+        );
         Assert.Throws<OperationCanceledException>(() => ContentPackReader.Open(
             canceled,
             canceledDescriptor,
             generation,
-            cancellationToken: new System.Threading.CancellationToken(true)
+            cancellationToken: new CancellationToken(true)
         ));
         Assert.False(canceled.CanRead);
     }
@@ -110,10 +117,10 @@ public sealed class PackContentStoreTests
             pair.Value.Length + (fault == "length" ? 1 : 0),
             fault == "payload" ? new string('A', 64) : Convert.ToHexString(SHA256.HashData(pair.Value))
         )).ToList();
-        MemoryStream output = new();
-        using (ZipArchive archive = new(output, ZipArchiveMode.Create, true))
+        var output = new MemoryStream();
+        using (var archive = new ZipArchive(output, ZipArchiveMode.Create, true))
         {
-            foreach (var pair in payloads)
+            foreach (KeyValuePair<string, byte[]> pair in payloads)
             {
                 if (fault == "missing")
                 {
@@ -143,7 +150,7 @@ public sealed class PackContentStoreTests
 
     private static byte[] Read(Stream input)
     {
-        using MemoryStream output = new();
+        using var output = new MemoryStream();
         input.CopyTo(output, 137);
         return output.ToArray();
     }

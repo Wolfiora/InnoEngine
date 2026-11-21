@@ -15,6 +15,8 @@ using Inno.Rendering.Runtime;
 using Inno.Runtime;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EngineColor = Inno.Core.Mathematics.Color;
+using EngineVector2 = Inno.Core.Mathematics.Vector2;
 using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.GameView;
@@ -94,7 +96,7 @@ internal sealed class GameViewPanel : EditorPanel
         m_rendering.SetPresentation(
             C_VIEWPORT_ID,
             new EditorViewportPresentation(
-                new Inno.Core.Mathematics.Color(m_backgroundColor.X, m_backgroundColor.Y, m_backgroundColor.Z, m_backgroundColor.W),
+                new EngineColor(m_backgroundColor.X, m_backgroundColor.Y, m_backgroundColor.Z, m_backgroundColor.W),
                 framebufferScale
             )
         );
@@ -103,7 +105,7 @@ internal sealed class GameViewPanel : EditorPanel
         Vector2 mouse = Ui.GetMousePos();
         Vector2 local = mouse - outputOrigin;
         bool inside = local.X >= 0f && local.Y >= 0f && local.X < layout.size.X && local.Y < layout.size.Y;
-        var viewport = Ui.GetViewport();
+        (uint id, Vector2 position) viewport = Ui.GetViewport();
         bool gameViewFocused = m_playMode.isPlaying && Ui.IsWindowFocused(ImGuiFocusedFlags.RootAndChildWindows);
         bool imageHovered = inside && Ui.IsWindowHovered(ImGuiHoveredFlags.RootAndChildWindows);
         bool focused = m_inputCapture.Report(viewport.id, outputOrigin - viewport.position, layout.size, gameViewFocused, imageHovered);
@@ -123,7 +125,7 @@ internal sealed class GameViewPanel : EditorPanel
         {
             m_leftPointerActive = false;
         }
-        var io = Ui.GetInput();
+        EditorUiInput io = Ui.GetInput();
         KeyModifier modifiers = KeyModifier.None;
         if (io.alt)
         {
@@ -145,12 +147,12 @@ internal sealed class GameViewPanel : EditorPanel
             C_VIEWPORT_ID,
             focused
             ? new RenderOutputInput(
-                new Inno.Core.Mathematics.Vector2(
+                new EngineVector2(
                     local.X * layout.pixelWidth / layout.size.X,
                     local.Y * layout.pixelHeight / layout.size.Y
                 ),
                 acceptsPointer,
-                acceptsPointer ? new Inno.Core.Mathematics.Vector2(0f, io.wheel) : default,
+                acceptsPointer ? new EngineVector2(0f, io.wheel) : default,
                 modifiers,
                 [],
                 [],

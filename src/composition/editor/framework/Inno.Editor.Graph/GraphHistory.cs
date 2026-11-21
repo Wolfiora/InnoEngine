@@ -96,7 +96,7 @@ internal sealed record GraphHistoryData(
     public byte[] Encode()
     {
         byte[] id = S_UTF8.GetBytes(documentId.ToString("D"));
-        byte[] result = new byte[checked((sizeof(int) * 3) + sizeof(long) + id.Length + before.Length + after.Length)];
+        var result = new byte[checked((sizeof(int) * 3) + sizeof(long) + id.Length + before.Length + after.Length)];
         Span<byte> span = result;
         BinaryPrimitives.WriteInt32LittleEndian(span, id.Length);
         id.CopyTo(span[sizeof(int)..]);

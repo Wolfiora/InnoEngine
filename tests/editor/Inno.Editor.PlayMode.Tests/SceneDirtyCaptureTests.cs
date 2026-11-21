@@ -189,9 +189,14 @@ public sealed class SceneDirtyCaptureTests
 [AllowMultipleComponent]
 internal sealed class DirtyCaptureComponent : GameComponent
 {
-    [SerializableProperty] public int number;
-    [SerializableProperty] public GameObject? target;
-    [SerializableProperty] public DirtyCaptureValue state { get; set; } = new();
+    [SerializableProperty]
+    public int number;
+
+    [SerializableProperty]
+    public GameObject? target;
+
+    [SerializableProperty]
+    public DirtyCaptureValue state { get; set; } = new();
 }
 
 internal sealed class DirtyCaptureValue

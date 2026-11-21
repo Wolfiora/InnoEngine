@@ -31,7 +31,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
     /// </param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var registrations = context.SyntaxProvider.ForAttributeWithMetadataName(
+        IncrementalValueProvider<ImmutableArray<Registration>> registrations = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Inno.Runtime.Contracts.RuntimeSubsystemRegistrationAttribute",
             static (
                 node,
@@ -45,7 +45,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
                 entry.Attributes[0].ConstructorArguments[0].Value as string ?? string.Empty
             )
         ).Collect();
-        var catalogs = context.SyntaxProvider.ForAttributeWithMetadataName(
+        IncrementalValueProvider<ImmutableArray<IMethodSymbol>> catalogs = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Inno.Runtime.Contracts.RuntimeSubsystemCatalogAttribute",
             static (
                 node,
@@ -106,7 +106,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
                 ))
                 .OrderBy(static registration => registration.id, StringComparer.Ordinal)
                 .ToArray();
-            var duplicate = matches.GroupBy(static registration => registration.id, StringComparer.Ordinal)
+            IGrouping<string, Registration> duplicate = matches.GroupBy(static registration => registration.id, StringComparer.Ordinal)
                 .FirstOrDefault(static group => group.Count() > 1);
             if (matches.Length == 0 || duplicate is not null)
             {
@@ -160,7 +160,7 @@ public sealed class RuntimeSubsystemGenerator : IIncrementalGenerator
             code.Append("        };\n");
             for (int index = 0; index < matches.Length; index++)
             {
-                string id = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(matches[index].id, true);
+                string id = SymbolDisplay.FormatLiteral(matches[index].id, true);
                 code.Append("        if (factories[")
                     .Append(index)
                     .Append("].descriptor.id.value != ")

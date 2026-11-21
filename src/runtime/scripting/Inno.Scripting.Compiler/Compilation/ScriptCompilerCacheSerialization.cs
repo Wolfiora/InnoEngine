@@ -8,8 +8,8 @@ namespace Inno.Scripting.Compiler;
 
 internal static class ScriptCompilerCacheSerialization
 {
-    private const int C_DIAGNOSTIC_MAGIC = 0x494E4447;
-    private const int C_TYPE_MANIFEST_MAGIC = 0x494E544D;
+    private const int C_DIAGNOSTIC_MAGIC = 0x494E_4447;
+    private const int C_TYPE_MANIFEST_MAGIC = 0x494E_544D;
     private const int C_MAX_ENTRY_COUNT = 1_000_000;
 
     internal static byte[] EncodeDiagnostics(IEnumerable<ScriptDiagnostic> diagnostics)
@@ -17,8 +17,8 @@ internal static class ScriptCompilerCacheSerialization
         ArgumentNullException.ThrowIfNull(diagnostics);
 
         ScriptDiagnostic[] entries = diagnostics as ScriptDiagnostic[] ?? [.. diagnostics];
-        using MemoryStream stream = new();
-        using BinaryWriter writer = new(stream, Encoding.UTF8, leaveOpen: true);
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write(C_DIAGNOSTIC_MAGIC);
         writer.Write(entries.Length);
         foreach (ScriptDiagnostic diagnostic in entries)
@@ -42,11 +42,11 @@ internal static class ScriptCompilerCacheSerialization
 
     internal static ScriptDiagnostic[] DecodeDiagnostics(ReadOnlySpan<byte> bytes)
     {
-        using MemoryStream stream = new(bytes.ToArray(), writable: false);
-        using BinaryReader reader = new(stream, Encoding.UTF8, leaveOpen: false);
+        using var stream = new MemoryStream(bytes.ToArray(), writable: false);
+        using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
         ValidateMagic(reader, C_DIAGNOSTIC_MAGIC, "script diagnostic cache");
         int count = ReadCount(reader, "diagnostic");
-        ScriptDiagnostic[] diagnostics = new ScriptDiagnostic[count];
+        var diagnostics = new ScriptDiagnostic[count];
         for (int index = 0; index < count; index++)
         {
             string id = reader.ReadString();
@@ -65,8 +65,8 @@ internal static class ScriptCompilerCacheSerialization
     internal static byte[] EncodeTypeManifest(ScriptTypeManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
-        using MemoryStream stream = new();
-        using BinaryWriter writer = new(stream, Encoding.UTF8, leaveOpen: true);
+        using var stream = new MemoryStream();
+        using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write(C_TYPE_MANIFEST_MAGIC);
         writer.Write(manifest.assemblyName);
         writer.Write(manifest.types.Count);
@@ -89,12 +89,12 @@ internal static class ScriptCompilerCacheSerialization
 
     internal static ScriptTypeManifest DecodeTypeManifest(ReadOnlySpan<byte> bytes)
     {
-        using MemoryStream stream = new(bytes.ToArray(), writable: false);
-        using BinaryReader reader = new(stream, Encoding.UTF8, leaveOpen: false);
+        using var stream = new MemoryStream(bytes.ToArray(), writable: false);
+        using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
         ValidateMagic(reader, C_TYPE_MANIFEST_MAGIC, "script type manifest cache");
         string assemblyName = reader.ReadString();
         int count = ReadCount(reader, "type manifest");
-        ScriptTypeManifestEntry[] types = new ScriptTypeManifestEntry[count];
+        var types = new ScriptTypeManifestEntry[count];
         for (int index = 0; index < count; index++)
         {
             types[index] = new ScriptTypeManifestEntry(

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Supplies one configured feature with frame-scoped graph services.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("00810cb8-162a-5a95-9a30-1a01992ac501")]
+[StableTypeId("00810cb8-162a-5a95-9a30-1a01992ac501")]
 public sealed class RenderFeatureContext
 {
     /// <summary>

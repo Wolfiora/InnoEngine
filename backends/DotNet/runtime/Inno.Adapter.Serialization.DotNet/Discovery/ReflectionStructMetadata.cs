@@ -15,9 +15,7 @@ internal static class ReflectionStructMetadata
     private static readonly ConditionalWeakTable<Type, MembersBox> S_CACHE = new();
 
     internal static SerializationMemberMetadata[] GetMembers(Type structType)
-    {
-        return S_CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
-    }
+        => S_CACHE.GetValue(structType, static type => new MembersBox(BuildMembers(type))).members;
 
     internal static bool HasPureFieldAccess(
         Type type,
@@ -36,7 +34,7 @@ internal static class ReflectionStructMetadata
                      && field.FieldType != typeof(IntPtr)
                      && field.FieldType != typeof(UIntPtr)
                      && field.FieldType != typeof(char)
-                     || field.FieldType == typeof(decimal) || field.FieldType == typeof(System.Guid) || field.FieldType == typeof(string))
+                     || field.FieldType == typeof(decimal) || field.FieldType == typeof(Guid) || field.FieldType == typeof(string))
             ) {
                 return false;
             }
@@ -85,10 +83,8 @@ internal static class ReflectionStructMetadata
     }
 
     private static int GetSerializableOrder(MemberInfo member)
-    {
-        return member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true)?.order
-               ?? int.MaxValue;
-    }
+        => member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true)?.order
+           ?? int.MaxValue;
 
     private static SerializationMemberMetadata? TryCreateField(
         Type structType,

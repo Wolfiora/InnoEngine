@@ -7,6 +7,7 @@ using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Scene.Components;
+using Inno.Scripting.Api;
 
 namespace Inno.Scene;
 
@@ -69,7 +70,7 @@ public sealed class SceneWorld : IDisposable
     /// <exception cref="InvalidOperationException">
     /// The binding was already configured.
     /// </exception>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public void ConfigurePrefabInstantiation(
         SerializationRegistry serialization,
         IAssetReferenceResolver assets

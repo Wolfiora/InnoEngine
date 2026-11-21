@@ -18,7 +18,10 @@ public sealed class ShaderBuildInputsTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoShaderInputs", Guid.NewGuid().ToString("N"));
 
-    public ShaderBuildInputsTests() => Directory.CreateDirectory(m_root);
+    public ShaderBuildInputsTests()
+    {
+        Directory.CreateDirectory(m_root);
+    }
 
     [Fact]
     public void LivePublicationIsNotAnAssetButPermanentImportSettingsAreBuildInputs()
@@ -30,7 +33,7 @@ public sealed class ShaderBuildInputsTests : IDisposable
         ShaderBuildInputs baseline = ShaderBuildInputs.Capture(m_root);
         string fingerprint = baseline.fingerprint;
         string candidate = source + ".imeta.staging-" + Guid.NewGuid().ToString("N");
-        using (FileStream publication = new(candidate, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        using (var publication = new FileStream(candidate, FileMode.CreateNew, FileAccess.Write, FileShare.None))
         {
             publication.Write("not yet published"u8);
             Assert.True(AssetSourcePolicy.defaultPolicy.IsIgnored(Path.GetFileName(candidate), false));
@@ -152,7 +155,7 @@ public sealed class ShaderBuildInputsTests : IDisposable
         {
             directory = workspace.directory;
             Assert.True(Directory.Exists(directory));
-            var registration = Assert.Single(BuildCacheOwnerCatalog.ReadOwners(m_root));
+            BuildCacheOwnerDescriptor registration = Assert.Single(BuildCacheOwnerCatalog.ReadOwners(m_root));
             Assert.Equal("shader-requests", registration.id);
             Assert.Equal(Path.GetDirectoryName(directory), registration.directory);
         }

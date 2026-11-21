@@ -65,12 +65,12 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public bool Equals(DiagnosticLocation other)
         => string.Equals(sourcePath, other.sourcePath, StringComparison.Ordinal)
            && line == other.line
@@ -79,12 +79,12 @@ public readonly struct DiagnosticLocation : IEquatable<DiagnosticLocation>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is DiagnosticLocation other && Equals(other);
 
     /// <summary>

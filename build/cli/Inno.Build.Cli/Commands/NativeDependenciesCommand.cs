@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Threading.Tasks;
 using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.Cli;
 
@@ -37,9 +39,9 @@ internal static class NativeDependenciesCommand
                 platform => platform.descriptor.id == request.target
             )
                 ?? throw new NotSupportedException("No native dependency platform is registered for '" + request.target + "'.");
-            Inno.Core.IO.AtomicFile.WriteAllBytes(
+            AtomicFile.WriteAllBytes(
                 options.Require("output"),
-                System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new
+                JsonSerializer.SerializeToUtf8Bytes(new
                 {
                     target = platform.descriptor.id.value,
                     products = platform.nativeProducts.Keys.Order(StringComparer.Ordinal).ToArray()
@@ -55,15 +57,16 @@ internal static class NativeDependenciesCommand
             {
                 throw new ArgumentException("Producer binding verification cannot consume a prebuilt selection.");
             }
-            var steps = product.plan.steps.Where(static step => step.component.bindingDefinition is not null)
+            IGrouping<string, ProductNativeBuildStep>[] steps = product.plan.steps
+                .Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
                 .ToArray();
             if (steps.Length == 0)
             {
                 return;
             }
-            var generator = request.distribution.ResolveBindingGenerator(request.target.value);
-            var bindingContext = new NativeBuildContext(
+            INativeBindingGenerator generator = request.distribution.ResolveBindingGenerator(request.target.value);
+            NativeBuildContext bindingContext = new NativeBuildContext(
                 request.root,
                 request.configuration.ToLowerInvariant()
             ).WithBindingGenerator(generator);
@@ -101,7 +104,7 @@ internal static class NativeDependenciesCommand
             string output = options.Require("output");
             try
             {
-                var assets = await NativeDependencyManifest.SelectAsync(
+                IReadOnlyList<NativeDependencyAsset> assets = await NativeDependencyManifest.SelectAsync(
                     request.root,
                     options.Require("native-dependencies"),
                     request.target.value,
@@ -112,11 +115,11 @@ internal static class NativeDependenciesCommand
                 byte[] result = operation == "select"
                                 ? JsonSerializer.SerializeToUtf8Bytes(assets)
                                 : JsonSerializer.SerializeToUtf8Bytes(new { matched = true, assets });
-                Inno.Core.IO.AtomicFile.WriteAllBytes(output, result);
+                AtomicFile.WriteAllBytes(output, result);
             }
             catch (InvalidDataException failure) when (operation == "evaluate")
             {
-                Inno.Core.IO.AtomicFile.WriteAllBytes(
+                AtomicFile.WriteAllBytes(
                     output,
                     JsonSerializer.SerializeToUtf8Bytes(new { matched = false, reason = failure.Message })
                 );
@@ -132,11 +135,11 @@ internal static class NativeDependenciesCommand
         {
             throw new ArgumentException("Dependency production cannot consume a prebuilt selection.");
         }
-        var phase = Stopwatch.StartNew();
+        Stopwatch phase = Stopwatch.StartNew();
         Console.WriteLine(
             $"Native producer: {product.plan.productId}/{request.target.value}/{request.configuration}; resolving the explicit toolchain."
         );
-        var context = new NativeBuildContext(request.root, request.configuration.ToLowerInvariant()).WithBindingGenerator(
+        NativeBuildContext context = new NativeBuildContext(request.root, request.configuration.ToLowerInvariant()).WithBindingGenerator(
             request.distribution.ResolveBindingGenerator(request.target.value)
         );
         context = context.WithToolchain(

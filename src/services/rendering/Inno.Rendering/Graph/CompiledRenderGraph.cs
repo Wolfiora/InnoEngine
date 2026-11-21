@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.ExceptionServices;
@@ -166,16 +167,16 @@ public sealed class CompiledRenderAttachment
 {
     internal CompiledRenderAttachment(RenderAttachment attachment)
     {
-        texture = attachment.texture;
-        slot = attachment.slot;
-        isDepth = attachment.isDepth;
-        mipLevel = attachment.mipLevel;
-        arrayLayer = attachment.arrayLayer;
-        loadAction = attachment.loadAction;
-        storeAction = attachment.storeAction;
-        clearColor = attachment.clearColor;
-        clearDepth = attachment.clearDepth;
-        clearStencil = attachment.clearStencil;
+        this.texture = attachment.texture;
+        this.slot = attachment.slot;
+        this.isDepth = attachment.isDepth;
+        this.mipLevel = attachment.mipLevel;
+        this.arrayLayer = attachment.arrayLayer;
+        this.loadAction = attachment.loadAction;
+        this.storeAction = attachment.storeAction;
+        this.clearColor = attachment.clearColor;
+        this.clearDepth = attachment.clearDepth;
+        this.clearStencil = attachment.clearStencil;
     }
 
     /// <summary>
@@ -516,9 +517,7 @@ public sealed class CompiledRenderGraph
 
     private Dictionary<CompiledRenderPass, RecordedRenderCommandEncoder> RecordParallelPasses(ulong frameIndex)
     {
-        var recorded = new System.Collections.Concurrent.ConcurrentDictionary<
-            CompiledRenderPass,
-            RecordedRenderCommandEncoder>();
+        var recorded = new ConcurrentDictionary<CompiledRenderPass, RecordedRenderCommandEncoder>();
         try
         {
             Parallel.ForEach(

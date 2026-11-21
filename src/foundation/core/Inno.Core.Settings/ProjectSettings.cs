@@ -38,11 +38,11 @@ public sealed class ProjectSettings : IDisposable
     /// <param name="defaultProjectId">
     /// The project namespace used when the document has no authored identity override.
     /// </param>
-    /// <param name="contributors">
-    /// Dependency-ordered default contributors.
-    /// </param>
     /// <param name="serializationContext">
     /// The owner's complete reference resolver context, used for defaults, contributions and returned snapshots.
+    /// </param>
+    /// <param name="contributors">
+    /// Dependency-ordered default contributors.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// A required service or the owner's serialization context is null.
@@ -420,13 +420,11 @@ public sealed class ProjectSettings : IDisposable
         ProjectSettingId id,
         ISerializable value,
         IReadOnlyList<ProjectSettingsContributor> contributors
-    ) {
-        _ = ApplyProjectOverrides(
-            new Dictionary<ProjectSettingId, ISerializable> { [id] = value },
-            resets: null,
-            contributors
-        );
-    }
+    ) => _ = ApplyProjectOverrides(
+        new Dictionary<ProjectSettingId, ISerializable> { [id] = value },
+        resets: null,
+        contributors
+    );
 
     /// <summary>
     /// Applies multiple project contributions and removals as one atomic document update.
@@ -454,7 +452,7 @@ public sealed class ProjectSettings : IDisposable
         ValidateContributorOrder(contributors);
 
         ProjectSettingsRegistry.Snapshot registry = m_registry.settings;
-        var records = m_document.overrides.ToDictionary(static record => record.id);
+        Dictionary<ProjectSettingId, ProjectSettingRecord> records = m_document.overrides.ToDictionary(static record => record.id);
         bool changed = false;
         if (resets is not null)
         {
@@ -566,7 +564,10 @@ public sealed class ProjectSettings : IDisposable
         IReadOnlySet<string> directDependencies,
         IReadOnlyList<ProjectSettingsContributor> contributors
     ) {
-        var byId = contributors.ToDictionary(static contributor => contributor.id, StringComparer.Ordinal);
+        Dictionary<string, ProjectSettingsContributor> byId = contributors.ToDictionary(
+            static contributor => contributor.id,
+            StringComparer.Ordinal
+        );
         var result = new HashSet<string>(StringComparer.Ordinal);
         DependencyGraph<string> graph = CreateContributorGraph(contributors);
         foreach (string id in directDependencies)

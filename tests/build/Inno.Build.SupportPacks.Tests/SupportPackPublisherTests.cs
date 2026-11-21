@@ -1,9 +1,12 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Sdk;
 using Inno.Build.SupportPacks;
 
 namespace Inno.Build.SupportPacks.Tests;
@@ -292,7 +295,9 @@ public sealed class SupportPackPublisherTests : IDisposable
         Task<PlayerSupportPackPublication> publishing = first.PublishAsync(m_root, output, S_TARGET, "unused").AsTask();
         await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
         using var cancellation = new CancellationTokenSource();
-        var second = new PlayerSupportPackPublisher([new TestSource(new InvalidOperationException("Preparation must not run."))]);
+        var second = new PlayerSupportPackPublisher(
+            [new TestSource(new InvalidOperationException("Preparation must not run."))]
+        );
         Task<PlayerSupportPackPublication> waiting = second.PublishAsync(m_root, output, S_TARGET, "unused", cancellation.Token).AsTask();
         try
         {
@@ -311,7 +316,7 @@ public sealed class SupportPackPublisherTests : IDisposable
     }
 
     private static string InputIdentity(string input)
-        => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(input)));
+        => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(input)));
 
     private sealed class PendingSource(
         TaskCompletionSource entered,
@@ -323,9 +328,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         public ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
             PlayerSupportPackPlanningContext context,
             CancellationToken cancellationToken
-        ) {
-            return ValueTask.FromResult<PlayerSupportPackPlan>(new PendingPlan(entered, release));
-        }
+        ) => ValueTask.FromResult<PlayerSupportPackPlan>(new PendingPlan(entered, release));
 
         private sealed class PendingPlan(
             TaskCompletionSource entered,
@@ -375,7 +378,7 @@ public sealed class SupportPackPublisherTests : IDisposable
         public override ValueTask PrepareAsync(
             string stagingDirectory,
             CancellationToken cancellationToken
-        ) => throw new Xunit.Sdk.XunitException("An unaccepted plan must never execute.");
+        ) => throw new XunitException("An unaccepted plan must never execute.");
     }
 
     private sealed class TestSource(

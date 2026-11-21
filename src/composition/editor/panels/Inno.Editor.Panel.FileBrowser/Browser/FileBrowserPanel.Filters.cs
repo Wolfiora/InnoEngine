@@ -72,7 +72,5 @@ internal sealed partial class FileBrowserPanel
     }
 
     private void DrawSearchInput()
-    {
-        _ = EditorUI.current.widgets.SearchInput("AssetSearch", ImGuiIcon.MagnifyingGlass, ref m_filter, (nuint)C_SEARCH_BUFFER_SIZE);
-    }
+        => _ = EditorUI.current.widgets.SearchInput("AssetSearch", ImGuiIcon.MagnifyingGlass, ref m_filter, (nuint)C_SEARCH_BUFFER_SIZE);
 }

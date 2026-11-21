@@ -67,7 +67,7 @@ internal sealed class PluginPackageBuilder
         string temporary = destination + ".staging-" + Guid.NewGuid().ToString("N");
         try
         {
-            await using (FileStream stream = new(
+            await using (var stream = new FileStream(
                 temporary,
                 FileMode.CreateNew,
                 FileAccess.Write,
@@ -120,7 +120,7 @@ internal sealed class PluginPackageBuilder
             EnsurePlanUnchanged(plan);
             cancellationToken.ThrowIfCancellationRequested();
             string contentHash;
-            await using (FileStream stream = new(
+            await using (var stream = new FileStream(
                 temporary,
                 FileMode.Open,
                 FileAccess.Read,
@@ -157,7 +157,7 @@ internal sealed class PluginPackageBuilder
         PluginCandidate[] installedPlugins = m_plugins.activePlugins.ToArray();
         ValidateDependencyGraph(installedPlugins);
         var selectedIds = new HashSet<string>(StringComparer.Ordinal);
-        var installedById = installedPlugins.ToDictionary(
+        Dictionary<string, PluginCandidate> installedById = installedPlugins.ToDictionary(
             static plugin => plugin.manifest.pluginId,
             StringComparer.Ordinal
         );
@@ -297,7 +297,7 @@ internal sealed class PluginPackageBuilder
         ZipArchiveEntry entry = archive.CreateEntry(source.archivePath, CompressionLevel.Optimal);
         entry.LastWriteTime = S_ARCHIVE_TIME;
         await using Stream output = entry.Open();
-        await using FileStream input = new(
+        await using var input = new FileStream(
             source.sourcePath,
             FileMode.Open,
             FileAccess.Read,
@@ -397,7 +397,7 @@ internal sealed class PluginPackageBuilder
 
     private void ValidateDestination(string destination)
     {
-        var protectedRoots = m_assets.sourceMounts
+        List<string> protectedRoots = m_assets.sourceMounts
             .Select(static mount => mount.rootPath)
             .Append(m_assets.libraryRoot)
             .ToList();

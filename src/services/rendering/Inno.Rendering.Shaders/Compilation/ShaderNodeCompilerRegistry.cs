@@ -22,7 +22,10 @@ public sealed class ShaderNodeCompilerRegistry : TypeRegistry<ShaderNodeCompiler
     /// Owner catalog, which must outlive this registry.
     /// </param>
     public ShaderNodeCompilerRegistry(TypeCatalog types)
-        : base(types) => m_types = types;
+        : base(types)
+        {
+        m_types = types;
+    }
 
     /// <summary>
     /// Gets stable compiler identities without exposing provider instances.

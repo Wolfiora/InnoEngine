@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
+using Inno.Assets;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
@@ -15,7 +16,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Persists graph and frozen function inputs as an authoring artifact; Player export removes this payload.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("1bb0d88f-b8ca-5d43-a91c-8d6d4ac0f0c2")]
+[StableTypeId("1bb0d88f-b8ca-5d43-a91c-8d6d4ac0f0c2")]
 public static partial class ShaderGraphArtifact
 {
     /// <summary>
@@ -77,7 +78,7 @@ public static partial class ShaderGraphArtifact
             {
                 continue;
             }
-            string path = ShaderGraphDocument.Read(node, "sourcePath", "", serialization, context);
+            string path = ShaderGraphDocument.Read(node, "sourcePath", string.Empty, serialization, context);
             sources.Add(node.id, readSource(id, path));
         }
         return Encode(graph, sources, serialization, program);
@@ -129,11 +130,11 @@ public static partial class ShaderGraphArtifact
     /// </returns>
     public static byte[] Read(
         ShaderAsset shader,
-        Inno.Assets.IAssetArtifactLookup artifacts
+        IAssetArtifactLookup artifacts
     ) {
         ArgumentNullException.ThrowIfNull(shader);
         ArgumentNullException.ThrowIfNull(artifacts);
-        using Inno.Assets.ArtifactLease lease = artifacts.AcquireArtifact(shader.identity.persistentId, outputName);
+        using ArtifactLease lease = artifacts.AcquireArtifact(shader.identity.persistentId, outputName);
         return lease.ReadAllBytes();
     }
 
@@ -259,40 +260,46 @@ public static partial class ShaderGraphArtifact
     ) {
         ArtifactData data = serialization.Deserialize<ArtifactData>(bytes);
         GraphDocument graph = GraphDocumentCodec.Decode(data.program, serialization);
-        var sources = data.sources.ToDictionary(static source => new GraphNodeId(source.node), source =>
-        {
-            GraphNodeRecord node = graph.FindNode(new(source.node))
-                                   ?? throw new InvalidOperationException($"Captured source node '{source.node}' is unavailable.");
-            string function = ShaderGraphDocument.Read(node, "function", "", serialization, context);
-            if (string.IsNullOrWhiteSpace(function))
+        Dictionary<GraphNodeId, ShaderSourceModuleAnalysis> sources = data.sources.ToDictionary(
+            static source => new GraphNodeId(source.node),
+            source =>
             {
-                throw new InvalidOperationException($"Source node '{source.node}' has no exported function selection.");
+                GraphNodeRecord node = graph.FindNode(new(source.node))
+                                       ?? throw new InvalidOperationException($"Captured source node '{source.node}' is unavailable.");
+                string function = ShaderGraphDocument.Read(node, "function", string.Empty, serialization, context);
+                if (string.IsNullOrWhiteSpace(function))
+                {
+                    throw new InvalidOperationException($"Source node '{source.node}' has no exported function selection.");
+                }
+                return frontends.AnalyzeModule(ShaderSourceBundle.Decode(source.bundle, function, serialization, defines));
             }
-            return frontends.AnalyzeModule(ShaderSourceBundle.Decode(source.bundle, function, serialization, defines));
-        });
+        );
         return new ShaderGraphProgramCompiler(nodes).Lower(graph, implementationId, sources, serialization, context);
     }
 
-    [Inno.Extensibility.Types.StableTypeId("16182a41-f19b-5a28-a66f-5310360f8a32")]
+    [StableTypeId("16182a41-f19b-5a28-a66f-5310360f8a32")]
     private sealed class ArtifactData : ISerializable
     {
         /// <summary>
         /// Gets or sets native graph bytes.
         /// </summary>
-        [SerializableProperty] public byte[] document { get; set; } = [];
+        [SerializableProperty]
+        public byte[] document { get; set; } = [];
 
         /// <summary>
         /// Gets or sets explicit target-expanded stage graph bytes.
         /// </summary>
-        [SerializableProperty] public byte[] program { get; set; } = [];
+        [SerializableProperty]
+        public byte[] program { get; set; } = [];
 
         /// <summary>
         /// Gets or sets frozen functions by node identity.
         /// </summary>
-        [SerializableProperty] public SourceData[] sources { get; set; } = [];
+        [SerializableProperty]
+        public SourceData[] sources { get; set; } = [];
     }
 
-    [Inno.Extensibility.Types.StableTypeId("91d54277-1257-5bf0-904d-165e8092fe4a")]
+    [StableTypeId("91d54277-1257-5bf0-904d-165e8092fe4a")]
     private struct SourceData
     {
         /// <summary>

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Inno.Core.IO;
 
 namespace Inno.Build.TaskHosting;
@@ -13,7 +15,7 @@ namespace Inno.Build.TaskHosting;
 /// Coordinates SDK restore writes for explicitly selected project closures.
 /// Parent solution entry points are excluded from these owned restores.
 /// </summary>
-public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, ICancelableTask
+public sealed class RestoreOwnedProjectTask : Task, ICancelableTask
 {
     private readonly object m_gate = new();
     private readonly CancellationTokenSource m_cancellation = new();
@@ -158,7 +160,7 @@ public sealed class RestoreOwnedProjectTask : Microsoft.Build.Utilities.Task, IC
             {
                 throw new ArgumentException("Restore properties require explicit name=value declarations.");
             }
-            properties[declaration[..separator]] = Microsoft.Build.Evaluation.ProjectCollection.Unescape(declaration[(separator + 1)..]);
+            properties[declaration[..separator]] = ProjectCollection.Unescape(declaration[(separator + 1)..]);
         }
     }
 }

@@ -64,8 +64,7 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
     }
 
     private static MemberInfo[] GetMembers(Type type)
-    {
-        return S_MEMBER_CACHE.GetValue(
+        => S_MEMBER_CACHE.GetValue(
             type,
             static value => new MembersBox(
                 value
@@ -75,7 +74,6 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
                     .ToArray()
             )
         ).members;
-    }
 
     private static bool IsRuntimeVisibleMember(MemberInfo member)
     {
@@ -97,41 +95,33 @@ internal sealed class StructPropertyDrawer : IPropertyDrawer
     }
 
     private static PropertyVisibility GetVisibility(MemberInfo member)
-    {
-        return member.GetCustomAttribute<SerializablePropertyAttribute>(true)?.propertyVisibility ?? PropertyVisibility.Show;
-    }
+        => member.GetCustomAttribute<SerializablePropertyAttribute>(true)?.propertyVisibility ?? PropertyVisibility.Show;
 
     private static Type GetMemberType(MemberInfo member)
+        => member switch
     {
-        return member switch
-        {
-            FieldInfo field => field.FieldType,
-            PropertyInfo property => property.PropertyType,
-            _ => throw new InvalidOperationException($"Unsupported struct member '{member.MemberType}'.")
-        };
-    }
+        FieldInfo field => field.FieldType,
+        PropertyInfo property => property.PropertyType,
+        _ => throw new InvalidOperationException($"Unsupported struct member '{member.MemberType}'.")
+    };
 
     private static object? GetMemberValue(
         MemberInfo member,
         object target
-    ) {
-        return member switch
-        {
-            FieldInfo field => field.GetValue(target),
-            PropertyInfo property => property.GetValue(target),
-            _ => null
-        };
-    }
+    ) => member switch
+    {
+        FieldInfo field => field.GetValue(target),
+        PropertyInfo property => property.GetValue(target),
+        _ => null
+    };
 
     private static bool CanWrite(MemberInfo member)
+        => member switch
     {
-        return member switch
-        {
-            FieldInfo field => !field.IsInitOnly,
-            PropertyInfo property => property.GetSetMethod(true) is not null,
-            _ => false
-        };
-    }
+        FieldInfo field => !field.IsInitOnly,
+        PropertyInfo property => property.GetSetMethod(true) is not null,
+        _ => false
+    };
 
     private static void SetMemberValue(
         MemberInfo member,

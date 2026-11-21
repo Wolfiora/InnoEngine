@@ -301,15 +301,18 @@ public sealed partial class SceneSerializationTests : IDisposable
 [StableTypeId("09d35197-7161-4fdf-8d60-95ecf3555c0c")]
 internal sealed class ReferenceComponent : GameComponent
 {
-    [SerializableProperty] public int value { get; set; }
-    [SerializableProperty] public GameObject? targetObject { get; set; }
-    [SerializableProperty] public ReferenceComponent? targetComponent { get; set; }
+    [SerializableProperty]
+    public int value { get; set; }
+
+    [SerializableProperty]
+    public GameObject? targetObject { get; set; }
+
+    [SerializableProperty]
+    public ReferenceComponent? targetComponent { get; set; }
+
     public int resetCount { get; private set; }
 
-    protected override void Reset()
-    {
-        resetCount++;
-    }
+    protected override void Reset() => resetCount++;
 }
 
 [StableTypeId("f7bc9bf3-288a-45b3-9caa-26289d66c181")]

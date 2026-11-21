@@ -179,13 +179,13 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// <summary>
     /// Stops new registrations and invokes cancellation callbacks on the calling thread.
     /// </summary>
+    /// <exception cref="AggregateException">
+    /// One or more cancellation callbacks fail.
+    /// </exception>
     /// <remarks>
     /// Callbacks must return promptly. Dependent resources remain owned while cancellation callbacks execute,
     /// including when another thread attempts disposal. A callback reporting pending work permanently blocks release.
     /// </remarks>
-    /// <exception cref="AggregateException">
-    /// One or more cancellation callbacks fail.
-    /// </exception>
     public void Cancel()
     {
         lock (m_sync)
@@ -233,16 +233,16 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// <summary>
     /// Releases a quiescent lifetime in reverse registration order, continuing after ordinary cleanup failures.
     /// </summary>
-    /// <remarks>
-    /// Pending retirement retains the current resource and all remaining dependencies for a later attempt.
-    /// Concurrent or reentrant retirement reports pending work without invoking a resource twice.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Tracked work remains active; drain it before retrying.
     /// </exception>
     /// <exception cref="AggregateException">
     /// Cancellation, work or resource retirement fails.
     /// </exception>
+    /// <remarks>
+    /// Pending retirement retains the current resource and all remaining dependencies for a later attempt.
+    /// Concurrent or reentrant retirement reports pending work without invoking a resource twice.
+    /// </remarks>
     public void Dispose()
     {
         lock (m_sync)
@@ -286,16 +286,16 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
     /// <summary>
     /// Cancels and asynchronously drains tracked work before reverse-order release.
     /// </summary>
-    /// <remarks>
-    /// Only use asynchronous disposal for thread-neutral resources. Control-thread owners must await their work
-    /// and call synchronous disposal at their own safe point; this method does not marshal to an owner thread.
-    /// </remarks>
     /// <returns>
     /// A task that completes only after work and resource retirement finish.
     /// </returns>
     /// <exception cref="AggregateException">
     /// Cancellation, work or resource retirement fails.
     /// </exception>
+    /// <remarks>
+    /// Only use asynchronous disposal for thread-neutral resources. Control-thread owners must await their work
+    /// and call synchronous disposal at their own safe point; this method does not marshal to an owner thread.
+    /// </remarks>
     public async ValueTask DisposeAsync()
     {
         try
@@ -382,7 +382,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         m_cancellation.Dispose();
         if (m_retirementFailures.Count > 0)
         {
-            var failure = new AggregateException("Lifetime retirement failed after all resources were attempted.", m_retirementFailures);
+            var failure = new AggregateException(
+                "Lifetime retirement failed after all resources were attempted.",
+                m_retirementFailures
+            );
             m_retirementFailures.Clear();
             throw failure;
         }
@@ -436,7 +439,7 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
             {
                 return;
             }
-            var owner = (LifetimeScope)state!;
+            LifetimeScope owner = (LifetimeScope)state!;
             lock (owner.m_sync)
             {
                 owner.m_tasks.Remove(completed);
@@ -459,8 +462,10 @@ public sealed class LifetimeScope : IDisposable, IAsyncDisposable
         try
         {
             TResult result;
-            using (var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, m_cancellation.Token))
-            {
+            using (CancellationTokenSource linked = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                m_cancellation.Token
+            )) {
                 result = await operation(linked.Token).ConfigureAwait(false);
             }
             lock (m_sync)

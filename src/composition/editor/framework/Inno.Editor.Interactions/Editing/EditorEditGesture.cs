@@ -30,7 +30,7 @@ public sealed class EditorEditGesture : IDisposable
     ) {
         ArgumentNullException.ThrowIfNull(history);
         m_transaction = history.BeginTransaction(name);
-        mergeKey = "gesture:" + m_transaction.id.ToString("N");
+        this.mergeKey = "gesture:" + m_transaction.id.ToString("N");
     }
 
     /// <summary>

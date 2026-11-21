@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
 using Inno.Editor.Assets;
@@ -13,6 +14,7 @@ using Inno.Editor.Rendering;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
+using Inno.Scripting.Api;
 
 using Draft = Inno.Editor.Assets.AssetDraftDocuments<Inno.Rendering.Assets.MaterialAsset>.Draft;
 
@@ -32,7 +34,7 @@ public sealed class MaterialDocuments : EditorModule
     /// <summary>
     /// Gets the authoritative asset catalog used by source-aware inspectors.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetPipeline assets { get; }
 
     internal readonly EditorInteractions interactions;
@@ -40,7 +42,7 @@ public sealed class MaterialDocuments : EditorModule
     /// <summary>
     /// Gets the generation-scoped preview service shared by material presentations.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public IEditorPreviewService previews { get; }
 
     internal MaterialDocuments(
@@ -119,7 +121,7 @@ public sealed class MaterialDocuments : EditorModule
     /// <returns>
     /// The generation-scoped draft; callers must not retain it across a reload.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public Draft OpenDraft(AssetPath path) => m_documents.GetDraft(Open(path));
 
     /// <summary>
@@ -131,7 +133,7 @@ public sealed class MaterialDocuments : EditorModule
     /// <returns>
     /// The generation-scoped editable source draft.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public Draft Open(MaterialAsset material)
     {
         if (!assets.TryGetInfo(material.identity.persistentId, out AssetInfo? info) || info is null)
@@ -156,7 +158,7 @@ public sealed class MaterialDocuments : EditorModule
     /// <returns>
     /// Detached presentation values; an unavailable graph uses the ordinary presentation defaults.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public ShaderParameterPresentation Presentation(
         ShaderAsset shader,
         ShaderPropertyId propertyId,
@@ -167,7 +169,7 @@ public sealed class MaterialDocuments : EditorModule
         {
             cache.contentVersion = shader.contentVersion;
             cache.graph = null;
-            cache.error = "";
+            cache.error = string.Empty;
             try
             {
                 cache.graph = ShaderGraphArtifact.ReadDocument(ShaderGraphArtifact.Read(shader, assets), m_serialization);
@@ -202,7 +204,7 @@ public sealed class MaterialDocuments : EditorModule
 
     internal static bool Recoverable(Exception error)
         => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-           && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+           && RetirementPendingException.Find(error) is null;
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.
@@ -236,7 +238,7 @@ public sealed class MaterialDocuments : EditorModule
     {
         internal long contentVersion = -1;
         internal GraphDocument? graph;
-        internal string error = "";
+        internal string error = string.Empty;
     }
 }
 

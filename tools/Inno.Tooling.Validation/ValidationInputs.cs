@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.IO;
@@ -268,7 +269,7 @@ internal static class ValidationInputs
                     "context",
                     check.context is null
                     ? string.Empty
-                    : System.Text.Json.JsonSerializer.Serialize(
+                    : JsonSerializer.Serialize(
                         plan.contexts
                             .GetValueOrDefault(check.context)?.properties
                             .ToDictionary(
@@ -279,7 +280,7 @@ internal static class ValidationInputs
                     )
                 )
             )
-            .Append(new("definition", System.Text.Json.JsonSerializer.Serialize(check)))
+            .Append(new("definition", JsonSerializer.Serialize(check)))
     );
 
     private static IEnumerable<KeyValuePair<string, string>> BackendPayloads(

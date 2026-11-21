@@ -31,7 +31,7 @@ internal static class PublicApiBoundaryValidator
             .ToArray();
         bool Selected(Project project)
             => selectedProjects is null || selectedProjects.Contains(Path.GetRelativePath(root, project.path).Replace('\\', '/'));
-        var byName = projects.ToDictionary(project => project.name, StringComparer.Ordinal);
+        Dictionary<string, Project> byName = projects.ToDictionary(project => project.name, StringComparer.Ordinal);
         var references = new Dictionary<string, PortableExecutableReference>(StringComparer.OrdinalIgnoreCase);
         string[] platform = ((string?)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") ?? string.Empty).Split(Path.PathSeparator);
         foreach (string path in platform.Where(File.Exists))
@@ -158,8 +158,12 @@ internal static class PublicApiBoundaryValidator
                                 Inspect(parameter.Type, member);
                             }
                             break;
-                        case IFieldSymbol field: Inspect(field.Type, member); break;
-                        case IEventSymbol signal: Inspect(signal.Type, member); break;
+                        case IFieldSymbol field:
+                            Inspect(field.Type, member);
+                            break;
+                        case IEventSymbol signal:
+                            Inspect(signal.Type, member);
+                            break;
                     }
                 }
             }
@@ -230,8 +234,12 @@ internal static class PublicApiBoundaryValidator
                 }
                 switch (value)
                 {
-                    case IArrayTypeSymbol array: Inspect(array.ElementType, member); return;
-                    case IPointerTypeSymbol pointer: Inspect(pointer.PointedAtType, member); return;
+                    case IArrayTypeSymbol array:
+                        Inspect(array.ElementType, member);
+                        return;
+                    case IPointerTypeSymbol pointer:
+                        Inspect(pointer.PointedAtType, member);
+                        return;
                     case IFunctionPointerTypeSymbol pointer:
                         Inspect(pointer.Signature.ReturnType, member);
                         foreach (IParameterSymbol parameter in pointer.Signature.Parameters)

@@ -13,9 +13,6 @@ public sealed partial class ImGuiWidget
     /// <summary>
     /// Draws a single-line search field with a stable identifier.
     /// </summary>
-    /// <remarks>
-    /// Escape clears a nonempty query before leaving text input on a subsequent press.
-    /// </remarks>
     /// <param name="id">
     /// The stable control identifier.
     /// </param>
@@ -34,6 +31,9 @@ public sealed partial class ImGuiWidget
     /// <returns>
     /// <see langword="true"/> when the query changed; otherwise, <see langword="false"/>.
     /// </returns>
+    /// <remarks>
+    /// Escape clears a nonempty query before leaving text input on a subsequent press.
+    /// </remarks>
     public bool SearchInput(
         string id,
         string hint,

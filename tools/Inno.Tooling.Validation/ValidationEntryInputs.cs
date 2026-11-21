@@ -66,7 +66,7 @@ internal sealed class ValidationEntryInputs
             {
                 continue;
             }
-            var node = m_nodes[id];
+            (string key, JsonElement variant, string[] references) node = m_nodes[id];
             keys.Add(node.key);
             foreach (string reference in node.references)
             {

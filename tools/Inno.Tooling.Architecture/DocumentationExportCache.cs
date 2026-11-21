@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -40,7 +41,7 @@ internal sealed class DocumentationExportCache : IDisposable
         m_activity = m_publisher.AcquireUseAsync(cancellationToken).AsTask().GetAwaiter().GetResult();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose() => m_activity.Dispose();
 
     internal bool TryRead<T>(
@@ -163,7 +164,7 @@ internal sealed class DocumentationExportCache : IDisposable
 
     private static string ToolIdentity()
     {
-        var assembly = typeof(DocumentationExportCache).Assembly;
+        Assembly assembly = typeof(DocumentationExportCache).Assembly;
         string[] sources = assembly.GetManifestResourceNames().Where(static name =>
             name.StartsWith("ApiExtractionSource/", StringComparison.Ordinal)).Order(StringComparer.Ordinal).ToArray();
         if (sources.Length == 0)
@@ -178,7 +179,7 @@ internal sealed class DocumentationExportCache : IDisposable
             using var reader = new StreamReader(stream);
             identities.Add(source + "\0" + Hash(Encoding.UTF8.GetBytes(reader.ReadToEnd().ReplaceLineEndings("\n"))));
         }
-        foreach (var compiler in new[] { typeof(Compilation).Assembly, typeof(CSharpCompilation).Assembly })
+        foreach (Assembly compiler in new[] { typeof(Compilation).Assembly, typeof(CSharpCompilation).Assembly })
         {
             identities.Add(compiler.GetName().Name + "\0" + Hash(File.ReadAllBytes(compiler.Location)));
         }

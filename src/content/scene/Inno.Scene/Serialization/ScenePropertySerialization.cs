@@ -150,14 +150,14 @@ public static class ScenePropertySerialization
     /// <param name="data">
     /// Bytes produced by <see cref="CaptureProperty"/> or <see cref="CaptureProperties"/>.
     /// </param>
-    /// <param name="mode">
-    /// The policy applied to unavailable or mismatched current properties.
-    /// </param>
     /// <param name="serialization">
     /// The serialization registry that owns the active converter generation.
     /// </param>
     /// <param name="assets">
     /// The resolver used to materialize canonical asset references in restored values.
+    /// </param>
+    /// <param name="mode">
+    /// The policy applied to unavailable or mismatched current properties.
     /// </param>
     /// <returns>
     /// A summary of restored, ignored, and incompatible properties.

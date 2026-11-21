@@ -426,7 +426,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
         {
             manifest["parserSchema"] = "prior-parser-implementation";
         }
-        manifest["identity"] = "";
+        manifest["identity"] = string.Empty;
         string previousIdentity = Hash(JsonSerializer.SerializeToUtf8Bytes(manifest));
         manifest["identity"] = previousIdentity;
         string previousDirectory = Path.Combine(cache, "generations", previousIdentity);
@@ -435,7 +435,11 @@ public sealed class DocumentationSnapshotTests : IDisposable
         File.WriteAllBytes(Path.Combine(cache, "leases", previousIdentity + ".lock"), []);
         File.WriteAllBytes(Path.Combine(cache, "current.json"), JsonSerializer.SerializeToUtf8Bytes(previousIdentity));
         string[] payloads = Directory.GetFiles(Path.Combine(cache, "pages"), "page.json", SearchOption.AllDirectories);
-        var timestamps = payloads.ToDictionary(static path => path, File.GetLastWriteTimeUtc, StringComparer.Ordinal);
+        Dictionary<string, DateTime> timestamps = payloads.ToDictionary(
+            static path => path,
+            File.GetLastWriteTimeUtc,
+            StringComparer.Ordinal
+        );
 
         await Assert.ThrowsAsync<InvalidDataException>(() => DocumentationStore.OpenAsync(cache));
         DocumentationResult refreshed = await IndexAsync();
@@ -900,7 +904,7 @@ public sealed class DocumentationSnapshotTests : IDisposable
     public async Task LargePageReadsPreservePreambleAndNestedSectionsThroughExplicitContinuation()
     {
         string body = "---\nuid: long-contract\nkind: explanation\n---\nPreamble ownership contract.\n\n# First\nOwner contract.\n\n### Deep\n"
-                      + new string('x', 18000) + "\n\n## Second\nRetirement contract.\n";
+                      + new string('x', 18_000) + "\n\n## Second\nRetirement contract.\n";
         Write("content/en/long.md", body);
         await IndexAsync();
         using DocumentationSnapshot snapshot = await DocumentationStore.OpenAsync(cache);

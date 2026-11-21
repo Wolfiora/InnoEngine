@@ -14,7 +14,7 @@ using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Sets the explicit model composition route for the primary output at a frame boundary.

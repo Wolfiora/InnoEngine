@@ -21,7 +21,7 @@ public sealed class AssemblyReloadSession : IDisposable, IGenerationPublication<
     ) {
         m_owner = owner;
         m_state = state;
-        context = new AssemblyReloadContext(
+        this.context = new AssemblyReloadContext(
             state.previousCatalog,
             state.candidateCatalog,
             state.candidateModules.Select(static module => module.handle).ToArray(),

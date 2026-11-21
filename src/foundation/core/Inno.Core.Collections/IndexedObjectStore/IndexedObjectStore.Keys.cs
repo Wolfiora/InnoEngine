@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace Inno.Core.Collections;
 
-sealed partial class IndexedObjectStore<T>
+public sealed partial class IndexedObjectStore<T>
     where T : class
 {
     /// <summary>
@@ -45,7 +45,7 @@ sealed partial class IndexedObjectStore<T>
                 throw new InvalidOperationException($"Key '{name}' already exists.");
             }
 
-            if ((flags & IndexedObjectKeyFlags.Ordered) != 0 && orderComparer == null)
+            if ((flags & IndexedObjectKeyFlags.Ordered) != 0 && orderComparer is null)
             {
                 throw new ArgumentNullException(
                     nameof(orderComparer),
@@ -54,7 +54,7 @@ sealed partial class IndexedObjectStore<T>
             }
 
             var index = new IndexedObjectIndex<T, TKey>(name, flags, orderComparer);
-            var id = m_nextIndexId++;
+            int id = m_nextIndexId++;
             m_indexes[id] = index;
             m_indexByName[name] = id;
             BumpVersion();
@@ -84,7 +84,7 @@ sealed partial class IndexedObjectStore<T>
         m_lock.EnterWriteLock();
         try
         {
-            if (!m_indexes.Remove(key.id, out var removed))
+            if (!m_indexes.Remove(key.id, out IIndexedObjectIndex<T>? removed))
             {
                 return false;
             }
@@ -127,13 +127,13 @@ sealed partial class IndexedObjectStore<T>
         m_lock.EnterReadLock();
         try
         {
-            if (!m_indexByName.TryGetValue(name, out var id))
+            if (!m_indexByName.TryGetValue(name, out int id))
             {
                 key = default;
                 return false;
             }
 
-            if (!m_indexes.TryGetValue(id, out var index) || index.keyType != typeof(TKey))
+            if (!m_indexes.TryGetValue(id, out IIndexedObjectIndex<T>? index) || index.keyType != typeof(TKey))
             {
                 key = default;
                 return false;
@@ -155,7 +155,7 @@ sealed partial class IndexedObjectStore<T>
         m_lock.EnterReadLock();
         try
         {
-            return m_indexes.TryGetValue(id, out var index) && index.keyType == keyType;
+            return m_indexes.TryGetValue(id, out IIndexedObjectIndex<T>? index) && index.keyType == keyType;
         }
         finally
         {
@@ -166,18 +166,18 @@ sealed partial class IndexedObjectStore<T>
     /// <summary>
     /// Gets all defined key names as a lazy enumerable.
     /// </summary>
-    /// <remarks>
-    /// Enumeration is fail-fast and throws if the store is modified during iteration.
-    /// </remarks>
     /// <returns>
     /// Lazy enumerable of key names.
     /// </returns>
+    /// <remarks>
+    /// Enumeration is fail-fast and throws if the store is modified during iteration.
+    /// </remarks>
     public IEnumerable<string> GetAllKeys() => EnumerateKeys();
 
     private IEnumerable<string> EnumerateKeys()
     {
-        var version = Volatile.Read(ref m_version);
-        foreach (var name in m_indexByName.Keys)
+        int version = Volatile.Read(ref m_version);
+        foreach (string name in m_indexByName.Keys)
         {
             EnsureVersion(version);
             yield return name;
@@ -192,12 +192,12 @@ sealed partial class IndexedObjectStore<T>
     private IndexedObjectIndex<T, TKey> GetIndex<TKey>(IndexedObjectKey<TKey> handle)
         where TKey : notnull
     {
-        if (handle.storeRef == null || !handle.storeRef.TryGetTarget(out var owner) || !ReferenceEquals(owner, this))
+        if (handle.storeRef is null || !handle.storeRef.TryGetTarget(out IIndexedObjectStore? owner) || !ReferenceEquals(owner, this))
         {
             throw new InvalidOperationException($"Key '{handle.name}' does not belong to this store.");
         }
 
-        if (!m_indexes.TryGetValue(handle.id, out var index))
+        if (!m_indexes.TryGetValue(handle.id, out IIndexedObjectIndex<T>? index))
         {
             throw new InvalidOperationException($"Key '{handle.name}' not found.");
         }

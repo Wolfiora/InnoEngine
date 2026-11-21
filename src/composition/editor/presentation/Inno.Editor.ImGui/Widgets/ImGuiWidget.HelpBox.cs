@@ -34,7 +34,7 @@ public sealed unsafe partial class ImGuiWidget
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(icon);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
-        Vector2 padding = new(10f * style.zoom, 8f * style.zoom);
+        var padding = new Vector2(10f * style.zoom, 8f * style.zoom);
         float width = MathF.Max(1f, NativeImGui.GetContentRegionAvail().X);
         float iconWidth = NativeImGui.CalcTextSize(icon).X;
         float gap = 8f * style.zoom;
@@ -201,13 +201,13 @@ public sealed unsafe partial class ImGuiWidget
     /// <param name="drawLeadingControl">
     /// Optional interactive control drawn before the section title.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="title"/> is <see langword="null"/>.
-    /// </exception>
     /// <returns>
     /// <see langword="true"/> when the section content should be drawn; otherwise,
     /// <see langword="false"/> when the section is collapsed.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="title"/> is <see langword="null"/>.
+    /// </exception>
     public bool SectionHeader(
         string title,
         string? description = null,

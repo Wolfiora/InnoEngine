@@ -64,10 +64,10 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         m_validator = supportPackValidator ?? throw new ArgumentNullException(nameof(supportPackValidator));
     }
 
-    /// <inheritdoc />
-    public BuildTargetId target => Inno.Build.BrowserWasm32.BrowserWasm32BuildModule.target.id;
+    /// <inheritdoc/>
+    public BuildTargetId target => BrowserWasm32BuildModule.target.id;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask<PlayerSupportPackPlan> CreatePlanAsync(
         PlayerSupportPackPlanningContext context,
         CancellationToken cancellationToken
@@ -91,7 +91,7 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         {
             throw new FileNotFoundException("The Browser publication template is absent.", template);
         }
-        var nativeContext = new NativeBuildContext(context.engineRoot, "release").WithBindingGenerator(m_bindingGenerator);
+        NativeBuildContext nativeContext = new NativeBuildContext(context.engineRoot, "release").WithBindingGenerator(m_bindingGenerator);
         NativeToolchainSelection tools = await new EmscriptenNativeToolchainProvider(context.dotnetHost)
             .ResolveAsync(nativeContext, m_host, target.value, cancellationToken)
             .ConfigureAwait(false);
@@ -196,7 +196,7 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
             "-p:InnoShaderToolSourceRoot=" + nativeContext.engineRoot,
             "-p:InnoNativeBindingSelection=" + bindingSelection,
             ..(identity.nativeDependencies is string selection
-               ? new[] { "-p:InnoNativeDependencyManifest=" + selection }
+               ? ["-p:InnoNativeDependencyManifest=" + selection]
                : Array.Empty<string>()),
             "-p:DebugType=None",
             "-p:DebugSymbols=false"
@@ -231,7 +231,7 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         await execution.VerifyAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Validate(string directory) => m_validator.Validate(directory);
 
     private static void CopyLinkTemplate(
@@ -287,10 +287,10 @@ public sealed class BrowserWasm32PlayerSupportPackSource : IPlayerSupportPackSou
         PlayerSupportPackPreparationIdentity identity
     ) : PlayerSupportPackPlan(owner.target, identity.fingerprint)
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken) => identity.VerifyAsync(cancellationToken);
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override ValueTask PrepareAsync(
             string stagingDirectory,
             CancellationToken cancellationToken

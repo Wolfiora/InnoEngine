@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using Inno.Core.Execution;
 using Inno.Editor.Core;
 
 namespace Inno.Editor.Interactions;
@@ -93,7 +94,7 @@ public sealed class EditorPanelExtension
             }
             return true;
         }
-        catch (Exception exception) when (Inno.Core.Execution.RetirementPendingException.Find(exception) is null)
+        catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
         {
             useWindowPadding = true;
             allowScrolling = true;
@@ -124,7 +125,7 @@ public sealed class EditorPanelExtension
             m_panel.Draw(context);
             return true;
         }
-        catch (Exception exception) when (Inno.Core.Execution.RetirementPendingException.Find(exception) is null)
+        catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
         {
             m_panel.isOpen = false;
             m_quarantine(exception);

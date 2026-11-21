@@ -13,7 +13,7 @@ public sealed unsafe class ImGuiAbiLayoutTests
         Assert.Equal(2 * sizeof(int), Marshal.OffsetOf<ImVectorInt>(nameof(ImVectorInt.Data)).ToInt32());
 
         int* values = stackalloc int[3] { 11, 23, 37 };
-        ImVectorInt vector = new() { Size = 2, Capacity = 3, Data = values };
+        var vector = new ImVectorInt() { Size = 2, Capacity = 3, Data = values };
         Assert.Equal(2, vector.Size);
         Assert.Equal(3, vector.Capacity);
         Assert.Equal(11, vector.Data[0]);

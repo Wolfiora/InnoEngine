@@ -54,7 +54,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         _ = typeof(AssetSerializationServices);
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
-        _ = new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target);
+        _ = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
         m_types.Rebuild();
     }
 
@@ -95,13 +95,13 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         );
         WriteBytes("Shaders/basic.ishader", GraphDocumentCodec.Encode(graph, m_serialization));
         WriteText("Meshes/triangle.obj", "v 0 0 0\nv 1 0 0\nv 0 1 0\nf 1 2 3\n");
-        byte[] png = new byte[24];
+        var png = new byte[24];
         new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }.CopyTo(png, 0);
         BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(16, 4), 8);
         BinaryPrimitives.WriteUInt32BigEndian(png.AsSpan(20, 4), 4);
         WriteBytes("Textures/color.png", png);
 
-        using (var writer = CreateLoader(m_assets, m_library))
+        using (AssetLoader writer = CreateLoader(m_assets, m_library))
         {
             ShaderAsset shader = Assert.IsType<ShaderAsset>(writer.Load(AssetPath.Project("Shaders/basic.ishader"), typeof(ShaderAsset)));
 
@@ -119,7 +119,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             Assert.True(writer.Save(AssetPath.Project("Pipelines/default.irenderpipeline"), pipeline));
         }
 
-        using var loader = CreateLoader(m_assets, m_library);
+        using AssetLoader loader = CreateLoader(m_assets, m_library);
         ShaderAsset loadedShader = Assert.IsType<ShaderAsset>(
             loader.Load(AssetPath.Project("Shaders/basic.ishader"), typeof(ShaderAsset))
         );
@@ -158,8 +158,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
     [Fact]
     public void ShaderIncludesUseTheCandidateMountSnapshotAndDeclaredPluginDependencies()
     {
-        AssetSourceId providerId = new("tests.provider");
-        AssetSourceId consumerId = new("tests.consumer");
+        var providerId = new AssetSourceId("tests.provider");
+        var consumerId = new AssetSourceId("tests.consumer");
         string providerRoot = Path.Combine(m_root, "ProviderPlugin");
         string consumerRoot = Path.Combine(m_root, "ConsumerPlugin");
         Directory.CreateDirectory(providerRoot);
@@ -185,11 +185,11 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             vec4 Evaluate() { return ProviderColor() * LocalValue(); }
             """
         );
-        AssetSourceMount project = new(AssetSourceId.project, m_assets, isReadOnly: false);
-        AssetSourceMount provider = new(providerId, providerRoot, isReadOnly: true);
-        AssetSourceMount undeclaredConsumer = new(consumerId, consumerRoot, isReadOnly: true);
+        var project = new AssetSourceMount(AssetSourceId.project, m_assets, isReadOnly: false);
+        var provider = new AssetSourceMount(providerId, providerRoot, isReadOnly: true);
+        var undeclaredConsumer = new AssetSourceMount(consumerId, consumerRoot, isReadOnly: true);
 
-        using (var undeclared = CreateLoader(
+        using (AssetLoader undeclared = CreateLoader(
             [project, provider, undeclaredConsumer],
             Path.Combine(m_root, "UndeclaredLibrary")
         )) {
@@ -197,8 +197,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             Assert.Contains("did not declare dependency", error.Message, StringComparison.OrdinalIgnoreCase);
         }
 
-        AssetSourceMount declaredConsumer = new(consumerId, consumerRoot, isReadOnly: true, dependencies: [providerId]);
-        using var loader = CreateLoader([project, provider, declaredConsumer], Path.Combine(m_root, "DeclaredLibrary"));
+        var declaredConsumer = new AssetSourceMount(consumerId, consumerRoot, isReadOnly: true, dependencies: [providerId]);
+        using AssetLoader loader = CreateLoader([project, provider, declaredConsumer], Path.Combine(m_root, "DeclaredLibrary"));
         loader.Rescan();
         ShaderFunctionAsset shader = Assert.IsType<ShaderFunctionAsset>(
             loader.Load(new AssetPath(consumerId, "main.ishadersource"), typeof(ShaderFunctionAsset))
@@ -228,7 +228,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             GraphDocumentCodec.Encode(ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty), m_serialization)
         );
         WriteReadOnlyShaderSource(m_assets, "Function.ishadersource", "vec4 Evaluate(vec4 color) { return color; }");
-        using var loader = CreateLoader(m_assets, m_library);
+        using AssetLoader loader = CreateLoader(m_assets, m_library);
         ShaderAsset shader = Assert.IsType<ShaderAsset>(loader.Load(AssetPath.Project("Surface.ishader"), typeof(ShaderAsset)));
         ShaderFunctionAsset function = Assert.IsType<ShaderFunctionAsset>(
             loader.Load(AssetPath.Project("Function.ishadersource"), typeof(ShaderFunctionAsset))
@@ -265,7 +265,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             "Exposure",
             "Tint"
         );
-        using var loader = CreateLoader(m_assets, m_library);
+        using AssetLoader loader = CreateLoader(m_assets, m_library);
         ShaderFunctionAsset library = Assert.IsType<ShaderFunctionAsset>(
             loader.Load(AssetPath.Project("Library.ishadersource"), typeof(ShaderFunctionAsset))
         );
@@ -300,13 +300,13 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         graph.AddNode(new(new("missing"), "unavailable.shader-node"));
         graph.AddEdge(new(new("unresolved"), new(new("missing"), new("old-output")), new(new("fragment"), new("old-input"))));
         byte[] expected = GraphDocumentCodec.Encode(graph, m_serialization);
-        using (var pipeline = CreatePipeline())
+        using (AssetPipeline pipeline = CreatePipeline())
         {
             var store = new ShaderGraphSourceStore(pipeline, m_serialization);
             _ = store.Save(path, graph, null);
             Assert.Equal(expected, GraphDocumentCodec.Encode(store.Read(path).document, m_serialization));
         }
-        using var restarted = CreatePipeline();
+        using AssetPipeline restarted = CreatePipeline();
         var reopened = new ShaderGraphSourceStore(restarted, m_serialization);
         Assert.Equal(expected, GraphDocumentCodec.Encode(reopened.Read(path).document, m_serialization));
     }
@@ -314,7 +314,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
     [Fact]
     public void ShaderSaveRejectsExternalEditsDeletionAndNewFileCollisions()
     {
-        using var pipeline = CreatePipeline();
+        using AssetPipeline pipeline = CreatePipeline();
         var store = new ShaderGraphSourceStore(pipeline, m_serialization);
         AssetPath path = AssetPath.Project("conflict.ishader");
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
@@ -348,7 +348,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             })
         );
         var id = new AssetSourceId("test.installed");
-        using var pipeline = CreatePipeline([new(AssetSourceId.project, m_assets, false), new(id, installed, true)]);
+        using AssetPipeline pipeline = CreatePipeline([new(AssetSourceId.project, m_assets, false), new(id, installed, true)]);
         var store = new ShaderGraphSourceStore(pipeline, m_serialization);
         var path = new AssetPath(id, "shader.ishader");
         ShaderGraphSourceSnapshot snapshot = store.Read(path);
@@ -381,7 +381,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         WriteBytes("surface.ishader", GraphDocumentCodec.Encode(graph, m_serialization));
         using AssetPipeline assets = CreatePipeline();
         ShaderAsset shader = assets.Load<ShaderAsset>(AssetPath.Project("surface.ishader"));
-        SerializedRenderExtensionState state = new(
+        var state = new SerializedRenderExtensionState(
             assets.CaptureProperties(new NestedPipelineSettings
             {
                 nested = new NestedPipelineReferences { shader = shader }
@@ -405,7 +405,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             () => new RenderPipelineAsset().RestoreProperties(state.stableTypeId, state.propertyData, new NestedPipelineSettings())
         );
         Assert.Throws<InvalidOperationException>(() => context.Restore(loaded.pipelineState, new OtherPipelineSettings()));
-        using (AssetLoader other = new(
+        using var other = new AssetLoader(
             m_types,
             m_serialization,
             new IdentityAllocator(),
@@ -413,24 +413,24 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
             m_logs,
             m_assets,
             Path.Combine(m_root, "IsolatedLibrary")
-        )) {
-            var otherPipeline = Assert.IsType<RenderPipelineAsset>(other.Load(path, typeof(RenderPipelineAsset)));
-            var otherShader = Assert.IsType<ShaderAsset>(other.Load(AssetPath.Project("surface.ishader"), typeof(ShaderAsset)));
-            Assert.Equal(shader.identity.persistentId, otherShader.identity.persistentId);
-            Assert.NotSame(shader, otherShader);
-            var second = new NestedPipelineSettings();
-            new RenderExtensionStateContext(otherPipeline).Restore(otherPipeline.pipelineState, second);
-            Assert.Same(otherShader, second.nested.shader);
-            var firstAgain = new NestedPipelineSettings();
-            ownedContext.Restore(loaded.pipelineState, firstAgain);
-            Assert.Same(shader, firstAgain.nested.shader);
-        }
+        );
+        RenderPipelineAsset otherPipeline = Assert.IsType<RenderPipelineAsset>(other.Load(path, typeof(RenderPipelineAsset)));
+        ShaderAsset otherShader = Assert.IsType<ShaderAsset>(other.Load(AssetPath.Project("surface.ishader"), typeof(ShaderAsset)));
+        Assert.Equal(shader.identity.persistentId, otherShader.identity.persistentId);
+        Assert.NotSame(shader, otherShader);
+        var second = new NestedPipelineSettings();
+        new RenderExtensionStateContext(otherPipeline).Restore(otherPipeline.pipelineState, second);
+        Assert.Same(otherShader, second.nested.shader);
+        var firstAgain = new NestedPipelineSettings();
+        ownedContext.Restore(loaded.pipelineState, firstAgain);
+        Assert.Same(shader, firstAgain.nested.shader);
     }
 
     [StableTypeId("5c438963-794a-4fde-bd59-45c00d7479de")]
     private sealed class NestedPipelineSettings : ISerializable
     {
-        [SerializableProperty] public NestedPipelineReferences nested { get; set; }
+        [SerializableProperty]
+        public NestedPipelineReferences nested { get; set; }
     }
 
     private struct NestedPipelineReferences
@@ -457,7 +457,7 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
     ) {
         string path = Path.Combine(m_assets, relativePath.Replace('/', Path.DirectorySeparatorChar));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        System.IO.File.WriteAllBytes(path, bytes);
+        File.WriteAllBytes(path, bytes);
     }
 
     private void WriteReadOnlyShaderSource(
@@ -469,8 +469,8 @@ public sealed class RenderingImporterIntegrationTests : IDisposable
         if (exports.Length == 0) exports = ["Evaluate"];
         string path = Path.Combine(root, localPath.Replace('/', Path.DirectorySeparatorChar));
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        System.IO.File.WriteAllText(path, content, Encoding.UTF8);
-        System.IO.File.WriteAllBytes(
+        File.WriteAllText(path, content, Encoding.UTF8);
+        File.WriteAllBytes(
             path + ".imeta",
             m_serialization.Serialize(
                 new RenderingAssetSourceMeta
@@ -511,7 +511,12 @@ internal sealed class RenderingAssetSourceMeta : ISerializable
 
 internal sealed class RenderingImportSettingsEnvelope : ISerializable
 {
-    [SerializableProperty] public Guid stableTypeId { get; set; }
-    [SerializableProperty] public byte[] properties { get; set; } = [];
-    [SerializableProperty] public Guid[] dependencies { get; set; } = [];
+    [SerializableProperty]
+    public Guid stableTypeId { get; set; }
+
+    [SerializableProperty]
+    public byte[] properties { get; set; } = [];
+
+    [SerializableProperty]
+    public Guid[] dependencies { get; set; } = [];
 }

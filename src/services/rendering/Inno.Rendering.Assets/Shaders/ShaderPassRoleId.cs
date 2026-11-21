@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies an open pass purpose defined by a rendering provider.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("56d381cc-a73a-595b-824c-05191b9ce303")]
+[StableTypeId("56d381cc-a73a-595b-824c-05191b9ce303")]
 public record struct ShaderPassRoleId
 {
     /// <summary>
@@ -44,5 +44,5 @@ public record struct ShaderPassRoleId
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public readonly override string ToString() => value ?? string.Empty;
+    public override readonly string ToString() => value ?? string.Empty;
 }

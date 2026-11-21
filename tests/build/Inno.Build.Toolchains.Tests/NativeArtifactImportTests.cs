@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -75,10 +77,10 @@ public sealed class NativeArtifactImportTests : IDisposable
         {
             File.WriteAllText(
                 Path.Combine(imported, "generation-manifest.json"),
-                System.Text.Json.JsonSerializer.Serialize(new
+                JsonSerializer.Serialize(new
                 {
                     fingerprint = damage == "wrong-identity" ? new string('0', 64) : source.fingerprint,
-                    files = new System.Collections.Generic.Dictionary<string, string> { ["../escape"] = new string('0', 64) }
+                    files = new Dictionary<string, string> { ["../escape"] = new string('0', 64) }
                 })
             );
         }
@@ -147,7 +149,7 @@ public sealed class NativeArtifactImportTests : IDisposable
                 producer,
                 archive,
                 selectedArtifacts: exactSelection
-                                   ? new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal) { relative }
+                                   ? new HashSet<string>(StringComparer.Ordinal) { relative }
                                    : null
             )
         );
@@ -194,7 +196,7 @@ public sealed class NativeArtifactImportTests : IDisposable
             }
             else if (damage == "link")
             {
-                output.ExternalAttributes = 0xa000 << 16;
+                output.ExternalAttributes = 0xA000 << 16;
             }
             else
             {

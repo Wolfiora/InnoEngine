@@ -3,6 +3,7 @@ using System.Numerics;
 using Inno.Native.ImGui;
 
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
 
@@ -94,14 +95,14 @@ public sealed unsafe partial class ImGuiWidget
             }
 
             bool deactivated = NativeImGui.IsItemDeactivated();
-            bool escapePressed = NativeImGui.IsKeyPressed((Inno.Native.ImGui.ImGuiKey)ImGuiKey.Escape);
+            bool escapePressed = NativeImGui.IsKeyPressed((NativeKey)ImGuiKey.Escape);
             bool active = NativeImGui.IsItemActive();
             bool contextMenuRequested = active && NativeImGui.IsMouseReleased((int)(ImGuiMouseButton.Right));
             if (selectAll && active)
             {
                 uint inputId = NativeImGui.GetItemID();
                 ImGuiInputTextState* inputState = NativeImGui.Raw.GetInputTextState(inputId);
-                if (inputState != null)
+                if (inputState is not null)
                 {
                     NativeImGui.Raw.SelectAll(inputState);
                     requestFocus = false;
@@ -110,7 +111,7 @@ public sealed unsafe partial class ImGuiWidget
 
             if (active)
             {
-                Vector2 focusOffset = new(C_INLINE_RENAME_FOCUS_OFFSET);
+                var focusOffset = new Vector2(C_INLINE_RENAME_FOCUS_OFFSET);
                 ImGui.DrawNativeRectangle(
                     NativeImGui.Raw.GetForegroundDrawList((ImGuiViewport*)null),
                     NativeImGui.GetItemRectMin() - focusOffset,

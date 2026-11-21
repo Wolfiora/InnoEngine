@@ -22,12 +22,12 @@ public sealed class SerializationRegistry : IDisposable
     /// <param name="types">
     /// The type catalog that owns converter extension generations.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="types"/> is null.
-    /// </exception>
     /// <param name="metadata">
     /// The declaration access provider selected by the same composition root.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="types"/> is null.
+    /// </exception>
     [ScriptingApiIgnore]
     public SerializationRegistry(
         TypeCatalog types,
@@ -404,12 +404,6 @@ public sealed class SerializationRegistry : IDisposable
     /// Reference equality proves unchanged bytes; different instances may still encode identically.
     /// Ordinary serialization and snapshot encoding produce identical bytes. Capture failure publishes no snapshot.
     /// </returns>
-    /// <remarks>
-    /// Writers borrowed by a snapshot converter belong to its synchronous callback and must not be used after it returns.
-    /// Default capture evaluates getters and converters in full. An explicitly opted-in converter may
-    /// reuse its prior node only after every current capture-key input has been verified. Ordinary
-    /// serialization never uses these keys; incomplete or unavailable declarations retain complete capture.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// The source value is null.
     /// </exception>
@@ -419,6 +413,12 @@ public sealed class SerializationRegistry : IDisposable
     /// <exception cref="InvalidOperationException">
     /// A converter, unsupported value or reference context prevents capture.
     /// </exception>
+    /// <remarks>
+    /// Writers borrowed by a snapshot converter belong to its synchronous callback and must not be used after it returns.
+    /// Default capture evaluates getters and converters in full. An explicitly opted-in converter may
+    /// reuse its prior node only after every current capture-key input has been verified. Ordinary
+    /// serialization never uses these keys; incomplete or unavailable declarations retain complete capture.
+    /// </remarks>
     [ScriptingApiIgnore]
     public SerializationSnapshot CaptureSnapshot<T>(
         T value,

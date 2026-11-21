@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -110,7 +111,7 @@ internal static class PublicApiDocumentationValidator
             {
                 document = XElement.Parse(xml);
             }
-            catch (System.Xml.XmlException)
+            catch (XmlException)
             {
                 continue;
             }
@@ -128,7 +129,7 @@ internal static class PublicApiDocumentationValidator
                 IPropertySymbol property => property.Parameters,
                 _ => []
             };
-            var documented = document.Elements("param")
+            HashSet<string?> documented = document.Elements("param")
                 .Select(static element => (string?)element.Attribute("name"))
                 .ToHashSet(StringComparer.Ordinal);
             if (parameters.Any(parameter => !documented.Contains(parameter.Name)))
@@ -137,7 +138,7 @@ internal static class PublicApiDocumentationValidator
             }
             if (target is IMethodSymbol generic)
             {
-                var typeParameters = document.Elements("typeparam")
+                HashSet<string?> typeParameters = document.Elements("typeparam")
                     .Select(static element => (string?)element.Attribute("name"))
                     .ToHashSet(StringComparer.Ordinal);
                 if (generic.TypeParameters.Any(parameter => !typeParameters.Contains(parameter.Name)))

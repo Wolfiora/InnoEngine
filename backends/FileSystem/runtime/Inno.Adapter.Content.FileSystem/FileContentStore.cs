@@ -25,10 +25,10 @@ public sealed class FileContentStore : IRuntimeContentStore
         this.retirementDiagnostics = retirementDiagnostics;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackDescriptor descriptor { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackIndex index { get; }
 
     /// <summary>
@@ -36,7 +36,7 @@ public sealed class FileContentStore : IRuntimeContentStore
     /// </summary>
     public IReadOnlyList<string> retirementDiagnostics { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentReadLease Acquire(ContentKey key)
     {
         lock (m_sync)

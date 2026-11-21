@@ -108,7 +108,7 @@ public static partial class NativeDependencyManifest
             selectedComponents.Add(step.id, selected);
             RequireDigest(selected.sha256);
             assets.Add(new(selected.asset, selected.sha256));
-            foreach (var pair in selected.sources)
+            foreach (KeyValuePair<string, string> pair in selected.sources)
             {
                 if (sources.TryGetValue(pair.Key, out string? previous) && previous != pair.Value)
                 {
@@ -213,7 +213,7 @@ public static partial class NativeDependencyManifest
                 .ToArray();
             if (step.component.bindingDefinition is not null)
             {
-                var bindingContext = new NativeBuildContext(root, step.configuration ?? context.configuration)
+                NativeBuildContext bindingContext = new NativeBuildContext(root, step.configuration ?? context.configuration)
                     .WithToolchain(context.RequireToolchain())
                     .WithBindingGenerator(context.RequireBindingGenerator());
                 await bindingContext
@@ -400,7 +400,7 @@ public static partial class NativeDependencyManifest
         foreach (ProductNativeBuildStep step in plan.steps)
         {
             DependencyAsset asset = Select(step);
-            foreach (var pair in asset.sources)
+            foreach (KeyValuePair<string, string> pair in asset.sources)
             {
                 if (expectedSources.TryGetValue(pair.Key, out string? existing) && existing != pair.Value)
                 {
@@ -523,7 +523,7 @@ public static partial class NativeDependencyManifest
                         bindingsPath = PathBoundary.Resolve(bindingDirectory, binding.managed),
                         nativeDirectory = PathBoundary.Resolve(bindingDirectory, binding.native)
                     };
-                    if (bindings.TryGetValue(step.component.nativeProject, out var previous)
+                    if (bindings.TryGetValue(step.component.nativeProject, out NativeBindingGenerationDescriptor? previous)
                         && previous.fingerprint != generation.fingerprint
                     ) {
                         throw new InvalidDataException("A dependency closure selected conflicting binding generations.");

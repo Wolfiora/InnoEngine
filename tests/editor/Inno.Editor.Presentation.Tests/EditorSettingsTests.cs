@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Diagnostics;
+using Inno.Core.Events;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
@@ -38,13 +41,13 @@ public sealed class EditorSettingsTests : IDisposable
             new ModuleHostOptions { catalogSource = new DotNetAssemblyCatalogSource(typeof(EditorSettingsTests).Assembly) }
         );
         _ = typeof(EditorSettings);
-        _ = System.Reflection.Assembly.Load("Inno.Editor.Panel.Logging");
+        _ = Assembly.Load("Inno.Editor.Panel.Logging");
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         SettingsCaptureModule.current = null;
         SettingsCaptureModule.console = null;
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_types, m_serialization, m_diagnostics, m_playMode]
@@ -289,7 +292,7 @@ public sealed class EditorSettingsTests : IDisposable
         public string? lastFailure => null;
         public LogSessionId activeSessionId => LogSessionId.none;
 
-        private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
+        private readonly EventDispatcher m_stateDispatcher = new();
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener) => m_stateDispatcher.CreateHub();
 

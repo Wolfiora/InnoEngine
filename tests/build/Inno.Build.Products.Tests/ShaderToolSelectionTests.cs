@@ -75,7 +75,9 @@ public sealed class ShaderToolSelectionTests
             Assert.Equal(sdk.cmakeArguments, runtime.cmakeArguments);
             Assert.False(runtime.TryResolveExecutable("dotnet", out _));
             string archive = Path.Combine(root, "bridge.lib");
-            var linking = WindowsX64BgfxIntegration.nativeProfile.CreateBindingLinkSettings(archive);
+            (string reference, IReadOnlyList<string> arguments) linking = WindowsX64BgfxIntegration.nativeProfile.CreateBindingLinkSettings(
+                archive
+            );
             Assert.Equal(Path.Combine(root, "bridge"), linking.reference);
             Assert.Equal(["/WHOLEARCHIVE:\"" + archive + "\""], linking.arguments);
         }

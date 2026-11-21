@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -96,7 +97,7 @@ public sealed class BackendInputTests
                 "--output",
                 repository.PathOf("artifacts/bound.json")
             ]);
-        static string Digest(string value) => System.Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
+        static string Digest(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
     }
 
     [Theory]
@@ -126,7 +127,7 @@ public sealed class BackendInputTests
         Assert.Contains(plan.RootElement.GetProperty("nativeRequests").EnumerateArray(), request => (
             request.GetProperty("product").GetString() == "tool-only" && request.GetProperty("configuration").GetString() == "Debug"
         ));
-        string digest = new('a', 64);
+        var digest = new string('a', 64);
         WriteSelection(digest);
         string output = repository.PathOf("artifacts/inputs.json");
         Assert.Equal(0, await Evaluate());
@@ -146,7 +147,7 @@ public sealed class BackendInputTests
                 "artifacts/native.json",
                 JsonSerializer.Serialize(new
                 {
-                    assets = System.Array.Empty<object>(),
+                    assets = Array.Empty<object>(),
                     aggregates = new[]
                     {
                         new { product = "tool-only", target = "fixture-target", configuration = "release", sha256 = digest }

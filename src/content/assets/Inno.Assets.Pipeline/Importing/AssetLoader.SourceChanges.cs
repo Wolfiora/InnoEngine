@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Reconciles source files, metadata, artifacts and the in-memory catalog.

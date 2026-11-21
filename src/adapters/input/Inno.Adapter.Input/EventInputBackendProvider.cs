@@ -14,7 +14,7 @@ public sealed class EventInputBackendProvider : InputBackendProvider
     public EventInputBackendProvider()
         : base(InputBackendId.events) {}
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IInputEventSource CreateEventSource(
         IPlatformWindow window,
         bool acceptAllWindows

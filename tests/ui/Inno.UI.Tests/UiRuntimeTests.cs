@@ -18,7 +18,7 @@ public sealed class UiRuntimeTests
     {
         var backend = new CapturingBackend();
         using var runtime = new UiRuntime(backend, new RejectingArtifacts());
-        InputSnapshot snapshot = new(
+        var snapshot = new InputSnapshot(
             7,
             keysPressed: [KeyCode.Enter],
             mouseButtonsReleased: [MouseButton.Left],
@@ -32,7 +32,7 @@ public sealed class UiRuntimeTests
         runtime.Attach();
 
         runtime.BeginFrame(frame);
-        Inno.UI.UI.Update(new UiContextHandle(10));
+        UI.Update(new UiContextHandle(10));
 
         UiInputSnapshot captured = Assert.IsType<UiInputSnapshot>(backend.lastInput);
         Assert.Equal(new Vector2(12f, 34f), captured.mousePosition);
@@ -143,7 +143,7 @@ public sealed class UiRuntimeTests
 
         public bool HasElementAtPoint(
             UiContextHandle context,
-            Inno.Core.Mathematics.Vector2 position
+            Vector2 position
         ) => false;
 
         public void Update(

@@ -26,7 +26,9 @@ public sealed class ShaderGraphProgramCompiler
     /// The owner-scoped node registry.
     /// </param>
     public ShaderGraphProgramCompiler(ShaderNodeCompilerRegistry nodes)
-        => m_nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));
+    {
+        m_nodes = nodes ?? throw new ArgumentNullException(nameof(nodes));
+    }
 
     /// <summary>
     /// Validates the complete pass/stage graph without deleting invalid or unavailable records.
@@ -78,7 +80,10 @@ public sealed class ShaderGraphProgramCompiler
                 return new([], diagnostics);
             }
             ConnectRasterStages(graph, implementationId, sources, serialization, context);
-            var definitions = definition.passes.ToDictionary(static pass => pass.name, StringComparer.Ordinal);
+            Dictionary<string, ShaderPassDefinition> definitions = definition.passes.ToDictionary(
+                static pass => pass.name,
+                StringComparer.Ordinal
+            );
             if (definitions.Count == 0)
             {
                 throw new InvalidOperationException("A shader graph requires at least one pass.");
@@ -90,13 +95,16 @@ public sealed class ShaderGraphProgramCompiler
                 throw new InvalidOperationException("Program references must name unique declared passes.");
             }
             var stages = new Dictionary<string, ShaderIrStage>(StringComparer.Ordinal);
-            var outputs = graph.nodes.Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId).ToArray();
-            var owners = graph.nodes.Where(static node => node.definitionId != ShaderGraphDocument.outputDefinitionId)
+            GraphNodeRecord[] outputs = graph.nodes
+                .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+                .ToArray();
+            Dictionary<GraphNodeId, string> owners = graph.nodes
+                .Where(static node => node.definitionId != ShaderGraphDocument.outputDefinitionId)
                 .ToDictionary(
                     static node => node.id,
-                    node => ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, "", serialization, context)
+                    node => ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, string.Empty, serialization, context)
                 );
-            var outputIds = outputs.Select(static node => node.id.value).ToHashSet(StringComparer.Ordinal);
+            HashSet<string> outputIds = outputs.Select(static node => node.id.value).ToHashSet(StringComparer.Ordinal);
             foreach ((GraphNodeId node, string owner) in owners)
             {
                 if (!outputIds.Contains(owner))
@@ -120,7 +128,7 @@ public sealed class ShaderGraphProgramCompiler
                     context
                 )
                     ?? throw new InvalidOperationException("A stage output node requires its stage settings.");
-                var region = graph.Clone();
+                GraphDocument region = graph.Clone();
                 foreach (GraphNodeRecord node in graph.nodes)
                 {
                     if (!owners.TryGetValue(node.id, out string? owner) || owner != output.id.value)
@@ -163,7 +171,8 @@ public sealed class ShaderGraphProgramCompiler
                         "Every stage output must have exactly one connection with its original port identity."
                     );
                 }
-                var inputs = region.nodes.Where(static node => node.definitionId == "inno.shader.stage-input")
+                Dictionary<GraphNodeId, ShaderIrStageInput> inputs = region.nodes
+                    .Where(static node => node.definitionId == "inno.shader.stage-input")
                     .ToDictionary(static node => node.id, node =>
                         (ShaderGraphDocument.Read<ShaderGraphInputSettings?>(
                             node,
@@ -205,7 +214,7 @@ public sealed class ShaderGraphProgramCompiler
                     lowered.block!,
                     inputs.Values,
                     settings.outputs.Select(
-                        static value => new ShaderIrStageOutput(value.id, value.kind, value.semantic ?? "", value.location)
+                        static value => new ShaderIrStageOutput(value.id, value.kind, value.semantic ?? string.Empty, value.location)
                     ),
                     settings.threadsX,
                     settings.threadsY,
@@ -280,8 +289,8 @@ public sealed class ShaderGraphProgramCompiler
         GraphNodeRecord[] outputs = graph.nodes
             .Where(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
             .ToArray();
-        var outputById = outputs.ToDictionary(static node => node.id.value, StringComparer.Ordinal);
-        var stageById = outputs.ToDictionary(
+        Dictionary<string, GraphNodeRecord> outputById = outputs.ToDictionary(static node => node.id.value, StringComparer.Ordinal);
+        Dictionary<string, ShaderStage> stageById = outputs.ToDictionary(
             static node => node.id.value,
             node => ShaderGraphDocument.Read(
                 node,
@@ -296,9 +305,15 @@ public sealed class ShaderGraphProgramCompiler
         string Owner(GraphNodeRecord node)
             => node.definitionId == ShaderGraphDocument.outputDefinitionId
                ? node.id.value
-               : ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, "", serialization, context);
+               : ShaderGraphDocument.Read(node, ShaderGraphDocument.stageKey, string.Empty, serialization, context);
 
-        var crossings = graph.edges
+        (
+            GraphEdgeRecord edge,
+            GraphNodeRecord source,
+            GraphNodeRecord destination,
+            string sourceOwner,
+            string destinationOwner
+        )[] crossings = graph.edges
             .Select(edge =>
                 {
                     GraphNodeRecord source = graph.FindNode(edge.output.nodeId)
@@ -342,7 +357,7 @@ public sealed class ShaderGraphProgramCompiler
             }
         }
 
-        var occupiedLocations = outputs.ToDictionary(
+        Dictionary<string, HashSet<int>> occupiedLocations = outputs.ToDictionary(
             static node => node.id.value,
             node => ShaderGraphDocument.Read(
                 node,
@@ -450,7 +465,7 @@ public sealed class ShaderGraphProgramCompiler
                 sourceBridges.Add(edge.output, sourceBridge);
             }
 
-            var key = (edge.output, destinationOwner);
+            (GraphEndpoint output, string destinationOwner) key = (edge.output, destinationOwner);
             if (!destinationBridges.TryGetValue(key, out GraphNodeRecord? inputNode))
             {
                 string token = Convert.ToHexString(

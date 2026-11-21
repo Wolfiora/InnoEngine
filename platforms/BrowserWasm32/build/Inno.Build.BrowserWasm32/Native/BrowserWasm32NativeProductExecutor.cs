@@ -56,7 +56,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
         ArgumentNullException.ThrowIfNull(plan);
         cancellationToken.ThrowIfCancellationRequested();
         NativeToolchainSelection tools = context.RequireToolchain();
-        if (tools.targetId != Inno.Build.BrowserWasm32.BrowserWasm32BuildModule.target.id.value || context.configuration != "release")
+        if (tools.targetId != BrowserWasm32BuildModule.target.id.value || context.configuration != "release")
         {
             throw new InvalidOperationException("Browser static publication requires an explicit Release wasm32 selection.");
         }
@@ -267,7 +267,7 @@ public sealed class BrowserWasm32NativeProductExecutor : INativeProductExecutor
         {
             delimiter++;
         }
-        string equals = new('=', delimiter);
+        var equals = new string('=', delimiter);
         return "[" + equals + "[" + portable + "]" + equals + "]";
     }
 }

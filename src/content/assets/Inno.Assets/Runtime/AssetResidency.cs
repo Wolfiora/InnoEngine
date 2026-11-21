@@ -149,16 +149,16 @@ public sealed class AssetLease<TAsset> : IDisposable
     /// <summary>
     /// Releases this caller's residency ownership, retaining its value and callback while the provider reports Pending.
     /// </summary>
-    /// <remarks>
-    /// Pending may be wrapped in another exception; classify the complete failure with RetirementPendingException.Find.
-    /// Ordinary sibling failures remain observable after a later release attempt succeeds.
-    /// </remarks>
     /// <exception cref="RetirementPendingException">
     /// Provider retirement is unfinished or a concurrent release is in progress; retain this lease and retry at a safe point.
     /// </exception>
     /// <exception cref="AggregateException">
     /// The provider reports a wrapped failure, or release completes with ordinary errors retained from earlier pending attempts.
     /// </exception>
+    /// <remarks>
+    /// Pending may be wrapped in another exception; classify the complete failure with RetirementPendingException.Find.
+    /// Ordinary sibling failures remain observable after a later release attempt succeeds.
+    /// </remarks>
     public void Dispose() => m_residency.Dispose();
 }
 
@@ -217,7 +217,7 @@ public sealed class ArtifactLease : IDisposable
             throw new InvalidDataException("The artifact payload exceeds the supported array budget.");
         }
         using Stream input = OpenRead();
-        byte[] bytes = new byte[(int)length];
+        var bytes = new byte[(int)length];
         input.ReadExactly(bytes);
         if (input.ReadByte() != -1)
         {
@@ -229,17 +229,17 @@ public sealed class ArtifactLease : IDisposable
     /// <summary>
     /// Releases artifact ownership, retaining metadata and callback while the provider reports Pending.
     /// </summary>
-    /// <remarks>
-    /// Pending may be wrapped in another exception; classify the complete failure with RetirementPendingException.Find.
-    /// Ordinary sibling failures remain observable after a later release attempt succeeds.
-    /// New reads stop when release begins; already opened streams retain their independent provider pins.
-    /// </remarks>
     /// <exception cref="RetirementPendingException">
     /// Provider retirement is unfinished or a concurrent release is in progress; retain this lease and retry at a safe point.
     /// </exception>
     /// <exception cref="AggregateException">
     /// The provider reports a wrapped failure, or release completes with ordinary errors retained from earlier pending attempts.
     /// </exception>
+    /// <remarks>
+    /// Pending may be wrapped in another exception; classify the complete failure with RetirementPendingException.Find.
+    /// Ordinary sibling failures remain observable after a later release attempt succeeds.
+    /// New reads stop when release begins; already opened streams retain their independent provider pins.
+    /// </remarks>
     public void Dispose()
     {
         lock (m_sync)
@@ -273,10 +273,7 @@ public sealed class RetentionScope : IDisposable
     /// Retirement has begun and the scope cannot accept another lease.
     /// </exception>
     public TLease Retain<TLease>(TLease lease)
-        where TLease : IDisposable
-    {
-        return m_lifetime.Own(lease);
-    }
+        where TLease : IDisposable => m_lifetime.Own(lease);
 
     /// <summary>
     /// Releases all retained leases in reverse acquisition order.

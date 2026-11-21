@@ -38,7 +38,9 @@ internal sealed class ValidationDependencyInputs(
         IEnumerable<ValidationContext> contexts,
         CancellationToken cancellation
     ) {
-        var packages = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var packages = new HashSet<string>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+        );
         foreach (string assets in contexts.SelectMany(static context => context.sdkGraph.EnumerateArray())
             .SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
             .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
@@ -134,7 +136,7 @@ internal sealed class ValidationDependencyInputs(
         if (node is JsonObject properties)
         {
             var result = new JsonObject();
-            foreach (var property in properties)
+            foreach (KeyValuePair<string, JsonNode?> property in properties)
             {
                 result.Add(ValidationPlanTransport.Logical(plan.root, plan.dotnet, property.Key), LogicalAssets(property.Value));
             }
@@ -163,7 +165,7 @@ internal sealed class ValidationDependencyInputs(
             {
                 throw new InvalidDataException("Documentation source provenance requires actual restored dependency inputs.");
             }
-            foreach (var package in Packages(assets, false))
+            foreach (KeyValuePair<string, string> package in Packages(assets, false))
             {
                 if (!Directory.Exists(package.Value))
                 {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -38,10 +39,10 @@ using Inno.Scene;
 using Inno.Scripting.Compiler;
 using Inno.Testing.Build;
 
-using EditorUiSession = Inno.Editor.ImGui.EditorUiSession;
-using ImGuiEditorRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
 using NativeGui = Inno.Native.ImGui.ImGui;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using UiRuntime = Inno.Editor.ImGui.ImGuiEditorRuntime;
+using UiSession = Inno.Editor.ImGui.EditorUiSession;
 
 namespace Inno.Editor.Exporting.Native.Tests;
 
@@ -55,7 +56,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         Directory.Delete(Path.Combine(m_supportPackRoot, new BuildTargetId("macos-arm64").value), recursive: true);
         var provisioner = new DrainingSupportPackProvisioner();
         BuildPipeline pipeline = CreatePipeline(provisioner);
-        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
         var buildSettings = new BuildSettingsStore(
             Path.Combine(m_projectRoot, "Settings.Build.inno"),
             m_engine.serialization,
@@ -65,7 +66,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             typeof(EditorExportService).Assembly,
             Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))
         ]);
-        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         using var runtime = new EditorInteractionRuntime(
             context,
             m_engine.types,
@@ -80,7 +81,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         try
         {
             NativeImGui.Raw.GetIO()->IniFilename = null;
-            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using var uiSession = new UiSession();
             using IDisposable uiScope = uiSession.Enter();
             ImGuiIO* io = NativeImGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = 1200f, Y = 900f };
@@ -124,7 +125,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             Assert.True(provisioner.canceled.Task.IsCompletedSuccessfully);
             Assert.False(provisioner.completed);
             provisioner.cleanup.SetResult();
-            var retirement = System.Diagnostics.Stopwatch.StartNew();
+            Stopwatch retirement = Stopwatch.StartNew();
             while (true)
             {
                 try
@@ -167,9 +168,9 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             [new GameBuildTargetBinding(target, target)],
             CreateManagedDeployments()
         );
-        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", target.id);
+        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", target.id);
         var settings = new BuildSettingsStore(
-            System.IO.Path.Combine(m_projectRoot, "Settings.Build.inno"),
+            Path.Combine(m_projectRoot, "Settings.Build.inno"),
             m_engine.serialization,
             defaults
         );
@@ -184,7 +185,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         {
             NativeGui.Raw.GetIO()->IniFilename = null;
             m_engine.logs.RegisterSink(logs);
-            using var session = new EditorUiSession();
+            using var session = new UiSession();
             using IDisposable scope = session.Enter();
             using var runtime = new EditorInteractionRuntime(
                 context,
@@ -230,22 +231,26 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         int height,
         float dpi
     ) {
-        var defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
-        var settings = new BuildSettingsStore(Path.Combine(m_projectRoot, "Settings.Build.inno"), m_engine.serialization, defaults);
+        BuildSettings defaults = BuildSettings.CreateDefault("Test Game", "Scenes/Startup.iscene", new BuildTargetId("macos-arm64"));
+        var settings = new BuildSettingsStore(
+            Path.Combine(m_projectRoot, "Settings.Build.inno"),
+            m_engine.serialization,
+            defaults
+        );
         m_engine.modules.Register("Tests.ExportPresentation", [
             typeof(EditorExportService).Assembly,
             Assembly.Load(new AssemblyName("Inno.Editor.Workbench"))
         ]);
-        var native = NativeGui.Raw.CreateContext(null);
+        ImGuiNativeContext* native = NativeGui.Raw.CreateContext(null);
         try
         {
             NativeGui.Raw.GetIO()->IniFilename = null;
-            var io = NativeGui.Raw.GetIO();
+            ImGuiIO* io = NativeGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = width, Y = height };
             io->DeltaTime = 0.2f;
             io->BackendFlags |= (int)ImGuiBackendFlags.RendererHasTextures;
             io->Fonts->RendererHasTextures = 1;
-            using var runtime = new ImGuiEditorRuntime(
+            using var runtime = new UiRuntime(
                 new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
                 m_engine.types,
                 m_engine.logs,
@@ -261,9 +266,12 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
                 runtime.Draw();
                 NativeGui.Render();
             }
-            using var title = BGCS.Runtime.Utf8Codec.EncodeNullTerminated("Export as Plugin##export.plugin", allowsNull: false);
-            var window = NativeGui.Raw.FindWindowByName((sbyte*)title.pointer);
-            Assert.True(window != null && window->WasActive != 0);
+            using NativeStringLease title = Utf8Codec.EncodeNullTerminated(
+                "Export as Plugin##export.plugin",
+                allowsNull: false
+            );
+            ImGuiWindow* window = NativeGui.Raw.FindWindowByName((sbyte*)title.pointer);
+            Assert.True(window is not null && window->WasActive != 0);
             Assert.True(window->Size.X <= width && window->Size.Y <= height);
             if (width == 1280)
             {
@@ -275,7 +283,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
             {
                 Assert.True(window->ScrollMax.Y > 0f);
             }
-            Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out var exports));
+            Assert.True(runtime.interactions.TryGetModule<EditorExportService>(out EditorExportService? exports));
             Assert.False(exports!.progress.isBusy);
         }
         finally
@@ -296,7 +304,7 @@ public sealed class ExportPresentationTests : BuildPipelineFixture
         try
         {
             bool drawn = modal.Draw(context);
-            bool leaked = NativeGui.Raw.GetCurrentTable() != null;
+            bool leaked = NativeGui.Raw.GetCurrentTable() is not null;
             // Retire only a table opened by this fixture's modal before reporting a failed regression.
             if (leaked)
             {

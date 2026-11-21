@@ -42,10 +42,10 @@ public sealed class RuntimeSession : IDisposable
     ) {
         m_host = host;
         this.options = Validate(options);
-        sessionId = LogSessionId.Create();
+        this.sessionId = LogSessionId.Create();
         m_identities = new IdentityAllocator();
         m_coroutines = new CoroutineScheduler();
-        events = new EventDispatcher();
+        this.events = new EventDispatcher();
         m_retirement = new RetirementBarrier($"Runtime session {sessionId}", host.retirementTimeout);
     }
 
@@ -410,7 +410,10 @@ public sealed class RuntimeSession : IDisposable
         }
         if (m_retirementFailures is not null)
         {
-            var failure = new AggregateException("Runtime session disposal encountered one or more failures.", m_retirementFailures);
+            var failure = new AggregateException(
+                "Runtime session disposal encountered one or more failures.",
+                m_retirementFailures
+            );
             m_retirementFailures = null;
             throw failure;
         }

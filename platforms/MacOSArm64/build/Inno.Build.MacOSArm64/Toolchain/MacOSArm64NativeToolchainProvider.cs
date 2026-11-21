@@ -30,7 +30,7 @@ public sealed class MacOSArm64NativeToolchainProvider : INativeToolchainProvider
         m_dotnetHost = dotnetHost;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask<NativeToolchainSelection> ResolveAsync(
         NativeBuildContext context,
         BuildHostDescriptor host,

@@ -97,13 +97,13 @@ public abstract class Layer
     /// <summary>
     /// Completes frame-scoped rendering state after render submission.
     /// </summary>
+    /// <param name="deltaTime">
+    /// The elapsed frame time in seconds.
+    /// </param>
     /// <remarks>
     /// A <see cref="LayerStack"/> invokes this callback in reverse order for every layer whose
     /// <see cref="OnBeforeRender"/> callback completed successfully, including when later work fails.
     /// </remarks>
-    /// <param name="deltaTime">
-    /// The elapsed frame time in seconds.
-    /// </param>
     public virtual void OnAfterRender(float deltaTime) {}
 
     /// <summary>

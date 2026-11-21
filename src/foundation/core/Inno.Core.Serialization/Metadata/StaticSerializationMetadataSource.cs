@@ -29,7 +29,7 @@ public sealed class StaticSerializationMetadataSource : ISerializationMetadataSo
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public SerializationTypeMetadata GetMetadata(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);

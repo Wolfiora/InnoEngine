@@ -17,9 +17,7 @@ public sealed class NativePlatformPolicyTests
     public void ComponentConfigurationCannotOwnPlatformPolicy(
         string configuration,
         bool rejected
-    ) {
-        Run(configuration, false, rejected);
-    }
+    ) => Run(configuration, false, rejected);
 
     [Fact]
     public void ComponentCannotKeepAnAdditionalTargetPreset() => Run("{}", true, true);

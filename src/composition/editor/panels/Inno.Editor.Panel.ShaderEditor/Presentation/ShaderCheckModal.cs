@@ -11,13 +11,13 @@ internal sealed class ShaderCheckModal(ShaderEditorDocuments documents) : Editor
     private DialogPresentation m_content;
     private DialogLayout m_layout;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool isVisible => documents.TryGetCheckDraft(out _);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool allowScrolling => false;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
@@ -27,6 +27,6 @@ internal sealed class ShaderCheckModal(ShaderEditorDocuments documents) : Editor
         return m_layout.size;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDraw(EditorContext context) => EditorUiSession.current.widgets.DrawDialog(m_content, m_layout);
 }

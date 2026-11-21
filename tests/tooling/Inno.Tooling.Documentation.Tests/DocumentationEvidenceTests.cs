@@ -132,18 +132,42 @@ public sealed class DocumentationEvidenceTests : IDisposable
         JsonNode certificate = await PrepareAsync();
         switch (change)
         {
-            case "missing-reference": certificate["references"] = new JsonArray(); break;
-            case "duplicate-reference": certificate["references"]!.AsArray().Add(certificate["references"]![0]!.DeepClone()); break;
-            case "duplicate-project": certificate["references"]![0]!["projects"] = new JsonArray("Probe", "Probe"); break;
-            case "unsupported-model": certificate["references"]![0]!["model"] = "unknown"; break;
-            case "missing-producer": certificate["producers"] = new JsonArray(); break;
-            case "bad-producer": certificate["producers"]![0]!["receiptIdentity"] = "not-a-digest"; break;
-            case "wrong-format": certificate["format"] = "unknown"; break;
-            case "missing-tables": certificate.AsObject().Remove("sourceFiles"); break;
-            case "missing-source-set": certificate["inputs"]![0]!["sourceSet"] = 9; break;
-            case "missing-source-file": certificate["sourceSets"]![0] = new JsonArray(9); break;
-            case "duplicate-source-file": certificate["sourceSets"]![0] = new JsonArray(0, 0); break;
-            case "escaping-source-file": certificate["sourceFiles"]![0]!["path"] = "../secret"; break;
+            case "missing-reference":
+                certificate["references"] = new JsonArray();
+                break;
+            case "duplicate-reference":
+                certificate["references"]!.AsArray().Add(certificate["references"]![0]!.DeepClone());
+                break;
+            case "duplicate-project":
+                certificate["references"]![0]!["projects"] = new JsonArray("Probe", "Probe");
+                break;
+            case "unsupported-model":
+                certificate["references"]![0]!["model"] = "unknown";
+                break;
+            case "missing-producer":
+                certificate["producers"] = new JsonArray();
+                break;
+            case "bad-producer":
+                certificate["producers"]![0]!["receiptIdentity"] = "not-a-digest";
+                break;
+            case "wrong-format":
+                certificate["format"] = "unknown";
+                break;
+            case "missing-tables":
+                certificate.AsObject().Remove("sourceFiles");
+                break;
+            case "missing-source-set":
+                certificate["inputs"]![0]!["sourceSet"] = 9;
+                break;
+            case "missing-source-file":
+                certificate["sourceSets"]![0] = new JsonArray(9);
+                break;
+            case "duplicate-source-file":
+                certificate["sourceSets"]![0] = new JsonArray(0, 0);
+                break;
+            case "escaping-source-file":
+                certificate["sourceFiles"]![0]!["path"] = "../secret";
+                break;
             case "missing-input-group":
             case "different-input-group":
                 certificate["examples"] = JsonSerializer.SerializeToNode(new[]

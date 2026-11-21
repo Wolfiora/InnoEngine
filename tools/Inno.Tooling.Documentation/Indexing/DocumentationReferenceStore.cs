@@ -28,7 +28,7 @@ internal static class DocumentationReferenceStore
     ) {
         var inputs = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         var references = new List<DocumentationReferenceInfo>();
-        var owners = projects.ToDictionary(static project => project.name, StringComparer.Ordinal);
+        Dictionary<string, DocumentationProject> owners = projects.ToDictionary(static project => project.name, StringComparer.Ordinal);
         await AddAsync(
             new(
                 binding.projectManifest,
@@ -125,7 +125,7 @@ internal static class DocumentationReferenceStore
 
     internal static void Verify(Prepared prepared)
     {
-        foreach (var input in prepared.inputs)
+        foreach (KeyValuePair<string, byte[]> input in prepared.inputs)
         {
             if (!File.ReadAllBytes(input.Key).AsSpan().SequenceEqual(input.Value))
             {

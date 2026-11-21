@@ -691,7 +691,7 @@ public sealed unsafe partial class BgfxDevice
             }
         }
 
-        Dictionary<string, BgfxShaderBindingResource> result = new(StringComparer.Ordinal);
+        var result = new Dictionary<string, BgfxShaderBindingResource>(StringComparer.Ordinal);
         foreach (RenderShaderBindingDescriptor binding in declaredBindings)
         {
             if (binding.kind is RenderShaderBindingKind.StorageBuffer or RenderShaderBindingKind.StorageTexture)
@@ -715,7 +715,7 @@ public sealed unsafe partial class BgfxDevice
 
     private static Dictionary<string, ReflectedUniform> ReflectShaders(params bgfx.ShaderHandle[] shaders)
     {
-        Dictionary<string, ReflectedUniform> result = new(StringComparer.Ordinal);
+        var result = new Dictionary<string, ReflectedUniform>(StringComparer.Ordinal);
         foreach (bgfx.ShaderHandle shader in shaders)
         {
             ushort count = BgfxNativeCalls.GetShaderUniforms(shader, null, 0);
@@ -724,7 +724,7 @@ public sealed unsafe partial class BgfxDevice
                 continue;
             }
 
-            bgfx.UniformHandle[] uniforms = new bgfx.UniformHandle[count];
+            var uniforms = new bgfx.UniformHandle[count];
             fixed (bgfx.UniformHandle* handles = uniforms)
             {
                 ushort written = BgfxNativeCalls.GetShaderUniforms(shader, handles, count);
@@ -733,7 +733,7 @@ public sealed unsafe partial class BgfxDevice
                     bgfx.UniformInfo info = default;
                     BgfxNativeCalls.GetUniformInfo(uniforms[index], &info);
                     string name = UniformName(info);
-                    ReflectedUniform reflected = new(uniforms[index], info.type, info.num);
+                    var reflected = new ReflectedUniform(uniforms[index], info.type, info.num);
                     if (result.TryGetValue(name, out ReflectedUniform current)
                         && (current.type != reflected.type || current.count != reflected.count)
                     ) {

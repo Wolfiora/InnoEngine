@@ -1,6 +1,7 @@
 using System;
 using Xunit;
 using Inno.Core.Identity;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Scene;
@@ -14,8 +15,8 @@ public sealed partial class SceneHistoryTests
     public void BatchPropertyEditPreservesIndependentBeforeValuesInOneUndo()
     {
         GameScene scene = CreateScene();
-        var first = scene.CreateObject("First").AddComponent<HistoryComponent>();
-        var second = scene.CreateObject("Second").AddComponent<HistoryComponent>();
+        HistoryComponent first = scene.CreateObject("First").AddComponent<HistoryComponent>();
+        HistoryComponent second = scene.CreateObject("Second").AddComponent<HistoryComponent>();
         first.value = 12;
         second.value = 34;
         Assert.False(m_edits.HaveSamePropertyValues([first, second], "value"));
@@ -35,8 +36,8 @@ public sealed partial class SceneHistoryTests
     public void BatchAxisEditPreservesUneditedComponentsIncludingEqualPrimarySamples()
     {
         GameScene scene = CreateScene();
-        var first = scene.CreateObject("First").transform;
-        var second = scene.CreateObject("Second").transform;
+        Transform first = scene.CreateObject("First").transform;
+        Transform second = scene.CreateObject("Second").transform;
         first.localPosition = new(1, 2, 3);
         second.localPosition = new(4, 5, 6);
         Assert.True(
@@ -48,11 +49,11 @@ public sealed partial class SceneHistoryTests
                 componentName: "x"
             )
         );
-        Assert.Equal(new Inno.Core.Mathematics.Vector3(9, 5, 6), second.localPosition);
+        Assert.Equal(new Vector3(9, 5, 6), second.localPosition);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
-        Assert.Equal(new Inno.Core.Mathematics.Vector3(4, 5, 6), second.localPosition);
+        Assert.Equal(new Vector3(4, 5, 6), second.localPosition);
         Assert.True(m_edits.ChangeProperties([first, second], "localPosition", () => {}, "Use Primary X", componentName: "x"));
-        Assert.Equal(new Inno.Core.Mathematics.Vector3(1, 5, 6), second.localPosition);
+        Assert.Equal(new Vector3(1, 5, 6), second.localPosition);
         Assert.Throws<ArgumentException>(
             () => m_edits.ChangeProperties(
                 [first, second],
@@ -62,15 +63,15 @@ public sealed partial class SceneHistoryTests
                 componentName: "notAComponent"
             )
         );
-        Assert.Equal(new Inno.Core.Mathematics.Vector3(1, 2, 3), first.localPosition);
+        Assert.Equal(new Vector3(1, 2, 3), first.localPosition);
     }
 
     [Fact]
     public void LaterBatchSetterFailureRestoresAllEarlierTargets()
     {
         GameScene scene = CreateScene();
-        var first = scene.CreateObject("First").AddComponent<BatchValidationComponent>();
-        var second = scene.CreateObject("Second").AddComponent<BatchValidationComponent>();
+        BatchValidationComponent first = scene.CreateObject("First").AddComponent<BatchValidationComponent>();
+        BatchValidationComponent second = scene.CreateObject("Second").AddComponent<BatchValidationComponent>();
         first.value = 12;
         second.value = 34;
         second.rejectAnswer = true;

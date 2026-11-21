@@ -14,7 +14,7 @@ public sealed class EditorCommandLineOptionsTests
         Assert.Equal(selection, EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection]).nativeDependencies);
         Assert.Null(EditorCommandLineOptions.Parse(["project"]).nativeDependencies);
         Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", "relative.json"]));
-        Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", ""]));
+        Assert.Throws<ArgumentException>(() => EditorCommandLineOptions.Parse(["project", "--native-dependencies", string.Empty]));
         Assert.Throws<ArgumentException>(
             () => EditorCommandLineOptions.Parse(["project", "--native-dependencies", selection, "--native-dependencies", selection])
         );

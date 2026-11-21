@@ -89,6 +89,9 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <summary>
     /// Restores serialized properties to the existing asset object.
     /// </summary>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
     /// <param name="stableTypeId">
     /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
@@ -98,9 +101,6 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
     public void RestoreProperties<TValue>(
         Guid stableTypeId,
         byte[] propertyData,
@@ -132,11 +132,11 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <param name="identities">
     /// The identity allocator that owns every canonical asset loaded by this instance.
     /// </param>
-    /// <param name="logs">
-    /// The explicitly owned router receiving importer and catalog diagnostics.
-    /// </param>
     /// <param name="diagnostics">
     /// The diagnostic hub that owns import, build, catalog, and reference reports.
+    /// </param>
+    /// <param name="logs">
+    /// The explicitly owned router receiving importer and catalog diagnostics.
     /// </param>
     /// <param name="assetRoot">
     /// The absolute source root.
@@ -179,11 +179,11 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <param name="identities">
     /// The identity allocator that owns every canonical asset loaded by this instance.
     /// </param>
-    /// <param name="logs">
-    /// The explicitly owned router receiving importer and catalog diagnostics.
-    /// </param>
     /// <param name="diagnostics">
     /// The diagnostic hub that owns import, build, catalog, and reference reports.
+    /// </param>
+    /// <param name="logs">
+    /// The explicitly owned router receiving importer and catalog diagnostics.
     /// </param>
     /// <param name="mounts">
     /// Complete isolated source mount snapshot.
@@ -279,7 +279,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
         m_buildProcessors = new AssetBuildProcessorRegistry(types);
         m_mounts = byId;
         m_runtimeArtifactsOnly = runtimeArtifactsOnly;
-        assetRoot = project.rootPath;
+        this.assetRoot = project.rootPath;
         this.libraryRoot = Path.GetFullPath(libraryRoot);
         foreach (AssetSourceMount mount in mounts)
         {
@@ -356,8 +356,7 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
     /// <see langword="true"/> when the importer registry changed.
     /// </returns>
     public bool RefreshRegistries()
-    {
-        return Execute(() =>
+        => Execute(() =>
         {
             long version = m_importers.snapshotVersion;
             long buildVersion = m_buildProcessors.snapshotVersion;
@@ -369,7 +368,6 @@ public sealed partial class AssetLoader : IDisposable, IAssetReferenceResolver, 
             RescanLocked();
             return true;
         });
-    }
 
     private void PublishReloaded(AssetObject asset)
     {

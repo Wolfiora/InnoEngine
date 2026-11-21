@@ -11,7 +11,7 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Begins a frame-scoped operation and makes queued work visible.
@@ -93,7 +93,7 @@ sealed unsafe partial class BgfxDevice
             throw new InvalidOperationException("No BGFX frame is open.");
         }
 
-        if (m_activeGraph is not null || m_activeEncoder != null)
+        if (m_activeGraph is not null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("All render graphs and encoders must end before BGFX frame submission.");
         }

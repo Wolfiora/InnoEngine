@@ -242,7 +242,7 @@ internal sealed partial class FileBrowserPanel
         string name = item.isPluginRoot ? item.displayName : entry.nameWithoutExtension;
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.List);
-        var table = Ui.GetTableBounds();
+        (float minimumX, float maximumX, float rowMinimum, float rowMaximum) table = Ui.GetTableBounds();
         float rowMinimumY = table.rowMinimum;
         float rowMaximumY = table.rowMaximum;
         InsetListCellContent();
@@ -328,10 +328,7 @@ internal sealed partial class FileBrowserPanel
         Ui.PopStyleColor();
     }
 
-    private static void InsetListCellContent()
-    {
-        Ui.SetCursorPosX(Ui.GetCursorPosX() + CurrentBrowserStyle.listContentHorizontalPadding);
-    }
+    private static void InsetListCellContent() => Ui.SetCursorPosX(Ui.GetCursorPosX() + CurrentBrowserStyle.listContentHorizontalPadding);
 
     private readonly record struct ListColumnSeparatorState(
         bool nameHovered,

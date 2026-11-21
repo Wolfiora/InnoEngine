@@ -123,6 +123,9 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <summary>
     /// Restores serialized properties to the existing asset object.
     /// </summary>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
     /// <param name="stableTypeId">
     /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
@@ -132,9 +135,6 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
     public void RestoreProperties<TValue>(
         Guid stableTypeId,
         byte[] propertyData,
@@ -185,11 +185,11 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
     /// <param name="identities">
     /// The identity allocator that owns every canonical asset in this pipeline.
     /// </param>
-    /// <param name="logs">
-    /// The explicitly owned router receiving asset pipeline diagnostics.
-    /// </param>
     /// <param name="diagnostics">
     /// The diagnostic hub that owns source database and asset processing reports.
+    /// </param>
+    /// <param name="logs">
+    /// The explicitly owned router receiving asset pipeline diagnostics.
     /// </param>
     /// <param name="options">
     /// The asset source, artifact and watcher configuration.
@@ -240,12 +240,12 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
             {
                 throw new ArgumentException("The project asset source mount must be writable.", nameof(options));
             }
-            assetRoot = projectMount.rootPath;
-            libraryRoot = Path.GetFullPath(options.libraryRoot);
+            this.assetRoot = projectMount.rootPath;
+            this.libraryRoot = Path.GetFullPath(options.libraryRoot);
             DeleteCandidateCatalogRoots(libraryRoot);
-            artifactRoot = Path.Combine(libraryRoot, "Artifacts");
-            sourceMounts = Array.AsReadOnly(mounts.ToArray());
-            AssetLoader loader = new(
+            this.artifactRoot = Path.Combine(libraryRoot, "Artifacts");
+            this.sourceMounts = Array.AsReadOnly(mounts.ToArray());
+            var loader = new AssetLoader(
                 types,
                 serialization,
                 identities,
@@ -260,7 +260,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
             {
                 loader.DeferUnavailableExtensions();
             }
-            AssetFileSystem fileSystem = new(
+            var fileSystem = new AssetFileSystem(
                 mounts,
                 autoStart: false,
                 options.fileWatcherFlushDelayMs,
@@ -282,7 +282,7 @@ public sealed partial class AssetPipeline : AssetResidencyProvider,
             m_cacheOptions = options.cacheOptions;
             m_options = options with { sourceMounts = mounts };
             m_lastArtifactCollectionTimestamp = 0;
-            isInitialized = true;
+            this.isInitialized = true;
             try
             {
                 loader.Rescan();

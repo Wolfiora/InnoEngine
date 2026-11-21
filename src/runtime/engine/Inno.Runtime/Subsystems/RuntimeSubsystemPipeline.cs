@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Extensibility.Reload;
@@ -294,7 +295,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         }
         if (failures.Count == 1)
         {
-            System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failures[0]).Throw();
+            ExceptionDispatchInfo.Capture(failures[0]).Throw();
         }
         if (failures.Count > 1)
         {
@@ -394,11 +395,11 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
             }
         }
 
-        var incoming = factories.ToDictionary(
+        Dictionary<RuntimeSubsystemId, int> incoming = factories.ToDictionary(
             static factory => factory.descriptor.id,
             factory => factory.descriptor.dependencies.Count(byId.ContainsKey)
         );
-        var dependants = factories.ToDictionary(
+        Dictionary<RuntimeSubsystemId, List<IRuntimeSubsystemFactory>> dependants = factories.ToDictionary(
             static factory => factory.descriptor.id,
             static _ => new List<IRuntimeSubsystemFactory>()
         );
@@ -636,7 +637,7 @@ public sealed class RuntimeSubsystemPipeline : IDisposable
         internal FactorySnapshot(IRuntimeSubsystemFactory factory)
         {
             m_factory = factory ?? throw new ArgumentNullException(nameof(factory));
-            descriptor = factory.descriptor ?? throw new InvalidOperationException("A subsystem descriptor cannot be null.");
+            this.descriptor = factory.descriptor ?? throw new InvalidOperationException("A subsystem descriptor cannot be null.");
         }
 
         /// <summary>

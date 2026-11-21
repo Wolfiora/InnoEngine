@@ -67,12 +67,12 @@ public sealed class BuildCacheCleanupPlan
     /// <param name="retireAll">
     /// Whether to propose all unreferenced generations regardless of size pressure.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels planning before any directory is removed.
-    /// </param>
     /// <param name="targetId">
     /// An exact producer-declared target filter, or null to manage all registered scopes.
     /// Outside-scope generations and their dependencies remain protected.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels planning before any directory is removed.
     /// </param>
     /// <returns>
     /// A fixed proposal; execution rechecks ownership, roots and active readers before deletion.
@@ -101,7 +101,7 @@ public sealed class BuildCacheCleanupPlan
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(policy);
-        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using CancellationTokenSource bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         bounded.CancelAfter(policy.timeBudget);
         Stopwatch elapsed = Stopwatch.StartNew();
         try

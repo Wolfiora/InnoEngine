@@ -66,7 +66,7 @@ public sealed class TestRepositoryInputsTests
             JsonElement[] declarations = result.RootElement.GetProperty("Items")
                 .GetProperty("AssemblyAttribute")
                 .EnumerateArray()
-                .Where(item => item.TryGetProperty("_Parameter1", out var key) && key.GetString() == "Inno.Testing.ArtifactsPath")
+                .Where(item => item.TryGetProperty("_Parameter1", out JsonElement key) && key.GetString() == "Inno.Testing.ArtifactsPath")
                 .ToArray();
             if (useArtifacts)
             {

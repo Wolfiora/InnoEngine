@@ -23,9 +23,6 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="engineRoot">
     /// The directory containing InnoEngine.sln and the Player project.
     /// </param>
-    /// <exception cref="DirectoryNotFoundException">
-    /// The directory is not an engine checkout.
-    /// </exception>
     /// <param name="publisher">
     /// The publisher containing the host-selected platform sources.
     /// </param>
@@ -38,6 +35,9 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="nativeDependencies">
     /// An absolute dependency selection disabling third-party production, or null for local source preparation.
     /// </param>
+    /// <exception cref="DirectoryNotFoundException">
+    /// The directory is not an engine checkout.
+    /// </exception>
     public SourcePlayerSupportPackProvisioner(
         string engineRoot,
         PlayerSupportPackPublisher publisher,
@@ -70,12 +70,6 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="startDirectory">
     /// The host binary directory from which to search upward.
     /// </param>
-    /// <returns>
-    /// A source provisioner, or null when the host is a source-independent distribution.
-    /// </returns>
-    /// <exception cref="DirectoryNotFoundException">
-    /// An explicit <c>INNO_ENGINE_ROOT</c> does not identify a complete engine checkout.
-    /// </exception>
     /// <param name="publisher">
     /// The publisher containing the host-selected platform sources.
     /// </param>
@@ -88,6 +82,12 @@ public sealed class SourcePlayerSupportPackProvisioner : IPlayerSupportPackProvi
     /// <param name="nativeDependencies">
     /// The explicit consume-only selection retained by the returned provisioner, or null for local source preparation.
     /// </param>
+    /// <returns>
+    /// A source provisioner, or null when the host is a source-independent distribution.
+    /// </returns>
+    /// <exception cref="DirectoryNotFoundException">
+    /// An explicit <c>INNO_ENGINE_ROOT</c> does not identify a complete engine checkout.
+    /// </exception>
     public static SourcePlayerSupportPackProvisioner? TryCreateForHost(
         string startDirectory,
         PlayerSupportPackPublisher publisher,

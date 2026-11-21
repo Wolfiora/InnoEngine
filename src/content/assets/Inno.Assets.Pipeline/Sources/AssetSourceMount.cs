@@ -42,7 +42,7 @@ public sealed class AssetSourceMount
         this.id = id;
         this.rootPath = Path.GetFullPath(rootPath);
         this.isReadOnly = isReadOnly;
-        dependencySourceIds = (dependencies ?? [])
+        this.dependencySourceIds = (dependencies ?? [])
             .Where(dependency => dependency.isValid && dependency != id)
             .ToFrozenSet();
     }
@@ -78,7 +78,7 @@ public sealed class AssetSourceMount
     /// </returns>
     public string Resolve(string localPath)
     {
-        AssetPath path = new(id, localPath);
+        var path = new AssetPath(id, localPath);
         try
         {
             return PathBoundary.Resolve(rootPath, path.localPath);

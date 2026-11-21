@@ -60,6 +60,6 @@ public readonly record struct StorageScope
     /// </summary>
     public bool isValid => value is not null;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string ToString() => value ?? string.Empty;
 }

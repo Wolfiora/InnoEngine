@@ -80,17 +80,26 @@ public static class ShaderGraphTemplates
         for (int index = 0; index < 2; index++)
         {
             GraphNodeRecord extract = Node("axis-" + index, "inno.shader.extract", 340, 280 + index * 270, vertex);
-            Set(extract, "type", "float2"); Set(extract, "index", index);
-            Connect(position, "value", extract, "input"); Connect(extract, "value", construct, "component." + index);
+            Set(extract, "type", "float2");
+            Set(extract, "index", index);
+            Connect(position, "value", extract, "input");
+            Connect(extract, "value", construct, "component." + index);
             GraphNodeRecord constant = Node("homogeneous-" + index, "inno.shader.constant", 40, 370 + index * 250, vertex);
-            Set(constant, "value", (float)index); Connect(constant, "value", construct, "component." + (index + 2));
+            Set(constant, "value", (float)index);
+            Connect(constant, "value", construct, "component." + (index + 2));
         }
         Connect(construct, "value", vertex, "position");
         GraphNodeRecord color = Node("color", "inno.shader.stage-input", 480, 920, fragment);
         Set(
             color,
             "settings",
-            new ShaderGraphInputSettings { id = "color", type = new() { id = "float4" }, kind = ShaderIrInputKind.Uniform, semantic = "" }
+            new ShaderGraphInputSettings
+            {
+                id = "color",
+                type = new() { id = "float4" },
+                kind = ShaderIrInputKind.Uniform,
+                semantic = string.Empty
+            }
         );
         Connect(color, "value", fragment, "color");
         return ShaderGraphPrograms.Bind(graph, "Main", [vertex.id, fragment.id], serialization, context);
@@ -107,7 +116,8 @@ public static class ShaderGraphTemplates
             {
                 Set(node, "stage", stage.id.value);
             }
-            graph.AddNode(node); return node;
+            graph.AddNode(node);
+            return node;
         }
         void Set<T>(
             GraphNodeRecord node,

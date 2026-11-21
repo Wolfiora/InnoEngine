@@ -14,7 +14,9 @@ public sealed class ValidationTestOwnershipTests
     [Fact]
     public async Task AFailedUnionRetainsSuccessfulOwnersAndRejectsMissingIsolatedReceipts()
     {
-        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationTestOwnershipTests).Assembly));
+        using var repository = new ValidationRepository(
+            TestRepository.GetRoot(typeof(ValidationTestOwnershipTests).Assembly)
+        );
         const string C_INPUT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
         const string C_UI = "tests/ui/Inno.UI.Tests/Inno.UI.Tests.csproj";
         const string C_PROBE = "tests/input/Inno.Input.Tests/UnionFailureProbe.cs";
@@ -110,7 +112,9 @@ public sealed class ValidationTestOwnershipTests
         repository.Git("add", C_EXECUTOR);
         repository.Git("commit", "-m", "Model a process failure after passing TRX output");
         using (await repository.PlanAsync()) { }
-        var failure = await Assert.ThrowsAsync<InvalidDataException>(() => repository.RunAsync(output: "artifacts/process-failure"));
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(
+            () => repository.RunAsync(output: "artifacts/process-failure")
+        );
         Assert.Contains("exited with 17", failure.Message);
         using JsonDocument process = JsonDocument.Parse(File.ReadAllText(repository.PathOf("artifacts/process-failure/results.json")));
         JsonElement[] tests = process.RootElement.GetProperty("results")

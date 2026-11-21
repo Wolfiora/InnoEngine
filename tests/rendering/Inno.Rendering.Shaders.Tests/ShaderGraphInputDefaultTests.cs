@@ -41,9 +41,10 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         graph.AddNode(node);
         graph.AddNode(left);
         graph.AddNode(right);
-        Set(node, "type", "float"); Set(node, "operation", "multiply");
+        Set(node, "type", "float");
+        Set(node, "operation", "multiply");
         ShaderGraphLiteral value = ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("float"));
-        value.scalarBits = [0x3f800000];
+        value.scalarBits = [0x3F80_0000];
         Set(node, ShaderGraphDocument.inputDefaultPrefix + "left", value);
         Set(node, ShaderGraphDocument.inputDefaultPrefix + "right", value);
         GraphDocument restored = GraphDocumentCodec.Decode(GraphDocumentCodec.Encode(graph, m_serialization), m_serialization);
@@ -66,7 +67,8 @@ public sealed class ShaderGraphInputDefaultTests : IDisposable
         var graph = new GraphDocument();
         var node = new GraphNodeRecord(new("multiply"), "inno.shader.binary");
         var constant = new GraphNodeRecord(new("source"), "inno.shader.constant");
-        graph.AddNode(node); graph.AddNode(constant);
+        graph.AddNode(node);
+        graph.AddNode(constant);
         Set(node, "type", "float");
         Set(node, ShaderGraphDocument.inputDefaultPrefix + "left", ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("uint")));
         Set(node, ShaderGraphDocument.inputDefaultPrefix + "right", ShaderGraphLiteral.Zero(ShaderSourceType.Atomic("float")));

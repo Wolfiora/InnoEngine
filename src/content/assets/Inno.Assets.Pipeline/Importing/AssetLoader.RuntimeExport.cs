@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Writes a source-free runtime catalog and its exact immutable artifact closure.
@@ -123,7 +123,7 @@ sealed partial class AssetLoader
             .ToArray();
         foreach (AssetRecord record in exported)
         {
-            AssetArtifactKey key = new(record.meta.artifactKey);
+            var key = new AssetArtifactKey(record.meta.artifactKey);
             if (!m_artifacts.TryGet(key, "asset-state", serialization, out _)
                 || !m_artifacts.TryGet(key, "runtime", serialization, out _)
             ) {
@@ -263,7 +263,7 @@ sealed partial class AssetLoader
                     $"Runtime asset '{record.relativePath}' was not successfully imported before export."
                 );
             }
-            AssetArtifactKey key = new(record.meta.artifactKey);
+            var key = new AssetArtifactKey(record.meta.artifactKey);
             if (!m_artifacts.TryGet(key, "asset-state", out _)
                 || !m_artifacts.TryGet(key, "runtime", out _)
             ) {

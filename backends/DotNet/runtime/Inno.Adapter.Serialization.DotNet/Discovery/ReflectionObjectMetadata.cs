@@ -92,10 +92,8 @@ internal static class ReflectionObjectMetadata
     }
 
     private static int GetSerializableOrder(MemberInfo member)
-    {
-        return member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true)?.order
-               ?? int.MaxValue;
-    }
+        => member.GetCustomAttribute<SerializablePropertyAttribute>(inherit: true)?.order
+           ?? int.MaxValue;
 
     private static SerializationMemberMetadata CreateFieldMember(
         Type runtimeType,
@@ -157,12 +155,7 @@ internal static class ReflectionObjectMetadata
     }
 
     private static MethodInfo[] GetRestoreHooks(Type runtimeType)
-    {
-        return S_RESTORE_HOOKS.GetValue(
-            runtimeType,
-            static value => new RestoreHooksBox(BuildRestoreHooks(value))
-        ).hooks;
-    }
+        => S_RESTORE_HOOKS.GetValue(runtimeType, static value => new RestoreHooksBox(BuildRestoreHooks(value))).hooks;
 
     private static MethodInfo[] BuildRestoreHooks(Type runtimeType)
     {

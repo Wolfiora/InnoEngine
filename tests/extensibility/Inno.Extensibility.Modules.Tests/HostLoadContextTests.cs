@@ -53,11 +53,11 @@ public sealed class HostLoadContextTests
             object options = Activator.CreateInstance(optionsType)!;
             optionsType.GetProperty(nameof(ModuleHostOptions.catalogSource))!.SetValue(options, source);
             Type hostType = modules.GetType(typeof(ModuleHost).FullName!, throwOnError: true)!;
-            using var host = (IDisposable)Activator.CreateInstance(hostType, options)!;
+            using IDisposable host = (IDisposable)Activator.CreateInstance(hostType, options)!;
             Type catalogType = types.GetType(typeof(TypeCatalog).FullName!, throwOnError: true)!;
             Type metadataType = adapter.GetType(typeof(ReflectionTypeCatalogSource).FullName!, throwOnError: true)!;
             object metadata = Activator.CreateInstance(metadataType)!;
-            using var catalog = (IDisposable)Activator.CreateInstance(catalogType, host, metadata)!;
+            using IDisposable catalog = (IDisposable)Activator.CreateInstance(catalogType, host, metadata)!;
             object snapshot = catalogType.GetProperty(nameof(TypeCatalog.current))!.GetValue(catalog)!;
             MethodInfo query = snapshot.GetType().GetMethod(nameof(TypeCacheSnapshot.TryGetTypeRef))!;
             Assert.True((bool)query.Invoke(snapshot, [hostType, null])!);

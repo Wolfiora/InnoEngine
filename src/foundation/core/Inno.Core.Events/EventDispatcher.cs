@@ -42,7 +42,7 @@ public sealed class EventDispatcher
     /// A budget is not positive.
     /// </exception>
     public EventDispatcher(
-        int queueCapacity = 65536,
+        int queueCapacity = 65_536,
         int flushBudget = 4096
     ) {
         if (queueCapacity <= 0)
@@ -75,7 +75,7 @@ public sealed class EventDispatcher
     {
         lock (m_hubsGate)
         {
-            EventHub hub = new(this, order, m_nextHubSequence++);
+            var hub = new EventHub(this, order, m_nextHubSequence++);
             List<EventHub> hubs = [..m_hubsSnapshot, hub];
             SortHubs(hubs);
             Volatile.Write(ref m_hubsSnapshot, [..hubs]);
@@ -157,13 +157,13 @@ public sealed class EventDispatcher
     /// <summary>
     /// Immediately dispatches an event to all valid hubs in priority order.
     /// </summary>
+    /// <param name="e">
+    /// The event instance to dispatch.
+    /// </param>
     /// <remarks>
     /// Hub dispatch stops when the event is marked globally handled. Completion observers are still notified.
     /// A failed hub propagates its exception without reporting successful completion.
     /// </remarks>
-    /// <param name="e">
-    /// The event instance to dispatch.
-    /// </param>
     public void Emit(Event e)
     {
         ArgumentNullException.ThrowIfNull(e);
@@ -210,19 +210,17 @@ public sealed class EventDispatcher
     }
 
     private static void SortHubs(List<EventHub> hubs)
-    {
-        hubs.Sort(static (
+        => hubs.Sort(static (
             a,
             b
         ) =>
         {
-            int byOrder = b.order.CompareTo(a.order);
-            if (byOrder != 0)
-            {
-                return byOrder;
-            }
+                                                                      int byOrder = b.order.CompareTo(a.order);
+                                                                      if (byOrder != 0)
+                                                                      {
+                                                                          return byOrder;
+                                                                      }
 
-            return a.sequence.CompareTo(b.sequence);
-        });
-    }
+                                                                      return a.sequence.CompareTo(b.sequence);
+                                                                  });
 }

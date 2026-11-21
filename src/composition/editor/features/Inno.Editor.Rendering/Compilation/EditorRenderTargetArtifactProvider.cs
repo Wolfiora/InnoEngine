@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
@@ -30,7 +32,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     private readonly ITextureTargetCompiler m_textureCompiler;
     private readonly IDiagnosticReporter m_diagnostics;
     private readonly CancellationTokenSource m_lifetime = new();
-    private readonly Inno.Core.Execution.LifetimeScope m_work = new();
+    private readonly LifetimeScope m_work = new();
     private readonly Dictionary<ShaderKey, ShaderEntry> m_shaders = [];
     private readonly Dictionary<TextureKey, TextureEntry> m_textures = [];
     private bool m_disposed;
@@ -39,14 +41,17 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     /// <summary>
     /// Creates an Editor artifact provider backed by explicit shader and texture toolchains.
     /// </summary>
-    /// <param name="shaderCompiler">
-    /// The compiler that turns backend-neutral shader IR into device target programs.
-    /// </param>
     /// <param name="assets">
     /// The authoring asset pipeline that owns source mounts.
     /// </param>
     /// <param name="serialization">
     /// The serialization registry that owns active Shader contracts.
+    /// </param>
+    /// <param name="types">
+    /// The shared authoring type generation owner for graph and source extensions.
+    /// </param>
+    /// <param name="shaderCompiler">
+    /// The compiler that turns backend-neutral shader IR into device target programs.
     /// </param>
     /// <param name="textureCompiler">
     /// The compiler that turns artist texture sources into portable KTX artifacts.
@@ -57,9 +62,6 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
     /// <exception cref="ArgumentNullException">
     /// Thrown when any required service is null.
     /// </exception>
-    /// <param name="types">
-    /// The shared authoring type generation owner for graph and source extensions.
-    /// </param>
     public EditorRenderTargetArtifactProvider(
         AssetPipeline assets,
         SerializationRegistry serialization,
@@ -312,7 +314,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 token
             ), token);
         }
-        catch (Exception exception) when (Inno.Core.Execution.RetirementPendingException.Find(exception) is null)
+        catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
         {
             entry.cancellation.Dispose();
             entry.cancellation = null;
@@ -334,7 +336,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         {
             return;
         }
-        if (pending.Exception is Exception failure && Inno.Core.Execution.RetirementPendingException.Find(failure) is not null)
+        if (pending.Exception is Exception failure && RetirementPendingException.Find(failure) is not null)
         {
             throw failure;
         }
@@ -357,7 +359,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
             );
         entry.latestSucceeded = result.succeeded;
         entry.sourceDiagnostics = Array.AsReadOnly(result.diagnostics.ToArray());
-        var diagnostics = result.diagnostics
+        List<Diagnostic> diagnostics = result.diagnostics
             .Select(diagnostic => new Diagnostic(
                 diagnostic.code,
                 diagnostic.message,
@@ -423,7 +425,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 ).ConfigureAwait(false);
             }, token);
         }
-        catch (Exception exception) when (Inno.Core.Execution.RetirementPendingException.Find(exception) is null)
+        catch (Exception exception) when (RetirementPendingException.Find(exception) is null)
         {
             entry.cancellation.Dispose();
             entry.cancellation = null;
@@ -440,7 +442,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
         {
             return;
         }
-        if (pending.Exception is Exception failure && Inno.Core.Execution.RetirementPendingException.Find(failure) is not null)
+        if (pending.Exception is Exception failure && RetirementPendingException.Find(failure) is not null)
         {
             throw failure;
         }
@@ -489,7 +491,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
                 {
                     return (await operation(cancellation).ConfigureAwait(false), null);
                 }
-                catch (Exception failure) when (Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                catch (Exception failure) when (RetirementPendingException.Find(failure) is null)
                 {
                     return (default!, failure);
                 }
@@ -498,10 +500,10 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
 
         static async Task<T> Unwrap(Task<(T value, Exception? failure)> task)
         {
-            var result = await task.ConfigureAwait(false);
+            (T value, Exception? failure) result = await task.ConfigureAwait(false);
             if (result.failure is not null)
             {
-                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(result.failure).Throw();
+                ExceptionDispatchInfo.Capture(result.failure).Throw();
             }
             return result.value;
         }
@@ -586,7 +588,7 @@ public sealed partial class EditorRenderTargetArtifactProvider : IRenderTargetAr
 
     private sealed class ShaderEntry
     {
-        internal string semanticHash { get; set; } = "";
+        internal string semanticHash { get; set; } = string.Empty;
         internal long extensionGeneration { get; set; } = long.MinValue;
         internal bool latestSucceeded { get; set; }
         internal IReadOnlyList<ShaderDiagnostic> sourceDiagnostics { get; set; } = Array.Empty<ShaderDiagnostic>();

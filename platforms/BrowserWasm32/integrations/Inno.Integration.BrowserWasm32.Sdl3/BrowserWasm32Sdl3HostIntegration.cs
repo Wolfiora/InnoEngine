@@ -11,19 +11,16 @@ namespace Inno.Integration.BrowserWasm32.Sdl3;
 /// </summary>
 public sealed class BrowserWasm32Sdl3HostIntegration : ISdl3HostIntegration
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Sdl3HostCapabilities capabilities { get; } = new(multipleWindows: false, liveResize: false);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void ConfigureInitialization() {}
 
-    /// <inheritdoc />
-    public nint CreateWindow(PlatformWindowOptions options)
-    {
-        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: true);
-    }
+    /// <inheritdoc/>
+    public nint CreateWindow(PlatformWindowOptions options) => Sdl3WindowOperations.CreateWindow(options, requireOpenGl: true);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public unsafe PlatformNativeHandles ResolveNativeSurface(nint windowHandle)
     {
         if (windowHandle == 0)
@@ -43,7 +40,7 @@ public sealed class BrowserWasm32Sdl3HostIntegration : ISdl3HostIntegration
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool GetInitialFocus(nint windowHandle)
     {
         if (windowHandle == 0)

@@ -138,7 +138,7 @@ public sealed class CoroutineRetirementTests
     public void CleanupFailuresDoNotPreventParentOrOtherCoroutineCleanup(bool dispose)
     {
         using var scheduler = new CoroutineScheduler();
-        var failures = new[] { new Exception("child"), new Exception("parent"), new Exception("other") };
+        Exception[] failures = new[] { new Exception("child"), new Exception("parent"), new Exception("other") };
         var cleaned = new List<int>();
         var child = new Probe(() => true, () => null, () => Fail(0));
         scheduler.StartCoroutine(new Probe(() => true, () => child, () => Fail(1)));

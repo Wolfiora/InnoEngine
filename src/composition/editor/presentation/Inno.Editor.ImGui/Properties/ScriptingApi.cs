@@ -10,7 +10,7 @@ using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 [assembly: ScriptingApiExport(typeof(EditorPalette), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorStyleMetrics), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(ListNavigationResult), ScriptingApiScope.Editor)]
-[assembly: ScriptingApiExport(typeof(Inno.Editor.ImGui.ImGui), ScriptingApiScope.Editor)]
+[assembly: ScriptingApiExport(typeof(ImGui), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(EditorWidget), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(InlineRenameResult), ScriptingApiScope.Editor)]
 [assembly: ScriptingApiExport(typeof(TreeNodeDrawContext), ScriptingApiScope.Editor)]

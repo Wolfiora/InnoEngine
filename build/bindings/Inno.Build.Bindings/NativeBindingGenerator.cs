@@ -24,7 +24,7 @@ public sealed partial class NativeBindingGenerator : INativeBindingGenerator
         m_profile = profile ?? throw new ArgumentNullException(nameof(profile));
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask<NativeBindingGenerationResult> GenerateAsync(
         NativeBuildContext context,
         NativeBindingGenerationRequest request,

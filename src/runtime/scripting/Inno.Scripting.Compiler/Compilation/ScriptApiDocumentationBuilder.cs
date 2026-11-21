@@ -39,7 +39,7 @@ internal static class ScriptApiDocumentationBuilder
 
     internal static void Verify(Inputs inputs)
     {
-        foreach (var input in inputs.documents)
+        foreach (KeyValuePair<string, byte[]?> input in inputs.documents)
         {
             bool exists = File.Exists(input.Key);
             if (exists != (input.Value is not null) || exists && !File.ReadAllBytes(input.Key).AsSpan().SequenceEqual(input.Value))
@@ -126,7 +126,7 @@ internal static class ScriptApiDocumentationBuilder
 
         // Origin data is emitted from the same resolved exports as the logical facade.
         // Documentation consumers must still select members from the actual reference assembly.
-        var origins = exports.Select(export =>
+        IOrderedEnumerable<XElement> origins = exports.Select(export =>
         {
             string sourceId = "T:" + GetDocumentationTypeName(export.type);
             string logicalId = sourceId;
@@ -222,9 +222,9 @@ internal static class ScriptApiDocumentationBuilder
     private static (string source, string target)[] CreateIdentityReplacements(
         IReadOnlyDictionary<string, string> namespaceMappings,
         IReadOnlyList<ScriptApiTypeMapping> typeMappings
-    ) {
+    ) =>
         // Freeze the ordered rewrite once per document; unchanged names need no replacement.
-        return namespaceMappings
+        namespaceMappings
             .OrderByDescending(static pair => pair.Key.Length)
             .Select(static pair => (source: pair.Key, target: pair.Value))
             .Concat(
@@ -236,5 +236,4 @@ internal static class ScriptApiDocumentationBuilder
             )
             .Where(static replacement => !string.Equals(replacement.source, replacement.target, StringComparison.Ordinal))
             .ToArray();
-    }
 }

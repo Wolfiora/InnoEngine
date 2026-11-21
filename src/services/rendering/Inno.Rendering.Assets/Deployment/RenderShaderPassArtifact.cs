@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Carries one immutable compiled shader pass and its reflected runtime bindings.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f22a2116-992d-5c69-bf6c-af05c191123b")]
+[StableTypeId("f22a2116-992d-5c69-bf6c-af05c191123b")]
 public sealed class RenderShaderPassArtifact
 {
     private readonly IReadOnlyList<RenderShaderStageArtifact> m_stages;

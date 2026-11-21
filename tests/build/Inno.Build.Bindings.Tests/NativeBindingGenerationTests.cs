@@ -6,6 +6,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using BGCS.Configuration;
+using BGCS.Core;
 using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Toolchains;
@@ -32,7 +34,12 @@ public sealed class NativeBindingGenerationTests : IDisposable
         await Git(m_root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-m", "Binding source");
         string consumer = Path.Combine(m_root, "consumer");
         await Git(m_root, "clone", "--no-hardlinks", m_root, consumer);
-        var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
+        var component = new NativeComponentDescriptor(
+            "fixture",
+            "Fixture.csproj",
+            "Fixture.csproj",
+            bindingDefinition: "bindings.props"
+        );
         string sdk = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? ToolchainEnvironment.ResolveExecutable("dotnet");
         var tools = new NativeToolchainSelection(
             "fixture-target",
@@ -44,7 +51,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
             new NativeLinkPlan(sharedLibraryExtension: ".data"),
             false
         );
-        var context = new NativeBuildContext(m_root, "release").WithToolchain(tools)
+        NativeBuildContext context = new NativeBuildContext(m_root, "release").WithToolchain(tools)
             .WithBindingGenerator(BindingTestProfiles.Generator("fixture-target"));
         int productions = 0;
         NativeBuildRecipe Recipe(NativeBuildContext current)
@@ -210,7 +217,10 @@ public sealed class NativeBindingGenerationTests : IDisposable
         {
             ["Inno.Native.Text.csproj"] = SelectedGeneration("selected")
         };
-        var linkage = new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared };
+        var linkage = new Dictionary<string, NativeLibraryKind>
+        {
+            ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared
+        };
         NativeBindingGenerationDescriptor.WriteSelection(output, generations, linkage);
         DateTime originalTime = DateTime.UtcNow.AddMinutes(-1);
         File.SetLastWriteTimeUtc(output, originalTime);
@@ -233,7 +243,10 @@ public sealed class NativeBindingGenerationTests : IDisposable
         {
             ["Inno.Native.Text.csproj"] = SelectedGeneration("original")
         };
-        var linkage = new Dictionary<string, NativeLibraryKind> { ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared };
+        var linkage = new Dictionary<string, NativeLibraryKind>
+        {
+            ["Inno.Native.Text.csproj"] = NativeLibraryKind.Shared
+        };
         NativeBindingGenerationDescriptor.WriteSelection(output, original, linkage);
         NativeBindingGenerationDescriptor.ValidateSelection(output, original, linkage);
         Assert.Throws<InvalidDataException>(() => NativeBindingGenerationDescriptor.ValidateSelection(
@@ -305,18 +318,27 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     [Theory]
-    [InlineData(BGCS.Core.BindingImportMode.LibraryImport)]
-    [InlineData(BGCS.Core.BindingImportMode.DllImport)]
+    [InlineData(BindingImportMode.LibraryImport)]
+    [InlineData(BindingImportMode.DllImport)]
     [Trait("ExternalDependency", "BGCS")]
-    public async Task PlatformImportChoiceChangesOfficialGenerationAndFrozenSelection(BGCS.Core.BindingImportMode importMode)
+    public async Task PlatformImportChoiceChangesOfficialGenerationAndFrozenSelection(BindingImportMode importMode)
     {
         CreateConfig("unsigned long long sample(void* value);");
         NativeBindingGenerationDescriptor provider = await GenerateAsync();
-        var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
-        var request = new NativeBindingGenerationRequest([component], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
+        var component = new NativeComponentDescriptor(
+            "fixture",
+            "Fixture.csproj",
+            "Fixture.csproj",
+            bindingDefinition: "bindings.props"
+        );
+        var request = new NativeBindingGenerationRequest(
+            [component],
+            "fixture-target",
+            NativeBindingOutputMode.TargetArtifacts
+        );
         var profile = new NativeBindingProfile(
             "fixture-target",
-            new BGCS.Configuration.TargetConfiguration { id = "windows-x64-msvc" },
+            new TargetConfiguration { id = "windows-x64-msvc" },
             importMode: importMode
         );
         using NativeBindingGenerationResult result = await new NativeBindingGenerator(profile).GenerateAsync(
@@ -370,8 +392,17 @@ public sealed class NativeBindingGenerationTests : IDisposable
     public async Task UnselectedPlatformDoesNotInvalidateTheSelectedGeneration()
     {
         string config = CreateConfig("int sample(int value);");
-        var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
-        var request = new NativeBindingGenerationRequest([owner], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
+        var owner = new NativeComponentDescriptor(
+            "fixture",
+            "Fixture.csproj",
+            "Fixture.csproj",
+            bindingDefinition: "bindings.props"
+        );
+        var request = new NativeBindingGenerationRequest(
+            [owner],
+            "fixture-target",
+            NativeBindingOutputMode.TargetArtifacts
+        );
         NativeBindingGenerationDescriptor first = await GenerateAsync();
         string definitionPath = Path.Combine(m_root, "bindings.props");
         XDocument definition = XDocument.Load(definitionPath);
@@ -543,10 +574,17 @@ public sealed class NativeBindingGenerationTests : IDisposable
         string? expected = null,
         CancellationToken cancellation = default
     ) {
-        var owner = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
-        var fingerprints = expected is null ? null : new Dictionary<string, string> { [owner.nativeProject] = expected };
+        var owner = new NativeComponentDescriptor(
+            "fixture",
+            "Fixture.csproj",
+            "Fixture.csproj",
+            bindingDefinition: "bindings.props"
+        );
+        Dictionary<string, string>? fingerprints = expected is null
+                                                   ? null
+                                                   : new Dictionary<string, string> { [owner.nativeProject] = expected };
         var request = new NativeBindingGenerationRequest([owner], "fixture-target", mode, checkOnly, fingerprints);
-        using var result = await BindingTestProfiles.Generator("fixture-target").GenerateAsync(
+        using NativeBindingGenerationResult result = await BindingTestProfiles.Generator("fixture-target").GenerateAsync(
             new NativeBuildContext(m_root, "release"),
             request,
             cancellation
@@ -555,8 +593,7 @@ public sealed class NativeBindingGenerationTests : IDisposable
     }
 
     private void WriteDefinition()
-    {
-        new XDocument(
+        => new XDocument(
             new XElement(
                 "Project",
                 new XElement(
@@ -567,11 +604,9 @@ public sealed class NativeBindingGenerationTests : IDisposable
             )
         )
             .Save(Path.Combine(m_root, "bindings.props"));
-    }
 
     private static void WriteCppConfig(string path)
-    {
-        File.WriteAllText(
+        => File.WriteAllText(
             path,
             JsonSerializer.Serialize(new
             {
@@ -582,5 +617,4 @@ public sealed class NativeBindingGenerationTests : IDisposable
                 output = new { root = "Generated", layout = "singleFile" }
             })
         );
-    }
 }

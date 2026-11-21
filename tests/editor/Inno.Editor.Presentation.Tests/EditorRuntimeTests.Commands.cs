@@ -12,7 +12,7 @@ public sealed partial class EditorRuntimeTests
     public void StaticMenuTemplatesKeepAvailabilityLabelsAndReasonsFresh()
     {
         var target = new MenuStateTarget();
-        var interaction = m_runtime.interactions.For("tests/static-menu", target);
+        EditorInteraction interaction = m_runtime.interactions.For("tests/static-menu", target);
         for (int index = 0; index < 3; index++)
         {
             target.label = "Current " + index;
@@ -37,7 +37,7 @@ public sealed partial class EditorRuntimeTests
     public void HiddenHigherOrderPlacementDoesNotEraseTheVisibleAction()
     {
         var target = new MenuStateTarget { visible = false };
-        var interaction = m_runtime.interactions.For("tests/shared-menu", target);
+        EditorInteraction interaction = m_runtime.interactions.For("tests/shared-menu", target);
         Assert.Equal("tests.menu-fallback", Assert.Single(interaction.BuildMenu().items).actionId);
         target.visible = true;
         Assert.Equal("tests.menu-conditional", Assert.Single(interaction.BuildMenu().items).actionId);

@@ -1,3 +1,5 @@
+using System;
+
 namespace Inno.Core.Identity;
 
 /// <summary>
@@ -5,7 +7,7 @@ namespace Inno.Core.Identity;
 /// </summary>
 public abstract class IdentityObject
 {
-    private Identity m_identity = new(System.Guid.NewGuid());
+    private Identity m_identity = new(Guid.NewGuid());
 
     /// <summary>
     /// Gets this object's current persistent and optional session-local identity snapshot.

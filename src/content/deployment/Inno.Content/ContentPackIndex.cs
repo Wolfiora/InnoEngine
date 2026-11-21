@@ -29,8 +29,8 @@ public sealed class ContentPackIndex
     public ContentPackIndex(IEnumerable<ContentEntry> entries)
     {
         ArgumentNullException.ThrowIfNull(entries);
-        m_byKey = new();
-        HashSet<string> folded = new(StringComparer.OrdinalIgnoreCase) { C_INDEX_KEY };
+        m_byKey = [];
+        var folded = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { C_INDEX_KEY };
         List<ContentEntry> ordered = [];
         foreach (ContentEntry entry in entries)
         {
@@ -41,7 +41,7 @@ public sealed class ContentPackIndex
             }
             m_byKey.Add(entry.key, entry);
             ordered.Add(entry);
-            totalLength = checked(totalLength + entry.length);
+            this.totalLength = checked(totalLength + entry.length);
         }
         ordered.Sort(static (
             left,

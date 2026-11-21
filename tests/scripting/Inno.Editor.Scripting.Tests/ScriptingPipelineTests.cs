@@ -4,9 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Loader;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -15,9 +19,12 @@ using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
 using Inno.Core.IO;
 using Inno.Core.Identity;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
@@ -87,7 +94,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 ["Assets/Nested.imeta"] = serialization.Serialize(
                     new ScriptingAssetSourceMeta { persistentId = Guid.NewGuid(), sourceKind = (int)AssetSourceKind.Directory }
                 ),
-                ["Assets/Nested/SourceLocalPathProbe.cs"] = System.Text.Encoding.UTF8.GetBytes("""
+                ["Assets/Nested/SourceLocalPathProbe.cs"] = Encoding.UTF8.GetBytes("""
                     using InnoEngine.Assets;
                     public static class SourceLocalPathProbe
                     {
@@ -132,14 +139,14 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static AssetPath InvokePublicPathProbe(string assemblyPath)
     {
-        var lifetime = new System.Runtime.Loader.AssemblyLoadContext("source-local-path-test", isCollectible: true);
+        var lifetime = new AssemblyLoadContext("source-local-path-test", isCollectible: true);
         try
         {
             using var stream = new MemoryStream(File.ReadAllBytes(assemblyPath));
-            var assembly = lifetime.LoadFromStream(stream);
+            Assembly assembly = lifetime.LoadFromStream(stream);
             Func<AssetPath> resolve = assembly.GetType("SourceLocalPathProbe", throwOnError: true)!.GetMethod(
                 "Resolve",
-                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+                BindingFlags.Public | BindingFlags.Static
             )!.CreateDelegate<Func<AssetPath>>();
             return resolve();
         }
@@ -773,8 +780,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     public void InstalledPluginSampleImportsAsAnImmediatelyCompilableWritableCopy()
     {
         using var fixture = new ScriptingFixture(WriteSamplePlugin);
-        AssetPath source = new(new AssetSourceId("tests.samples"), "~Starter");
-        AssetPath sourceFile = new(new AssetSourceId("tests.samples"), "~Starter/StarterBehavior.cs");
+        var source = new AssetPath(new AssetSourceId("tests.samples"), "~Starter");
+        var sourceFile = new AssetPath(new AssetSourceId("tests.samples"), "~Starter/StarterBehavior.cs");
         Assert.True(fixture.assets.TryGetFileSystemEntry(source, out AssetFileEntry sample));
         Assert.True(sample.isReadOnly);
         Assert.True(sample.isSample);
@@ -806,7 +813,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             );
             Assert.True(candidate.success, FormatDiagnostics(candidate));
         });
-        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
         import.Commit();
         AssetPath imported = import.target;
         Assert.Equal(AssetPath.Project("~Starter"), imported);
@@ -836,7 +843,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             root,
             serialization
         ) => WriteSamplePlugin(root, serialization, "public sealed class BrokenSample { this is invalid; }"));
-        AssetPath source = new(new AssetSourceId("tests.samples"), "~Starter");
+        var source = new AssetPath(new AssetSourceId("tests.samples"), "~Starter");
         using AssetSampleImportTransaction import = PrepareSample(fixture, source);
         import.BeginValidation(async (
             sources,
@@ -852,9 +859,9 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 throw new InvalidOperationException(FormatDiagnostics(candidate));
             }
         });
-        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
         Assert.Throws<InvalidOperationException>(() => import.Commit());
-        new Inno.Core.Execution.RetirementBarrier("Test sample import").Wait(import.Rollback);
+        new RetirementBarrier("Test sample import").Wait(import.Rollback);
         Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter")));
         Assert.False(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("~Starter"), out _));
     }
@@ -862,7 +869,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [Fact]
     public void SampleImportPreservesEveryLeadingTildeAndRejectsDestinationCollisions()
     {
-        AssetPath source = new(new AssetSourceId("tests.samples"), "Samples/~~~Starter");
+        var source = new AssetPath(new AssetSourceId("tests.samples"), "Samples/~~~Starter");
         Assert.Equal("~~~Starter", AssetSample.GetImportName(source));
         Assert.True(AssetSample.IsRuntimeExcluded(AssetPath.Project("~~~Starter/File.cs"), false));
         Assert.False(AssetSample.Contains(AssetPath.Project("~~~Starter/File.cs"), false));
@@ -898,7 +905,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.Throws<InvalidOperationException>(() => fixture.assets.CreateDirectory(AssetPath.Project("Concurrent")));
         Assert.Throws<InvalidOperationException>(() => fixture.host.modules.generations.EnsureReady("reload while importing"));
         completion.SetResult();
-        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
         import.Commit();
         Assert.Equal(1, notifications);
         Assert.Equal(revision + 1, fixture.assets.revision);
@@ -919,13 +926,13 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             _
         ) => new ValueTask(completion.Task));
         import.Cancel();
-        Assert.Throws<Inno.Core.Execution.RetirementPendingException>(() => import.Rollback());
-        Assert.Throws<Inno.Core.Execution.RetirementPendingException>(() => fixture.assets.Dispose());
+        Assert.Throws<RetirementPendingException>(() => import.Rollback());
+        Assert.Throws<RetirementPendingException>(() => fixture.assets.Dispose());
         Assert.True(fixture.assets.isInitialized);
         Assert.Throws<InvalidOperationException>(() => fixture.host.modules.generations.EnsureReady("reload before drain"));
         completion.SetResult();
-        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
-        new Inno.Core.Execution.RetirementBarrier("Test sample import").Wait(import.Rollback);
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
+        new RetirementBarrier("Test sample import").Wait(import.Rollback);
         Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
         Assert.False(File.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter.imeta")));
         Assert.Equal(0, notifications);
@@ -943,9 +950,9 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             _,
             _
         ) => ValueTask.CompletedTask);
-        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
         Assert.Throws<IOException>(() => import.Commit(_ => throw new IOException("History spill failed.")));
-        new Inno.Core.Execution.RetirementBarrier("Test sample import").Wait(import.Rollback);
+        new RetirementBarrier("Test sample import").Wait(import.Rollback);
         Assert.Equal(0, notifications);
         Assert.False(fixture.assets.TryGetFileSystemEntry(import.target, out _));
         fixture.host.modules.generations.EnsureReady("continue after finalization failure");
@@ -967,11 +974,11 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     import.Rollback();
                     return true;
                 }
-                catch (Inno.Core.Execution.RetirementPendingException)
+                catch (RetirementPendingException)
                 {
                     return false;
                 }
-            }, 15000)
+            }, 15_000)
         );
         Assert.False(Directory.Exists(Path.Combine(fixture.projectRoot, "Assets", "~Starter")));
         string transactions = Path.Combine(fixture.assets.libraryRoot, "AssetDatabase", "Transactions");
@@ -1000,14 +1007,14 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     import.Rollback();
                     return true;
                 }
-                catch (Inno.Core.Execution.RetirementPendingException)
+                catch (RetirementPendingException)
                 {
                     return false;
                 }
-            }, 15000)
+            }, 15_000)
         );
         Assert.True(reload.TryCompilePending(out Task<ScriptCompilationResult>? compilation));
-        Assert.True(SpinWait.SpinUntil(() => compilation!.IsCompleted, 15000));
+        Assert.True(SpinWait.SpinUntil(() => compilation!.IsCompleted, 15_000));
         Assert.True(compilation!.IsCompletedSuccessfully);
         Assert.True(reload.lastCompilation!.success);
     }
@@ -1087,7 +1094,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 }
             });
             runtime.Dispose();
-            Assert.True(SpinWait.SpinUntil(() => shutdownObserver.IsCompleted, 15000));
+            Assert.True(SpinWait.SpinUntil(() => shutdownObserver.IsCompleted, 15_000));
             Assert.True(shutdownObserver.IsCompletedSuccessfully, shutdownObserver.Exception?.ToString());
         }
         finally
@@ -1102,11 +1109,11 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                         runtime.Dispose();
                         return true;
                     }
-                    catch (Inno.Core.Execution.RetirementPendingException)
+                    catch (RetirementPendingException)
                     {
                         return false;
                     }
-                }, 15000)
+                }, 15_000)
             );
         }
 
@@ -1126,7 +1133,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         {
             WriteSamplePlugin(root, serialization);
             string package = Path.Combine(root, "Plugins", "samples.iplugin");
-            using var archive = ZipFile.Open(package, ZipArchiveMode.Update);
+            using ZipArchive archive = ZipFile.Open(package, ZipArchiveMode.Update);
             archive.GetEntry("Assets/~Starter.imeta")!.Delete();
             WritePluginPackageEntry(
                 archive,
@@ -1158,7 +1165,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             Assert.NotEqual(sourceId, settings.referenceId);
             return ValueTask.CompletedTask;
         });
-        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+        Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
         import.Commit();
     }
 
@@ -1171,8 +1178,8 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         ) =>
         {
             WriteSamplePlugin(root, serialization);
-            using var package = ZipFile.Open(Path.Combine(root, "Plugins", "samples.iplugin"), ZipArchiveMode.Update);
-            WritePluginPackageEntry(package, "Assets/~Starter/Slow.samplebusy", System.Text.Encoding.UTF8.GetBytes("sample"));
+            using ZipArchive package = ZipFile.Open(Path.Combine(root, "Plugins", "samples.iplugin"), ZipArchiveMode.Update);
+            WritePluginPackageEntry(package, "Assets/~Starter/Slow.samplebusy", Encoding.UTF8.GetBytes("sample"));
             WritePluginPackageEntry(
                 package,
                 "Assets/~Starter/Slow.samplebusy.imeta",
@@ -1198,7 +1205,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                 {
                     Assert.False(import.Advance());
                     return control.started.IsSet;
-                }, 15000)
+                }, 15_000)
             );
             Assert.NotEqual(Environment.CurrentManagedThreadId, control.workerThread);
             long revision = fixture.assets.revision;
@@ -1215,7 +1222,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         }
         finally
         {
-            new Inno.Core.Execution.RetirementBarrier("Test sample preimport").Wait(import.Dispose);
+            new RetirementBarrier("Test sample preimport").Wait(import.Dispose);
             ControlledSampleAssetImporter.current = null;
         }
 
@@ -1256,7 +1263,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         finally
         {
             progress.release.Set();
-            Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60000));
+            Assert.True(SpinWait.SpinUntil(() => import.isValidationComplete, 60_000));
         }
 
         import.Commit();
@@ -1274,7 +1281,11 @@ public sealed partial class ScriptingPipelineTests : IDisposable
     [InlineData(true)]
     public void SampleIndexingDoesNotWaitForWatcherQuietPeriod(bool commit)
     {
-        using var fixture = new ScriptingFixture(WriteSamplePlugin, enableFileSystemWatcher: true, fileWatcherFlushDelayMs: 3000);
+        using var fixture = new ScriptingFixture(
+            WriteSamplePlugin,
+            enableFileSystemWatcher: true,
+            fileWatcherFlushDelayMs: 3000
+        );
         AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(
             new AssetPath(new AssetSourceId("tests.samples"), "~Starter")
         );
@@ -1290,7 +1301,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     maximumAdvance = frame.Elapsed;
                 }
                 return ready;
-            }, 15000);
+            }, 15_000);
             Assert.True(indexed);
             Assert.True(
                 maximumAdvance < TimeSpan.FromSeconds(2),
@@ -1309,7 +1320,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             }
             else
             {
-                new Inno.Core.Execution.RetirementBarrier("Test canceled watched sample").Wait(import.Rollback);
+                new RetirementBarrier("Test canceled watched sample").Wait(import.Rollback);
             }
             fixture.assets.Update();
             Assert.True(fixture.assets.TryGetFileSystemEntry(AssetPath.Project("External.txt"), out _));
@@ -1317,7 +1328,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         }
         finally
         {
-            new Inno.Core.Execution.RetirementBarrier("Test watched sample import").Wait(import.Dispose);
+            new RetirementBarrier("Test watched sample import").Wait(import.Dispose);
         }
     }
 
@@ -1326,7 +1337,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         AssetPath source
     ) {
         AssetSampleImportTransaction import = fixture.assets.PrepareSampleImport(source);
-        Assert.True(SpinWait.SpinUntil(() => import.Advance(), 15000));
+        Assert.True(SpinWait.SpinUntil(() => import.Advance(), 15_000));
         return import;
     }
 
@@ -1624,8 +1635,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Assert.False(previousType.IsAlive, "A neutral settings cache must not retain the old script type.");
         Assert.True(CaptureCachedSettingType(detachedSettings).IsAlive);
         void WriteSetting(int value)
-        {
-            fixture.Write("DetachedSetting.cs", $$"""
+            => fixture.Write("DetachedSetting.cs", $$"""
                 using InnoEngine.Reflection;
                 using InnoEngine.Serialization;
                 using InnoEngine.Settings;
@@ -1636,7 +1646,6 @@ public sealed partial class ScriptingPipelineTests : IDisposable
                     [SerializableProperty] public int value { get; set; } = {{value}};
                 }
                 """);
-        }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
@@ -1978,7 +1987,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             runtime,
             () => scripting.state == EditorScriptCompilationState.Ready,
             () => $"{scripting.state}: {scripting.progress.status}; ticket={scripting.currentTicket?.state}",
-            timeoutMilliseconds: 120000
+            timeoutMilliseconds: 120_000
         );
         ScriptCompilationResult initial = Assert.IsType<ScriptCompilationResult>(scripting.lastCompilation);
         IScriptCompilationTicket? accepted = scripting.currentTicket;
@@ -2014,7 +2023,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             runtime,
             () => scripting.state == EditorScriptCompilationState.Ready && !ReferenceEquals(initial, scripting.lastCompilation),
             () => $"{scripting.state}: {scripting.progress.status}; ticket={scripting.currentTicket?.state}",
-            timeoutMilliseconds: 120000
+            timeoutMilliseconds: 120_000
         );
         Assert.Equal(GenerationState.Ready, fixture.host.generations.state);
         Assert.Equal(3, ReadLatestVersion(fixture));
@@ -2052,7 +2061,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             runtime,
             () => scripting.state is EditorScriptCompilationState.Ready or EditorScriptCompilationState.Failed,
             DescribeCompilation,
-            timeoutMilliseconds: 60000
+            timeoutMilliseconds: 60_000
         );
         Assert.True(scripting.state == EditorScriptCompilationState.Ready, DescribeCompilation());
 
@@ -2069,7 +2078,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         Func<bool> completed,
         Func<string> status,
         bool focused = true,
-        int timeoutMilliseconds = 15000
+        int timeoutMilliseconds = 15_000
     ) {
         long started = Environment.TickCount64;
         int frame = 0;
@@ -2260,7 +2269,7 @@ public sealed partial class ScriptingPipelineTests : IDisposable
             new PluginManifest { pluginId = "tests.projection", displayName = "Projection Plugin" },
             new Dictionary<string, byte[]>
             {
-                ["Assets/ProjectionRuntime.cs"] = System.Text.Encoding.UTF8.GetBytes(c_source),
+                ["Assets/ProjectionRuntime.cs"] = Encoding.UTF8.GetBytes(c_source),
                 ["Assets/ProjectionRuntime.cs.imeta"] = CreateScriptSourceMeta(serialization, Guid.NewGuid())
             }
         );
@@ -2288,22 +2297,20 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         string projectRoot,
         SerializationRegistry serialization,
         string source
-    ) {
-        WritePluginPackage(
-            projectRoot,
-            "unavailability.iplugin",
-            serialization,
-            new PluginManifest { pluginId = "tests.unavailability", displayName = "Unavailability Test Plugin" },
-            new Dictionary<string, byte[]>
-            {
-                ["Assets/PluginBehavior.cs"] = System.Text.Encoding.UTF8.GetBytes(source),
-                ["Assets/PluginBehavior.cs.imeta"] = CreateScriptSourceMeta(
-                    serialization,
-                    Guid.Parse("37f9751f-a7de-43c7-94ac-c8e854762d49")
-                )
-            }
-        );
-    }
+    ) => WritePluginPackage(
+        projectRoot,
+        "unavailability.iplugin",
+        serialization,
+        new PluginManifest { pluginId = "tests.unavailability", displayName = "Unavailability Test Plugin" },
+        new Dictionary<string, byte[]>
+        {
+            ["Assets/PluginBehavior.cs"] = Encoding.UTF8.GetBytes(source),
+            ["Assets/PluginBehavior.cs.imeta"] = CreateScriptSourceMeta(
+                serialization,
+                Guid.Parse("37f9751f-a7de-43c7-94ac-c8e854762d49")
+            )
+        }
+    );
 
     private static void WriteSamplePlugin(
         string projectRoot,
@@ -2319,31 +2326,29 @@ public sealed partial class ScriptingPipelineTests : IDisposable
         string projectRoot,
         SerializationRegistry serialization,
         string source
-    ) {
-        WritePluginPackage(
-            projectRoot,
-            "samples.iplugin",
-            serialization,
-            new PluginManifest { pluginId = "tests.samples", displayName = "Sample Test Plugin" },
-            new Dictionary<string, byte[]>
-            {
-                ["Assets/"] = [],
-                ["Assets/~Starter/"] = [],
-                ["Assets/~Starter.imeta"] = serialization.Serialize(
-                    new ScriptingAssetSourceMeta
-                    {
-                        persistentId = Guid.Parse("7726b1d2-9aee-4d2c-a865-2fd53155095f"),
-                        sourceKind = (int)AssetSourceKind.Directory
-                    }
-                ),
-                ["Assets/~Starter/StarterBehavior.cs"] = System.Text.Encoding.UTF8.GetBytes(source),
-                ["Assets/~Starter/StarterBehavior.cs.imeta"] = CreateScriptSourceMeta(
-                    serialization,
-                    Guid.Parse("75f6a70b-93b2-47f0-8747-cc359474b7a3")
-                )
-            }
-        );
-    }
+    ) => WritePluginPackage(
+        projectRoot,
+        "samples.iplugin",
+        serialization,
+        new PluginManifest { pluginId = "tests.samples", displayName = "Sample Test Plugin" },
+        new Dictionary<string, byte[]>
+        {
+            ["Assets/"] = [],
+            ["Assets/~Starter/"] = [],
+            ["Assets/~Starter.imeta"] = serialization.Serialize(
+                new ScriptingAssetSourceMeta
+                {
+                    persistentId = Guid.Parse("7726b1d2-9aee-4d2c-a865-2fd53155095f"),
+                    sourceKind = (int)AssetSourceKind.Directory
+                }
+            ),
+            ["Assets/~Starter/StarterBehavior.cs"] = Encoding.UTF8.GetBytes(source),
+            ["Assets/~Starter/StarterBehavior.cs.imeta"] = CreateScriptSourceMeta(
+                serialization,
+                Guid.Parse("75f6a70b-93b2-47f0-8747-cc359474b7a3")
+            )
+        }
+    );
 
     private static byte[] CreateScriptSourceMeta(
         SerializationRegistry serialization,
@@ -2592,7 +2597,7 @@ internal sealed class ScriptingFixture : IDisposable
         bool enableFileSystemWatcher = false,
         int fileWatcherFlushDelayMs = 100
     ) {
-        projectRoot = Path.Combine(Path.GetTempPath(), "InnoScriptingPipelineTests", Guid.NewGuid().ToString("N"));
+        this.projectRoot = Path.Combine(Path.GetTempPath(), "InnoScriptingPipelineTests", Guid.NewGuid().ToString("N"));
         string assetRoot = Path.Combine(projectRoot, "Assets");
         string pluginRoot = Path.Combine(projectRoot, "Plugins");
         string libraryRoot = Path.Combine(projectRoot, "Library");
@@ -2600,7 +2605,7 @@ internal sealed class ScriptingFixture : IDisposable
         Directory.CreateDirectory(pluginRoot);
         Directory.CreateDirectory(libraryRoot);
         m_identityScope = m_identities.EnterScope();
-        host = new EngineHostBuilder().UseMetadataSources(
+        this.host = new EngineHostBuilder().UseMetadataSources(
             new DotNetAssemblyCatalogSource(typeof(ScriptingPipelineTests).Assembly),
             new ReflectionTypeCatalogSource(),
             new ReflectionSerializationMetadataSource()
@@ -2610,7 +2615,7 @@ internal sealed class ScriptingFixture : IDisposable
         var pluginSources = new PluginSourceService(host.serialization, pluginRoot, libraryRoot);
         PluginScanResult scan = pluginSources.Scan();
         AssetPipelineOptions options = AssetPipelineOptions.Create(assetRoot, libraryRoot);
-        assets = new AssetPipeline(
+        this.assets = new AssetPipeline(
             host.modules,
             host.types,
             host.serialization,
@@ -2633,14 +2638,14 @@ internal sealed class ScriptingFixture : IDisposable
         );
         m_plugins = new PluginEnvironment(assets, m_settings, host.serialization, pluginRoot, libraryRoot, scan, host.modules.generations);
         string dotnetHost = Path.Combine(
-            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
         );
-        compiler = new ScriptCompiler(
+        this.compiler = new ScriptCompiler(
             new ScriptCompilerOptions
             {
                 projectRootDirectory = projectRoot,
-                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
+                compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
             },
             assets,
             m_plugins
@@ -2789,7 +2794,7 @@ internal sealed class ScriptingFixture : IDisposable
         reloads ??= new EditorReloadCoordinator();
         RuntimeSession editorSession = CreateEditorSession();
         return new EditorInteractionRuntime(
-            new EditorContext(projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             host.types,
             host.logs,
             [

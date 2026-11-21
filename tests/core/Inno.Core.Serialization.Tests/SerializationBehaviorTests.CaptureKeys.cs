@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.Loader;
 using System.Threading.Tasks;
@@ -191,17 +192,17 @@ public sealed partial class SerializationBehaviorTests
     public void PureFieldMetadataPreservesExactFloatBitsAcrossTrackedPropertyChanges()
     {
         var identities = new IdentityAllocator();
-        var properties = new PureFieldCaptureProperties { value = new PureCaptureFields { number = -0.0f } };
+        var properties = new PureFieldCaptureProperties { value = new PureCaptureFields { number = -0f } };
         var value = new CaptureKeyRoot { properties = properties };
         Assert.True(identities.Register(value));
         Assert.True(identities.Register(properties));
         _ = m_serialization.CapturePropertiesData(properties);
         SerializationSnapshot before = m_serialization.CaptureSnapshot(value);
         Assert.Same(before, m_serialization.CaptureSnapshot(value, previous: before));
-        properties.value = new PureCaptureFields { number = 0.0f };
+        properties.value = new PureCaptureFields { number = 0f };
         SerializationSnapshot zero = m_serialization.CaptureSnapshot(value, previous: before);
         Assert.NotEqual(before.ToArray(), zero.ToArray());
-        foreach (int bits in new[] { 0x7fc00001, 0x7fc00002 })
+        foreach (int bits in new[] { 0x7FC0_0001, 0x7FC0_0002 })
         {
             properties.value = new PureCaptureFields { number = BitConverter.Int32BitsToSingle(bits) };
             SerializationSnapshot changed = m_serialization.CaptureSnapshot(value, previous: zero);
@@ -328,9 +329,9 @@ public sealed partial class SerializationBehaviorTests
     private (SerializationSnapshot, SerializationCaptureKeyBuilder, WeakReference, WeakReference) CaptureCollectibleProperties()
     {
         var context = new CapturePropertyLoadContext();
-        var assembly = context.LoadFromAssemblyPath(typeof(CaptureRevisionProperties).Assembly.Location);
+        Assembly assembly = context.LoadFromAssemblyPath(typeof(CaptureRevisionProperties).Assembly.Location);
         Type type = assembly.GetType(typeof(CaptureRevisionProperties).FullName!, throwOnError: true)!;
-        var properties = (ISerializable)Activator.CreateInstance(type)!;
+        ISerializable properties = (ISerializable)Activator.CreateInstance(type)!;
         var identities = new IdentityAllocator();
         var value = new CaptureKeyRoot { properties = properties };
         Assert.True(identities.Register(value));
@@ -461,14 +462,17 @@ public sealed class CaptureRevisionProperties : IdentityObject, ISerializable
 
 internal sealed class UntrackedCaptureProperties : IdentityObject, ISerializable
 {
-    [SerializableProperty] public int number;
+    [SerializableProperty]
+    public int number;
 }
 
 [SerializationRevision("revision")]
 internal sealed class ConvertedCaptureProperties : IdentityObject, ISerializable
 {
     private ulong? revision => 0;
-    [SerializableProperty] public CaptureConvertedValue value = new() { number = 1 };
+
+    [SerializableProperty]
+    public CaptureConvertedValue value = new() { number = 1 };
 }
 
 [SerializationRevision("m_revision")]
@@ -498,7 +502,9 @@ internal struct PureCaptureFields
 internal sealed class GetterCaptureProperties : IdentityObject, ISerializable
 {
     private ulong? revision => 0;
-    [SerializableProperty] public CaptureGetterStruct value = new();
+
+    [SerializableProperty]
+    public CaptureGetterStruct value = new();
 }
 
 internal struct CaptureGetterStruct
@@ -526,7 +532,10 @@ internal sealed class CaptureConvertedValueConverter : SerializationConverter<Ca
     internal static readonly List<string> events = [];
     internal static int calls;
 
-    public CaptureConvertedValueConverter() => events.Add("construct");
+    public CaptureConvertedValueConverter()
+    {
+        events.Add("construct");
+    }
 
     public override void Write(
         SerializationWriter writer,
@@ -543,7 +552,8 @@ internal sealed class CaptureConvertedValueConverter : SerializationConverter<Ca
 [SerializationRevision("revision")]
 internal sealed class SerializedCaptureCounter : IdentityObject, ISerializable
 {
-    [SerializableProperty(PropertyVisibility.Serialize)] public ulong revision => 0;
+    [SerializableProperty(PropertyVisibility.Serialize)]
+    public ulong revision => 0;
 }
 
 internal sealed class FreshCaptureMetadataSource : ISerializationMetadataSource
@@ -559,6 +569,6 @@ internal sealed class FreshCaptureMetadataSource : ISerializationMetadataSource
 
 internal sealed class CapturePropertyLoadContext() : AssemblyLoadContext(isCollectible: true)
 {
-    protected override System.Reflection.Assembly? Load(System.Reflection.AssemblyName name)
+    protected override Assembly? Load(AssemblyName name)
         => Default.Assemblies.FirstOrDefault(assembly => assembly.GetName().Name == name.Name);
 }

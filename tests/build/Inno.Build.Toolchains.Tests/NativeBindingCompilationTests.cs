@@ -100,16 +100,21 @@ public sealed class NativeBindingCompilationTests : IDisposable
         string hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes("verified")));
         return new NativeBindingCompilation
         {
-            roots = [new("user", "source", false, true), new("nested", "source/nested", false, true), new("generated", "", true, true)],
+            roots =
+            [
+                new("user", "source", false, true),
+                new("nested", "source/nested", false, true),
+                new("generated", string.Empty, true, true)
+            ],
             files = [new("user", "nested/api.hpp", 8, hash, false), new("nested", "api.hpp", 8, hash, true)],
-            includeDirectories = [new("user", "", false, false), new("nested", "", false, false)],
+            includeDirectories = [new("user", string.Empty, false, false), new("nested", string.Empty, false, false)],
             defines = ["first", "second"],
             compilerDefines = ["__COMPILER_FACT=1"],
             cxxStandard = 20,
             cStandard = 0,
             requiredExports = ["exported"],
             staticExportSymbols = [],
-            staticExportAbi = "",
+            staticExportAbi = string.Empty,
             staticExportNames = []
         };
     }

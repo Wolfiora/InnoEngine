@@ -151,7 +151,7 @@ public static class BuildMaintenanceApplication
         ArgumentNullException.ThrowIfNull(policy);
         Stopwatch elapsed = Stopwatch.StartNew();
         IReadOnlyList<BuildCacheOwnerDescriptor> owners;
-        using (var inventoryBudget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
+        using (CancellationTokenSource inventoryBudget = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
         {
             inventoryBudget.CancelAfter(policy.timeBudget);
             try
@@ -192,7 +192,7 @@ public static class BuildMaintenanceApplication
         Console.WriteLine(
             $"Cache: {plan.totalBytes} bytes; protected {plan.protectedBytes}; reclaimed {result.retiredBytes}; skipped {result.skipped.Count}."
         );
-        foreach (var failure in result.failures)
+        foreach (KeyValuePair<string, string> failure in result.failures)
         {
             Console.Error.WriteLine($"Cache retirement failed: {failure.Key}: {failure.Value}");
         }

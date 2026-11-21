@@ -3,6 +3,8 @@ using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
+using Inno.Editor.Assets.ImGui;
 using Inno.Editor.ImGui;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
@@ -23,7 +25,7 @@ internal sealed partial class ShaderEditorCanvas
         InspectorRow("source.actions", "Source", () =>
         {
             if (EditorImGui.SmallButton("Show in File Browser")
-                && owner.interactions.TryGetModule<Inno.Editor.Assets.ImGui.AssetBrowserModule>(out var browser)
+                && owner.interactions.TryGetModule<AssetBrowserModule>(out AssetBrowserModule? browser)
                 && browser is not null
             ) {
                 RevealShaderFunction.Reveal(owner, browser, sourceId);
@@ -52,7 +54,10 @@ internal sealed partial class ShaderEditorCanvas
             EditorImGui.BeginDisabled(readOnly);
             try
             {
-                var settings = owner.serialization.Deserialize<ShaderSourceImportSettings>(draft.sourceSettings, owner.context);
+                ShaderSourceImportSettings settings = owner.serialization.Deserialize<ShaderSourceImportSettings>(
+                    draft.sourceSettings,
+                    owner.context
+                );
                 bool changed = false;
                 InspectorRow("source.language", "Language", () =>
                 {
@@ -121,7 +126,8 @@ internal sealed partial class ShaderEditorCanvas
                     try
                     {
                         string function = settings.exports[i];
-                        bool functionChanged = false, remove = false;
+                        bool functionChanged = false;
+                        bool remove = false;
                         InspectorRow("source.export", "Function " + (i + 1), () =>
                         {
                             functionChanged = EditorImGui.InputText("##name", ref function, 256);
@@ -251,7 +257,7 @@ internal sealed partial class ShaderEditorCanvas
             if (readOnly)
             {
                 EditorUI.current.widgets.ColoredText(
-                    Inno.Editor.ImGui.EditorPalette.textDisabled,
+                    EditorPalette.textDisabled,
                     "Installed source settings are read-only."
                 );
             }
@@ -261,7 +267,7 @@ internal sealed partial class ShaderEditorCanvas
             }
         }
         catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException)
-                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                        && RetirementPendingException.Find(failure) is null)
         {
             draft.sourceSettingsStatus = failure.Message;
             EditorUI.current.widgets.WrappedText(draft.sourceSettingsStatus);
@@ -284,6 +290,6 @@ internal sealed partial class ShaderEditorCanvas
         draft.settingsSource = sourceId;
         draft.sourceSettingsFingerprint = snapshot.fingerprint;
         draft.sourceSettings = owner.serialization.Serialize(settings, owner.context);
-        draft.sourceSettingsStatus = "";
+        draft.sourceSettingsStatus = string.Empty;
     }
 }

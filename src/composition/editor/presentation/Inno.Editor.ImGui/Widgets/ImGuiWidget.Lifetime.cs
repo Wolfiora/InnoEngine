@@ -13,7 +13,7 @@ public sealed unsafe partial class ImGuiWidget
     internal ImGuiWidget(EditorUiSession session)
     {
         m_session = session ?? throw new ArgumentNullException(nameof(session));
-        style = new EditorStyleMetrics(session);
+        this.style = new EditorStyleMetrics(session);
     }
 
     internal void RetireOwner(string owner)
@@ -23,7 +23,7 @@ public sealed unsafe partial class ImGuiWidget
             CancelEdits();
         }
         var retired = new List<(string Owner, uint Window)>();
-        foreach (var key in m_treeStatesByWindow.Keys)
+        foreach ((string Owner, uint Window) key in m_treeStatesByWindow.Keys)
         {
             if (string.Equals(key.Owner, owner, StringComparison.Ordinal))
             {
@@ -31,7 +31,7 @@ public sealed unsafe partial class ImGuiWidget
             }
         }
 
-        foreach (var key in retired)
+        foreach ((string Owner, uint Window) key in retired)
         {
             m_treeStatesByWindow.Remove(key);
         }

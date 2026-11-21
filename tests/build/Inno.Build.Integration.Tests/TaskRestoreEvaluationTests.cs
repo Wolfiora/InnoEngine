@@ -97,7 +97,7 @@ public sealed class TaskRestoreEvaluationTests
                                      new XAttribute("LoadDirectory", Path.Combine(root, "loads", "reader", "Debug")),
                                      new XAttribute("Targets", "Restore;PublishRuntime")
                                  );
-            XElement run = new("Target", new XAttribute("Name", "Run"), operation);
+            var run = new XElement("Target", new XAttribute("Name", "Run"), operation);
             if (ownedRestore)
             {
                 run.Add(

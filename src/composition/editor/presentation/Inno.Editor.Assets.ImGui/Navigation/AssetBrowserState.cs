@@ -84,7 +84,7 @@ public sealed class AssetBrowserState
     public string? GetSelectedPath(EditorContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        return (m_interactions.selection.selectedTarget as Inno.Assets.Pipeline.AssetFileEntry)?.assetPath.ToString();
+        return (m_interactions.selection.selectedTarget as AssetFileEntry)?.assetPath.ToString();
     }
 
     /// <summary>
@@ -116,9 +116,7 @@ public sealed class AssetBrowserState
     public void ToggleSelection(
         EditorContext context,
         AssetFileEntry entry
-    ) {
-        m_interactions.ToggleSelection(entry);
-    }
+    ) => m_interactions.ToggleSelection(entry);
 
     /// <summary>
     /// Switches the displayed root while preserving the last directory visited in each root.
@@ -169,10 +167,8 @@ public sealed class AssetBrowserState
         object? target = null;
         if (!string.IsNullOrWhiteSpace(relativePath))
         {
-            if (m_assets.TryGetFileSystemEntry(
-                Inno.Assets.AssetPath.Parse(Normalize(relativePath)),
-                out Inno.Assets.Pipeline.AssetFileEntry entry
-            )) {
+            if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(Normalize(relativePath)), out AssetFileEntry entry))
+            {
                 target = entry;
             }
         }

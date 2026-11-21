@@ -80,7 +80,7 @@ internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry>
         InspectionDrawContext context,
         AssetFileEntry target
     ) {
-        if (context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents))
+        if (context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents))
         {
             if (documents!.TryOpen(target, out ShaderEditorDocuments.Draft draft))
             {
@@ -88,7 +88,7 @@ internal sealed class ShaderSourceDrawer(IInspectionIconProvider<AssetFileEntry>
             }
             else
             {
-                EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
+                EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Waiting for Shader asset import…");
             }
         }
     }
@@ -117,7 +117,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
     protected override string GetIcon(
         InspectionDrawContext context,
         ShaderInspectionSelection target
-    ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
+    ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
          && documents is not null
          && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
          && info is not null
@@ -142,7 +142,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         InspectionDrawContext context,
         ShaderInspectionSelection target
     ) {
-        if (context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
+        if (context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
             && documents is not null
             && documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
             && info is not null
@@ -165,7 +165,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         InspectionDrawContext context,
         ShaderInspectionSelection target
     ) {
-        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
             || documents is null
             || !documents.assets.TryGetInfo(target.assetId, out AssetInfo? info)
             || info is null
@@ -207,7 +207,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         InspectionDrawContext context,
         ShaderInspectionSelection target
     ) {
-        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null)
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents) || documents is null)
         {
             return;
         }
@@ -225,7 +225,7 @@ internal sealed class ShaderSelectionDrawer(IInspectionIconProvider<AssetFileEnt
         }
         else
         {
-            EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
+            EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Waiting for Shader asset import…");
         }
     }
 }
@@ -253,7 +253,7 @@ internal sealed class ShaderAssetDrawer(IInspectionIconProvider<AssetFileEntry> 
     protected override string GetIcon(
         InspectionDrawContext context,
         ShaderAsset target
-    ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents)
+    ) => context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents)
          && documents is not null
          && documents.assets.TryGetFileSystemEntry(
              target.assetPath,
@@ -290,7 +290,7 @@ internal sealed class ShaderAssetDrawer(IInspectionIconProvider<AssetFileEntry> 
         InspectionDrawContext context,
         ShaderAsset target
     ) {
-        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out var documents) || documents is null)
+        if (!context.interactions.TryGetModule<ShaderEditorDocuments>(out ShaderEditorDocuments? documents) || documents is null)
         {
             return;
         }
@@ -304,7 +304,7 @@ internal sealed class ShaderAssetDrawer(IInspectionIconProvider<AssetFileEntry> 
         }
         else
         {
-            EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Waiting for Shader asset import…");
+            EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Waiting for Shader asset import…");
         }
     }
 }

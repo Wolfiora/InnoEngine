@@ -1,3 +1,4 @@
+using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Interactions;
@@ -18,9 +19,9 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDr
     /// </returns>
     protected override EditorDropStatus Query(EditorDropContext<AssetFileEntry, AssetReferenceDropTarget> context)
     {
-        if (!assets.TryGetPersistentId(context.source.assetPath, out System.Guid persistentId)
-            || persistentId == System.Guid.Empty
-            || !assets.TryGetAssetType(context.source.assetPath, out System.Type? assetType)
+        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentId)
+            || persistentId == Guid.Empty
+            || !assets.TryGetAssetType(context.source.assetPath, out Type? assetType)
             || assetType is null
             || !context.target.expectedType.IsAssignableFrom(assetType)
         ) {
@@ -44,7 +45,7 @@ internal sealed class AssetReferenceDropHandler(AssetPipeline assets) : EditorDr
         {
             return EditorDropResult.rejected;
         }
-        if (!assets.TryGetPersistentId(context.source.assetPath, out System.Guid persistentId))
+        if (!assets.TryGetPersistentId(context.source.assetPath, out Guid persistentId))
         {
             return EditorDropResult.rejected;
         }

@@ -26,7 +26,7 @@ internal sealed partial class FileBrowserPanel
         m_navigation.SyncExternalDirectoryChange(m_assets.browser.root, m_assets.browser.currentDirectory);
         EditorUiLayout style = Ui.GetLayout();
         float breadcrumbBarHeight = GetBreadcrumbBarHeight(m_assets.browser.root, m_assets.browser.currentDirectory);
-        Vector2 bodySize = new(0f, -(breadcrumbBarHeight + style.itemSpacing.Y));
+        var bodySize = new Vector2(0f, -(breadcrumbBarHeight + style.itemSpacing.Y));
         bool mainVisible = Ui.BeginChild(
             "##FileBrowserMain",
             bodySize,
@@ -47,7 +47,7 @@ internal sealed partial class FileBrowserPanel
                 Ui.PushStyleVar(ImGuiStyleVar.CellPadding, Vector2.Zero);
                 try
                 {
-                    bool splitStarted = Ui.BeginTable("##FileBrowserSplit", 3, splitFlags, default(System.Numerics.Vector2), 0f);
+                    bool splitStarted = Ui.BeginTable("##FileBrowserSplit", 3, splitFlags, default, 0f);
                     try
                     {
                         if (splitStarted)
@@ -91,16 +91,14 @@ internal sealed partial class FileBrowserPanel
     }
 
     private static float GetTreeSplitterWidth(EditorUiLayout style)
-    {
-        return MathF.Max(EditorUI.current.widgets.style.splitterMinimumWidth, style.dockingSeparatorSize);
-    }
+        => MathF.Max(EditorUI.current.widgets.style.splitterMinimumWidth, style.dockingSeparatorSize);
 
     private void DrawTreeSplitter(
         float width,
         float availableWidth,
         float treeWidth
     ) {
-        Vector2 size = new(width, MathF.Max(1f, Ui.GetContentRegionAvailable().Y));
+        var size = new Vector2(width, MathF.Max(1f, Ui.GetContentRegionAvailable().Y));
         _ = Ui.InvisibleButton("##TreeSplitterGrip", size);
         bool hovered = Ui.IsItemHovered();
         bool active = Ui.IsItemActive();
@@ -160,7 +158,7 @@ internal sealed partial class FileBrowserPanel
         try
         {
             EditorUiLayout style = Ui.GetLayout();
-            Vector2 treePaneSize = new(-style.windowPadding.X, 0f);
+            var treePaneSize = new Vector2(-style.windowPadding.X, 0f);
             bool treeVisible = Ui.BeginChild(
                 "##TreePane",
                 treePaneSize,
@@ -296,13 +294,13 @@ internal sealed partial class FileBrowserPanel
         }
         finally
         {
-            m_visibleSelection = Array.Empty<Inno.Core.Identity.RuntimeIdentity>();
+            m_visibleSelection = Array.Empty<RuntimeIdentity>();
             m_drawKeyboardFocus = null;
         }
         RuntimeIdentity? activation = m_pendingActivation;
         m_pendingActivation = null;
         if (activation is RuntimeIdentity identity
-            && m_assets.edits.interactions.TryResolveIdentity(identity, out Inno.Core.Identity.IdentityObject? target)
+            && m_assets.edits.interactions.TryResolveIdentity(identity, out IdentityObject? target)
             && target is AssetFileEntry entry
         ) {
             m_navigation.OpenEntry(context, entry, m_tree);

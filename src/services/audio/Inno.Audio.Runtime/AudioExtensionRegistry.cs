@@ -55,9 +55,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
     protected override void OnCleanupFailed(
         string phase,
         Exception exception
-    ) {
-        m_retirementFailure ??= exception;
-    }
+    ) => m_retirementFailure ??= exception;
 
     /// <summary>
     /// Builds a complete validated audio extension snapshot from one type generation.
@@ -127,7 +125,7 @@ internal sealed class AudioExtensionRegistry : TypeRegistry<AudioExtensionRegist
             Func<Type, AudioContentProvider> createProvider
         ) {
             m_types = types;
-            typeCacheVersion = types.version;
+            this.typeCacheVersion = types.version;
             m_mixers = mixers;
             m_features = features;
             m_providers = providers;

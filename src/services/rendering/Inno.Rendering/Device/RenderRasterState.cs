@@ -167,7 +167,7 @@ public sealed class RenderRasterState
     /// <summary>
     /// Gets the four-bit RGBA write mask.
     /// </summary>
-    public byte colorWriteMask { get; init; } = 0x0f;
+    public byte colorWriteMask { get; init; } = 0x0F;
 
     /// <summary>
     /// Gets whether multisample rasterization is enabled for compatible targets.

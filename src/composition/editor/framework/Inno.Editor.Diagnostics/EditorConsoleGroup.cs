@@ -14,7 +14,7 @@ public sealed class EditorConsoleGroup
     ) {
         this.identity = identity;
         this.occurrences = Array.AsReadOnly(occurrences);
-        latest = occurrences[^1];
+        this.latest = occurrences[^1];
     }
 
     /// <summary>

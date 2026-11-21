@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Xunit;
 using Inno.Extensibility.Catalogs;
 using Inno.Runtime;
@@ -41,7 +43,7 @@ public sealed class RuntimeModuleCatalogGeneratorTests
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
         );
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new RuntimeModuleCatalogGenerator().AsSourceGenerator());
-        driver.RunGeneratorsAndUpdateCompilation(input, out _, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(input, out _, out ImmutableArray<Diagnostic> diagnostics);
         Diagnostic failure = Assert.Single(diagnostics, static diagnostic => diagnostic.Id == "INNORUN002");
         Assert.Equal(DiagnosticSeverity.Error, failure.Severity);
         Assert.Contains("parameterless constructor", failure.GetMessage());
@@ -106,10 +108,10 @@ public sealed class RuntimeModuleCatalogGeneratorTests
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
         );
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new RuntimeModuleCatalogGenerator().AsSourceGenerator());
-        driver.RunGeneratorsAndUpdateCompilation(input, out Compilation output, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(input, out Compilation output, out ImmutableArray<Diagnostic> diagnostics);
         Assert.Empty(diagnostics.Where(static value => value.Severity == DiagnosticSeverity.Error));
         using var stream = new MemoryStream();
-        var emitted = output.Emit(stream);
+        EmitResult emitted = output.Emit(stream);
         Assert.True(emitted.Success, string.Join(Environment.NewLine, emitted.Diagnostics));
         stream.Position = 0;
         var lifetime = new AssemblyLoadContext("static-catalog-test", isCollectible: true);
@@ -118,7 +120,7 @@ public sealed class RuntimeModuleCatalogGeneratorTests
             Assembly assembly = lifetime.LoadFromStream(stream);
             MethodInfo entry = assembly.GetType("Inno.StaticCatalogFixture.Generated.RuntimeModuleCatalog", throwOnError: true)!
                 .GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!;
-            var register = entry.CreateDelegate<Action<ITypeCatalogRegistrar>>();
+            Action<ITypeCatalogRegistrar> register = entry.CreateDelegate<Action<ITypeCatalogRegistrar>>();
             var catalog = new StaticTypeCatalogSource([register]);
             Type derivedType = assembly.GetType("Fixture.Derived", throwOnError: true)!;
             TypeCatalogMetadata derived = catalog.GetMetadata(derivedType);

@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Captures the current failure identity of every writable source without exposing catalog internals.

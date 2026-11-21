@@ -88,7 +88,7 @@ public sealed class EncodedContentTests
     private static AudioClipDescriptor Describe(
         IAudioClipSource source,
         AudioClipLoadMode mode
-    ) => new(AudioCodecId.wav, mode, 1, 48000, 4800, source.length);
+    ) => new(AudioCodecId.wav, mode, 1, 48_000, 4800, source.length);
 
     private static void WaitForReady(
         IAudioDevice backend,
@@ -101,8 +101,7 @@ public sealed class EncodedContentTests
     }
 
     private static void Retire(Func<bool> cleanup)
-    {
-        Assert.True(
+        => Assert.True(
             SpinWait.SpinUntil(() =>
             {
                 try
@@ -116,7 +115,6 @@ public sealed class EncodedContentTests
                 }
             }, TimeSpan.FromSeconds(5))
         );
-    }
 
     private static byte[] CreateWave()
     {
@@ -128,8 +126,8 @@ public sealed class EncodedContentTests
         writer.Write(16);
         writer.Write((short)1);
         writer.Write((short)1);
-        writer.Write(48000);
-        writer.Write(96000);
+        writer.Write(48_000);
+        writer.Write(96_000);
         writer.Write((short)2);
         writer.Write((short)16);
         writer.Write("data"u8);
@@ -150,7 +148,7 @@ public sealed class EncodedContentTests
         internal GatedSource(byte[] bytes)
         {
             m_bytes = bytes;
-            contentHash = Convert.ToHexString(SHA256.HashData(bytes));
+            this.contentHash = Convert.ToHexString(SHA256.HashData(bytes));
         }
 
         public string contentHash { get; init; }
@@ -178,7 +176,10 @@ public sealed class EncodedContentTests
             private bool m_closed;
 
             internal GatedStream(GatedSource owner)
-                : base(owner.m_bytes, writable: false) => m_owner = owner;
+                : base(owner.m_bytes, writable: false)
+                {
+                m_owner = owner;
+            }
 
             public override async ValueTask<int> ReadAsync(
                 Memory<byte> buffer,

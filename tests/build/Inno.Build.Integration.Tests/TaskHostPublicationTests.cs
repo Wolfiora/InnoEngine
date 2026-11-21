@@ -11,6 +11,8 @@ using Xunit;
 using Inno.Build.TaskHosting;
 using Inno.Build.Toolchains;
 
+using AsyncTask = System.Threading.Tasks.Task;
+
 namespace Inno.Build.Integration.Tests;
 
 public sealed class TaskHostPublicationTests : IDisposable
@@ -41,14 +43,11 @@ public sealed class TaskHostPublicationTests : IDisposable
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task ConcurrentReadersShareTheCompleteContentIdentity()
+    public async AsyncTask ConcurrentReadersShareTheCompleteContentIdentity()
     {
         PublishTaskHostTask first = CreateTask();
         PublishTaskHostTask second = CreateTask();
-        bool[] results = await System.Threading.Tasks.Task.WhenAll(
-            System.Threading.Tasks.Task.Run(first.Execute),
-            System.Threading.Tasks.Task.Run(second.Execute)
-        );
+        bool[] results = await AsyncTask.WhenAll(AsyncTask.Run(first.Execute), AsyncTask.Run(second.Execute));
         Assert.All(results, result => Assert.True(result));
         Assert.Equal(first.PublishedAssembly, second.PublishedAssembly);
         Assert.Single(Directory.GetDirectories(Path.Combine(m_root, "hosts")));
@@ -93,7 +92,7 @@ public sealed class TaskHostPublicationTests : IDisposable
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task RetirementKeepsLiveReadersAndReleasesDeadReadersAndTheirUnreferencedRuntime()
+    public async AsyncTask RetirementKeepsLiveReadersAndReleasesDeadReadersAndTheirUnreferencedRuntime()
     {
         TaskHostPublicationProcess old = await TaskHostPublicationProcess.StartAsync(m_root);
         await using TaskHostPublicationProcess live = await TaskHostPublicationProcess.StartAsync(m_root);
@@ -131,7 +130,7 @@ public sealed class TaskHostPublicationTests : IDisposable
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task BootstrapRetirementPreservesCurrentProcessAndRemovesOnlyConfirmedDeadOwners()
+    public async AsyncTask BootstrapRetirementPreservesCurrentProcessAndRemovesOnlyConfirmedDeadOwners()
     {
         await using TaskHostPublicationProcess previous = await TaskHostPublicationProcess.StartAsync(m_root);
         await previous.DisposeAsync();
@@ -148,7 +147,7 @@ public sealed class TaskHostPublicationTests : IDisposable
     private PublishTaskHostTask CreateTask()
     {
         string source = Path.Combine(m_root, "input", "Inno.Build.Tasks.dll");
-        TaskItem file = new(source);
+        var file = new TaskItem(source);
         file.SetMetadata("RelativePath", "Inno.Build.Tasks.dll");
         file.SetMetadata("FileHash", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(source))));
         return new PublishTaskHostTask
@@ -160,7 +159,7 @@ public sealed class TaskHostPublicationTests : IDisposable
         };
     }
 
-    private async System.Threading.Tasks.Task MaintainAsync()
+    private async AsyncTask MaintainAsync()
     {
         BuildCacheOwnerDescriptor[] owners =
         [

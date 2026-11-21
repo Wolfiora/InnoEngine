@@ -2,6 +2,8 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
+using NumericsVector2 = System.Numerics.Vector2;
+
 namespace Inno.Core.Mathematics;
 
 /// <summary>
@@ -13,12 +15,14 @@ public struct Vector2 : IEquatable<Vector2>
     /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public float x;
+    [DataMember]
+    public float x;
 
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public float y;
+    [DataMember]
+    public float y;
 
     /// <summary>
     /// Creates a vector from explicit component values.
@@ -478,7 +482,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// <returns>
     /// The validated system.numerics.vector2 that represents the completed operation.
     /// </returns>
-    public static implicit operator System.Numerics.Vector2(Vector2 v) => new(v.x, v.y);
+    public static implicit operator NumericsVector2(Vector2 v) => new(v.x, v.y);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Vector2"/>.
@@ -489,7 +493,7 @@ public struct Vector2 : IEquatable<Vector2>
     /// <returns>
     /// The validated vector2 that represents the completed operation.
     /// </returns>
-    public static implicit operator Vector2(System.Numerics.Vector2 v) => new(v.X, v.Y);
+    public static implicit operator Vector2(NumericsVector2 v) => new(v.X, v.Y);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

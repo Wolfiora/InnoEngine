@@ -54,7 +54,7 @@ internal sealed partial class ShaderEditorCanvas
             return false;
         }
         float zoom = EditorUI.current.widgets.style.zoom;
-        Vector2 size = new(MathF.Min(C_MINI_MAP_WIDTH * zoom, m_size.X * 0.30f), MathF.Min(C_MINI_MAP_HEIGHT * zoom, m_size.Y * 0.30f));
+        var size = new Vector2(MathF.Min(C_MINI_MAP_WIDTH * zoom, m_size.X * 0.3f), MathF.Min(C_MINI_MAP_HEIGHT * zoom, m_size.Y * 0.3f));
         maximum = m_origin + new Vector2(m_size.X - C_MINI_MAP_MARGIN * zoom, C_MINI_MAP_MARGIN * zoom + size.Y);
         minimum = maximum - size;
         return true;
@@ -100,7 +100,7 @@ internal sealed partial class ShaderEditorCanvas
                 );
             }
 
-            DrawMiniMapContents(Inno.Editor.ImGui.ImGui.GetDrawList(), layout);
+            DrawMiniMapContents(ImGuiApi.GetDrawList(), layout);
         }
         finally
         {
@@ -126,7 +126,7 @@ internal sealed partial class ShaderEditorCanvas
         foreach (GraphNodeRecord node in Controller.document.nodes)
         {
             GraphPosition position = draft.pointer.previewPositions.GetValueOrDefault(node.id, node.position);
-            Vector2 nodeMinimum = new(position.x, position.y);
+            var nodeMinimum = new Vector2(position.x, position.y);
             Vector2 nodeMaximum = nodeMinimum + new Vector2(NodeWidth(node), C_HEADER + Rows(node) * C_ROW + 20f);
             m_miniMapGeometry.Add(node.id, new(nodeMinimum, nodeMaximum));
             worldMinimum = Vector2.Min(worldMinimum, nodeMinimum);
@@ -158,7 +158,7 @@ internal sealed partial class ShaderEditorCanvas
         foreach (GraphNodeRecord node in Controller.document.nodes)
         {
             MiniMapNodeGeometry geometry = m_miniMapGeometry[node.id];
-            uint fill = Canvas.selectedNodes.Contains(node.id) ? Color(0.60f, 0.44f, 0.83f) : Color(0.34f, 0.37f, 0.44f);
+            uint fill = Canvas.selectedNodes.Contains(node.id) ? Color(0.6f, 0.44f, 0.83f) : Color(0.34f, 0.37f, 0.44f);
             draw.FilledRectangle(layout.ToScreen(geometry.minimum), layout.ToScreen(geometry.maximum), fill, 2f, false);
         }
 
@@ -166,7 +166,7 @@ internal sealed partial class ShaderEditorCanvas
         Vector2 viewMaximum = viewMinimum + m_size / Canvas.zoom;
         Vector2 screenMinimum = layout.ToScreen(viewMinimum);
         Vector2 screenMaximum = layout.ToScreen(viewMaximum);
-        draw.FilledRectangle(screenMinimum, screenMaximum, Color(0.65f, 0.47f, 0.88f, 0.10f), 0, false);
+        draw.FilledRectangle(screenMinimum, screenMaximum, Color(0.65f, 0.47f, 0.88f, 0.1f), 0, false);
         draw.Rectangle(screenMinimum, screenMaximum, Color(0.76f, 0.62f, 0.95f), 0f, 1.5f);
     }
 }

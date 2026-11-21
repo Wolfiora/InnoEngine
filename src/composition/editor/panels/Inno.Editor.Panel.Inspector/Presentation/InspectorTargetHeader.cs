@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Inspection;
@@ -21,15 +22,15 @@ internal sealed class InspectorTargetHeader
     /// <summary>
     /// Resolves the target that should be presented after applying Inspector lock state.
     /// </summary>
-    /// <returns>
-    /// The current valid Inspector target, or <see langword="null"/> when none is available.
-    /// </returns>
     /// <param name="interactions">
     /// Shared interaction service that resolves targets in their owning identity domains.
     /// </param>
     /// <param name="selectedTarget">
     /// The current inspection target used to render the header.
     /// </param>
+    /// <returns>
+    /// The current valid Inspector target, or <see langword="null"/> when none is available.
+    /// </returns>
     internal object? Resolve(
         EditorInteractions interactions,
         object? selectedTarget
@@ -200,5 +201,5 @@ internal sealed class InspectorTargetHeader
     }
 
     private static string GetTargetId(object target)
-        => $"{target.GetType().FullName}_{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(target)}";
+        => $"{target.GetType().FullName}_{RuntimeHelpers.GetHashCode(target)}";
 }

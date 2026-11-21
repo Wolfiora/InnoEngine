@@ -1,17 +1,28 @@
 using System;
+using System.IO;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using BGCS.Runtime;
 using Xunit;
+using Inno.Adapter.Modules.DotNet;
+using Inno.Core.Diagnostics;
+using Inno.Core.Input;
+using Inno.Core.Logging;
+using Inno.Editor.Core;
+using Inno.Editor.ImGui.ImGuiWidget;
+using Inno.Editor.Interactions;
+using Inno.Extensibility.Modules;
+using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
 using EditorImGui = Inno.Editor.ImGui.ImGui;
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
-using ImGuiCond = Inno.Editor.ImGui.ImGuiCond;
-using ImGuiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
-using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using UiCond = Inno.Editor.ImGui.ImGuiCond;
+using UiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
+using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using Widget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 
 namespace Inno.Editor.ImGui.Tests;
@@ -21,7 +32,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void PackedColorConversionMatchesNativeSaturationRoundingAndChannelOrder()
     {
-        using (NativeContext context = new(1f))
+        using (var context = new NativeContext(1f))
         {
             context.Frame(() =>
             {
@@ -85,8 +96,8 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void StyleRequestsDoNotChangeTheActiveNativeFrame()
     {
-        using NativeContext context = new(1f);
-        var widgets = EditorUI.current.widgets;
+        using var context = new NativeContext(1f);
+        Widget widgets = EditorUI.current.widgets;
         for (int frame = 0; frame < 2; frame++)
         {
             context.Frame(() =>
@@ -124,8 +135,8 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void AForeignNativeContextCannotPublishChangesIntoASuspendedOwnerFrame()
     {
-        using NativeContext context = new(1f);
-        var widgets = EditorUI.current.widgets;
+        using var context = new NativeContext(1f);
+        Widget widgets = EditorUI.current.widgets;
         context.Frame(() =>
         {
             widgets.SetupStyle();
@@ -164,7 +175,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void CopiedWindowGeometryRequiresAnActiveNativeFrame()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         Assert.Throws<InvalidOperationException>(() => EditorImGui.GetClipBounds());
         Assert.Throws<InvalidOperationException>(() => EditorImGui.GetWindowBounds());
         context.Frame(() =>
@@ -172,7 +183,7 @@ public sealed unsafe class WidgetLayoutTests
             BeginWindow("Geometry owner", new(400f, 300f));
             try
             {
-                var clip = EditorImGui.GetClipBounds();
+                (Vector2 minimum, Vector2 maximum) clip = EditorImGui.GetClipBounds();
                 Assert.True(clip.maximum.X > clip.minimum.X && clip.maximum.Y > clip.minimum.Y);
                 Assert.True(EditorImGui.GetWindowBounds().maximumX > EditorImGui.GetWindowBounds().minimumX);
             }
@@ -188,7 +199,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void FlattenedRowsRetainExpansionWithoutOwningNativeTreeScopes()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         for (int frame = 0; frame < 3; frame++)
         {
             context.Frame(() =>
@@ -196,17 +207,17 @@ public sealed unsafe class WidgetLayoutTests
                 BeginWindow("Flattened tree", new(400f, 300f));
                 try
                 {
-                    var widgets = EditorUI.current.widgets;
+                    Widget widgets = EditorUI.current.widgets;
                     widgets.SetTreeNodeOpen("root", true);
                     ulong revision = widgets.treeExpansionRevision;
                     widgets.SetTreeNodeOpen("root", true);
                     Assert.Equal(revision, widgets.treeExpansionRevision);
                     int nativeDepth = NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth;
-                    var root = widgets.TreeNode("root", _ => NativeImGui.TextUnformatted("Root"), new() { depth = 0 });
+                    TreeNodeResult root = widgets.TreeNode("root", _ => NativeImGui.TextUnformatted("Root"), new() { depth = 0 });
                     Assert.True(root.isOpen);
                     Assert.True(widgets.IsTreeNodeOpen("root"));
                     Assert.Equal(nativeDepth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
-                    var child = widgets.TreeNode(
+                    TreeNodeResult child = widgets.TreeNode(
                         "child",
                         _ => NativeImGui.TextUnformatted("Deep child"),
                         new() { depth = 7, isLeaf = true }
@@ -233,14 +244,14 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void TenThousandTreeRowsSubmitCustomContentOnlyWithinTheViewport()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         for (int frame = 0; frame < 3; frame++)
         {
             context.Frame(() =>
             {
                 BeginWindow("Large tree", new(400f, 300f));
                 int drawn = 0;
-                Action<Inno.Editor.ImGui.ImGuiWidget.TreeNodeDrawContext> draw = _ =>
+                Action<TreeNodeDrawContext> draw = _ =>
                 {
                     drawn++;
                     NativeImGui.TextUnformatted("Visible content");
@@ -262,7 +273,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void FixedRowsRetainExplicitRowsAndBalanceTheirNativeOwner()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         context.Frame(() =>
         {
             BeginWindow("Clipped rows", new(400f, 300f));
@@ -291,7 +302,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void FixedRowFailureReleasesTheClipperBeforeTheNextFrame()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         for (int frame = 0; frame < 2; frame++)
         {
             context.Frame(() =>
@@ -324,23 +335,23 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(1.5f)]
     public void TrendUsesOneBoundedRegionAndFiniteGeometry(float zoom)
     {
-        using NativeContext context = new(zoom);
+        using var context = new NativeContext(zoom);
         context.Frame(() =>
         {
             BeginWindow("Trend bounds", new Vector2(400f, 400f));
-            var widgets = EditorUI.current.widgets;
-            widgets.Trend("Finite extremes", new[] { float.MinValue, 0f, float.MaxValue }, offset: 1);
+            Widget widgets = EditorUI.current.widgets;
+            widgets.Trend("Finite extremes", [float.MinValue, 0f, float.MaxValue], offset: 1);
             Assert.Equal(widgets.style.trendHeight, NativeImGui.GetItemRectSize().Y, 3);
             Assert.True(NativeImGui.GetItemRectSize().X <= 400f);
-            var draw = NativeImGui.Raw.GetWindowDrawList();
+            ImDrawList* draw = NativeImGui.Raw.GetWindowDrawList();
             for (int index = 0; index < draw->VtxBuffer.Size; index++)
             {
                 Vector2 point = Unsafe.BitCast<NativeVector2, Vector2>(draw->VtxBuffer.Data[index].Pos);
                 Assert.True(float.IsFinite(point.X) && float.IsFinite(point.Y));
             }
-            widgets.Trend("Empty", ReadOnlySpan<float>.Empty);
-            Assert.Throws<ArgumentOutOfRangeException>(() => widgets.Trend("Offset", new[] { 1f }, offset: 1));
-            Assert.Throws<ArgumentException>(() => widgets.Trend("Invalid", new[] { float.NaN }));
+            widgets.Trend("Empty", []);
+            Assert.Throws<ArgumentOutOfRangeException>(() => widgets.Trend("Offset", [1f], offset: 1));
+            Assert.Throws<ArgumentException>(() => widgets.Trend("Invalid", [float.NaN]));
             NativeImGui.End();
         });
     }
@@ -348,35 +359,32 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void ListNavigationUsesVisibleIndicesAndRespectsTextAndPopupOwnership()
     {
-        string root = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "InnoListNavigation", Guid.NewGuid().ToString("N"));
-        System.IO.Directory.CreateDirectory(root);
+        string root = Path.Combine(Path.GetTempPath(), "InnoListNavigation", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
         try
         {
-            var diagnostics = new Inno.Core.Diagnostics.DiagnosticHub();
+            var diagnostics = new DiagnosticHub();
             using IDisposable diagnosticScope = diagnostics.EnterScope();
-            using var modules = new Inno.Extensibility.Modules.ModuleHost(new()
+            using var modules = new ModuleHost(new()
             {
-                catalogSource = new Inno.Adapter.Modules.DotNet.DotNetAssemblyCatalogSource(typeof(WidgetLayoutTests).Assembly)
+                catalogSource = new DotNetAssemblyCatalogSource(typeof(WidgetLayoutTests).Assembly)
             });
-            using var types = new Inno.Extensibility.Types.TypeCatalog(
-                modules,
-                new Inno.Adapter.Modules.DotNet.ReflectionTypeCatalogSource()
-            );
-            using var logs = new Inno.Core.Logging.LogRouter();
-            using var runtime = new Inno.Editor.Interactions.EditorInteractionRuntime(
+            using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+            using var logs = new LogRouter();
+            using var runtime = new EditorInteractionRuntime(
                 root,
                 types,
                 logs,
-                new Inno.Editor.Core.EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")
+                new EditorKeyboardPolicy(KeyModifier.Control, "Super")
             );
             runtime.Start();
-            using NativeContext context = new(1f);
-            NativeImGui.Raw.GetIO()->ConfigFlags |= (int)Inno.Native.ImGui.ImGuiConfigFlags.NavEnableKeyboard;
+            using var context = new NativeContext(1f);
+            NativeImGui.Raw.GetIO()->ConfigFlags |= (int)ImGuiConfigFlags.NavEnableKeyboard;
             int focused = 4;
             bool textInput = false;
             bool popup = false;
             string query = string.Empty;
-            Inno.Editor.ImGui.ImGuiWidget.ListNavigationResult observed = default;
+            ListNavigationResult observed = default;
             Action draw = () =>
             {
                 BeginWindow("List navigation", new Vector2(500f, 400f));
@@ -400,40 +408,40 @@ public sealed unsafe class WidgetLayoutTests
             };
             context.Frame(draw);
             context.Frame(draw);
-            var io = NativeImGui.Raw.GetIO();
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.PageDown, 1);
+            ImGuiIO* io = NativeImGui.Raw.GetIO();
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.PageDown, 1);
             context.Frame(draw);
             Assert.Equal(14, focused);
             Assert.True(observed.selectionRequested);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.PageDown, 0);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.PageDown, 0);
             context.Frame(draw);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.End, 1);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.End, 1);
             context.Frame(draw);
             Assert.Equal(99, focused);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.End, 0);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.End, 0);
             context.Frame(draw);
             textInput = true;
             context.Frame(draw);
             context.Frame(draw);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Home, 1);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.Home, 1);
             context.Frame(draw);
             Assert.Equal(99, focused);
             Assert.False(observed.selectionRequested);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Home, 0);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.Home, 0);
             context.Frame(draw);
             textInput = false;
             popup = true;
             context.Frame(draw);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.UpArrow, 1);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.UpArrow, 1);
             context.Frame(draw);
             Assert.Equal(99, focused);
             Assert.False(observed.selectionRequested);
-            NativeImGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.UpArrow, 0);
+            NativeImGui.Raw.AddKeyEvent(io, NativeKey.UpArrow, 0);
             context.Frame(draw);
         }
         finally
         {
-            System.IO.Directory.Delete(root, recursive: true);
+            Directory.Delete(root, recursive: true);
         }
     }
 
@@ -445,7 +453,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData("tree-overlay")]
     public void ExtensionDrawingFailureRestoresTheEnclosingWindow(string failure)
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         for (int frame = 0; frame < 2; frame++)
         {
             context.Frame(() =>
@@ -454,7 +462,7 @@ public sealed unsafe class WidgetLayoutTests
                 nint window = (nint)NativeImGui.Raw.GetCurrentWindow();
                 int depth = NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth;
                 Vector2 padding = Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetStyle()->FramePadding);
-                var widgets = EditorUI.current.widgets;
+                Widget widgets = EditorUI.current.widgets;
                 Action rejected = () => throw new InvalidOperationException("Rejected extension draw");
                 Assert.Throws<InvalidOperationException>(() =>
                 {
@@ -486,7 +494,7 @@ public sealed unsafe class WidgetLayoutTests
                 Assert.Equal(depth, NativeImGui.Raw.GetCurrentWindow()->DC.TreeDepth);
                 Assert.Equal(padding, Unsafe.BitCast<NativeVector2, Vector2>(NativeImGui.Raw.GetStyle()->FramePadding));
                 widgets.SetNextTreeNodeOpen(true);
-                var next = widgets.TreeNode("next-tree", _ => EditorImGui.Text("Next valid row"), new());
+                TreeNodeResult next = widgets.TreeNode("next-tree", _ => EditorImGui.Text("Next valid row"), new());
                 Assert.True(next.isOpen);
                 NativeImGui.TreePop();
                 EditorImGui.GetDrawList().Line(new(30f, 30f), new(60f, 60f), uint.MaxValue);
@@ -498,8 +506,8 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void DrawingBorrowRejectsAnotherWindowOrFrame()
     {
-        using NativeContext context = new(1f);
-        Inno.Editor.ImGui.EditorDrawList borrow = default;
+        using var context = new NativeContext(1f);
+        EditorDrawList borrow = default;
         context.Frame(() =>
         {
             BeginWindow("Drawing owner", new Vector2(400f, 300f));
@@ -516,13 +524,13 @@ public sealed unsafe class WidgetLayoutTests
             Assert.Throws<InvalidOperationException>(() => borrow.Line(Vector2.Zero, Vector2.One, 0));
             NativeImGui.End();
         });
-        Assert.Throws<InvalidOperationException>(() => default(Inno.Editor.ImGui.EditorDrawList).Line(Vector2.Zero, Vector2.One, 0));
+        Assert.Throws<InvalidOperationException>(() => default(EditorDrawList).Line(Vector2.Zero, Vector2.One, 0));
     }
 
     [Fact]
     public void BoundedTextControlsDoNotAllocateOneBufferAndEncoderPerSubmission()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         string value = "Unicode: 漢字 😀";
         long allocated = 0;
         Action draw = () =>
@@ -548,7 +556,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void TimelineWorkspace_UsesOneBoundedChildScrollOwner()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         float childScroll = 0f;
         float parentScroll = 0f;
         for (int frame = 0; frame < 4; frame++)
@@ -592,7 +600,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void TimelinePointer_UsesCumulativeUiDragUntilRelease()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         Vector2 hit = default;
         Vector2 drag = default;
         bool held = false;
@@ -604,7 +612,7 @@ public sealed unsafe class WidgetLayoutTests
             hit = (EditorImGui.GetItemMinimum() + EditorImGui.GetItemMaximum()) * 0.5f;
             active = EditorImGui.IsItemActive();
             held = EditorImGui.IsMouseButtonDown();
-            drag = EditorImGui.GetMouseDragDelta(ImGuiMouseButton.Left, 0f);
+            drag = EditorImGui.GetMouseDragDelta(UiMouseButton.Left, 0f);
             NativeImGui.End();
         };
         context.Frame(draw);
@@ -633,7 +641,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(1.5f)]
     public void PropertyRows_WrapWithinTwoToThreeColumnsWithoutScrollbars(float zoom)
     {
-        using NativeContext context = new(zoom);
+        using var context = new NativeContext(zoom);
         Vector2 labelSize = default;
         float labelWidth = 0f;
         float valueWidth = 0f;
@@ -685,7 +693,7 @@ public sealed unsafe class WidgetLayoutTests
         bool shouldScroll,
         float zoom
     ) {
-        using NativeContext context = new(zoom);
+        using var context = new NativeContext(zoom);
         Vector2 controlMinimum = default;
         Vector2 controlMaximum = default;
         Vector2 popupPosition = default;
@@ -738,7 +746,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(320f)]
     public void SelectorsNearWindowBottom_UseOnlyRemainingDownwardSpace(float verticalOffset)
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         Vector2 controlMinimum = default;
         Vector2 controlMaximum = default;
         Vector2 popupPosition = default;
@@ -786,7 +794,7 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(1.1f)]
     public void ContextMenu_SearchFillsItsActualContentWidthWithoutScrollbars(float zoom)
     {
-        using NativeContext context = new(zoom);
+        using var context = new NativeContext(zoom);
         Vector2 controlMinimum = default;
         Vector2 controlMaximum = default;
         Vector2 scroll = default;
@@ -830,7 +838,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void OverlappingWindows_OnlyForegroundClickableTextReceivesPress()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         int backgroundPresses = 0;
         int foregroundPresses = 0;
         Vector2 hit = default;
@@ -868,13 +876,13 @@ public sealed unsafe class WidgetLayoutTests
         bool isLeaf,
         float zoom
     ) {
-        using NativeContext context = new(zoom);
+        using var context = new NativeContext(zoom);
         int presses = 0;
         Vector2 hit = default;
         Action draw = () =>
         {
             BeginWindow("Tree content", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode(
+            TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 $"content-{isLeaf}-{zoom}",
                 _ => EditorUI.current.widgets.IconText("O", "Selected object", false),
                 new()
@@ -908,14 +916,14 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void TreeRows_DisclosureClickExpandsWithoutSelectingContent()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         int presses = 0;
         bool opened = false;
         Vector2 hit = default;
         Action draw = () =>
         {
             BeginWindow("Tree disclosure", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode(
+            TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 "disclosure",
                 _ => NativeImGui.TextUnformatted("Parent"),
                 new() { isLeaf = false }
@@ -945,14 +953,14 @@ public sealed unsafe class WidgetLayoutTests
     [InlineData(false)]
     public void TreeRows_OverlayConsumesItsOwnClick(bool settleHover)
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         int rowPresses = 0;
         int overlayPresses = 0;
         Vector2 overlayHit = default;
         Action draw = () =>
         {
             BeginWindow("Tree overlay", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode(
+            TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 $"overlay-{settleHover}",
                 _ => NativeImGui.TextUnformatted("Object"),
                 new()
@@ -986,7 +994,7 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void TreeRows_ContentDoubleClickExpandsOnce()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         int presses = 0;
         int doublePresses = 0;
         bool opened = false;
@@ -994,7 +1002,7 @@ public sealed unsafe class WidgetLayoutTests
         Action draw = () =>
         {
             BeginWindow("Tree double click", new Vector2(400f, 300f));
-            var result = EditorUI.current.widgets.TreeNode(
+            TreeNodeResult result = EditorUI.current.widgets.TreeNode(
                 "double-click",
                 _ => NativeImGui.TextUnformatted("Parent"),
                 new() { isLeaf = false }
@@ -1028,11 +1036,11 @@ public sealed unsafe class WidgetLayoutTests
     [Fact]
     public void MixedValueRestoresOuterStateAfterNestedGroupsAndFailures()
     {
-        using NativeContext context = new(1f);
+        using var context = new NativeContext(1f);
         context.Frame(() =>
         {
             BeginWindow("Mixed scope", new Vector2(400f, 300f));
-            var widgets = EditorUI.current.widgets;
+            Widget widgets = EditorUI.current.widgets;
             Assert.False(widgets.isMixedValue);
             widgets.MixedValue(true, () =>
             {
@@ -1052,7 +1060,7 @@ public sealed unsafe class WidgetLayoutTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private static EditorStyleMetrics RetireStyleOwner(out WeakReference owner)
     {
-        using var session = new EditorUiSession();
+        using EditorUI session = new EditorUiSession();
         owner = new WeakReference(session);
         return session.widgets.style;
     }
@@ -1061,20 +1069,20 @@ public sealed unsafe class WidgetLayoutTests
         string name,
         Vector2 size
     ) {
-        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
-        NativeImGui.SetNextWindowSize(size, (int)(ImGuiCond.Always));
+        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(UiCond.Always), default);
+        NativeImGui.SetNextWindowSize(size, (int)(UiCond.Always));
         using NativeStringLease nativeTestText0 = Utf8Codec.EncodeNullTerminated(name, allowsNull: false);
         NativeImGui.Raw.Begin(
             (sbyte*)nativeTestText0.pointer,
             null,
-            (int)(ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoSavedSettings)
+            (int)(UiWindowFlags.NoTitleBar | UiWindowFlags.NoResize | UiWindowFlags.NoMove | UiWindowFlags.NoSavedSettings)
         );
     }
 
     private sealed class NativeContext : IDisposable
     {
         private readonly ImGuiNativeContext* m_context;
-        private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
+        private readonly EditorUI m_ui = new();
         private readonly IDisposable m_uiScope;
 
         public NativeContext(float zoom)

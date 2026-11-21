@@ -83,7 +83,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
     /// </returns>
     public override bool Execute()
     {
-        using CancellationTokenSource cancellation = new();
+        using var cancellation = new CancellationTokenSource();
         lock (m_gate)
         {
             m_cancellation = cancellation;
@@ -94,7 +94,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         }
         try
         {
-            var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
             BgfxShaderTargetProfile platform = StandardBuildDistribution.Create(execution).ResolveShaderTarget(new BuildTargetId(Target));
             if (!GraphicsApi.TryParse(Renderer, out GraphicsApi renderer))
             {
@@ -141,8 +141,8 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         out string compilerFingerprint,
         out BuildArtifactReadLease reading
     ) {
-        NativeBuildContext context = new(EngineRoot, "release");
-        var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+        var context = new NativeBuildContext(EngineRoot, "release");
+        BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
         context = context.WithBindingGenerator(StandardBuildDistribution.Create(execution).build.ResolveBindingGenerator(ToolTarget));
         string cacheKey = "Inno.Build.ShaderTools|"
                           + context.engineRoot
@@ -175,7 +175,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
             .GetResult();
         if (NativeDependencyManifestPath.Length != 0)
         {
-            var selected = NativeDependencyManifest.SelectAsync(
+            IReadOnlyList<NativeDependencyAsset> selected = NativeDependencyManifest.SelectAsync(
                 EngineRoot,
                 NativeDependencyManifestPath,
                 ToolTarget,
@@ -193,7 +193,7 @@ public sealed class CompileShaderTask : BuildTask, ICancelableTask
         }
         if (record is null)
         {
-            var distribution = StandardBuildDistribution.Create(execution).build;
+            BuildDistribution distribution = StandardBuildDistribution.Create(execution).build;
             if (NativeDependencyManifestPath.Length == 0)
             {
                 context = context.WithToolchain(

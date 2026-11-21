@@ -18,8 +18,8 @@ internal static class DocumentationXml
 {
     internal static DocumentationXmlContent Read(string xml)
     {
-        if (string.IsNullOrWhiteSpace(xml)) return new(["No XML description is available."], "");
-        using var reader = XmlReader.Create(
+        if (string.IsNullOrWhiteSpace(xml)) return new(["No XML description is available."], string.Empty);
+        using XmlReader reader = XmlReader.Create(
             new StringReader(xml),
             new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null }
         );
@@ -34,7 +34,7 @@ internal static class DocumentationXml
             {
                 string heading = group.Key switch
                 {
-                    "summary" => "",
+                    "summary" => string.Empty,
                     "remarks" => "Remarks",
                     "param" => "Parameters",
                     "typeparam" => "Type parameters",
@@ -58,13 +58,13 @@ internal static class DocumentationXml
                 if (group.Key == "summary")
                 {
                     summaries = parts;
-                    return "";
+                    return string.Empty;
                 }
-                return parts.Length == 0 ? "" : "## " + heading + "\n\n" + string.Join("\n\n", parts);
+                return parts.Length == 0 ? string.Empty : "## " + heading + "\n\n" + string.Join("\n\n", parts);
             })
                 .Where(text => text.Length != 0)
         );
-        return new(summaries, body.Length == 0 ? "" : body + "\n");
+        return new(summaries, body.Length == 0 ? string.Empty : body + "\n");
     }
 
     private static string Children(XElement element) => string.Concat(element.Nodes().Select(Node));
@@ -83,7 +83,7 @@ internal static class DocumentationXml
                 .Replace("_", "\\_", StringComparison.Ordinal)
                 .Replace("`", "\\`", StringComparison.Ordinal);
         }
-        if (node is XComment) return "";
+        if (node is XComment) return string.Empty;
         if (node is not XElement element) throw new InvalidDataException("Unsupported XML documentation node.");
         return element.Name.LocalName switch
         {
@@ -111,8 +111,8 @@ internal static class DocumentationXml
 
     private static string Code(string value)
     {
-        string fence = new('`', Math.Max(1, Regex.Matches(value, "`+").Select(match => match.Length + 1).DefaultIfEmpty(1).Max()));
-        return fence + (value.StartsWith('`') ? " " : "") + value + (value.EndsWith('`') ? " " : "") + fence;
+        var fence = new string('`', Math.Max(1, Regex.Matches(value, "`+").Select(match => match.Length + 1).DefaultIfEmpty(1).Max()));
+        return fence + (value.StartsWith('`') ? " " : string.Empty) + value + (value.EndsWith('`') ? " " : string.Empty) + fence;
     }
 
     private static string CodeBlock(XElement element)
@@ -124,7 +124,7 @@ internal static class DocumentationXml
             .Select(line => line.Length - line.TrimStart().Length)
             .DefaultIfEmpty(0)
             .Min();
-        string code = string.Join('\n', lines.Select(line => line.Length >= indentation ? line[indentation..] : ""));
+        string code = string.Join('\n', lines.Select(line => line.Length >= indentation ? line[indentation..] : string.Empty));
         // XML code inside an example is executable C#; an unlabelled formula in remarks is explanatory text.
         // This is structural XML metadata, not a guess based on whether a snippet happens to compile.
         string? language = (string?)element.Attribute("language") ?? (string?)element.Attribute("lang");
@@ -134,7 +134,7 @@ internal static class DocumentationXml
         {
             throw new InvalidDataException("Invalid XML example language.");
         }
-        string fence = new('`', Math.Max(3, Regex.Matches(code, "`+").Select(match => match.Length + 1).DefaultIfEmpty(3).Max()));
+        var fence = new string('`', Math.Max(3, Regex.Matches(code, "`+").Select(match => match.Length + 1).DefaultIfEmpty(3).Max()));
         return "\n\n" + fence + language + "\n" + code + "\n" + fence + "\n\n";
     }
 
@@ -161,7 +161,9 @@ internal static class DocumentationXml
                 }
             }
             string Cell(XElement? value)
-                => value is null ? "" : Children(value).Trim().Replace("|", "\\|", StringComparison.Ordinal).ReplaceLineEndings(" ");
+                => value is null
+                   ? string.Empty
+                   : Children(value).Trim().Replace("|", "\\|", StringComparison.Ordinal).ReplaceLineEndings(" ");
             return "\n\n| "
                    + (header is null ? "Term | Description" : Cell(header.Element("term")) + " | " + Cell(header.Element("description")))
                    + " |\n| --- | --- |\n"

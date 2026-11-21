@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -90,10 +91,10 @@ public sealed class PluginSourceServiceTests : IDisposable
         PluginScanResult first = service.Scan();
         PluginCandidate candidate = Assert.Single(first.candidates);
         string cachedFile = Directory.EnumerateFiles(candidate.sourceMount.rootPath, "*.txt", SearchOption.AllDirectories).Single();
-        byte[] original = System.IO.File.ReadAllBytes(cachedFile);
+        byte[] original = File.ReadAllBytes(cachedFile);
         byte[] changed = original.ToArray();
         changed[0] ^= 1;
-        System.IO.File.WriteAllBytes(cachedFile, changed);
+        File.WriteAllBytes(cachedFile, changed);
         PluginScanResult corrupted = service.Scan();
         Assert.Empty(corrupted.candidates);
         Assert.Contains("invalid bytes", Assert.Single(corrupted.diagnostics).message);
@@ -101,7 +102,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         PluginScanResult restored = service.Scan();
         Assert.Empty(restored.diagnostics);
         Assert.Equal(candidate.contentHash, Assert.Single(restored.candidates).contentHash);
-        Assert.Equal(original, System.IO.File.ReadAllBytes(cachedFile));
+        Assert.Equal(original, File.ReadAllBytes(cachedFile));
     }
 
     [Fact]
@@ -156,7 +157,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         PluginCandidate active = Assert.Single(PluginSourceService.GetActivatableCandidates(scan));
         Assert.True(active.sourceMount.isReadOnly);
         Assert.Equal("tests.code", active.sourceMount.id.value);
-        Assert.True(System.IO.File.Exists(Path.Combine(active.sourceMount.rootPath, "Plugin.cs")));
+        Assert.True(File.Exists(Path.Combine(active.sourceMount.rootPath, "Plugin.cs")));
     }
 
     [Fact]
@@ -193,7 +194,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         PluginCandidate active = Assert.Single(m_environment!.activePlugins);
         string activeSnapshotRoot = active.sourceMount.rootPath;
 
-        System.IO.File.Delete(sourcePath);
+        File.Delete(sourcePath);
 
         Assert.True(m_environment.Refresh());
         Assert.True(m_environment.hasPendingActivation);
@@ -236,7 +237,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         StartEnvironment(service.Scan());
         Assert.Single(m_environment!.activePlugins);
 
-        System.IO.File.WriteAllBytes(sourcePath, [0x49, 0x4E, 0x4E, 0x4F]);
+        File.WriteAllBytes(sourcePath, [0x49, 0x4E, 0x4E, 0x4F]);
 
         Assert.True(m_environment.Refresh());
         Assert.True(m_environment.hasPendingActivation);
@@ -302,16 +303,16 @@ public sealed class PluginSourceServiceTests : IDisposable
     public void OperatingSystemMetadataBesidePackageDoesNotAffectIdentity()
     {
         WritePlugin("metadata.iplugin", Manifest("tests.package-metadata"), TextContent("content"));
-        System.IO.File.WriteAllBytes(Path.Combine(m_plugins, ".DS_Store"), [1, 2, 3]);
-        System.IO.File.WriteAllBytes(Path.Combine(m_plugins, "Thumbs.db"), [4, 5, 6]);
+        File.WriteAllBytes(Path.Combine(m_plugins, ".DS_Store"), [1, 2, 3]);
+        File.WriteAllBytes(Path.Combine(m_plugins, "Thumbs.db"), [4, 5, 6]);
         var service = new PluginSourceService(m_serialization, m_plugins, m_library);
 
         PluginScanResult withMetadata = service.Scan();
 
         Assert.Empty(withMetadata.diagnostics);
         string contentHash = Assert.Single(withMetadata.candidates).contentHash;
-        System.IO.File.Delete(Path.Combine(m_plugins, ".DS_Store"));
-        System.IO.File.Delete(Path.Combine(m_plugins, "Thumbs.db"));
+        File.Delete(Path.Combine(m_plugins, ".DS_Store"));
+        File.Delete(Path.Combine(m_plugins, "Thumbs.db"));
         PluginScanResult withoutMetadata = service.Scan();
         Assert.Empty(withoutMetadata.diagnostics);
         Assert.Equal(contentHash, Assert.Single(withoutMetadata.candidates).contentHash);
@@ -331,7 +332,7 @@ public sealed class PluginSourceServiceTests : IDisposable
 
         Assert.Empty(withMetadata.diagnostics);
         string contentHash = Assert.Single(withMetadata.candidates).contentHash;
-        System.IO.File.Delete(Path.Combine(m_plugins, "metadata.iplugin"));
+        File.Delete(Path.Combine(m_plugins, "metadata.iplugin"));
         WritePlugin("metadata.iplugin", manifest, TextContent("content"));
         PluginScanResult withoutMetadata = service.Scan();
         Assert.Empty(withoutMetadata.diagnostics);
@@ -436,12 +437,12 @@ public sealed class PluginSourceServiceTests : IDisposable
     public void SymbolicLinksAndExcessiveEntryCountsAreRejectedBeforeExtraction()
     {
         string symbolicLinkPath = Path.Combine(m_plugins, "symbolic-link.iplugin");
-        using (FileStream stream = System.IO.File.Create(symbolicLinkPath))
+        using (FileStream stream = File.Create(symbolicLinkPath))
         using (var archive = new ZipArchive(stream, ZipArchiveMode.Create))
         {
             WriteEntry(archive, "Plugin.inno", m_serialization.Serialize(Manifest("tests.symbolic-link")));
             ZipArchiveEntry link = archive.CreateEntry("Assets/link.txt");
-            link.ExternalAttributes = unchecked((int)0xA1FF0000);
+            link.ExternalAttributes = unchecked((int)0xA1FF_0000);
             WriteEntry(archive, "Assets/link.txt.imeta", [1]);
         }
 
@@ -451,7 +452,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.Empty(symbolicLink.candidates);
         Assert.Contains("symbolic link", Assert.Single(symbolicLink.diagnostics).message, StringComparison.OrdinalIgnoreCase);
 
-        System.IO.File.Delete(symbolicLinkPath);
+        File.Delete(symbolicLinkPath);
         WritePlugin("entry-count.iplugin", Manifest("tests.entry-count"), TextContent("bounded"));
         var entryCountService = new PluginSourceService(
             m_serialization,
@@ -475,7 +476,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         string expectedMessage
     ) {
         byte[] first = scenario == "ratio" ? new byte[4096] : CreateNoise(1024, seed: 17);
-        Dictionary<string, byte[]> entries = new()
+        var entries = new Dictionary<string, byte[]>()
         {
             ["Assets/first.data"] = first,
             ["Assets/first.data.imeta"] = [1]
@@ -742,7 +743,10 @@ public sealed class PluginSourceServiceTests : IDisposable
         Assert.True(m_environment!.Refresh());
         m_environment.ActivatePending();
         AssetSourceMountTransaction candidate = m_environment.compilationAssets!;
-        var failure = new InvalidOperationException("observer context", new RetirementPendingException("rollback work"));
+        var failure = new InvalidOperationException(
+            "observer context",
+            new RetirementPendingException("rollback work")
+        );
         bool laterCalled = false;
         Action blocked = () => throw failure;
         Action later = () => laterCalled = true;
@@ -853,7 +857,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     private static Dictionary<string, byte[]> TextContent(string value)
         => new()
     {
-        ["Assets/content.txt"] = System.Text.Encoding.UTF8.GetBytes(value),
+        ["Assets/content.txt"] = Encoding.UTF8.GetBytes(value),
         ["Assets/content.txt.imeta"] = [1]
     };
 
@@ -884,7 +888,7 @@ public sealed class PluginSourceServiceTests : IDisposable
         IReadOnlyDictionary<string, byte[]> entries
     ) {
         string path = Path.Combine(m_plugins, fileName);
-        using FileStream stream = System.IO.File.Create(path);
+        using FileStream stream = File.Create(path);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Create);
         WriteEntry(archive, "Plugin.inno", manifestBytes);
         foreach ((string entryPath, byte[] bytes) in entries)
@@ -900,19 +904,19 @@ public sealed class PluginSourceServiceTests : IDisposable
     ) {
         string root = Path.Combine(m_plugins, directoryName);
         Directory.CreateDirectory(root);
-        System.IO.File.WriteAllBytes(Path.Combine(root, "Plugin.inno"), m_serialization.Serialize(manifest));
+        File.WriteAllBytes(Path.Combine(root, "Plugin.inno"), m_serialization.Serialize(manifest));
         foreach ((string entryPath, byte[] bytes) in entries)
         {
             string physicalPath = Path.Combine(root, entryPath.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(physicalPath)!);
-            System.IO.File.WriteAllBytes(physicalPath, bytes);
+            File.WriteAllBytes(physicalPath, bytes);
         }
     }
 
     private void WriteArchiveWithDuplicateEntry(string fileName)
     {
         string path = Path.Combine(m_plugins, fileName);
-        using FileStream stream = System.IO.File.Create(path);
+        using FileStream stream = File.Create(path);
         using var archive = new ZipArchive(stream, ZipArchiveMode.Create);
         WriteEntry(archive, "Plugin.inno", m_serialization.Serialize(Manifest("tests.duplicate-entry")));
         WriteEntry(archive, "Assets/value.txt", [1]);
@@ -950,8 +954,7 @@ public sealed class PluginSourceServiceTests : IDisposable
     }
 
     private void StartEnvironment(PluginScanResult scan)
-    {
-        m_environment = new PluginEnvironment(
+        => m_environment = new PluginEnvironment(
             m_assets ?? throw new InvalidOperationException("Project assets must be initialized first."),
             m_settings,
             m_serialization,
@@ -960,7 +963,6 @@ public sealed class PluginSourceServiceTests : IDisposable
             scan,
             m_modules.generations
         );
-    }
 
     private byte[] CreateTextSourceMeta()
         => m_serialization.Serialize(new TestAssetSourceMeta

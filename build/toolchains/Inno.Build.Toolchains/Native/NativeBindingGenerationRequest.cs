@@ -77,7 +77,7 @@ public sealed class NativeBindingGenerationRequest
         this.targetId = targetId;
         this.outputMode = outputMode;
         this.checkOnly = checkOnly;
-        Dictionary<string, string> expected = new(expectedFingerprints ?? new Dictionary<string, string>(), StringComparer.Ordinal);
+        var expected = new Dictionary<string, string>(expectedFingerprints ?? new Dictionary<string, string>(), StringComparer.Ordinal);
         if (expected.Any(pair => (
             !owners.Any(owner => owner.nativeProject == pair.Key)
             || string.IsNullOrWhiteSpace(pair.Value)

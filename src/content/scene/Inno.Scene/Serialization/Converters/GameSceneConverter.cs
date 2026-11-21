@@ -149,7 +149,7 @@ internal sealed class GameSceneConverter : SerializationConverter<GameScene>
         );
         IReadOnlyList<SerializationReader> systemReaders =
             reader.ReadObjectArray(SceneGraphSerialization.C_SYSTEMS_KEY);
-        var missingPlaceholders = graph.missingPlaceholders.ToList();
+        List<EngineObject> missingPlaceholders = graph.missingPlaceholders.ToList();
         IReadOnlyList<(GameSystem system, byte[] state)> systemStates =
             SceneGraphSerialization.CreateSystems(
                 scene,

@@ -131,8 +131,7 @@ public sealed class PluginSourceService
     }
 
     private IEnumerable<string> DiscoverPackages()
-    {
-        return Directory
+        => Directory
             .EnumerateFiles(m_pluginRoot, "*", SearchOption.TopDirectoryOnly)
             .Where(static path => string.Equals(
                 Path.GetExtension(path),
@@ -140,11 +139,9 @@ public sealed class PluginSourceService
                 StringComparison.OrdinalIgnoreCase
             ))
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase);
-    }
 
     private IEnumerable<string> DiscoverUnsupportedSources()
-    {
-        return Directory
+        => Directory
             .EnumerateFileSystemEntries(m_pluginRoot, "*", SearchOption.TopDirectoryOnly)
             .Where(path =>
             {
@@ -157,7 +154,6 @@ public sealed class PluginSourceService
                        || !string.Equals(Path.GetExtension(path), ".iplugin", StringComparison.OrdinalIgnoreCase);
             })
             .OrderBy(static path => path, StringComparer.OrdinalIgnoreCase);
-    }
 
     private IReadOnlyList<PluginCandidate> ValidatePackage(string packagePath)
     {
@@ -559,7 +555,7 @@ public sealed class PluginSourceService
                 }
                 Directory.CreateDirectory(Path.GetDirectoryName(target)!);
                 using Stream source = item.entry.Open();
-                using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None);
                 source.CopyTo(output);
             }
 
@@ -617,7 +613,7 @@ public sealed class PluginSourceService
                 throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has an invalid length for '{item.path}'.");
             }
             using Stream expected = item.entry.Open();
-            using FileStream materialized = new(physical, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+            using var materialized = new FileStream(physical, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             if (!SHA256.HashData(materialized).AsSpan().SequenceEqual(SHA256.HashData(expected)))
             {
                 throw new InvalidDataException($"Plugin cache snapshot '{destinationRoot}' has invalid bytes for '{item.path}'.");
@@ -641,7 +637,7 @@ public sealed class PluginSourceService
 
     private static string ComputePackageContentHash(IReadOnlyList<ValidatedPackageEntry> entries)
     {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (ValidatedPackageEntry item in entries.OrderBy(static entry => entry.path, StringComparer.Ordinal))
         {
             AppendPath(hash, item.path);
@@ -670,7 +666,7 @@ public sealed class PluginSourceService
         IncrementalHash hash,
         Stream stream
     ) {
-        byte[] buffer = new byte[64 * 1024];
+        var buffer = new byte[64 * 1024];
         int read;
         while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
         {

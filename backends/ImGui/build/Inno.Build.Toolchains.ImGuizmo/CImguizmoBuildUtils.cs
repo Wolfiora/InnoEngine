@@ -32,14 +32,14 @@ internal static class CImguizmoBuildUtils
             );
         }
 
-        var cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
+        string cimguizmoCpp = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.CIMGUIMO_CPP_FILE);
         if (!File.Exists(cimguizmoCpp))
         {
             throw new FileNotFoundException($"Missing {CImguizmoBuildConstants.CIMGUIMO_CPP_FILE}: {cimguizmoCpp}");
         }
 
-        var imguizmoDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.IMGUIZMO_DIR_NAME);
-        var imguizmoCpp = Path.Combine(imguizmoDir, CImguizmoBuildConstants.IMGUIZMO_CPP_FILE);
+        string imguizmoDir = Path.Combine(cimguizmoDir, CImguizmoBuildConstants.IMGUIZMO_DIR_NAME);
+        string imguizmoCpp = Path.Combine(imguizmoDir, CImguizmoBuildConstants.IMGUIZMO_CPP_FILE);
         if (!File.Exists(imguizmoCpp))
         {
             throw new FileNotFoundException($"Missing {CImguizmoBuildConstants.IMGUIZMO_CPP_FILE}: {imguizmoCpp}");

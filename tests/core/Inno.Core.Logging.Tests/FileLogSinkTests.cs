@@ -62,7 +62,7 @@ public sealed class FileLogSinkTests : IDisposable
     public void OversizedEntriesRemainCompleteAndRotateBeforeTheNextEntry()
     {
         using var sink = new FileLogSink(m_root, maxFileSizeBytes: 128, maxFiles: 2);
-        string oversized = new('x', 2_000);
+        var oversized = new string('x', 2_000);
         sink.Receive(CreateEntry(oversized));
         sink.Receive(CreateEntry("next-entry"));
 

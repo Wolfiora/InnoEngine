@@ -76,7 +76,7 @@ public sealed class AssetSampleTransformContext
         out Guid newId
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(relativePath);
-        if (m_sourceIdentities.TryGetValue(relativePath.Replace('\\', '/'), out var pair))
+        if (m_sourceIdentities.TryGetValue(relativePath.Replace('\\', '/'), out (Guid oldId, Guid newId) pair))
         {
             oldId = pair.oldId;
             newId = pair.newId;
@@ -123,13 +123,13 @@ public interface IAssetSampleSourceRewriter
     /// <summary>
     /// Rewrites staged source files and registers any changed serialized type identities.
     /// </summary>
+    /// <param name="context">
+    /// The transaction-owned staged clone.
+    /// </param>
     /// <remarks>
     /// Runs on a worker with a pinned extension generation. Access only transaction-owned files
     /// and context data, observe cancellation, and do not access live Assets or Editor state.
     /// </remarks>
-    /// <param name="context">
-    /// The transaction-owned staged clone.
-    /// </param>
     void Transform(AssetSampleTransformContext context);
 }
 

@@ -11,7 +11,7 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     private void ConfigureViewTarget(
         ushort viewId,
@@ -42,7 +42,7 @@ sealed unsafe partial class BgfxDevice
             {
                 RetireSupersededFrameBuffer(pass.name);
                 bgfx.Attachment* attachments = stackalloc bgfx.Attachment[pass.attachments.Count];
-                GraphAttachmentSignature[] signature = new GraphAttachmentSignature[pass.attachments.Count];
+                var signature = new GraphAttachmentSignature[pass.attachments.Count];
                 for (int index = 0; index < pass.attachments.Count; index++)
                 {
                     CompiledRenderAttachment attachment = pass.attachments[index];

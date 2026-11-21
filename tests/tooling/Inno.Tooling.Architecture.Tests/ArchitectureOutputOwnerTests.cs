@@ -168,15 +168,13 @@ public sealed class ArchitectureOutputOwnerTests
             Assert.Contains("public/protected API exposes Inno.Core.Contract", rejected, StringComparison.Ordinal);
 
             async Task Build(string[] properties)
-            {
-                await ToolchainEnvironment.RunAsync(
+                => await ToolchainEnvironment.RunAsync(
                     host,
                     ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-v:quiet", .. properties],
                     root,
                     cancellation.Token,
                     DotNetSdkEnvironment.Create(host)
                 );
-            }
         }
         finally
         {

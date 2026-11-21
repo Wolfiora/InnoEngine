@@ -97,7 +97,10 @@ internal sealed class ResidencyLease<TValue> : IDisposable
 
     private AggregateException TakeCompletedFailure()
     {
-        var failure = new AggregateException("Residency release completed with earlier cleanup failures.", m_completedFailures!);
+        var failure = new AggregateException(
+            "Residency release completed with earlier cleanup failures.",
+            m_completedFailures!
+        );
         m_completedFailures = null;
         return failure;
     }

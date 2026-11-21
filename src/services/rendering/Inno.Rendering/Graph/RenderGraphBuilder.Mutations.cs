@@ -2,7 +2,7 @@ using System;
 
 namespace Inno.Rendering;
 
-sealed partial class RenderGraphBuilder
+public sealed partial class RenderGraphBuilder
 {
     internal void EnsurePassMutable(RenderPassRecord pass)
     {

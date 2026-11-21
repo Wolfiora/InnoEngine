@@ -15,7 +15,7 @@ internal static class PropertySnapshotBinaryFormat
         using var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true);
         writer.Write(C_MAGIC);
         writer.Write(members.Count);
-        foreach (var member in members)
+        foreach (KeyValuePair<string, SerializationNode> member in members)
         {
             byte[] data = BinarySerializationFormat.Encode(member.Value);
             writer.Write(member.Key);

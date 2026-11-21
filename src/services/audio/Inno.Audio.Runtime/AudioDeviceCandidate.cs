@@ -10,7 +10,10 @@ internal sealed class AudioDeviceCandidate : IDisposable
     private IAudioDevice? m_device;
     private AudioMixerOwner? m_mixer;
 
-    internal AudioDeviceCandidate(IAudioDevice device) => m_device = device;
+    internal AudioDeviceCandidate(IAudioDevice device)
+    {
+        m_device = device;
+    }
 
     internal AudioMixerOwner Prepare(AudioMixerOwner previous) => m_mixer = previous.PrepareReplacement(m_device!);
 

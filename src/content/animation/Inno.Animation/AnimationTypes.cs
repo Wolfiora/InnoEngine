@@ -325,14 +325,14 @@ public readonly record struct AnimationSample
     /// <summary>
     /// Creates one final animation sample.
     /// </summary>
+    /// <param name="target">
+    /// The weak destination or explicit sampling-only policy.
+    /// </param>
     /// <param name="binding">
     /// Stable target binding.
     /// </param>
     /// <param name="value">
     /// Final blended value.
-    /// </param>
-    /// <param name="target">
-    /// The weak destination or explicit sampling-only policy.
     /// </param>
     public AnimationSample(
         AnimationTarget target,

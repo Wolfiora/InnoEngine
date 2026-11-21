@@ -115,7 +115,7 @@ public sealed class DiagnosticReporter : IDiagnosticReporter, IDisposable
             DiagnosticHub hub = GetHub();
             hub.SetOwned(m_source, m_epoch, candidate.Values.ToArray());
             m_issues.Clear();
-            foreach (var entry in candidate)
+            foreach (KeyValuePair<IssueKey, Diagnostic> entry in candidate)
             {
                 m_issues.Add(entry.Key, entry.Value);
             }

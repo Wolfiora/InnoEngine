@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Inno.Core.Identity;
 
@@ -61,7 +62,7 @@ public readonly struct IdentityDomainId : IEquatable<IdentityDomainId>
     /// <returns>
     /// The numeric domain value, or <c>&lt;invalid&gt;</c> when the value is not allocated.
     /// </returns>
-    public override string ToString() => isValid ? value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "<invalid>";
+    public override string ToString() => isValid ? value.ToString(CultureInfo.InvariantCulture) : "<invalid>";
 
     /// <summary>
     /// Determines whether two values identify the same runtime domain.

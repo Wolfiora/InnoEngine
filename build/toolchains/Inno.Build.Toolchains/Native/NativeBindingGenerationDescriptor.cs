@@ -213,8 +213,10 @@ public sealed class NativeBindingGenerationDescriptor
         }
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var document = new XElement("Project");
-        foreach (var entry in generations.OrderBy(static entry => entry.Key, StringComparer.Ordinal))
-        {
+        foreach (KeyValuePair<string, NativeBindingGenerationDescriptor> entry in generations.OrderBy(
+            static entry => entry.Key,
+            StringComparer.Ordinal
+        )) {
             string name = Path.GetFileNameWithoutExtension(entry.Key);
             if (string.IsNullOrWhiteSpace(name) || name.Any(static value => (
                 !char.IsAsciiLetterOrDigit(value)

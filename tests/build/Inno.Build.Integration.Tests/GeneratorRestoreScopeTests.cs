@@ -28,7 +28,7 @@ public sealed class GeneratorRestoreScopeTests
     {
         string root = TestRepository.GetRoot(typeof(GeneratorRestoreScopeTests).Assembly);
         string project = Path.Combine(root, relative);
-        using Process process = new()
+        using var process = new Process()
         {
             StartInfo = new ProcessStartInfo("dotnet")
             {

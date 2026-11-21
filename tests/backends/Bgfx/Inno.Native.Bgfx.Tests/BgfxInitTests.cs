@@ -18,7 +18,7 @@ public sealed class BgfxInitTests
         Assert.True(ok);
         try
         {
-            Assert.True(bgfx.Raw.get_caps() != null);
+            Assert.True(bgfx.Raw.get_caps() is not null);
             Assert.Equal(bgfx.RendererType.Noop, bgfx.get_renderer_type());
         }
         finally

@@ -82,19 +82,19 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Type> GetTypes(Assembly assembly)
         => m_types.TryGetValue(assembly, out IReadOnlyList<Type>? types)
            ? types
            : throw new InvalidOperationException($"Linked assembly '{assembly.GetName().Name}' has no generated type catalog.");
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public TypeCatalogMetadata GetMetadata(Type type)
         => m_metadata.TryGetValue(type, out TypeCatalogMetadata? metadata)
            ? metadata
            : throw new InvalidOperationException($"Linked declaration '{type}' has no generated metadata.");
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Type? ConstructGenericType(
         Type definition,
         IReadOnlyList<Type> arguments
@@ -123,11 +123,11 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
         );
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool CanCreateInstance(Type type)
         => m_factories.TryGetValue(type, out Func<object>? factory) && factory is not null;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public object CreateInstance(Type type)
     {
         if (!m_factories.TryGetValue(type, out Func<object>? factory) || factory is null)
@@ -165,7 +165,7 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
         private bool m_sealed;
         private readonly int m_ownerThread = Environment.CurrentManagedThreadId;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Register(
             TypeCatalogMetadata metadata,
             Func<object>? factory
@@ -179,7 +179,7 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
             factories.Add(metadata.type, factory);
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void RegisterFactory(
             Type type,
             Func<object> factory
@@ -195,7 +195,7 @@ public sealed class StaticTypeCatalogSource : ITypeCatalogSource
             factories.TryAdd(type, factory);
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void RejectGenericConstruction(
             Type definition,
             IReadOnlyList<Type> arguments

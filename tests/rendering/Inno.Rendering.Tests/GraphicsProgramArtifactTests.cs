@@ -83,7 +83,7 @@ public sealed class GraphicsProgramArtifactTests
         byte[] header = (byte[])bytes.Clone();
         header[0] = 0;
         Assert.Throws<InvalidDataException>(() => GraphicsProgramArtifactCodec.Decode(header));
-        byte[] trailing = new byte[bytes.Length + 1];
+        var trailing = new byte[bytes.Length + 1];
         bytes.CopyTo(trailing, 0);
         Assert.Throws<InvalidDataException>(() => GraphicsProgramArtifactCodec.Decode(trailing));
     }

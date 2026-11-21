@@ -262,7 +262,7 @@ public sealed class ShaderIrStage
         this.threadsY = threadsY;
         this.threadsZ = threadsZ;
         Validate();
-        contentHash = ShaderIrSemanticHash.Compute(this);
+        this.contentHash = ShaderIrSemanticHash.Compute(this);
     }
 
     /// <summary>

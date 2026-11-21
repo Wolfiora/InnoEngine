@@ -34,11 +34,11 @@ public sealed class NativeToolchainSelection
     /// <param name="cmakeArguments">
     /// Ordered configuration arguments pinning compiler, generator and SDK.
     /// </param>
-    /// <param name="multiConfiguration">
-    /// Whether configuration is selected during build rather than configure.
-    /// </param>
     /// <param name="linkPlan">
     /// The sole source of target library formats and linker capabilities.
+    /// </param>
+    /// <param name="multiConfiguration">
+    /// Whether configuration is selected during build rather than configure.
     /// </param>
     /// <param name="compilerInputs">
     /// Explicit SDK parser inputs, or null when no native parser is provided.
@@ -115,7 +115,7 @@ public sealed class NativeToolchainSelection
         this.multiConfiguration = multiConfiguration;
         this.compilerInputs = compilerInputs ?? new NativeCompilerInputs();
         this.linkPlan = linkPlan;
-        declarations = Array.AsReadOnly(
+        this.declarations = Array.AsReadOnly(
             this.environment.OrderBy(static entry => entry.Key, StringComparer.Ordinal)
                 .Select(static entry => entry.Key + "=" + entry.Value)
                 .Concat(

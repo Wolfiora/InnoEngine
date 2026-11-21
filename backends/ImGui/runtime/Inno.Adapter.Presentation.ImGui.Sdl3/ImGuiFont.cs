@@ -27,7 +27,7 @@ public static unsafe class ImGuiFont
     {
         ValidateStyle(style);
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
-        if (context == null)
+        if (context is null)
         {
             return false;
         }
@@ -52,7 +52,7 @@ public static unsafe class ImGuiFont
     {
         ValidateStyle(style);
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
-        if (context == null)
+        if (context is null)
         {
             return default;
         }
@@ -76,7 +76,7 @@ public static unsafe class ImGuiFont
         ImGuiNativeContext* context,
         IReadOnlyDictionary<ImGuiFontStyle, nint> fonts
     ) {
-        if (context == null)
+        if (context is null)
         {
             throw new ArgumentException("An ImGui context is required.", nameof(context));
         }
@@ -103,7 +103,7 @@ public static unsafe class ImGuiFont
         ImGuiFontStyle style,
         nint font
     ) {
-        if (context == null)
+        if (context is null)
         {
             throw new ArgumentException("An ImGui context is required.", nameof(context));
         }
@@ -127,7 +127,7 @@ public static unsafe class ImGuiFont
 
     internal static void UnregisterContext(ImGuiNativeContext* context)
     {
-        if (context == null)
+        if (context is null)
         {
             return;
         }
@@ -149,7 +149,7 @@ public static unsafe class ImGuiFont
     internal static void PopStyle(nuint contextKey)
     {
         ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
-        if (context == null || GetContextKey(context) != contextKey)
+        if (context is null || GetContextKey(context) != contextKey)
         {
             throw new InvalidOperationException("The font style scope must be disposed in the context where it was created.");
         }

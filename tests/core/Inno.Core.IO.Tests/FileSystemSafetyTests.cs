@@ -128,7 +128,9 @@ public sealed class FileSystemSafetyTests : IDisposable
     /// <summary>
     /// Rejects canceled installation before creating parents or modifying either owned tree.
     /// </summary>
-    /// <param name="existing">Whether a previous destination is already present.</param>
+    /// <param name="existing">
+    /// Whether a previous destination is already present.
+    /// </param>
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -174,7 +176,7 @@ public sealed class FileSystemSafetyTests : IDisposable
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "current");
         File.WriteAllText(Path.Combine(destination, "previous.txt"), "previous");
-        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using FileStream reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var cancellation = new CancellationTokenSource();
         bool evacuated = false;
         ObserveBlockedRename(
@@ -185,7 +187,7 @@ public sealed class FileSystemSafetyTests : IDisposable
             },
             () =>
             {
-                var failure = Assert.ThrowsAny<OperationCanceledException>(
+                OperationCanceledException failure = Assert.ThrowsAny<OperationCanceledException>(
                     () => AtomicDirectory.Install(candidate, destination, cancellation.Token)
                 );
                 Assert.Equal(cancellation.Token, failure.CancellationToken);
@@ -218,7 +220,7 @@ public sealed class FileSystemSafetyTests : IDisposable
         string destination = Path.Combine(m_root, "published");
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "complete");
-        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using FileStream reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var cancellation = new CancellationTokenSource();
         ObserveBlockedRename(
             () =>
@@ -231,7 +233,7 @@ public sealed class FileSystemSafetyTests : IDisposable
             },
             () =>
             {
-                var failure = Assert.ThrowsAny<OperationCanceledException>(
+                OperationCanceledException failure = Assert.ThrowsAny<OperationCanceledException>(
                     () => AtomicDirectory.Publish(candidate, destination, cancellation.Token)
                 );
                 Assert.Equal(cancellation.Token, failure.CancellationToken);
@@ -254,7 +256,7 @@ public sealed class FileSystemSafetyTests : IDisposable
         string destination = Path.Combine(m_root, "published");
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "complete");
-        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using FileStream reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         using var cancellation = new CancellationTokenSource();
         ObserveBlockedRename(reader.Dispose, () => AtomicDirectory.Publish(candidate, destination, cancellation.Token));
         cancellation.Cancel();
@@ -274,7 +276,7 @@ public sealed class FileSystemSafetyTests : IDisposable
         string destination = Path.Combine(m_root, "published");
         string file = Path.Combine(candidate, "value.txt");
         File.WriteAllText(file, "complete");
-        using var reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using FileStream reader = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read);
         Exception? failure = Record.Exception(() => AtomicDirectory.Publish(candidate, destination));
         Assert.True(failure is IOException or UnauthorizedAccessException && IsSharingError(failure));
         Assert.False(Directory.Exists(destination));
@@ -294,7 +296,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     }
 
     private static bool IsSharingError(Exception exception)
-        => exception.HResult is unchecked((int)0x80070005) or unchecked((int)0x80070020) or unchecked((int)0x80070021);
+        => exception.HResult is unchecked((int)0x8007_0005) or unchecked((int)0x8007_0020) or unchecked((int)0x8007_0021);
 
     private void ObserveBlockedRename(
         Action onBlocked,
@@ -302,7 +304,7 @@ public sealed class FileSystemSafetyTests : IDisposable
     ) {
         // The isolated test intercepts the actual Windows denial before the production catch filter runs.
         int thread = Environment.CurrentManagedThreadId;
-        var clock = Stopwatch.StartNew();
+        Stopwatch clock = Stopwatch.StartNew();
         long blocked = -1;
         long resumed = -1;
         int hresult = 0;

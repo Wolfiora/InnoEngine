@@ -26,9 +26,6 @@ public sealed class Sdl3PlatformBackendProvider : PlatformBackendProvider
         m_hostIntegration = hostIntegration;
     }
 
-    /// <inheritdoc />
-    public override IPlatformApplication CreateApplication()
-    {
-        return new Sdl3PlatformApplication(m_hostIntegration);
-    }
+    /// <inheritdoc/>
+    public override IPlatformApplication CreateApplication() => new Sdl3PlatformApplication(m_hostIntegration);
 }

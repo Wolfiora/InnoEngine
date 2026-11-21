@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Imports one isolated source file into metadata and a runtime artifact.
@@ -179,8 +179,10 @@ sealed partial class AssetLoader
                 try
                 {
                     CommitBuildLocked(build, writeSource: false, sourceBytes);
-                    if (m_unavailableImports.Remove(relativePath, out var recovered))
-                    {
+                    if (m_unavailableImports.Remove(
+                        relativePath,
+                        out (long generation, AssetSourceFileStamp source, AssetSourceFileStamp metadata, string kind, string id) recovered
+                    )) {
                         foreach (string dependent in m_unavailableImports
                             .Where(pair => pair.Value.kind == recovered.kind && pair.Value.id == recovered.id)
                             .Select(static pair => pair.Key)
@@ -229,7 +231,10 @@ sealed partial class AssetLoader
 
     private bool IsExtensionImportUnchanged(string relativePath)
     {
-        if (!m_unavailableImports.TryGetValue(relativePath, out var previous)
+        if (!m_unavailableImports.TryGetValue(
+            relativePath,
+            out (long generation, AssetSourceFileStamp source, AssetSourceFileStamp metadata, string kind, string id) previous
+        )
             || previous.generation != m_types.current.version
             || !AssetSourceFileStamp.TryCapture(GetSourcePath(relativePath), out AssetSourceFileStamp sourceStamp)
             || sourceStamp != previous.source

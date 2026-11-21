@@ -4,6 +4,7 @@ using Inno.Core.Serialization;
 using Inno.Editor.Inspection;
 using Inno.Editor.Rendering;
 using Inno.Editor.Shaders;
+using Inno.Rendering.Shaders;
 
 namespace Inno.Editor.Shaders.ImGui;
 
@@ -221,7 +222,7 @@ public sealed class ShaderNodeDrawContext
     public T Read<T>(
         string key,
         T defaultValue
-    ) => Inno.Rendering.Shaders.ShaderGraphDocument.Read(m_node, key, defaultValue, m_serialization, m_context);
+    ) => ShaderGraphDocument.Read(m_node, key, defaultValue, m_serialization, m_context);
 
     /// <summary>
     /// Records an unsaved draft edit through shared history; only an explicit document save applies it to the asset.
@@ -247,7 +248,7 @@ public sealed class ShaderNodeDrawContext
         {
             throw new InvalidOperationException("Copy this installed Shader into the project before editing.");
         }
-        m_write(key, Inno.Rendering.Shaders.ShaderGraphDocument.Encode(value, m_serialization, m_context), mergeKey);
+        m_write(key, ShaderGraphDocument.Encode(value, m_serialization, m_context), mergeKey);
     }
 
     /// <summary>
@@ -293,7 +294,7 @@ public sealed class ShaderNodeDrawContext
 
     private sealed class Edits(Action<Action, string?> apply) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,

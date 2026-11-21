@@ -24,11 +24,9 @@ public readonly struct AssetCacheOptions
     /// The default cache options.
     /// </returns>
     public static AssetCacheOptions CreateDefault()
+        => new AssetCacheOptions
     {
-        return new AssetCacheOptions
-        {
-            maximumSizeBytes = 4L * 1024 * 1024 * 1024,
-            garbageCollectionGracePeriod = TimeSpan.FromDays(7)
-        };
-    }
+        maximumSizeBytes = 4L * 1024 * 1024 * 1024,
+        garbageCollectionGracePeriod = TimeSpan.FromDays(7)
+    };
 }

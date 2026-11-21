@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Xunit;
 using Inno.Core.Diagnostics;
+using Inno.Core.Events;
 using Inno.Core.Logging;
 using Inno.Editor.Diagnostics;
 using Inno.Extensibility.Modules;
@@ -194,15 +195,18 @@ public sealed class PlayModeLogRetentionTests : IDisposable
 
         public LogSessionId activeSessionId { get; private set; }
 
-        private readonly Inno.Core.Events.EventDispatcher m_stateDispatcher = new();
-        private readonly Inno.Core.Events.EventHub m_stateEvents;
+        private readonly EventDispatcher m_stateDispatcher = new();
+        private readonly EventHub m_stateEvents;
 
-        internal FakePlayMode() => m_stateEvents = m_stateDispatcher.CreateHub();
+        internal FakePlayMode()
+        {
+            m_stateEvents = m_stateDispatcher.CreateHub();
+        }
 
         public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
             => m_stateEvents.Listen<StateNotification>(notification => listener(notification.state));
 
-        private sealed class StateNotification(EditorPlayModeState state) : Inno.Core.Events.Event
+        private sealed class StateNotification(EditorPlayModeState state) : Event
         {
             internal EditorPlayModeState state { get; } = state;
         }

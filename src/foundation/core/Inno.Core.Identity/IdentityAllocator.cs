@@ -28,7 +28,7 @@ public sealed class IdentityAllocator
         {
             throw new InvalidOperationException("The process exhausted available identity domains.");
         }
-        domainId = new IdentityDomainId(nextDomainId);
+        this.domainId = new IdentityDomainId(nextDomainId);
         m_registry = new IdentityRegistry(domainId);
     }
 
@@ -77,10 +77,7 @@ public sealed class IdentityAllocator
     /// <exception cref="InvalidOperationException">
     /// Thrown when scopes are disposed out of order.
     /// </exception>
-    public IDisposable EnterScope()
-    {
-        return S_CURRENT_SCOPE.Enter(this);
-    }
+    public IDisposable EnterScope() => S_CURRENT_SCOPE.Enter(this);
 
     /// <summary>
     /// Registers an object and assigns its session-local runtime identity.

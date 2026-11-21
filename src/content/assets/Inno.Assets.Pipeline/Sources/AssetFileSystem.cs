@@ -150,7 +150,7 @@ public sealed class AssetFileSystem : IDisposable
             throw new ArgumentException("A read-only project source cannot be watched for authoring changes.", nameof(autoStart));
         }
 
-        assetRoot = project.rootPath;
+        this.assetRoot = project.rootPath;
         m_identities = identities;
         m_mounts = byId;
         m_persistentIdentityResolver = persistentIdentityResolver;
@@ -601,7 +601,7 @@ public sealed class AssetFileSystem : IDisposable
         byte[] pathBytes = Encoding.UTF8.GetBytes(path);
         Span<byte> namespaceBytes = stackalloc byte[16];
         new Guid("eac730be-e359-49f7-86c9-b3b09da457cc").TryWriteBytes(namespaceBytes);
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         hash.AppendData(namespaceBytes);
         hash.AppendData(pathBytes);
         return new Guid(hash.GetHashAndReset().AsSpan(0, 16));

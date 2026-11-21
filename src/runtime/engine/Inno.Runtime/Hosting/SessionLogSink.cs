@@ -16,7 +16,7 @@ internal sealed class SessionLogSink : ILogSink, IDisposable
         m_sink = sink;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Receive(LogEntry entry)
     {
         if (entry.sessionId == m_sessionId)
@@ -25,7 +25,7 @@ internal sealed class SessionLogSink : ILogSink, IDisposable
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (m_sink is IDisposable owner)

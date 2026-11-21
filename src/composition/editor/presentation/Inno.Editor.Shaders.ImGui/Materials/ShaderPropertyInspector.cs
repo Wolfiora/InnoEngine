@@ -86,7 +86,7 @@ public static class ShaderPropertyInspector
                 () => value.sampler,
                 next =>
             {
-                var candidate = value;
+                MaterialValue candidate = value;
                 candidate.kind = MaterialValueKind.Texture;
                 candidate.sampler = (RenderSamplerState)next!;
                 setter(candidate);
@@ -172,7 +172,9 @@ public static class ShaderPropertyInspector
         }
         else if (edited.kind == MaterialValueKind.Matrix)
         {
-            Matrix b = before.matrix, e = edited.matrix, t = target.matrix;
+            Matrix b = before.matrix;
+            Matrix e = edited.matrix;
+            Matrix t = target.matrix;
             target.matrix = new(
                 Merge(b.m11, e.m11, t.m11),
                 Merge(b.m12, e.m12, t.m12),
@@ -194,7 +196,9 @@ public static class ShaderPropertyInspector
         }
         else
         {
-            Vector4 b = before.vector, e = edited.vector, t = target.vector;
+            Vector4 b = before.vector;
+            Vector4 e = edited.vector;
+            Vector4 t = target.vector;
             target.vector = new(Merge(b.x, e.x, t.x), Merge(b.y, e.y, t.y), Merge(b.z, e.z, t.z), Merge(b.w, e.w, t.w));
         }
 

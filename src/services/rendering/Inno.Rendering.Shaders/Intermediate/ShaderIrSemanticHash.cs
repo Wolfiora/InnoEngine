@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -66,7 +67,7 @@ internal static class ShaderIrSemanticHash
                 }
             }
             writer.Write(block.outputs.Count);
-            foreach (var output in block.outputs.OrderBy(static value => value.Key, StringComparer.Ordinal))
+            foreach (KeyValuePair<string, ShaderIrValue> output in block.outputs.OrderBy(static value => value.Key, StringComparer.Ordinal))
             {
                 writer.Write(output.Key);
                 writer.Write(output.Value.index);

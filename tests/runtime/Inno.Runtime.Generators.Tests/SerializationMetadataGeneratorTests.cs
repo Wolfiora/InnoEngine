@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Serialization;
@@ -27,7 +29,7 @@ public sealed class SerializationMetadataGeneratorTests
         string source = "using Inno.Core.Serialization; public class State : ISerializable { " + member + " }";
         CSharpCompilation input = CreateCompilation("Inno.InvalidSerializationFixture", source, []);
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new SerializationMetadataGenerator().AsSourceGenerator());
-        driver.RunGeneratorsAndUpdateCompilation(input, out _, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(input, out _, out ImmutableArray<Diagnostic> diagnostics);
         Assert.Contains(diagnostics, diagnostic => diagnostic.Id == expectedDiagnostic && diagnostic.Severity == DiagnosticSeverity.Error);
     }
 
@@ -59,7 +61,7 @@ public sealed class SerializationMetadataGeneratorTests
                 "Inno.SerializationChildFixture.Generated.RuntimeSerializationMetadataCatalog",
                 throwOnError: true
             )!;
-            var register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
+            Action<Action<SerializationTypeMetadata>> register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
                 .CreateDelegate<Action<Action<SerializationTypeMetadata>>>();
             var source = new StaticSerializationMetadataSource([register]);
             Type declaration = assembly.GetType("Fixture.Child", throwOnError: true)!;
@@ -170,10 +172,10 @@ public sealed class SerializationMetadataGeneratorTests
             new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable)
         );
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new SerializationMetadataGenerator().AsSourceGenerator());
-        driver.RunGeneratorsAndUpdateCompilation(input, out Compilation output, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(input, out Compilation output, out ImmutableArray<Diagnostic> diagnostics);
         Assert.Empty(diagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
         using var stream = new MemoryStream();
-        var emitted = output.Emit(stream);
+        EmitResult emitted = output.Emit(stream);
         Assert.True(emitted.Success, string.Join(Environment.NewLine, emitted.Diagnostics));
         stream.Position = 0;
         var lifetime = new AssemblyLoadContext("serialization-metadata-fixture", isCollectible: true);
@@ -184,7 +186,7 @@ public sealed class SerializationMetadataGeneratorTests
                 "Inno.SerializationMetadataFixture.Generated.RuntimeSerializationMetadataCatalog",
                 throwOnError: true
             )!;
-            var register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
+            Action<Action<SerializationTypeMetadata>> register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
                 .CreateDelegate<Action<Action<SerializationTypeMetadata>>>();
             var metadata = new StaticSerializationMetadataSource([register]);
             using var modules = new ModuleHost(new ModuleHostOptions
@@ -193,7 +195,7 @@ public sealed class SerializationMetadataGeneratorTests
             });
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var serialization = new SerializationRegistry(types, metadata);
-            var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!
+            Func<SerializationRegistry, bool> run = assembly.GetType("Fixture.Scenario", throwOnError: true)!
                 .GetMethod("Run")!
                 .CreateDelegate<Func<SerializationRegistry, bool>>();
             Assert.True(run(serialization));
@@ -236,16 +238,14 @@ public sealed class SerializationMetadataGeneratorTests
                 public static bool Run(SerializationRegistry serialization) => __RECEIVER__Execute(serialization);
             }
             """;
-        source = source.Replace("__OPEN__", nested ? "private static partial class Owner {" : "")
-            .Replace("__CLOSE__", nested ? "}" : "")
-            .Replace("__RECEIVER__", nested ? "Owner." : "");
+        source = source.Replace("__OPEN__", nested ? "private static partial class Owner {" : string.Empty)
+            .Replace("__CLOSE__", nested ? "}" : string.Empty)
+            .Replace("__RECEIVER__", nested ? "Owner." : string.Empty);
         AssertScenario(source);
     }
 
     [Fact]
-    public void PublicDeclarationCanKeepPrivateSerializedMemberTypes()
-    {
-        AssertScenario("""
+    public void PublicDeclarationCanKeepPrivateSerializedMemberTypes() => AssertScenario("""
             using Inno.Core.Serialization;
             namespace Fixture;
             public sealed partial class State : ISerializable
@@ -267,7 +267,6 @@ public sealed class SerializationMetadataGeneratorTests
                 }
             }
             """);
-    }
 
     [Fact]
     public void PrivateDeclarationsRequireAnExplicitPartialOwner()
@@ -277,7 +276,7 @@ public sealed class SerializationMetadataGeneratorTests
             public static class Owner { private sealed class State : ISerializable {} }
             """, []);
         GeneratorDriver driver = CSharpGeneratorDriver.Create(new SerializationMetadataGenerator().AsSourceGenerator());
-        driver.RunGeneratorsAndUpdateCompilation(input, out _, out var diagnostics);
+        driver.RunGeneratorsAndUpdateCompilation(input, out _, out ImmutableArray<Diagnostic> diagnostics);
         Assert.Contains(diagnostics, static diagnostic => (
             diagnostic.Id == "INNOSER012"
             && diagnostic.Severity == DiagnosticSeverity.Error
@@ -285,13 +284,10 @@ public sealed class SerializationMetadataGeneratorTests
     }
 
     [Fact]
-    public void OpenGenericContainingOwnersDoNotEmitUnboundShapes()
-    {
-        _ = Compile("Inno.OpenSerializationFixture", """
+    public void OpenGenericContainingOwnersDoNotEmitUnboundShapes() => _ = Compile("Inno.OpenSerializationFixture", """
             using Inno.Core.Serialization;
             public sealed class Owner<T> { private sealed class State : ISerializable { } }
             """, []);
-    }
 
     private static void AssertScenario(string source)
     {
@@ -304,7 +300,7 @@ public sealed class SerializationMetadataGeneratorTests
                 "Inno.PrivateSerializationFixture.Generated.RuntimeSerializationMetadataCatalog",
                 throwOnError: true
             )!;
-            var register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
+            Action<Action<SerializationTypeMetadata>> register = catalog.GetMethod("Register", BindingFlags.Public | BindingFlags.Static)!
                 .CreateDelegate<Action<Action<SerializationTypeMetadata>>>();
             var metadata = new StaticSerializationMetadataSource([register]);
             using var modules = new ModuleHost(new ModuleHostOptions
@@ -313,7 +309,7 @@ public sealed class SerializationMetadataGeneratorTests
             });
             using var types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
             using var serialization = new SerializationRegistry(types, metadata);
-            var run = assembly.GetType("Fixture.Scenario", throwOnError: true)!
+            Func<SerializationRegistry, bool> run = assembly.GetType("Fixture.Scenario", throwOnError: true)!
                 .GetMethod("Run")!
                 .CreateDelegate<Func<SerializationRegistry, bool>>();
             Assert.True(run(serialization));
@@ -348,11 +344,11 @@ public sealed class SerializationMetadataGeneratorTests
         driver.RunGeneratorsAndUpdateCompilation(
             CreateCompilation(assemblyName, source, additionalReferences),
             out Compilation output,
-            out var diagnostics
+            out ImmutableArray<Diagnostic> diagnostics
         );
         Assert.Empty(diagnostics.Where(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error));
         using var stream = new MemoryStream();
-        var emitted = output.Emit(stream);
+        EmitResult emitted = output.Emit(stream);
         Assert.True(emitted.Success, string.Join(Environment.NewLine, emitted.Diagnostics));
         return stream.ToArray();
     }

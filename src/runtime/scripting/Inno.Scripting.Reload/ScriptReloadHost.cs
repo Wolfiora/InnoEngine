@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
@@ -297,15 +300,15 @@ public sealed class ScriptReloadHost : IDisposable
     /// <summary>
     /// Requests cancellation of the active compilation without changing the active script generation.
     /// </summary>
+    /// <param name="operationId">
+    /// The observed request; a stale cancellation is rejected.
+    /// </param>
     /// <returns>
     /// <see langword="true"/> when an active compilation received the request.
     /// </returns>
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the manager has been disposed.
     /// </exception>
-    /// <param name="operationId">
-    /// The observed request; a stale cancellation is rejected.
-    /// </param>
     public bool CancelCompilation(long operationId)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -343,10 +346,7 @@ public sealed class ScriptReloadHost : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown after the manager has been disposed.
     /// </exception>
-    public void RecompileScripting()
-    {
-        QueueReload(ScriptReloadRequest.Recompile);
-    }
+    public void RecompileScripting() => QueueReload(ScriptReloadRequest.Recompile);
 
     /// <summary>
     /// Queues a complete rebuild of both scripting load contexts while retaining the plugin generation.
@@ -369,15 +369,15 @@ public sealed class ScriptReloadHost : IDisposable
     /// <summary>
     /// Starts a pending compilation after the configured quiet period has elapsed.
     /// </summary>
-    /// <remarks>
-    /// The initial automatic request is immediately ready and does not observe the debounce duration.
-    /// </remarks>
     /// <param name="compilation">
     /// The started compilation task, or <see langword="null"/> when none was ready.
     /// </param>
     /// <returns>
     /// <see langword="true"/> when a pending compilation was started.
     /// </returns>
+    /// <remarks>
+    /// The initial automatic request is immediately ready and does not observe the debounce duration.
+    /// </remarks>
     public bool TryCompilePending(out Task<ScriptCompilationResult>? compilation)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -926,8 +926,8 @@ public sealed class ScriptReloadHost : IDisposable
             return new ReloadPlan([], []);
         }
 
-        var compiled = pending.compilation.compiledAssemblyNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
-        var selected = requests
+        HashSet<string> compiled = pending.compilation.compiledAssemblyNames.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> selected = requests
             .Where(request => (
                 GetOwnedAssemblyNames(request).Any(compiled.Contains)
                 || !m_activeModuleFingerprints.TryGetValue(request.moduleName, out string? activeFingerprint)
@@ -1009,18 +1009,18 @@ public sealed class ScriptReloadHost : IDisposable
     private static IEnumerable<string> GetOwnedAssemblyNames(ScriptModuleDeployment request)
         => new[] { request.mainAssemblyPath }
             .Concat(request.preloadAssemblyPaths)
-            .Select(static path => System.Reflection.AssemblyName.GetAssemblyName(path).Name ?? string.Empty);
+            .Select(static path => AssemblyName.GetAssemblyName(path).Name ?? string.Empty);
 
     private static string ComputeRequestFingerprint(ScriptModuleDeployment request)
     {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (string path in new[] { request.mainAssemblyPath }
             .Concat(request.preloadAssemblyPaths)
             .OrderBy(static value => value, StringComparer.OrdinalIgnoreCase)
         ) {
-            byte[] name = System.Text.Encoding.UTF8.GetBytes(System.IO.Path.GetFileName(path));
+            byte[] name = Encoding.UTF8.GetBytes(Path.GetFileName(path));
             hash.AppendData(name);
-            hash.AppendData(System.IO.File.ReadAllBytes(path));
+            hash.AppendData(File.ReadAllBytes(path));
         }
         return Convert.ToHexString(hash.GetHashAndReset());
     }
@@ -1053,7 +1053,7 @@ public sealed class ScriptReloadHost : IDisposable
                 static plugin => plugin.contentHash,
                 StringComparer.Ordinal
             );
-        var removedModuleNames = m_plugins.activePlugins
+        HashSet<string> removedModuleNames = m_plugins.activePlugins
             .Where(static plugin => plugin.containsCode)
             .Where(plugin => (
                 !candidatePluginHashes.TryGetValue(plugin.manifest.pluginId, out string? candidateHash)

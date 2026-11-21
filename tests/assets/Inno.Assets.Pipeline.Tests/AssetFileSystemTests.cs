@@ -6,6 +6,7 @@ using System.Threading;
 using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Identity;
 
 namespace Inno.Assets.Pipeline.Tests;
 
@@ -21,7 +22,7 @@ public sealed class AssetFileSystemTests
             File.WriteAllText(Path.Combine(root, "Folder", "value.txt"), "value");
             using var fileSystem = new AssetFileSystem(root, autoStart: false);
             AssetFileEntry[] previous = fileSystem.GetEntries().ToArray();
-            var identities = previous.Select(static entry => entry.identity.runtimeIdentity).ToArray();
+            RuntimeIdentity?[] identities = previous.Select(static entry => entry.identity.runtimeIdentity).ToArray();
             fileSystem.Refresh();
             for (int index = 0; index < previous.Length; index++)
             {
@@ -46,7 +47,7 @@ public sealed class AssetFileSystemTests
             File.WriteAllText(Path.Combine(root, "value.txt"), "value");
             using var fileSystem = new AssetFileSystem(root, autoStart: false);
             Assert.True(fileSystem.TryGetEntry(AssetPath.Project("value.txt"), out AssetFileEntry previous));
-            var identity = previous.identity.runtimeIdentity;
+            RuntimeIdentity? identity = previous.identity.runtimeIdentity;
             Directory.Move(root, moved);
             try
             {
@@ -121,18 +122,18 @@ public sealed class AssetFileSystemTests
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "Config"));
-            System.IO.File.WriteAllText(Path.Combine(root, "Config", "a.json"), "{}");
-            System.IO.File.WriteAllText(Path.Combine(root, "readme.txt"), "hi");
+            File.WriteAllText(Path.Combine(root, "Config", "a.json"), "{}");
+            File.WriteAllText(Path.Combine(root, "readme.txt"), "hi");
 
             using var fs = new AssetFileSystem(root, autoStart: false);
-            var entries = fs.GetEntries(includeDirectories: true);
+            IReadOnlyList<AssetFileEntry> entries = fs.GetEntries(includeDirectories: true);
 
             Assert.Contains(entries, static x => x.assetPath == AssetPath.Project(string.Empty) && x.isDirectory);
             Assert.Contains(entries, static x => x.assetPath == AssetPath.Project("Config") && x.isDirectory);
             Assert.Contains(entries, static x => x.assetPath == AssetPath.Project("Config/a.json") && !x.isDirectory);
             Assert.Contains(entries, static x => x.assetPath == AssetPath.Project("readme.txt") && !x.isDirectory);
 
-            var rootChildren = fs.GetChildren(AssetPath.Project(string.Empty));
+            IReadOnlyList<AssetFileEntry> rootChildren = fs.GetChildren(AssetPath.Project(string.Empty));
             Assert.Equal(2, rootChildren.Count);
             Assert.Equal(AssetPath.Project("Config"), rootChildren[0].assetPath);
             Assert.Equal(AssetPath.Project("readme.txt"), rootChildren[1].assetPath);
@@ -151,10 +152,10 @@ public sealed class AssetFileSystemTests
         {
             Directory.CreateDirectory(Path.Combine(root, "Config"));
             string file = Path.Combine(root, "Config", "watch.txt");
-            System.IO.File.WriteAllText(file, "a");
+            File.WriteAllText(file, "a");
 
             using var fs = new AssetFileSystem(root, autoStart: true, flushDelayMs: 20);
-            System.IO.File.WriteAllText(file, "b");
+            File.WriteAllText(file, "b");
             IReadOnlyList<AssetChangedEvent> batch = fs.WaitForIdle();
 
             Assert.Contains(batch, static x => x.relativePath == "Config/watch.txt");
@@ -173,10 +174,10 @@ public sealed class AssetFileSystemTests
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "Scripts"));
-            System.IO.File.WriteAllText(Path.Combine(root, "Scripts", "Tool.editor.cs"), "class Tool {} ");
-            System.IO.File.WriteAllText(Path.Combine(root, "Scripts", "Tool.editor.cs.imeta"), "meta");
-            System.IO.File.WriteAllText(Path.Combine(root, "Scripts", "Tool.pdb"), "symbols");
-            System.IO.File.WriteAllText(Path.Combine(root, ".DS_Store"), "noise");
+            File.WriteAllText(Path.Combine(root, "Scripts", "Tool.editor.cs"), "class Tool {} ");
+            File.WriteAllText(Path.Combine(root, "Scripts", "Tool.editor.cs.imeta"), "meta");
+            File.WriteAllText(Path.Combine(root, "Scripts", "Tool.pdb"), "symbols");
+            File.WriteAllText(Path.Combine(root, ".DS_Store"), "noise");
 
             using var fileSystem = new AssetFileSystem(root, autoStart: false);
             AssetFileEntry entry = Assert.Single(fileSystem.GetEntries(includeDirectories: false));
@@ -198,11 +199,8 @@ public sealed class AssetFileSystemTests
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "~Starter", "Scenes"));
-            System.IO.File.WriteAllText(
-                Path.Combine(root, "~Starter", "Scenes", "Game.cs"),
-                "public sealed class Game { }"
-            );
-            System.IO.File.WriteAllText(Path.Combine(root, "~Standalone.cs"), "sample-like file");
+            File.WriteAllText(Path.Combine(root, "~Starter", "Scenes", "Game.cs"), "public sealed class Game { }");
+            File.WriteAllText(Path.Combine(root, "~Standalone.cs"), "sample-like file");
 
             using var fileSystem = new AssetFileSystem(root, autoStart: false);
 
@@ -234,8 +232,8 @@ public sealed class AssetFileSystemTests
         {
             Directory.CreateDirectory(project);
             Directory.CreateDirectory(plugin);
-            System.IO.File.WriteAllText(Path.Combine(project, "same.txt"), "project");
-            System.IO.File.WriteAllText(Path.Combine(plugin, "same.txt"), "plugin");
+            File.WriteAllText(Path.Combine(project, "same.txt"), "project");
+            File.WriteAllText(Path.Combine(plugin, "same.txt"), "plugin");
             var pluginId = new AssetSourceId("tests.mount");
             using var fileSystem = new AssetFileSystem(
                 [
@@ -284,10 +282,10 @@ public sealed class AssetFileSystemTests
         {
             string oldPath = Path.Combine(root, "old.txt");
             string newPath = Path.Combine(root, "new.txt");
-            System.IO.File.WriteAllText(oldPath, "value");
+            File.WriteAllText(oldPath, "value");
             using var fileSystem = new AssetFileSystem(root, autoStart: true, flushDelayMs: 20);
 
-            System.IO.File.Move(oldPath, newPath);
+            File.Move(oldPath, newPath);
             IReadOnlyList<AssetChangedEvent> changes = fileSystem.WaitForIdle();
 
             AssetChangedEvent moved = Assert.Single(changes, static change =>

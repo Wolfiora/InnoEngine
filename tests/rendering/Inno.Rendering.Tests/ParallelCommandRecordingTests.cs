@@ -119,7 +119,7 @@ public sealed class ParallelCommandRecordingTests
             new GraphicsCapabilities(
                 GraphicsApi.Noop,
                 GraphicsCapability.Compute | GraphicsCapability.StorageBuffer | GraphicsCapability.StorageTexture,
-                new GraphicsLimits(16, 8, 16384, 16),
+                new GraphicsLimits(16, 8, 16_384, 16),
                 [RenderTextureFormat.RGBA8],
                 [RenderTextureFormat.RGBA8],
                 [RenderTextureFormat.RGBA8],
@@ -136,17 +136,17 @@ public sealed class ParallelCommandRecordingTests
         var binding = new RenderBindingId("weights.\u03b1");
         for (int index = 0; index < 64; index++)
         {
-            byte[] uniform = new byte[4097];
+            var uniform = new byte[4097];
             for (int offset = 0; offset < uniform.Length; offset++)
             {
                 uniform[offset] = unchecked((byte)(offset + index));
             }
-            float[] transform = new float[16];
+            var transform = new float[16];
             for (int element = 0; element < transform.Length; element++)
             {
                 transform[element] = index + element * 0.25f;
             }
-            var sampler = RenderSamplerState.linearClamp;
+            RenderSamplerState sampler = RenderSamplerState.linearClamp;
             var sourceRegion = new RenderTextureRegion(0, 1, 2, 0, 3, 4);
             var destinationRegion = new RenderTextureRegion(0, 5, 6, 0, 3, 4);
             commands.BindGraphicsPipeline(DeviceHandles.graphics);
@@ -224,12 +224,12 @@ public sealed class ParallelCommandRecordingTests
 
     private sealed class DeviceHandles : RenderDevice
     {
-        internal static GraphicsPipelineHandle graphics => CreateGraphicsPipelineHandle(0x123456789, 7);
-        internal static ComputePipelineHandle compute => CreateComputePipelineHandle(0x987654321, 7);
-        internal static PersistentTextureHandle texture => CreatePersistentTextureHandle(0x123456781, 7);
-        internal static PersistentTextureHandle otherTexture => CreatePersistentTextureHandle(0x123456782, 7);
-        internal static PersistentBufferHandle buffer => CreatePersistentBufferHandle(0x123456783, 7);
-        internal static PersistentBufferHandle otherBuffer => CreatePersistentBufferHandle(0x123456784, 7);
+        internal static GraphicsPipelineHandle graphics => CreateGraphicsPipelineHandle(0x1_2345_6789, 7);
+        internal static ComputePipelineHandle compute => CreateComputePipelineHandle(0x9_8765_4321, 7);
+        internal static PersistentTextureHandle texture => CreatePersistentTextureHandle(0x1_2345_6781, 7);
+        internal static PersistentTextureHandle otherTexture => CreatePersistentTextureHandle(0x1_2345_6782, 7);
+        internal static PersistentBufferHandle buffer => CreatePersistentBufferHandle(0x1_2345_6783, 7);
+        internal static PersistentBufferHandle otherBuffer => CreatePersistentBufferHandle(0x1_2345_6784, 7);
     }
 
     private sealed class ProbeBackend : IRenderGraphBackend
@@ -243,7 +243,7 @@ public sealed class ParallelCommandRecordingTests
             bool capture = true
         ) {
             m_phase = phase;
-            encoder = new ProbeEncoder(phase, capture);
+            this.encoder = new ProbeEncoder(phase, capture);
         }
 
         public void BeginGraph(CompiledRenderGraph graph) {}

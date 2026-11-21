@@ -21,10 +21,20 @@ public sealed partial class RenderRuntimeGenerationTests
         var previewDiagnostics = new TestDiagnosticSink();
         using var runtime = new RenderRuntime(m_types, device, projectDiagnostics, targetArtifacts: provider);
         RenderShaderArtifact draft = Publication("draft");
-        GraphicsPipelineHandle canonical = default, preview = default;
+        GraphicsPipelineHandle canonical = default;
+        GraphicsPipelineHandle preview = default;
         ResourceProbePipeline.action = resources =>
         {
-            Assert.True(resources.TryResolveGraphicsMaterial(material, new("test.publication"), new("draw"), null, null, out var saved));
+            Assert.True(
+                resources.TryResolveGraphicsMaterial(
+                    material,
+                    new("test.publication"),
+                    new("draw"),
+                    null,
+                    null,
+                    out RenderMaterialPass? saved
+                )
+            );
             Assert.True(
                 resources.TryResolveMaterialArtifact(
                     new("preview/document"),
@@ -36,12 +46,13 @@ public sealed partial class RenderRuntimeGenerationTests
                     null,
                     null,
                     previewDiagnostics,
-                    out var edited
+                    out RenderMaterialPass? edited
                 )
             );
             Assert.Equal("saved", saved!.definition.name);
             Assert.Equal("draft", edited!.definition.name);
-            canonical = saved.graphicsPipeline; preview = edited.graphicsPipeline;
+            canonical = saved.graphicsPipeline;
+            preview = edited.graphicsPipeline;
             Assert.NotEqual(canonical, preview);
             Assert.True(
                 resources.TryResolveMaterialArtifact(
@@ -54,7 +65,7 @@ public sealed partial class RenderRuntimeGenerationTests
                     null,
                     null,
                     previewDiagnostics,
-                    out var sameFrame
+                    out RenderMaterialPass? sameFrame
                 )
             );
             Assert.Equal(preview, sameFrame!.graphicsPipeline);
@@ -65,7 +76,16 @@ public sealed partial class RenderRuntimeGenerationTests
         Assert.DoesNotContain(preview, device.destroyedPrograms);
         ResourceProbePipeline.action = resources =>
         {
-            Assert.True(resources.TryResolveGraphicsMaterial(material, new("test.publication"), new("draw"), null, null, out var saved));
+            Assert.True(
+                resources.TryResolveGraphicsMaterial(
+                    material,
+                    new("test.publication"),
+                    new("draw"),
+                    null,
+                    null,
+                    out RenderMaterialPass? saved
+                )
+            );
             Assert.Equal(canonical, saved!.graphicsPipeline);
         };
         RunResourceFrame(runtime);
@@ -98,7 +118,7 @@ public sealed partial class RenderRuntimeGenerationTests
                     null,
                     null,
                     preview,
-                    out var pass
+                    out RenderMaterialPass? pass
                 )
             );
             if (lastGood.isValid) Assert.Equal(lastGood, pass!.graphicsPipeline);
@@ -112,7 +132,16 @@ public sealed partial class RenderRuntimeGenerationTests
         Assert.Contains(preview.items, issue => issue.code == "RENDER_PROGRAM_CREATE_FAILED");
         ResourceProbePipeline.action = resources =>
         {
-            Assert.True(resources.TryResolveGraphicsMaterial(material, new("test.publication"), new("draw"), null, null, out var saved));
+            Assert.True(
+                resources.TryResolveGraphicsMaterial(
+                    material,
+                    new("test.publication"),
+                    new("draw"),
+                    null,
+                    null,
+                    out RenderMaterialPass? saved
+                )
+            );
             Assert.Equal("saved", saved!.definition.name);
             Assert.NotEqual(lastGood, saved.graphicsPipeline);
         };
@@ -123,9 +152,9 @@ public sealed partial class RenderRuntimeGenerationTests
     [Fact]
     public void ShaderProgramsFollowPublishedContentNotTheLatestAssetDefinitionOrItsVersion()
     {
-        var first = Publication("first");
-        var second = Publication("second");
-        var shader = PublicationShader("first");
+        RenderShaderArtifact first = Publication("first");
+        RenderShaderArtifact second = Publication("second");
+        ShaderAsset shader = PublicationShader("first");
         var material = new MaterialAsset { shader = shader };
         var provider = new PublicationProvider(m_serialization) { artifact = first };
         var device = new RecordingRenderDevice();
@@ -162,7 +191,7 @@ public sealed partial class RenderRuntimeGenerationTests
     [Fact]
     public void AllPreviouslyUsedPassesMustBeCreatedBeforeAnyReplacementIsPublished()
     {
-        var shader = PublicationShader("main", "shadow");
+        ShaderAsset shader = PublicationShader("main", "shadow");
         var material = new MaterialAsset { shader = shader };
         var provider = new PublicationProvider(m_serialization) { artifact = Publication("main", "shadow") };
         var device = new RecordingRenderDevice();
@@ -204,10 +233,15 @@ public sealed partial class RenderRuntimeGenerationTests
     public void ShaderArtifactChangesCannotSplitTheCurrentExtractionFrame()
     {
         var material = new MaterialAsset { shader = PublicationShader("first") };
-        var first = Publication("first");
-        var second = Publication("second");
+        RenderShaderArtifact first = Publication("first");
+        RenderShaderArtifact second = Publication("second");
         var provider = new PublicationProvider(m_serialization) { artifact = first };
-        using var runtime = new RenderRuntime(m_types, new RecordingRenderDevice(), new TestDiagnosticSink(), targetArtifacts: provider);
+        using var runtime = new RenderRuntime(
+            m_types,
+            new RecordingRenderDevice(),
+            new TestDiagnosticSink(),
+            targetArtifacts: provider
+        );
         ResourceProbePipeline.action = resources =>
         {
             Assert.True(

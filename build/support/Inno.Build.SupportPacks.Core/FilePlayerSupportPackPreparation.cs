@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.SupportPacks;
 
@@ -55,14 +56,14 @@ public sealed class FilePlayerSupportPackPreparation
     /// <param name="nativePlan">
     /// The frozen product component closure.
     /// </param>
+    /// <param name="nativeExecutor">
+    /// The product-selected native execution strategy.
+    /// </param>
     /// <param name="toolchainProvider">
     /// The SDK provider for the explicit native target.
     /// </param>
     /// <param name="host">
     /// The declared machine executing tools.
-    /// </param>
-    /// <param name="nativeExecutor">
-    /// The product-selected native execution strategy.
     /// </param>
     /// <param name="bindingGenerator">
     /// The borrowed generation service used by the frozen Native operation.
@@ -141,13 +142,13 @@ public sealed class FilePlayerSupportPackPreparation
     ) {
         ArgumentNullException.ThrowIfNull(context);
         cancellationToken.ThrowIfCancellationRequested();
-        string project = Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_productProject);
-        string template = Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_templateFile);
+        string project = PathBoundary.Resolve(context.engineRoot, m_productProject);
+        string template = PathBoundary.Resolve(context.engineRoot, m_templateFile);
         if (!File.Exists(template))
         {
             throw new FileNotFoundException("The Player publication template is absent.", template);
         }
-        var native = new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION)
+        NativeBuildContext native = new NativeBuildContext(context.engineRoot, ToolchainLayout.C_RELEASE_CONFIGURATION)
             .WithBindingGenerator(m_bindingGenerator);
         if (context.nativeDependencies is null)
         {
@@ -286,7 +287,7 @@ public sealed class FilePlayerSupportPackPreparation
         await CopyNativeRuntimeAsync(products, context.stagingDirectory, cancellationToken).ConfigureAwait(false);
         string link = Path.Combine(context.stagingDirectory, "PlayerLink");
         Directory.CreateDirectory(link);
-        File.Copy(Inno.Core.IO.PathBoundary.Resolve(context.engineRoot, m_templateFile), Path.Combine(link, "Player.csproj"));
+        File.Copy(PathBoundary.Resolve(context.engineRoot, m_templateFile), Path.Combine(link, "Player.csproj"));
         await PlayerSupportPackFiles.CopyPlayerSourcesAsync(
             context,
             project,
@@ -347,7 +348,7 @@ public sealed class FilePlayerSupportPackPreparation
             string destination = Path.Combine(playerDirectory, "native", Path.GetRelativePath(nativeRoot, input));
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             await using FileStream source = File.OpenRead(input);
-            await using FileStream output = new(destination, FileMode.CreateNew);
+            await using var output = new FileStream(destination, FileMode.CreateNew);
             await source.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
             if (!OperatingSystem.IsWindows())
             {
@@ -365,10 +366,10 @@ public sealed class FilePlayerSupportPackPreparation
         PlayerSupportPackPreparationIdentity identity
     ) : PlayerSupportPackPlan(owner.target, identity.fingerprint)
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override ValueTask VerifyInputsAsync(CancellationToken cancellationToken) => identity.VerifyAsync(cancellationToken);
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override ValueTask PrepareAsync(
             string stagingDirectory,
             CancellationToken cancellationToken

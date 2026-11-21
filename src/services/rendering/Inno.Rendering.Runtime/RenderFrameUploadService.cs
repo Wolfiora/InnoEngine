@@ -104,7 +104,7 @@ internal sealed class RenderFrameUploadService : RenderFrameUploadProvider, IRen
             );
             PersistentBufferHandle handle = m_device.CreateBuffer(
                 bufferDescriptor,
-                ReadOnlySpan<byte>.Empty,
+                [],
                 $"{name}/FrameUpload[{pool.pages.Count}]"
             );
             page = new UploadPage(handle, capacity, bytes);

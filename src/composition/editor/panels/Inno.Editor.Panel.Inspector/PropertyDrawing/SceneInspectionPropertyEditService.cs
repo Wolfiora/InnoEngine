@@ -23,7 +23,7 @@ internal sealed class SceneInspectionPropertyEditService : IInspectionPropertyEd
         m_edits = edits ?? throw new ArgumentNullException(nameof(edits));
     }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
     public bool ChangeProperty(
         object owner,
         string propertyName,

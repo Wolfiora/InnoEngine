@@ -182,7 +182,8 @@ public readonly unsafe struct EditorDrawList
         Vector2 maximum,
         bool intersect = true
     ) {
-        ImVec2C first = ImGui.ToNative(minimum), last = ImGui.ToNative(maximum);
+        ImVec2C first = ImGui.ToNative(minimum);
+        ImVec2C last = ImGui.ToNative(maximum);
         NativeImGui.Raw.PushClipRect(Resolve(), &first, &last, intersect ? (byte)1 : (byte)0);
     }
 

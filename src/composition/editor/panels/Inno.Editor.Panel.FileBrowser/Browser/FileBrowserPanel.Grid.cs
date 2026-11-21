@@ -88,7 +88,7 @@ internal sealed partial class FileBrowserPanel
             "##FileBrowserGrid",
             columns,
             (ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.NoPadOuterX | ImGuiTableFlags.NoSavedSettings),
-            default(System.Numerics.Vector2),
+            default,
             0f
         );
         if (!tableStarted)
@@ -142,7 +142,7 @@ internal sealed partial class FileBrowserPanel
         string name = item.isPluginRoot ? item.displayName : entry.name;
         bool selected = m_assets.browser.IsSelected(context, entry);
         bool editing = m_rename.IsEditing(context, entry.assetPath.ToString(), FileBrowserPresentation.Grid);
-        Vector2 itemSize = new(cellSize - CurrentBrowserStyle.gridCellPadding, cellSize - CurrentBrowserStyle.gridCellPadding);
+        var itemSize = new Vector2(cellSize - CurrentBrowserStyle.gridCellPadding, cellSize - CurrentBrowserStyle.gridCellPadding);
         Ui.PushId(entry.assetPath.ToString());
         Ui.PushStyleColor(ImGuiCol.Header, EditorPalette.transparent);
         Ui.PushStyleColor(ImGuiCol.HeaderHovered, EditorPalette.transparent);
@@ -232,7 +232,7 @@ internal sealed partial class FileBrowserPanel
         float fontSize = Ui.GetFontSize();
         float iconFontSize = fontSize * scale;
         Vector4 iconBounds = EditorUI.current.widgets.GetGlyphVisualBounds(iconFontSize, icon);
-        Vector2 iconSize = new(iconBounds.Z - iconBounds.X, iconBounds.W - iconBounds.Y);
+        var iconSize = new Vector2(iconBounds.Z - iconBounds.X, iconBounds.W - iconBounds.Y);
         string[] nameLines = FitTextToLines(
             name,
             MathF.Max(1f, size.X - CurrentBrowserStyle.gridLabelHorizontalPadding),
@@ -257,7 +257,7 @@ internal sealed partial class FileBrowserPanel
         }
 
         float horizontalCenter = min.X + size.X * 0.5f;
-        Vector2 iconAreaCenter = new(
+        var iconAreaCenter = new Vector2(
             horizontalCenter + C_GRID_ICON_HORIZONTAL_OPTICAL_OFFSET * EditorUI.current.widgets.style.zoom,
             iconAreaTop + maximumIconHeight * 0.5f
         );
@@ -267,7 +267,7 @@ internal sealed partial class FileBrowserPanel
         for (int i = 0; drawName && i < nameLines.Length; i++)
         {
             Vector2 lineSize = Ui.MeasureText(nameLines[i]);
-            Vector2 linePosition = new(horizontalCenter - lineSize.X * 0.5f, labelY + lineAdvance * i);
+            var linePosition = new Vector2(horizontalCenter - lineSize.X * 0.5f, labelY + lineAdvance * i);
             Ui.DrawText(linePosition, textColor, nameLines[i]);
         }
 

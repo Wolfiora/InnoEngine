@@ -203,7 +203,7 @@ public sealed unsafe partial class ImGuiWidget
             ImGui.DrawNativeLine(
                 drawList,
                 min + new Vector2(size * 0.43f, size * 0.72f),
-                min + new Vector2(size * 0.80f, size * 0.28f),
+                min + new Vector2(size * 0.8f, size * 0.28f),
                 checkColor,
                 1.5f
             );

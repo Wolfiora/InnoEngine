@@ -5,13 +5,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.pipeline")]
-[Inno.Extensibility.Types.StableTypeId("6753d2fb-9773-518d-9673-beae57f6daa7")]
+[StableTypeId("6753d2fb-9773-518d-9673-beae57f6daa7")]
 internal sealed class RenderPipelineAssetImporter : AssetImporter<RenderPipelineAsset>
 {
     /// <summary>

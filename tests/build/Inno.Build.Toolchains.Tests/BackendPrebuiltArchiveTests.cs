@@ -21,7 +21,10 @@ public sealed class BackendPrebuiltArchiveTests : IDisposable
     private string Inventory => Path.Combine(m_root, "inventory.json");
     private string Archive => Path.Combine(m_root, "platform.zip");
 
-    public BackendPrebuiltArchiveTests() => Directory.CreateDirectory(m_root);
+    public BackendPrebuiltArchiveTests()
+    {
+        Directory.CreateDirectory(m_root);
+    }
 
     [Fact]
     public async Task RepackingOneHundredRevisionsIncludesOnlyTheSelectedCurrentFiles()

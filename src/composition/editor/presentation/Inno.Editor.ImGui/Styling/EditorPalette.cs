@@ -32,7 +32,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets soft opacity for tinted container surfaces.
     /// </summary>
-    public const float opacitySoft = 0.20f;
+    public const float opacitySoft = 0.2f;
 
     /// <summary>
     /// Gets muted opacity for shadows and subdued outlines.
@@ -52,7 +52,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets prominent opacity for navigation emphasis.
     /// </summary>
-    public const float opacityProminent = 0.70f;
+    public const float opacityProminent = 0.7f;
 
     /// <summary>
     /// Gets emphasized opacity for borders and interactive grips.
@@ -87,7 +87,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets disabled text color.
     /// </summary>
-    public static Vector4 textDisabled { get; } = new(0.58f, 0.60f, 0.64f, opacityOpaque);
+    public static Vector4 textDisabled { get; } = new(0.58f, 0.6f, 0.64f, opacityOpaque);
 
     /// <summary>
     /// Gets the standard error color.
@@ -177,12 +177,12 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the collapsed title background.
     /// </summary>
-    public static Vector4 titleCollapsed { get; } = new(0.065f, 0.070f, 0.080f, opacityOpaque);
+    public static Vector4 titleCollapsed { get; } = new(0.065f, 0.07f, 0.08f, opacityOpaque);
 
     /// <summary>
     /// Gets the standard scrollbar thumb.
     /// </summary>
-    public static Vector4 scrollbarGrab { get; } = new(0.30f, 0.32f, 0.36f, opacityEmphasized);
+    public static Vector4 scrollbarGrab { get; } = new(0.3f, 0.32f, 0.36f, opacityEmphasized);
 
     /// <summary>
     /// Gets the hovered scrollbar thumb.
@@ -217,17 +217,17 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the hovered tab color.
     /// </summary>
-    public static Vector4 tabHovered { get; } = new(0.19f, 0.20f, 0.225f, opacityOpaque);
+    public static Vector4 tabHovered { get; } = new(0.19f, 0.2f, 0.225f, opacityOpaque);
 
     /// <summary>
     /// Gets the selected tab color.
     /// </summary>
-    public static Vector4 tabSelected { get; } = new(0.17f, 0.176f, 0.20f, opacityOpaque);
+    public static Vector4 tabSelected { get; } = new(0.17f, 0.176f, 0.2f, opacityOpaque);
 
     /// <summary>
     /// Gets the dimmed tab color.
     /// </summary>
-    public static Vector4 tabDimmed { get; } = new(0.082f, 0.088f, 0.10f, opacityOpaque);
+    public static Vector4 tabDimmed { get; } = new(0.082f, 0.088f, 0.1f, opacityOpaque);
 
     /// <summary>
     /// Gets the selected dimmed tab color.
@@ -237,7 +237,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the selected tab overline color.
     /// </summary>
-    public static Vector4 tabSelectedOverline { get; } = new(0.72f, 0.66f, 0.90f, opacityOpaque);
+    public static Vector4 tabSelectedOverline { get; } = new(0.72f, 0.66f, 0.9f, opacityOpaque);
 
     /// <summary>
     /// Gets the table header background.
@@ -292,7 +292,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the persistent target header border.
     /// </summary>
-    public static Vector4 targetHeaderBorder { get; } = new(0.30f, 0.29f, 0.34f, opacityOpaque);
+    public static Vector4 targetHeaderBorder { get; } = new(0.3f, 0.29f, 0.34f, opacityOpaque);
 
     /// <summary>
     /// Gets card body background.
@@ -322,7 +322,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets compact control hover color.
     /// </summary>
-    public static Vector4 compactControlHovered { get; } = new(0.74f, 0.70f, 0.90f, opacityOpaque);
+    public static Vector4 compactControlHovered { get; } = new(0.74f, 0.7f, 0.9f, opacityOpaque);
 
     /// <summary>
     /// Gets the deepest collection background.
@@ -337,7 +337,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the alternate collection row background.
     /// </summary>
-    public static Vector4 collectionRowAlternate { get; } = new(0.135f, 0.144f, 0.160f, opacityOpaque);
+    public static Vector4 collectionRowAlternate { get; } = new(0.135f, 0.144f, 0.16f, opacityOpaque);
 
     /// <summary>
     /// Gets the content field background.
@@ -347,7 +347,7 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the content border.
     /// </summary>
-    public static Vector4 contentBorder { get; } = new(0.31f, 0.30f, 0.35f, opacityOpaque);
+    public static Vector4 contentBorder { get; } = new(0.31f, 0.3f, 0.35f, opacityOpaque);
 
     /// <summary>
     /// Gets the soft content border.
@@ -372,28 +372,28 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets the opaque content accent.
     /// </summary>
-    public static Vector4 contentAccent { get; } = new(0.50f, 0.45f, 0.62f, opacityOpaque);
+    public static Vector4 contentAccent { get; } = new(0.5f, 0.45f, 0.62f, opacityOpaque);
 
     /// <summary>
     /// Gets a hover treatment derived from a base theme color.
     /// </summary>
-    /// <returns>
-    /// The base color blended toward the palette text color using the standard hover amount.
-    /// </returns>
     /// <param name="color">
     /// The color consumed by get hovered; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The base color blended toward the palette text color using the standard hover amount.
+    /// </returns>
     public static Vector4 GetHovered(Vector4 color) => Lerp(color, text, 0.16f);
 
     /// <summary>
     /// Gets an active treatment derived from a base theme color.
     /// </summary>
-    /// <returns>
-    /// The base color blended toward the palette text color using the standard active amount.
-    /// </returns>
     /// <param name="color">
     /// The color consumed by get active; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The base color blended toward the palette text color using the standard active amount.
+    /// </returns>
     public static Vector4 GetActive(Vector4 color) => Lerp(color, text, 0.24f);
 
     /// <summary>
@@ -404,22 +404,22 @@ public static unsafe class EditorPalette
     /// <summary>
     /// Gets X axis color.
     /// </summary>
-    public static Vector4 axisX { get; } = new(0.76f, 0.20f, 0.22f, opacityOpaque);
+    public static Vector4 axisX { get; } = new(0.76f, 0.2f, 0.22f, opacityOpaque);
 
     /// <summary>
     /// Gets Y axis color.
     /// </summary>
-    public static Vector4 axisY { get; } = new(0.16f, 0.62f, 0.30f, opacityOpaque);
+    public static Vector4 axisY { get; } = new(0.16f, 0.62f, 0.3f, opacityOpaque);
 
     /// <summary>
     /// Gets Z axis color.
     /// </summary>
-    public static Vector4 axisZ { get; } = new(0.20f, 0.34f, 0.78f, opacityOpaque);
+    public static Vector4 axisZ { get; } = new(0.2f, 0.34f, 0.78f, opacityOpaque);
 
     /// <summary>
     /// Gets W axis color.
     /// </summary>
-    public static Vector4 axisW { get; } = new(0.48f, 0.48f, 0.50f, opacityOpaque);
+    public static Vector4 axisW { get; } = new(0.48f, 0.48f, 0.5f, opacityOpaque);
 
     /// <summary>
     /// Linearly interpolates two palette colors using a clamped amount.

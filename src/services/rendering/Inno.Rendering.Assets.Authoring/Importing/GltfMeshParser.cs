@@ -6,17 +6,18 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
-[Inno.Extensibility.Types.StableTypeId("c2a6add7-0201-527c-87a4-137904623ee6")]
+[StableTypeId("c2a6add7-0201-527c-87a4-137904623ee6")]
 internal static partial class MeshSourceParser
 {
-    private const uint C_GLB_MAGIC = 0x46546c67;
-    private const uint C_JSON_CHUNK = 0x4e4f534a;
-    private const uint C_BIN_CHUNK = 0x004e4942;
+    private const uint C_GLB_MAGIC = 0x4654_6C67;
+    private const uint C_JSON_CHUNK = 0x4E4F_534A;
+    private const uint C_BIN_CHUNK = 0x004E_4942;
 
     internal static GeometryData ParseGltf(
         string sourcePath,

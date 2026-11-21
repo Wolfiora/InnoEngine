@@ -20,14 +20,14 @@ public sealed class AssetFileSystemChangeTests
             using var fileSystem = new AssetFileSystem(root, autoStart: true, flushDelayMs: 20);
             string path = Path.Combine(root, "Flow", "item.txt");
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            System.IO.File.WriteAllText(path, "one");
-            System.IO.File.WriteAllText(path, "two");
+            File.WriteAllText(path, "one");
+            File.WriteAllText(path, "two");
             IReadOnlyList<AssetChangedEvent> observed = fileSystem.WaitForIdle();
 
             Assert.True(fileSystem.TryGetEntry(AssetPath.Project("Flow/item.txt"), out AssetFileEntry created));
             Assert.False(created.isDirectory);
 
-            System.IO.File.Delete(path);
+            File.Delete(path);
             observed = observed.Concat(fileSystem.WaitForIdle()).ToArray();
 
             Assert.False(fileSystem.TryGetEntry(AssetPath.Project("Flow/item.txt"), out _));
@@ -50,9 +50,9 @@ public sealed class AssetFileSystemChangeTests
         {
             string oldPath = Path.Combine(root, "old.txt");
             string newPath = Path.Combine(root, "new.txt");
-            System.IO.File.WriteAllText(oldPath, "value");
+            File.WriteAllText(oldPath, "value");
             using var fileSystem = new AssetFileSystem(root, autoStart: true, flushDelayMs: 20);
-            System.IO.File.Move(oldPath, newPath);
+            File.Move(oldPath, newPath);
             IReadOnlyList<AssetChangedEvent> observed = fileSystem.WaitForIdle();
 
             AssetChangedEvent renamed = Assert.Single(
@@ -76,8 +76,8 @@ public sealed class AssetFileSystemChangeTests
         try
         {
             using var fileSystem = new AssetFileSystem(root, autoStart: true, flushDelayMs: 20);
-            System.IO.File.WriteAllText(Path.Combine(root, "asset.txt.imeta"), "cache");
-            System.IO.File.WriteAllText(Path.Combine(root, "asset.txt.abin"), "generated");
+            File.WriteAllText(Path.Combine(root, "asset.txt.imeta"), "cache");
+            File.WriteAllText(Path.Combine(root, "asset.txt.abin"), "generated");
             Thread.Sleep(100);
             IReadOnlyList<AssetChangedEvent> changes = fileSystem.WaitForIdle();
 

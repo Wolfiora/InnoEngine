@@ -28,7 +28,9 @@ internal static class EditorUiBoundaryValidator
             bool panel = relative.StartsWith("src/composition/editor/panels/", StringComparison.Ordinal);
             foreach (XElement reference in XDocument.Load(path).Descendants("ProjectReference"))
             {
-                string dependency = Path.GetFileNameWithoutExtension(((string? )reference.Attribute("Include") ?? "").Replace('\\', '/'));
+                string dependency = Path.GetFileNameWithoutExtension(
+                    ((string? )reference.Attribute("Include") ?? string.Empty).Replace('\\', '/')
+                );
                 if (feature
                     && (dependency.Contains("ImGui", StringComparison.Ordinal)
                         || dependency.StartsWith("Inno.Native.", StringComparison.Ordinal)
@@ -77,7 +79,7 @@ internal static class EditorUiBoundaryValidator
         {
             return false;
         }
-        var syntax = CSharpSyntaxTree.ParseText(
+        CompilationUnitSyntax syntax = CSharpSyntaxTree.ParseText(
             File.ReadAllText(manifest),
             new CSharpParseOptions(LanguageVersion.CSharp14)
         ).GetCompilationUnitRoot();

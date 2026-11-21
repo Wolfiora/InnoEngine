@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security;
+using System.Security.Cryptography;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -24,7 +28,7 @@ public sealed class ValidationPlanningTests
         using JsonDocument planned = await repository.PlanAsync(profile: "fast");
         string source = repository.PathOf("artifacts/scheduled.json");
         string output = repository.PathOf("artifacts/bound");
-        var plan = System.Text.Json.Nodes.JsonNode.Parse(planned.RootElement.GetRawText())!;
+        JsonNode plan = JsonNode.Parse(planned.RootElement.GetRawText())!;
         File.WriteAllText(source, plan.ToJsonString());
         Task<int> Bind()
             => ValidationCommand.ExecuteAsync([
@@ -81,7 +85,7 @@ public sealed class ValidationPlanningTests
         File.WriteAllText(previous, baseline.RootElement.GetRawText());
         repository.Write("src/Example/Optional.props", "<Project><PropertyGroup><ExampleValue>2</ExampleValue></PropertyGroup></Project>");
         using JsonDocument plan = await repository.PlanAsync();
-        var tests = plan.RootElement.GetProperty("checks")
+        Dictionary<string, JsonElement> tests = plan.RootElement.GetProperty("checks")
             .EnumerateArray()
             .Where(check => check.GetProperty("kind").GetString() == "test")
             .ToDictionary(check => check.GetProperty("owner").GetString()!);
@@ -91,7 +95,7 @@ public sealed class ValidationPlanningTests
             reason.GetString()!.Contains("src/Example/Optional.props is consumed by", StringComparison.Ordinal));
         File.Delete(repository.PathOf("src/Example/Optional.props"));
         using JsonDocument removed = await repository.PlanAsync(baselinePlan: previous);
-        var afterDelete = removed.RootElement.GetProperty("checks")
+        Dictionary<string, JsonElement> afterDelete = removed.RootElement.GetProperty("checks")
             .EnumerateArray()
             .Where(check => check.GetProperty("kind").GetString() == "test")
             .ToDictionary(check => check.GetProperty("owner").GetString()!);
@@ -183,8 +187,8 @@ public sealed class ValidationPlanningTests
                 "tests/" + layer + "/Suite.csproj",
                 ValidationRepository.Project(
                     "<PropertyGroup><IsTestProject>true</IsTestProject><InnoValidationLayer>" + layer
-                    + "</InnoValidationLayer>" + (layer == "native" ? "<InnoTestNativeProduct>editor</InnoTestNativeProduct>" : "")
-                    + "</PropertyGroup><ItemGroup><ProjectReference Include=\"../../src/Example/Example.csproj\" /></ItemGroup>"
+                + "</InnoValidationLayer>" + (layer == "native" ? "<InnoTestNativeProduct>editor</InnoTestNativeProduct>" : string.Empty)
+                + "</PropertyGroup><ItemGroup><ProjectReference Include=\"../../src/Example/Example.csproj\" /></ItemGroup>"
                 )
             );
         }
@@ -508,7 +512,7 @@ public sealed class ValidationPlanningTests
         repository.Write(
             "src/Example/Example.csproj",
             ValidationRepository.Project(
-                "<PropertyGroup><NetCoreTargetingPackRoot>" + System.Security.SecurityElement.Escape(packs)
+                "<PropertyGroup><NetCoreTargetingPackRoot>" + SecurityElement.Escape(packs)
                 + "</NetCoreTargetingPackRoot></PropertyGroup>"
             )
         );
@@ -688,7 +692,7 @@ public sealed class ValidationPlanningTests
         repository.Write(
             "src/Example/Example.csproj",
             ValidationRepository.Project(
-                "<ItemGroup><Compile Include=\"" + System.Security.SecurityElement.Escape(path) + "\" /></ItemGroup>"
+                "<ItemGroup><Compile Include=\"" + SecurityElement.Escape(path) + "\" /></ItemGroup>"
             )
         );
         repository.Git("add", ".");
@@ -714,7 +718,7 @@ public sealed class ValidationPlanningTests
         external.Write("Shared.props", original);
         repository.Write(
             "src/Example/Example.csproj",
-            ValidationRepository.Project("<Import Project=\"" + System.Security.SecurityElement.Escape(path) + "\" />")
+            ValidationRepository.Project("<Import Project=\"" + SecurityElement.Escape(path) + "\" />")
         );
         repository.Git("add", ".");
         repository.Git("commit", "-m", "Declare external SDK import");
@@ -740,9 +744,7 @@ public sealed class ValidationPlanningTests
         string dependency = external.PathOf("Shared.props");
         repository.Write(
             "src/Example/Example.csproj",
-            ValidationRepository.Project(
-                "<Import Project=\"" + System.Security.SecurityElement.Escape(dependency) + "\" />"
-            )
+            ValidationRepository.Project("<Import Project=\"" + SecurityElement.Escape(dependency) + "\" />")
         );
         string script = string.Join(
             '\n',
@@ -1405,7 +1407,7 @@ public sealed class ValidationPlanningTests
         );
         Assert.True(results.RootElement.GetProperty("completed").GetBoolean());
         string identity = Convert.ToHexStringLower(
-            System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(repository.PathOf("artifacts/run/plan.json")))
+            SHA256.HashData(File.ReadAllBytes(repository.PathOf("artifacts/run/plan.json")))
         );
         Assert.Equal(identity, results.RootElement.GetProperty("planIdentity").GetString());
         await Assert.ThrowsAsync<InvalidDataException>(() => repository.EvidenceAsync(repository.PathOf("artifacts/run/results.json")));
@@ -1605,7 +1607,7 @@ public sealed class ValidationPlanningTests
             "HEAD",
             "--output",
             output,
-            ..snapshot is null ? Array.Empty<string>() : new[] { "--docs-cache-root", docs.cache, "--docs-snapshot", snapshot.snapshot! }
+            ..snapshot is null ? Array.Empty<string>() : ["--docs-cache-root", docs.cache, "--docs-snapshot", snapshot.snapshot!]
         ]);
 
         Assert.Equal(2, status);

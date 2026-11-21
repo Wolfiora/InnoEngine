@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.shader-function")]
-[Inno.Extensibility.Types.StableTypeId("17f67477-6d9c-5b85-9c98-f1c9df4961d3")]
+[StableTypeId("17f67477-6d9c-5b85-9c98-f1c9df4961d3")]
 internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset>
 {
     /// <summary>
@@ -54,8 +55,8 @@ internal sealed class ShaderFunctionImporter : AssetImporter<ShaderFunctionAsset
         AssetImportWriter<ShaderFunctionAsset> output,
         CancellationToken cancellationToken
     ) {
-        var settings = context.importSettings as ShaderSourceImportSettings
-                       ?? throw new InvalidOperationException("Shader source requires its standard import settings.");
+        ShaderSourceImportSettings settings = context.importSettings as ShaderSourceImportSettings
+            ?? throw new InvalidOperationException("Shader source requires its standard import settings.");
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.languageId);
         ArgumentException.ThrowIfNullOrWhiteSpace(settings.implementationId);
         string[] exports = (settings.exports ?? []).Where(static value => !string.IsNullOrWhiteSpace(value))
@@ -148,7 +149,7 @@ public ShaderSourceFile ReadInclude(
                                  owner.source,
                                  (Path.GetDirectoryName(owner.localPath)?.Replace('\\', '/') is { Length: > 0 } directory
                                   ? directory + "/"
-                                  : "") + normalized
+                                  : string.Empty) + normalized
                              );
             return new(path.ToString(), context.ReadSourceUtf8Text(path));
         }

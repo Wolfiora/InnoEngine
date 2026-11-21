@@ -55,7 +55,7 @@ internal sealed class SceneSystemScheduler
             );
         }
 
-        var system = (GameSystem)m_types.snapshot.CreateInstance(systemType);
+        GameSystem system = (GameSystem)m_types.snapshot.CreateInstance(systemType);
         Add(system, descriptor, persistentId, invokeReset);
         return system;
     }

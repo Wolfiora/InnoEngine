@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Inno.Scripting.Api;
 
@@ -133,7 +134,7 @@ internal static class ScriptApiStubSourceBuilder
         }
         else
         {
-            if (type.IsDefined(typeof(System.Runtime.CompilerServices.IsReadOnlyAttribute), inherit: false))
+            if (type.IsDefined(typeof(IsReadOnlyAttribute), inherit: false))
             {
                 builder.Append("readonly ");
             }

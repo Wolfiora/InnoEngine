@@ -191,7 +191,7 @@ internal sealed class FileBrowserData(AssetBrowserModule assets)
 
     internal List<AssetFileEntry> SortTreeEntries(IReadOnlyList<AssetFileEntry> entries)
     {
-        List<AssetFileEntry> sorted = new(entries);
+        List<AssetFileEntry> sorted = [.. entries];
         sorted.Sort(static (
             left,
             right

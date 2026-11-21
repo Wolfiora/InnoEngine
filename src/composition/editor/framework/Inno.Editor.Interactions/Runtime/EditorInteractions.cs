@@ -43,7 +43,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
         ArgumentNullException.ThrowIfNull(identityDomains);
         m_identityDomains = identityDomains.ToDictionary(static allocator => allocator.domainId);
         m_log = log ?? throw new ArgumentNullException(nameof(log));
-        selection = new EditorSelectionState(this);
+        this.selection = new EditorSelectionState(this);
         m_documents = new EditorDocumentService(events);
         m_history = new EditorHistory(
             new EditorHistoryOptions { cacheDirectory = Path.Combine(editor.projectDirectory, "Library", "Editor", "History") },
@@ -114,16 +114,16 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     /// <summary>
     /// Starts an isolated temporary Undo and Redo branch while retaining the current editing branch.
     /// </summary>
-    /// <remarks>
-    /// Disposing the returned scope releases every temporary operation and restores the retained branch.
-    /// This host-level boundary is intended for transient editor sessions such as Play Mode.
-    /// </remarks>
     /// <returns>
     /// A scope that restores the retained history branch when disposed.
     /// </returns>
     /// <exception cref="InvalidOperationException">
     /// Thrown during an Undo, Redo, transaction, or another isolated branch.
     /// </exception>
+    /// <remarks>
+    /// Disposing the returned scope releases every temporary operation and restores the retained branch.
+    /// This host-level boundary is intended for transient editor sessions such as Play Mode.
+    /// </remarks>
     [ScriptingApiIgnore]
     public IDisposable BeginHistoryIsolation() => m_history.BeginIsolation();
 
@@ -731,7 +731,7 @@ public sealed class EditorInteractions : IEditorSelectionCoordinator, IEditorHis
     {
         private EditorInteractions? m_owner = owner;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             EditorInteractions? active = m_owner;

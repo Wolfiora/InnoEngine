@@ -1,6 +1,7 @@
 using System.Numerics;
 using Inno.Native.ImGui;
 
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 using RawImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
@@ -84,7 +85,7 @@ public static partial class ImGui
     public static bool IsKeyDown(ImGuiKey key)
     {
         EditorUiSession.current.EnsureDrawing();
-        return RawImGui.IsKeyDown((Inno.Native.ImGui.ImGuiKey)key);
+        return RawImGui.IsKeyDown((NativeKey)key);
     }
 
     /// <summary>
@@ -104,7 +105,7 @@ public static partial class ImGui
         bool repeat = true
     ) {
         EditorUiSession.current.EnsureDrawing();
-        return RawImGui.IsKeyPressed((Inno.Native.ImGui.ImGuiKey)key, repeat);
+        return RawImGui.IsKeyPressed((NativeKey)key, repeat);
     }
 
     /// <summary>

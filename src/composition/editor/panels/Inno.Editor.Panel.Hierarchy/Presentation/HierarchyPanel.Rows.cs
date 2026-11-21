@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Inno.Core.Identity;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Scene;
 using Inno.Scene.Components;
 
@@ -23,7 +24,7 @@ internal sealed partial class HierarchyPanel
 
     private void RefreshRows(IReadOnlyList<GameScene> scenes)
     {
-        var widgets = EditorUI.current.widgets;
+        ImGuiWidget widgets = EditorUI.current.widgets;
         foreach (GameScene scene in scenes)
         {
             if (m_initializedSceneIds.Add(scene.identity.persistentId))
@@ -70,7 +71,7 @@ internal sealed partial class HierarchyPanel
             {
                 pending.Push((roots[index], 1));
             }
-            while (pending.TryPop(out var next))
+            while (pending.TryPop(out (GameObject target, int depth) next))
             {
                 if (!next.target.isRuntimeValid)
                 {

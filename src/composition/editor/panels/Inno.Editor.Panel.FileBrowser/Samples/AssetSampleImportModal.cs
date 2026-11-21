@@ -13,18 +13,18 @@ internal sealed class AssetSampleImportModal(AssetSampleImportModule imports) : 
     private DialogLayout m_layout;
     private long m_operation;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool isVisible => imports.isBusy;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool allowScrolling => false;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
     ) {
-        var snapshot = imports.progress;
+        AssetSampleImportProgress snapshot = imports.progress;
         m_operation = snapshot.operationId;
         m_content = new(
             snapshot.status,
@@ -37,7 +37,7 @@ internal sealed class AssetSampleImportModal(AssetSampleImportModule imports) : 
         return m_layout.size;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDraw(EditorContext context)
     {
         if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))

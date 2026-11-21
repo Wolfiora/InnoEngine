@@ -6,7 +6,12 @@ using Xunit;
 using Inno.Adapter;
 using Inno.Adapter.Authoring.Default;
 using Inno.Adapter.Default;
+using Inno.Adapter.Platform;
+using Inno.Adapter.Platform.Sdl3;
 using Inno.Adapter.Presentation;
+using Inno.Adapter.Presentation.ImGui;
+using Inno.Adapter.Rendering;
+using Inno.Adapter.Rendering.Bgfx;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
 using Inno.Build;
@@ -17,6 +22,8 @@ using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Input;
 using Inno.Editor.Core;
 using Inno.Editor.Hosting;
+using Inno.Integration.WindowsX64.Bgfx.Runtime;
+using Inno.Integration.WindowsX64.Sdl3;
 using Inno.Shell;
 
 namespace Inno.Editor.Hosting.Tests;
@@ -89,22 +96,16 @@ public sealed class EditorApplicationTests
         var adapters = new DefaultAuthoringAdapterCatalog(
             new DefaultAdapterCatalogOptions
             {
-                platform = new Inno.Adapter.Platform.PlatformBackendCatalog(
-                    [new Inno.Adapter.Platform.Sdl3.Sdl3PlatformBackendProvider(
-                        new Inno.Integration.WindowsX64.Sdl3.WindowsX64Sdl3HostIntegration()
-                    )]
+                platform = new PlatformBackendCatalog(
+                    [new Sdl3PlatformBackendProvider(new WindowsX64Sdl3HostIntegration())]
                 ),
-                rendering = new Inno.Adapter.Rendering.RenderingBackendCatalog(
-                    [new Inno.Adapter.Rendering.Bgfx.BgfxRenderingBackendProvider(
-                        new Inno.Integration.WindowsX64.Bgfx.Runtime.WindowsX64BgfxSurfaceIntegration()
-                    )]
+                rendering = new RenderingBackendCatalog(
+                    [new BgfxRenderingBackendProvider(new WindowsX64BgfxSurfaceIntegration())]
                 ),
                 storage = new StorageBackendCatalog([new FileSystemStorageBackendProvider(Path.Combine(project, "Data"))])
             },
             [new BgfxAuthoringProvider(standard.ResolveShaderTarget(new BuildTargetId("windows-x64")))],
-            [new Inno.Adapter.Presentation.ImGui.ImGuiPresentationProvider(
-                new Inno.Adapter.Presentation.ImGui.ImGuiInteractionOptions(false, 1)
-            )]
+            [new ImGuiPresentationProvider(new ImGuiInteractionOptions(false, 1))]
         );
         return new EditorLaunchOptions
         {

@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Stops new loads and releases canonical assets before their registries and diagnostics.
@@ -122,7 +122,7 @@ sealed partial class AssetLoader
                 continue;
             }
             bool isCurrent = m_types.TryGetTypeRef(asset.GetType(), out _);
-            TypeRef persistedType = new(record.stableTypeId);
+            var persistedType = new TypeRef(record.stableTypeId);
             if (isCurrent
                 && (record.stableTypeId == Guid.Empty
                     || !m_types.TryResolve(persistedType, out Type? resolvedType)

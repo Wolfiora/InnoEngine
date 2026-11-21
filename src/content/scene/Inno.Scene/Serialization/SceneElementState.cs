@@ -4,19 +4,35 @@ using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 
 namespace Inno.Scene;
 
 internal sealed class SceneElementState : ISerializable
 {
-    [SerializableProperty] internal Guid typeId { get; set; }
-    [SerializableProperty] internal string typeName { get; set; } = string.Empty;
-    [SerializableProperty] internal byte[] properties { get; set; } = [];
-    [SerializableProperty] internal Guid[] dependencyIds { get; set; } = [];
-    [SerializableProperty] internal Guid[] dependencyTypes { get; set; } = [];
-    [SerializableProperty] internal string[] dependencyPaths { get; set; } = [];
-    [SerializableProperty] internal Guid[] aliasIds { get; set; } = [];
-    [SerializableProperty] internal Guid[] aliasTargets { get; set; } = [];
+    [SerializableProperty]
+    internal Guid typeId { get; set; }
+
+    [SerializableProperty]
+    internal string typeName { get; set; } = string.Empty;
+
+    [SerializableProperty]
+    internal byte[] properties { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] dependencyIds { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] dependencyTypes { get; set; } = [];
+
+    [SerializableProperty]
+    internal string[] dependencyPaths { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] aliasIds { get; set; } = [];
+
+    [SerializableProperty]
+    internal Guid[] aliasTargets { get; set; } = [];
 
     internal void SetDependencies(IEnumerable<AssetDependency> dependencies)
     {
@@ -37,11 +53,7 @@ internal sealed class SceneElementState : ISerializable
         => dependencyIds.Select((
             id,
             index
-        ) => new AssetDependency(
-            id,
-            new Inno.Extensibility.Types.TypeRef(dependencyTypes[index]),
-            dependencyPaths[index]
-        )).ToArray();
+        ) => new AssetDependency(id, new TypeRef(dependencyTypes[index]), dependencyPaths[index])).ToArray();
 
     internal IReadOnlyDictionary<Guid, Guid> GetAliases()
         => aliasIds.Select((

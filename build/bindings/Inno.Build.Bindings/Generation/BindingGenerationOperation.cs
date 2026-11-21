@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using BGCS;
+using BGCS.Core;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -70,16 +72,16 @@ internal sealed class BindingGenerationOperation : IDisposable
         }
         m_context.RecordBindingBatch();
         Verify(definitions, fingerprints, m_context.BeginInputVerification("binding-locks"), cancellation);
-        Dictionary<string, NativeBindingGenerationDescriptor> results = new(StringComparer.Ordinal);
-        HashSet<string> protectedTargets = new(StringComparer.Ordinal);
+        var results = new Dictionary<string, NativeBindingGenerationDescriptor>(StringComparer.Ordinal);
+        var protectedTargets = new HashSet<string>(StringComparer.Ordinal);
         for (int index = 0; index < definitions.Length; index++)
         {
             cancellation.ThrowIfCancellationRequested();
             BindingGenerationConfiguration definition = definitions[index];
             string fingerprint = fingerprints[index];
             string output = definition.GetOutputRoot(m_context);
-            var loaded = definition.Load(m_context, cancellation);
-            bool usesRuntimeImports = loaded.configuration.api.importMode != BGCS.Core.BindingImportMode.FunctionTable;
+            GenerationRequest loaded = definition.Load(m_context, cancellation);
+            bool usesRuntimeImports = loaded.configuration.api.importMode != BindingImportMode.FunctionTable;
             if (m_request.outputMode == NativeBindingOutputMode.TargetArtifacts)
             {
                 string destination = Path.Combine(output, fingerprint);
@@ -114,7 +116,7 @@ internal sealed class BindingGenerationOperation : IDisposable
                 {
                     // Invalid output is repaired only after exclusive artifact ownership is acquired at commit.
                 }
-                var publication = BindingGenerationPublication.CreateTarget(
+                BindingGenerationPublication publication = BindingGenerationPublication.CreateTarget(
                     Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
                     destination,
                     cancellation
@@ -133,7 +135,7 @@ internal sealed class BindingGenerationOperation : IDisposable
             }
             else
             {
-                var publication = BindingGenerationPublication.CreateHost(
+                BindingGenerationPublication publication = BindingGenerationPublication.CreateHost(
                     Path.Combine(m_context.engineRoot, "artifacts", "bindings"),
                     output,
                     definition.GetHostNativeRoot(m_context),
@@ -296,7 +298,7 @@ internal sealed class BindingGenerationOperation : IDisposable
         NativeBuildContext context,
         CancellationToken cancellation
     ) {
-        var loaded = definition.Load(context, cancellation);
+        GenerationRequest loaded = definition.Load(context, cancellation);
         return NativeBindingGenerationIdentity.Compute(loaded, definition, context, cancellation);
     }
 }

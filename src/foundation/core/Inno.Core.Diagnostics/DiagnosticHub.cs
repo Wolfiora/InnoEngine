@@ -93,10 +93,7 @@ public sealed class DiagnosticHub
     /// <returns>
     /// A strict last-in-first-out scope owned by the caller.
     /// </returns>
-    public IDisposable EnterScope()
-    {
-        return S_CURRENT_SCOPE.Enter(this);
-    }
+    public IDisposable EnterScope() => S_CURRENT_SCOPE.Enter(this);
 
     /// <summary>
     /// Registers a sink and synchronously replays every active report before registration completes.

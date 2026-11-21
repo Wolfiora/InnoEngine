@@ -165,16 +165,10 @@ public sealed class StorageRuntime : RuntimeSubsystem, IApplicationStorage
     /// <param name="frame">
     /// The frame consumed by begin frame; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
-    protected override void OnBeginFrame(RuntimeFrame frame)
-    {
-        OwnFrameScope(StorageExecutionContext.EnterScope(this));
-    }
+    protected override void OnBeginFrame(RuntimeFrame frame) => OwnFrameScope(StorageExecutionContext.EnterScope(this));
 
     /// <summary>
     /// Releases the storage backend after owned work has quiesced.
     /// </summary>
-    protected override void OnStop()
-    {
-        m_operations.Dispose();
-    }
+    protected override void OnStop() => m_operations.Dispose();
 }

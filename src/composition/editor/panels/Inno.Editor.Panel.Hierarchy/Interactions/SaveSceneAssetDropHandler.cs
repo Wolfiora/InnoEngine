@@ -1,3 +1,4 @@
+using System;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Core;
@@ -17,8 +18,8 @@ internal sealed class SaveSceneAssetDropHandler : EditorDrop<GameScene, string>
         IEditorSceneWorkspace workspace,
         AssetPipeline assets
     ) {
-        m_workspace = workspace ?? throw new System.ArgumentNullException(nameof(workspace));
-        m_assets = assets ?? throw new System.ArgumentNullException(nameof(assets));
+        m_workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+        m_assets = assets ?? throw new ArgumentNullException(nameof(assets));
     }
 
     /// <summary>

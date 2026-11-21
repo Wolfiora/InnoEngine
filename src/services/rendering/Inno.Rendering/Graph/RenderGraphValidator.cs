@@ -28,7 +28,7 @@ internal static partial class RenderGraphValidator
         analysis.bufferCount = buffers.Count;
         analysis.passCount = passes.Count;
         // End-of-graph output and scheduling diagnostics are revision-local, not prefix state.
-        diagnostics = new List<RenderGraphDiagnostic>(diagnostics);
+        diagnostics = [.. diagnostics];
         foreach (RenderResourceKey output in outputs)
         {
             if (!analysis.initialized.Contains(output))
@@ -588,34 +588,30 @@ internal static partial class RenderGraphValidator
         RenderTextureRecord texture,
         string role,
         List<RenderGraphDiagnostic> diagnostics
-    ) {
-        diagnostics.Add(
-            new RenderGraphDiagnostic(
-                "RENDER_GRAPH_ATTACHMENT_USAGE",
-                $"Texture '{texture.name}' is not declared for {role} attachment usage.",
-                DiagnosticSeverity.Error,
-                pass.name,
-                texture.name
-            )
-        );
-    }
+    ) => diagnostics.Add(
+        new RenderGraphDiagnostic(
+            "RENDER_GRAPH_ATTACHMENT_USAGE",
+            $"Texture '{texture.name}' is not declared for {role} attachment usage.",
+            DiagnosticSeverity.Error,
+            pass.name,
+            texture.name
+        )
+    );
 
     private static void AddResourceUsageError(
         RenderPassRecord pass,
         string resourceName,
         string requiredUsage,
         List<RenderGraphDiagnostic> diagnostics
-    ) {
-        diagnostics.Add(
-            new RenderGraphDiagnostic(
-                "RENDER_GRAPH_RESOURCE_USAGE",
-                $"Resource '{resourceName}' used by pass '{pass.name}' requires '{requiredUsage}' usage.",
-                DiagnosticSeverity.Error,
-                pass.name,
-                resourceName
-            )
-        );
-    }
+    ) => diagnostics.Add(
+        new RenderGraphDiagnostic(
+            "RENDER_GRAPH_RESOURCE_USAGE",
+            $"Resource '{resourceName}' used by pass '{pass.name}' requires '{requiredUsage}' usage.",
+            DiagnosticSeverity.Error,
+            pass.name,
+            resourceName
+        )
+    );
 
     private static void AddCapabilityError(
         RenderPassRecord pass,
@@ -623,15 +619,13 @@ internal static partial class RenderGraphValidator
         string operation,
         GraphicsCapability requiredFeature,
         List<RenderGraphDiagnostic> diagnostics
-    ) {
-        diagnostics.Add(
-            new RenderGraphDiagnostic(
-                "RENDER_GRAPH_CAPABILITY_UNSUPPORTED",
-                $"Pass '{pass.name}' requires '{requiredFeature}' for {operation} operations.",
-                DiagnosticSeverity.Error,
-                pass.name,
-                resourceName
-            )
-        );
-    }
+    ) => diagnostics.Add(
+        new RenderGraphDiagnostic(
+            "RENDER_GRAPH_CAPABILITY_UNSUPPORTED",
+            $"Pass '{pass.name}' requires '{requiredFeature}' for {operation} operations.",
+            DiagnosticSeverity.Error,
+            pass.name,
+            resourceName
+        )
+    );
 }

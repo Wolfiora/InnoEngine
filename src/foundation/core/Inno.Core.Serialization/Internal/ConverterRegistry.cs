@@ -135,7 +135,7 @@ internal sealed class ConverterRegistry : IDisposable
             return false;
         }
 
-        var converter = (SerializationConverter)GetOrCreateConverter(snapshot, closedConverterType);
+        SerializationConverter converter = (SerializationConverter)GetOrCreateConverter(snapshot, closedConverterType);
         ConverterInvoker invoker = converter.CreateInvoker();
         candidate = new ConverterCandidate(closedConverterType, GetTypeDistance(valueType, targetType), invoker);
         return true;
@@ -422,14 +422,17 @@ internal sealed class ConverterRegistryLease : IDisposable
         SerializationTypeMetadata metadata,
         ISerializationMetadataSource source
     ) {
-        var plans = Volatile.Read(ref m_revisionPlans);
+        ConcurrentDictionary<SerializationTypeMetadata, (ISerializationMetadataSource source, bool eligible)>? plans = Volatile.Read(
+            ref m_revisionPlans
+        );
         if (plans is null)
         {
             var created = new ConcurrentDictionary<SerializationTypeMetadata, (ISerializationMetadataSource source, bool eligible)>();
             plans = Interlocked.CompareExchange(ref m_revisionPlans, created, null) ?? created;
         }
-        if (plans.TryGetValue(metadata, out var known) && ReferenceEquals(known.source, source))
-        {
+        if (plans.TryGetValue(metadata, out (ISerializationMetadataSource source, bool eligible) known)
+            && ReferenceEquals(known.source, source)
+        ) {
             return known.eligible;
         }
         bool eligible = !metadata.requiresConverter;

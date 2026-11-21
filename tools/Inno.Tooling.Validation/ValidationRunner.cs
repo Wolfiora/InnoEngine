@@ -4,10 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Inno.Tooling.Architecture;
 using Inno.Tooling.Documentation;
 
@@ -53,9 +55,9 @@ internal static class ValidationRunner
             cancellation
         ).ConfigureAwait(false);
         Console.WriteLine("Validation phase: acquire the selected workspace ownership and freeze current inputs.");
-        using var workspace = checks.Any(static check => check.kind == "build" && check.exclusion is null)
-                              ? await ValidationWorkspace.AcquireAsync(plan, cancellation).ConfigureAwait(false)
-                              : null;
+        using CoordinatedFileLease? workspace = checks.Any(static check => check.kind == "build" && check.exclusion is null)
+                                                ? await ValidationWorkspace.AcquireAsync(plan, cancellation).ConfigureAwait(false)
+                                                : null;
         if (retainedOutputs is not null)
         {
             if (!continuation || workspace is null)
@@ -64,7 +66,7 @@ internal static class ValidationRunner
             }
             ValidationWorkspace.RestoreOutputs(plan, retainedOutputs, cancellation);
         }
-        foreach (var context in plan.contexts)
+        foreach (KeyValuePair<string, ValidationContext> context in plan.contexts)
         {
             await File.WriteAllTextAsync(
                 Path.Combine(directory, context.Key + "-sdk-graph.json"),
@@ -83,7 +85,7 @@ internal static class ValidationRunner
                 "Validation plan inputs changed before execution. Generate a new plan. Changed inputs: " + string.Join(", ", changed)
             );
         }
-        var buildSolutions = checks.Where(static check => check.kind == "build" && check.exclusion is null)
+        Dictionary<string, string> buildSolutions = checks.Where(static check => check.kind == "build" && check.exclusion is null)
             .GroupBy(static check => check.context!, StringComparer.Ordinal)
             .ToDictionary(
                 static group => group.Key,
@@ -94,7 +96,7 @@ internal static class ValidationRunner
         {
             // Restore rebinds SDK-generated absolute paths to this runner and obtains the exact
             // packages before comparing dependency identities. It does not compile the union.
-            foreach (var solution in buildSolutions)
+            foreach (KeyValuePair<string, string> solution in buildSolutions)
             {
                 await ValidationProcess.RunAsync(
                     plan.dotnet,
@@ -135,7 +137,7 @@ internal static class ValidationRunner
             Dictionary<string, string>? outputs = null;
             string dependencyIdentity = string.Empty;
             ValidationDocumentationInput[]? documentationInputs = null;
-            var elapsed = Stopwatch.StartNew();
+            Stopwatch elapsed = Stopwatch.StartNew();
             if (check.exclusion is not null)
             {
                 status = "NotApplicable";
@@ -543,7 +545,7 @@ internal static class ValidationRunner
                                     + "-smoke.log"
                                 ).ConfigureAwait(false);
                                 string[] renderers = Directory.GetFiles(Path.Combine(project, "Logs"), "*.log").SelectMany(path =>
-                                    System.Text.RegularExpressions.Regex
+                                    Regex
                                         .Matches(File.ReadAllText(path), @"Rendering initialized with (\w+)")
                                         .Select(static match => match.Groups[1].Value)).Distinct(StringComparer.Ordinal).ToArray();
                                 if (renderers.Length != 1)
@@ -631,7 +633,12 @@ internal static class ValidationRunner
                                 string solution = buildSolutions[contextId];
                                 try
                                 {
-                                    var compilationInputs = new ValidationBuildInputs(plan, contextId, outputDigests, cancellation);
+                                    var compilationInputs = new ValidationBuildInputs(
+                                        plan,
+                                        contextId,
+                                        outputDigests,
+                                        cancellation
+                                    );
                                     string[] properties = plan.contexts[contextId].properties
                                         .Select(static pair => "-p:" + pair.Key + "=" + pair.Value)
                                         .ToArray();
@@ -650,7 +657,7 @@ internal static class ValidationRunner
                                                 "-p:InnoTaskBootstrapOwner="
                                                 + Guid.NewGuid().ToString("N"),
                                                 ..retainDependencies
-                                                  ? new[] { "-p:BuildProjectReferences=false", "-p:InnoCleanProjectReferences=false" }
+                                                  ? ["-p:BuildProjectReferences=false", "-p:InnoCleanProjectReferences=false"]
                                                   : Array.Empty<string>(),
                                                 "--disable-build-servers",
                                                 "-m:1",
@@ -669,7 +676,7 @@ internal static class ValidationRunner
                                             ..properties,
                                             "-p:InnoTaskBootstrapOwner=" + Guid.NewGuid().ToString("N"),
                                             ..retainDependencies
-                                              ? new[] { "-p:InnoUseVerifiedProjectOutputs=true" }
+                                              ? ["-p:InnoUseVerifiedProjectOutputs=true"]
                                               : Array.Empty<string>(),
                                             "--disable-build-servers",
                                             "-m:"
@@ -772,7 +779,7 @@ internal static class ValidationRunner
                                     {
                                         batchSeconds[contextId] = Stopwatch.GetElapsedTime(batchStart).TotalSeconds;
                                     }
-                                    foreach (var evidence in ValidationTestEvidence.Read(
+                                    foreach (KeyValuePair<string, (bool passed, string detail)> evidence in ValidationTestEvidence.Read(
                                         plan.root,
                                         tests.ToDictionary(static project => project, project =>
                                             plan.contexts[contextId].sdkGraph.EnumerateArray()
@@ -930,8 +937,9 @@ internal static class ValidationRunner
             }
             if (sourceStable && environmentStable)
             {
-                foreach (var compilation in pendingCompilations.Where(pair => !unstableCompilations.Contains(pair.Key)))
-                {
+                foreach (KeyValuePair<string, ValidationBuildInputs> compilation in pendingCompilations.Where(
+                    pair => !unstableCompilations.Contains(pair.Key)
+                )) {
                     compilation.Value.Record(dependencyInputs);
                 }
             }

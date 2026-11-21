@@ -56,7 +56,7 @@ public static class Sdl3WindowOperations
                 throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL window properties could not be set.");
             }
             SDLWindow* window = SDL.Raw.CreateWindowWithProperties(properties);
-            if (window == null)
+            if (window is null)
             {
                 throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL window creation failed.");
             }

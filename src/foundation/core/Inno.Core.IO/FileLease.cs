@@ -13,7 +13,10 @@ public sealed class FileLease : IDisposable
 {
     private readonly FileStream m_stream;
 
-    private FileLease(FileStream stream) => m_stream = stream;
+    private FileLease(FileStream stream)
+    {
+        m_stream = stream;
+    }
 
     /// <summary>
     /// Waits for exclusive ownership without blocking an owner thread or changing shared data.
@@ -30,10 +33,6 @@ public sealed class FileLease : IDisposable
     /// <returns>
     /// The exclusive lease whose disposal permits the next participant to acquire ownership.
     /// </returns>
-    /// <remarks>
-    /// Lease files remain after disposal. Removing them would let Unix processes lock different
-    /// inodes for the same path while an earlier participant still owns the original inode.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// The path is empty or relative, or the timeout is negative and not infinite.
     /// </exception>
@@ -49,6 +48,10 @@ public sealed class FileLease : IDisposable
     /// <exception cref="UnauthorizedAccessException">
     /// The operating system denies access to the lease path.
     /// </exception>
+    /// <remarks>
+    /// Lease files remain after disposal. Removing them would let Unix processes lock different
+    /// inodes for the same path while an earlier participant still owns the original inode.
+    /// </remarks>
     public static async ValueTask<FileLease> AcquireAsync(
         string path,
         TimeSpan timeout,
@@ -129,7 +132,7 @@ public sealed class FileLease : IDisposable
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                FileStream stream = new(path, mode, access, sharing);
+                var stream = new FileStream(path, mode, access, sharing);
                 if (cancellationToken.IsCancellationRequested)
                 {
                     stream.Dispose();
@@ -159,6 +162,6 @@ public sealed class FileLease : IDisposable
     private static bool IsCompetingOwnership(IOException failure)
         // .NET reports Unix flock contention as raw errno; Darwin uses EWOULDBLOCK 35.
         => OperatingSystem.IsWindows()
-           ? (failure.HResult & 0xffff) is 32 or 33
+           ? (failure.HResult & 0xFFFF) is 32 or 33
            : failure.HResult == (OperatingSystem.IsMacOS() ? 35 : 11);
 }

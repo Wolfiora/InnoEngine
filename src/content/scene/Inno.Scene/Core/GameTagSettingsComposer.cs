@@ -65,7 +65,7 @@ internal sealed class GameTagSettingsComposer : ProjectSettingComposer<GameTagCa
         GameTagCatalog target,
         IReadOnlyList<ProjectSettingContribution<GameTagSettingContribution>> contributions
     ) {
-        var owners = target.GetTags().ToDictionary(static tag => tag, static _ => "host", StringComparer.Ordinal);
+        Dictionary<string, string> owners = target.GetTags().ToDictionary(static tag => tag, static _ => "host", StringComparer.Ordinal);
         foreach (ProjectSettingContribution<GameTagSettingContribution> contribution in contributions)
         {
             contribution.value.Validate();

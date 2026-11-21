@@ -24,7 +24,7 @@ public sealed partial class SceneSerializationTests
         GC.Collect();
         Assert.False(removed.IsAlive);
 
-        var replacement = scene.AddSystem<OrderSerializationSystemB>();
+        OrderSerializationSystemB replacement = scene.AddSystem<OrderSerializationSystemB>();
         SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(scene, m_serializationContext);
         Assert.Same(replacement, Assert.Single(scene.GetSystems()));
         Assert.Equal(m_serialization.Serialize(scene, m_serializationContext), snapshot.ToArray());
@@ -125,7 +125,7 @@ public sealed partial class SceneSerializationTests
     [MethodImpl(MethodImplOptions.NoInlining)]
     private WeakReference CaptureAndRemoveSystem(GameScene scene)
     {
-        var system = scene.AddSystem<OrderSerializationSystemA>();
+        OrderSerializationSystemA system = scene.AddSystem<OrderSerializationSystemA>();
         SerializationSnapshot snapshot = m_serialization.CaptureSnapshot(scene, m_serializationContext);
         Assert.Equal(m_serialization.Serialize(scene, m_serializationContext), snapshot.ToArray());
         Assert.True(scene.RemoveSystem(system));

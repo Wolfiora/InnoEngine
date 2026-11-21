@@ -814,7 +814,7 @@ public sealed class PluginEnvironment : IDisposable
 
     private string ComputeActiveFingerprint(PluginScanResult scan)
     {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (PluginCandidate candidate in PluginSourceService.GetActivatableCandidates(scan))
         {
             hash.AppendData(Encoding.UTF8.GetBytes(candidate.manifest.pluginId));
@@ -826,22 +826,22 @@ public sealed class PluginEnvironment : IDisposable
     private static string ComputeInstallationFingerprint(string pluginRoot)
     {
         Directory.CreateDirectory(pluginRoot);
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         string[] paths = Directory.EnumerateFileSystemEntries(pluginRoot, "*", SearchOption.TopDirectoryOnly)
             .ToArray();
         foreach (string path in paths.OrderBy(static value => value, StringComparer.OrdinalIgnoreCase))
         {
-            FileAttributes attributes = System.IO.File.GetAttributes(path);
+            FileAttributes attributes = File.GetAttributes(path);
             string relative = Path.GetRelativePath(pluginRoot, path).Replace('\\', '/');
             hash.AppendData(Encoding.UTF8.GetBytes(relative));
             hash.AppendData(BitConverter.GetBytes((int)attributes));
             if ((attributes & FileAttributes.Directory) != 0)
             {
-                DirectoryInfo directory = new(path);
+                var directory = new DirectoryInfo(path);
                 hash.AppendData(BitConverter.GetBytes(directory.LastWriteTimeUtc.Ticks));
                 continue;
             }
-            FileInfo file = new(path);
+            var file = new FileInfo(path);
             hash.AppendData(BitConverter.GetBytes(file.Length));
             hash.AppendData(BitConverter.GetBytes(file.LastWriteTimeUtc.Ticks));
         }

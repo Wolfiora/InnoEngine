@@ -34,16 +34,16 @@ public sealed class EngineHost : IDisposable
         ISerializationMetadataSource serializationMetadata
     ) {
         this.retirementTimeout = retirementTimeout;
-        logs = new LogRouter(deliveryMode: logDeliveryMode);
-        diagnostics = new DiagnosticHub();
+        this.logs = new LogRouter(deliveryMode: logDeliveryMode);
+        this.diagnostics = new DiagnosticHub();
         try
         {
-            modules = new ModuleHost(new ModuleHostOptions
+            this.modules = new ModuleHost(new ModuleHostOptions
             {
                 catalogSource = moduleSource
             });
-            types = new TypeCatalog(modules, typeSource);
-            serialization = new SerializationRegistry(types, serializationMetadata);
+            this.types = new TypeCatalog(modules, typeSource);
+            this.serialization = new SerializationRegistry(types, serializationMetadata);
         }
         catch
         {
@@ -296,7 +296,10 @@ public sealed class EngineHost : IDisposable
         }
         if (m_retirementFailures is not null)
         {
-            var failure = new AggregateException("Engine host disposal encountered one or more failures.", m_retirementFailures);
+            var failure = new AggregateException(
+                "Engine host disposal encountered one or more failures.",
+                m_retirementFailures
+            );
             m_retirementFailures = null;
             throw failure;
         }

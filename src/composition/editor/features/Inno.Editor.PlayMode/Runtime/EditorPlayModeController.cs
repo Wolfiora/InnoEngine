@@ -120,16 +120,16 @@ public sealed class EditorPlayModeController :
     /// </summary>
     public bool isPlaying => m_state == EditorPlayModeState.Playing;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     bool IEditorReloadGuard.canRequestReload => !m_disposed && m_state == EditorPlayModeState.Editing;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     bool IEditorReloadGuard.canActivateReload
         => !m_disposed
            && m_state is EditorPlayModeState.Editing or EditorPlayModeState.Compiling
            && m_runtimeSession is null && m_sceneLease is null && m_generationLease is null;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     string? IEditorReloadGuard.blockingReason
         => m_state == EditorPlayModeState.Editing
            ? null
@@ -145,7 +145,7 @@ public sealed class EditorPlayModeController :
     /// </summary>
     public LogSessionId activeSessionId => m_activeSessionId;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IDisposable ListenStateChanges(Action<EditorPlayModeState> listener)
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);

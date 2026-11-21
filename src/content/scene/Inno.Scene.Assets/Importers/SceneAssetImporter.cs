@@ -59,18 +59,18 @@ internal sealed class SceneAssetImporter : AssetImporter<SceneAsset>
     /// <summary>
     /// Writes a validated asset representation to its writable source mount.
     /// </summary>
+    /// <param name="context">
+    /// The generation-bound source export services.
+    /// </param>
     /// <param name="asset">
     /// The validated asset instance exported by this operation.
     /// </param>
-    /// <param name="context">
-    /// The generation-bound source export services.
+    /// <param name="cancellationToken">
+    /// The token that cancels the operation before it commits.
     /// </param>
     /// <returns>
     /// An asynchronous operation that completes after all requested work has finished.
     /// </returns>
-    /// <param name="cancellationToken">
-    /// The token that cancels the operation before it commits.
-    /// </param>
     protected override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         SceneAsset asset,

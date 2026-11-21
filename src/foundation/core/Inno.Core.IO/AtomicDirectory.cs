@@ -21,11 +21,6 @@ public static class AtomicDirectory
     /// <param name="cancellationToken">
     /// Cancels preparation or bounded waits before the rename commits.
     /// </param>
-    /// <remarks>
-    /// Windows access and sharing failures are retried for at most two seconds to tolerate temporary readers.
-    /// Cancellation observed after a blocked rename takes precedence over its timeout error.
-    /// Failure preserves the candidate and any existing destination. A committed rename is not canceled afterward.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// A path is blank or the two directory trees overlap.
     /// </exception>
@@ -41,6 +36,11 @@ public static class AtomicDirectory
     /// <exception cref="OperationCanceledException">
     /// Cancellation is observed before publication, including while handling a failed rename.
     /// </exception>
+    /// <remarks>
+    /// Windows access and sharing failures are retried for at most two seconds to tolerate temporary readers.
+    /// Cancellation observed after a blocked rename takes precedence over its timeout error.
+    /// Failure preserves the candidate and any existing destination. A committed rename is not canceled afterward.
+    /// </remarks>
     public static void Publish(
         string source,
         string destination,
@@ -81,13 +81,6 @@ public static class AtomicDirectory
     /// <param name="cancellationToken">
     /// Cancels preparation or bounded rename waits before the candidate commits.
     /// </param>
-    /// <remarks>
-    /// The caller must serialize readers and writers while the two directory moves run.
-    /// Cancellation before commit restores the previous destination without canceling rollback.
-    /// Cancellation observed after a blocked rename takes precedence over its timeout error.
-    /// A committed candidate is not canceled afterward.
-    /// Backup cleanup runs after commit; its failure preserves the installed candidate and remaining backup.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// Either path is blank, or the candidate and destination trees overlap.
     /// </exception>
@@ -109,6 +102,13 @@ public static class AtomicDirectory
     /// <exception cref="OperationCanceledException">
     /// Cancellation is observed before the candidate commits, including while handling a failed rename. Any moved previous tree is restored.
     /// </exception>
+    /// <remarks>
+    /// The caller must serialize readers and writers while the two directory moves run.
+    /// Cancellation before commit restores the previous destination without canceling rollback.
+    /// Cancellation observed after a blocked rename takes precedence over its timeout error.
+    /// A committed candidate is not canceled afterward.
+    /// Backup cleanup runs after commit; its failure preserves the installed candidate and remaining backup.
+    /// </remarks>
     public static void Install(
         string source,
         string destination,

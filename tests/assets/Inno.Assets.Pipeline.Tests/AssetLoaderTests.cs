@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,8 +80,8 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ReadOnlyImportFailureDoesNotRewriteMetadataOrThrowAgainWhileRecordingFailure()
     {
-        using TestWorkspace workspace = new();
-        using TestWorkspace package = new();
+        using var workspace = new TestWorkspace();
+        using var package = new TestWorkspace();
         package.WriteText("README.md", "Documentation");
         byte[] metadata = m_serialization.Serialize(new MountedSourceMetadata
         {
@@ -88,7 +89,7 @@ public sealed class AssetLoaderTests : IDisposable
             sourceKind = (int)AssetSourceKind.File,
             importerId = "tests.unavailable.importer"
         });
-        System.IO.File.WriteAllBytes(package.SourcePath("README.md.imeta"), metadata);
+        File.WriteAllBytes(package.SourcePath("README.md.imeta"), metadata);
         var source = new AssetSourceId("tests.readonly");
         using var loader = new AssetLoader(
             m_types,
@@ -104,7 +105,7 @@ public sealed class AssetLoaderTests : IDisposable
         );
 
         Assert.False(loader.Import(new AssetPath(source, "README.md")));
-        Assert.Equal(metadata, System.IO.File.ReadAllBytes(package.SourcePath("README.md.imeta")));
+        Assert.Equal(metadata, File.ReadAllBytes(package.SourcePath("README.md.imeta")));
         Assert.True(loader.TryGetInfo(new AssetPath(source, "README.md"), out AssetInfo? failure));
         Assert.Equal(AssetImportStatus.Failed, failure!.status);
         Assert.Contains(failure.diagnostics, value => value.Contains("Read-only source metadata", StringComparison.Ordinal));
@@ -115,7 +116,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void FailedRuntimeDependencyRecoversAfterPublicationOrLoaderRestart(bool reopen)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("parent.depgraph", "child.deferredasset");
         workspace.WriteText("child.deferredasset", "unchanged");
         DeferredAssetImporter.isAvailable = false;
@@ -176,7 +177,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void ExtensionDiscoveryDefersOnlyMissingExtensionsAndRetriesOnceWhenCompleted(bool available)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("surface.extensionasset", "authored");
         var sink = new TestDiagnosticSink();
         m_diagnostics.RegisterSink(sink);
@@ -198,7 +199,7 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(pipeline.TryGetInfo(path, out AssetInfo? pending));
         Assert.Equal(AssetImportStatus.Pending, pending!.status);
         Assert.Equal(DiagnosticSeverity.Info, Assert.Single(Assert.Single(sink.reports.Values).diagnostics).severity);
-        byte[] sidecar = System.IO.File.ReadAllBytes(workspace.SourcePath("surface.extensionasset.imeta"));
+        byte[] sidecar = File.ReadAllBytes(workspace.SourcePath("surface.extensionasset.imeta"));
         int attempts = ExtensionDependentImporter.attempts;
         for (int i = 0; i < 5; i++)
         {
@@ -222,8 +223,8 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.Equal(DiagnosticSeverity.Error, Assert.Single(Assert.Single(sink.reports.Values).diagnostics).severity);
         }
         Assert.Equal(pending.persistentId, completed.persistentId);
-        Assert.Equal(sidecar, System.IO.File.ReadAllBytes(workspace.SourcePath("surface.extensionasset.imeta")));
-        Assert.Equal("authored", System.IO.File.ReadAllText(workspace.SourcePath("surface.extensionasset")));
+        Assert.Equal(sidecar, File.ReadAllBytes(workspace.SourcePath("surface.extensionasset.imeta")));
+        Assert.Equal("authored", File.ReadAllText(workspace.SourcePath("surface.extensionasset")));
         attempts = ExtensionDependentImporter.attempts;
         for (int i = 0; i < 5; i++)
         {
@@ -247,8 +248,8 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ReadOnlyExtensionWaitPreservesSidecarAndBecomesStrictAfterDiscovery()
     {
-        using TestWorkspace workspace = new();
-        using TestWorkspace package = new();
+        using var workspace = new TestWorkspace();
+        using var package = new TestWorkspace();
         package.WriteText("surface.extensionasset", "authored");
         byte[] metadata = m_serialization.Serialize(new MountedSourceMetadata
         {
@@ -256,7 +257,7 @@ public sealed class AssetLoaderTests : IDisposable
             sourceKind = (int)AssetSourceKind.File,
             importerId = "tests.extension-dependent"
         });
-        System.IO.File.WriteAllBytes(package.SourcePath("surface.extensionasset.imeta"), metadata);
+        File.WriteAllBytes(package.SourcePath("surface.extensionasset.imeta"), metadata);
         var source = new AssetSourceId("tests.readonly-extension");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -279,7 +280,7 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Throws<InvalidDataException>(pipeline.CompleteExtensionDiscovery);
         Assert.True(pipeline.TryGetInfo(path, out AssetInfo? failed));
         Assert.Equal(AssetImportStatus.Failed, failed!.status);
-        Assert.Equal(metadata, System.IO.File.ReadAllBytes(package.SourcePath("surface.extensionasset.imeta")));
+        Assert.Equal(metadata, File.ReadAllBytes(package.SourcePath("surface.extensionasset.imeta")));
         ExtensionDependentImporter.available = true;
         Assert.True(pipeline.Import(path));
         Assert.True(pipeline.TryGetInfo(path, out AssetInfo? recovered));
@@ -290,7 +291,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void DiscoveryDoesNotDeferMalformedContentAndCandidateActivationDoesNotHideMissingExtensions()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("bad.mutableasset", "!invalid!");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -330,7 +331,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void MissingExtensionPropagatesToImportDependentsWithoutHydratingEmptyArtifacts(bool reference)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("surface.extensionasset", "authored");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -368,7 +369,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void AssemblyCatalogPublishesAnIsolatedLoaderAndRollsBackWithoutTouchingLastGood(bool reject)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "previous");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -380,7 +381,7 @@ public sealed class AssetLoaderTests : IDisposable
             new AssetPipelineOptions { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot }
         );
         HookAsset previous = pipeline.Load<HookAsset>(AssetPath.Project("value.hookasset"));
-        byte[] previousMeta = System.IO.File.ReadAllBytes(workspace.SourcePath("value.hookasset.imeta"));
+        byte[] previousMeta = File.ReadAllBytes(workspace.SourcePath("value.hookasset.imeta"));
         var observer = new CatalogObserver();
         using IDisposable registration = m_modules.RegisterCatalogParticipant(observer);
         workspace.WriteText("value.hookasset", "candidate");
@@ -390,7 +391,7 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.Same(previous, m_identities.Get<AssetObject>(previous.identity.persistentId));
             Assert.Equal("previous", Encoding.UTF8.GetString(previous.runtimePayload.Span));
             Assert.False(pipeline.TryGetInfo(AssetPath.Project("new.txt"), out _));
-            Assert.False(System.IO.File.Exists(workspace.SourcePath("new.txt.imeta")));
+            Assert.False(File.Exists(workspace.SourcePath("new.txt.imeta")));
         };
         observer.activate = () =>
         {
@@ -398,7 +399,7 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.NotSame(previous, published);
             Assert.Equal("candidate", Encoding.UTF8.GetString(published.runtimePayload.Span));
             Assert.Equal("previous", Encoding.UTF8.GetString(previous.runtimePayload.Span));
-            Assert.False(System.IO.File.Exists(workspace.SourcePath("new.txt.imeta")));
+            Assert.False(File.Exists(workspace.SourcePath("new.txt.imeta")));
             if (reject)
             {
                 throw new InvalidOperationException("Expected later participant rejection.");
@@ -410,8 +411,8 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.Same(previous, m_identities.Get<AssetObject>(previous.identity.persistentId));
             Assert.Equal(0, previous.unloadingCount);
             Assert.Equal("previous", Encoding.UTF8.GetString(previous.runtimePayload.Span));
-            Assert.Equal(previousMeta, System.IO.File.ReadAllBytes(workspace.SourcePath("value.hookasset.imeta")));
-            Assert.False(System.IO.File.Exists(workspace.SourcePath("new.txt.imeta")));
+            Assert.Equal(previousMeta, File.ReadAllBytes(workspace.SourcePath("value.hookasset.imeta")));
+            Assert.False(File.Exists(workspace.SourcePath("new.txt.imeta")));
             Assert.False(pipeline.TryGetInfo(AssetPath.Project("new.txt"), out _));
         }
         else
@@ -419,7 +420,7 @@ public sealed class AssetLoaderTests : IDisposable
             m_modules.Rebuild();
             Assert.NotSame(previous, pipeline.Load<HookAsset>(previous.identity.persistentId));
             Assert.Equal(1, previous.unloadingCount);
-            Assert.True(System.IO.File.Exists(workspace.SourcePath("new.txt.imeta")));
+            Assert.True(File.Exists(workspace.SourcePath("new.txt.imeta")));
         }
         observer.prepare = null;
         observer.activate = null;
@@ -428,7 +429,7 @@ public sealed class AssetLoaderTests : IDisposable
             m_modules.Rebuild();
             Assert.NotSame(previous, pipeline.Load<HookAsset>(previous.identity.persistentId));
             Assert.Equal(1, previous.unloadingCount);
-            Assert.True(System.IO.File.Exists(workspace.SourcePath("new.txt.imeta")));
+            Assert.True(File.Exists(workspace.SourcePath("new.txt.imeta")));
         }
     }
 
@@ -437,7 +438,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void AssemblyCatalogJoinsAnExistingSourceCandidateWithoutTakingItsPublicationOwnership(bool reject)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.txt", "previous");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -488,7 +489,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void IntroducedImportFailureLeavesTheLiveAssetAndCatalogUntouched()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.mutableasset", "previous");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -500,14 +501,14 @@ public sealed class AssetLoaderTests : IDisposable
             new AssetPipelineOptions { assetRoot = workspace.assetRoot, libraryRoot = workspace.libraryRoot }
         );
         MutableAsset previous = pipeline.Load<MutableAsset>(AssetPath.Project("value.mutableasset"));
-        byte[] sidecar = System.IO.File.ReadAllBytes(workspace.SourcePath("value.mutableasset.imeta"));
+        byte[] sidecar = File.ReadAllBytes(workspace.SourcePath("value.mutableasset.imeta"));
         workspace.WriteText("value.mutableasset", "!invalid!");
         Assert.Throws<InvalidDataException>(m_modules.Rebuild);
         Assert.Same(previous, m_identities.Get<AssetObject>(previous.identity.persistentId));
         Assert.Equal("previous", previous.value);
         Assert.True(pipeline.TryGetInfo(previous.identity.persistentId, out AssetInfo? info));
         Assert.Equal(AssetImportStatus.Imported, info!.status);
-        Assert.Equal(sidecar, System.IO.File.ReadAllBytes(workspace.SourcePath("value.mutableasset.imeta")));
+        Assert.Equal(sidecar, File.ReadAllBytes(workspace.SourcePath("value.mutableasset.imeta")));
         workspace.WriteText("value.mutableasset", "recovered");
         m_modules.Rebuild();
         MutableAsset recovered = pipeline.Load<MutableAsset>(previous.identity.persistentId);
@@ -518,8 +519,8 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void CandidateMetadataRejectsExternalChangesWithoutOverwritingThem()
     {
-        using TestWorkspace workspace = new();
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using var workspace = new TestWorkspace();
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         workspace.WriteText("new.txt", "candidate");
         using AssetCatalogCandidate candidate = loader.PrepareCatalogCandidate(
             [new AssetSourceMount(AssetSourceId.project, workspace.assetRoot, false)]
@@ -527,23 +528,23 @@ public sealed class AssetLoaderTests : IDisposable
         using AssetLoader candidateLoader = candidate.loader;
         candidateLoader.Rescan();
         string sidecarPath = workspace.SourcePath("new.txt.imeta");
-        Assert.False(System.IO.File.Exists(sidecarPath));
+        Assert.False(File.Exists(sidecarPath));
         byte[] external = m_serialization.Serialize(new MountedSourceMetadata
         {
             persistentId = Guid.NewGuid(),
             sourceKind = (int)AssetSourceKind.File,
             importerId = "external.importer"
         });
-        System.IO.File.WriteAllBytes(sidecarPath, external);
+        File.WriteAllBytes(sidecarPath, external);
         Assert.Throws<IOException>(candidate.Commit);
-        Assert.Equal(external, System.IO.File.ReadAllBytes(sidecarPath));
+        Assert.Equal(external, File.ReadAllBytes(sidecarPath));
     }
 
     [Fact]
     public void CandidateMetadataCompensatesEarlierSidecarsWhenALaterWriteFails()
     {
-        using TestWorkspace workspace = new();
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using var workspace = new TestWorkspace();
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         workspace.WriteText("a.txt", "first");
         workspace.WriteText("z.txt", "last");
         using AssetCatalogCandidate candidate = loader.PrepareCatalogCandidate(
@@ -554,7 +555,7 @@ public sealed class AssetLoaderTests : IDisposable
         Directory.CreateDirectory(workspace.SourcePath("z.txt.imeta"));
         Exception failure = Assert.ThrowsAny<Exception>(candidate.Commit);
         Assert.True(failure is IOException or UnauthorizedAccessException, failure.ToString());
-        Assert.False(System.IO.File.Exists(workspace.SourcePath("a.txt.imeta")));
+        Assert.False(File.Exists(workspace.SourcePath("a.txt.imeta")));
         Assert.True(Directory.Exists(workspace.SourcePath("z.txt.imeta")));
     }
 
@@ -563,7 +564,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void CandidateDiagnosticsPublishOnlyWithTheirSourceGenerationAndRetireWithoutErasingAnotherOwner(bool commit)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("previous.mutableasset", "!invalid!");
         var sink = new TestDiagnosticSink();
         m_diagnostics.RegisterSink(sink);
@@ -602,13 +603,13 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void CandidateCommitRestoresCatalogAndSidecarsWhenJournalRetirementFails()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("previous.txt", "last good");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         loader.Rescan();
         string snapshotPath = Path.Combine(workspace.libraryRoot, "AssetDatabase", "Catalog.snapshot");
         string journalPath = Path.Combine(workspace.libraryRoot, "AssetDatabase", "Catalog.journal");
-        byte[] previous = System.IO.File.ReadAllBytes(snapshotPath);
+        byte[] previous = File.ReadAllBytes(snapshotPath);
         workspace.WriteText("new.txt", "candidate");
         using AssetCatalogCandidate candidate = loader.PrepareCatalogCandidate(
             [new AssetSourceMount(AssetSourceId.project, workspace.assetRoot, false)]
@@ -619,8 +620,8 @@ public sealed class AssetLoaderTests : IDisposable
 
         Exception? failure = Record.Exception(candidate.Commit);
         Assert.True(failure is IOException or UnauthorizedAccessException, failure?.ToString());
-        Assert.Equal(previous, System.IO.File.ReadAllBytes(snapshotPath));
-        Assert.False(System.IO.File.Exists(workspace.SourcePath("new.txt.imeta")));
+        Assert.Equal(previous, File.ReadAllBytes(snapshotPath));
+        Assert.False(File.Exists(workspace.SourcePath("new.txt.imeta")));
         Assert.True(Directory.Exists(journalPath));
         Assert.False(loader.TryGetInfo(AssetPath.Project("new.txt"), out _));
     }
@@ -628,7 +629,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void CandidateDiagnosticRecoveryCanRollBackToThePreviousUnresolvedReport()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.mutableasset", "!invalid!");
         var sink = new TestDiagnosticSink();
         m_diagnostics.RegisterSink(sink);
@@ -685,7 +686,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void SourceCandidatePublishesCanonicalIdentitiesOnlyDuringSharedRecovery(bool commit)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.txt", "old");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -738,7 +739,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void SourceCandidateIdentityConflictRestoresThePreviousDomain()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("previous.txt", "old");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -772,7 +773,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void SourceRemovalAndReturnKeepTheSameRecoverySlotAndNeutralState()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.txt", "preserved");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -785,8 +786,8 @@ public sealed class AssetLoaderTests : IDisposable
         );
         TextAsset previous = pipeline.Load<TextAsset>(AssetPath.Project("value.txt"));
         Guid id = previous.identity.persistentId;
-        byte[] metadata = System.IO.File.ReadAllBytes(workspace.SourcePath("value.txt.imeta"));
-        System.IO.File.Delete(workspace.SourcePath("value.txt"));
+        byte[] metadata = File.ReadAllBytes(workspace.SourcePath("value.txt.imeta"));
+        File.Delete(workspace.SourcePath("value.txt"));
         using AssetSourceMountTransaction removal = pipeline.PrepareSourceMounts(pipeline.sourceMounts);
         removal.Activate();
         ReferenceRecoveryChange missing = Assert.Single(removal.recoveryChanges);
@@ -801,7 +802,7 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Equal(ReferenceResolutionState.Missing, Assert.Single(stillMissing.recoveryChanges).resolution.state);
         stillMissing.Complete();
         workspace.WriteText("value.txt", "preserved");
-        System.IO.File.WriteAllBytes(workspace.SourcePath("value.txt.imeta"), metadata);
+        File.WriteAllBytes(workspace.SourcePath("value.txt.imeta"), metadata);
         using AssetSourceMountTransaction recovery = pipeline.PrepareSourceMounts(pipeline.sourceMounts);
         recovery.Activate();
         ReferenceRecoveryChange restored = Assert.Single(recovery.recoveryChanges);
@@ -817,7 +818,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void SourceRetirementDrainsPendingHooksBeforeCompletingTheTransaction(bool commit)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "previous");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -859,9 +860,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void LoaderRetirementRetainsPendingAssetPayloadAndRegistration()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "payload");
-        var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         HookAsset asset = Assert.IsType<HookAsset>(loader.Load(AssetPath.Project("value.hookasset"), typeof(HookAsset)));
         RuntimeIdentity identity = asset.identity.runtimeIdentity!.Value;
         asset.pendingUnloads = 1;
@@ -880,7 +881,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void PipelineShutdownDrainsCanonicalAssetsBeforeReleasingTheirOwners()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "payload");
         var pipeline = new AssetPipeline(
             m_modules,
@@ -903,10 +904,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void LoaderRetirementKeepsEarlierFailuresAcrossPendingResources()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("a.hookasset", "pending");
         workspace.WriteText("b.hookasset", "failure");
-        var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         HookAsset pending = Assert.IsType<HookAsset>(loader.Load(AssetPath.Project("a.hookasset"), typeof(HookAsset)));
         HookAsset failing = Assert.IsType<HookAsset>(loader.Load(AssetPath.Project("b.hookasset"), typeof(HookAsset)));
         pending.pendingUnloads = 1;
@@ -925,11 +926,11 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void LoaderShutdownIncludesCanonicalTombstones()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "payload");
-        var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         HookAsset asset = Assert.IsType<HookAsset>(loader.Load(AssetPath.Project("value.hookasset"), typeof(HookAsset)));
-        System.IO.File.Delete(workspace.SourcePath("value.hookasset"));
+        File.Delete(workspace.SourcePath("value.hookasset"));
         loader.Rescan();
         Assert.True(asset.isMissing);
         loader.Dispose();
@@ -940,9 +941,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public async Task LoaderDisposalDoesNotBlockAnInFlightLoadOrAdmitNewWork()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.slowasset", "payload");
-        var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Task<AssetObject?> loading = loader.LoadAsync(AssetPath.Project("value.slowasset"), typeof(SlowAsset)).AsTask();
         try
         {
@@ -965,7 +966,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void SourceRetirementTimeoutFaultsAdmissionAndKeepsBothGenerationsOwned(bool commit)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "previous");
         var modules = new ModuleHost(new ModuleHostOptions
         {
@@ -1017,9 +1018,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void RuntimeDatabaseRetainsPendingPayloadAndRegistrationUntilShutdownCompletes()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "runtime payload");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.NotNull(loader.Load(AssetPath.Project("value.hookasset"), typeof(HookAsset)));
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
@@ -1045,10 +1046,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void OneImporterCanKeepGraphInputsInAuthoringWhileExportingExecutableAssets()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("node.mixedscope", "authoring");
         workspace.WriteText("shader.mixedscope", "runtime");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.NotNull(loader.Load(AssetPath.Project("node.mixedscope"), typeof(DependencyAsset)));
         Assert.NotNull(loader.Load(AssetPath.Project("shader.mixedscope"), typeof(DependencyAsset)));
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
@@ -1065,9 +1066,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public async Task RuntimeLeaseRetriesPendingBudgetEvictionWithoutReleasingAnotherLease()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("value.hookasset", "leased payload");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.NotNull(loader.Load(AssetPath.Project("value.hookasset"), typeof(HookAsset)));
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
@@ -1117,19 +1118,26 @@ public sealed class AssetLoaderTests : IDisposable
 
     private sealed class MountedSourceMetadata : ISerializable
     {
-        [SerializableProperty] public Guid persistentId { get; set; }
-        [SerializableProperty] public int sourceKind { get; set; }
-        [SerializableProperty] public string importerId { get; set; } = string.Empty;
-        [SerializableProperty] public byte[] importerSettingsBytes { get; set; } = [];
+        [SerializableProperty]
+        public Guid persistentId { get; set; }
+
+        [SerializableProperty]
+        public int sourceKind { get; set; }
+
+        [SerializableProperty]
+        public string importerId { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        public byte[] importerSettingsBytes { get; set; } = [];
     }
 
     [Fact]
     public void MissingReferenceNeverBindsAnotherIdentityAtItsLastKnownPath()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/replaced.txt", "replacement");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
-        var replacement = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/replaced.txt"), typeof(TextAsset)));
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        TextAsset replacement = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/replaced.txt"), typeof(TextAsset)));
         Guid intended = Guid.NewGuid();
         Assert.True(m_types.TryGetTypeRef(typeof(TextAsset), out TypeRef type));
 
@@ -1151,12 +1159,12 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void Import_WritesCacheWithoutCreatingCanonicalInstance()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Config/game.txt", "one");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         Assert.True(loader.Import(AssetPath.Project("Config/game.txt")));
-        Assert.True(System.IO.File.Exists(workspace.SourcePath("Config/game.txt.imeta")));
+        Assert.True(File.Exists(workspace.SourcePath("Config/game.txt.imeta")));
         Assert.True(loader.TryGetPersistentId(AssetPath.Project("Config/game.txt"), out Guid persistentId));
         Assert.NotEqual(Guid.Empty, persistentId);
         Assert.True(loader.TryGetArtifact(persistentId, "runtime", out AssetArtifactInfo? artifact));
@@ -1171,9 +1179,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void AutomaticallyDiscoveredPrivateImporter_LoadsWithoutRegistrationApi()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Private/item.privateasset", "private");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         PrivateConstructorAsset asset = Assert.IsType<PrivateConstructorAsset>(
             loader.Load(AssetPath.Project("Private/item.privateasset"), typeof(PrivateConstructorAsset))
@@ -1187,10 +1195,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void SameAssetType_CanUseMultipleImportersForDifferentExtensions()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Graphs/a.depgraph", string.Empty);
         workspace.WriteText("Graphs/b.depgraph2", string.Empty);
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         Assert.IsType<DependencyAsset>(loader.Load(AssetPath.Project("Graphs/a.depgraph"), typeof(DependencyAsset)));
         Assert.IsType<DependencyAsset>(loader.Load(AssetPath.Project("Graphs/b.depgraph2"), typeof(DependencyAsset)));
@@ -1199,9 +1207,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void DuplicateImporterId_IsRejectedDuringAutomaticDiscovery()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Conflict/initialize.txt", "initialize");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.True(loader.Import(AssetPath.Project("Conflict/initialize.txt")));
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
             () => m_modules.Load(new DotNetModuleSource
@@ -1225,9 +1233,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void DuplicateImporterExtension_IsRejectedDuringAutomaticDiscovery()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Conflict/value.conflict", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         ImporterConflictProbe.duplicateExtension = true;
 
         InvalidOperationException exception = Assert.Throws<InvalidOperationException>(
@@ -1240,9 +1248,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void PathAndPersistentIdLoads_ReturnCanonicalInstance()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/shared.txt", "shared");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         TextAsset byPath = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/shared.txt"), typeof(TextAsset)));
         TextAsset byId = Assert.IsType<TextAsset>(loader.Load(byPath.identity.persistentId, typeof(TextAsset)));
@@ -1254,7 +1262,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void BlockedSourceVerificationRetainsLastGoodArtifactAndReportsImportFailure()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/cached.txt", "cached");
         using (AssetLoader first = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs))
         {
@@ -1282,15 +1290,15 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ChangedStampWithEqualContent_DoesNotReimportCanonicalAsset()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/touched.txt", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         TextAsset before = Assert.IsType<TextAsset>(
             loader.Load(AssetPath.Project("Text/touched.txt"), typeof(TextAsset))
         );
         long version = before.contentVersion;
         string sourcePath = workspace.SourcePath("Text/touched.txt");
-        System.IO.File.SetLastWriteTimeUtc(sourcePath, System.IO.File.GetLastWriteTimeUtc(sourcePath).AddSeconds(1));
+        File.SetLastWriteTimeUtc(sourcePath, File.GetLastWriteTimeUtc(sourcePath).AddSeconds(1));
 
         TextAsset after = Assert.IsType<TextAsset>(
             loader.Load(AssetPath.Project("Text/touched.txt"), typeof(TextAsset))
@@ -1303,10 +1311,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void BlockedDependencyVerificationRetainsLastGoodArtifactAndReportsImportFailure()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Import/schema.inc", "schema");
         workspace.WriteText("Import/root.importgraph", "Import/schema.inc");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.True(loader.Import(AssetPath.Project("Import/root.importgraph")));
         using var sourceLock = new FileStream(
             workspace.SourcePath("Import/schema.inc"),
@@ -1327,9 +1335,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public async Task ConcurrentAsyncLoads_ShareImportAndCancellationOnlyCancelsOneWaiter()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Slow/item.slowasset", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         using var cancellation = new CancellationTokenSource();
 
         ValueTask<AssetObject?> first = loader.LoadAsync(AssetPath.Project("Slow/item.slowasset"), typeof(SlowAsset));
@@ -1352,18 +1360,18 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ChangedDependencyWithPreservedTimestampReimportsTheCanonicalAsset()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Import/schema.inc", "first");
         workspace.WriteText("Import/root.importgraph", "Import/schema.inc");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         ImportGraphAsset before = Assert.IsType<ImportGraphAsset>(
             loader.Load(AssetPath.Project("Import/root.importgraph"), typeof(ImportGraphAsset))
         );
         long version = before.contentVersion;
         string dependency = workspace.SourcePath("Import/schema.inc");
-        DateTime timestamp = System.IO.File.GetLastWriteTimeUtc(dependency);
+        DateTime timestamp = File.GetLastWriteTimeUtc(dependency);
         workspace.WriteText("Import/schema.inc", "other");
-        System.IO.File.SetLastWriteTimeUtc(dependency, timestamp);
+        File.SetLastWriteTimeUtc(dependency, timestamp);
 
         ImportGraphAsset after = Assert.IsType<ImportGraphAsset>(
             loader.Load(AssetPath.Project("Import/root.importgraph"), typeof(ImportGraphAsset))
@@ -1379,19 +1387,19 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public void StaleSource_ReimportsAndUpdatesCanonicalInstanceInPlace(bool preserveTimestamp)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/reload.txt", "one");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         TextAsset before = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/reload.txt"), typeof(TextAsset)));
         Guid persistentId = before.identity.persistentId;
         long version = before.contentVersion;
         string sourcePath = workspace.SourcePath("Text/reload.txt");
-        DateTime sourceTime = System.IO.File.GetLastWriteTimeUtc(sourcePath);
+        DateTime sourceTime = File.GetLastWriteTimeUtc(sourcePath);
 
         workspace.WriteText("Text/reload.txt", "two");
         if (preserveTimestamp)
         {
-            System.IO.File.SetLastWriteTimeUtc(sourcePath, sourceTime);
+            File.SetLastWriteTimeUtc(sourcePath, sourceTime);
         }
         TextAsset after = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/reload.txt"), typeof(TextAsset)));
 
@@ -1404,10 +1412,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void RuntimeDependencyCycle_IsAllowedAndLoadsAsOneCanonicalSubgraph()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Graphs/a.depgraph", "Graphs/b.depgraph");
         workspace.WriteText("Graphs/b.depgraph", "Graphs/a.depgraph");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         DependencyAsset root = Assert.IsType<DependencyAsset>(
             loader.Load(AssetPath.Project("Graphs/a.depgraph"), typeof(DependencyAsset))
@@ -1427,7 +1435,7 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData("invalid")]
     public async Task AsyncRuntimeExportReleasesItsGenerationLeaseAfterEveryOutcome(string outcome)
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("leaf.buildinput", "original");
         using var pipeline = new AssetPipeline(
             m_modules,
@@ -1475,9 +1483,9 @@ public sealed class AssetLoaderTests : IDisposable
         string change,
         bool importChange
     ) {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("leaf.buildinput", "original");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.True(loader.Import(AssetPath.Project("leaf.buildinput")));
         AssetObject leaf = Assert.IsType<DependencyAsset>(loader.Load(AssetPath.Project("leaf.buildinput"), typeof(DependencyAsset)));
         workspace.WriteText("middle.buildinput", leaf.identity.persistentId.ToString());
@@ -1517,11 +1525,11 @@ public sealed class AssetLoaderTests : IDisposable
     [InlineData(true)]
     public async Task ColdRootsShareDependencyIoAndRetireReservationsAcrossRepeatedCycles(bool cancelFirst)
     {
-        using TestWorkspace workspace = new();
-        workspace.WriteText("Shared.txt", new string('s', 65536));
+        using var workspace = new TestWorkspace();
+        workspace.WriteText("Shared.txt", new string('s', 65_536));
         workspace.WriteText("A.depgraph", "Shared.txt");
         workspace.WriteText("B.depgraph", "Shared.txt");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.NotNull(loader.Load(AssetPath.Project("A.depgraph"), typeof(DependencyAsset)));
         Assert.NotNull(loader.Load(AssetPath.Project("B.depgraph"), typeof(DependencyAsset)));
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
@@ -1534,7 +1542,7 @@ public sealed class AssetLoaderTests : IDisposable
             m_types.current,
             new IdentityAllocator(),
             residencyBudgetBytes: 0,
-            preparationBudgetBytes: 100000
+            preparationBudgetBytes: 100_000
         );
         for (int cycle = 0; cycle < 32; cycle++)
         {
@@ -1578,16 +1586,16 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.Equal(96, statistics.payloadReadsStarted);
         Assert.Equal(32, statistics.sharedPayloadReads);
         Assert.Equal(2, statistics.peakPendingRequests);
-        Assert.InRange(statistics.peakReservedBytes, 65536, 100000);
+        Assert.InRange(statistics.peakReservedBytes, 65_536, 100_000);
         Assert.Equal(0, statistics.rejectedRequests);
     }
 
     [Fact]
     public void ColdAdmissionCountersRemainBoundedAndDisposeDrainsEveryCanceledWaiter()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Shared.txt", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.NotNull(loader.Load(AssetPath.Project("Shared.txt"), typeof(TextAsset)));
         string contentRoot = Path.Combine(workspace.libraryRoot, "Runtime");
         loader.ExportRuntimeArtifacts(contentRoot);
@@ -1611,11 +1619,11 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void CorruptSharedPayloadFailsBothRootsWithoutLeakingReservationsOrPublishingAssets()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Shared.txt", "payload");
         workspace.WriteText("A.depgraph", "Shared.txt");
         workspace.WriteText("B.depgraph", "Shared.txt");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         Assert.NotNull(loader.Load(AssetPath.Project("A.depgraph"), typeof(DependencyAsset)));
         Assert.NotNull(loader.Load(AssetPath.Project("B.depgraph"), typeof(DependencyAsset)));
         AssetObject shared = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Shared.txt"), typeof(TextAsset)));
@@ -1634,7 +1642,7 @@ public sealed class AssetLoaderTests : IDisposable
                 ))
             ).key;
             byte[] bytes = artifact.ReadAllBytes();
-            bytes[0] ^= 0xff;
+            bytes[0] ^= 0xFF;
             contentStore.CorruptPayload(key, bytes);
         }
         Task<AssetLease<DependencyAsset>> first = database.AcquireAsync<DependencyAsset>(AssetPath.Project("A.depgraph")).AsTask();
@@ -1658,10 +1666,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ImportDependencyCycle_IsRejectedWithClosedPathChain()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Import/a.importgraph", "Import/b.importgraph");
         workspace.WriteText("Import/b.importgraph", "Import/a.importgraph");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         Assert.True(loader.Import(AssetPath.Project("Import/a.importgraph")));
         Assert.False(loader.Import(AssetPath.Project("Import/b.importgraph")));
@@ -1678,15 +1686,15 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void RenameAndDelete_UpdateCanonicalInstanceWithoutChangingIdentity()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/old.txt", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         TextAsset asset = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/old.txt"), typeof(TextAsset)));
         Guid persistentId = asset.identity.persistentId;
 
         workspace.Move("Text/old.txt", "Text/new.txt");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Renamed, "Text/old.txt")
+            new AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Renamed, "Text/old.txt")
         ]);
 
         Assert.Equal("Text/new.txt", asset.assetPath.ToString());
@@ -1694,13 +1702,13 @@ public sealed class AssetLoaderTests : IDisposable
 
         workspace.DeleteSource("Text/new.txt");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Deleted)
+            new AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Deleted)
         ]);
 
         Assert.True(asset.isMissing);
         Assert.Equal(persistentId, asset.identity.persistentId);
         Assert.True(asset.runtimePayload.IsEmpty);
-        Assert.False(System.IO.File.Exists(workspace.SourcePath("Text/new.txt.imeta")));
+        Assert.False(File.Exists(workspace.SourcePath("Text/new.txt.imeta")));
         Assert.False(loader.TryGetInfo(AssetPath.Project("Text/new.txt"), out _));
         Assert.True(loader.TryGetInfo(persistentId, out AssetInfo? tombstone));
         Assert.NotNull(tombstone);
@@ -1712,18 +1720,18 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void RecreatedSourceWithoutMetadata_ReceivesNewIdentity()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/recover.txt", "one");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         TextAsset asset = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/recover.txt"), typeof(TextAsset)));
 
         workspace.DeleteSource("Text/recover.txt");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Deleted)
+            new AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Deleted)
         ]);
         workspace.WriteText("Text/recover.txt", "two");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Created)
+            new AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Created)
         ]);
 
         TextAsset replacement = Assert.IsType<TextAsset>(
@@ -1739,7 +1747,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void Tombstone_SurvivesCatalogRestartWithoutOccupyingItsFormerPath()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/value.txt", "one");
         Guid oldId;
         using (AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs))
@@ -1748,7 +1756,7 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/value.txt"), out oldId));
             workspace.DeleteSource("Text/value.txt");
             loader.ApplySourceChanges([
-                new Inno.Assets.Pipeline.AssetChangedEvent("Text/value.txt", WatcherChangeTypes.Deleted)
+                new AssetChangedEvent("Text/value.txt", WatcherChangeTypes.Deleted)
             ]);
         }
 
@@ -1765,7 +1773,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void CatalogRestart_PrefersCurrentSourceIdentityOverHistoricalPathRecord()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         const string path = "Text/identity.txt";
         workspace.WriteText(path, "value");
         Guid historicalId;
@@ -1782,11 +1790,11 @@ public sealed class AssetLoaderTests : IDisposable
 
         string sidecarPath = workspace.SourcePath(path + ".imeta");
         MountedSourceMetadata metadata = m_serialization.Deserialize<MountedSourceMetadata>(
-            System.IO.File.ReadAllBytes(sidecarPath)
+            File.ReadAllBytes(sidecarPath)
         );
         Guid currentId = Guid.NewGuid();
         metadata.persistentId = currentId;
-        System.IO.File.WriteAllBytes(sidecarPath, m_serialization.Serialize(metadata));
+        File.WriteAllBytes(sidecarPath, m_serialization.Serialize(metadata));
 
         using (AssetLoader recovered = workspace.CreateLoader(
             m_types,
@@ -1813,7 +1821,7 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.True(restarted.TryGetPersistentId(AssetPath.Project(path), out Guid stableId));
         Assert.Equal(currentId, stableId);
         MountedSourceMetadata stableMetadata = m_serialization.Deserialize<MountedSourceMetadata>(
-            System.IO.File.ReadAllBytes(sidecarPath)
+            File.ReadAllBytes(sidecarPath)
         );
         Assert.Equal(currentId, stableMetadata.persistentId);
     }
@@ -1821,7 +1829,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void CatalogRestart_DoesNotPromoteHistoricalTombstonesToMissingReferences()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/removed.txt", "one");
         Guid removedId;
         using (AssetLoader loader = workspace.CreateLoader(
@@ -1835,7 +1843,7 @@ public sealed class AssetLoaderTests : IDisposable
             Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/removed.txt"), out removedId));
             workspace.DeleteSource("Text/removed.txt");
             loader.ApplySourceChanges([
-                new Inno.Assets.Pipeline.AssetChangedEvent("Text/removed.txt", WatcherChangeTypes.Deleted)
+                new AssetChangedEvent("Text/removed.txt", WatcherChangeTypes.Deleted)
             ]);
         }
 
@@ -1895,21 +1903,21 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void RestoredSourceAndMetadata_ReactivatesOriginalIdentityInPlace()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/recover.txt", "one");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         TextAsset asset = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/recover.txt"), typeof(TextAsset)));
         Guid id = asset.identity.persistentId;
-        byte[] metadata = System.IO.File.ReadAllBytes(workspace.SourcePath("Text/recover.txt.imeta"));
+        byte[] metadata = File.ReadAllBytes(workspace.SourcePath("Text/recover.txt.imeta"));
 
         workspace.DeleteSource("Text/recover.txt");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Deleted)
+            new AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Deleted)
         ]);
         workspace.WriteText("Text/recover.txt", "two");
-        System.IO.File.WriteAllBytes(workspace.SourcePath("Text/recover.txt.imeta"), metadata);
+        File.WriteAllBytes(workspace.SourcePath("Text/recover.txt.imeta"), metadata);
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Created)
+            new AssetChangedEvent("Text/recover.txt", WatcherChangeTypes.Created)
         ]);
 
         TextAsset restored = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/recover.txt"), typeof(TextAsset)));
@@ -1922,31 +1930,31 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void DeleteCreateRenameFallback_PreservesIdentityOnlyWhenFingerprintMatchIsUnique()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/old.txt", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         loader.Rescan();
         Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/old.txt"), out Guid id));
 
         workspace.Move("Text/old.txt", "Text/new.txt");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/old.txt", WatcherChangeTypes.Deleted),
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Created)
+            new AssetChangedEvent("Text/old.txt", WatcherChangeTypes.Deleted),
+            new AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Created)
         ]);
 
         Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/new.txt"), out Guid movedId));
         Assert.Equal(id, movedId);
-        Assert.False(System.IO.File.Exists(workspace.SourcePath("Text/old.txt.imeta")));
-        Assert.True(System.IO.File.Exists(workspace.SourcePath("Text/new.txt.imeta")));
+        Assert.False(File.Exists(workspace.SourcePath("Text/old.txt.imeta")));
+        Assert.True(File.Exists(workspace.SourcePath("Text/new.txt.imeta")));
     }
 
     [Fact]
     public void AmbiguousDeleteCreateRenameFallback_DoesNotGuessAnIdentity()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/first.txt", "same");
         workspace.WriteText("Text/second.txt", "same");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         loader.Rescan();
         Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/first.txt"), out Guid firstId));
         Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/second.txt"), out Guid secondId));
@@ -1955,9 +1963,9 @@ public sealed class AssetLoaderTests : IDisposable
         workspace.DeleteSource("Text/second.txt");
         workspace.WriteText("Text/new.txt", "same");
         loader.ApplySourceChanges([
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/first.txt", WatcherChangeTypes.Deleted),
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/second.txt", WatcherChangeTypes.Deleted),
-            new Inno.Assets.Pipeline.AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Created)
+            new AssetChangedEvent("Text/first.txt", WatcherChangeTypes.Deleted),
+            new AssetChangedEvent("Text/second.txt", WatcherChangeTypes.Deleted),
+            new AssetChangedEvent("Text/new.txt", WatcherChangeTypes.Created)
         ]);
 
         Assert.True(loader.TryGetPersistentId(AssetPath.Project("Text/new.txt"), out Guid newId));
@@ -1975,8 +1983,8 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void Save_PreservesIdentityIncrementsVersionAndRejectsDifferentPath()
     {
-        using TestWorkspace workspace = new();
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using var workspace = new TestWorkspace();
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         var asset = new MutableAsset { value = "one" };
 
         Assert.True(loader.Save(AssetPath.Project("Data/value.mutableasset"), asset));
@@ -1995,9 +2003,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void FailedReimport_KeepsPreviousCanonicalStateAndVersion()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Data/stable.mutableasset", "one");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         MutableAsset asset = Assert.IsType<MutableAsset>(
             loader.Load(AssetPath.Project("Data/stable.mutableasset"), typeof(MutableAsset))
         );
@@ -2017,9 +2025,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void FailedReimport_PublishesCurrentDiagnosticUntilSuccessfulRetry()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Data/diagnostic.mutableasset", "valid");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         var sink = new TestDiagnosticSink();
         m_diagnostics.RegisterSink(sink);
         try
@@ -2054,9 +2062,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void UnchangedFailedSourceIsNotRetriedUntilItsInputChanges()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Data/retry.mutableasset", "!invalid!");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         AssetPath path = AssetPath.Project("Data/retry.mutableasset");
         Assert.False(loader.Import(path));
         int failedAttempts = MutableAssetImporter.attempts;
@@ -2075,12 +2083,12 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void FailedSave_PreservesCommittedSourceMetaArtifactAndVersion()
     {
-        using TestWorkspace workspace = new();
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using var workspace = new TestWorkspace();
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         var asset = new MutableAsset { value = "one" };
         Assert.True(loader.Save(AssetPath.Project("Data/rollback.mutableasset"), asset));
-        byte[] sourceBefore = System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset"));
-        byte[] metaBefore = System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta"));
+        byte[] sourceBefore = File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset"));
+        byte[] metaBefore = File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta"));
         Assert.True(loader.TryGetArtifact(asset.identity.persistentId, "runtime", out AssetArtifactInfo? artifact));
         Assert.NotNull(artifact);
         byte[] artifactBefore;
@@ -2093,8 +2101,8 @@ public sealed class AssetLoaderTests : IDisposable
 
         Assert.Throws<InvalidDataException>(() => loader.Save(asset));
 
-        Assert.Equal(sourceBefore, System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset")));
-        Assert.Equal(metaBefore, System.IO.File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta")));
+        Assert.Equal(sourceBefore, File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset")));
+        Assert.Equal(metaBefore, File.ReadAllBytes(workspace.SourcePath("Data/rollback.mutableasset.imeta")));
         using (ArtifactLease after = loader.AcquireArtifact(asset.identity.persistentId, "runtime"))
         {
             Assert.Equal(artifactBefore, after.ReadAllBytes());
@@ -2105,10 +2113,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void RuntimeDependencyRetention_KeepsDependencyAliveWhileRootIsReferenced()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/dependency.txt", "dependency");
         workspace.WriteText("Graphs/root.depgraph", "Text/dependency.txt");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         DependencyAsset root = Assert.IsType<DependencyAsset>(
             loader.Load(AssetPath.Project("Graphs/root.depgraph"), typeof(DependencyAsset))
         );
@@ -2121,10 +2129,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void UnusedRuntimeDependencyCycle_IsCollectedAsAUnit()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Graphs/a.depgraph", "Graphs/b.depgraph");
         workspace.WriteText("Graphs/b.depgraph", "Graphs/a.depgraph");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         (WeakReference first, WeakReference second) = LoadCycleWithoutEscaping(loader);
 
         int released = loader.UnloadUnusedAssets();
@@ -2138,10 +2146,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ReferenceDiagnostics_DoNotKeepAssetsAlive()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/dependency.txt", "dependency");
         workspace.WriteText("Graphs/root.depgraph", "Text/dependency.txt");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         WeakReference weak = LoadAndInspectWithoutEscaping(loader);
 
         Assert.Equal(2, loader.UnloadUnusedAssets());
@@ -2151,9 +2159,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void Dispose_ReleasesRuntimeResourcesExactlyOnce()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Hooks/value.hookasset", "value");
-        var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         HookAsset asset = Assert.IsType<HookAsset>(loader.Load(AssetPath.Project("Hooks/value.hookasset"), typeof(HookAsset)));
 
         loader.Dispose();
@@ -2167,29 +2175,29 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void Rescan_TracksUnsupportedSourcesAndFolderIdentityWithoutFakeArtifacts()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         Directory.CreateDirectory(workspace.SourcePath("EmptyFolder"));
         workspace.WriteText("Unknown/value.unknown", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
 
         loader.Rescan();
 
         Assert.True(loader.TryGetInfo(AssetPath.Project("EmptyFolder"), out AssetInfo? folder));
         Assert.Equal(AssetSourceKind.Directory, folder!.sourceKind);
         Assert.Equal(AssetImportStatus.Imported, folder.status);
-        Assert.True(System.IO.File.Exists(workspace.SourcePath("EmptyFolder.imeta")));
+        Assert.True(File.Exists(workspace.SourcePath("EmptyFolder.imeta")));
         Assert.True(folder.artifactKey.isEmpty);
         Assert.True(loader.TryGetInfo(AssetPath.Project("Unknown/value.unknown"), out AssetInfo? unsupported));
         Assert.Equal(AssetImportStatus.Unsupported, unsupported!.status);
         Assert.Equal(Guid.Empty, unsupported.persistentId);
-        Assert.False(System.IO.File.Exists(workspace.SourcePath("Unknown/value.unknown.imeta")));
+        Assert.False(File.Exists(workspace.SourcePath("Unknown/value.unknown.imeta")));
         Assert.True(unsupported.artifactKey.isEmpty);
     }
 
     [Fact]
     public void Rescan_RecoversAnonymousCatalogEntryFromSourceIdentityWithoutFalseMissingWarning()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         const string path = "Deferred/value.unavailable";
         workspace.WriteText(path, "source awaiting its module generation");
         using (AssetLoader first = workspace.CreateLoader(
@@ -2206,7 +2214,7 @@ public sealed class AssetLoaderTests : IDisposable
 
         Guid persistentId = Guid.NewGuid();
         Guid expectedStableTypeId = Guid.NewGuid();
-        System.IO.File.WriteAllBytes(
+        File.WriteAllBytes(
             workspace.SourcePath(path + ".imeta"),
             m_serialization.Serialize(new MountedSourceMetadata
             {
@@ -2265,7 +2273,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void Rescan_PreservesLastGoodCatalogWhileItsPathImporterIsUnavailable()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         const string path = "Deferred/value.deferredasset";
         workspace.WriteText(path, "last-good source");
         Guid persistentId;
@@ -2292,32 +2300,26 @@ public sealed class AssetLoaderTests : IDisposable
         m_modules.Rebuild();
         try
         {
-            using (AssetLoader restarted = workspace.CreateLoader(
+            using AssetLoader restarted = workspace.CreateLoader(
                 m_types,
                 m_serialization,
                 m_identities,
                 m_diagnostics,
                 m_logs
-            )) {
-                restarted.Rescan();
+            );
+            restarted.Rescan();
 
-                Assert.True(restarted.TryGetInfo(AssetPath.Project(path), out AssetInfo? preserved));
-                Assert.Equal(persistentId, preserved!.persistentId);
-                Assert.Equal(stableTypeId, preserved.stableAssetTypeId);
-                Assert.Equal(AssetImportStatus.Imported, preserved.status);
-                Assert.Equal(artifactKey, preserved.artifactKey);
-                AssetObject resolved = restarted.ResolveReference(
-                    persistentId,
-                    stableTypeId,
-                    path,
-                    typeof(AssetObject)
-                );
-                Assert.False(resolved.isMissing);
-                Assert.DoesNotContain(
-                    sink.reports.Values.SelectMany(static report => report.diagnostics),
-                    static diagnostic => diagnostic.code == "ASSET-REFERENCE"
-                );
-            }
+            Assert.True(restarted.TryGetInfo(AssetPath.Project(path), out AssetInfo? preserved));
+            Assert.Equal(persistentId, preserved!.persistentId);
+            Assert.Equal(stableTypeId, preserved.stableAssetTypeId);
+            Assert.Equal(AssetImportStatus.Imported, preserved.status);
+            Assert.Equal(artifactKey, preserved.artifactKey);
+            AssetObject resolved = restarted.ResolveReference(persistentId, stableTypeId, path, typeof(AssetObject));
+            Assert.False(resolved.isMissing);
+            Assert.DoesNotContain(
+                sink.reports.Values.SelectMany(static report => report.diagnostics),
+                static diagnostic => diagnostic.code == "ASSET-REFERENCE"
+            );
         }
         finally
         {
@@ -2330,7 +2332,7 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void SourceMetadata_RestoresPersistentIdentityWhenLibraryIsRebuilt()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/value.txt", "value");
         Guid id;
         using (AssetLoader first = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs))
@@ -2351,10 +2353,10 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public void ContentAddressedStore_DeduplicatesEqualImportsAndCollectsUnreachableBundles()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/first.txt", "same");
         workspace.WriteText("Text/second.txt", "same");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         loader.Rescan();
         Assert.True(loader.TryGetInfo(AssetPath.Project("Text/first.txt"), out AssetInfo? first));
         Assert.True(loader.TryGetInfo(AssetPath.Project("Text/second.txt"), out AssetInfo? second));
@@ -2368,38 +2370,38 @@ public sealed class AssetLoaderTests : IDisposable
         Assert.NotNull(currentArtifact);
         Assert.NotEqual(oldArtifact.key, currentArtifact.key);
         string oldPath = workspace.FindArtifactFile(oldArtifact);
-        Assert.True(System.IO.File.Exists(oldPath));
+        Assert.True(File.Exists(oldPath));
 
         Assert.Equal(0, loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0));
-        Assert.True(System.IO.File.Exists(oldPath));
+        Assert.True(File.Exists(oldPath));
         workspace.DeleteSource("Text/second.txt");
-        System.IO.File.Delete(workspace.SourcePath("Text/second.txt.imeta"));
+        File.Delete(workspace.SourcePath("Text/second.txt.imeta"));
         loader.Rescan();
         Assert.True(loader.CollectArtifacts(TimeSpan.Zero, maximumSizeBytes: 0) >= 1);
-        Assert.False(System.IO.File.Exists(oldPath));
-        Assert.True(System.IO.File.Exists(workspace.FindArtifactFile(currentArtifact)));
+        Assert.False(File.Exists(oldPath));
+        Assert.True(File.Exists(workspace.FindArtifactFile(currentArtifact)));
     }
 
     [Fact]
     public void ArtifactLookupRejectsWrongLengthAndExportRejectsSameLengthCorruption()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/value.txt", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         loader.Rescan();
         Assert.True(loader.TryGetInfo(AssetPath.Project("Text/value.txt"), out AssetInfo? info));
         Assert.True(loader.TryGetArtifact(info!.persistentId, "runtime", out AssetArtifactInfo? artifact));
         string path = workspace.FindArtifactFile(artifact!);
-        byte[] original = System.IO.File.ReadAllBytes(path);
+        byte[] original = File.ReadAllBytes(path);
 
-        System.IO.File.WriteAllBytes(path, [1]);
+        File.WriteAllBytes(path, [1]);
         Assert.Throws<InvalidDataException>(() => loader.TryGetArtifact(info.persistentId, "runtime", out _));
         byte[] changed = (byte[])original.Clone();
         changed[0] ^= 0x01;
-        System.IO.File.WriteAllBytes(path, changed);
+        File.WriteAllBytes(path, changed);
         Assert.True(loader.TryGetArtifact(info.persistentId, "runtime", out _));
         Assert.Throws<InvalidDataException>(() => loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "CorruptedRuntime")));
-        System.IO.File.WriteAllBytes(path, original);
+        File.WriteAllBytes(path, original);
         Assert.True(loader.TryGetArtifact(info.persistentId, "runtime", out _));
         loader.ExportRuntimeArtifacts(Path.Combine(workspace.libraryRoot, "ValidRuntime"));
     }
@@ -2407,9 +2409,9 @@ public sealed class AssetLoaderTests : IDisposable
     [Fact]
     public async Task AggregateBuildProcessor_ProducesStableContentAddressedOutput()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.WriteText("Text/input.txt", "value");
-        using var loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
+        using AssetLoader loader = workspace.CreateLoader(m_types, m_serialization, m_identities, m_diagnostics, m_logs);
         loader.Rescan();
         Assert.True(loader.TryGetInfo(AssetPath.Project("Text/input.txt"), out AssetInfo? input));
         Assert.NotNull(input);
@@ -2483,9 +2485,7 @@ public sealed class AssetLoaderTests : IDisposable
             );
             return Directory.EnumerateFiles(directory).Single(path => (
                 new FileInfo(path).Length == artifact.length
-                && Convert.ToHexString(
-                    System.Security.Cryptography.SHA256.HashData(System.IO.File.ReadAllBytes(path))
-                ) == artifact.contentHash
+                && Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))) == artifact.contentHash
             ));
         }
 
@@ -2495,10 +2495,10 @@ public sealed class AssetLoaderTests : IDisposable
         ) {
             string path = SourcePath(relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            System.IO.File.WriteAllText(path, content, new UTF8Encoding(false));
+            File.WriteAllText(path, content, new UTF8Encoding(false));
         }
 
-        internal string ReadText(string relativePath) => System.IO.File.ReadAllText(SourcePath(relativePath));
+        internal string ReadText(string relativePath) => File.ReadAllText(SourcePath(relativePath));
 
         internal void Move(
             string oldRelativePath,
@@ -2506,15 +2506,15 @@ public sealed class AssetLoaderTests : IDisposable
         ) {
             string target = SourcePath(newRelativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            System.IO.File.Move(SourcePath(oldRelativePath), target);
+            File.Move(SourcePath(oldRelativePath), target);
         }
 
         internal void DeleteSource(string relativePath)
         {
             string path = SourcePath(relativePath);
-            if (System.IO.File.Exists(path))
+            if (File.Exists(path))
             {
-                System.IO.File.Delete(path);
+                File.Delete(path);
             }
         }
 

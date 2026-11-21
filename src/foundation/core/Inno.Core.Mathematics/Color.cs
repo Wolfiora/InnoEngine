@@ -53,10 +53,10 @@ public struct Color : IEquatable<Color>
         float b,
         float a = 1f
     ) {
-        this.r = Math.Clamp(r, 0.0f, 1.0f);
-        this.g = Math.Clamp(g, 0.0f, 1.0f);
-        this.b = Math.Clamp(b, 0.0f, 1.0f);
-        this.a = Math.Clamp(a, 0.0f, 1.0f);
+        this.r = Math.Clamp(r, 0f, 1f);
+        this.g = Math.Clamp(g, 0f, 1f);
+        this.b = Math.Clamp(b, 0f, 1f);
+        this.a = Math.Clamp(a, 0f, 1f);
     }
 
     /// <summary>
@@ -82,9 +82,7 @@ public struct Color : IEquatable<Color>
         byte g,
         byte b,
         byte a = 255
-    ) {
-        return new Color(r / 255f, g / 255f, b / 255f, a / 255f);
-    }
+    ) => new Color(r / 255f, g / 255f, b / 255f, a / 255f);
 
     /// <summary>
     /// Converts normalized color channels to bytes by multiplying by 255 and truncating.
@@ -93,14 +91,12 @@ public struct Color : IEquatable<Color>
     /// Red, green, blue and alpha bytes. Inputs must already be finite and in [0, 1]; conversion does not clamp field writes.
     /// </returns>
     public (byte R, byte G, byte B, byte A) ToBytes()
-    {
-        return (
-            (byte)(r * 255),
-            (byte)(g * 255),
-            (byte)(b * 255),
-            (byte)(a * 255)
-        );
-    }
+        => (
+                (byte)(r * 255),
+                (byte)(g * 255),
+                (byte)(b * 255),
+                (byte)(a * 255)
+            );
 
     /// <summary>
     /// Packs normalized channels into the existing unsigned 0xAABBGGRR representation.
@@ -231,9 +227,7 @@ public struct Color : IEquatable<Color>
     public static Color operator *(
         Color c,
         float factor
-    ) {
-        return new Color(c.r * factor, c.g * factor, c.b * factor, c.a * factor);
-    }
+    ) => new Color(c.r * factor, c.g * factor, c.b * factor, c.a * factor);
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -251,12 +245,10 @@ public struct Color : IEquatable<Color>
     public static bool operator ==(
         Color a,
         Color b
-    ) {
-        return MathHelper.AlmostEquals(a.r, b.r)
-               && MathHelper.AlmostEquals(a.g, b.g)
-               && MathHelper.AlmostEquals(a.b, b.b)
-               && MathHelper.AlmostEquals(a.a, b.a);
-    }
+    ) => MathHelper.AlmostEquals(a.r, b.r)
+         && MathHelper.AlmostEquals(a.g, b.g)
+         && MathHelper.AlmostEquals(a.b, b.b)
+         && MathHelper.AlmostEquals(a.a, b.a);
 
     /// <summary>
     /// Determines whether the supplied values differ under the type's equality tolerance.

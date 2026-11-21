@@ -43,12 +43,12 @@ public static class Animation
     /// <param name="clip">
     /// Valid imported animation clip.
     /// </param>
-    /// <returns>
-    /// A generation-checked playback handle.
-    /// </returns>
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
+    /// <returns>
+    /// A generation-checked playback handle.
+    /// </returns>
     public static AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target
@@ -60,15 +60,15 @@ public static class Animation
     /// <param name="clip">
     /// Valid imported animation clip.
     /// </param>
+    /// <param name="target">
+    /// The weak destination or explicit sampling-only policy.
+    /// </param>
     /// <param name="options">
     /// Playback and blend options.
     /// </param>
     /// <returns>
     /// A generation-checked playback handle.
     /// </returns>
-    /// <param name="target">
-    /// The weak destination or explicit sampling-only policy.
-    /// </param>
     public static AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target,

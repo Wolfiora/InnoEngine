@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -10,7 +11,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Converts supported artist texture sources into a validated portable runtime container.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("01400c3b-21c2-5193-ae8f-3cf3665f4261")]
+[StableTypeId("01400c3b-21c2-5193-ae8f-3cf3665f4261")]
 public interface ITextureTargetCompiler
 {
     /// <summary>

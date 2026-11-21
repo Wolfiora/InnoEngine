@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Core.Logging;
+using Inno.Extensibility.Modules;
 
 namespace Inno.Core.Logging.Tests;
 
@@ -29,7 +30,7 @@ public sealed class LoggingBehaviorTests : IDisposable
     public void InlineDeliveryIsImmediateAndQuarantinesAFailingSink()
     {
         using var router = new LogRouter(deliveryMode: LogDeliveryMode.Inline);
-        using var scope = router.EnterScope();
+        using IDisposable scope = router.EnterScope();
         using var healthy = new ProbeSink();
         var failing = new FailingSink();
         Exception? failure = null;
@@ -56,16 +57,15 @@ public sealed class LoggingBehaviorTests : IDisposable
         Assert.Throws<ArgumentNullException>(() => Log.Info(null!, "Missing source"));
         m_router.Flush();
         LogEntry entry = Assert.Single(sink.entries);
-        Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoInternal, entry.domain);
+        Assert.Equal(AssemblyDomain.InnoInternal, entry.domain);
         Assert.Equal("Explicit static source", entry.message);
         m_router.UnregisterSink(sink);
     }
 
     [Fact]
-    public void UnknownDeliveryPoliciesFailAtConstruction()
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new LogRouter(deliveryMode: (LogDeliveryMode)99));
-    }
+    public void UnknownDeliveryPoliciesFailAtConstruction() => Assert.Throws<ArgumentOutOfRangeException>(
+        () => new LogRouter(deliveryMode: (LogDeliveryMode)99)
+    );
 
     [Theory]
     [InlineData("/build/Game/PlayerBehavior.cs")]
@@ -95,7 +95,7 @@ public sealed class LoggingBehaviorTests : IDisposable
         bool failingObserver
     ) {
         using var router = new LogRouter(deliveryMode: mode);
-        using var scope = router.EnterScope();
+        using IDisposable scope = router.EnterScope();
         using var healthy = new ProbeSink();
         var failing = new FailingSink();
         int reported = 0;
@@ -161,7 +161,7 @@ public sealed class LoggingBehaviorTests : IDisposable
             Assert.Equal(nameof(LoggingBehaviorTests), entry.category);
             Assert.Equal("LoggingBehaviorTests.cs", Path.GetFileName(entry.file));
             Assert.True(entry.line > 0);
-            Assert.Equal(Inno.Extensibility.Modules.AssemblyDomain.InnoInternal, entry.domain);
+            Assert.Equal(AssemblyDomain.InnoInternal, entry.domain);
         });
         Assert.Equal("plain", sink.entries[0].message);
         Assert.Equal("formatted-73", sink.entries[1].message);
@@ -271,13 +271,13 @@ public sealed class LoggingBehaviorTests : IDisposable
     [Fact]
     public void FileLogSink_WritesEntriesAndRotates()
     {
-        var dir = Path.Combine(Path.GetTempPath(), "InnoLoggingTests", Guid.NewGuid().ToString("N"));
+        string dir = Path.Combine(Path.GetTempPath(), "InnoLoggingTests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dir);
 
         using var sink = new FileLogSink(dir, maxFileSizeBytes: 256, maxFiles: 3);
         m_router.RegisterSink(sink);
 
-        for (var i = 0; i < 80; i++)
+        for (int i = 0; i < 80; i++)
         {
             Log.Warn(typeof(LoggingBehaviorTests), "line-{0}", [i]);
         }
@@ -286,8 +286,8 @@ public sealed class LoggingBehaviorTests : IDisposable
         m_router.UnregisterSink(sink);
         sink.Dispose();
 
-        var files = Directory.GetFiles(dir, FileLogSink.C_LOG_FILE_PREFIX + "*.log");
-        var combined = string.Join(Environment.NewLine, files.Select(File.ReadAllText));
+        string[] files = Directory.GetFiles(dir, FileLogSink.C_LOG_FILE_PREFIX + "*.log");
+        string combined = string.Join(Environment.NewLine, files.Select(File.ReadAllText));
         Assert.Contains("line-79", combined);
         Assert.True(files.Length <= 3);
         Assert.All(files, static file => Assert.Equal(".log", Path.GetExtension(file)));
@@ -316,7 +316,7 @@ public sealed class LoggingBehaviorTests : IDisposable
             int count,
             TimeSpan timeout
         ) {
-            var deadline = DateTime.UtcNow + timeout;
+            DateTime deadline = DateTime.UtcNow + timeout;
             while (DateTime.UtcNow < deadline)
             {
                 if (m_entries.Count >= count)
@@ -331,10 +331,7 @@ public sealed class LoggingBehaviorTests : IDisposable
             return m_entries.Count >= count;
         }
 
-        public void Dispose()
-        {
-            m_signal.Dispose();
-        }
+        public void Dispose() => m_signal.Dispose();
     }
 
     private sealed class BrokenErrorWriter : TextWriter

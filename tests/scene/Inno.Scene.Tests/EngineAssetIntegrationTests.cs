@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -296,7 +297,7 @@ public sealed partial class EngineAssetIntegrationTests : IDisposable
     [Fact]
     public void EngineImporters_AreDiscoveredWithoutManualRegistration()
     {
-        var importerTypes = m_fixture.types.GetSubTypesOf<AssetImporter>();
+        IReadOnlyList<TypeRef> importerTypes = m_fixture.types.GetSubTypesOf<AssetImporter>();
 
         Assert.Contains(importerTypes, type => type.Resolve(m_fixture.types).Name == "SceneAssetImporter");
         Assert.Contains(importerTypes, type => type.Resolve(m_fixture.types).Name == "PrefabAssetImporter");

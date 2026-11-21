@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Adapter.Serialization.DotNet;
 using Inno.Core.Graphs;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
@@ -43,7 +45,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
         m_serialization = new SerializationRegistry(m_types, new ReflectionSerializationMetadataSource());
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_testRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(m_testRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_serialization, m_sink, m_reloads]
@@ -131,7 +133,7 @@ public sealed class GraphDocumentControllerTests : IDisposable
         GC.Collect();
         GC.WaitForPendingFinalizers();
         GC.Collect();
-        foreach (var entry in retired)
+        foreach ((GraphDocumentController controller, WeakReference<GraphDocument> document) entry in retired)
         {
             Assert.False(entry.controller.isAvailable);
             Assert.False(entry.document.TryGetTarget(out _));
@@ -315,10 +317,10 @@ public sealed class GraphDocumentControllerTests : IDisposable
             node,
             remap
         ) =>
-            node.SetValue("owner", new(System.Text.Encoding.UTF8.GetBytes(remap[owner].value))));
+            node.SetValue("owner", new(Encoding.UTF8.GetBytes(remap[owner].value))));
         Assert.Equal(
             created[0].value,
-            System.Text.Encoding.UTF8.GetString(controller.document.FindNode(created[1])!.values["owner"].data.Span)
+            Encoding.UTF8.GetString(controller.document.FindNode(created[1])!.values["owner"].data.Span)
         );
         Assert.True(history.Undo().succeeded);
         Assert.Equal(2, controller.document.nodes.Count);

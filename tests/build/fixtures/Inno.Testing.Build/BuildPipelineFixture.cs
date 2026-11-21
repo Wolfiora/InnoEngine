@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ using Inno.Assets.Pipeline;
 using Inno.Build;
 using Inno.Build.MacOSArm64;
 using Inno.Build.Managed;
+using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Build.WindowsX64;
 using Inno.Content;
 using Inno.Core.Execution;
@@ -25,7 +27,10 @@ using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Extensibility.Types;
+using Inno.Integration.MacOSArm64.Bgfx;
+using Inno.Integration.WindowsX64.Bgfx;
 using Inno.Plugins.Authoring;
+using Inno.Rendering;
 using Inno.Runtime;
 using Inno.Scene;
 using Inno.Scripting.Compiler;
@@ -103,9 +108,9 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
             new ScriptCompilerOptions
             {
                 projectRootDirectory = m_projectRoot,
-                compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(
+                compilationEnvironment = new SdkScriptCompilationEnvironment(
                     Path.Combine(
-                        Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+                        Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
                         OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
                     ),
                     m_projectRoot
@@ -165,29 +170,29 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
         [
             new GameBuildTargetBinding(
                 new MacOSArm64GameBuildTarget(new MacOSArm64SupportPackValidator()),
-                new Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler(
+                new BgfxGameContentCompiler(
                     m_assets,
                     m_engine.serialization,
                     m_engine.types,
-                    Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxIntegration.shaderProfile,
-                    [Inno.Rendering.GraphicsApi.Metal],
-                    new Inno.Build.Toolchains.Bgfx.Tools.ToolRunner()
+                    MacOSArm64BgfxIntegration.shaderProfile,
+                    [GraphicsApi.Metal],
+                    new ToolRunner()
                 )
             ),
             new GameBuildTargetBinding(
                 new WindowsX64GameBuildTarget(new WindowsX64SupportPackValidator()),
-                new Inno.Build.Toolchains.Bgfx.Tools.BgfxGameContentCompiler(
+                new BgfxGameContentCompiler(
                     m_assets,
                     m_engine.serialization,
                     m_engine.types,
-                    Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxIntegration.shaderProfile,
+                    WindowsX64BgfxIntegration.shaderProfile,
                     [
-                        Inno.Rendering.GraphicsApi.Direct3D11,
-                        Inno.Rendering.GraphicsApi.Direct3D12,
-                        Inno.Rendering.GraphicsApi.Vulkan,
-                        Inno.Rendering.GraphicsApi.OpenGL
+                        GraphicsApi.Direct3D11,
+                        GraphicsApi.Direct3D12,
+                        GraphicsApi.Vulkan,
+                        GraphicsApi.OpenGL
                     ],
-                    new Inno.Build.Toolchains.Bgfx.Tools.ToolRunner()
+                    new ToolRunner()
                 )
             )
         ],
@@ -213,7 +218,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
     {
         public FixtureManagedDeploymentCompiler(IReadOnlyList<string>? runtimeIdentifiers = null)
         {
-            capabilities = new ManagedDeploymentCapabilities(
+            this.capabilities = new ManagedDeploymentCapabilities(
                 runtimeIdentifiers ?? ["win-x64", "osx-arm64"],
                 dynamicCode: true,
                 aheadOfTime: false,
@@ -309,7 +314,7 @@ public abstract class BuildPipelineFixture : PlayerSupportPackFixture
 
         public TaskCompletionSource release { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public void Validate(string directory) => new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator().Validate(directory);
+        public void Validate(string directory) => new MacOSArm64SupportPackValidator().Validate(directory);
 
         public BuildTargetId id => new BuildTargetId("macos-arm64");
         public BuildTargetId target => id;

@@ -117,7 +117,7 @@ public sealed unsafe partial class ImGuiWidget
             return;
         }
         ImGuiViewport* viewport = NativeImGui.Raw.GetWindowViewport();
-        Vector2 margin = new(6f * style.zoom);
+        var margin = new Vector2(6f * style.zoom);
         Vector2 available = Vector2.Max(Vector2.One, ImGui.FromNative(viewport->WorkSize) - margin * 2f);
         Vector2 padding = style.menuWindowPadding;
         float outerWidth = MathF.Min(C_TOOLTIP_WRAP_WIDTH * style.zoom, available.X);
@@ -129,7 +129,7 @@ public sealed unsafe partial class ImGuiWidget
         );
         innerWidth = MathF.Max(1f, outerWidth - padding.X * 2f - style.menuBorderSize * 2f);
         textSize = NativeImGui.CalcTextSize(text, false, innerWidth);
-        Vector2 size = new(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
+        var size = new Vector2(outerWidth, MathF.Min(available.Y, textSize.Y + padding.Y * 2f + style.menuBorderSize * 2f));
         Vector2 workMin = ImGui.FromNative(viewport->WorkPos) + margin;
         Vector2 workMax = workMin + available;
         Vector2 mouse = NativeImGui.GetMousePos();
@@ -244,12 +244,10 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data)
-    {
+    private static unsafe void RoundMenuPopupSize(ImGuiSizeCallbackData* data) =>
         // ImGui truncates constrained sizes. Round content upward within integer bounds so
         // fractional padding cannot turn a fully fitting menu into a scrolling window.
         data->DesiredSize = ImGui.ToNative(new Vector2(MathF.Ceiling(data->DesiredSize.X), MathF.Ceiling(data->DesiredSize.Y)));
-    }
 
     private void PushContextMenuStyle()
     {

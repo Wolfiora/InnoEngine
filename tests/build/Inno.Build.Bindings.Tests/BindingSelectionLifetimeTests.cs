@@ -39,9 +39,9 @@ public sealed class BindingSelectionLifetimeTests
                 Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
                 OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
             );
-            using CancellationTokenSource timeout = new(TimeSpan.FromMinutes(3));
-            using StringWriter output = new();
-            using StringWriter error = new();
+            using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+            using var output = new StringWriter();
+            using var error = new StringWriter();
             Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
                 sdk,
                 ["msbuild", project, "-t:PublishProductNativeDeployment", "-nodeReuse:false", "-v:minimal"],
@@ -133,9 +133,9 @@ public sealed class BindingSelectionLifetimeTests
                     Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
                     OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
                 );
-                using CancellationTokenSource timeout = new(TimeSpan.FromMinutes(3));
-                using StringWriter output = new();
-                using StringWriter error = new();
+                using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+                using var output = new StringWriter();
+                using var error = new StringWriter();
                 Exception? failure = await Record.ExceptionAsync(() => ToolchainEnvironment.RunAsync(
                     sdk,
                     [command, project, "--disable-build-servers", "-m:1", "-nodeReuse:false", "-v:minimal"],

@@ -14,6 +14,7 @@ using Inno.Adapter.UI;
 using Inno.Audio;
 using Inno.Audio.Runtime;
 using Inno.Core.Events;
+using Inno.Core.Mathematics;
 using Inno.Input;
 using Inno.Platform;
 using Inno.Rendering;
@@ -32,7 +33,7 @@ public sealed partial class PlayerWithoutFileSystemTests
 
         public MemoryAdapters(bool failFrame)
         {
-            application = new MemoryApplication(retired);
+            this.application = new MemoryApplication(retired);
             m_render = new MemoryRenderDevice(retired, failFrame);
         }
 
@@ -335,7 +336,7 @@ public sealed partial class PlayerWithoutFileSystemTests
 
         public bool HasElementAtPoint(
             UiContextHandle context,
-            Inno.Core.Mathematics.Vector2 position
+            Vector2 position
         ) => false;
 
         public void Update(

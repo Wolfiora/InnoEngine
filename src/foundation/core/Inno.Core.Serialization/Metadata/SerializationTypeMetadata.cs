@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Core.Identity;
 
 namespace Inno.Core.Serialization;
 
@@ -148,7 +149,7 @@ public sealed class SerializationTypeMetadata
     {
         ArgumentNullException.ThrowIfNull(readRevision);
         if (!type.IsSealed || type.IsValueType || !typeof(ISerializable).IsAssignableFrom(type)
-            || !typeof(Inno.Core.Identity.IdentityObject).IsAssignableFrom(type)
+            || !typeof(IdentityObject).IsAssignableFrom(type)
         ) {
             throw new InvalidOperationException(
                 "Capture revision metadata requires a sealed serializable Core identity source."

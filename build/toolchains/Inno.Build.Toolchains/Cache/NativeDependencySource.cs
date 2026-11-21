@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Core.IO;
 
 namespace Inno.Build.Toolchains;
 
@@ -35,7 +36,7 @@ internal static class NativeDependencySource
         }
         foreach (string path in roots)
         {
-            _ = Inno.Core.IO.PathBoundary.Resolve(root, path);
+            _ = PathBoundary.Resolve(root, path);
         }
         string dirty = await GitAsync(
             ["status", "--porcelain", "--untracked-files=all", "--ignore-submodules=none", "--", ..roots]
@@ -48,7 +49,7 @@ internal static class NativeDependencySource
         foreach (string[] batch in roots.Chunk(80))
         {
             string tree = await GitAsync(["ls-tree", "-t", "-z", "HEAD", "--", ..batch]).ConfigureAwait(false);
-            var entries = tree
+            Dictionary<string, string> entries = tree
                 .Split('\0', StringSplitOptions.RemoveEmptyEntries)
                 .ToDictionary(entry => entry[(entry.IndexOf('\t') + 1)..], StringComparer.Ordinal);
             foreach (string path in batch)
@@ -94,11 +95,11 @@ internal static class NativeDependencySource
                     throw new InvalidDataException("Native source tree returned incomplete object metadata.");
                 }
                 string relative = entry[(separator + 1)..];
-                string path = Inno.Core.IO.PathBoundary.Resolve(root, relative);
-                Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, Path.GetDirectoryName(path)!);
+                string path = PathBoundary.Resolve(root, relative);
+                PathBoundary.RequireUnlinkedPath(root, Path.GetDirectoryName(path)!);
                 if (metadata[1] == "commit")
                 {
-                    Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, path);
+                    PathBoundary.RequireUnlinkedPath(root, path);
                     // A consumer does not need a third-party checkout. An initialized checkout is mutable and must be checked.
                     if (File.Exists(Path.Combine(path, ".git")) || Directory.Exists(Path.Combine(path, ".git")))
                     {
@@ -131,7 +132,7 @@ internal static class NativeDependencySource
                 }
                 else
                 {
-                    Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, path);
+                    PathBoundary.RequireUnlinkedPath(root, path);
                     if (!File.Exists(path))
                     {
                         throw new InvalidDataException("Native source is missing: " + relative);
@@ -149,7 +150,7 @@ internal static class NativeDependencySource
             {
                 throw new InvalidDataException("Native source hashing returned an incomplete input inventory.");
             }
-            var changed = batch.Where((
+            KeyValuePair<string, string>[] changed = batch.Where((
                 pair,
                 index
             ) => hashes[index] != pair.Value).ToArray();

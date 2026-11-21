@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Shaders;
 
@@ -18,7 +19,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <param name="target">
 /// Exact toolchain profile and capability snapshot.
 /// </param>
-[Inno.Extensibility.Types.StableTypeId("8a37ee08-a048-52fc-bbf4-bbc47fe425d4")]
+[StableTypeId("8a37ee08-a048-52fc-bbf4-bbc47fe425d4")]
 public sealed record ShaderStageToolRequest(
     ShaderIrStage stage,
     ShaderCompileTarget target
@@ -36,7 +37,7 @@ public sealed record ShaderStageToolRequest(
 /// <param name="location">
 /// Assigned texture slot; uniform locations are resolved by the runtime.
 /// </param>
-[Inno.Extensibility.Types.StableTypeId("00dff34d-f800-51e6-8a37-0141761958c8")]
+[StableTypeId("00dff34d-f800-51e6-8a37-0141761958c8")]
 public sealed record ShaderStageBinding(
     string id,
     string nativeName,
@@ -46,7 +47,7 @@ public sealed record ShaderStageBinding(
 /// <summary>
 /// Returns a frozen typed-stage compilation candidate; failure never carries a usable artifact.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("cf544248-8a38-5999-b8aa-bbdcf94fa6e8")]
+[StableTypeId("cf544248-8a38-5999-b8aa-bbdcf94fa6e8")]
 public sealed class ShaderStageToolResult
 {
     private readonly byte[] m_bytes;
@@ -132,7 +133,7 @@ public sealed partial class ShaderCompiler
         ArgumentNullException.ThrowIfNull(stage);
         ArgumentNullException.ThrowIfNull(target);
         cancellationToken.ThrowIfCancellationRequested();
-        var key = (stage.contentHash, target.key, target.capabilities);
+        (string contentHash, string key, GraphicsCapabilities capabilities) key = (stage.contentHash, target.key, target.capabilities);
         lock (m_stageCacheLock)
         {
             if (m_stageCache.TryGetValue(key, out ShaderStageToolResult? previous))

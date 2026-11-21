@@ -4,6 +4,7 @@ using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.IO;
@@ -28,7 +29,7 @@ internal static class ValidationProductInput
         string commit = document.RootElement.GetProperty("commit").GetString()!;
         string prefix = document.RootElement.GetProperty("project").GetString()!.TrimEnd('/') + "/";
         if (!Uri.TryCreate(repository, UriKind.Absolute, out Uri? source) || source.Scheme != "https"
-            || source.Host != "github.com" || !System.Text.RegularExpressions.Regex.IsMatch(commit, "\\A[0-9a-f]{40}\\z")
+            || source.Host != "github.com" || !Regex.IsMatch(commit, "\\A[0-9a-f]{40}\\z")
         ) {
             throw new InvalidDataException("The product consumer must declare an exact HTTPS repository revision.");
         }

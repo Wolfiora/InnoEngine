@@ -21,12 +21,12 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Defines the largest supported editor UI zoom.
     /// </summary>
-    public const float C_MAX_ZOOM = 1.50f;
+    public const float C_MAX_ZOOM = 1.5f;
 
     /// <summary>
     /// Defines one keyboard or menu zoom increment.
     /// </summary>
-    public const float C_ZOOM_STEP = 0.10f;
+    public const float C_ZOOM_STEP = 0.1f;
 
     private readonly WeakReference<EditorUiSession>? m_owner;
     private float m_requestedZoom = 1f;
@@ -149,7 +149,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets global content scale.
     /// </summary>
-    public float fontScale => Scale(m_compactMode ? 1.10f : 1.20f);
+    public float fontScale => Scale(m_compactMode ? 1.1f : 1.2f);
 
     /// <summary>
     /// Gets disabled content opacity.
@@ -370,7 +370,7 @@ public sealed class EditorStyleMetrics
     /// <summary>
     /// Gets property label width ratio.
     /// </summary>
-    public float propertyLabelRatio => 0.40f;
+    public float propertyLabelRatio => 0.4f;
 
     /// <summary>
     /// Gets the default width of searchable editor popups.

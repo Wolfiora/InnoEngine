@@ -43,10 +43,18 @@ public sealed class NativeProjectPanelHost : IDisposable
     /// <summary>
     /// Creates the explicit test composition and its isolated project resources.
     /// </summary>
-    /// <param name="composition">The calling test assembly declaring all discovered modules and serialized test types.</param>
-    /// <param name="supportsVertexOffsets">Whether to advertise and validate native vertex offsets.</param>
-    /// <param name="includeSettings">Whether to compose real project and build settings services.</param>
-    /// <param name="settingsDocument">An optional public document-store boundary for settings persistence.</param>
+    /// <param name="composition">
+    /// The calling test assembly declaring all discovered modules and serialized test types.
+    /// </param>
+    /// <param name="supportsVertexOffsets">
+    /// Whether to advertise and validate native vertex offsets.
+    /// </param>
+    /// <param name="includeSettings">
+    /// Whether to compose real project and build settings services.
+    /// </param>
+    /// <param name="settingsDocument">
+    /// An optional public document-store boundary for settings persistence.
+    /// </param>
     public NativeProjectPanelHost(
         Assembly composition,
         bool supportsVertexOffsets = false,
@@ -75,7 +83,7 @@ public sealed class NativeProjectPanelHost : IDisposable
         });
         m_execution = m_session.EnterExecutionScope();
         var identities = new IdentityAllocator();
-        assets = new AssetPipeline(
+        this.assets = new AssetPipeline(
             m_engine.modules,
             m_engine.types,
             m_engine.serialization,
@@ -104,7 +112,7 @@ public sealed class NativeProjectPanelHost : IDisposable
         m_console = new EditorConsole(m_engine.logs, m_engine.diagnostics, new NativePanelHost.InactivePlayMode());
         m_console.Start();
         var ui = new EditorUiSession();
-        reloads = new EditorReloadCoordinator();
+        this.reloads = new EditorReloadCoordinator();
         SettingsPanelServices? settingsServices = includeSettings
                                                   ? new SettingsPanelServices(m_root, assets, m_plugins, m_settings, m_engine)
                                                   : null;
@@ -112,7 +120,7 @@ public sealed class NativeProjectPanelHost : IDisposable
         {
             _ = Assembly.Load("Inno.Editor.Panel.Settings");
         }
-        runtime = new EditorInteractionRuntime(
+        this.runtime = new EditorInteractionRuntime(
             new EditorContext(m_root, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")),
             m_engine.types,
             m_engine.logs,
@@ -133,11 +141,11 @@ public sealed class NativeProjectPanelHost : IDisposable
         );
         runtime.Start();
         _ = runtime.panelCount;
-        Assert.True(runtime.interactions.TryGetModule<NativeProjectPanelProbe>(out var probe));
-        workspace = probe!.workspace;
-        graphs = probe.graphs;
-        edits = probe.edits;
-        native = new NativePanelHost(runtime, ui, m_console, m_engine.logs, m_engine.diagnostics, supportsVertexOffsets);
+        Assert.True(runtime.interactions.TryGetModule<NativeProjectPanelProbe>(out NativeProjectPanelProbe? probe));
+        this.workspace = probe!.workspace;
+        this.graphs = probe.graphs;
+        this.edits = probe.edits;
+        this.native = new NativePanelHost(runtime, ui, m_console, m_engine.logs, m_engine.diagnostics, supportsVertexOffsets);
     }
 
     /// <summary>
@@ -193,7 +201,9 @@ public sealed class NativeProjectPanelHost : IDisposable
     /// <summary>
     /// Creates and loads an additive scene in the owned Edit session.
     /// </summary>
-    /// <returns>The scene owned by this fixture's session.</returns>
+    /// <returns>
+    /// The scene owned by this fixture's session.
+    /// </returns>
     public GameScene CreateScene() => m_session.scenes.LoadNewSceneAdditive();
 
     /// <summary>

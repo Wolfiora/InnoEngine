@@ -26,9 +26,9 @@ public sealed class BrowserSupportPackAbiTests : IDisposable
                         + "0".PadRight(6) + "644".PadRight(8) + "8".PadRight(10) + "`\n";
         byte[] bytes = [.. Encoding.ASCII.GetBytes("!<arch>\n" + header), 0, 97, 115, 109, 1, 0, 0, 0];
         File.WriteAllBytes(archive, bytes);
-        var validator = new Inno.Build.BrowserWasm32.BrowserWasm32SupportPackValidator();
+        var validator = new BrowserWasm32SupportPackValidator();
         validator.Validate(m_root);
-        bytes[^8] = 0x7f;
+        bytes[^8] = 0x7F;
         File.WriteAllBytes(archive, bytes);
         Assert.Contains("ABI", Assert.Throws<InvalidDataException>(() => validator.Validate(m_root)).Message);
     }

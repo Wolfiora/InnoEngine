@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using Inno.Assets;
 using Inno.Core.IO;
 using Inno.Core.Serialization;
@@ -141,18 +142,16 @@ internal sealed class AssetArtifactStore
     internal byte[] Read(
         AssetArtifactKey key,
         string outputName
-    ) {
-        return TryGet(key, outputName, out AssetArtifactInfo? artifact) && artifact is not null
-               ? ReadOutputBytes(artifact, ResolveOutput(artifact))
-               : [];
-    }
+    ) => TryGet(key, outputName, out AssetArtifactInfo? artifact) && artifact is not null
+         ? ReadOutputBytes(artifact, ResolveOutput(artifact))
+         : [];
 
     internal Func<Stream> CreateReadFactory(AssetArtifactInfo artifact)
     {
         string path = ResolveOutput(artifact);
         return () =>
         {
-            FileStream input = new(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
             try
             {
                 if (input.Length != artifact.length
@@ -331,7 +330,7 @@ internal sealed class AssetArtifactStore
         IReadOnlyDictionary<string, ReadOnlyMemory<byte>> outputs,
         IReadOnlySet<string>? authoringOutputs
     ) {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Append(hash, "Inno.AssetArtifact");
         Append(hash, inputFingerprint);
         foreach (KeyValuePair<string, ReadOnlyMemory<byte>> output in outputs
@@ -348,7 +347,7 @@ internal sealed class AssetArtifactStore
         AssetArtifactKey key,
         AssetArtifactStore destination,
         SerializationGeneration? serialization,
-        System.Threading.CancellationToken cancellationToken
+        CancellationToken cancellationToken
     ) {
         AssetArtifactManifest manifest = ReadManifest(key, serialization)
                                          ?? throw new InvalidDataException($"Artifact bundle '{key}' has no manifest.");

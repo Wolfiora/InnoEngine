@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading;
 using Inno.Core.IO;
@@ -28,7 +29,7 @@ internal static class Program
         {
             string ownership = ReadProductLock();
             // Product clean must wait until the running Editor has released its deployment.
-            if (!System.IO.File.Exists(ownership))
+            if (!File.Exists(ownership))
             {
                 FileLease.AcquireAsync(ownership, TimeSpan.FromSeconds(10), cancellation.Token)
                     .GetAwaiter()

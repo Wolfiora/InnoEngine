@@ -440,7 +440,7 @@ internal sealed partial class HierarchyPanel : EditorPanel
     private void DrawBlankArea(EditorContext context)
     {
         Vector2 available = Ui.GetContentRegionAvailable();
-        Vector2 size = new(MathF.Max(1f, available.X), MathF.Max(hierarchyStyle.blankMinimumHeight, available.Y));
+        var size = new Vector2(MathF.Max(1f, available.X), MathF.Max(hierarchyStyle.blankMinimumHeight, available.Y));
         _ = Ui.InvisibleButton("##hierarchy_blank", size);
         if (Ui.IsItemClicked((ImGuiMouseButton.Left)))
         {

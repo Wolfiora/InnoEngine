@@ -32,9 +32,9 @@ public sealed class BgfxAuthoringProvider : RenderingAuthoringBackendProvider
         m_tools = tools;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IShaderCompilerToolchain CreateShaderCompilerToolchain() => new BgfxShadercToolchain(m_target, m_tools);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler(m_tools);
 }

@@ -68,7 +68,7 @@ public sealed partial class RenderGraphBuilder
     ) {
         EnsureMutating();
         ValidateNameAndValue(name, descriptor);
-        RenderTextureHandle handle = new(m_textures.Count, m_generation, checked(++m_nextResourceId));
+        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceId));
         m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, false, default, handle.allocationId));
         InvalidateValidation();
         return handle;
@@ -101,7 +101,7 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException("Persistent texture handle is invalid.", nameof(texture));
         }
 
-        RenderTextureHandle handle = new(m_textures.Count, m_generation, checked(++m_nextResourceId));
+        var handle = new RenderTextureHandle(m_textures.Count, m_generation, checked(++m_nextResourceId));
         m_textures.Add(new RenderTextureRecord(QualifyName(name), descriptor, true, texture, handle.allocationId));
         InvalidateValidation();
         return handle;
@@ -125,7 +125,7 @@ public sealed partial class RenderGraphBuilder
     ) {
         EnsureMutating();
         ValidateNameAndValue(name, descriptor);
-        RenderBufferHandle handle = new(m_buffers.Count, m_generation, checked(++m_nextResourceId));
+        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceId));
         m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, false, default, handle.allocationId));
         InvalidateValidation();
         return handle;
@@ -158,7 +158,7 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException("Persistent buffer handle is invalid.", nameof(buffer));
         }
 
-        RenderBufferHandle handle = new(m_buffers.Count, m_generation, checked(++m_nextResourceId));
+        var handle = new RenderBufferHandle(m_buffers.Count, m_generation, checked(++m_nextResourceId));
         m_buffers.Add(new RenderBufferRecord(QualifyName(name), descriptor, true, buffer, handle.allocationId));
         InvalidateValidation();
         return handle;
@@ -424,7 +424,7 @@ public sealed partial class RenderGraphBuilder
             throw new ArgumentException($"Render pass '{qualifiedName}' already exists.", nameof(name));
         }
 
-        RenderPassRecord pass = new()
+        var pass = new RenderPassRecord()
         {
             index = m_passes.Count,
             name = qualifiedName,

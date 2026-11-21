@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Describes one capability-compatible material pass selection.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("e4a37a17-bfc1-5b29-9c57-f7b387271f9f")]
+[StableTypeId("e4a37a17-bfc1-5b29-9c57-f7b387271f9f")]
 public sealed class MaterialPassResolution
 {
     private readonly ShaderTechniqueDefinition m_technique;

@@ -66,9 +66,9 @@ public sealed class TaskPublisherBootstrapTests
                     + "</ProjectReference></ItemDefinitionGroup><ItemGroup>" + references + "</ItemGroup></Project>"
                 );
             }
-            var first = await Build(root, configuration);
+            (string output, string binlog) first = await Build(root, configuration);
             string firstOwner = Validate(first.output, first.binlog);
-            var second = await Build(root, configuration);
+            (string output, string binlog) second = await Build(root, configuration);
             string secondOwner = Validate(second.output, second.binlog);
             Assert.NotEqual(firstOwner, secondOwner);
         }

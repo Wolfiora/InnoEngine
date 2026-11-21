@@ -22,18 +22,14 @@ internal static unsafe class ComponentFieldDrawer
         string label,
         ref float value,
         float width
-    ) {
-        return EditorUI.current.widgets.AxisDragFloat(path, label, ref value, width);
-    }
+    ) => EditorUI.current.widgets.AxisDragFloat(path, label, ref value, width);
 
     internal static bool Int(
         string path,
         string label,
         ref int value,
         float width
-    ) {
-        return EditorUI.current.widgets.AxisDragInt(path, label, ref value, width);
-    }
+    ) => EditorUI.current.widgets.AxisDragInt(path, label, ref value, width);
 
     internal static void Next() => Ui.SameLine(0f, -1f);
 }
@@ -301,12 +297,12 @@ internal sealed unsafe class ColorPropertyDrawer : IPropertyDrawer
     {
         Color value = context.GetValue() is Color current ? current : default;
         var nativeValue = new NumericsVector4(value.r, value.g, value.b, value.a);
-        var flags = context.hdrColor
-                    ? Inno.Editor.ImGui.ImGuiColorEditFlags.Hdr
-                      | Inno.Editor.ImGui.ImGuiColorEditFlags.Float
-                      | Inno.Editor.ImGui.ImGuiColorEditFlags.InputRgb
-                      | Inno.Editor.ImGui.ImGuiColorEditFlags.DisplayRgb
-                    : Inno.Editor.ImGui.ImGuiColorEditFlags.None;
+        ImGuiColorEditFlags flags = context.hdrColor
+                                    ? ImGuiColorEditFlags.Hdr
+                                      | ImGuiColorEditFlags.Float
+                                      | ImGuiColorEditFlags.InputRgb
+                                      | ImGuiColorEditFlags.DisplayRgb
+                                    : ImGuiColorEditFlags.None;
         if (Ui.ColorEditLinear4($"##{context.path}", ref nativeValue, flags))
         {
             context.SetValue(new Color(nativeValue.X, nativeValue.Y, nativeValue.Z, nativeValue.W));

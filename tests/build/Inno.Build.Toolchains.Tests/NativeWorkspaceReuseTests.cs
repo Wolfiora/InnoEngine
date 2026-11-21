@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -145,9 +146,9 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
             File.WriteAllText(managed, generation);
             File.WriteAllText(
                 Path.Combine(bridge, "compilation.json"),
-                System.Text.Json.JsonSerializer.Serialize(new NativeBindingCompilation
+                JsonSerializer.Serialize(new NativeBindingCompilation
                 {
-                    roots = [new("generated", "", true, true)],
+                    roots = [new("generated", string.Empty, true, true)],
                     files = [],
                     includeDirectories = [],
                     defines = [],
@@ -156,7 +157,7 @@ public sealed class NativeWorkspaceReuseTests : IDisposable
                     cStandard = 0,
                     requiredExports = [],
                     staticExportSymbols = [],
-                    staticExportAbi = "",
+                    staticExportAbi = string.Empty,
                     staticExportNames = []
                 })
             );

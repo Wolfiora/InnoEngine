@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Assigns exactly one rendering model and its world-content sources to an output layer.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("7bdfe53d-72a0-5e9a-a922-fbc52362618f")]
+[StableTypeId("7bdfe53d-72a0-5e9a-a922-fbc52362618f")]
 public sealed class RenderOutputLayer
 {
     /// <summary>

@@ -46,7 +46,7 @@ internal sealed class CommandSearchModule(EditorInteractions interactions) : Edi
         object? target = m_target is RuntimeIdentity id && interactions.TryResolveIdentity(id, out IdentityObject? live) ? live : null;
         EditorInteraction local = interactions.For(m_area, target);
         EditorMenuModel commands = local.BuildCommands();
-        var localItems = Leaves(commands.items).Where(item => !globalIds.Contains(item.actionId)).ToArray();
+        EditorMenuItem[] localItems = Leaves(commands.items).Where(item => !globalIds.Contains(item.actionId)).ToArray();
         return ui.menus.DrawSearchItems(local, localItems, search);
         void Collect(IReadOnlyList<EditorMenuItem> items)
         {

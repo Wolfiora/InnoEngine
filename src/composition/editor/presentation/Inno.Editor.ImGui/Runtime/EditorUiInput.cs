@@ -55,15 +55,15 @@ public readonly struct EditorUiInput
 
     internal unsafe EditorUiInput(ImGuiIO* io)
     {
-        alt = io->KeyAlt != 0;
+        this.alt = io->KeyAlt != 0;
         bool swapsModifiers = io->ConfigMacOsxBehaviors != 0;
-        control = (swapsModifiers ? io->KeySuper : io->KeyCtrl) != 0;
-        shift = io->KeyShift != 0;
-        super = (swapsModifiers ? io->KeyCtrl : io->KeySuper) != 0;
-        wantsText = io->WantTextInput != 0;
-        mouseDelta = ImGui.FromNative(io->MouseDelta);
-        framebufferScale = ImGui.FromNative(io->DisplayFramebufferScale);
-        wheel = io->MouseWheel;
-        deltaTime = io->DeltaTime;
+        this.control = (swapsModifiers ? io->KeySuper : io->KeyCtrl) != 0;
+        this.shift = io->KeyShift != 0;
+        this.super = (swapsModifiers ? io->KeyCtrl : io->KeySuper) != 0;
+        this.wantsText = io->WantTextInput != 0;
+        this.mouseDelta = ImGui.FromNative(io->MouseDelta);
+        this.framebufferScale = ImGui.FromNative(io->DisplayFramebufferScale);
+        this.wheel = io->MouseWheel;
+        this.deltaTime = io->DeltaTime;
     }
 }

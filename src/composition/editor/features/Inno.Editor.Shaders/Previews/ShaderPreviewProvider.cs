@@ -83,11 +83,19 @@ public sealed class ShaderPreviewContext
         {
             throw new ArgumentException("A resource identity is required.", nameof(resourceId));
         }
-        ArgumentNullException.ThrowIfNull(material); ArgumentNullException.ThrowIfNull(artifact);
-        ArgumentNullException.ThrowIfNull(definition); ArgumentNullException.ThrowIfNull(diagnostics);
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth); ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
-        this.resourceId = resourceId; this.material = material; this.artifact = artifact; this.definition = definition;
-        this.diagnostics = diagnostics; this.pixelWidth = pixelWidth; this.pixelHeight = pixelHeight;
+        ArgumentNullException.ThrowIfNull(material);
+        ArgumentNullException.ThrowIfNull(artifact);
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelHeight);
+        this.resourceId = resourceId;
+        this.material = material;
+        this.artifact = artifact;
+        this.definition = definition;
+        this.diagnostics = diagnostics;
+        this.pixelWidth = pixelWidth;
+        this.pixelHeight = pixelHeight;
     }
 
     /// <summary>

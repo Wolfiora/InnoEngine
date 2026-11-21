@@ -24,9 +24,9 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
         Task running,
         CancellationTokenSource budget
     ) {
-        loadDirectory = load;
-        publisherDirectory = publisher;
-        readyFile = ready;
+        this.loadDirectory = load;
+        this.publisherDirectory = publisher;
+        this.readyFile = ready;
         m_release = release;
         m_running = running;
         m_budget = budget;
@@ -152,7 +152,7 @@ internal sealed class TaskHostPublicationProcess : IAsyncDisposable
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
         if (Interlocked.Exchange(ref m_disposed, 1) != 0)

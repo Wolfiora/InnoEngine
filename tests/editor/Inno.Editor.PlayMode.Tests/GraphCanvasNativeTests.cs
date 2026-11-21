@@ -5,11 +5,15 @@ using Xunit;
 using Inno.Core.Graphs;
 using Inno.Editor.Graph;
 using Inno.Editor.Graph.ImGui;
+using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
 using Inno.Testing.Editor.Native;
 
 using NativeGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
+using UiDrawList = Inno.Editor.ImGui.EditorDrawList;
+using UiHoveredFlags = Inno.Editor.ImGui.ImGuiHoveredFlags;
+using UiMouseButton = Inno.Editor.ImGui.ImGuiMouseButton;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -24,8 +28,8 @@ public sealed unsafe class GraphCanvasNativeTests
         var second = new GraphNodeRecord(new("workflow.second"), "workflow.step") { position = new(300f, 20f) };
         document.AddNode(first);
         document.AddNode(second);
-        var history = host.runtime.interactions.history;
-        var controller = host.graphs.OpenDocument(Guid.NewGuid(), document, history);
+        IEditorHistory history = host.runtime.interactions.history;
+        GraphDocumentController controller = host.graphs.OpenDocument(Guid.NewGuid(), document, history);
         var state = new GraphCanvasState();
         var pointer = new GraphCanvasPointerController(state);
         var layout = new GraphCanvasLayout();
@@ -54,7 +58,7 @@ public sealed unsafe class GraphCanvasNativeTests
             Vector2 mouse,
             bool down
         ) {
-            var io = NativeGui.Raw.GetIO();
+            ImGuiIO* io = NativeGui.Raw.GetIO();
             NativeGui.Raw.AddMousePosEvent(io, mouse.X, mouse.Y);
             NativeGui.Raw.AddMouseButtonEvent(io, 0, down ? (byte)1 : (byte)0);
             host.native.Frame(() =>
@@ -85,10 +89,10 @@ public sealed unsafe class GraphCanvasNativeTests
                     GraphCanvasPointerResult result = pointer.Step(view, layout, new()
                     {
                         position = Ui.GetMousePos(),
-                        isHovered = Ui.IsItemHovered(Inno.Editor.ImGui.ImGuiHoveredFlags.AllowWhenBlockedByActiveItem),
-                        isPressed = Ui.IsMouseClicked(Inno.Editor.ImGui.ImGuiMouseButton.Left),
-                        isDown = Ui.IsMouseButtonDown(Inno.Editor.ImGui.ImGuiMouseButton.Left),
-                        isReleased = Ui.IsMouseReleased(Inno.Editor.ImGui.ImGuiMouseButton.Left)
+                        isHovered = Ui.IsItemHovered(UiHoveredFlags.AllowWhenBlockedByActiveItem),
+                        isPressed = Ui.IsMouseClicked(UiMouseButton.Left),
+                        isDown = Ui.IsMouseButtonDown(UiMouseButton.Left),
+                        isReleased = Ui.IsMouseReleased(UiMouseButton.Left)
                     });
                     if (result.movedNodes is { } positions)
                     {
@@ -98,13 +102,13 @@ public sealed unsafe class GraphCanvasNativeTests
                     {
                         _ = controller.Connect(output, input);
                     }
-                    var draw = Ui.GetDrawList();
+                    UiDrawList draw = Ui.GetDrawList();
                     foreach (GraphCanvasNode node in layout.nodes)
                     {
                         _ = view.DrawNode(
                             draw,
                             node,
-                            0xFF504030,
+                            0xFF50_4030,
                             state.selectedNodes.Contains(node.id),
                             previewPosition: pointer.previewPositions.TryGetValue(node.id, out GraphPosition position) ? position : null
                         );
@@ -123,7 +127,7 @@ public sealed unsafe class GraphCanvasNativeTests
     {
         using var host = new NativePanelHost(typeof(GraphCanvasNativeTests).Assembly);
         var state = new GraphCanvasState();
-        GraphNodeId id = new("workflow.begin");
+        var id = new GraphNodeId("workflow.begin");
         var node = new GraphCanvasNode(
             id,
             new(10f, 10f),
@@ -144,7 +148,7 @@ public sealed unsafe class GraphCanvasNativeTests
                 {
                     ImGuiWindow* window = NativeGui.Raw.GetCurrentWindow();
                     int clipDepth = window->DrawList->ClipRectStack.Size;
-                    var draw = Ui.GetDrawList();
+                    UiDrawList draw = Ui.GetDrawList();
                     var view = new GraphCanvasView(state, new(40f, 60f), new(540f, 300f));
                     var failure = new InvalidOperationException("Workflow node extension failed.");
                     Assert.Same(
@@ -152,19 +156,26 @@ public sealed unsafe class GraphCanvasNativeTests
                         Assert.Throws<InvalidOperationException>(() => view.DrawNode(
                             draw,
                             node,
-                            0xFF504030,
+                            0xFF50_4030,
                             true,
                             () => throw failure
                         ))
                     );
                     Assert.Equal(clipDepth, window->DrawList->ClipRectStack.Size);
-                    Assert.True(view.DrawNode(draw, node, 0xFF504030, false));
-                    var offscreen = new GraphCanvasNode(new("workflow.hidden"), new(5000f, 5000f), new(200f, 100f), 24f, "Hidden", []);
+                    Assert.True(view.DrawNode(draw, node, 0xFF50_4030, false));
+                    var offscreen = new GraphCanvasNode(
+                        new("workflow.hidden"),
+                        new(5000f, 5000f),
+                        new(200f, 100f),
+                        24f,
+                        "Hidden",
+                        []
+                    );
                     Assert.False(
                         view.DrawNode(
                             draw,
                             offscreen,
-                            0xFF504030,
+                            0xFF50_4030,
                             false,
                             () => throw new InvalidOperationException("Culled content must not run.")
                         )
@@ -182,7 +193,7 @@ public sealed unsafe class GraphCanvasNativeTests
                         oversized.DrawNode(
                             draw,
                             outsideWindow,
-                            0xFF504030,
+                            0xFF50_4030,
                             false,
                             () => throw new InvalidOperationException("Parent-clipped content must not run.")
                         )

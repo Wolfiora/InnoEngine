@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Validates the source-free material, pass and technique contract shared by graph compilation and deployed shaders.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("196d9066-fe0d-5bd7-b763-0395296f7d88")]
+[StableTypeId("196d9066-fe0d-5bd7-b763-0395296f7d88")]
 public static class ShaderDefinitionValidator
 {
     /// <summary>

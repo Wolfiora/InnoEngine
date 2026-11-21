@@ -36,8 +36,8 @@ public sealed class ShaderNodeCompilerCatalog
                 throw new ArgumentException($"Duplicate shader node compiler '{compiler.definitionId}'.", nameof(compilers));
             }
         }
-        providers = Array.AsReadOnly(m_compilers.Values.ToArray());
-        definitionIds = Array.AsReadOnly(m_compilers.Keys.Order(StringComparer.Ordinal).ToArray());
+        this.providers = Array.AsReadOnly(m_compilers.Values.ToArray());
+        this.definitionIds = Array.AsReadOnly(m_compilers.Keys.Order(StringComparer.Ordinal).ToArray());
     }
 
     /// <summary>
@@ -136,7 +136,14 @@ public sealed class ShaderNodeCompilerCatalog
                 }
                 request.sourceModules.TryGetValue(node.id, out ShaderSourceModuleAnalysis? source);
                 request.stageInputs.TryGetValue(node.id, out ShaderIrStageInput? input);
-                var description = new ShaderNodeDescriptionContext(node, serialization, context, source, request.implementationId, input);
+                var description = new ShaderNodeDescriptionContext(
+                    node,
+                    serialization,
+                    context,
+                    source,
+                    request.implementationId,
+                    input
+                );
                 descriptions.Add(node.id, description);
                 IReadOnlyList<ShaderNodePort> describedPorts = compiler.GetPorts(description).ToArray();
                 nodePorts.Add(node.id, describedPorts);
@@ -164,9 +171,12 @@ public sealed class ShaderNodeCompilerCatalog
 
             var connections = new Dictionary<GraphEndpoint, GraphEndpoint>();
             var inputDefaults = new Dictionary<GraphEndpoint, ShaderGraphLiteral>();
-            var nodeConnections = nodes.ToDictionary(static node => node.id, static _ => new List<(string port, GraphEndpoint source)>());
+            Dictionary<GraphNodeId, List<(string port, GraphEndpoint source)>> nodeConnections = nodes.ToDictionary(
+                static node => node.id,
+                static _ => new List<(string port, GraphEndpoint source)>()
+            );
             var incoming = new int[nodes.Count];
-            var following = Enumerable.Range(0, nodes.Count).Select(static _ => new List<int>()).ToArray();
+            List<int>[] following = Enumerable.Range(0, nodes.Count).Select(static _ => new List<int>()).ToArray();
             foreach (GraphEdgeRecord edge in request.graph.edges)
             {
                 if (!ports.TryGetValue(edge.input, out ShaderNodePort? input) || input.direction != GraphPortDirection.Input)

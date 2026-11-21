@@ -65,7 +65,7 @@ public abstract class Shell : IDisposable
         m_adapterSelection = options.adapters;
         m_suspendWhenHidden = options.suspendWhenHidden;
         this.options = options;
-        framePacing = new FramePacingOptions { verticalSync = options.verticalSync };
+        this.framePacing = new FramePacingOptions { verticalSync = options.verticalSync };
     }
 
     /// <summary>

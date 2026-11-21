@@ -14,7 +14,7 @@ using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Registers frame-final work without transferring frame ownership.

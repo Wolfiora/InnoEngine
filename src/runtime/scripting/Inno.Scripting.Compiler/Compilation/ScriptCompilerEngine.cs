@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -21,6 +22,8 @@ using Inno.Core.Serialization.Generators;
 using Inno.Extensibility.Modules;
 using Inno.Plugins.Authoring;
 using Inno.Runtime.Generators;
+
+using EngineSeverity = Inno.Core.Diagnostics.DiagnosticSeverity;
 
 namespace Inno.Scripting.Compiler;
 
@@ -335,7 +338,7 @@ internal static class ScriptCompilerEngine
             validationReferences[referencePath] = MetadataReference.CreateFromFile(referencePath);
         }
 
-        var validationCompilation = CSharpCompilation.Create(
+        CSharpCompilation validationCompilation = CSharpCompilation.Create(
             assemblyName,
             syntaxTrees,
             validationReferences.Values,
@@ -360,8 +363,8 @@ internal static class ScriptCompilerEngine
             assemblyName + ScriptApiMapBuilder.C_FILE_EXTENSION,
             ScriptApiMapBuilder.Build(api)
         );
-        var analyzerOptions = new AnalyzerOptions(ImmutableArray.Create<AdditionalText>(apiMapFile));
-        var analyzers = ImmutableArray.Create<DiagnosticAnalyzer>(new LogicalScriptingApiAnalyzer());
+        var analyzerOptions = new AnalyzerOptions([apiMapFile]);
+        ImmutableArray<DiagnosticAnalyzer> analyzers = [new LogicalScriptingApiAnalyzer()];
         progress.Begin($"Validating the {assemblyName} API surface...");
         ImmutableArray<Diagnostic> analyzerDiagnostics = await validationCompilation
             .WithAnalyzers(analyzers, analyzerOptions)
@@ -393,7 +396,12 @@ internal static class ScriptCompilerEngine
         {
             logicalReferences[referencePath] = MetadataReference.CreateFromFile(referencePath);
         }
-        var logicalBindings = CSharpCompilation.Create(assemblyName, syntaxTrees, logicalReferences.Values, validationCompilation.Options);
+        CSharpCompilation logicalBindings = CSharpCompilation.Create(
+            assemblyName,
+            syntaxTrees,
+            logicalReferences.Values,
+            validationCompilation.Options
+        );
         SyntaxTree[] runtimeTrees = syntaxTrees
             .Select(tree => CSharpSyntaxTree.Create(
                 (CSharpSyntaxNode)usingRewriter.Visit(
@@ -407,7 +415,7 @@ internal static class ScriptCompilerEngine
                 Encoding.UTF8
             ))
             .ToArray();
-        var contractCompilation = CSharpCompilation.Create(
+        CSharpCompilation contractCompilation = CSharpCompilation.Create(
             assemblyName,
             runtimeTrees,
             validationReferences.Values,
@@ -426,7 +434,7 @@ internal static class ScriptCompilerEngine
         {
             // User code has passed the same trimmed contract used by IDE projects.
             // Generated registration alone needs the owning assemblies' implementation metadata.
-            var implementationReferences = platformReferences.ToDictionary(
+            Dictionary<string, MetadataReference> implementationReferences = platformReferences.ToDictionary(
                 static reference => reference.Display!,
                 StringComparer.OrdinalIgnoreCase
             );
@@ -453,7 +461,7 @@ internal static class ScriptCompilerEngine
             }
             runtimeReferences = targetReferences.Values;
         }
-        var runtimeCompilation = CSharpCompilation.Create(
+        CSharpCompilation runtimeCompilation = CSharpCompilation.Create(
             assemblyName,
             runtimeTrees,
             runtimeReferences,
@@ -481,9 +489,7 @@ internal static class ScriptCompilerEngine
             runtimeCompilation = runtimeCompilation.AddSyntaxTrees(mappingTree);
         }
         progress.Complete($"Resolved {assemblyName} script type identities.");
-        if (typeAnalysis.diagnostics.Any(static diagnostic => (
-            diagnostic.severity == Inno.Core.Diagnostics.DiagnosticSeverity.Error
-        ))
+        if (typeAnalysis.diagnostics.Any(static diagnostic => (diagnostic.severity == EngineSeverity.Error))
         ) {
             return new CompilationResult(false, typeAnalysis.diagnostics);
         }
@@ -614,12 +620,12 @@ internal static class ScriptCompilerEngine
         IReadOnlyDictionary<string, string> dependencyKeys,
         IReadOnlyList<string> defines
     ) {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         AppendHash(hash, "Inno.ScriptAssemblyArtifact.SourceOwned");
         AppendHash(hash, typeof(ScriptCompilerEngine).Module.ModuleVersionId.ToString("N"));
         AppendHash(hash, typeof(RuntimeModuleCatalogGenerator).Module.ModuleVersionId.ToString("N"));
         AppendHash(hash, typeof(SerializationConverterGenerator).Module.ModuleVersionId.ToString("N"));
-        AppendHash(hash, System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+        AppendHash(hash, RuntimeInformation.FrameworkDescription);
         AppendHash(hash, Environment.Version.ToString());
         AppendHash(hash, assembly.name);
         AppendHash(hash, assembly.scope.ToString());
@@ -667,7 +673,7 @@ internal static class ScriptCompilerEngine
         ScriptSourceSet sources,
         IReadOnlyDictionary<string, string> assemblyKeys
     ) {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         AppendHash(hash, "Inno.ScriptGenerationArtifact.Incremental");
         foreach (ScriptAssemblyInput assembly in sources.assemblies)
         {
@@ -910,7 +916,7 @@ internal static class ScriptCompilerEngine
         internal TemporaryDirectory(string root)
         {
             Directory.CreateDirectory(root);
-            path = Path.Combine(root, Guid.NewGuid().ToString("N"));
+            this.path = Path.Combine(root, Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(path);
         }
 
@@ -1070,9 +1076,9 @@ internal static class ScriptCompilerEngine
             diagnostic.Id,
             diagnostic.Severity switch
             {
-                DiagnosticSeverity.Error => Inno.Core.Diagnostics.DiagnosticSeverity.Error,
-                DiagnosticSeverity.Warning => Inno.Core.Diagnostics.DiagnosticSeverity.Warning,
-                _ => Inno.Core.Diagnostics.DiagnosticSeverity.Info
+                DiagnosticSeverity.Error => EngineSeverity.Error,
+                DiagnosticSeverity.Warning => EngineSeverity.Warning,
+                _ => EngineSeverity.Info
             },
             diagnostic.GetMessage(),
             string.IsNullOrWhiteSpace(location.Path) ? null : location.Path,
@@ -1094,7 +1100,7 @@ internal static class ScriptCompilerEngine
             string path,
             string text
         ) {
-            Path = path;
+            this.Path = path;
             m_text = SourceText.From(text, Encoding.UTF8);
         }
 

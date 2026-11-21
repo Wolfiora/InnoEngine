@@ -82,10 +82,6 @@ public class FileLogSink : ILogSink, IDisposable
     /// <param name="entry">
     /// The immutable entry to persist.
     /// </param>
-    /// <remarks>
-    /// The router owns scheduling and backpressure. Write failures propagate to its sink quarantine.
-    /// Retention cannot remove files locked by another active writer and retries them on later rotation.
-    /// </remarks>
     /// <exception cref="ObjectDisposedException">
     /// The sink has been disposed.
     /// </exception>
@@ -98,6 +94,10 @@ public class FileLogSink : ILogSink, IDisposable
     /// <exception cref="InvalidOperationException">
     /// A previous failed rotation left no writable file.
     /// </exception>
+    /// <remarks>
+    /// The router owns scheduling and backpressure. Write failures propagate to its sink quarantine.
+    /// Retention cannot remove files locked by another active writer and retries them on later rotation.
+    /// </remarks>
     public void Receive(LogEntry entry)
     {
         lock (m_lifecycleSync)

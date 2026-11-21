@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -10,7 +11,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Encodes and validates the strict source-free binary format shared by game builds and Players.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("224813eb-a98c-5afa-a351-92e539a99d61")]
+[StableTypeId("224813eb-a98c-5afa-a351-92e539a99d61")]
 public static class RenderShaderArtifactCodec
 {
     private const int C_MAX_BINDINGS = 4096;

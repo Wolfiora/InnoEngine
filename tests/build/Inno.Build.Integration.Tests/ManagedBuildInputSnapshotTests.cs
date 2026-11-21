@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -263,7 +266,7 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
             context,
             sdk,
             project,
-            new System.Collections.Generic.Dictionary<string, string> { ["Configuration"] = "Release" }
+            new Dictionary<string, string> { ["Configuration"] = "Release" }
         );
         using ManagedBuildExecution execution = await snapshot.CreateExecutionAsync();
         Assert.Equal("owned vendor tool", File.ReadAllText(Path.Combine(execution.engineRoot, "Vendor", "bin", "tool.dat")));
@@ -297,10 +300,10 @@ public sealed class ManagedBuildInputSnapshotTests : IDisposable
         await execution.VerifyAsync();
         string output = Path.Combine(Path.GetDirectoryName(execution.project)!, "bin", "Release", "net10.0", "App.dll");
         using FileStream stream = File.OpenRead(output);
-        using var image = new System.Reflection.PortableExecutable.PEReader(stream);
-        System.Reflection.Metadata.MetadataReader metadata = System.Reflection.Metadata.PEReaderExtensions.GetMetadataReader(image);
-        string[] names = System.Linq.Enumerable.ToArray(
-            System.Linq.Enumerable.Select(
+        using var image = new PEReader(stream);
+        MetadataReader metadata = PEReaderExtensions.GetMetadataReader(image);
+        string[] names = Enumerable.ToArray(
+            Enumerable.Select(
                 metadata.TypeDefinitions,
                 handle => metadata.GetString(metadata.GetTypeDefinition(handle).Name)
             )

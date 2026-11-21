@@ -31,7 +31,7 @@ public sealed unsafe partial class ImGuiWidget
         }
         float fontSize = NativeImGui.GetFontSize();
         float width = NativeImGui.GetTextLineHeight();
-        foreach (var entry in EditorIconCatalog.standard)
+        foreach ((string Name, string Glyph) entry in EditorIconCatalog.standard)
         {
             Vector4 bounds = GetGlyphVisualBounds(fontSize, entry.Glyph);
             width = MathF.Max(width, bounds.Z - bounds.X);
@@ -122,7 +122,7 @@ public sealed unsafe partial class ImGuiWidget
         int codepoint = char.ConvertToUtf32(text, 0);
         ImFontBaked* baked = NativeImGui.Raw.GetFontBaked(font, fontSize, -1f);
         ImFontGlyph* glyph = codepoint <= ushort.MaxValue ? NativeImGui.Raw.FindGlyph(baked, (ushort)codepoint) : null;
-        if (glyph != null)
+        if (glyph is not null)
         {
             return new Vector4(glyph->X0, glyph->Y0, glyph->X1, glyph->Y1);
         }
@@ -163,7 +163,7 @@ public sealed unsafe partial class ImGuiWidget
     ) {
         m_session.EnsureDrawing();
         Vector4 bounds = GetGlyphVisualBoundsNative(font, fontSize, text);
-        Vector2 visibleCenterOffset = new((bounds.X + bounds.Z) * 0.5f, (bounds.Y + bounds.W) * 0.5f);
+        var visibleCenterOffset = new Vector2((bounds.X + bounds.Z) * 0.5f, (bounds.Y + bounds.W) * 0.5f);
         ImGui.DrawNativeText(drawList, font, fontSize, center - visibleCenterOffset, color, text);
     }
 
@@ -427,7 +427,7 @@ public sealed unsafe partial class ImGuiWidget
         }
 
         Vector2 origin = NativeImGui.GetCursorScreenPos();
-        Vector2 effectivePadding = new(
+        var effectivePadding = new Vector2(
             MathF.Min(padding.X, MathF.Max(0f, (areaSize.X - 1f) * 0.5f)),
             MathF.Min(padding.Y, MathF.Max(0f, (areaSize.Y - 1f) * 0.5f))
         );
@@ -603,7 +603,7 @@ public sealed unsafe partial class ImGuiWidget
     {
         m_session.EnsureDrawing();
         float iconSlotWidth = NativeImGui.GetTextLineHeight();
-        return new Vector2(iconSlotWidth + this.style.iconLabelSpacing, NativeImGui.GetFrameHeight());
+        return new Vector2(iconSlotWidth + style.iconLabelSpacing, NativeImGui.GetFrameHeight());
     }
 
     /// <summary>
@@ -664,7 +664,7 @@ public sealed unsafe partial class ImGuiWidget
             Vector4 glyphBounds = GetGlyphVisualBoundsNative(font, fontSize, icon);
             float iconSlotWidth = MathF.Max(lineHeight, glyphBounds.Z - glyphBounds.X);
             Vector2 textSize = NativeImGui.CalcTextSize(text);
-            Vector2 textPos = new(cursor.X + iconSlotWidth + style->ItemInnerSpacing.X, cursor.Y);
+            var textPos = new Vector2(cursor.X + iconSlotWidth + style->ItemInnerSpacing.X, cursor.Y);
             uint color = NativeImGui.GetColorU32((int)(ImGuiCol.Text));
             ImDrawList* drawList = NativeImGui.Raw.GetWindowDrawList();
             AddGlyphCenteredNative(

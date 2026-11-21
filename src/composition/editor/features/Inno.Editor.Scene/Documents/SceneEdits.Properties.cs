@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using Inno.Core.Serialization;
@@ -12,7 +13,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Renames a loaded scene and records the two display strings.
@@ -181,11 +182,9 @@ sealed partial class SceneEdits
         ChangeScalar(
             gameObject,
             SceneScalarKind.GameObjectLayer,
-            gameObject.layer.index.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            layer.index.ToString(System.Globalization.CultureInfo.InvariantCulture),
-            value => gameObject.layer = new GameLayer(
-                int.Parse(value, System.Globalization.CultureInfo.InvariantCulture)
-            ),
+            gameObject.layer.index.ToString(CultureInfo.InvariantCulture),
+            layer.index.ToString(CultureInfo.InvariantCulture),
+            value => gameObject.layer = new GameLayer(int.Parse(value, CultureInfo.InvariantCulture)),
             historyName,
             $"game-object-layer:{gameObject.identity.persistentId:N}"
         );

@@ -23,7 +23,7 @@ internal static class BindingDefinitionReader
         {
             throw new InvalidDataException("Binding definitions must be declarative Project data.");
         }
-        Dictionary<string, string> properties = new(StringComparer.Ordinal);
+        var properties = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (XElement group in project.Elements())
         {
             if (group.Attributes().Any())

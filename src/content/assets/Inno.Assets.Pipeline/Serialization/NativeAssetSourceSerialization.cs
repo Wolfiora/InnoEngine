@@ -55,11 +55,11 @@ public static partial class NativeAssetSourceSerialization
     /// <param name="bytes">
     /// Native source bytes.
     /// </param>
-    /// <param name="dependencies">
-    /// Receives persistent dependencies discovered during export.
-    /// </param>
     /// <param name="services">
     /// The generation-bound serialization and reference services supplied by the import context.
+    /// </param>
+    /// <param name="dependencies">
+    /// Receives persistent dependencies discovered during export.
     /// </param>
     /// <returns>
     /// A detached asset ready for an import transaction.
@@ -83,8 +83,8 @@ public static partial class NativeAssetSourceSerialization
                 + $"'{expectedType.stableId:D}'."
             );
         }
-        var asset = (TAsset)(Activator.CreateInstance(typeof(TAsset), nonPublic: true)
-                             ?? throw new InvalidOperationException($"Asset type '{typeof(TAsset).FullName}' could not be created."));
+        TAsset asset = (TAsset)(Activator.CreateInstance(typeof(TAsset), nonPublic: true)
+                                ?? throw new InvalidOperationException($"Asset type '{typeof(TAsset).FullName}' could not be created."));
         SerializationContext context = AssetSerializationContext.Create(services.references);
         _ = services.serialization.Decode(document.propertyData, reader =>
         {

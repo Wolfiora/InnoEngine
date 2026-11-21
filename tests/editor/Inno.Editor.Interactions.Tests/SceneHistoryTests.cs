@@ -8,7 +8,9 @@ using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Identity;
+using Inno.Core.Input;
 using Inno.Core.Logging;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Scene;
@@ -67,7 +69,7 @@ public sealed partial class SceneHistoryTests : IDisposable
             )with { enableFileSystemWatcher = false }
         );
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             m_host.types,
             m_host.logs,
             [m_host.types, m_host.serialization, m_session, m_assets, m_reloads]
@@ -95,7 +97,7 @@ public sealed partial class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         GameObject gameObject = scene.CreateObject("Object");
-        var component = gameObject.AddComponent<HistoryComponent>();
+        HistoryComponent component = gameObject.AddComponent<HistoryComponent>();
         component.value = 10;
         Guid sceneId = scene.identity.persistentId;
         Guid objectId = gameObject.identity.persistentId;
@@ -123,7 +125,7 @@ public sealed partial class SceneHistoryTests : IDisposable
     [Fact]
     public void PropertyUndoRestoresEverySiblingChangedByThePrimarySetter()
     {
-        var component = CreateScene().CreateObject("Coupled").AddComponent<CoupledHistoryComponent>();
+        CoupledHistoryComponent component = CreateScene().CreateObject("Coupled").AddComponent<CoupledHistoryComponent>();
         Assert.True(component.primary);
         Assert.Equal(CoupledHistoryMode.Base, component.mode);
         Assert.True(
@@ -151,9 +153,9 @@ public sealed partial class SceneHistoryTests : IDisposable
     {
         GameObject gameObject = CreateScene().CreateObject("Manipulated");
         Transform transform = gameObject.transform;
-        var position = new Inno.Core.Mathematics.Vector3(3f, -2f, 4f);
-        Inno.Core.Mathematics.Quaternion rotation = Inno.Core.Mathematics.Quaternion.CreateFromYawPitchRoll(0.2f, 0.3f, 0.4f);
-        var scale = new Inno.Core.Mathematics.Vector3(2f, 3f, 4f);
+        var position = new Vector3(3f, -2f, 4f);
+        Quaternion rotation = Quaternion.CreateFromYawPitchRoll(0.2f, 0.3f, 0.4f);
+        var scale = new Vector3(2f, 3f, 4f);
         using (EditorHistoryTransaction transaction = m_runtime.interactions.history.BeginTransaction("Move GameObject"))
         {
             Assert.True(
@@ -180,9 +182,9 @@ public sealed partial class SceneHistoryTests : IDisposable
 
         Assert.Equal("Move GameObject", m_runtime.interactions.history.undoName);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
-        Assert.Equal(Inno.Core.Mathematics.Vector3.ZERO, transform.localPosition);
-        Assert.Equal(Inno.Core.Mathematics.Quaternion.identity, transform.localRotation);
-        Assert.Equal(Inno.Core.Mathematics.Vector3.ONE, transform.localScale);
+        Assert.Equal(Vector3.ZERO, transform.localPosition);
+        Assert.Equal(Quaternion.identity, transform.localRotation);
+        Assert.Equal(Vector3.ONE, transform.localScale);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.Equal(position, transform.localPosition);
         Assert.Equal(rotation, transform.localRotation);
@@ -194,13 +196,13 @@ public sealed partial class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         Transform parent = scene.CreateObject("Parent").transform;
-        parent.localPosition = new Inno.Core.Mathematics.Vector3(3f, -2f, 4f);
-        parent.localScale = new Inno.Core.Mathematics.Vector3(2f, 3f, 4f);
+        parent.localPosition = new Vector3(3f, -2f, 4f);
+        parent.localScale = new Vector3(2f, 3f, 4f);
         Transform child = scene.CreateObject("Child").transform;
         child.SetParent(parent);
-        var beforeLocal = child.localPosition;
-        var beforeWorld = child.worldPosition;
-        var requestedWorld = new Inno.Core.Mathematics.Vector3(11f, 7f, 20f);
+        Vector3 beforeLocal = child.localPosition;
+        Vector3 beforeWorld = child.worldPosition;
+        var requestedWorld = new Vector3(11f, 7f, 20f);
         Assert.True(
             m_edits.ChangeProperty(
                 child,
@@ -209,7 +211,7 @@ public sealed partial class SceneHistoryTests : IDisposable
                 "Edit World Position"
             )
         );
-        var afterLocal = child.localPosition;
+        Vector3 afterLocal = child.localPosition;
         Assert.Equal(requestedWorld, child.worldPosition);
         Assert.NotEqual(beforeLocal, afterLocal);
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -225,15 +227,15 @@ public sealed partial class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         GameObject gameObject = scene.CreateObject("Object");
-        var first = (HistoryComponent)m_edits.AddComponent(gameObject, typeof(HistoryComponent));
+        HistoryComponent first = (HistoryComponent)m_edits.AddComponent(gameObject, typeof(HistoryComponent));
         Guid firstId = first.identity.persistentId;
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
-        var restoredFirst = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(firstId));
+        HistoryComponent restoredFirst = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.NotSame(first, restoredFirst);
         Assert.Equal(7, restoredFirst.value);
-        var second = (HistoryComponent)m_edits.AddComponent(gameObject, typeof(HistoryComponent));
+        HistoryComponent second = (HistoryComponent)m_edits.AddComponent(gameObject, typeof(HistoryComponent));
         m_edits.SetComponentIndex(second, 1);
         Assert.Equal(1, gameObject.GetComponentIndex(second));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
@@ -247,7 +249,7 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.True(m_edits.RemoveComponent(restoredFirst));
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
-        var restoredAgain = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(firstId));
+        HistoryComponent restoredAgain = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(firstId));
         Assert.Equal(99, restoredAgain.value);
     }
 
@@ -261,13 +263,15 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.True(m_assets.Import(assetPath));
         TextAsset asset = m_assets.Load<TextAsset>(assetPath);
         GameObject owner = CreateScene().CreateObject("Audio Source Owner");
-        var component = owner.AddComponent<HistoryAssetReferenceComponent>();
+        HistoryAssetReferenceComponent component = owner.AddComponent<HistoryAssetReferenceComponent>();
         component.asset = asset;
         Guid componentId = component.identity.persistentId;
         Assert.True(m_edits.RemoveComponent(component));
         EditorHistoryResult undo = m_runtime.interactions.history.Undo();
         Assert.True(undo.succeeded, undo.message);
-        var restored = Assert.IsType<HistoryAssetReferenceComponent>(IdentityAllocator.current.Get<GameComponent>(componentId));
+        HistoryAssetReferenceComponent restored = Assert.IsType<HistoryAssetReferenceComponent>(
+            IdentityAllocator.current.Get<GameComponent>(componentId)
+        );
         Assert.Same(asset, restored.asset);
         Assert.True(m_runtime.interactions.history.Redo().succeeded);
         Assert.Null(IdentityAllocator.current.Get<GameComponent>(componentId));
@@ -531,10 +535,10 @@ public sealed partial class SceneHistoryTests : IDisposable
         GameObject targetObject = scene.CreateObject("Target");
         GameObject targetChild = scene.CreateObject("Child");
         targetChild.transform.SetParent(targetObject.transform);
-        var targetComponent = targetChild.AddComponent<HistoryComponent>();
+        HistoryComponent targetComponent = targetChild.AddComponent<HistoryComponent>();
         targetComponent.value = 41;
         GameObject referenceObject = scene.CreateObject("References");
-        var references = referenceObject.AddComponent<HistoryReferenceComponent>();
+        HistoryReferenceComponent references = referenceObject.AddComponent<HistoryReferenceComponent>();
         references.targetComponent = targetComponent;
         references.targetObject = targetChild;
         Guid componentId = targetComponent.identity.persistentId;
@@ -543,7 +547,7 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.True(m_edits.RemoveComponent(targetComponent));
         EditorHistoryResult restoreComponentResult = m_runtime.interactions.history.Undo();
         Assert.True(restoreComponentResult.succeeded, restoreComponentResult.message);
-        var restoredComponent = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(componentId));
+        HistoryComponent restoredComponent = Assert.IsType<HistoryComponent>(IdentityAllocator.current.Get<GameComponent>(componentId));
         Assert.Same(restoredComponent, references.targetComponent);
         Assert.Equal(41, restoredComponent.value);
         Assert.True(m_edits.DeleteGameObject(targetObject));
@@ -562,7 +566,7 @@ public sealed partial class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         GameObject sourceObject = scene.CreateObject("Source");
-        var source = sourceObject.AddComponent<HistoryReferenceComponent>();
+        HistoryReferenceComponent source = sourceObject.AddComponent<HistoryReferenceComponent>();
         byte[] incompatibleState = SceneElementSerialization.CaptureState(source, m_host.serialization, m_assets);
         GameObject owner = scene.CreateObject("Owner");
         TypeRef componentType = m_host.types.GetTypeRef(typeof(HistoryComponent));
@@ -602,7 +606,7 @@ public sealed partial class SceneHistoryTests : IDisposable
     {
         GameScene scene = CreateScene();
         GameObject sourceOwner = scene.CreateObject("Source");
-        var source = sourceOwner.AddComponent<RestoreCleanupFailureComponent>();
+        RestoreCleanupFailureComponent source = sourceOwner.AddComponent<RestoreCleanupFailureComponent>();
         byte[] state = SceneElementSerialization.CaptureState(source, m_host.serialization, m_assets);
         GameObject targetOwner = scene.CreateObject("Target");
         TypeRef typeRef = m_host.types.GetTypeRef(typeof(RestoreCleanupFailureComponent));
@@ -702,8 +706,8 @@ public sealed partial class SceneHistoryTests : IDisposable
     public void SystemHistoryPreservesIdentityStateAndExplicitOrder()
     {
         GameScene scene = CreateScene();
-        var first = (HistorySystem)m_edits.AddSystem(scene, typeof(HistorySystem));
-        var second = (HistorySystem)m_edits.AddSystem(scene, typeof(HistorySystem));
+        HistorySystem first = (HistorySystem)m_edits.AddSystem(scene, typeof(HistorySystem));
+        HistorySystem second = (HistorySystem)m_edits.AddSystem(scene, typeof(HistorySystem));
         first.value = 30;
         Guid firstId = first.identity.persistentId;
         m_edits.SetSystemIndex(scene, second, 0);
@@ -716,7 +720,7 @@ public sealed partial class SceneHistoryTests : IDisposable
         Assert.Equal(30, first.value);
         Assert.True(m_edits.RemoveSystem(first));
         Assert.True(m_runtime.interactions.history.Undo().succeeded);
-        var restored = Assert.IsType<HistorySystem>(IdentityAllocator.current.Get<GameSystem>(firstId));
+        HistorySystem restored = Assert.IsType<HistorySystem>(IdentityAllocator.current.Get<GameSystem>(firstId));
         Assert.Equal(30, restored.value);
     }
 
@@ -837,10 +841,7 @@ internal sealed class HistoryComponent : GameBehavior
     [SerializableProperty]
     public int value { get; set; }
 
-    protected override void Reset()
-    {
-        value = 7;
-    }
+    protected override void Reset() => value = 7;
 }
 
 internal enum CoupledHistoryMode
@@ -902,10 +903,7 @@ internal sealed class HistorySystem : GameSystem
     [SerializableProperty]
     public int value { get; set; }
 
-    protected override void Reset()
-    {
-        value = 11;
-    }
+    protected override void Reset() => value = 11;
 }
 
 [StableTypeId("71cc27da-2c47-47f2-a037-c9bc29615358")]

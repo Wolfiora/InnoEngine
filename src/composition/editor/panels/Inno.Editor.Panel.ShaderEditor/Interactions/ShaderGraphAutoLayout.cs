@@ -48,7 +48,13 @@ internal static class ShaderGraphAutoLayout
             GraphNodeRecord[] members = output.definitionId == ShaderGraphDocument.outputDefinitionId
                                         ? graph.nodes.Where(node => (
                                             node.id == output.id
-                                            || ShaderGraphDocument.Read(node, "stage", "", serialization, context) == output.id.value
+                                            || ShaderGraphDocument.Read(
+                                                node,
+                                                "stage",
+                                                string.Empty,
+                                                serialization,
+                                                context
+                                            ) == output.id.value
                                         )).ToArray()
                                         : graph.nodes.Where(node => !placed.Contains(node.id)).ToArray();
             LayoutLane(output, members, ref laneY);
@@ -69,7 +75,7 @@ internal static class ShaderGraphAutoLayout
             GraphNodeRecord[] members,
             ref float y
         ) {
-            var memberIds = members.Select(static node => node.id).ToHashSet();
+            HashSet<GraphNodeId> memberIds = members.Select(static node => node.id).ToHashSet();
             var distance = new Dictionary<GraphNodeId, int> { [output.id] = 0 };
             var queue = new Queue<GraphNodeId>();
             queue.Enqueue(output.id);
@@ -137,7 +143,7 @@ internal static class ShaderGraphAutoLayout
                 {
                     return;
                 }
-                var oldOrder = nodes.Select(static (
+                Dictionary<GraphNodeId, int> oldOrder = nodes.Select(static (
                     node,
                     index
                 ) => (node.id, index)).ToDictionary();

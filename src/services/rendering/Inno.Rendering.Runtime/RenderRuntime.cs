@@ -68,11 +68,11 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// <summary>
     /// Creates a render runtime without installing any concrete pipeline.
     /// </summary>
-    /// <param name="device">
-    /// Active backend-neutral device.
-    /// </param>
     /// <param name="types">
     /// The type catalog that owns render extension generations.
+    /// </param>
+    /// <param name="device">
+    /// Active backend-neutral device.
     /// </param>
     /// <param name="diagnostics">
     /// Owner-bound structured diagnostic producer.
@@ -91,10 +91,6 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// Optional host callback that selects the content region within the primary presentation surface.
     /// The complete surface is used when omitted.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// The contributor sequence contains a null entry or the same contributor more than once.
-    /// No rendering generation is registered in this case.
-    /// </exception>
     /// <param name="resourceLimits">
     /// Finite native cache and asynchronous readback limits; omitted values use the engine defaults.
     /// </param>
@@ -107,6 +103,10 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// <param name="compositionProgramProvider">
     /// Backend-specific program provider used when the host composites multiple render layers.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// The contributor sequence contains a null entry or the same contributor more than once.
+    /// No rendering generation is registered in this case.
+    /// </exception>
     public RenderRuntime(
         TypeCatalog types,
         IRenderDevice device,
@@ -146,7 +146,7 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
         m_resourceService = new RenderResourceService(m_device, m_diagnostics, targetArtifacts, resourceLimits);
         m_uploads = new RenderFrameUploadService(m_device, resourceLimits);
         m_compositor = new RenderLayerCompositor(m_device, compositionProgramProvider);
-        targets = new RenderTargetStore(device, resourceLimits.targets);
+        this.targets = new RenderTargetStore(device, resourceLimits.targets);
     }
 
     /// <summary>
@@ -254,10 +254,7 @@ public sealed partial class RenderRuntime : RuntimeSubsystem, IRenderRequestSink
     /// <summary>
     /// Attaches this feature to its owning runtime generation.
     /// </summary>
-    protected override void OnStart()
-    {
-        EnsureActive();
-    }
+    protected override void OnStart() => EnsureActive();
 
     private void EnsureActive()
     {

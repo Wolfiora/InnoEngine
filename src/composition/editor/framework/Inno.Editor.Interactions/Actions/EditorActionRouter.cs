@@ -433,7 +433,7 @@ internal sealed class EditorActionRouter(
             {
                 HotKeyGesture gesture = CreateGesture(shortcut);
                 string area = string.IsNullOrEmpty(shortcut.area) ? registration.area ?? string.Empty : shortcut.area;
-                var key = (gesture.key, gesture.normalizedModifiers, area);
+                (KeyCode key, KeyModifier normalizedModifiers, string area) key = (gesture.key, gesture.normalizedModifiers, area);
                 if (!candidates.TryGetValue(key, out HashSet<string>? actions))
                 {
                     candidates.Add(key, actions = new(StringComparer.Ordinal));

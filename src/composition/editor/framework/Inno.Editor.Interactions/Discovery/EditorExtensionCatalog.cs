@@ -387,9 +387,9 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
         {
             m_state.Save(GetAvailableState(previous), GetAvailablePanels(previous));
         }
-        var existing = previous is null
-                       ? new HashSet<object>(ReferenceEqualityComparer.Instance)
-                       : new HashSet<object>(previous.instances, ReferenceEqualityComparer.Instance);
+        HashSet<object> existing = previous is null
+                                   ? new HashSet<object>(ReferenceEqualityComparer.Instance)
+                                   : new HashSet<object>(previous.instances, ReferenceEqualityComparer.Instance);
         EditorHistory.HandlerUpdate handlers = m_interactions.historyHost.PrepareHandlerUpdate(
             CreateHistoryHandlerMap(candidate.historyHandlers)
         );
@@ -510,7 +510,7 @@ internal sealed class EditorExtensionCatalog : TypeRegistry<EditorExtensionCatal
 
         AttemptCleanup(() => RestorePrevious(activation), failures);
         m_activation = null;
-        var previousPanelIds = previous is null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(
+        HashSet<string> previousPanelIds = previous is null ? new HashSet<string>(StringComparer.Ordinal) : new HashSet<string>(
             GetAvailablePanels(previous).Select(static registration => registration.attribute.id),
             StringComparer.Ordinal
         );

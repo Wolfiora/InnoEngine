@@ -12,7 +12,7 @@ namespace Inno.Build.Toolchains;
 /// </summary>
 public sealed class ComponentNativeProductExecutor : INativeProductExecutor
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async Task<ProductNativeBuildResult> BuildAsync(
         NativeBuildContext context,
         ProductNativeBuildPlan plan,

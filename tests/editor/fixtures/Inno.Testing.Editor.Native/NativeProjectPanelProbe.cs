@@ -8,9 +8,15 @@ namespace Inno.Testing.Editor.Native;
 /// <summary>
 /// Resolves the actual workspace and editing services through public Editor module composition.
 /// </summary>
-/// <param name="workspace">The composed scene workspace.</param>
-/// <param name="graphs">The composed graph editor module.</param>
-/// <param name="edits">The composed scene editing service.</param>
+/// <param name="workspace">
+/// The composed scene workspace.
+/// </param>
+/// <param name="graphs">
+/// The composed graph editor module.
+/// </param>
+/// <param name="edits">
+/// The composed scene editing service.
+/// </param>
 [EditorModule("tests.native-project-panels", order: 2000)]
 public sealed class NativeProjectPanelProbe(
     IEditorSceneWorkspace workspace,

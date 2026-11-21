@@ -9,7 +9,7 @@ namespace Inno.Build.MacOSArm64;
 /// </summary>
 public sealed class MacOSArm64BuildHostProvider : IBuildHostProvider
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public BuildHostDescriptor? TryCapture()
         => !OperatingSystem.IsMacOS()
            || RuntimeInformation.ProcessArchitecture != Architecture.Arm64

@@ -29,7 +29,7 @@ public static class BgfxTargetCapabilities
         return new GraphicsCapabilities(
             backend,
             features,
-            new GraphicsLimits(256, 8, 16384, 16),
+            new GraphicsLimits(256, 8, 16_384, 16),
             formats,
             formats,
             formats,

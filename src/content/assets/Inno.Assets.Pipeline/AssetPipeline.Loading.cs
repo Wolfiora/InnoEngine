@@ -18,7 +18,7 @@ using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetPipeline
+public sealed partial class AssetPipeline
 {
     /// <summary>
     /// Loads a canonical asset by isolated source path.

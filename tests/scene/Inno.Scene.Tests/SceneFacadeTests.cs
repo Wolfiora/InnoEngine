@@ -24,7 +24,7 @@ public sealed class SceneFacadeTests : IDisposable
         {
             roots.Add(scene.CreateObject("Root " + index).transform);
         }
-        var random = new Random(27102026);
+        var random = new Random(27_102_026);
         for (int iteration = 0; iteration < 200; iteration++)
         {
             ulong before = scene.hierarchyRevision;
@@ -410,10 +410,7 @@ public sealed class SceneFacadeTests : IDisposable
     {
         public int baseResetCount;
 
-        protected override void Reset()
-        {
-            baseResetCount++;
-        }
+        protected override void Reset() => baseResetCount++;
     }
 
     private sealed class DerivedResetComponent : BaseResetComponent

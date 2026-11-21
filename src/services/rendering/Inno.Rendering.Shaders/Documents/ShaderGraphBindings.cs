@@ -56,7 +56,7 @@ public static class ShaderGraphBindings
             .ToHashSet(StringComparer.Ordinal);
         foreach (GraphNodeRecord node in graph.nodes)
         {
-            if (stages.Contains(ShaderGraphDocument.Read(node, "stage", "", serialization, context)))
+            if (stages.Contains(ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context)))
             {
                 removed.Add(node.id);
             }
@@ -81,8 +81,9 @@ public static class ShaderGraphBindings
         }
         foreach (GraphNodeRecord node in graph.nodes)
         {
-            if (stages.Contains(node.id.value) || stages.Contains(ShaderGraphDocument.Read(node, "stage", "", serialization, context)))
-            {
+            if (stages.Contains(node.id.value)
+                || stages.Contains(ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context))
+            ) {
                 removed.Add(node.id);
             }
         }
@@ -101,7 +102,7 @@ public static class ShaderGraphBindings
             {
                 affectedBindings.Add(input.id);
             }
-            affectedBindings.Add(ShaderGraphDocument.Read(node, "bindingIdentity", "", serialization, context));
+            affectedBindings.Add(ShaderGraphDocument.Read(node, "bindingIdentity", string.Empty, serialization, context));
         }
         foreach (GraphNodeId id in removed)
         {
@@ -131,13 +132,13 @@ public static class ShaderGraphBindings
                 context
             );
             string id = string.IsNullOrWhiteSpace(input.id)
-                        ? ShaderGraphDocument.Read(node, "bindingIdentity", "", serialization, context)
+                        ? ShaderGraphDocument.Read(node, "bindingIdentity", string.Empty, serialization, context)
                         : input.id;
             if (!IsBinding(input) || !affectedBindings.Contains(id))
             {
                 continue;
             }
-            string stageId = ShaderGraphDocument.Read(node, "stage", "", serialization, context);
+            string stageId = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
             GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageId) ? null : candidate.FindNode(new(stageId));
             ShaderStage stage = output is null
                 ? ShaderStage.None
@@ -212,11 +213,11 @@ public static class ShaderGraphBindings
         // Keep the last declared identity through incomplete text input; clearing a name must not erase its default value.
         if (string.IsNullOrWhiteSpace(previous.id))
         {
-            previous.id = ShaderGraphDocument.Read(node, "bindingIdentity", "", serialization, context);
+            previous.id = ShaderGraphDocument.Read(node, "bindingIdentity", string.Empty, serialization, context);
         }
         node.SetValue("settings", ShaderGraphDocument.Encode(settings, serialization, context));
         ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(candidate, serialization, context);
-        var properties = definition.properties.ToList();
+        List<ShaderPropertyDefinition> properties = definition.properties.ToList();
         ShaderPropertyDefinition? previousProperty = properties
             .Where(value => value.id.value == previous.id)
             .Cast<ShaderPropertyDefinition?>()
@@ -265,7 +266,7 @@ public static class ShaderGraphBindings
                 {
                     continue;
                 }
-                string stageId = ShaderGraphDocument.Read(input, "stage", "", serialization, context);
+                string stageId = ShaderGraphDocument.Read(input, "stage", string.Empty, serialization, context);
                 GraphNodeRecord? output = string.IsNullOrWhiteSpace(stageId) ? null : candidate.FindNode(new(stageId));
                 if (output is not null)
                 {

@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores reload-safe configuration for one pipeline or feature extension generation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("8683f095-765d-5aa3-9a9f-fb95777885c5")]
+[StableTypeId("8683f095-765d-5aa3-9a9f-fb95777885c5")]
 public struct SerializedRenderExtensionState
 {
     /// <summary>
@@ -20,8 +20,8 @@ public struct SerializedRenderExtensionState
     /// </summary>
     public SerializedRenderExtensionState()
     {
-        propertyData = [];
-        dependencies = [];
+        this.propertyData = [];
+        this.dependencies = [];
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ public struct SerializedRenderExtensionState
     ) {
         this.stableTypeId = stableTypeId;
         this.propertyData = propertyData.ToArray();
-        dependencies = [];
+        this.dependencies = [];
     }
 
     /// <summary>
@@ -51,9 +51,9 @@ public struct SerializedRenderExtensionState
     public SerializedRenderExtensionState(AssetPropertySnapshot properties)
     {
         ArgumentNullException.ThrowIfNull(properties);
-        stableTypeId = properties.stableTypeId;
-        propertyData = properties.data.ToArray();
-        dependencies = properties.dependencies.ToArray();
+        this.stableTypeId = properties.stableTypeId;
+        this.propertyData = properties.data.ToArray();
+        this.dependencies = properties.dependencies.ToArray();
     }
 
     /// <summary>

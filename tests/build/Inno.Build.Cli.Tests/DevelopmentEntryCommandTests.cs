@@ -17,10 +17,10 @@ public sealed class DevelopmentEntryCommandTests
     [InlineData("support-pack", "--clean")]
     [InlineData("editor", "--dry-run")]
     [InlineData("editor", "--unrecognized", "value")]
-    public async Task InvalidCommandsFailBeforeSdkDiscoveryOrCleanup(params string[] arguments)
-    {
-        Assert.Equal(1, await BuildApplication.Run(arguments, CancellationToken.None));
-    }
+    public async Task InvalidCommandsFailBeforeSdkDiscoveryOrCleanup(params string[] arguments) => Assert.Equal(
+        1,
+        await BuildApplication.Run(arguments, CancellationToken.None)
+    );
 
     [Fact]
     public async Task CancellationReturnsBeforeCreatingBuildState()

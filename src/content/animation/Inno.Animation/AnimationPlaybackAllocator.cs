@@ -23,7 +23,7 @@ public sealed class AnimationPlaybackAllocator
         {
             throw new InvalidOperationException("Animation owner generations are exhausted.");
         }
-        generation = (uint)next;
+        this.generation = (uint)next;
     }
 
     /// <summary>
@@ -55,7 +55,7 @@ public sealed class AnimationPlaybackAllocator
         {
             throw new ArgumentOutOfRangeException(nameof(slotGeneration));
         }
-        return new AnimationPlaybackHandle(((ulong)slotGeneration << 32) | ((uint)slot + 1U), generation);
+        return new AnimationPlaybackHandle(((ulong)slotGeneration << 32) | ((uint)slot + 1u), generation);
     }
 
     /// <summary>
@@ -74,6 +74,6 @@ public sealed class AnimationPlaybackAllocator
             return (-1, 0);
         }
         uint encodedSlot = (uint)(handle.value & uint.MaxValue);
-        return (checked((int)(encodedSlot - 1U)), (uint)(handle.value >> 32));
+        return (checked((int)(encodedSlot - 1u)), (uint)(handle.value >> 32));
     }
 }

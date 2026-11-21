@@ -215,7 +215,11 @@ internal sealed class TypeRegistryRefreshSet(IReadOnlyList<ITypeRegistryTransact
             }
             catch (Exception rollbackFailure)
             {
-                var combined = new AggregateException("Type registry activation and rollback failed.", activationFailure, rollbackFailure);
+                var combined = new AggregateException(
+                    "Type registry activation and rollback failed.",
+                    activationFailure,
+                    rollbackFailure
+                );
                 if (RetirementPendingException.Find(combined) is not null)
                 {
                     m_failure = combined;

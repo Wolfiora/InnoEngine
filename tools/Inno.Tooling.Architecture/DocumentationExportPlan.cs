@@ -213,5 +213,5 @@ internal static class DocumentationExportPlan
     private static string Property(
         JsonElement node,
         string name
-    ) => node.GetProperty("Properties").GetProperty(name).GetString() ?? "";
+    ) => node.GetProperty("Properties").GetProperty(name).GetString() ?? string.Empty;
 }

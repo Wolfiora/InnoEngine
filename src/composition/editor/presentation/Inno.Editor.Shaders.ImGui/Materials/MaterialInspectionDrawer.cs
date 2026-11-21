@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
 using Inno.Assets.Pipeline;
+using Inno.Editor.Assets;
 using Inno.Editor.ImGui;
 using Inno.Editor.Inspection;
+using Inno.Editor.Rendering;
 using Inno.Editor.Shaders;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -18,7 +20,7 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => Inno.Editor.ImGui.ImGuiIcon.File;
+    public override string icon => ImGuiIcon.File;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -35,7 +37,7 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
     protected override string GetIcon(
         InspectionDrawContext context,
         MaterialAsset target
-    ) => context.interactions.TryGetModule<MaterialDocuments>(out var documents)
+    ) => context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents)
          && documents is not null
          && documents.assets.TryGetFileSystemEntry(
              target.assetPath,
@@ -72,7 +74,7 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         MaterialAsset target
     ) {
-        if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        if (context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents) && documents is not null)
         {
             MaterialInspector.DrawHeader(context, documents, documents.Open(target));
         }
@@ -91,7 +93,7 @@ internal sealed class MaterialInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         MaterialAsset target
     ) {
-        if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        if (context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents) && documents is not null)
         {
             MaterialInspector.Draw(context, documents, documents.Open(target));
         }
@@ -104,7 +106,7 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => Inno.Editor.ImGui.ImGuiIcon.File;
+    public override string icon => ImGuiIcon.File;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -165,7 +167,7 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) {
-        if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        if (context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents) && documents is not null)
         {
             MaterialInspector.DrawHeader(context, documents, documents.OpenDraft(target.assetPath));
         }
@@ -184,7 +186,7 @@ internal sealed class MaterialSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) {
-        if (context.interactions.TryGetModule<MaterialDocuments>(out var documents) && documents is not null)
+        if (context.interactions.TryGetModule<MaterialDocuments>(out MaterialDocuments? documents) && documents is not null)
         {
             MaterialInspector.Draw(context, documents, documents.OpenDraft(target.assetPath));
         }
@@ -196,26 +198,24 @@ internal static class MaterialInspector
     internal static void DrawHeader(
         InspectionDrawContext context,
         MaterialDocuments documents,
-        Inno.Editor.Assets.AssetDraftDocuments<MaterialAsset>.Draft draft
-    ) {
-        EditorUI.current.widgets.Disabled(draft.readOnly, () =>
+        AssetDraftDocuments<MaterialAsset>.Draft draft
+    ) => EditorUI.current.widgets.Disabled(draft.readOnly, () =>
+    {
+        if (Ui.Button("Save"))
         {
-            if (Ui.Button("Save"))
-            {
-                _ = context.interactions.documents.Save(draft.documentId);
-            }
-            Ui.SameLine(0f, -1f);
-            if (Ui.Button("Revert"))
-            {
-                _ = context.interactions.documents.Revert(draft.documentId);
-            }
-        });
-    }
+            _ = context.interactions.documents.Save(draft.documentId);
+        }
+        Ui.SameLine(0f, -1f);
+        if (Ui.Button("Revert"))
+        {
+            _ = context.interactions.documents.Revert(draft.documentId);
+        }
+    });
 
     internal static void Draw(
         InspectionDrawContext context,
         MaterialDocuments documents,
-        Inno.Editor.Assets.AssetDraftDocuments<MaterialAsset>.Draft draft
+        AssetDraftDocuments<MaterialAsset>.Draft draft
     ) {
         MaterialAsset material = documents.Read(draft.id);
         var edits = new DraftEdits(documents, draft, material);
@@ -228,8 +228,9 @@ internal static class MaterialInspector
                 {
                     EditorUI.current.widgets.Hint("Choose an available Shader to preview this Material.");
                 }
-                else if (context.interactions.TryGetModule<ShaderPreviews>(out var shaderPreviews) && shaderPreviews is not null)
-                {
+                else if (context.interactions.TryGetModule<ShaderPreviews>(out ShaderPreviews? shaderPreviews)
+                         && shaderPreviews is not null
+                ) {
                     shaderPreviews.DrawMaterial(draft.id, material, MathF.Max(1f, MathF.Min(256f, Ui.GetContentRegionAvailable().X)));
                 }
                 else
@@ -321,7 +322,7 @@ internal static class MaterialInspector
                 "Inherited values follow Shader defaults. Changing a field creates a Material override; Reset restores inheritance."
             );
             bool groupOpen = parametersOpen;
-            string currentGroup = "";
+            string currentGroup = string.Empty;
             int visibleParameters = 0;
             foreach (ShaderPropertyDefinition property in definition.properties.Where(IsEditable))
             {
@@ -381,8 +382,9 @@ internal static class MaterialInspector
 
                     if (value.kind == MaterialValueKind.Texture)
                     {
-                        if (value.texture is { isMissing: false } texture && documents.previews.TryGetTexture(texture, out var preview))
-                        {
+                        if (value.texture is { isMissing: false } texture
+                            && documents.previews.TryGetTexture(texture, out EditorPreviewHandle preview)
+                        ) {
                             float width = MathF.Max(1f, MathF.Min(128f, Ui.GetContentRegionAvailable().X));
                             float height = width * preview.pixelHeight / preview.pixelWidth;
                             if (height > 128f)
@@ -545,11 +547,11 @@ internal static class MaterialInspector
 
     private sealed class DraftEdits(
         MaterialDocuments documents,
-        Inno.Editor.Assets.AssetDraftDocuments<MaterialAsset>.Draft draft,
+        AssetDraftDocuments<MaterialAsset>.Draft draft,
         MaterialAsset material
     ) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,

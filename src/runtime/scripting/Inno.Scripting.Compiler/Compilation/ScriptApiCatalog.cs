@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Loader;
+using Microsoft.CodeAnalysis.CSharp;
 using Inno.Scripting.Api;
 
 namespace Inno.Scripting.Compiler;
@@ -58,7 +59,7 @@ internal static class ScriptApiCatalog
                 && AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default
             ))
             .ToArray();
-        var byName = loaded
+        Dictionary<string, Assembly> byName = loaded
             .Where(static assembly => assembly.GetName().Name is not null)
             .GroupBy(static assembly => assembly.GetName().Name!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);
@@ -172,7 +173,7 @@ internal static class ScriptApiCatalog
             {
                 throw new InvalidOperationException($"Script API type '{type.FullName}' must be public.");
             }
-            if (!Microsoft.CodeAnalysis.CSharp.SyntaxFacts.IsValidIdentifier(export.name))
+            if (!SyntaxFacts.IsValidIdentifier(export.name))
             {
                 throw new InvalidOperationException(
                     $"Script API name '{export.name}' for type '{type.FullName}' is not a valid C# identifier."
@@ -299,7 +300,7 @@ internal static class ScriptApiCatalog
                 && AssemblyLoadContext.GetLoadContext(assembly) == AssemblyLoadContext.Default
             ))
             .ToArray();
-        var byName = loaded
+        Dictionary<string, Assembly> byName = loaded
             .Where(static assembly => assembly.GetName().Name is not null)
             .GroupBy(static assembly => assembly.GetName().Name!, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(static group => group.Key, static group => group.First(), StringComparer.OrdinalIgnoreCase);

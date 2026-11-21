@@ -29,10 +29,8 @@ public sealed class ShaderGraphArtifactTests : IDisposable
 
     public ShaderGraphArtifactTests()
     {
-        m_types = new(m_modules, new ReflectionTypeCatalogSource()); m_serialization = new(
-            m_types,
-            new ReflectionSerializationMetadataSource()
-        );
+        m_types = new(m_modules, new ReflectionTypeCatalogSource());
+        m_serialization = new(m_types, new ReflectionSerializationMetadataSource());
     }
 
     [Theory]
@@ -104,14 +102,14 @@ public sealed class ShaderGraphArtifactTests : IDisposable
     {
         GraphDocument graph = ShaderGraphTemplates.CreateRaster(m_serialization, SerializationContext.empty);
         GraphNodeRecord input = graph.FindNode(new("color"))!;
-        var settings = ShaderGraphDocument.Read(
+        ShaderGraphInputSettings settings = ShaderGraphDocument.Read(
             input,
             "settings",
             new ShaderGraphInputSettings(),
             m_serialization,
             SerializationContext.empty
         );
-        settings.id = "";
+        settings.id = string.Empty;
         graph = ShaderGraphBindings.ChangeInput(graph, input.id, settings, m_serialization, SerializationContext.empty);
         settings.id = "renamed-color";
         graph = ShaderGraphBindings.ChangeInput(graph, input.id, settings, m_serialization, SerializationContext.empty);

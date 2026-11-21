@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Core.Execution;
 using Inno.Core.Jobs;
 
 namespace Inno.Core.JobsSystem.Tests;
@@ -20,7 +21,7 @@ public sealed class JobSystemBehaviorTests
         for (int frame = 0; frame < 256; frame++)
         {
             jobs.BeginFrame();
-            Assert.Throws<ArgumentException>(() => jobs.Schedule(_ => {}, null, new JobHandle[] { default }));
+            Assert.Throws<ArgumentException>(() => jobs.Schedule(_ => {}, null, [default]));
             Assert.Equal(0, jobs.statistics.frameJobs);
             Assert.Throws<InvalidOperationException>(() => jobs.ParallelFor(8, 1, (
                 _,
@@ -48,9 +49,9 @@ public sealed class JobSystemBehaviorTests
         int attempts = 0;
         jobs.EnqueueMainThread(() =>
         {
-            if (++attempts == 1) throw new Inno.Core.Execution.RetirementPendingException("pending");
+            if (++attempts == 1) throw new RetirementPendingException("pending");
         });
-        Assert.Throws<Inno.Core.Execution.RetirementPendingException>(jobs.DrainMainThreadQueue);
+        Assert.Throws<RetirementPendingException>(jobs.DrainMainThreadQueue);
         Assert.Equal(1, jobs.statistics.mainThreadPending);
         jobs.DrainMainThreadQueue();
         Assert.Equal(2, attempts);
@@ -96,12 +97,12 @@ public sealed class JobSystemBehaviorTests
         using var jobs = new JobScheduler(JobExecutionMode.SingleThread);
         jobs.BeginFrame();
 
-        var mainThread = Environment.CurrentManagedThreadId;
+        int mainThread = Environment.CurrentManagedThreadId;
         var observed = new List<int>();
-        var a = jobs.Schedule(() => observed.Add(Environment.CurrentManagedThreadId));
-        var b = jobs.Schedule(() => observed.Add(Environment.CurrentManagedThreadId));
+        JobHandle a = jobs.Schedule(() => observed.Add(Environment.CurrentManagedThreadId));
+        JobHandle b = jobs.Schedule(() => observed.Add(Environment.CurrentManagedThreadId));
 
-        jobs.CompleteAll(stackalloc[] { a, b });
+        jobs.CompleteAll([a, b]);
         jobs.EndFrame();
 
         Assert.Equal(2, observed.Count);
@@ -137,11 +138,11 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_ScheduleAndComplete_RunsJob()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        var value = 0;
-        var handle = jobs.Schedule(() => value = 7);
+        int value = 0;
+        JobHandle handle = jobs.Schedule(() => value = 7);
         jobs.Complete(handle);
         jobs.EndFrame();
 
@@ -151,12 +152,12 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_ScheduleWithDependencies_RunsInOrder()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
         var order = new ConcurrentQueue<int>();
-        var first = jobs.Schedule(() => order.Enqueue(1));
-        var second = jobs.Schedule(_ => order.Enqueue(2), null, [first]);
+        JobHandle first = jobs.Schedule(() => order.Enqueue(1));
+        JobHandle second = jobs.Schedule(_ => order.Enqueue(2), null, [first]);
 
         jobs.Complete(second);
         jobs.EndFrame();
@@ -167,13 +168,13 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_CombineDependencies_CompletesAfterAll()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        var sum = 0;
-        var a = jobs.Schedule(() => Interlocked.Add(ref sum, 3));
-        var b = jobs.Schedule(() => Interlocked.Add(ref sum, 4));
-        var barrier = jobs.CombineDependencies([a, b]);
+        int sum = 0;
+        JobHandle a = jobs.Schedule(() => Interlocked.Add(ref sum, 3));
+        JobHandle b = jobs.Schedule(() => Interlocked.Add(ref sum, 4));
+        JobHandle barrier = jobs.CombineDependencies([a, b]);
 
         jobs.Complete(barrier);
         jobs.EndFrame();
@@ -184,17 +185,17 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_ParallelFor_CoversEveryIndexExactlyOnce()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
         const int length = 1024;
         var values = new int[length];
-        var handle = jobs.ParallelFor(length, 32, (
+        JobHandle handle = jobs.ParallelFor(length, 32, (
             start,
             end
         ) =>
         {
-            for (var i = start; i < end; i++)
+            for (int i = start; i < end; i++)
             {
                 Interlocked.Increment(ref values[i]);
             }
@@ -203,7 +204,7 @@ public sealed class JobSystemBehaviorTests
         jobs.Complete(handle);
         jobs.EndFrame();
 
-        for (var i = 0; i < values.Length; i++)
+        for (int i = 0; i < values.Length; i++)
         {
             Assert.Equal(1, values[i]);
         }
@@ -212,10 +213,10 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_MainThreadQueue_DrainExecutesOnMainThread()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        var mainThread = Environment.CurrentManagedThreadId;
+        int mainThread = Environment.CurrentManagedThreadId;
         var threadIds = new List<int>();
         jobs.EnqueueMainThread(() => threadIds.Add(Environment.CurrentManagedThreadId));
         jobs.EnqueueMainThread(() => threadIds.Add(Environment.CurrentManagedThreadId));
@@ -229,7 +230,7 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_MainThreadQueue_DrainFromWorkerThread_Throws()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
         Exception? fault = null;
@@ -254,28 +255,28 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_WhenJobThrows_CompleteRethrowsAndEndFrameAggregates()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        var handle = jobs.Schedule(() => throw new InvalidOperationException("boom"));
-        var completeEx = Assert.Throws<InvalidOperationException>(() => jobs.Complete(handle));
+        JobHandle handle = jobs.Schedule(() => throw new InvalidOperationException("boom"));
+        InvalidOperationException completeEx = Assert.Throws<InvalidOperationException>(() => jobs.Complete(handle));
         Assert.IsType<InvalidOperationException>(completeEx.InnerException);
 
-        var endEx = Assert.Throws<AggregateException>(() => jobs.EndFrame());
+        AggregateException endEx = Assert.Throws<AggregateException>(() => jobs.EndFrame());
         Assert.NotEmpty(endEx.InnerExceptions);
     }
 
     [Fact]
     public void WorkStealing_EndFrameRecyclesHandle_AndStaleHandleThrows()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
-        var handle = jobs.Schedule(() => {});
+        JobHandle handle = jobs.Schedule(() => {});
         jobs.EndFrame();
 
         jobs.BeginFrame();
-        var ex = Assert.Throws<InvalidOperationException>(() => jobs.Complete(handle));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => jobs.Complete(handle));
         jobs.EndFrame();
 
         Assert.Contains("stale", ex.Message, StringComparison.OrdinalIgnoreCase);
@@ -284,14 +285,14 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_ConcurrentSchedulingAcrossThreads_IsStable()
     {
-        using var jobs = CreateWorkStealing(workerCount: 4);
+        using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
 
         const int taskCount = 2000;
-        var count = 0;
+        int count = 0;
         Parallel.For(0, taskCount, _ =>
         {
-            var handle = jobs.Schedule(() => Interlocked.Increment(ref count));
+            JobHandle handle = jobs.Schedule(() => Interlocked.Increment(ref count));
             jobs.Complete(handle);
         });
 
@@ -302,12 +303,12 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_WorkerThreadsParticipateUnderLoad()
     {
-        using var jobs = CreateWorkStealing(workerCount: 4);
+        using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
 
         var threadIds = new ConcurrentDictionary<int, byte>();
         var handles = new JobHandle[256];
-        for (var i = 0; i < handles.Length; i++)
+        for (int i = 0; i < handles.Length; i++)
         {
             handles[i] = jobs.Schedule(() =>
             {
@@ -325,13 +326,13 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_NestedScheduleFromWorker_IsSupported()
     {
-        using var jobs = CreateWorkStealing(workerCount: 2);
+        using JobScheduler jobs = CreateWorkStealing(workerCount: 2);
         jobs.BeginFrame();
 
-        var value = 0;
-        var outer = jobs.Schedule(() =>
+        int value = 0;
+        JobHandle outer = jobs.Schedule(() =>
         {
-            var inner = jobs.Schedule(() => Interlocked.Add(ref value, 3));
+            JobHandle inner = jobs.Schedule(() => Interlocked.Add(ref value, 3));
             jobs.Complete(inner);
             Interlocked.Add(ref value, 2);
         });
@@ -352,18 +353,18 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void WorkStealing_CombineManyDependencies_CompletesReliably()
     {
-        using var jobs = CreateWorkStealing(workerCount: 4);
+        using JobScheduler jobs = CreateWorkStealing(workerCount: 4);
         jobs.BeginFrame();
 
         const int count = 300;
         var handles = new JobHandle[count];
-        var sum = 0;
-        for (var i = 0; i < count; i++)
+        int sum = 0;
+        for (int i = 0; i < count; i++)
         {
             handles[i] = jobs.Schedule(() => Interlocked.Increment(ref sum));
         }
 
-        var barrier = jobs.CombineDependencies(handles);
+        JobHandle barrier = jobs.CombineDependencies(handles);
         jobs.Complete(barrier);
         jobs.EndFrame();
 
@@ -373,14 +374,14 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void CommonApi_EndFrameWithoutBeginFrame_Throws()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         Assert.Throws<InvalidOperationException>(() => jobs.EndFrame());
     }
 
     [Fact]
     public void CommonApi_BeginFrameTwice_Throws()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
         Assert.Throws<InvalidOperationException>(() => jobs.BeginFrame());
         jobs.EndFrame();
@@ -389,7 +390,7 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void CommonApi_ParallelForInvalidArguments_Throws()
     {
-        using var jobs = CreateWorkStealing();
+        using JobScheduler jobs = CreateWorkStealing();
         jobs.BeginFrame();
 
         Assert.Throws<ArgumentOutOfRangeException>(() => jobs.ParallelFor(-1, 8, (
@@ -407,7 +408,7 @@ public sealed class JobSystemBehaviorTests
     [Fact]
     public void CommonApi_DisposePreventsFurtherUse()
     {
-        var jobs = CreateWorkStealing();
+        JobScheduler jobs = CreateWorkStealing();
         jobs.Dispose();
 
         Assert.Throws<ObjectDisposedException>(() => jobs.BeginFrame());
@@ -415,10 +416,8 @@ public sealed class JobSystemBehaviorTests
     }
 
     private static JobScheduler CreateWorkStealing(int workerCount = 2)
+        => new JobScheduler(JobExecutionMode.WorkerPool, new JobSchedulerOptions
     {
-        return new JobScheduler(JobExecutionMode.WorkerPool, new JobSchedulerOptions
-        {
-            workerCount = workerCount
-        });
-    }
+        workerCount = workerCount
+    });
 }

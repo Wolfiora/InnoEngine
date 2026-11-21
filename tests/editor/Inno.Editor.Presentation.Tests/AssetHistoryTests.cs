@@ -8,12 +8,14 @@ using Inno.Assets.Pipeline;
 using Inno.Core.Diagnostics;
 using Inno.Core.IO;
 using Inno.Core.Identity;
+using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
@@ -23,7 +25,7 @@ namespace Inno.Editor.Presentation.Tests;
 
 public sealed class AssetHistoryTests : IDisposable
 {
-    private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
+    private readonly EditorUiSession m_ui = new();
     private readonly IdentityAllocator m_identities = new();
     private readonly IDisposable m_identityScope;
     private readonly string m_projectRoot = Path.Combine(Path.GetTempPath(), "InnoAssetHistoryTests", Guid.NewGuid().ToString("N"));
@@ -76,7 +78,7 @@ public sealed class AssetHistoryTests : IDisposable
             m_modules.generations
         );
         m_runtime = new EditorInteractionRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             m_types,
             m_logs,
             [m_types, m_serialization, m_identities, m_assets, m_plugins, m_ui]

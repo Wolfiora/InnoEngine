@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -12,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Stores one complete texture mip and addressable layer, slice, or cubemap-face upload.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("22ed6418-30e6-511e-8af3-5d830d3b0ce5")]
+[StableTypeId("22ed6418-30e6-511e-8af3-5d830d3b0ce5")]
 public sealed class RenderTextureSubresourceData
 {
     private readonly byte[] m_data;

@@ -189,9 +189,6 @@ public sealed class AnimationRuntimeTests
     {
         internal IReadOnlyList<AnimationSample> lastSamples { get; private set; } = [];
 
-        public void Apply(ReadOnlySpan<AnimationSample> samples)
-        {
-            lastSamples = samples.ToArray();
-        }
+        public void Apply(ReadOnlySpan<AnimationSample> samples) => lastSamples = samples.ToArray();
     }
 }

@@ -38,7 +38,7 @@ internal static class ScriptDeploymentReferenceResolver
         }
 
         var identities = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        using var fingerprint = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash fingerprint = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         Append(fingerprint, "Inno.ScriptDeploymentReferences");
         foreach (string path in paths)
         {

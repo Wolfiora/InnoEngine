@@ -17,7 +17,7 @@ internal static class ValidationShards
 
     internal static ValidationShard[] Create(ValidationCheck[] checks)
     {
-        var owners = checks.ToDictionary(
+        Dictionary<string, string> owners = checks.ToDictionary(
             static check => check.id,
             static check => (
                 check.exclusion is not null || check.context is null
@@ -27,7 +27,7 @@ internal static class ValidationShards
             StringComparer.Ordinal
         );
         var shards = new List<ValidationShard>();
-        foreach (var group in checks.GroupBy(check => owners[check.id], StringComparer.Ordinal))
+        foreach (IGrouping<string, ValidationCheck> group in checks.GroupBy(check => owners[check.id], StringComparer.Ordinal))
         {
             var prerequisites = new HashSet<string>(StringComparer.Ordinal);
             foreach (string required in group.Where(static check => check.exclusion is null)
@@ -154,10 +154,10 @@ internal static class ValidationShards
         {
             throw new InvalidDataException("No planned checks were discovered.");
         }
-        var expected = checks.Select(static check => check.id).ToHashSet(StringComparer.Ordinal);
-        var observed = evidence.results.ToLookup(static result => result.id, StringComparer.Ordinal);
+        HashSet<string> expected = checks.Select(static check => check.id).ToHashSet(StringComparer.Ordinal);
+        ILookup<string, ValidationResult> observed = evidence.results.ToLookup(static result => result.id, StringComparer.Ordinal);
         var errors = new List<string>();
-        foreach (var group in observed)
+        foreach (IGrouping<string, ValidationResult> group in observed)
         {
             if (!expected.Contains(group.Key))
             {

@@ -30,22 +30,22 @@ internal sealed class SceneGraphSourceIds : IReadOnlyDictionary<EngineObject, Gu
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public int Count => checked(m_objects.Count + (m_systems?.Count ?? 0));
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IEnumerable<EngineObject> Keys => EnumerateKeys();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IEnumerable<Guid> Values => EnumerateValues();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Guid this[EngineObject key] => TryGetValue(key, out Guid value) ? value : throw new KeyNotFoundException();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool ContainsKey(EngineObject key) => TryGetValue(key, out _);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool TryGetValue(
         EngineObject key,
         out Guid value
@@ -62,7 +62,7 @@ internal sealed class SceneGraphSourceIds : IReadOnlyDictionary<EngineObject, Gu
         return false;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IEnumerator<KeyValuePair<EngineObject, Guid>> GetEnumerator()
     {
         foreach (KeyValuePair<EngineObject, Guid> entry in m_objects)

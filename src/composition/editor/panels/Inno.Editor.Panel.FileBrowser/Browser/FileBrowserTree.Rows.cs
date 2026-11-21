@@ -7,6 +7,7 @@ using Inno.Core.Identity;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui.ImGuiWidget;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -62,7 +63,7 @@ internal sealed partial class FileBrowserTree
 
     private void RefreshRows()
     {
-        var widgets = EditorUI.current.widgets;
+        ImGuiWidget widgets = EditorUI.current.widgets;
         AssetPipeline pipeline = m_assets.edits.pipeline;
         if (!m_rootOpenRequest && !m_currentDirectoryOpenRequest && m_rowsRoot == m_assets.browser.root
             && m_sourceRevision == pipeline.revision && m_expansionRevision == widgets.treeExpansionRevision
@@ -94,7 +95,7 @@ internal sealed partial class FileBrowserTree
                 }
             }
         }
-        while (pending.TryPop(out var next))
+        while (pending.TryPop(out (string path, string label, bool root, int depth) next))
         {
             AssetFileEntry? entry = null;
             if (!next.root && (!pipeline.TryGetFileSystemEntry(AssetPath.Parse(next.path), out entry) || entry is null))

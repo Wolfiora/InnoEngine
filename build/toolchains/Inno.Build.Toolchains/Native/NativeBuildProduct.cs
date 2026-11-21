@@ -30,8 +30,8 @@ public sealed class NativeBuildProduct : IDisposable
         m_readLease = readLease;
         try
         {
-            artifacts = NativeArtifact.Read(directory);
-            files = Array.AsReadOnly(artifacts.Select(static artifact => artifact.file).Order(StringComparer.Ordinal).ToArray());
+            this.artifacts = NativeArtifact.Read(directory);
+            this.files = Array.AsReadOnly(artifacts.Select(static artifact => artifact.file).Order(StringComparer.Ordinal).ToArray());
         }
         catch
         {

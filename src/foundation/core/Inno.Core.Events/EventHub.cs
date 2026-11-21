@@ -105,9 +105,9 @@ public sealed class EventHub : IDisposable
             listenerOrder = m_nextListenerOrder++;
 
             Action<Event> invoker = e => handler((TEvent)e);
-            Listener listener = new(invoker, priority, listenerOrder);
+            var listener = new Listener(invoker, priority, listenerOrder);
 
-            Dictionary<Type, Listener[]> nextBuckets = new(Volatile.Read(ref m_state).buckets);
+            var nextBuckets = new Dictionary<Type, Listener[]>(Volatile.Read(ref m_state).buckets);
             Listener[] existing = nextBuckets.TryGetValue(eventType, out Listener[]? items) ? items : [];
             nextBuckets[eventType] = ListenerBucket.InsertSorted(existing, listener);
             Volatile.Write(ref m_state, new HubState(nextBuckets));
@@ -140,7 +140,7 @@ public sealed class EventHub : IDisposable
         ThrowIfInvalid();
         ArgumentNullException.ThrowIfNull(handler);
 
-        OneShotSubscription<TEvent> oneShot = new(handler);
+        var oneShot = new OneShotSubscription<TEvent>(handler);
         IDisposable subscription = Listen<TEvent>(oneShot.Invoke, priority);
         oneShot.Bind(subscription);
         return oneShot;
@@ -149,13 +149,13 @@ public sealed class EventHub : IDisposable
     /// <summary>
     /// Immediately dispatches an event inside this hub only.
     /// </summary>
+    /// <param name="e">
+    /// The event instance to dispatch locally.
+    /// </param>
     /// <remarks>
     /// This does not route through the dispatcher hub chain.
     /// Only listeners registered on this hub are invoked.
     /// </remarks>
-    /// <param name="e">
-    /// The event instance to dispatch locally.
-    /// </param>
     public void Announce(Event e)
     {
         ThrowIfInvalid();
@@ -244,7 +244,7 @@ public sealed class EventHub : IDisposable
                 return;
             }
 
-            Dictionary<Type, Listener[]> nextBuckets = new(Volatile.Read(ref m_state).buckets);
+            var nextBuckets = new Dictionary<Type, Listener[]>(Volatile.Read(ref m_state).buckets);
             if (!nextBuckets.TryGetValue(eventType, out Listener[]? existing))
             {
                 return;
@@ -412,7 +412,7 @@ public sealed class EventHub : IDisposable
             Listener[] source,
             Listener listener
         ) {
-            Listener[] result = new Listener[source.Length + 1];
+            var result = new Listener[source.Length + 1];
             int index = 0;
             while (index < source.Length)
             {
@@ -483,7 +483,7 @@ public sealed class EventHub : IDisposable
                 return [];
             }
 
-            Listener[] result = new Listener[source.Length - 1];
+            var result = new Listener[source.Length - 1];
             if (index > 0)
             {
                 Array.Copy(source, 0, result, 0, index);
@@ -503,7 +503,7 @@ public sealed class EventHub : IDisposable
         /// <summary>
         /// The empty value used as part of this type's public representation.
         /// </summary>
-        public static readonly HubState Empty = new(new Dictionary<Type, Listener[]>());
+        public static readonly HubState Empty = new([]);
 
         /// <summary>
         /// Gets the immutable listener buckets captured for one dispatch operation.

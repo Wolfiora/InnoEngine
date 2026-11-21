@@ -144,7 +144,7 @@ public static class BackendPrebuiltArchive
         stream.Position = 0;
         using var zip = new ZipArchive(stream, ZipArchiveMode.Read);
         ZipArchiveEntry metadata = zip.GetEntry(C_MANIFEST) ?? throw new InvalidDataException("Missing backend inventory.");
-        if (metadata.Length > 16 * 1024 * 1024 || zip.Entries.Count > 50001)
+        if (metadata.Length > 16 * 1024 * 1024 || zip.Entries.Count > 50_001)
         {
             throw new InvalidDataException("Backend ZIP inventory exceeds its limit.");
         }
@@ -160,7 +160,7 @@ public static class BackendPrebuiltArchive
         using ProcessOwnedDirectory staging = await ProcessOwnedDirectory.CreateAsync(parent, cancellationToken).ConfigureAwait(false);
         string payload = Path.Combine(staging.directory, "payload");
         Directory.CreateDirectory(payload);
-        var expected = inventory.files.ToDictionary(static file => file.path, StringComparer.Ordinal);
+        Dictionary<string, FileRecord> expected = inventory.files.ToDictionary(static file => file.path, StringComparer.Ordinal);
         long total = 0;
         foreach (ZipArchiveEntry entry in zip.Entries)
         {
@@ -168,7 +168,7 @@ public static class BackendPrebuiltArchive
             {
                 continue;
             }
-            if (!expected.Remove(entry.FullName, out FileRecord? file) || ((entry.ExternalAttributes >> 16) & 0xf000) is not (0 or 0x8000)
+            if (!expected.Remove(entry.FullName, out FileRecord? file) || ((entry.ExternalAttributes >> 16) & 0xF000) is not (0 or 0x8000)
                 || (entry.ExternalAttributes & (int)FileAttributes.ReparsePoint) != 0
                 || (total = checked(total + entry.Length)) > C_MAX_BYTES
             ) {
@@ -201,7 +201,7 @@ public static class BackendPrebuiltArchive
     private static Inventory Read(Stream input)
     {
         Inventory inventory = JsonSerializer.Deserialize<Inventory>(input) ?? throw new InvalidDataException("Missing backend inventory.");
-        if (inventory.version != 1 || string.IsNullOrWhiteSpace(inventory.target) || inventory.files is not { Length: > 0 and <= 50000 })
+        if (inventory.version != 1 || string.IsNullOrWhiteSpace(inventory.target) || inventory.files is not { Length: > 0 and <= 50_000 })
         {
             throw new InvalidDataException("Unsupported or empty backend inventory.");
         }
@@ -246,8 +246,8 @@ public static class BackendPrebuiltArchive
         long length,
         CancellationToken cancellation
     ) {
-        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        byte[] buffer = new byte[81920];
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var buffer = new byte[81_920];
         long copied = 0;
         int read;
         while ((read = input.Read(buffer)) > 0)

@@ -210,7 +210,7 @@ public sealed class SerializationConverterGenerator : IIncrementalGenerator
             hierarchy.Push(current);
         }
 
-        var members = ImmutableArray.CreateBuilder<SerializableMember>();
+        ImmutableArray<SerializableMember>.Builder members = ImmutableArray.CreateBuilder<SerializableMember>();
         while (hierarchy.Count > 0)
         {
             INamedTypeSymbol current = hierarchy.Pop();

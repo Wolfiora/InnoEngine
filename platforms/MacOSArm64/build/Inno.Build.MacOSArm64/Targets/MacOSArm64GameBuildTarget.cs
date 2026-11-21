@@ -42,12 +42,12 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the macOS ARM64 target identity.
     /// </summary>
-    public BuildTargetId id => Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id;
+    public BuildTargetId id => MacOSArm64BuildModule.target.id;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string runtimeIdentifier => "osx-arm64";
 
     /// <summary>
@@ -146,8 +146,8 @@ public sealed class MacOSArm64GameBuildTarget : IGameBuildTarget
             }
             string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
-            await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
+            await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true);
+            await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131_072, true);
             await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
             if (!OperatingSystem.IsWindows())
             {

@@ -28,7 +28,7 @@ internal static class BuildComposition
         CancellationToken cancellationToken,
         string? nativeDependencies = null
     ) {
-        var distribution = StandardBuildDistribution.Create(context).build;
+        BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         NativeProductContribution contribution = distribution.ResolveNativeProduct(context.toolsTarget.value, "shader-tools");
         if (nativeDependencies is not null)
         {
@@ -41,10 +41,11 @@ internal static class BuildComposition
                 cancellationToken
             ).ConfigureAwait(false);
         }
-        var nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(
+        NativeBuildContext nativeContext = new NativeBuildContext(engineRoot, C_HOST_CONFIGURATION).WithBindingGenerator(
             StandardBuildDistribution.Create(context).build.ResolveBindingGenerator(context.toolsTarget.value)
         );
-        var provider = StandardBuildDistribution.Create(context).build.ResolveNativeToolchain(context.toolsTarget.value);
+        INativeToolchainProvider provider = StandardBuildDistribution.Create(context).build
+            .ResolveNativeToolchain(context.toolsTarget.value);
         nativeContext = nativeContext.WithToolchain(
             await provider.ResolveAsync(
                 nativeContext,
@@ -65,16 +66,14 @@ internal static class BuildComposition
         ScriptCompiler compiler,
         string supportPackRoot,
         ToolRunner tools
-    ) {
-        return BuildPipelineFactory.Create(
-            context,
-            StandardBuildDistribution.Create(context, tools).build,
-            engine,
-            assets,
-            plugins,
-            settings,
-            compiler,
-            supportPackRoot
-        );
-    }
+    ) => BuildPipelineFactory.Create(
+        context,
+        StandardBuildDistribution.Create(context, tools).build,
+        engine,
+        assets,
+        plugins,
+        settings,
+        compiler,
+        supportPackRoot
+    );
 }

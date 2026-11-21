@@ -316,7 +316,7 @@ public sealed class AssetSampleImportModule : EditorModule
         long operation
     ) : IProgress<ScriptCompilationProgress>
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Report(ScriptCompilationProgress value) => owner.SetProgress(0.2f + value.fraction * 0.6f, value.stage, operation);
     }
 }

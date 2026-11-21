@@ -35,11 +35,11 @@ public sealed class EngineSessionComposition
     /// <param name="audioSettings">
     /// The portable audio defaults, captured during factory activation.
     /// </param>
-    /// <param name="audioOverride">
-    /// An optional product-specific audio owner, such as Editor preview/Play isolation.
-    /// </param>
     /// <param name="createStorage">
     /// The host factory transferring one isolated storage service to the session.
+    /// </param>
+    /// <param name="audioOverride">
+    /// An optional product-specific audio owner, such as Editor preview/Play isolation.
     /// </param>
     public EngineSessionComposition(
         RuntimeSession session,

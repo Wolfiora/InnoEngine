@@ -41,12 +41,12 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
     /// <summary>
     /// Gets the Windows x64 target identity.
     /// </summary>
-    public BuildTargetId id => Inno.Build.WindowsX64.WindowsX64BuildModule.target.id;
+    public BuildTargetId id => WindowsX64BuildModule.target.id;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentId defaultManagedDeployment => ManagedDeploymentId.coreClr;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string runtimeIdentifier => "win-x64";
 
     /// <summary>
@@ -121,8 +121,8 @@ public sealed class WindowsX64GameBuildTarget : IGameBuildTarget
             }
             string target = Path.Combine(destination, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-            await using FileStream input = new(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131072, true);
-            await using FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131072, true);
+            await using var input = new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read, 131_072, true);
+            await using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None, 131_072, true);
             await input.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
         }
     }

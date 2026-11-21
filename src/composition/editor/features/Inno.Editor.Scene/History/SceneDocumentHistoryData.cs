@@ -71,10 +71,10 @@ internal sealed record SceneDocumentHistoryData(
 
     private static EditorSceneWorkspace.SceneDocumentSnapshot ReadSnapshot(BinaryReader reader)
     {
-        Guid sceneId = new(reader.ReadBytes(16));
+        var sceneId = new Guid(reader.ReadBytes(16));
         byte[] payload = ReadBytes(reader, "scene");
         string sourcePath = reader.ReadString();
-        Guid sourceAssetId = new(reader.ReadBytes(16));
+        var sourceAssetId = new Guid(reader.ReadBytes(16));
         byte[] savedHash = ReadBytes(reader, "saved hash");
         bool isDirty = reader.ReadBoolean();
         int sceneIndex = reader.ReadInt32();

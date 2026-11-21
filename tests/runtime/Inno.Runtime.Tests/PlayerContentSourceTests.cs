@@ -61,7 +61,7 @@ public sealed class PlayerContentSourceTests
             .Build())
         using (SerializationGeneration serialization = metadataOwner.serialization.CaptureGeneration())
         {
-            string hash = new string('A', 64);
+            var hash = new string('A', 64);
             metadata = new PlayerContentMetadata(
                 RuntimeManifestEnvelope.Encode(manifest, serialization),
                 serialization.Serialize(new RuntimeContentCatalog
@@ -156,7 +156,7 @@ public sealed class PlayerContentSourceTests
         IPlayerModuleActivator? activator = null
     ) => new()
     {
-        adapterSelection = new Inno.Adapter.AdapterSelection(),
+        adapterSelection = new AdapterSelection(),
         modules = modules,
         types = new ReflectionTypeCatalogSource(),
         serializationMetadata = new ReflectionSerializationMetadataSource(),

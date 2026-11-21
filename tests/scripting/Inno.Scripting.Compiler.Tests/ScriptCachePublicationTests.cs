@@ -18,7 +18,9 @@ public sealed class ScriptCachePublicationTests
     /// <summary>
     /// Publishes a complete generation after a temporary filesystem reader releases its staging borrow.
     /// </summary>
-    /// <returns>The completed public compiler and artifact-equivalence checks.</returns>
+    /// <returns>
+    /// The completed public compiler and artifact-equivalence checks.
+    /// </returns>
     [WindowsDirectorySharingFact]
     public async Task ReusedAssembliesPublishAfterATemporaryStagingReaderReleasesThem()
     {
@@ -87,7 +89,9 @@ public sealed class ScriptCachePublicationTests
     /// <summary>
     /// Cancels a blocked publication without changing another completed generation.
     /// </summary>
-    /// <returns>The completed failure, previous-generation and explicit retry checks.</returns>
+    /// <returns>
+    /// The completed failure, previous-generation and explicit retry checks.
+    /// </returns>
     [WindowsDirectorySharingFact]
     public Task CanceledPublicationPreservesThePreviousGenerationAndAllowsAnotherRequest()
         => Task.Run(() => VerifyRejectedPublication(cancel: true));
@@ -95,7 +99,9 @@ public sealed class ScriptCachePublicationTests
     /// <summary>
     /// Reports a persistent filesystem block without publishing incomplete or replacing previous artifacts.
     /// </summary>
-    /// <returns>The completed failure, previous-generation and explicit retry checks.</returns>
+    /// <returns>
+    /// The completed failure, previous-generation and explicit retry checks.
+    /// </returns>
     [WindowsDirectorySharingFact]
     public Task BlockedPublicationPreservesThePreviousGenerationAndAllowsAnotherRequest()
         => Task.Run(() => VerifyRejectedPublication(cancel: false));
@@ -103,7 +109,9 @@ public sealed class ScriptCachePublicationTests
     /// <summary>
     /// Preserves a rejected cache tree until its reader releases ownership and an explicit repair commits.
     /// </summary>
-    /// <returns>The completed replacement failure, byte-preservation and repair checks.</returns>
+    /// <returns>
+    /// The completed replacement failure, byte-preservation and repair checks.
+    /// </returns>
     [WindowsDirectorySharingFact]
     public Task BlockedReplacementPreservesTheEntireExistingTreeAndAllowsRepair()
         => Task.Run(VerifyRejectedReplacement);
@@ -250,7 +258,7 @@ public sealed class ScriptCachePublicationTests
             m_stage = stage;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Report(ScriptCompilationProgress value)
         {
             lock (m_sync)
@@ -276,7 +284,7 @@ public sealed class ScriptCachePublicationTests
             }
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             lock (m_sync)
@@ -292,12 +300,14 @@ public sealed class ScriptCachePublicationTests
 
     private sealed class WindowsDirectorySharingFactAttribute : FactAttribute
     {
-        /// <summary>Marks the Windows directory-sharing fixture as unexecuted on other hosts.</summary>
+        /// <summary>
+        /// Marks the Windows directory-sharing fixture as unexecuted on other hosts.
+        /// </summary>
         public WindowsDirectorySharingFactAttribute()
         {
             if (!OperatingSystem.IsWindows())
             {
-                Skip = "This fixture requires Windows directory rename sharing semantics.";
+                this.Skip = "This fixture requires Windows directory rename sharing semantics.";
             }
         }
     }

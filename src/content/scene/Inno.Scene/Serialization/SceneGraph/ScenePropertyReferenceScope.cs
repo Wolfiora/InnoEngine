@@ -46,10 +46,10 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
         }
     }
 
-    /// <inheritdoc />
     /// <remarks>
     /// The current allocator must still own the Scene and the exact registered object in that Scene.
     /// </remarks>
+    /// <inheritdoc/>
     protected override bool TryGetSourceId(
         EngineObject engineObject,
         out Guid sourceId
@@ -65,10 +65,10 @@ internal sealed class ScenePropertyReferenceScope : SceneReferenceScope
         return true;
     }
 
-    /// <inheritdoc />
     /// <remarks>
     /// Neutral aliases resolve to current Core identities; destroyed or foreign Scene objects are rejected.
     /// </remarks>
+    /// <inheritdoc/>
     protected override bool TryResolve(
         Guid sourceId,
         out EngineObject? engineObject

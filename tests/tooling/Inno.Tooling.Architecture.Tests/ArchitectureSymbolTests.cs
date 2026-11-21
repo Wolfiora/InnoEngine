@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Xunit;
 
 namespace Inno.Tooling.Architecture.Tests;
@@ -107,17 +108,17 @@ public sealed class ArchitectureSymbolTests
         bool accepted
     ) {
         using var fixture = new SymbolFixture();
-        string summary = scenario == "missing-summary" ? "" : """
+        string summary = scenario == "missing-summary" ? string.Empty : """
             /// <summary>
             /// Combines two values using the implementation's operation.
             /// </summary>
             """;
-        string right = scenario == "missing-parameter" ? "" : """
+        string right = scenario == "missing-parameter" ? string.Empty : """
             /// <param name="right">
             /// The second value supplied to the operation.
             /// </param>
             """;
-        string returns = scenario == "missing-returns" ? "" : """
+        string returns = scenario == "missing-returns" ? string.Empty : """
             /// <returns>
             /// The combined value produced by the operation.
             /// </returns>
@@ -144,7 +145,7 @@ public sealed class ArchitectureSymbolTests
         {
             source = "namespace Inno.Editor.Probe; public interface IContract {\n" + contract
                      + "int Combine(int left, int right); }\npublic class Probe"
-                     + (scenario == "standalone" ? "" : " : IContract") + " {\n"
+                     + (scenario == "standalone" ? string.Empty : " : IContract") + " {\n"
                      + (scenario == "wrong-cref" ? "/// <inheritdoc cref=\"string.ToString()\" />\n" : "/// <inheritdoc />\n")
                      + "public int Combine(int left, int right) => left + right; }";
         }
@@ -476,7 +477,7 @@ public sealed class ArchitectureSymbolTests
                 references,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, allowUnsafe: true)
             );
-            var result = compilation.Emit(output, xmlDocumentationPath: Path.ChangeExtension(output, ".xml"));
+            EmitResult result = compilation.Emit(output, xmlDocumentationPath: Path.ChangeExtension(output, ".xml"));
             Assert.True(result.Success, string.Join(Environment.NewLine, result.Diagnostics));
             return output;
         }

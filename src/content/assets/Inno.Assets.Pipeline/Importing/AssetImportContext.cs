@@ -69,7 +69,7 @@ public sealed class AssetImportContext
         Func<string, ReadOnlyMemory<byte>> sourceReader,
         IAssetArtifactLookup artifacts
     ) {
-        assetPath = AssetPath.Parse(relativePath ?? throw new ArgumentNullException(nameof(relativePath)));
+        this.assetPath = AssetPath.Parse(relativePath ?? throw new ArgumentNullException(nameof(relativePath)));
         this.absolutePath = absolutePath ?? throw new ArgumentNullException(nameof(absolutePath));
         this.sourceBytes = sourceBytes;
         this.sourceHash = sourceHash ?? throw new ArgumentNullException(nameof(sourceHash));
@@ -77,7 +77,7 @@ public sealed class AssetImportContext
         this.types = types ?? throw new ArgumentNullException(nameof(types));
         this.serialization = serialization ?? throw new ArgumentNullException(nameof(serialization));
         this.references = references ?? throw new ArgumentNullException(nameof(references));
-        services = new AssetSerializationServices(
+        this.services = new AssetSerializationServices(
             types,
             serialization,
             references,
@@ -176,10 +176,7 @@ public sealed class AssetImportContext
     /// <returns>
     /// The decoded text without an optional byte-order mark.
     /// </returns>
-    public string ReadUtf8Text()
-    {
-        return DecodeUtf8(sourceBytes.Span);
-    }
+    public string ReadUtf8Text() => DecodeUtf8(sourceBytes.Span);
 
     /// <summary>
     /// Reads another source from the same candidate mount snapshot and records it as an import dependency.
@@ -244,10 +241,7 @@ public sealed class AssetImportContext
     /// <param name="dependency">
     /// The persistent dependency descriptor.
     /// </param>
-    public void DependsOnAsset(AssetDependency dependency)
-    {
-        m_runtimeDependencies.Add(dependency);
-    }
+    public void DependsOnAsset(AssetDependency dependency) => m_runtimeDependencies.Add(dependency);
 
     /// <summary>
     /// Resolves and declares a strongly typed runtime asset dependency during import.

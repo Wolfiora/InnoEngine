@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Inno.Rendering;
@@ -10,8 +11,14 @@ public sealed class PipelineResourceTests
     [Fact]
     public void PipelineBindingSnapshotsRejectMutationOfPublishedStorage()
     {
-        var binding = new RenderShaderBindingDescriptor(new RenderBindingId("original"), RenderShaderBindingKind.Uniform);
-        var changed = new RenderShaderBindingDescriptor(new RenderBindingId("changed"), RenderShaderBindingKind.Uniform);
+        var binding = new RenderShaderBindingDescriptor(
+            new RenderBindingId("original"),
+            RenderShaderBindingKind.Uniform
+        );
+        var changed = new RenderShaderBindingDescriptor(
+            new RenderBindingId("changed"),
+            RenderShaderBindingKind.Uniform
+        );
         RenderShaderBindingDescriptor[] input = [binding];
         var graphics = new GraphicsPipelineDescriptor([1], [2], input, null);
         var compute = new ComputePipelineDescriptor([1], input);
@@ -19,10 +26,10 @@ public sealed class PipelineResourceTests
         Assert.Same(binding, graphics.bindings[0]);
         Assert.Same(binding, compute.bindings[0]);
         Assert.Throws<NotSupportedException>(
-            () => ((System.Collections.Generic.IList<RenderShaderBindingDescriptor>)graphics.bindings)[0] = changed
+            () => ((IList<RenderShaderBindingDescriptor>)graphics.bindings)[0] = changed
         );
         Assert.Throws<NotSupportedException>(
-            () => ((System.Collections.Generic.IList<RenderShaderBindingDescriptor>)compute.bindings)[0] = changed
+            () => ((IList<RenderShaderBindingDescriptor>)compute.bindings)[0] = changed
         );
     }
 
@@ -37,20 +44,16 @@ public sealed class PipelineResourceTests
 
         Assert.Equal(semantics.Length, layout.attributes.Count);
         Assert.Equal(semantics.Length * 16, layout.stride);
-        Assert.Throws<NotSupportedException>(() =>
-            ((System.Collections.Generic.IList<RenderVertexAttribute>)layout.attributes)[0] = default);
+        Assert.Throws<NotSupportedException>(() => ((IList<RenderVertexAttribute>)layout.attributes)[0] = default);
     }
 
     [Fact]
-    public void VertexLayout_RejectsDuplicateSemantic()
-    {
-        Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
-            [
-                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3),
-                new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2)
-            ]
-        ));
-    }
+    public void VertexLayout_RejectsDuplicateSemantic() => Assert.Throws<ArgumentException>(() => new RenderVertexLayout(
+        [
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3),
+            new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float2)
+        ]
+    ));
 
     [Fact]
     public void VertexLayout_PreservesExplicitOffsetsAndTrailingPadding()
@@ -102,8 +105,8 @@ public sealed class PipelineResourceTests
     [Fact]
     public void PersistentVertexBuffer_RequiresMatchingLayout()
     {
-        RenderBufferDescriptor buffer = new(3, 12, RenderBufferUsage.Vertex);
-        RenderVertexLayout mismatched = new(
+        var buffer = new RenderBufferDescriptor(3, 12, RenderBufferUsage.Vertex);
+        var mismatched = new RenderVertexLayout(
             [
                 new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float4)
             ]
@@ -184,14 +187,14 @@ public sealed class PipelineResourceTests
             alphaSource = RenderBlendFactor.One,
             alphaDestination = RenderBlendFactor.DestinationAlpha,
             alphaEquation = RenderBlendEquation.Maximum,
-            constantRgba = 0x80402010,
+            constantRgba = 0x8040_2010,
             alphaToCoverage = true
         };
         var raster = new RenderRasterState { blend = blend };
 
         Assert.Equal(RenderBlendFactor.Constant, raster.blend.colorSource);
         Assert.Equal(RenderBlendEquation.Maximum, raster.blend.alphaEquation);
-        Assert.Equal(0x80402010u, raster.blend.constantRgba);
+        Assert.Equal(0x8040_2010u, raster.blend.constantRgba);
         Assert.True(raster.blend.alphaToCoverage);
     }
 
@@ -204,7 +207,7 @@ public sealed class PipelineResourceTests
             RenderStencilOperation.IncrementWrap,
             RenderStencilOperation.Replace
         );
-        var stencil = new RenderStencilState(true, 7, 0x7f, 0x3f, face, face);
+        var stencil = new RenderStencilState(true, 7, 0x7F, 0x3F, face, face);
         var raster = new RenderRasterState(
             RenderCullMode.Front,
             RenderFrontFace.Clockwise,
@@ -218,8 +221,8 @@ public sealed class PipelineResourceTests
 
         Assert.True(stencil.enabled);
         Assert.Equal((byte)7, stencil.reference);
-        Assert.Equal((byte)0x7f, stencil.readMask);
-        Assert.Equal((byte)0x3f, stencil.writeMask);
+        Assert.Equal((byte)0x7F, stencil.readMask);
+        Assert.Equal((byte)0x3F, stencil.writeMask);
         Assert.Equal(RenderStencilCompare.NotEqual, stencil.front.compare);
         Assert.Equal(RenderStencilOperation.Replace, stencil.back.pass);
         Assert.Equal(RenderCullMode.Front, raster.cull);
@@ -233,13 +236,10 @@ public sealed class PipelineResourceTests
     }
 
     [Fact]
-    public void ShaderBinding_RejectsDefaultIdentifier()
-    {
-        Assert.Throws<ArgumentException>(() => new RenderShaderBindingDescriptor(
-            default,
-            RenderShaderBindingKind.Uniform
-        ));
-    }
+    public void ShaderBinding_RejectsDefaultIdentifier() => Assert.Throws<ArgumentException>(() => new RenderShaderBindingDescriptor(
+        default,
+        RenderShaderBindingKind.Uniform
+    ));
 
     [Fact]
     public void ShaderBinding_ModelsStorageTextureAccessWithoutBackendTypes()

@@ -18,14 +18,14 @@ internal sealed class BgfxBuildRequest
         {
             throw new ArgumentException("The BGFX profile does not match the frozen toolchain target.", nameof(profile));
         }
-        context = operation.WithToolchain(profile.SelectTools(operation, includeTools));
-        component = includeTools ? BgfxToolsBuild.componentDescriptor : BgfxNativeBuild.componentDescriptor;
+        this.context = operation.WithToolchain(profile.SelectTools(operation, includeTools));
+        this.component = includeTools ? BgfxToolsBuild.componentDescriptor : BgfxNativeBuild.componentDescriptor;
         NativeComponentBuildOptions options = context.RequireComponentOptions(component);
         if (options.libraryKind != NativeLibraryKind.Shared || options.cmakeArguments.Count != 0)
         {
             throw new NotSupportedException("The standalone graphics recipe requires shared linkage and its explicit generation profile.");
         }
-        artifactToken = profile.artifactPathToken;
+        this.artifactToken = profile.artifactPathToken;
         ArgumentException.ThrowIfNullOrWhiteSpace(artifactToken);
         string[] arguments = profile.generatorArguments?.ToArray()
                              ?? throw new ArgumentException("The BGFX profile has no generator arguments.", nameof(profile));
@@ -33,20 +33,20 @@ internal sealed class BgfxBuildRequest
         {
             throw new ArgumentException("The BGFX profile requires assigned generator arguments.", nameof(profile));
         }
-        generatorArguments = includeTools
-                             ? ["--with-shared-lib", "--with-tools", .. arguments]
-                             : ["--with-shared-lib", .. arguments];
-        bindingCmakeArguments = includeTools ? [] : profile.bindingCmakeArguments.ToArray();
-        invocation = profile.CreateBuildInvocation(context, includeTools)
-                     ?? throw new ArgumentException("The BGFX profile returned no SDK invocation.", nameof(profile));
+        this.generatorArguments = includeTools
+                                  ? ["--with-shared-lib", "--with-tools", .. arguments]
+                                  : ["--with-shared-lib", .. arguments];
+        this.bindingCmakeArguments = includeTools ? [] : profile.bindingCmakeArguments.ToArray();
+        this.invocation = profile.CreateBuildInvocation(context, includeTools)
+                          ?? throw new ArgumentException("The BGFX profile returned no SDK invocation.", nameof(profile));
         NativeToolchainSelection tools = context.RequireToolchain();
-        compiler = tools.ResolveExecutable(invocation.tool);
-        externalDirectory = Path.Combine(context.engineRoot, "extern");
+        this.compiler = tools.ResolveExecutable(invocation.tool);
+        this.externalDirectory = Path.Combine(context.engineRoot, "extern");
         string bgfx = Path.Combine(externalDirectory, "bgfx");
         string bx = Path.Combine(externalDirectory, "bx");
         string bimg = Path.Combine(externalDirectory, "bimg");
         BgfxBuildUtils.ValidateSubmodules(bgfx, bx, bimg);
-        genie = tools.ResolveExecutable("genie");
+        this.genie = tools.ResolveExecutable("genie");
         string[] declarations =
         [
             "artifact=" + artifactToken,
@@ -56,7 +56,7 @@ internal sealed class BgfxBuildRequest
             .. invocation.arguments.Select(static value => "compile=" + value)
         ];
         string implementation = component.GetToolchainRoot(context.engineRoot);
-        recipe = NativeBuildRecipe.CreateForComponent(
+        this.recipe = NativeBuildRecipe.CreateForComponent(
             context,
             component,
             includeTools ? "bgfx-tools" : "bgfx",

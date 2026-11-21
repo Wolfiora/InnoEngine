@@ -603,7 +603,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
             return false;
         }
 
-        RenderPersistentResourceId resourceId = new($"asset:{texture.assetId:D}:texture:{texture.slot.id}");
+        var resourceId = new RenderPersistentResourceId($"asset:{texture.assetId:D}:texture:{texture.slot.id}");
         bool sRgb = texture.slot.colorSpace == TextureColorSpace.Srgb;
         if (m_textures.TryGetValue(resourceId, out TextureEntry? current)
             && current.kind == TextureEntryKind.Ktx
@@ -834,10 +834,7 @@ internal sealed class RenderResourceService : RenderResourceProvider, IRenderRes
         CompleteRetirement();
     }
 
-    private void CompleteRetirement()
-    {
-        m_disposed = true;
-    }
+    private void CompleteRetirement() => m_disposed = true;
 
     internal RenderResourceStatistics statistics
         => new()

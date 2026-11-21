@@ -72,7 +72,7 @@ public static class SerializedIdentityRemapper
                 return new BinarySerializationNode(Rewrite(binary.value, identities, paths));
             case ObjectSerializationNode value:
             {
-                var rewritten = new ObjectSerializationNode();
+                    var rewritten = new ObjectSerializationNode();
                 foreach ((string name, SerializationNode child) in value.values)
                 {
                     rewritten.values.Add(name, RewriteNode(child, identities, paths));
@@ -81,7 +81,7 @@ public static class SerializedIdentityRemapper
             }
             case ArraySerializationNode value:
             {
-                var rewritten = new ArraySerializationNode();
+                    var rewritten = new ArraySerializationNode();
                 foreach (SerializationNode child in value.values)
                 {
                     rewritten.values.Add(RewriteNode(child, identities, paths));
@@ -90,7 +90,7 @@ public static class SerializedIdentityRemapper
             }
             case MapSerializationNode value:
             {
-                var rewritten = new MapSerializationNode();
+                    var rewritten = new MapSerializationNode();
                 foreach (KeyValuePair<SerializationNode, SerializationNode> entry in value.values)
                 {
                     rewritten.values.Add(

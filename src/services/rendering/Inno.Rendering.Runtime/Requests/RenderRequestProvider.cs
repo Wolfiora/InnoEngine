@@ -1,5 +1,6 @@
 using System;
 using Inno.Core.Execution;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Runtime;
 /// Marks a reloadable provider that produces model-neutral render requests each frame.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
-[Inno.Extensibility.Types.StableTypeId("54ca2eb2-0fc2-5b3e-91d1-0bd52d01caab")]
+[StableTypeId("54ca2eb2-0fc2-5b3e-91d1-0bd52d01caab")]
 public sealed class RenderRequestProviderExtensionAttribute : Attribute
 {
     /// <summary>
@@ -44,7 +45,7 @@ public sealed class RenderRequestProviderExtensionAttribute : Attribute
 /// <summary>
 /// Supplies frame timing, capabilities and the request sink to one provider invocation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("67067617-9592-55b2-bbb0-739c6927984b")]
+[StableTypeId("67067617-9592-55b2-bbb0-739c6927984b")]
 public sealed class RenderRequestProviderContext
 {
     /// <summary>
@@ -162,7 +163,7 @@ public sealed class RenderRequestProviderContext
 /// <summary>
 /// Produces arbitrary render requests without prescribing a scene or rendering model.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("5c4302ea-8da5-5627-8fbe-f34ee7b2aec1")]
+[StableTypeId("5c4302ea-8da5-5627-8fbe-f34ee7b2aec1")]
 public abstract class RenderRequestProvider : IDisposable
 {
     private bool m_disposed;

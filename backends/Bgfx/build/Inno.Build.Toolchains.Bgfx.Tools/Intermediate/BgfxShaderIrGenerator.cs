@@ -110,7 +110,8 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
                     EmitStorageDeclaration(declarations, input, name);
                     m_bindings.Add(new(input.id, name, input.location));
                     break;
-                default: throw Error("Unsupported stage input kind.");
+                default:
+                    throw Error("Unsupported stage input kind.");
             }
             stageInputs.Add(input.id, name);
         }
@@ -168,7 +169,7 @@ internal sealed partial class BgfxShaderIrGenerator(ShaderIrStage stage)
             ShaderIrValue value = stage.body.outputs[output.id];
             Assign(m_body, value.type, destination, Value(value));
         }
-        var source = new StringBuilder().Append(header).Append(m_types).Append(declarations).Append(m_modules);
+        StringBuilder source = new StringBuilder().Append(header).Append(m_types).Append(declarations).Append(m_modules);
         source.AppendLine("#line 1 \"inno-generated-stage\"");
         if (stage.stage == ShaderStage.Compute)
         {

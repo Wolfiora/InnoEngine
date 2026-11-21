@@ -147,7 +147,7 @@ public sealed class ShaderResourceIrTests
         ShaderIrValue value = builder.LoadStorage(source, index);
         ShaderIrValue previous = builder.AtomicAddStorage(target, index, value);
         builder.StoreStorage(target, builder.Constant(1u), previous);
-        ShaderIrStage stage = new(
+        var stage = new ShaderIrStage(
             ShaderStage.Compute,
             builder.Build(new Dictionary<string, ShaderIrValue>()),
             [new("source", source.type, ShaderIrInputKind.Storage), new("target", target.type, ShaderIrInputKind.Storage, location: 1)],
@@ -182,7 +182,7 @@ public sealed class ShaderResourceIrTests
                                        : builder.Construct(ShaderSourceType.Atomic("int2"), zero, zero);
             ShaderIrValue loaded = builder.LoadStorage(image, coordinate);
             builder.StoreStorage(image, coordinate, builder.Binary(ShaderIrOperation.Add, loaded, loaded));
-            ShaderIrStage stage = new(
+            var stage = new ShaderIrStage(
                 ShaderStage.Compute,
                 builder.Build(new Dictionary<string, ShaderIrValue>()),
                 [new("image", type, ShaderIrInputKind.Storage)],
@@ -238,7 +238,7 @@ public sealed class ShaderResourceIrTests
                                       | GraphicsCapability.Texture2DArray
                                       | GraphicsCapability.Texture3D
     ) {
-        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target);
+        var toolchain = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(
             GraphicsApi.Metal,
             features,

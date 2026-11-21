@@ -32,7 +32,7 @@ public sealed class ManagedDeploymentCatalog
             throw new ArgumentException("Managed providers require unique valid identities.", nameof(compilers));
         }
         m_compilers = compilers.ToDictionary(static compiler => compiler.id);
-        availableDeployments = Array.AsReadOnly(
+        this.availableDeployments = Array.AsReadOnly(
             compilers.Select(static compiler => compiler.id)
                 .OrderBy(static id => id.value, StringComparer.Ordinal)
                 .ToArray()

@@ -1,3 +1,5 @@
+using System;
+
 namespace Inno.References;
 
 /// <summary>
@@ -21,8 +23,8 @@ public sealed class ReferenceRecoveryChange
         SerializedMissingState missingState,
         ReferenceResolution resolution
     ) {
-        System.ArgumentNullException.ThrowIfNull(missingState);
-        System.ArgumentNullException.ThrowIfNull(resolution);
+        ArgumentNullException.ThrowIfNull(missingState);
+        ArgumentNullException.ThrowIfNull(resolution);
         this.missingState = missingState;
         this.resolution = resolution;
     }

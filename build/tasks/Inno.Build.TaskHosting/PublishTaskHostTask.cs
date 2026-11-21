@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -16,7 +17,7 @@ namespace Inno.Build.TaskHosting;
 /// Publishes one immutable task runtime per content identity before a build loads its private closure.
 /// This bootstrap depends only on filesystem primitives and never loads the task runtime being built.
 /// </summary>
-public sealed partial class PublishTaskHostTask : Microsoft.Build.Utilities.Task, ICancelableTask
+public sealed partial class PublishTaskHostTask : Task, ICancelableTask
 {
     private readonly object m_cancellationGate = new();
     private readonly CancellationTokenSource m_cancellation = new();

@@ -10,7 +10,7 @@ public sealed class ContentCacheConcurrencyTests
     [Fact]
     public async Task ConcurrentPreparationPublishesOneCompleteGeneration()
     {
-        using ContentCacheFixture fixture = new();
+        using var fixture = new ContentCacheFixture();
         FileContentStore[] readers = await Task.WhenAll(
             Enumerable.Range(0, 8).Select(_ =>
                 FileContentPreparation.PrepareAsync(fixture.source, fixture.options).AsTask())

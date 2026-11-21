@@ -76,7 +76,7 @@ internal sealed class DocumentationProjectReferences
             bool resolved = graph.RootElement[0].GetProperty("Items").TryGetProperty("ReferencePath", out _);
             foreach (JsonElement snapshot in graph.RootElement.EnumerateArray())
             {
-                var properties = snapshot.GetProperty("GlobalProperties")
+                Dictionary<string, string> properties = snapshot.GetProperty("GlobalProperties")
                     .EnumerateObject()
                     .ToDictionary(
                         static property => property.Name,
@@ -194,7 +194,7 @@ internal sealed class DocumentationProjectReferences
         foreach (SyntaxTree tree in compilation.SyntaxTrees)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var parse = (CSharpParseOptions)tree.Options;
+            CSharpParseOptions parse = (CSharpParseOptions)tree.Options;
             sources.Add(new
             {
                 path = Path.GetRelativePath(m_root, tree.FilePath).Replace('\\', '/'),
@@ -293,7 +293,7 @@ internal sealed class DocumentationProjectReferences
             }
             if (m_selectedProperties is not null)
             {
-                foreach (var property in m_selectedProperties)
+                foreach (KeyValuePair<string, string> property in m_selectedProperties)
                 {
                     batchProperties[property.Key] = property.Value;
                 }

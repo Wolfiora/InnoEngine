@@ -21,7 +21,7 @@ public sealed class EditorDocumentContext
         this.assetId = assetId;
         this.assetPath = assetPath;
         this.providerId = providerId;
-        title = Path.GetFileName(assetPath);
+        this.title = Path.GetFileName(assetPath);
     }
 
     /// <summary>

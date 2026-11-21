@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -55,11 +56,6 @@ public static class DocumentationStore
     /// The published snapshot identity and the number of parsed and reused pages; source API remains unverified.
     /// Query-only changes rebuild the index while reusing pages whose parser, source and payload identities match.
     /// </returns>
-    /// <remarks>
-    /// Independent page preparation uses at most four workers and retains each page's exclusive lease.
-    /// Catalog validation and generation publication occur only after all workers finish. Worker parsing
-    /// and registration timing totals can overlap; PagePreparation reports their enclosing wall time.
-    /// </remarks>
     /// <exception cref="IOException">
     /// Inputs change during preparation, paths escape ownership, or a reference, contract or inclusion is invalid.
     /// </exception>
@@ -69,14 +65,19 @@ public static class DocumentationStore
     /// <exception cref="OperationCanceledException">
     /// Preparation is canceled. Completed immutable payloads remain registered for safe maintenance.
     /// </exception>
+    /// <remarks>
+    /// Independent page preparation uses at most four workers and retains each page's exclusive lease.
+    /// Catalog validation and generation publication occur only after all workers finish. Worker parsing
+    /// and registration timing totals can overlap; PagePreparation reports their enclosing wall time.
+    /// </remarks>
     public static async Task<DocumentationResult> IndexAsync(
         string workspaceRoot,
         string documentationRoot,
         string cacheRoot,
         CancellationToken cancellationToken = default
     ) {
-        var total = Stopwatch.StartNew();
-        var phase = Stopwatch.StartNew();
+        Stopwatch total = Stopwatch.StartNew();
+        Stopwatch phase = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
         long parsingTicks = 0;
         long registrationTicks = 0;
@@ -117,10 +118,10 @@ public static class DocumentationStore
             cancellationToken
         ).ConfigureAwait(false);
         DocumentationManifest? previous = TryReadCurrent(output);
-        var reusable = previous?.parserSchema == parserSchema
-                       ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
-                       : new Dictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
-        var raw = EnumerateContent(content).ToDictionary(
+        Dictionary<string, DocumentationPageReference> reusable = previous?.parserSchema == parserSchema
+            ? previous.pages.Values.ToDictionary(static page => page.key, StringComparer.Ordinal)
+            : new Dictionary<string, DocumentationPageReference>(StringComparer.Ordinal);
+        Dictionary<string, string> raw = EnumerateContent(content).ToDictionary(
             path => Path.GetRelativePath(root, path).Replace('\\', '/'),
             File.ReadAllText,
             StringComparer.Ordinal
@@ -189,7 +190,7 @@ public static class DocumentationStore
             }
         ).ConfigureAwait(false);
         var pages = new List<DocumentationPage>(prepared.Length);
-        foreach (var item in prepared)
+        foreach ((DocumentationPage page, DocumentationPageReference reference) item in prepared)
         {
             pages.Add(item.page);
             entries.Add(item.page.path, item.reference);
@@ -217,7 +218,7 @@ public static class DocumentationStore
             .ToArray();
         DocumentationCatalog.Validate(root, pages, projects);
         RecordPhase("CatalogValidation");
-        var search = pages.SelectMany(page => page.sections.Select(section =>
+        DocumentationSearchEntry[] search = pages.SelectMany(page => page.sections.Select(section =>
         {
             string body = DocumentationMarkdown.OwnText(page, section);
             string terms = section.title + " " + body + " " + string.Join(' ', page.metadata.aliases)
@@ -230,8 +231,11 @@ public static class DocumentationStore
                 DocumentationMarkdown.Tokens(terms)
             );
         })).ToArray();
-        var origins = composed.origins.ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
-        var symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
+        Dictionary<string, DocumentationApiOrigin> origins = composed.origins.ToDictionary(
+            origin => origin.page + "\0" + origin.id,
+            StringComparer.Ordinal
+        );
+        DocumentationSymbolReference[] symbols = pages.SelectMany(page => page.symbols.Select(symbol => new DocumentationSymbolReference(
             page.metadata.owners.Single(),
             page.metadata.apiSurface!,
             symbol.id,
@@ -240,7 +244,7 @@ public static class DocumentationStore
             origins.GetValueOrDefault(page.path + "\0" + symbol.id)?.surfaces
         ))).ToArray();
         var manifest = new DocumentationManifest(
-            "",
+            string.Empty,
             schema,
             parserSchema,
             binding,
@@ -431,7 +435,7 @@ public static class DocumentationStore
 
     private static string CreateSchemaIdentity(params string[] selectedInputs)
     {
-        var assembly = typeof(DocumentationStore).Assembly;
+        Assembly assembly = typeof(DocumentationStore).Assembly;
         string[] sources = assembly
             .GetManifestResourceNames()
             .Where(static name => name.StartsWith("DocumentationSource/", StringComparison.Ordinal))
@@ -464,7 +468,7 @@ public static class DocumentationStore
         DocumentationManifest manifest = Deserialize<DocumentationManifest>(File.ReadAllBytes(path));
         if (manifest.identity != identity
             || (requireCurrentSchema && (manifest.schema != schema || manifest.parserSchema != parserSchema || manifest.references is null))
-            || DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest with { identity = "" }, json)) != identity
+            || DocumentationMarkdown.Hash(JsonSerializer.SerializeToUtf8Bytes(manifest with { identity = string.Empty }, json)) != identity
         ) {
             throw new InvalidDataException("Documentation snapshot integrity or schema mismatch; explicitly rebuild its index.");
         }

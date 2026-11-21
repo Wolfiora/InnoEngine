@@ -56,7 +56,7 @@ public sealed class RenderingBackendRegistrationTests
     private sealed class AuthoringProvider(RenderingBackendId id) : RenderingAuthoringBackendProvider(id)
     {
         public override IShaderCompilerToolchain CreateShaderCompilerToolchain()
-            => new BgfxShadercToolchain(Inno.Integration.WindowsX64.Bgfx.WindowsX64BgfxShaderProfiles.target);
+            => new BgfxShadercToolchain(WindowsX64BgfxShaderProfiles.target);
 
         public override ITextureTargetCompiler CreateTextureTargetCompiler() => new BgfxTextureTargetCompiler();
     }

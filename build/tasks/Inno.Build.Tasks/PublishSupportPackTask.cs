@@ -69,7 +69,7 @@ public sealed class PublishSupportPackTask : BuildTask, ICancelableTask
         }
         try
         {
-            var execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
+            BuildCompositionContext execution = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId(ToolTarget));
             var context = new BuildCompositionContext(
                 ToolchainEnvironment.ResolveExecutable(DotnetHost),
                 AppContext.BaseDirectory,

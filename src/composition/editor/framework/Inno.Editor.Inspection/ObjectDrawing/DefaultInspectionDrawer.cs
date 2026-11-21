@@ -56,7 +56,5 @@ internal sealed class DefaultInspectionDrawer : InspectionDrawer<object>
     protected override void Draw(
         InspectionDrawContext context,
         object target
-    ) {
-        context.DrawProperties();
-    }
+    ) => context.DrawProperties();
 }

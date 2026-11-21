@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Declares a host output without naming a camera or scene model.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("18d40f92-089a-5c0e-94a9-402b68225c2b")]
+[StableTypeId("18d40f92-089a-5c0e-94a9-402b68225c2b")]
 public sealed class RenderOutputSession
 {
     /// <summary>

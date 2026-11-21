@@ -48,12 +48,12 @@ public static unsafe partial class ImGui
     /// <summary>
     /// Draws a compact button.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the button is activated.
-    /// </returns>
     /// <param name="label">
     /// The visible label and optional ImGui identity suffix.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the button is activated.
+    /// </returns>
     public static bool SmallButton(string label)
     {
         EditorUiSession.current.EnsureDrawing();
@@ -66,12 +66,12 @@ public static unsafe partial class ImGui
     /// <param name="label">
     /// The control label.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the value changes.
-    /// </returns>
     /// <param name="value">
     /// The checked state, updated when the user toggles the control.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the value changes.
+    /// </returns>
     public static bool Checkbox(
         string label,
         ref bool value
@@ -152,9 +152,6 @@ public static unsafe partial class ImGui
     /// <param name="label">
     /// The control label.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the value changes.
-    /// </returns>
     /// <param name="value">
     /// The integer displayed by the control and replaced after an accepted edit.
     /// </param>
@@ -167,6 +164,9 @@ public static unsafe partial class ImGui
     /// <param name="flags">
     /// Text editing options for the numeric field.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the value changes.
+    /// </returns>
     public static bool InputInt(
         string label,
         ref int value,
@@ -184,12 +184,12 @@ public static unsafe partial class ImGui
     /// <param name="label">
     /// The control label.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the value changes.
-    /// </returns>
     /// <param name="value">
     /// The number displayed with three fractional digits and replaced after an accepted edit.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the value changes.
+    /// </returns>
     public static bool InputFloat(
         string label,
         ref float value
@@ -316,7 +316,7 @@ public static unsafe partial class ImGui
         {
             throw new ArgumentException("Linear RGBA editing requires RGB input storage.", nameof(flags));
         }
-        Vector4 display = new(LinearToSrgb(value.X), LinearToSrgb(value.Y), LinearToSrgb(value.Z), value.W);
+        var display = new Vector4(LinearToSrgb(value.X), LinearToSrgb(value.Y), LinearToSrgb(value.Z), value.W);
         Vector4 original = display;
         if (!ColorEdit4(label, ref display, flags | ImGuiColorEditFlags.InputRgb))
         {
@@ -343,12 +343,12 @@ public static unsafe partial class ImGui
     /// <param name="flags">
     /// Child-region behavior.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when child contents should be submitted.
-    /// </returns>
     /// <param name="windowFlags">
     /// Scroll and window policies for the child.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when child contents should be submitted.
+    /// </returns>
     public static bool BeginChild(
         string id,
         Vector2 size = default,
@@ -383,12 +383,12 @@ public static unsafe partial class ImGui
     /// <param name="size">
     /// The requested outer size.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when table contents should be submitted.
-    /// </returns>
     /// <param name="innerWidth">
     /// Optional inner scrolling width; zero uses the outer size.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when table contents should be submitted.
+    /// </returns>
     public static bool BeginTable(
         string id,
         int columns,
@@ -513,12 +513,12 @@ public static unsafe partial class ImGui
     /// <param name="flags">
     /// Selectable behavior.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the item is activated.
-    /// </returns>
     /// <param name="size">
     /// The interaction bounds, or zero for the ordinary content size.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the item is activated.
+    /// </returns>
     public static bool Selectable(
         string label,
         bool selected = false,
@@ -646,9 +646,7 @@ public static unsafe partial class ImGui
         string label,
         ref bool isOpen,
         ImGuiTabItemFlags flags = ImGuiTabItemFlags.None
-    ) {
-        return RawImGui.BeginTabItem(label, ref isOpen, (int)flags);
-    }
+    ) => RawImGui.BeginTabItem(label, ref isOpen, (int)flags);
 
     /// <summary>
     /// Ends the current tab item.
@@ -1034,12 +1032,12 @@ public static unsafe partial class ImGui
     /// <summary>
     /// Measures text using the current font.
     /// </summary>
-    /// <returns>
-    /// The measured width and height.
-    /// </returns>
     /// <param name="text">
     /// The text text validated by the measure text operation.
     /// </param>
+    /// <returns>
+    /// The measured width and height.
+    /// </returns>
     public static Vector2 MeasureText(string text)
     {
         EditorUiSession.current.EnsureDrawing();
@@ -1170,12 +1168,12 @@ public static unsafe partial class ImGui
     /// <summary>
     /// Converts a floating-point RGBA color to Dear ImGui packed color order.
     /// </summary>
-    /// <returns>
-    /// The packed color value.
-    /// </returns>
     /// <param name="color">
     /// The color consumed by to packed color; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The packed color value.
+    /// </returns>
     public static uint ToPackedColor(Vector4 color)
     {
         EditorUiSession.current.EnsureDrawing();
@@ -1293,7 +1291,10 @@ public static unsafe partial class ImGui
         float thickness = 1f
     ) {
         EditorUiSession.current.EnsureDrawing();
-        ImVec2C a = ToNative(start), b = ToNative(firstControl), c = ToNative(secondControl), d = ToNative(end);
+        ImVec2C a = ToNative(start);
+        ImVec2C b = ToNative(firstControl);
+        ImVec2C c = ToNative(secondControl);
+        ImVec2C d = ToNative(end);
         RawImGui.Raw.AddBezierCubic(RawImGui.Raw.GetWindowDrawList(), &a, &b, &c, &d, color, thickness, 0);
     }
 

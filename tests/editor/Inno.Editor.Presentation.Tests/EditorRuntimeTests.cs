@@ -11,6 +11,7 @@ using Inno.Core.Execution;
 using Inno.Core.Identity;
 using Inno.Core.Input;
 using Inno.Core.Logging;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Core.Settings;
 using Inno.Editor.Core;
@@ -77,7 +78,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         ZThrowingDisposeModule.disposeCount = 0;
         ZThrowingDisposeModule.throwOnDispose = false;
         ShutdownOrder.events.Clear();
-        m_runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")));
+        m_runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")));
         m_runtime.Start();
     }
 
@@ -102,13 +103,13 @@ public sealed partial class EditorRuntimeTests : IDisposable
     [Fact]
     public void FeatureLookupReturnsOnlyStartedNonQuarantinedModules()
     {
-        Assert.True(m_runtime.interactions.TryGetModule<TestModule>(out var first));
+        Assert.True(m_runtime.interactions.TryGetModule<TestModule>(out TestModule? first));
         Assert.NotNull(first);
-        Assert.True(m_runtime.interactions.TryGetModule<TestModule>(out var again));
+        Assert.True(m_runtime.interactions.TryGetModule<TestModule>(out TestModule? again));
         Assert.Same(first, again);
         UpdateBarrierModule.throwWhenRead = true;
         m_runtime.Update(new EditorFrame());
-        Assert.False(m_runtime.interactions.TryGetModule<UpdateBarrierModule>(out var quarantined));
+        Assert.False(m_runtime.interactions.TryGetModule<UpdateBarrierModule>(out UpdateBarrierModule? quarantined));
         Assert.Null(quarantined);
     }
 
@@ -145,7 +146,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         var service = new TestHostService();
         HostServicePanel.current = null;
         using EditorInteractionRuntime runtime = CreateRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super")),
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super")),
             service
         );
         runtime.Start();
@@ -158,7 +159,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
     {
         HostServicePanel.current = null;
         using EditorInteractionRuntime runtime = CreateRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"))
         );
         runtime.Start();
         Assert.DoesNotContain(runtime.panels, static panel => panel.id == "tests.host-service");
@@ -275,8 +276,8 @@ public sealed partial class EditorRuntimeTests : IDisposable
         var down = new EditorViewportPointerEvent(
             7,
             EditorViewportPointerPhase.Down,
-            new Inno.Core.Mathematics.Vector2(2f, 3f),
-            coordinates.ScreenToWorld(new Inno.Core.Mathematics.Vector2(2f, 3f)),
+            new Vector2(2f, 3f),
+            coordinates.ScreenToWorld(new Vector2(2f, 3f)),
             0,
             KeyModifier.None
         );
@@ -437,7 +438,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
     public void LargeNeutralPayloadSpillsToTheBoundedSessionDiskStore()
     {
         NeutralHistoryHandler.value = 32;
-        byte[] bytes = new byte[128 * 1024];
+        var bytes = new byte[128 * 1024];
         BitConverter.GetBytes(9).CopyTo(bytes, 0);
         BitConverter.GetBytes(32).CopyTo(bytes, sizeof(int));
         m_runtime.interactions.history.RecordApplied(
@@ -515,7 +516,9 @@ public sealed partial class EditorRuntimeTests : IDisposable
     [Fact]
     public void ProductKeyboardPolicyControlsDiscoveryLabelsAndShortcutDispatch()
     {
-        using var runtime = CreateRuntime(new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Super, "Cmd")));
+        using EditorInteractionRuntime runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Super, "Cmd"))
+        );
         runtime.Start();
         NeutralHistoryHandler.value = 1;
         runtime.interactions.history.RecordApplied("Change Test Value", NeutralHistoryHandler.CreateChange(before: 0, after: 1));
@@ -687,8 +690,8 @@ public sealed partial class EditorRuntimeTests : IDisposable
         m_runtime.Dispose();
         int stops = TestModule.stopCount;
         TestModule.throwOnStart = true;
-        using var runtime = CreateRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        using EditorInteractionRuntime runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"))
         );
         try
         {
@@ -708,8 +711,8 @@ public sealed partial class EditorRuntimeTests : IDisposable
         m_runtime.Dispose();
         int detaches = TestPanel.detachCount;
         TestPanel.throwOnAttach = true;
-        using var runtime = CreateRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+        using EditorInteractionRuntime runtime = CreateRuntime(
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"))
         );
         try
         {
@@ -794,7 +797,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
         Assert.Contains("[InnoEditor][Module.tests.state]", document);
         Assert.DoesNotContain("[InnoEditor][Module.tests.update-barrier]", document);
         using EditorInteractionRuntime restored = CreateRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"))
         );
         restored.Start();
         Assert.Equal(42, TestModule.restoredStateValue);
@@ -805,7 +808,7 @@ public sealed partial class EditorRuntimeTests : IDisposable
     public void MalformedModuleStateValueUsesTheExtensionFallback()
     {
         m_runtime.Dispose();
-        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         context.SetLayoutSection("Module.tests.state", new Dictionary<string, string> { ["value"] = "not-json" });
         context.SaveLayout();
         TestModule.restoredStateValue = -1;
@@ -842,11 +845,11 @@ public sealed partial class EditorRuntimeTests : IDisposable
     public void UnifiedEditorIniPreservesLayoutAndExtensionStateSectionsTogether()
     {
         const string layout = "[Window][Hierarchy]\nPos=10,20\nSize=300,400";
-        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         context.SetImGuiLayout(layout);
         context.SetLayoutSection("Module.tests", new Dictionary<string, string> { ["openScenes"] = "[\"Scenes/Test.iscene\"]" });
         Assert.True(context.SaveLayoutIfChanged());
-        var restored = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
+        var restored = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         Assert.Equal(layout, restored.imguiLayout);
         Assert.True(restored.TryGetLayoutSection("Module.tests", out IReadOnlyDictionary<string, string> values));
         Assert.Equal("[\"Scenes/Test.iscene\"]", values["openScenes"]);
@@ -861,14 +864,14 @@ public sealed partial class EditorRuntimeTests : IDisposable
     public void StartupRegistryRefreshCannotOverwriteModuleStateBeforeRestore()
     {
         m_runtime.Dispose();
-        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"));
+        var context = new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"));
         context.SetLayoutSection("Module.tests.state", new Dictionary<string, string> { ["value"] = "91" });
         context.SaveLayout();
         TestModule.startCount = 0;
         TestModule.restoredStateValue = 0;
         TestModule.rebuildDuringRestore = true;
         using EditorInteractionRuntime restored = CreateRuntime(
-            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(Inno.Core.Input.KeyModifier.Control, "Super"))
+            new EditorContext(m_projectRoot, new EditorKeyboardPolicy(KeyModifier.Control, "Super"))
         );
         restored.Start();
         Assert.Equal(91, TestModule.restoredStateValue);
@@ -924,7 +927,7 @@ public sealed class NeutralHistoryHandler : EditorHistoryHandler
         int before,
         int after
     ) {
-        byte[] bytes = new byte[sizeof(int) * 2];
+        var bytes = new byte[sizeof(int) * 2];
         BitConverter.GetBytes(before).CopyTo(bytes, 0);
         BitConverter.GetBytes(after).CopyTo(bytes, sizeof(int));
         return new EditorHistoryChange(KIND, EditorHistoryPayload.FromBytes(bytes));
@@ -1377,9 +1380,9 @@ public sealed class TestDocumentProvider : EditorDocumentProvider
 
 public sealed class TestViewportCoordinates : IEditorViewportCoordinateConverter
 {
-    public Inno.Core.Mathematics.Vector2 ScreenToWorld(Inno.Core.Mathematics.Vector2 screenPosition) => screenPosition * 2f;
+    public Vector2 ScreenToWorld(Vector2 screenPosition) => screenPosition * 2f;
 
-    public Inno.Core.Mathematics.Vector2 WorldToScreen(Inno.Core.Mathematics.Vector2 worldPosition) => worldPosition / 2f;
+    public Vector2 WorldToScreen(Vector2 worldPosition) => worldPosition / 2f;
 }
 
 public sealed class TestViewportTool(IEditorHistory history) : EditorViewportTool

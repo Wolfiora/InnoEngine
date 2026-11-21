@@ -242,7 +242,10 @@ public sealed class NativeCMakeSource
         private readonly NativeInputSnapshot m_inputs;
         private Task<NativeCMakeSource>? m_task;
 
-        internal Preparation(NativeInputSnapshot inputs) => m_inputs = inputs;
+        internal Preparation(NativeInputSnapshot inputs)
+        {
+            m_inputs = inputs;
+        }
 
         internal Task<NativeCMakeSource> GetAsync(
             NativeBuildContext context,

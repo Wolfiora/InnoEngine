@@ -45,14 +45,12 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
         isEnabledByDefault: true
     );
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
-    {
-        context.RegisterSourceOutput(context.CompilationProvider, static (
+        => context.RegisterSourceOutput(context.CompilationProvider, static (
             output,
             compilation
         ) => Generate(output, compilation));
-    }
 
     private static void Generate(
         SourceProductionContext output,
@@ -414,7 +412,7 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
                 .Append(" Access")
                 .Append(index)
                 .Append("(")
-                .Append(isStruct ? "ref " : "")
+                .Append(isStruct ? "ref " : string.Empty)
                 .Append(declaring)
                 .Append(" target);\n");
             return read
@@ -446,10 +444,10 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
             .Append(" Access")
             .Append(index)
             .Append("(")
-            .Append(isStruct ? "ref " : "")
+            .Append(isStruct ? "ref " : string.Empty)
             .Append(declaring)
             .Append(" target")
-            .Append(read ? "" : ", " + value + " value")
+            .Append(read ? string.Empty : ", " + value + " value")
             .Append(");\n");
         return read
                ? "static target => Access" + index + "(" + target + ")"
@@ -527,15 +525,15 @@ public sealed class SerializationMetadataGenerator : IIncrementalGenerator
                     .Append(")]\n    private static extern void ")
                     .Append(name)
                     .Append("(")
-                    .Append(ancestor.IsValueType ? "ref " : "")
+                    .Append(ancestor.IsValueType ? "ref " : string.Empty)
                     .Append(Name(ancestor))
                     .Append(" target")
-                    .Append(hook.Parameters.Length == 0 ? "" : ", global::Inno.Core.Serialization.SerializationContext context")
+                    .Append(hook.Parameters.Length == 0 ? string.Empty : ", global::Inno.Core.Serialization.SerializationContext context")
                     .Append(");\n");
                 string target = ancestor.IsValueType
                                 ? "ref global::System.Runtime.CompilerServices.Unsafe.Unbox<" + Name(ancestor) + ">(target)"
                                 : "(" + Name(ancestor) + ")target";
-                calls.Add(name + "(" + target + (hook.Parameters.Length == 0 ? "" : ", context") + ");");
+                calls.Add(name + "(" + target + (hook.Parameters.Length == 0 ? string.Empty : ", context") + ");");
             }
         }
         return calls.Count == 0 ? "null" : "static (target, context) => { " + string.Join(" ", calls) + " }";

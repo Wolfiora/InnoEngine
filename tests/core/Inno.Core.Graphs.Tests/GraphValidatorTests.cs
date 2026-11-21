@@ -83,8 +83,8 @@ public sealed class GraphValidatorTests : IDisposable
     [Fact]
     public void Validate_WithMissingNodeDefinition_PreservesDocumentAsWarning()
     {
-        GraphDocument document = new();
-        GraphNodeRecord node = new(new GraphNodeId("missing"), "plugin.removed");
+        var document = new GraphDocument();
+        var node = new GraphNodeRecord(new GraphNodeId("missing"), "plugin.removed");
         document.AddNode(node);
 
         GraphValidationResult result = GraphValidator.Validate(document, new Resolver(m_serialization));
@@ -97,7 +97,7 @@ public sealed class GraphValidatorTests : IDisposable
     [Fact]
     public void Validate_WithCycle_ReportsError()
     {
-        GraphDocument document = new();
+        var document = new GraphDocument();
         GraphNodeRecord left = CreateNode("left", "float", "float");
         GraphNodeRecord right = CreateNode("right", "float", "float");
         document.AddNode(left);
@@ -126,7 +126,7 @@ public sealed class GraphValidatorTests : IDisposable
         string outputType,
         string inputType
     ) {
-        GraphDocument document = new();
+        var document = new GraphDocument();
         GraphNodeRecord source = CreateNode("source", outputType, outputType);
         GraphNodeRecord destination = CreateNode("destination", inputType, inputType);
         document.AddNode(source);
@@ -140,7 +140,7 @@ public sealed class GraphValidatorTests : IDisposable
         string inputType,
         string outputType
     ) {
-        GraphNodeRecord node = new(new GraphNodeId(id), $"node.{id}");
+        var node = new GraphNodeRecord(new GraphNodeId(id), $"node.{id}");
         node.SetValue("inputType", GraphSerializedValue.From(inputType, m_serialization));
         node.SetValue("outputType", GraphSerializedValue.From(outputType, m_serialization));
         return node;
@@ -162,7 +162,7 @@ public sealed class GraphValidatorTests : IDisposable
             string definitionId,
             out GraphNodeDefinition? definition
         ) {
-            if (!definitionId.StartsWith("node.", System.StringComparison.Ordinal))
+            if (!definitionId.StartsWith("node.", StringComparison.Ordinal))
             {
                 definition = null;
                 return false;

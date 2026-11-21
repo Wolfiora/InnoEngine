@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
@@ -271,7 +272,7 @@ internal sealed record ScriptSourceSet(
         using ArtifactLease lease = candidateAssets is null
                                     ? assets.AcquireArtifact(info.persistentId, "source")
                                     : candidateAssets.AcquireArtifact(info.persistentId, "source");
-        using StreamReader reader = new(lease.OpenRead(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        using var reader = new StreamReader(lease.OpenRead(), Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
         return new ScriptSourceInput(
             entry.assetPath,
             mount.Resolve(entry.assetPath.localPath),
@@ -295,7 +296,7 @@ internal sealed record ScriptSourceSet(
                 .Concat(asset.references.OrderBy(static value => value, StringComparer.Ordinal))
                 .Concat(asset.defines.OrderBy(static value => value, StringComparer.Ordinal))
         );
-        return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(normalized)));
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(normalized)));
     }
 
     private static void ValidateManifestDefinitions(

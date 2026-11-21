@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Inno.Core.Execution;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Exposes current rendering configuration and immutable device state.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("6310eecc-3492-572c-a2f7-e29ec16e65b9")]
+[StableTypeId("6310eecc-3492-572c-a2f7-e29ec16e65b9")]
 public static class GraphicsSettings
 {
     /// <summary>
@@ -32,7 +33,7 @@ public static class GraphicsSettings
     public static RenderFrameStatistics? frameStatistics => GraphicsSettingsExecutionContext.currentOrNull?.frameStatistics;
 }
 
-[Inno.Extensibility.Types.StableTypeId("1af0f9ea-f6cf-544c-a2c5-0c3c306c6780")]
+[StableTypeId("1af0f9ea-f6cf-544c-a2c5-0c3c306c6780")]
 internal sealed class GraphicsSettingsState
 {
     private readonly object m_sync = new();
@@ -92,7 +93,7 @@ internal sealed class GraphicsSettingsState
     }
 }
 
-[Inno.Extensibility.Types.StableTypeId("0f145d08-b261-54bf-92aa-5ee6605d819e")]
+[StableTypeId("0f145d08-b261-54bf-92aa-5ee6605d819e")]
 internal static class GraphicsSettingsExecutionContext
 {
     private static readonly ExecutionSlot<GraphicsSettingsState> S_CURRENT = new("state");

@@ -19,7 +19,10 @@ public sealed class ShaderSourceFrontendRegistry : TypeRegistry<ShaderSourceFron
     /// The owner type catalog; it must outlive this registry.
     /// </param>
     public ShaderSourceFrontendRegistry(TypeCatalog types)
-        : base(types) => m_types = types;
+        : base(types)
+        {
+        m_types = types;
+    }
 
     /// <summary>
     /// Gets immutable language identities available in the current generation.

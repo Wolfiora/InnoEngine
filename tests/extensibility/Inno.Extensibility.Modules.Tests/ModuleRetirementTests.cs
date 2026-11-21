@@ -28,7 +28,7 @@ public sealed class ModuleRetirementTests
         var participant = new Participant();
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
         participant.phase = phase;
-        var reload = modules.BeginReload(handle, Request("V2", cache));
+        AssemblyReloadSession reload = modules.BeginReload(handle, Request("V2", cache));
         AssemblyLoadContext previous = Context(reload.context.previousCatalog);
         AssemblyLoadContext candidate = Context(reload.context.candidateCatalog);
         int unloads = 0;
@@ -83,7 +83,7 @@ public sealed class ModuleRetirementTests
             new InvalidOperationException("completed sibling"),
             new InvalidOperationException("native owner", new RetirementTimeoutException("callback still active"))
         );
-        var reload = modules.BeginReload(handle, Request("V2", cache));
+        AssemblyReloadSession reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;
@@ -135,7 +135,7 @@ public sealed class ModuleRetirementTests
         using IDisposable second = modules.RegisterCatalogParticipant(phase == "complete" ? pending : ordinary);
         ordinary.phase = phase;
         pending.phase = phase;
-        var reload = modules.BeginReload(handle, Request("V2", cache));
+        AssemblyReloadSession reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;
@@ -173,7 +173,7 @@ public sealed class ModuleRetirementTests
         using IDisposable registration = modules.RegisterCatalogParticipant(participant);
         participant.phase = "rollback";
         participant.activationFailure = new InvalidOperationException("catalog activation rejected");
-        var reload = modules.BeginReload(handle, Request("V2", cache));
+        AssemblyReloadSession reload = modules.BeginReload(handle, Request("V2", cache));
         int unloads = 0;
         Context(reload.context.previousCatalog).Unloading += _ => unloads++;
         Context(reload.context.candidateCatalog).Unloading += _ => unloads++;

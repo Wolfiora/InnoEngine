@@ -1,4 +1,5 @@
 using System;
+using System.Numerics;
 using Inno.Assets.Pipeline;
 using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
@@ -63,8 +64,8 @@ internal sealed class FileBrowserDragDrop(AssetBrowserModule assets)
         {
             return;
         }
-        System.Numerics.Vector2 minimum = Ui.GetItemMinimum();
-        System.Numerics.Vector2 maximum = Ui.GetItemMaximum();
+        Vector2 minimum = Ui.GetItemMinimum();
+        Vector2 maximum = Ui.GetItemMaximum();
         EditorDropWidgetResult result = EditorDragDropRenderer.Target(
             assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, relativePath)
         );

@@ -31,8 +31,8 @@ public sealed class InputRuntimeTests
     {
         using var first = new EventInputSource(7);
         using var second = new EventInputSource(8);
-        using var firstBackend = first.CreateBackend();
-        using var secondBackend = second.CreateBackend();
+        using IInputBackend firstBackend = first.CreateBackend();
+        using IInputBackend secondBackend = second.CreateBackend();
         Event[] events =
         [
             new KeyPressedEvent(7, KeyCode.Space),
@@ -61,7 +61,7 @@ public sealed class InputRuntimeTests
     public void ApplicationSuspensionClearsTransientInputAndRejectsBackgroundPresses()
     {
         using var source = new EventInputSource(windowId: 7);
-        using var backend = source.CreateBackend();
+        using IInputBackend backend = source.CreateBackend();
         source.ProcessEvent(new KeyPressedEvent(7, KeyCode.Space));
         source.ProcessEvent(new MouseButtonPressedEvent(7, MouseButton.Left));
         source.ProcessEvent(new TextInputEvent(7, "x"));
@@ -83,7 +83,7 @@ public sealed class InputRuntimeTests
     public void GloballyConsumedPlatformEventsNeverReachSessionInput()
     {
         using var source = new EventInputSource(windowId: 0);
-        using var backend = source.CreateBackend();
+        using IInputBackend backend = source.CreateBackend();
         var consumed = new KeyPressedEvent(42, KeyCode.Space);
         consumed.HandleInGlobal();
         source.ProcessEvent(consumed);
@@ -96,8 +96,8 @@ public sealed class InputRuntimeTests
     public void DisposingOneSessionDoesNotDisconnectOtherSessionSubscriptions()
     {
         using var source = new EventInputSource(windowId: 0);
-        var retired = source.CreateBackend();
-        using var current = source.CreateBackend();
+        IInputBackend retired = source.CreateBackend();
+        using IInputBackend current = source.CreateBackend();
         retired.Dispose();
         source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
         Assert.True(current.Capture(1).IsKeyDown(KeyCode.Space));
@@ -130,7 +130,7 @@ public sealed class InputRuntimeTests
     public void AllWindowSourceAcceptsDetachedWindowAndClearsItOnFocusLoss()
     {
         using var source = new EventInputSource(windowId: 0);
-        using var backend = source.CreateBackend();
+        using IInputBackend backend = source.CreateBackend();
 
         source.ProcessEvent(new KeyPressedEvent(42, KeyCode.Space));
         source.ProcessEvent(new MouseButtonPressedEvent(42, MouseButton.Left));

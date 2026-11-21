@@ -37,7 +37,10 @@ public sealed unsafe class DefaultLayoutNativeTests
         );
         using var types = new TypeCatalog(modules, new EmptyTypeSource());
         using var logs = new LogRouter();
-        var context = new EditorContext(host.runtime.context.projectDirectory, new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl"));
+        var context = new EditorContext(
+            host.runtime.context.projectDirectory,
+            new EditorKeyboardPolicy(KeyModifier.Control, "Ctrl")
+        );
         using var runtime = new ImGuiEditorRuntime(context, types, logs, []);
         ImGuiIO* io = NativeGui.Raw.GetIO();
         io->ConfigFlags |= (int)ImGuiConfigFlags.DockingEnable;
@@ -76,7 +79,7 @@ public sealed unsafe class DefaultLayoutNativeTests
                 }
             });
         }
-        foreach (var rectangle in rectangles.Values)
+        foreach ((Vector2 position, Vector2 size, uint dock) rectangle in rectangles.Values)
         {
             Assert.NotEqual(0u, rectangle.dock);
             Assert.True(rectangle.size.X > 0f && rectangle.size.Y > 0f);
@@ -93,8 +96,8 @@ public sealed unsafe class DefaultLayoutNativeTests
         Assert.True(rectangles["Inspector"].position.X > rectangles["Hierarchy"].position.X);
         Assert.True(rectangles["Console"].position.Y > rectangles["Inspector"].position.Y);
         Assert.InRange(rectangles["File"].size.X / width, 0.43f, 0.49f);
-        Assert.InRange(rectangles["Hierarchy"].size.X / width, 0.25f, 0.30f);
-        Assert.InRange(rectangles["Inspector"].size.X / width, 0.25f, 0.30f);
+        Assert.InRange(rectangles["Hierarchy"].size.X / width, 0.25f, 0.3f);
+        Assert.InRange(rectangles["Inspector"].size.X / width, 0.25f, 0.3f);
     }
 
     private sealed class EmptyTypeSource : ITypeCatalogSource

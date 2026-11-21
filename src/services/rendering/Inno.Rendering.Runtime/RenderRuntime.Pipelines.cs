@@ -14,7 +14,7 @@ using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Validates and selects a project default while preserving its last-good generation.

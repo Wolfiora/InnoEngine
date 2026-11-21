@@ -10,7 +10,10 @@ public sealed class NativeDeploymentIndexTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDeploymentIndex", Guid.NewGuid().ToString("N"));
 
-    public NativeDeploymentIndexTests() => Directory.CreateDirectory(m_root);
+    public NativeDeploymentIndexTests()
+    {
+        Directory.CreateDirectory(m_root);
+    }
 
     [Fact]
     public void UnknownSystemAndSuffixResolveThroughExplicitMappings()

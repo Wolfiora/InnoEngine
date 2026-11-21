@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading;
 using Xunit;
 using Xunit.Abstractions;
 using Inno.Assets;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Editor.Interactions;
 using Inno.Scene;
@@ -22,8 +25,11 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void DueDirtyInspectionsMeasureTheCompleteSavedSceneTraversal()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
-        Inno.Scene.GameScene scene = LoadSavedHierarchy(host);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
+        GameScene scene = LoadSavedHierarchy(host);
         Measure(
             host,
             null,
@@ -37,13 +43,16 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void ChangedDirtyInspectionsMeasureTheCompleteSavedSceneTraversal()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
         GameScene scene = LoadSavedHierarchy(host);
         GameObject value = scene.GetObjects()[0];
         int revision = 0;
         Measure(host, null, "10000-hierarchy-dirty-edits", () =>
         {
-            value.transform.localPosition = new Inno.Core.Mathematics.Vector3(++revision % 2 + 1, 0, 0);
+            value.transform.localPosition = new Vector3(++revision % 2 + 1, 0, 0);
             Assert.True(host.workspace.IsDirty(scene));
         }, static () => Thread.Sleep(110), consumer: "complete-authoritative-dirty-inspection-after-each-owned-write");
     }
@@ -52,8 +61,11 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void NeutralCaptureSeparatesSerializationFromSourceFreshness()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
-        Inno.Scene.GameScene scene = LoadSavedHierarchy(host);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
+        GameScene scene = LoadSavedHierarchy(host);
         SerializationContext context = AssetSerializationContext.Create(
             host.assets,
             new AssetDependencyCollection(includeLastKnownPaths: false)
@@ -73,8 +85,11 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void SourceFreshnessMeasuresTheActualSavedSceneLoadBoundary()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
-        Inno.Scene.GameScene scene = LoadSavedHierarchy(host);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
+        GameScene scene = LoadSavedHierarchy(host);
         Assert.True(host.workspace.TryGetSourcePath(scene, out string path));
         SceneAsset asset = host.assets.Load<SceneAsset>(AssetPath.Project(path));
         Measure(
@@ -90,7 +105,10 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void SceneMetadataReadsMeasureTheOwnedAttachmentBoundary()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
         GameScene scene = LoadSavedHierarchy(host);
         IReadOnlyList<GameObject> objects = scene.GetObjects();
         long checksum = 0;
@@ -111,7 +129,10 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void TenThousandHierarchyRowsProduceRepeatableFrameMeasurements()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
         string? input = InputDirectory("hierarchy");
         if (input is not null && Directory.Exists(input))
         {
@@ -121,7 +142,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
         }
         else
         {
-            var scene = host.CreateScene();
+            GameScene scene = host.CreateScene();
             for (int index = 0; index < 10_000; index++)
             {
                 _ = scene.CreateObject("Object " + index.ToString("D5"));
@@ -140,7 +161,10 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
     [Trait("Acceptance", "Performance")]
     public void TenThousandAssetRowsProduceRepeatableFrameMeasurements()
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
         string? input = InputDirectory("assets");
         if (input is not null && Directory.Exists(input))
         {
@@ -163,10 +187,10 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
         Measure(host, panel, "10000-asset-directory-rows");
     }
 
-    private static Inno.Scene.GameScene LoadSavedHierarchy(NativeProjectPanelHost host)
+    private static GameScene LoadSavedHierarchy(NativeProjectPanelHost host)
     {
         string? input = InputDirectory("hierarchy");
-        Inno.Scene.GameScene scene;
+        GameScene scene;
         if (input is not null && Directory.Exists(input))
         {
             CopyDirectory(input, Path.Combine(host.projectRoot, "Assets"));
@@ -222,7 +246,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
             operation();
         }
         string? requested = Environment.GetEnvironmentVariable("INNO_UI_PERFORMANCE_REPETITIONS");
-        int repetitions = requested is null ? 5 : int.Parse(requested, System.Globalization.CultureInfo.InvariantCulture);
+        int repetitions = requested is null ? 5 : int.Parse(requested, CultureInfo.InvariantCulture);
         Assert.InRange(repetitions, 1, 5);
         using Process process = Process.GetCurrentProcess();
         var samples = new List<object>();
@@ -268,7 +292,7 @@ public sealed partial class LargePanelPerformanceTests(ITestOutputHelper output)
                     ?.Configuration
                                 ?? throw new InvalidOperationException("The benchmark assembly has no SDK configuration metadata."),
                 samples,
-                framework = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription,
+                framework = RuntimeInformation.FrameworkDescription,
                 viewport = "1000x800",
                 warmupFrames = 5,
                 measuredFramesPerRepetition = 10,

@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Editor.Core;
 using Inno.Editor.Graph;
 using Inno.Editor.Graph.ImGui;
 using Inno.Editor.ImGui;
+using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Rendering;
 using Inno.Editor.Shaders;
@@ -30,7 +33,7 @@ internal sealed partial class ShaderEditorCanvas(
     );
 
     internal const string C_AREA = "panel/rendering.shader-editor";
-    private static readonly Vector4 C_EMPTY_GROUP_HEADER = new(0.16f, 0.17f, 0.20f, EditorPalette.opacityOpaque);
+    private static readonly Vector4 C_EMPTY_GROUP_HEADER = new(0.16f, 0.17f, 0.2f, EditorPalette.opacityOpaque);
     private const string C_NODE_WIDTH = "editor.width";
     private const float C_DEFAULT_WIDTH = 270f;
     private const float C_MINIMUM_WIDTH = 180f;
@@ -119,7 +122,8 @@ internal sealed partial class ShaderEditorCanvas(
             Pointer(hovered && !miniMapHovered);
             if (draft.pointer.isBoxSelecting)
             {
-                Vector2 min = Vector2.Min(draft.pointer.boxStart, mouse), max = Vector2.Max(draft.pointer.boxStart, mouse);
+                Vector2 min = Vector2.Min(draft.pointer.boxStart, mouse);
+                Vector2 max = Vector2.Max(draft.pointer.boxStart, mouse);
                 draw.FilledRectangle(min, max, Color(0.52f, 0.37f, 0.78f, EditorPalette.opacitySubtle), 0, false);
                 draw.Rectangle(min, max, Color(0.65f, 0.47f, 0.88f), 0, 1f);
             }
@@ -164,7 +168,7 @@ internal sealed partial class ShaderEditorCanvas(
     }
 
     internal void DrawInspector(
-        Inno.Editor.Inspection.InspectionDrawContext inspection,
+        InspectionDrawContext inspection,
         IReadOnlyList<GraphNodeId> selected
     ) {
         m_inspection = inspection;
@@ -188,7 +192,7 @@ internal sealed partial class ShaderEditorCanvas(
                 "Preview",
                 "The preview uses the current draft without publishing it to Scene or Game views."
             )) {
-                var preview = owner.Preview(draft);
+                EditorShaderDraftCompilationSnapshot? preview = owner.Preview(draft);
                 if (preview is null)
                 {
                     EditorUI.current.widgets.Hint("Run Check to build a preview for the current draft.");
@@ -199,13 +203,13 @@ internal sealed partial class ShaderEditorCanvas(
                 }
                 else if (preview.state == EditorShaderCompilationState.Succeeded
                          && preview.artifact is not null
-                         && owner.interactions.TryGetModule<Inno.Editor.Shaders.ImGui.ShaderPreviews>(out var images)
+                         && owner.interactions.TryGetModule<ShaderPreviews>(out ShaderPreviews? images)
                          && images is not null
                 ) {
-                    var shader = owner.assets.Load<Inno.Rendering.Assets.ShaderAsset>(draft.path);
+                    ShaderAsset shader = owner.assets.Load<ShaderAsset>(draft.path);
                     images.Draw(
                         draft.id,
-                        new Inno.Rendering.Assets.MaterialAsset { shader = shader },
+                        new MaterialAsset { shader = shader },
                         preview,
                         MathF.Max(1f, MathF.Min(256f, ImGuiApi.GetContentRegionAvailable().X))
                     );
@@ -255,8 +259,12 @@ internal sealed partial class ShaderEditorCanvas(
                 }
                 if (Controller.document.metadata.ContainsKey(ShaderGraphDocument.definitionKey))
                 {
-                    var definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
-                    foreach (var property in definition.properties)
+                    ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(
+                        Controller.document,
+                        owner.serialization,
+                        owner.context
+                    );
+                    foreach (ShaderPropertyDefinition property in definition.properties)
                     {
                         InspectorRow(
                             "definition." + property.id.value,
@@ -328,7 +336,7 @@ internal sealed partial class ShaderEditorCanvas(
     }
 
     private GraphNodeRecord[]? m_inspectionNodes;
-    private Inno.Editor.Inspection.InspectionDrawContext? m_inspection;
+    private InspectionDrawContext? m_inspection;
 
     private static void InspectorRow(
         string id,
@@ -346,7 +354,7 @@ internal sealed partial class ShaderEditorCanvas(
             ImGuiApi.SetNextItemWidth(-1f);
             string title = draft is null
                            ? "Select Shader"
-                           : System.IO.Path.GetFileName(draft.path.localPath) + (owner.Controller(draft).isDirty ? " *" : "");
+                           : Path.GetFileName(draft.path.localPath) + (owner.Controller(draft).isDirty ? " *" : string.Empty);
             if (EditorUI.current.widgets.BeginBoundedCombo("##shader-header-select", title))
             {
                 try
@@ -459,7 +467,7 @@ internal sealed partial class ShaderEditorCanvas(
                 }
             }
             catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or FormatException)
-                                            && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                            && RetirementPendingException.Find(failure) is null)
             {
                 draft.nodeErrors[node.id] = failure.Message;
             }
@@ -606,7 +614,7 @@ internal sealed partial class ShaderEditorCanvas(
         {
             if (resizeTarget is not null)
             {
-                draft.selectedGroupId = "";
+                draft.selectedGroupId = string.Empty;
                 draft.selectedEdge = null;
                 Canvas.SelectNodes([resizeTarget.id]);
                 draft.resizingNode = resizeTarget.id;
@@ -632,7 +640,7 @@ internal sealed partial class ShaderEditorCanvas(
             }
             if (hitNode is null && HitPort(mouse) is null)
             {
-                draft.selectedGroupId = "";
+                draft.selectedGroupId = string.Empty;
                 draft.selectedEdge = HitEdge(mouse);
                 if (draft.selectedEdge is not null)
                 {
@@ -657,7 +665,7 @@ internal sealed partial class ShaderEditorCanvas(
         });
         if (intent.nodePressed is GraphNodeId pressed && Controller.document.FindNode(pressed) is { } node)
         {
-            draft.selectedGroupId = "";
+            draft.selectedGroupId = string.Empty;
             draft.selectedEdge = null;
             SetStage(node);
             SynchronizeInspection();
@@ -694,7 +702,7 @@ internal sealed partial class ShaderEditorCanvas(
         GraphNodeRecord node,
         Vector2 mouse
     ) {
-        var rect = Rect(node);
+        (Vector2 min, Vector2 max) rect = Rect(node);
         if (rect.max.X < m_origin.X || rect.min.X > m_origin.X + m_size.X || rect.max.Y < m_origin.Y || rect.min.Y > m_origin.Y + m_size.Y)
         {
             return;
@@ -737,7 +745,7 @@ internal sealed partial class ShaderEditorCanvas(
                 EditorUI.current.widgets.DrawTooltip(
                     port.type.id + (missing
                     ? " · missing port; reconnect explicitly"
-                    : optional ? " · optional input" : port.direction == GraphPortDirection.Input ? " · required input" : "")
+                    : optional ? " · optional input" : port.direction == GraphPortDirection.Input ? " · required input" : string.Empty)
                 );
             }
         }
@@ -796,7 +804,8 @@ internal sealed partial class ShaderEditorCanvas(
             {
                 continue;
             }
-            Vector2 min = bounds.min, max = bounds.max;
+            Vector2 min = bounds.min;
+            Vector2 max = bounds.max;
             bool selected = draft.selectedGroupId == group.id;
             Vector4 headerColor = GroupHeaderColor(group);
             Vector4 bodyColor = EditorPalette.WithOpacity(headerColor, EditorPalette.opacitySoft);
@@ -840,12 +849,13 @@ internal sealed partial class ShaderEditorCanvas(
 
     private (Vector2 min, Vector2 max)? GroupRect(ShaderCanvasGroup group)
     {
-        Vector2 min = new(float.MaxValue), max = new(float.MinValue);
+        var min = new Vector2(float.MaxValue);
+        var max = new Vector2(float.MinValue);
         foreach (string id in group.nodes)
         {
             if (Controller.document.FindNode(new(id)) is GraphNodeRecord node)
             {
-                var rect = Rect(node);
+                (Vector2 min, Vector2 max) rect = Rect(node);
                 min = Vector2.Min(min, rect.min);
                 max = Vector2.Max(max, rect.max);
             }
@@ -972,9 +982,7 @@ internal sealed partial class ShaderEditorCanvas(
             Vector2 a,
             Vector2 b,
             bool selected = false
-        ) {
-            View.DrawConnection(draw, a, b, selected ? Color(0.87f, 0.72f, 1f) : Color(0.59f, 0.46f, 0.82f), selected ? 3f : 2f);
-        }
+        ) => View.DrawConnection(draw, a, b, selected ? Color(0.87f, 0.72f, 1f) : Color(0.59f, 0.46f, 0.82f), selected ? 3f : 2f);
     }
 
     private GraphEdgeId? HitEdge(Vector2 mouse)
@@ -1132,16 +1140,16 @@ internal sealed partial class ShaderEditorCanvas(
         float startHue,
         float hueRange
     ) {
-        uint hash = 2166136261;
+        uint hash = 2_166_136_261;
         foreach (char value in key)
         {
             hash ^= value;
-            hash *= 16777619;
+            hash *= 16_777_619;
         }
 
-        float hue = (startHue + hueRange * (hash & 0xffff) / 65535f) % 360f;
-        float saturation = 0.52f + 0.12f * ((hash >> 16) & 0xff) / 255f;
-        float brightness = 0.34f + 0.08f * ((hash >> 24) & 0xff) / 255f;
+        float hue = (startHue + hueRange * (hash & 0xFFFF) / 65535f) % 360f;
+        float saturation = 0.52f + 0.12f * ((hash >> 16) & 0xFF) / 255f;
+        float brightness = 0.34f + 0.08f * ((hash >> 24) & 0xFF) / 255f;
         float chroma = brightness * saturation;
         float sector = hue / 60f;
         float secondary = chroma * (1f - MathF.Abs(sector % 2f - 1f));
@@ -1235,7 +1243,7 @@ internal sealed partial class ShaderEditorCanvas(
         {
             return;
         }
-        string stage = node.definitionId == ShaderGraphDocument.outputDefinitionId ? node.id.value : Read(node, "stage", "");
+        string stage = node.definitionId == ShaderGraphDocument.outputDefinitionId ? node.id.value : Read(node, "stage", string.Empty);
         if (stage.Length != 0)
         {
             draft.activeStage = new(stage);
@@ -1251,7 +1259,8 @@ internal sealed partial class ShaderEditorCanvas(
         {
             return;
         }
-        float minX = selection.Min(static node => node.position.x), minY = selection.Min(static node => node.position.y);
+        float minX = selection.Min(static node => node.position.x);
+        float minY = selection.Min(static node => node.position.y);
         float maxX = selection.Max(node => node.position.x + NodeWidth(node));
         float maxY = selection.Max(node => node.position.y + C_HEADER + Rows(node) * C_ROW + 20);
         float scale = Math.Clamp(
@@ -1284,7 +1293,7 @@ internal sealed partial class ShaderEditorCanvas(
 
         if (node.definitionId == "inno.shader.source")
         {
-            string function = Read(node, "function", "");
+            string function = Read(node, "function", string.Empty);
             return function.Length == 0 ? "Source Function" : function;
         }
 
@@ -1304,6 +1313,8 @@ internal sealed partial class ShaderEditorCanvas(
         {
             return "Function Outputs";
         }
-        return EditorDisplayNames.Nicify(node.definitionId.Replace("inno.shader.", "", StringComparison.Ordinal).Replace('-', ' '));
+        return EditorDisplayNames.Nicify(
+            node.definitionId.Replace("inno.shader.", string.Empty, StringComparison.Ordinal).Replace('-', ' ')
+        );
     }
 }

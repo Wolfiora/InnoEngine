@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
@@ -62,7 +63,7 @@ internal sealed class ReorderSceneDropHandler(
     }
 
     private static int IndexOf(
-        System.Collections.Generic.IReadOnlyList<GameScene> scenes,
+        IReadOnlyList<GameScene> scenes,
         GameScene scene
     ) {
         for (int index = 0; index < scenes.Count; index++)

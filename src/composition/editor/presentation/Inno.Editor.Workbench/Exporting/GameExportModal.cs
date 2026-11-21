@@ -120,7 +120,7 @@ internal sealed class GameExportModal(ExportWindowModule window) : EditorModal
             id,
             2,
             ImGuiTableFlags.SizingStretchProp | ImGuiTableFlags.NoSavedSettings | ImGuiTableFlags.NoPadOuterX,
-            default(Vector2),
+            default,
             0f
         );
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
@@ -22,7 +23,11 @@ public sealed partial class RenderRuntimeGenerationTests
     {
         DotNetModuleSource plugin = CreateRenderingPluginRequest();
         m_modules.Load(plugin);
-        using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out TestDeviceProxy proxy), new TestDiagnosticSink());
+        using var runtime = new RenderRuntime(
+            m_types,
+            TestDeviceProxy.Create(out TestDeviceProxy proxy),
+            new TestDiagnosticSink()
+        );
         runtime.SetPrimaryModelOutputEnabled(false);
         WeakReference contributor = CompleteCollectibleContributorFrame(runtime, proxy, rejectGraph);
         (IAssemblyUnloadProbe monitor, IRenderRuntimeReloadTransaction transaction) =
@@ -38,7 +43,11 @@ public sealed partial class RenderRuntimeGenerationTests
     [Fact]
     public void ContributorRegistrationChangesTakeEffectOnTheNextFrame()
     {
-        using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out TestDeviceProxy proxy), new TestDiagnosticSink());
+        using var runtime = new RenderRuntime(
+            m_types,
+            TestDeviceProxy.Create(out TestDeviceProxy proxy),
+            new TestDiagnosticSink()
+        );
         runtime.SetPrimaryModelOutputEnabled(false);
         var first = new CountingContributor();
         var next = new CountingContributor();
@@ -110,7 +119,11 @@ public sealed partial class RenderRuntimeGenerationTests
         int contributorCount,
         bool fail
     ) {
-        using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out TestDeviceProxy proxy), new TestDiagnosticSink());
+        using var runtime = new RenderRuntime(
+            m_types,
+            TestDeviceProxy.Create(out TestDeviceProxy proxy),
+            new TestDiagnosticSink()
+        );
         runtime.SetPrimaryModelOutputEnabled(false);
         var contributors = new List<CountingContributor>();
         for (int index = 0; index < contributorCount; index++)
@@ -152,7 +165,7 @@ public sealed partial class RenderRuntimeGenerationTests
                 bytesPerFrame = allocatedBytes / (double)frames,
                 millisecondsPerFrame = elapsedMs / frames,
                 graphCompileCount = ReadGraphCompileCount(runtime),
-                runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
+                runtime = RuntimeInformation.FrameworkDescription
             }, new JsonSerializerOptions { WriteIndented = true })
         );
     }
@@ -164,7 +177,11 @@ public sealed partial class RenderRuntimeGenerationTests
     [InlineData(32)]
     public void ContributorRetirementMeasurementsIncludeRegistrationAndTheFollowingEmptyFrame(int contributorCount)
     {
-        using var runtime = new RenderRuntime(m_types, TestDeviceProxy.Create(out TestDeviceProxy proxy), new TestDiagnosticSink());
+        using var runtime = new RenderRuntime(
+            m_types,
+            TestDeviceProxy.Create(out TestDeviceProxy proxy),
+            new TestDiagnosticSink()
+        );
         runtime.SetPrimaryModelOutputEnabled(false);
         CountingContributor[] contributors = Enumerable.Range(0, contributorCount)
             .Select(static _ => new CountingContributor())
@@ -208,7 +225,7 @@ public sealed partial class RenderRuntimeGenerationTests
                 bytesPerCycle = allocatedBytes / (double)cycles,
                 millisecondsPerCycle = elapsedMs / cycles,
                 graphCompileCount = ReadGraphCompileCount(runtime),
-                runtime = System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription
+                runtime = RuntimeInformation.FrameworkDescription
             }, new JsonSerializerOptions { WriteIndented = true })
         );
     }
@@ -256,7 +273,7 @@ public sealed partial class RenderRuntimeGenerationTests
         Type type = m_types.current.GetTypesImplementing<IRenderFrameGraphContributor>()
             .Select(reference => reference.Resolve(m_types))
             .Single(type => type.Name == "ReloadableContributor");
-        var contributor = (IRenderFrameGraphContributor)Activator.CreateInstance(
+        IRenderFrameGraphContributor contributor = (IRenderFrameGraphContributor)Activator.CreateInstance(
             type,
             new Action<IRenderFrameGraphContributor>(value => Assert.True(runtime.UnregisterContributor(value))),
             rejectGraph

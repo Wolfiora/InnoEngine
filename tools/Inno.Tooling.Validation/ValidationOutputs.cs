@@ -30,12 +30,14 @@ internal static class ValidationOutputs
         ) {
             return outputs;
         }
-        var directories = new HashSet<string>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var directories = new HashSet<string>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+        );
         if (check.kind is "support-pack" or "release-bundle")
         {
             foreach (string name in check.kind == "support-pack"
                                     ? new[] { "PlayerSupportPack.zip" }
-                                    : new[] { "Editor.zip", "PlayerSupportPack.zip", "deliverable-manifest.json" }
+                                    : ["Editor.zip", "PlayerSupportPack.zip", "deliverable-manifest.json"]
             ) {
                 string archive = Path.Combine(plan.artifacts, "deliverables", name);
                 if (!File.Exists(archive))

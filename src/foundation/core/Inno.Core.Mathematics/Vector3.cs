@@ -5,6 +5,8 @@ using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
 using System.Runtime.Serialization;
 
+using NumericsVector3 = System.Numerics.Vector3;
+
 namespace Inno.Core.Mathematics;
 
 /// <summary>
@@ -16,17 +18,20 @@ public struct Vector3 : IEquatable<Vector3>
     /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public float x;
+    [DataMember]
+    public float x;
 
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public float y;
+    [DataMember]
+    public float y;
 
     /// <summary>
     /// The depth or third component.
     /// </summary>
-    [DataMember] public float z;
+    [DataMember]
+    public float z;
 
     /// <summary>
     /// Creates a vector from explicit component values.
@@ -333,15 +338,15 @@ public struct Vector3 : IEquatable<Vector3>
     /// <summary>
     /// Transforms a position as a column vector with an implicit homogeneous coordinate of one.
     /// </summary>
-    /// <returns>
-    /// The transformed XYZ components, including translation. No perspective divide is performed.
-    /// </returns>
     /// <param name="position">
     /// The input position.
     /// </param>
     /// <param name="matrix">
     /// The transformation matrix applied to the supplied value.
     /// </param>
+    /// <returns>
+    /// The transformed XYZ components, including translation. No perspective divide is performed.
+    /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Vector3 Transform(
         Vector3 position,
@@ -349,10 +354,10 @@ public struct Vector3 : IEquatable<Vector3>
     ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
-            var v = Vector128.Create(position.x, position.y, position.z, 1f);
-            var row1 = Vector128.Create(matrix.m11, matrix.m12, matrix.m13, matrix.m14);
-            var row2 = Vector128.Create(matrix.m21, matrix.m22, matrix.m23, matrix.m24);
-            var row3 = Vector128.Create(matrix.m31, matrix.m32, matrix.m33, matrix.m34);
+            Vector128<float> v = Vector128.Create(position.x, position.y, position.z, 1f);
+            Vector128<float> row1 = Vector128.Create(matrix.m11, matrix.m12, matrix.m13, matrix.m14);
+            Vector128<float> row2 = Vector128.Create(matrix.m21, matrix.m22, matrix.m23, matrix.m24);
+            Vector128<float> row3 = Vector128.Create(matrix.m31, matrix.m32, matrix.m33, matrix.m34);
 
             float x = SimdMath.Dot4(row1, v);
             float y = SimdMath.Dot4(row2, v);
@@ -385,10 +390,10 @@ public struct Vector3 : IEquatable<Vector3>
     ) {
         if (Sse.IsSupported || AdvSimd.IsSupported)
         {
-            var v = Vector128.Create(normal.x, normal.y, normal.z, 0f);
-            var row1 = Vector128.Create(matrix.m11, matrix.m12, matrix.m13, 0f);
-            var row2 = Vector128.Create(matrix.m21, matrix.m22, matrix.m23, 0f);
-            var row3 = Vector128.Create(matrix.m31, matrix.m32, matrix.m33, 0f);
+            Vector128<float> v = Vector128.Create(normal.x, normal.y, normal.z, 0f);
+            Vector128<float> row1 = Vector128.Create(matrix.m11, matrix.m12, matrix.m13, 0f);
+            Vector128<float> row2 = Vector128.Create(matrix.m21, matrix.m22, matrix.m23, 0f);
+            Vector128<float> row3 = Vector128.Create(matrix.m31, matrix.m32, matrix.m33, 0f);
 
             float x = SimdMath.Dot4(row1, v);
             float y = SimdMath.Dot4(row2, v);
@@ -419,8 +424,13 @@ public struct Vector3 : IEquatable<Vector3>
         Vector3 value,
         Quaternion rotation
     ) {
-        float x = value.x, y = value.y, z = value.z;
-        float qx = rotation.x, qy = rotation.y, qz = rotation.z, qw = rotation.w;
+        float x = value.x;
+        float y = value.y;
+        float z = value.z;
+        float qx = rotation.x;
+        float qy = rotation.y;
+        float qz = rotation.z;
+        float qw = rotation.w;
 
         float num1 = 2f * (qy * z - qz * y);
         float num2 = 2f * (qz * x - qx * z);
@@ -584,7 +594,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// <returns>
     /// The validated system.numerics.vector3 that represents the completed operation.
     /// </returns>
-    public static implicit operator System.Numerics.Vector3(Vector3 v) => new(v.x, v.y, v.z);
+    public static implicit operator NumericsVector3(Vector3 v) => new(v.x, v.y, v.z);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Vector3"/>.
@@ -595,7 +605,7 @@ public struct Vector3 : IEquatable<Vector3>
     /// <returns>
     /// The validated vector3 that represents the completed operation.
     /// </returns>
-    public static implicit operator Vector3(System.Numerics.Vector3 v) => new(v.X, v.Y, v.Z);
+    public static implicit operator Vector3(NumericsVector3 v) => new(v.X, v.Y, v.Z);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

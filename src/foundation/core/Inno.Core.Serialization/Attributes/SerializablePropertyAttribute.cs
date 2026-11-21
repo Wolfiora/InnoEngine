@@ -32,6 +32,6 @@ public sealed class SerializablePropertyAttribute : Attribute
     /// </param>
     public SerializablePropertyAttribute(PropertyVisibility visibility = PropertyVisibility.Show)
     {
-        propertyVisibility = visibility;
+        this.propertyVisibility = visibility;
     }
 }

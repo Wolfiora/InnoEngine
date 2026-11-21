@@ -256,8 +256,8 @@ internal static class PrefabOverrideProcessor
         {
             return;
         }
-        var mappedObjectIds = connection.objectIdentities.Values.ToHashSet();
-        var mappedComponentIds = connection.componentIdentities.Values.ToHashSet();
+        HashSet<Guid> mappedObjectIds = connection.objectIdentities.Values.ToHashSet();
+        HashSet<Guid> mappedComponentIds = connection.componentIdentities.Values.ToHashSet();
         var stack = new Stack<GameObject>();
         stack.Push(root);
         while (stack.Count != 0)

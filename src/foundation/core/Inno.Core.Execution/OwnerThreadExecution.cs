@@ -58,7 +58,7 @@ public static class OwnerThreadExecution
         private readonly BlockingCollection<Action> m_callbacks = new();
         private readonly int m_threadId = Environment.CurrentManagedThreadId;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Post(
             SendOrPostCallback callback,
             object? state
@@ -67,7 +67,7 @@ public static class OwnerThreadExecution
             m_callbacks.Add(() => callback(state));
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Send(
             SendOrPostCallback callback,
             object? state
@@ -99,10 +99,10 @@ public static class OwnerThreadExecution
             failure?.Throw();
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override SynchronizationContext CreateCopy() => this;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose() => m_callbacks.Dispose();
 
         internal void Pump(Task completion)

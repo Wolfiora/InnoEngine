@@ -11,19 +11,16 @@ namespace Inno.Integration.WindowsX64.Sdl3;
 /// </summary>
 public sealed class WindowsX64Sdl3HostIntegration : ISdl3HostIntegration
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Sdl3HostCapabilities capabilities { get; } = new(multipleWindows: true, liveResize: true);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void ConfigureInitialization() {}
 
-    /// <inheritdoc />
-    public nint CreateWindow(PlatformWindowOptions options)
-    {
-        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
-    }
+    /// <inheritdoc/>
+    public nint CreateWindow(PlatformWindowOptions options) => Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public unsafe PlatformNativeHandles ResolveNativeSurface(nint windowHandle)
     {
         if (windowHandle == 0)
@@ -44,9 +41,6 @@ public sealed class WindowsX64Sdl3HostIntegration : ISdl3HostIntegration
         return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.win32);
     }
 
-    /// <inheritdoc />
-    public bool GetInitialFocus(nint windowHandle)
-    {
-        return Sdl3WindowOperations.ReadFocus(windowHandle);
-    }
+    /// <inheritdoc/>
+    public bool GetInitialFocus(nint windowHandle) => Sdl3WindowOperations.ReadFocus(windowHandle);
 }

@@ -123,10 +123,7 @@ public sealed unsafe partial class ImGuiWidget
     public bool DragDropTarget<TPayload>(
         string payloadType,
         out TPayload payload
-    ) where TPayload : unmanaged
-    {
-        return DragDropTarget(payloadType, out payload, out _);
-    }
+    ) where TPayload : unmanaged => DragDropTarget(payloadType, out payload, out _);
 
     /// <summary>
     /// Accepts an unmanaged payload and reports its preview state on the most recently submitted item.
@@ -150,10 +147,7 @@ public sealed unsafe partial class ImGuiWidget
         string payloadType,
         out TPayload payload,
         out bool isPreviewing
-    ) where TPayload : unmanaged
-    {
-        return DragDropTarget(payloadType, out payload, out isPreviewing, drawDefaultHighlight: true);
-    }
+    ) where TPayload : unmanaged => DragDropTarget(payloadType, out payload, out isPreviewing, drawDefaultHighlight: true);
 
     /// <summary>
     /// Accepts an unmanaged payload and controls whether ImGui draws its default target rectangle.
@@ -258,7 +252,7 @@ public sealed unsafe partial class ImGuiWidget
         {
             return false;
         }
-        ImRect bounds = new()
+        var bounds = new ImRect()
         {
             Min = ImGui.ToNative(minimum),
             Max = ImGui.ToNative(maximum)
@@ -305,7 +299,7 @@ public sealed unsafe partial class ImGuiWidget
     ) where TPayload : unmanaged
     {
         payload = default;
-        if ((nativePayload == null) || nativePayload->DataSize != sizeof(TPayload) || nativePayload->Data == null)
+        if ((nativePayload is null) || nativePayload->DataSize != sizeof(TPayload) || nativePayload->Data is null)
         {
             return false;
         }

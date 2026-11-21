@@ -20,7 +20,7 @@ public sealed class IdentityAllocatorTests
 
     private WeakReference<Entity> CreateRegisteredEntity(out int runtimeId)
     {
-        Entity entity = new();
+        var entity = new Entity();
         m_allocator.Register(entity);
         runtimeId = GetIdentity(entity).runtimeId!.Value;
         return new WeakReference<Entity>(entity);

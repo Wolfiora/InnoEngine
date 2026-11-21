@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Inno.Core.Input;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Frame-local input located in the output viewport's physical pixels.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("0fe2e29e-4826-5e41-9ebd-a3110e673b5e")]
+[StableTypeId("0fe2e29e-4826-5e41-9ebd-a3110e673b5e")]
 public sealed class RenderOutputInput
 {
     /// <summary>

@@ -11,9 +11,9 @@ public sealed class ToolRunnerTests
     [Fact]
     public void Run_UsesExplicitlyDeployedTools()
     {
-        foreach (var tool in Enum.GetValues<BgfxTool>())
+        foreach (BgfxTool tool in Enum.GetValues<BgfxTool>())
         {
-            var toolName = tool.ToString().ToLowerInvariant();
+            string toolName = tool.ToString().ToLowerInvariant();
             ToolRunResult result = new ToolRunner().Run(tool, ["--help"]);
             Assert.InRange(result.exitCode, 0, 1);
             Assert.False(string.IsNullOrWhiteSpace(result.standardOutput + result.standardError));

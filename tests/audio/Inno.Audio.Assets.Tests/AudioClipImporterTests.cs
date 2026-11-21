@@ -74,7 +74,7 @@ public sealed class AudioClipImporterTests : IDisposable
         Assert.Equal(AudioCodecId.wav, wav.metadata!.Value.codec);
         Assert.Equal(4, wav.metadata.Value.frameCount);
         Assert.Equal(AudioCodecId.flac, flac.metadata!.Value.codec);
-        Assert.Equal(48000, flac.metadata.Value.frameCount);
+        Assert.Equal(48_000, flac.metadata.Value.frameCount);
         Assert.Equal(AudioCodecId.mp3, mp3.metadata!.Value.codec);
         Assert.Equal(1152, mp3.metadata.Value.frameCount);
         AssertSeparateArtifact(loader, wav, CreateWav());
@@ -123,15 +123,15 @@ public sealed class AudioClipImporterTests : IDisposable
 
     private static byte[] CreateWav()
     {
-        byte[] bytes = new byte[60];
+        var bytes = new byte[60];
         "RIFF"u8.CopyTo(bytes);
         BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(4, 4), 52);
         "WAVEfmt "u8.CopyTo(bytes.AsSpan(8));
         BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(16, 4), 16);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(20, 2), 1);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(22, 2), 2);
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(24, 4), 48000);
-        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(28, 4), 192000);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(24, 4), 48_000);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(28, 4), 192_000);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(32, 2), 4);
         BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(34, 2), 16);
         "data"u8.CopyTo(bytes.AsSpan(36));
@@ -141,19 +141,19 @@ public sealed class AudioClipImporterTests : IDisposable
 
     private static byte[] CreateFlac()
     {
-        byte[] bytes = new byte[42];
+        var bytes = new byte[42];
         "fLaC"u8.CopyTo(bytes);
         bytes[4] = 0x80;
         bytes[7] = 34;
-        ulong packed = ((ulong)48000 << 44) | (1UL << 41) | (15UL << 36) | 48000UL;
+        ulong packed = ((ulong)48_000 << 44) | (1UL << 41) | (15UL << 36) | 48_000UL;
         BinaryPrimitives.WriteUInt64BigEndian(bytes.AsSpan(18, 8), packed);
         return bytes;
     }
 
     private static byte[] CreateMp3()
     {
-        byte[] bytes = new byte[417];
-        BinaryPrimitives.WriteUInt32BigEndian(bytes, 0xfffb9000);
+        var bytes = new byte[417];
+        BinaryPrimitives.WriteUInt32BigEndian(bytes, 0xFFFB_9000);
         return bytes;
     }
 }

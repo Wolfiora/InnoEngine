@@ -39,7 +39,7 @@ public sealed class MissingGameSystem : GameSystem
                                : missingTypeName;
         m_serializedState = serializedState.ToArray();
         m_dependencies = dependencies?.ToArray() ?? [];
-        enabled = false;
+        this.enabled = false;
     }
 
     /// <summary>

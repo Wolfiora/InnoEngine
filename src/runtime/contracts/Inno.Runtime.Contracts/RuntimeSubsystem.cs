@@ -32,13 +32,13 @@ public abstract class RuntimeSubsystem : IRuntimeSubsystem
     /// <summary>
     /// Acquires session resources after every dependency has attached.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The subsystem is already started.
+    /// </exception>
     /// <remarks>
     /// The caller must own this instance before attachment. Failed attachment stops admission but leaves partial
     /// resources with that owner, which must drive Dispose through any pending retirement.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// The subsystem is already started.
-    /// </exception>
     public void Attach()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);

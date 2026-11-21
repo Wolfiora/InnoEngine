@@ -10,7 +10,7 @@ public sealed class ContentCacheRetirementTests
     [Fact]
     public async Task RepairKeepsAnOldReaderGenerationUntilItsLastStreamCloses()
     {
-        using ContentCacheFixture fixture = new();
+        using var fixture = new ContentCacheFixture();
         FileContentStore old = await FileContentPreparation.PrepareAsync(fixture.source, fixture.options);
         string oldDirectory = fixture.current;
         ContentReadLease lease = old.Acquire(new ContentKey("Artifacts/aa/bb/data"));
@@ -21,7 +21,7 @@ public sealed class ContentCacheRetirementTests
         using FileContentStore replacement = await FileContentPreparation.PrepareAsync(fixture.source, fixture.options);
         Assert.NotEqual(oldDirectory, fixture.current);
         Assert.True(Directory.Exists(oldDirectory));
-        byte[] bytes = new byte[3];
+        var bytes = new byte[3];
         input.ReadExactly(bytes);
         Assert.Equal(new byte[] { 4, 5, 6 }, bytes);
         input.Dispose();

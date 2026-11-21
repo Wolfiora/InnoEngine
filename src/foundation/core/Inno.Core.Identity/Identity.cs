@@ -22,7 +22,7 @@ public struct Identity
     {
         get
         {
-            if (m_registryRef == null || !m_registryRef.TryGetTarget(out IdentityRegistry? registry))
+            if (m_registryRef is null || !m_registryRef.TryGetTarget(out IdentityRegistry? registry))
             {
                 return null;
             }
@@ -41,7 +41,7 @@ public struct Identity
     {
         get
         {
-            if (m_registryRef == null || !m_registryRef.TryGetTarget(out IdentityRegistry? registry))
+            if (m_registryRef is null || !m_registryRef.TryGetTarget(out IdentityRegistry? registry))
             {
                 return null;
             }
@@ -82,7 +82,7 @@ public struct Identity
 
     internal void Unbind(IdentityRegistry registry)
     {
-        if (m_registryRef != null
+        if (m_registryRef is not null
             && m_registryRef.TryGetTarget(out IdentityRegistry? current)
             && ReferenceEquals(current, registry)
         ) {

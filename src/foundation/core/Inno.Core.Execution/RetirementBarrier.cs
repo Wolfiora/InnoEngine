@@ -52,10 +52,6 @@ public sealed class RetirementBarrier
     /// <returns>
     /// True after retirement completes, or false while work remains within its deadline.
     /// </returns>
-    /// <remarks>
-    /// Wrapped pending failures retain their ownership semantics. A nested timeout is rethrown in its original
-    /// exception tree. Ordinary sibling failures survive retries and are reported once retirement completes.
-    /// </remarks>
     /// <exception cref="AggregateException">
     /// Retirement completed after earlier ordinary failures, or the owner reported a wrapped terminal timeout.
     /// </exception>
@@ -65,6 +61,10 @@ public sealed class RetirementBarrier
     /// <exception cref="InvalidOperationException">
     /// The caller is not the thread that created this barrier.
     /// </exception>
+    /// <remarks>
+    /// Wrapped pending failures retain their ownership semantics. A nested timeout is rethrown in its original
+    /// exception tree. Ordinary sibling failures survive retries and are reported once retirement completes.
+    /// </remarks>
     public bool TryComplete(Action retire)
     {
         ArgumentNullException.ThrowIfNull(retire);
@@ -144,7 +144,10 @@ public sealed class RetirementBarrier
 
     private AggregateException TakeCompletedFailure()
     {
-        var failure = new AggregateException($"Owner '{m_owner}' retired with completed cleanup failures.", m_completedFailures);
+        var failure = new AggregateException(
+            $"Owner '{m_owner}' retired with completed cleanup failures.",
+            m_completedFailures
+        );
         m_completedFailures.Clear();
         return failure;
     }

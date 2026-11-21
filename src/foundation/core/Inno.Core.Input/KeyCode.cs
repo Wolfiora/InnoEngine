@@ -348,45 +348,56 @@ public enum KeyCode
     /// <summary>
     /// The plus key.
     /// </summary>
-    Plus = 187,          // '+' key
+    // '+' key
+    Plus = 187,
     /// <summary>
     /// The comma key.
     /// </summary>
-    Comma = 188,         // ',' key
+    // ',' key
+    Comma = 188,
     /// <summary>
     /// The minus key.
     /// </summary>
-    Minus = 189,         // '-' key
+    // '-' key
+    Minus = 189,
     /// <summary>
     /// The period key.
     /// </summary>
-    Period = 190,        // '.' key
+    // '.' key
+    Period = 190,
     /// <summary>
     /// The slash key.
     /// </summary>
-    Slash = 191,         // '/' key
+    // '/' key
+    Slash = 191,
     /// <summary>
     /// The tilde key.
     /// </summary>
-    Tilde = 192,         // '`' key
+    // '`' key
+    Tilde = 192,
     /// <summary>
     /// The backslash key.
     /// </summary>
-    Backslash = 220,     // '\' key
+    // '\' key
+    Backslash = 220,
     /// <summary>
     /// The semicolon key.
     /// </summary>
-    Semicolon = 186,     // ';' key
+    // ';' key
+    Semicolon = 186,
     /// <summary>
     /// The quote key.
     /// </summary>
-    Quote = 222,         // ''' key
+    // ''' key
+    Quote = 222,
     /// <summary>
     /// The left bracket key.
     /// </summary>
-    LeftBracket = 219,   // '[' key
+    // '[' key
+    LeftBracket = 219,
     /// <summary>
     /// The right bracket key.
     /// </summary>
-    RightBracket = 221   // ']' key
+    // ']' key
+    RightBracket = 221
 }

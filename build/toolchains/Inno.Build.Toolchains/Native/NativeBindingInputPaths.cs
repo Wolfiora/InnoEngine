@@ -57,7 +57,7 @@ internal sealed class NativeBindingInputPaths
     internal string? ResolveRelative(string path)
     {
         string absolute = Path.TrimEndingDirectorySeparator(Path.GetFullPath(path));
-        foreach (var entry in m_roots)
+        foreach ((string physical, string relative, bool file) entry in m_roots)
         {
             if (string.Equals(absolute, entry.physical, m_comparison))
             {

@@ -197,7 +197,7 @@ public abstract class ProjectSettingEditor<TSetting> : ProjectSettingEditor
     internal sealed override bool DrawValue(ISerializable value)
     {
         ValidateValue(value);
-        var setting = (TSetting)value;
+        TSetting setting = (TSetting)value;
         Baseline baseline = m_baselines.GetValue(
             setting,
             candidate => new Baseline(serialization.CapturePropertiesData(candidate))

@@ -9,7 +9,7 @@ public sealed class UnixFileLinksFactAttribute : FactAttribute
     {
         if (OperatingSystem.IsWindows())
         {
-            Skip = "Unix compiler file-link semantics require a Unix filesystem; Windows directory-link rejection is tested separately.";
+            this.Skip = "Unix compiler file-link semantics require a Unix filesystem; Windows directory-link rejection is tested separately.";
         }
     }
 }

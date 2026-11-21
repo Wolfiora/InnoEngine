@@ -13,5 +13,5 @@ internal static class InspectorTargetStyle
     /// <summary>
     /// Gets the subdued background of Layer labels in Inspector target headers.
     /// </summary>
-    internal static Vector4 layerLabel { get; } = new(0.24f, 0.34f, 0.40f, EditorPalette.opacityOpaque);
+    internal static Vector4 layerLabel { get; } = new(0.24f, 0.34f, 0.4f, EditorPalette.opacityOpaque);
 }

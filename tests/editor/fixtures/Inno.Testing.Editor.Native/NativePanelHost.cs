@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Inno.Adapter.Modules.DotNet;
 using Inno.Core.Diagnostics;
+using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Core.Logging;
 using Inno.Editor.Core;
@@ -17,10 +18,10 @@ using Inno.Extensibility.Modules;
 using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
-using ImGuiCond = Inno.Native.ImGui.ImGuiCond;
-using ImGuiWindowFlags = Inno.Native.ImGui.ImGuiWindowFlags;
+using NativeCond = Inno.Native.ImGui.ImGuiCond;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
+using NativeWindowFlags = Inno.Native.ImGui.ImGuiWindowFlags;
 
 namespace Inno.Testing.Editor.Native;
 
@@ -46,8 +47,12 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Creates a panel host with the default keyboard convention and vertex-offset validation disabled.
     /// </summary>
-    /// <param name="composition">The calling test assembly owning the complete discovery closure.</param>
-    /// <param name="assemblies">Additional declared panel assemblies to load before discovery.</param>
+    /// <param name="composition">
+    /// The calling test assembly owning the complete discovery closure.
+    /// </param>
+    /// <param name="assemblies">
+    /// Additional declared panel assemblies to load before discovery.
+    /// </param>
     public NativePanelHost(
         Assembly composition,
         params string[] assemblies
@@ -56,9 +61,15 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Creates a panel host with an explicit vertex-offset capability.
     /// </summary>
-    /// <param name="composition">The calling test assembly owning the complete discovery closure.</param>
-    /// <param name="supportsVertexOffsets">Whether to advertise and validate native vertex offsets.</param>
-    /// <param name="assemblies">Additional declared panel assemblies to load before discovery.</param>
+    /// <param name="composition">
+    /// The calling test assembly owning the complete discovery closure.
+    /// </param>
+    /// <param name="supportsVertexOffsets">
+    /// Whether to advertise and validate native vertex offsets.
+    /// </param>
+    /// <param name="assemblies">
+    /// Additional declared panel assemblies to load before discovery.
+    /// </param>
     public NativePanelHost(
         Assembly composition,
         bool supportsVertexOffsets,
@@ -68,10 +79,18 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Creates the owned diagnostics, discovery, interactions and native frame context.
     /// </summary>
-    /// <param name="composition">The calling test assembly owning the complete discovery closure.</param>
-    /// <param name="supportsVertexOffsets">Whether to advertise and validate native vertex offsets.</param>
-    /// <param name="keyboard">The explicit keyboard convention used by the test.</param>
-    /// <param name="assemblies">Additional declared panel assemblies to load before discovery.</param>
+    /// <param name="composition">
+    /// The calling test assembly owning the complete discovery closure.
+    /// </param>
+    /// <param name="supportsVertexOffsets">
+    /// Whether to advertise and validate native vertex offsets.
+    /// </param>
+    /// <param name="keyboard">
+    /// The explicit keyboard convention used by the test.
+    /// </param>
+    /// <param name="assemblies">
+    /// Additional declared panel assemblies to load before discovery.
+    /// </param>
     public NativePanelHost(
         Assembly composition,
         bool supportsVertexOffsets,
@@ -85,16 +104,16 @@ public sealed unsafe class NativePanelHost : IDisposable
         {
             _ = Assembly.Load(assembly);
         }
-        diagnostics = new DiagnosticHub();
+        this.diagnostics = new DiagnosticHub();
         m_diagnosticScope = diagnostics.EnterScope();
-        logs = new LogRouter();
+        this.logs = new LogRouter();
         m_modules = new ModuleHost(new() { catalogSource = new DotNetAssemblyCatalogSource(composition) });
         m_types = new TypeCatalog(m_modules, new ReflectionTypeCatalogSource());
-        console = new EditorConsole(logs, diagnostics, new InactivePlayMode());
+        this.console = new EditorConsole(logs, diagnostics, new InactivePlayMode());
         console.Start();
-        runtime = new EditorInteractionRuntime(new EditorContext(m_root, keyboard), m_types, logs, [console]);
+        this.runtime = new EditorInteractionRuntime(new EditorContext(m_root, keyboard), m_types, logs, [console]);
         runtime.Start();
-        ui = new EditorUiSession();
+        this.ui = new EditorUiSession();
         m_nativeContext = CreateNativeContext(ui, supportsVertexOffsets);
         m_clipboard = new NativeClipboard(m_nativeContext);
         logs.Flush();
@@ -148,9 +167,15 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Finds and opens exactly one discovered panel.
     /// </summary>
-    /// <param name="id">The registered panel identity.</param>
-    /// <returns>The borrowed panel, valid until this host is disposed.</returns>
-    /// <exception cref="InvalidOperationException">The identity has no unique discovered panel.</exception>
+    /// <param name="id">
+    /// The registered panel identity.
+    /// </param>
+    /// <returns>
+    /// The borrowed panel, valid until this host is disposed.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// The identity has no unique discovered panel.
+    /// </exception>
     public EditorPanelExtension GetPanel(string id)
     {
         EditorPanelExtension panel = runtime.panels.Single(value => value.id == id);
@@ -161,8 +186,12 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Executes a real native frame and validates its resulting draw data.
     /// </summary>
-    /// <param name="draw">The drawing operation executed within the UI scope.</param>
-    /// <param name="deltaTime">The explicit elapsed frame time in seconds.</param>
+    /// <param name="draw">
+    /// The drawing operation executed within the UI scope.
+    /// </param>
+    /// <param name="deltaTime">
+    /// The explicit elapsed frame time in seconds.
+    /// </param>
     public void Frame(
         Action draw,
         float deltaTime = 1f / 60f
@@ -190,9 +219,15 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Sets the native display dimensions, framebuffer scale and UI zoom.
     /// </summary>
-    /// <param name="logicalSize">The logical display size in UI coordinates.</param>
-    /// <param name="framebufferScale">The physical framebuffer scale.</param>
-    /// <param name="zoom">The UI style zoom.</param>
+    /// <param name="logicalSize">
+    /// The logical display size in UI coordinates.
+    /// </param>
+    /// <param name="framebufferScale">
+    /// The physical framebuffer scale.
+    /// </param>
+    /// <param name="zoom">
+    /// The UI style zoom.
+    /// </param>
     public void SetDisplayMetrics(
         Vector2 logicalSize,
         float framebufferScale,
@@ -210,42 +245,48 @@ public sealed unsafe class NativePanelHost : IDisposable
     /// <summary>
     /// Draws the actual panel inside a bounded native window and completes the frame.
     /// </summary>
-    /// <param name="panel">The borrowed panel belonging to this host's interaction runtime.</param>
-    /// <param name="afterDraw">An optional operation performed after the panel draws and before the window closes.</param>
-    /// <param name="deltaTime">The explicit elapsed frame time in seconds.</param>
-    /// <exception cref="InvalidOperationException">The panel is quarantined by a real draw failure.</exception>
+    /// <param name="panel">
+    /// The borrowed panel belonging to this host's interaction runtime.
+    /// </param>
+    /// <param name="afterDraw">
+    /// An optional operation performed after the panel draws and before the window closes.
+    /// </param>
+    /// <param name="deltaTime">
+    /// The explicit elapsed frame time in seconds.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The panel is quarantined by a real draw failure.
+    /// </exception>
     public void DrawPanel(
         EditorPanelExtension panel,
         Action? afterDraw = null,
         float deltaTime = 1f / 60f
-    ) {
-        Frame(() =>
+    ) => Frame(() =>
+    {
+        NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)NativeCond.Always);
+        NativeImGui.SetNextWindowSize(m_panelSize, (int)NativeCond.Always);
+        bool open = true;
+        _ = NativeImGui.Begin("Panel acceptance", ref open, (int)NativeWindowFlags.NoSavedSettings);
+        try
         {
-            NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)ImGuiCond.Always);
-            NativeImGui.SetNextWindowSize(m_panelSize, (int)ImGuiCond.Always);
-            bool open = true;
-            _ = NativeImGui.Begin("Panel acceptance", ref open, (int)ImGuiWindowFlags.NoSavedSettings);
-            try
+            if (panel.isOpen && !panel.Draw(runtime.context))
             {
-                if (panel.isOpen && !panel.Draw(runtime.context))
-                {
-                    logs.Flush();
-                    string failures = string.Join(
-                        Environment.NewLine,
-                        console.Capture().occurrences
-                            .Where(static entry => entry.level >= LogLevel.Error)
-                            .Select(static entry => entry.message + Environment.NewLine + entry.stackTrace)
-                    );
-                    throw new InvalidOperationException("The actual panel was quarantined: " + panel.id + Environment.NewLine + failures);
-                }
-                afterDraw?.Invoke();
+                logs.Flush();
+                string failures = string.Join(
+                    Environment.NewLine,
+                    console.Capture().occurrences
+                        .Where(static entry => entry.level >= LogLevel.Error)
+                        .Select(static entry => entry.message + Environment.NewLine + entry.stackTrace)
+                );
+                throw new InvalidOperationException("The actual panel was quarantined: " + panel.id + Environment.NewLine + failures);
             }
-            finally
-            {
-                NativeImGui.End();
-            }
-        }, deltaTime);
-    }
+            afterDraw?.Invoke();
+        }
+        finally
+        {
+            NativeImGui.End();
+        }
+    }, deltaTime);
 
     /// <summary>
     /// Releases the owned UI, native context and services on their creating thread.
@@ -327,7 +368,7 @@ public sealed unsafe class NativePanelHost : IDisposable
 
     internal sealed class InactivePlayMode : IEditorPlayMode
     {
-        private readonly Inno.Core.Events.EventDispatcher m_events = new();
+        private readonly EventDispatcher m_events = new();
         public EditorPlayModeState state => EditorPlayModeState.Editing;
         public bool isPlaying => false;
         public string? lastFailure => null;

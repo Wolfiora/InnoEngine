@@ -17,9 +17,9 @@ public sealed class WindowSurfaceTests
             return;
         }
 
-        var host = NativeHostFixture.Create();
+        ISdl3HostIntegration host = NativeHostFixture.Create();
         using var app = new Sdl3PlatformApplication(host);
-        using var window = app.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = app.CreateWindow(new PlatformWindowOptions
         {
             title = "Surface contract",
             width = 40,

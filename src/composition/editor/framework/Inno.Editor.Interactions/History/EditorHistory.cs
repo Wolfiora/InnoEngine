@@ -52,7 +52,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
         m_log = log ?? throw new ArgumentNullException(nameof(log));
         options.Validate();
         m_options = options;
-        capacity = options.maxEntries;
+        this.capacity = options.maxEntries;
         m_blobStore = new EditorHistoryBlobStore(options.cacheDirectory);
     }
 
@@ -863,7 +863,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
             Func<EditorHistoryResult> redo,
             object? mergeKey
         ) {
-            name = operationName;
+            this.name = operationName;
             m_undo = undo;
             m_redo = redo;
             m_mergeKey = mergeKey;
@@ -1039,7 +1039,7 @@ internal sealed class EditorHistory : IEditorHistory, IDisposable
             Action<T> apply,
             object mergeKey
         ) {
-            name = operationName;
+            this.name = operationName;
             m_before = before;
             m_after = after;
             m_apply = apply;

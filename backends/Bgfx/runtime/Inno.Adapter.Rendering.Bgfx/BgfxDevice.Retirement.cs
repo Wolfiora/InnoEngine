@@ -11,7 +11,7 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Shuts down BGFX after releasing all active and queued backend resources.
@@ -28,7 +28,7 @@ sealed unsafe partial class BgfxDevice
         }
 
         EnsureApiThread();
-        if (m_activeEncoder != null || m_activeGraph is not null)
+        if (m_activeEncoder is not null || m_activeGraph is not null)
         {
             throw new InvalidOperationException("Cannot dispose BGFX while a render graph or encoder is active.");
         }
@@ -205,7 +205,7 @@ sealed unsafe partial class BgfxDevice
 
     private string? GetManagedResourceClosureFailure()
     {
-        if (m_activeEncoder != null
+        if (m_activeEncoder is not null
             || m_activeGraph is not null
             || m_graphFrameBuffers.Count != 0
             || m_graphTextures.Count != 0

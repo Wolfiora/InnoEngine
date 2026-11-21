@@ -17,11 +17,11 @@ public sealed class SceneReloadService
     /// <summary>
     /// Creates a scene reload service bound to one serialization generation owner.
     /// </summary>
-    /// <param name="serialization">
-    /// The serialization registry used to capture and restore scene state.
-    /// </param>
     /// <param name="world">
     /// The isolated scene world whose active generation is captured.
+    /// </param>
+    /// <param name="serialization">
+    /// The serialization registry used to capture and restore scene state.
     /// </param>
     /// <param name="assets">
     /// The asset reference generation used throughout capture, activation, and rollback.

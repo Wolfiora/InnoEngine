@@ -164,13 +164,13 @@ public sealed class ValidationRepository : IDisposable
             extended.ToString(),
             "--configuration",
             configuration,
-            ..profile is null ? Array.Empty<string>() : new[] { "--profile", profile },
-            ..baselinePlan is null ? Array.Empty<string>() : new[] { "--baseline-plan", baselinePlan },
-            ..backendStore is null ? Array.Empty<string>() : new[] { "--backend-store", backendStore },
-            ..nativeDependencies is null ? Array.Empty<string>() : new[] { "--native-dependencies", nativeDependencies },
-            ..documentationCache is null ? Array.Empty<string>() : new[] { "--docs-cache-root", documentationCache },
-            ..documentationSnapshot is null ? Array.Empty<string>() : new[] { "--docs-snapshot", documentationSnapshot },
-            ..documentationBaseline is null ? Array.Empty<string>() : new[] { "--docs-base-snapshot", documentationBaseline }
+            ..profile is null ? Array.Empty<string>() : ["--profile", profile],
+            ..baselinePlan is null ? Array.Empty<string>() : ["--baseline-plan", baselinePlan],
+            ..backendStore is null ? Array.Empty<string>() : ["--backend-store", backendStore],
+            ..nativeDependencies is null ? Array.Empty<string>() : ["--native-dependencies", nativeDependencies],
+            ..documentationCache is null ? Array.Empty<string>() : ["--docs-cache-root", documentationCache],
+            ..documentationSnapshot is null ? Array.Empty<string>() : ["--docs-snapshot", documentationSnapshot],
+            ..documentationBaseline is null ? Array.Empty<string>() : ["--docs-base-snapshot", documentationBaseline]
         ]);
         return JsonDocument.Parse(File.ReadAllText(Path.Combine(output, "plan.json")));
     }
@@ -219,7 +219,7 @@ public sealed class ValidationRepository : IDisposable
         PathOf("artifacts/plan/plan.json"),
         "--output",
         PathOf(output),
-        ..evidence is null ? Array.Empty<string>() : new[] { "--evidence", PathOf(evidence) }
+        ..evidence is null ? Array.Empty<string>() : ["--evidence", PathOf(evidence)]
     ], cancellation);
 
     public Task BuildAsync(params string[] arguments)

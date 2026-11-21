@@ -14,7 +14,7 @@ using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     /// <summary>
     /// Submits validated work to the active backend for ordered processing.
@@ -197,10 +197,7 @@ sealed partial class RenderRuntime
         }
     }
 
-    private void EnsureRequestProviders()
-    {
-        m_requestProviders = m_extensions.extensions.providers;
-    }
+    private void EnsureRequestProviders() => m_requestProviders = m_extensions.extensions.providers;
 
     private sealed record CompositionRequest(
         string name,

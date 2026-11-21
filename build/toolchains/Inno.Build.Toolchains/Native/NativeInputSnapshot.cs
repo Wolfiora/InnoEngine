@@ -14,7 +14,9 @@ internal sealed class NativeInputSnapshot
     );
 
     internal NativeInputSnapshot(IEnumerable<Entry> entries)
-        => this.entries = Array.AsReadOnly(entries.OrderBy(static entry => entry.logicalPath, StringComparer.Ordinal).ToArray());
+    {
+        this.entries = Array.AsReadOnly(entries.OrderBy(static entry => entry.logicalPath, StringComparer.Ordinal).ToArray());
+    }
 
     internal IReadOnlyList<Entry> entries { get; }
 
@@ -23,7 +25,7 @@ internal sealed class NativeInputSnapshot
         NativeInputReadCache cache,
         CancellationToken cancellationToken
     ) {
-        Dictionary<string, string> paths = new(StringComparer.Ordinal);
+        var paths = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (NativeBuildInput input in inputs)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -41,7 +43,7 @@ internal sealed class NativeInputSnapshot
                 paths.Add(logical, physical);
             }
         }
-        var ordered = paths.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
+        KeyValuePair<string, string>[] ordered = paths.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
         byte[][] hashes = cache.Hash(ordered.Select(static pair => pair.Value).ToArray(), cancellationToken);
         return new NativeInputSnapshot(
             ordered.Select((

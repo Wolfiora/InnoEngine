@@ -36,8 +36,8 @@ internal sealed record SceneScalarHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        Guid targetId = new(reader.ReadBytes(16));
-        var scalarKind = (SceneScalarKind)reader.ReadByte();
+        var targetId = new Guid(reader.ReadBytes(16));
+        SceneScalarKind scalarKind = (SceneScalarKind)reader.ReadByte();
         if (!Enum.IsDefined(scalarKind))
         {
             throw new InvalidDataException($"Unknown scene scalar history kind '{scalarKind}'.");

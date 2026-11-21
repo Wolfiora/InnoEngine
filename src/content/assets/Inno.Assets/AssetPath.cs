@@ -53,7 +53,7 @@ public record struct AssetSourceId
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public readonly override string ToString() => value ?? string.Empty;
+    public override readonly string ToString() => value ?? string.Empty;
 }
 
 /// <summary>
@@ -102,12 +102,12 @@ public record struct AssetPath
     /// <summary>
     /// Creates a path in the writable project source.
     /// </summary>
-    /// <returns>
-    /// A project-owned asset path.
-    /// </returns>
     /// <param name="localPath">
     /// The local path text validated by the project operation.
     /// </param>
+    /// <returns>
+    /// A project-owned asset path.
+    /// </returns>
     public static AssetPath Project(string localPath) => new(AssetSourceId.project, localPath);
 
     /// <summary>
@@ -134,7 +134,7 @@ public record struct AssetPath
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public readonly override string ToString()
+    public override readonly string ToString()
         => source == AssetSourceId.project
            ? localPath ?? string.Empty
            : $"{source}{C_SOURCE_SEPARATOR}{localPath}";

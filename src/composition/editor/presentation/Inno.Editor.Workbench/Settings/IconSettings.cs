@@ -139,7 +139,7 @@ internal abstract class IconSetting : EditorSetting
             new Vector2(origin.X + iconSlotWidth * 0.5f, origin.Y + lineHeight * 0.5f),
             color
         );
-        Inno.Editor.ImGui.ImGui.DrawText(new Vector2(origin.X + iconSlotWidth + style.itemInnerSpacing.X, origin.Y), color, text);
+        Ui.DrawText(new Vector2(origin.X + iconSlotWidth + style.itemInnerSpacing.X, origin.Y), color, text);
     }
 }
 

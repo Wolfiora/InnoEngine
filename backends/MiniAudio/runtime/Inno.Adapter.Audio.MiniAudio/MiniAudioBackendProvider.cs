@@ -14,9 +14,7 @@ public sealed class MiniAudioBackendProvider : AudioBackendProvider
     public MiniAudioBackendProvider()
         : base(AudioBackendId.miniAudio) {}
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IAudioDevice CreateDevice(AudioBackendOptions options)
-    {
-        return new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = options.noDevice });
-    }
+        => new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = options.noDevice });
 }

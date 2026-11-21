@@ -308,12 +308,12 @@ public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => Equals(obj as RenderVertexLayout);
 
     /// <summary>
@@ -324,7 +324,7 @@ public sealed class RenderVertexLayout : IEquatable<RenderVertexLayout>
     /// </returns>
     public override int GetHashCode()
     {
-        HashCode hash = new();
+        var hash = new HashCode();
         foreach (RenderVertexAttribute attribute in m_attributes)
         {
             hash.Add(attribute);

@@ -70,7 +70,7 @@ public sealed class BrowserSupportPackTests : IDisposable
         foreach (ProductNativeBuildStep step in plan.steps)
         {
             foreach (string archive in step.component.staticBuild!.logicalOutputs.Select(
-                Inno.Build.BrowserWasm32.BrowserWasm32LinkerSettings.Create().GetStaticFileName
+                BrowserWasm32LinkerSettings.Create().GetStaticFileName
             )) {
                 Write(pack, $"PlayerLink/Native/{step.id}/browser-wasm/{archive}");
             }

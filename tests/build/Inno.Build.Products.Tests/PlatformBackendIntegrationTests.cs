@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Xunit;
 using Inno.Build.Bindings;
 using Inno.Build.Composition;
@@ -19,11 +20,11 @@ public sealed class PlatformBackendIntegrationTests
         Assert.Equal("macos-arm64", MacOSArm64BgfxIntegration.nativeProfile.targetId);
         var context = new BuildCompositionContext(
             "explicit-sdk",
-            System.IO.Path.GetTempPath(),
+            Path.GetTempPath(),
             new BuildHostDescriptor("Windows", "x64"),
             new BuildTargetId("windows-x64")
         );
-        var standard = StandardBuildDistribution.Create(context);
+        StandardBuildDistribution standard = StandardBuildDistribution.Create(context);
         Assert.Same(WindowsX64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetId("windows-x64")));
         Assert.Same(MacOSArm64BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetId("macos-arm64")));
         Assert.Same(BrowserWasm32BgfxIntegration.shaderProfile, standard.ResolveShaderTarget(new BuildTargetId("browser-wasm")));

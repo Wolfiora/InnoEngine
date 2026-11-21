@@ -113,7 +113,11 @@ internal static class DocumentationApiPackage
                 return 0;
             }
         }
-        var updates = incoming.files.ToDictionary(file => file.path, file => (string?)file.text, StringComparer.Ordinal);
+        Dictionary<string, string?> updates = incoming.files.ToDictionary(
+            file => file.path,
+            file => (string?)file.text,
+            StringComparer.Ordinal
+        );
         string oldBindingPath = DocumentationApiFacts.Resolve(root, C_BINDING);
         if (File.Exists(oldBindingPath))
         {
@@ -134,7 +138,7 @@ internal static class DocumentationApiPackage
                 incoming.contentIdentity
             }) + "\n"
         );
-        var originals = updates.Keys.ToDictionary(path => path, path =>
+        Dictionary<string, byte[]?> originals = updates.Keys.ToDictionary(path => path, path =>
         {
             string absolute = DocumentationApiFacts.Resolve(root, path);
             return File.Exists(absolute) ? File.ReadAllBytes(absolute) : null;
@@ -142,7 +146,7 @@ internal static class DocumentationApiPackage
         cancellation.ThrowIfCancellationRequested();
         try
         {
-            foreach (var update in updates)
+            foreach (KeyValuePair<string, string?> update in updates)
             {
                 string path = DocumentationApiFacts.Resolve(root, update.Key);
                 if (update.Value is null)
@@ -160,7 +164,7 @@ internal static class DocumentationApiPackage
         }
         catch
         {
-            foreach (var original in originals)
+            foreach (KeyValuePair<string, byte[]?> original in originals)
             {
                 string path = DocumentationApiFacts.Resolve(root, original.Key);
                 if (original.Value is null)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Build.Composition;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -19,7 +20,7 @@ internal sealed record ProductCleanPlan(
         CancellationToken cancellationToken
     ) {
         var projects = new List<string> { project };
-        foreach (var platform in context.distribution.platforms)
+        foreach (BuildPlatformContribution platform in context.distribution.platforms)
         {
             if (platform.descriptor.id == context.target && platform.editorProject is not null)
             {

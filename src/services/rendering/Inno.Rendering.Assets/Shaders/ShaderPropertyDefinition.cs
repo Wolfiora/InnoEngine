@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Declares one shader property and its reflected stage visibility.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("4b05e49c-b844-535e-aec9-c2201cfdd93f")]
+[StableTypeId("4b05e49c-b844-535e-aec9-c2201cfdd93f")]
 public struct ShaderPropertyDefinition
 {
     /// <summary>

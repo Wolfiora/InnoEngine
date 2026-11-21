@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -7,7 +8,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies one immutable texture source across authoring, deployment, and runtime generations.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("045f13ba-3cc0-5470-b025-08f9febf40e6")]
+[StableTypeId("045f13ba-3cc0-5470-b025-08f9febf40e6")]
 public readonly record struct RenderTextureArtifactReference
 {
     /// <summary>

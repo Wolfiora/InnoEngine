@@ -14,7 +14,10 @@ public sealed class AtomicFilePublicationTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoAtomicPublication", Guid.NewGuid().ToString("N"));
 
-    public AtomicFilePublicationTests() => Directory.CreateDirectory(m_root);
+    public AtomicFilePublicationTests()
+    {
+        Directory.CreateDirectory(m_root);
+    }
 
     [Theory]
     [InlineData("document.imeta.staging-0123456789abcdef0123456789ABCDEF", true)]
@@ -229,7 +232,7 @@ public sealed class AtomicFilePublicationTests : IDisposable
 
     private static async Task WaitUntil(Func<bool> condition)
     {
-        long deadline = Environment.TickCount64 + 20000;
+        long deadline = Environment.TickCount64 + 20_000;
         while (!condition())
         {
             Assert.True(Environment.TickCount64 < deadline, "The independent publishers did not reach their owned barrier.");

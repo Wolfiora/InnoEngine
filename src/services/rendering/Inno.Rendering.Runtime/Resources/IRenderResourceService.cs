@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -12,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Resolves neutral assets and provider-owned uploads into opaque resources for the active device generation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("8f112b16-5cda-5171-949e-e2c5c4583b34")]
+[StableTypeId("8f112b16-5cda-5171-949e-e2c5c4583b34")]
 public interface IRenderResourceService
 {
     /// <summary>
@@ -409,10 +410,12 @@ public interface IRenderResourceService
     /// <summary>
     /// Releases cached resources with this provider-owned identifier at a safe GPU mutation point.
     /// </summary>
-    /// <remarks>Calls between frames or during graph execution queue neutral identities until the next frame;
-    /// runtime shutdown also retires them. Calls must occur on the rendering owner thread. Unused identities are ignored.</remarks>
     /// <param name="id">
     /// Stable resource identifier to release.
     /// </param>
+    /// <remarks>
+    /// Calls between frames or during graph execution queue neutral identities until the next frame;
+    /// runtime shutdown also retires them. Calls must occur on the rendering owner thread. Unused identities are ignored.
+    /// </remarks>
     void Release(RenderPersistentResourceId id);
 }

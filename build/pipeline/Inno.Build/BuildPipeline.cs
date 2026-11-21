@@ -32,14 +32,8 @@ public sealed class BuildPipeline
     /// <summary>
     /// Creates a build pipeline from installed Player Support Packs and platform packagers.
     /// </summary>
-    /// <param name="supportPackRoot">
-    /// The directory containing one child directory per <see cref="BuildTargetId"/>.
-    /// </param>
     /// <param name="assets">
     /// The active authoring asset pipeline captured by builds.
-    /// </param>
-    /// <param name="generations">
-    /// The host-wide admission gate that remains pinned until the build snapshot is released.
     /// </param>
     /// <param name="plugins">
     /// The active Plugin environment captured by builds.
@@ -50,8 +44,14 @@ public sealed class BuildPipeline
     /// <param name="serialization">
     /// The serialization registry used to pin and encode the build snapshot.
     /// </param>
+    /// <param name="generations">
+    /// The host-wide admission gate that remains pinned until the build snapshot is released.
+    /// </param>
     /// <param name="compiler">
     /// The project compiler used to produce a fresh runtime-only assembly generation for each game build.
+    /// </param>
+    /// <param name="supportPackRoot">
+    /// The directory containing one child directory per <see cref="BuildTargetId"/>.
     /// </param>
     /// <param name="gameTargets">
     /// The complete set of replaceable platform package implementations available to this host.
@@ -232,12 +232,6 @@ public sealed class BuildPipeline
     /// <summary>
     /// Builds and installs one complete source-free game deployment with rollback protection.
     /// </summary>
-    /// <remarks>
-    /// Prepare current packs with EnsurePlayerSupportPackAsync before invoking this method on the
-    /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
-    /// Coordinate readers and writers of the output directory during its two installation moves.
-    /// Post-commit backup, staging and progress observer failures are warnings on the successful result.
-    /// </remarks>
     /// <param name="request">
     /// The exact profile, destination, and activated runtime compilation generation.
     /// </param>
@@ -265,6 +259,12 @@ public sealed class BuildPipeline
     /// <exception cref="AggregateException">
     /// Output installation and restoration both fail; the previous tree remains at the reported backup path.
     /// </exception>
+    /// <remarks>
+    /// Prepare current packs with EnsurePlayerSupportPackAsync before invoking this method on the
+    /// authoring owner's thread. The synchronous snapshot phase never waits for asynchronous provisioning.
+    /// Coordinate readers and writers of the output directory during its two installation moves.
+    /// Post-commit backup, staging and progress observer failures are warnings on the successful result.
+    /// </remarks>
     public async ValueTask<BuildResult> BuildGameAsync(
         GameBuildRequest request,
         IProgress<BuildProgress>? progress = null,

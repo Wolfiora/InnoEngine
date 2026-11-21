@@ -20,7 +20,7 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
-            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using var uiSession = new EditorUI();
             using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
             EditorUI.current.widgets.SetupStyle();
@@ -62,14 +62,14 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
-            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using var uiSession = new EditorUI();
             using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
             EditorUI.current.widgets.SetupStyle();
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default);
                 NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), (int)(ImGuiCond.Always));
                 using NativeStringLease nativeTestText1 = Utf8Codec.EncodeNullTerminated("Selector bounds", allowsNull: false);
                 _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText1.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar));
@@ -106,14 +106,14 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
-            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using var uiSession = new EditorUI();
             using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
             EditorUI.current.widgets.SetupStyle();
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default);
                 NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), (int)(ImGuiCond.Always));
                 using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("Selector near bottom", allowsNull: false);
                 _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText2.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar));
@@ -152,14 +152,14 @@ public sealed unsafe class EditorPopupLayoutTests
         ImGuiNativeContext* context = NativeImGui.Raw.CreateContext(null);
         try
         {
-            using var uiSession = new Inno.Editor.ImGui.EditorUiSession();
+            using var uiSession = new EditorUI();
             using IDisposable uiScope = uiSession.Enter();
             ConfigureContext();
             EditorUI.current.widgets.SetupStyle();
             for (int frame = 0; frame < 3; frame++)
             {
                 NativeImGui.NewFrame();
-                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default(Vector2));
+                NativeImGui.SetNextWindowPos(new Vector2(20f, 20f), (int)(ImGuiCond.Always), default);
                 NativeImGui.SetNextWindowSize(new Vector2(300f, 250f), (int)(ImGuiCond.Always));
                 using NativeStringLease nativeTestText3 = Utf8Codec.EncodeNullTerminated("Panel with layout child", allowsNull: false);
                 _ = NativeImGui.Raw.Begin((sbyte*)nativeTestText3.pointer, null, (int)(ImGuiWindowFlags.NoTitleBar));

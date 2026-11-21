@@ -260,7 +260,7 @@ internal sealed class RenderLayerCompositor : IDisposable
 
     private static byte[] CreateVertices(bool originBottomLeft)
     {
-        byte[] bytes = new byte[4 * 20];
+        var bytes = new byte[4 * 20];
         float top = originBottomLeft ? 1f : 0f;
         float bottom = originBottomLeft ? 0f : 1f;
         WriteVertex(0, -1f, 1f, 0f, top);

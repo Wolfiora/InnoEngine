@@ -22,8 +22,7 @@ public sealed class ImGuiInteractionOptionsTests
     [InlineData(0)]
     [InlineData(2)]
     [InlineData(-2)]
-    public void WheelDirectionCannotSilentlyDisableOrAmplifyInput(int direction)
-    {
-        Assert.Throws<ArgumentOutOfRangeException>(() => new ImGuiInteractionOptions(false, direction));
-    }
+    public void WheelDirectionCannotSilentlyDisableOrAmplifyInput(int direction) => Assert.Throws<ArgumentOutOfRangeException>(
+        () => new ImGuiInteractionOptions(false, direction)
+    );
 }

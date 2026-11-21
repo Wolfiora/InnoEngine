@@ -13,9 +13,9 @@ internal static class DocumentationCatalog
         IReadOnlyList<DocumentationPage> pages,
         IReadOnlyList<DocumentationProject> projects
     ) {
-        var paths = pages.ToDictionary(static page => page.path, StringComparer.Ordinal);
-        var identities = pages.ToDictionary(static page => page.metadata.uid, StringComparer.Ordinal);
-        var owners = projects.ToDictionary(static project => project.name, StringComparer.Ordinal);
+        Dictionary<string, DocumentationPage> paths = pages.ToDictionary(static page => page.path, StringComparer.Ordinal);
+        Dictionary<string, DocumentationPage> identities = pages.ToDictionary(static page => page.metadata.uid, StringComparer.Ordinal);
+        Dictionary<string, DocumentationProject> owners = projects.ToDictionary(static project => project.name, StringComparer.Ordinal);
         foreach (DocumentationProject project in projects)
         {
             if (project.entry is null)

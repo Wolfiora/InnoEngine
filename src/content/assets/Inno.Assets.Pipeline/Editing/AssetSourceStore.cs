@@ -171,8 +171,8 @@ public sealed class AssetSourceSnapshot
         bool readOnly
     ) {
         m_bytes = bytes;
-        contentHash = hash;
-        isReadOnly = readOnly;
+        this.contentHash = hash;
+        this.isReadOnly = readOnly;
     }
 
     /// <summary>

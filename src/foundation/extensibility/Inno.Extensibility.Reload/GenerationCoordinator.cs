@@ -148,16 +148,16 @@ public sealed class GenerationCoordinator
     /// <returns>
     /// A scope for the entire operation, or a borrowed scope inside publication on its own control thread.
     /// </returns>
-    /// <remarks>
-    /// Published data remains readable while old contexts await collection. This scope does not authorize Play,
-    /// Build, Export or a new generation transaction; those owners must still use their strict admission boundary.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// Another thread is publishing or the owner is Faulted.
     /// </exception>
     /// <exception cref="RetirementPendingException">
     /// Retirement has failed without releasing its dependent owners.
     /// </exception>
+    /// <remarks>
+    /// Published data remains readable while old contexts await collection. This scope does not authorize Play,
+    /// Build, Export or a new generation transaction; those owners must still use their strict admission boundary.
+    /// </remarks>
     public IDisposable AcquireOperation(string operation)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(operation);
@@ -346,13 +346,20 @@ public sealed class GenerationCoordinator
             catch (Exception failure) when (RetirementPendingException.Find(failure) is not null)
             {
                 retirementBlocked = true;
-                var combined = new AggregateException($"Generation '{operation}' failed and rollback remains pending.", error, failure);
+                var combined = new AggregateException(
+                    $"Generation '{operation}' failed and rollback remains pending.",
+                    error,
+                    failure
+                );
                 RetainFailedRetirement(combined, (publication, snapshot));
                 throw combined;
             }
             if (rollback.Count > 0)
             {
-                var failure = new AggregateException($"Generation '{operation}' failed and rollback was incomplete.", [error, .. rollback]);
+                var failure = new AggregateException(
+                    $"Generation '{operation}' failed and rollback was incomplete.",
+                    [error, .. rollback]
+                );
                 Fault(failure);
                 throw failure;
             }
@@ -479,13 +486,13 @@ public sealed class GenerationCoordinator
     /// <summary>
     /// Rejects dependency destruction after a generation owner reported unfinished retirement.
     /// </summary>
+    /// <exception cref="RetirementPendingException">
+    /// A failed generation still owns live work; its dependencies must remain owned until host restart.
+    /// </exception>
     /// <remarks>
     /// Ordinary terminal cleanup failures do not prevent remaining cleanup. Unfinished retirement remains
     /// blocking even if an earlier ordinary error is the primary diagnostic failure.
     /// </remarks>
-    /// <exception cref="RetirementPendingException">
-    /// A failed generation still owns live work; its dependencies must remain owned until host restart.
-    /// </exception>
     public void EnsureRetirementSafe()
     {
         lock (m_sync)

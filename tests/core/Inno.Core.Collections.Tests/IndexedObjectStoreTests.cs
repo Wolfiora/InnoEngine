@@ -18,7 +18,7 @@ public sealed class IndexedObjectStoreTests
             int category
         ) {
             this.name = name;
-            Category = category;
+            this.Category = category;
         }
     }
 
@@ -45,7 +45,7 @@ public sealed class IndexedObjectStoreTests
     public void DefineKey_UniqueAndLookup()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
+        IndexedObjectKey<int> key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
 
         var a = new Item("A", 1);
         var b = new Item("B", 2);
@@ -53,10 +53,10 @@ public sealed class IndexedObjectStoreTests
         store.Add(a).Set(key, 10);
         store.Add(b).Set(key, 20);
 
-        var found = store.First(key, 20);
+        Item? found = store.First(key, 20);
         Assert.Same(b, found);
 
-        var all = store.Find(key, 10).ToList();
+        List<Item> all = store.Find(key, 10).ToList();
         Assert.Single(all);
         Assert.Same(a, all[0]);
     }
@@ -65,7 +65,7 @@ public sealed class IndexedObjectStoreTests
     public void DefineKey_Unique_ThrowsOnDuplicateValueFromDifferentItems()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
+        IndexedObjectKey<int> key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
 
         var a = new Item("A", 1);
         var b = new Item("B", 2);
@@ -81,7 +81,7 @@ public sealed class IndexedObjectStoreTests
     public void DefineKey_Unique_AllowsResettingSameValueOnSameItem()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
+        IndexedObjectKey<int> key = store.DefineKey<int>("id", IndexedObjectKeyFlags.Unique);
 
         var a = new Item("A", 1);
 
@@ -96,7 +96,7 @@ public sealed class IndexedObjectStoreTests
     public void DefineKey_MultiAndQuery()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("category", IndexedObjectKeyFlags.Unordered);
+        IndexedObjectKey<int> key = store.DefineKey<int>("category", IndexedObjectKeyFlags.Unordered);
 
         var a = new Item("A", 1);
         var b = new Item("B", 1);
@@ -106,13 +106,13 @@ public sealed class IndexedObjectStoreTests
         store.Add(b).Set(key, 1);
         store.Add(c).Set(key, 2);
 
-        var results = store.Find(key, 1).ToList();
+        List<Item> results = store.Find(key, 1).ToList();
         Assert.Equal(2, results.Count);
         Assert.Contains(a, results);
         Assert.Contains(b, results);
 
-        var query = store.Query().Find(key, 2);
-        var single = query.First();
+        IndexedObjectQuery<Item> query = store.Query().Find(key, 2);
+        Item? single = query.First();
         Assert.Same(c, single);
     }
 
@@ -175,7 +175,7 @@ public sealed class IndexedObjectStoreTests
             .OrderBy(orderKey)
             .GetFast()
             .ToArray();
-        Assert.Equal(new[] { excluded, last }, fast);
+        Assert.Equal([excluded, last], fast);
         Assert.Equal(2, predicateCalls);
     }
 
@@ -183,7 +183,7 @@ public sealed class IndexedObjectStoreTests
     public void OrderBy_UsesSortedKey()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("ordered", IndexedObjectKeyFlags.Ordered, Comparer<int>.Default);
+        IndexedObjectKey<int> key = store.DefineKey<int>("ordered", IndexedObjectKeyFlags.Ordered, Comparer<int>.Default);
 
         var a = new Item("A", 1);
         var b = new Item("B", 1);
@@ -193,7 +193,7 @@ public sealed class IndexedObjectStoreTests
         store.Add(b).Set(key, 1);
         store.Add(c).Set(key, 2);
 
-        var ordered = store.Query().OrderBy(key).Get().ToList();
+        List<Item> ordered = store.Query().OrderBy(key).Get().ToList();
         Assert.Equal(3, ordered.Count);
         Assert.Same(b, ordered[0]);
         Assert.Same(c, ordered[1]);
@@ -204,7 +204,7 @@ public sealed class IndexedObjectStoreTests
     public void RemoveKey_InvalidatesKey()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("temp");
+        IndexedObjectKey<int> key = store.DefineKey<int>("temp");
 
         var item = new Item("A", 1);
         store.Add(item).Set(key, 1);
@@ -218,7 +218,7 @@ public sealed class IndexedObjectStoreTests
     public void TryGetKey_ResolvesByName()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("resolve");
+        IndexedObjectKey<int> key = store.DefineKey<int>("resolve");
 
         Assert.True(store.TryGetKey("resolve", out IndexedObjectKey<int> resolved));
         Assert.True(resolved.isValid);
@@ -235,7 +235,7 @@ public sealed class IndexedObjectStoreTests
         store.Add(a);
         store.Add(b);
 
-        var results = store.Query()
+        List<Item> results = store.Query()
             .Where(item => item.Category == 2)
             .Get()
             .ToList();
@@ -251,7 +251,7 @@ public sealed class IndexedObjectStoreTests
         store.Add(new Item("A", 1));
         store.Add(new Item("B", 2));
 
-        using var enumerator = store.Query().GetFast().GetEnumerator();
+        using IEnumerator<Item> enumerator = store.Query().GetFast().GetEnumerator();
         Assert.True(enumerator.MoveNext());
 
         store.Add(new Item("C", 3));
@@ -280,7 +280,7 @@ public sealed class IndexedObjectStoreTests
     public void RemoveAll_KeepsKeys()
     {
         var store = new IndexedObjectStore<Item>();
-        var key = store.DefineKey<int>("category");
+        IndexedObjectKey<int> key = store.DefineKey<int>("category");
 
         var a = new Item("A", 1);
         store.Add(a).Set(key, 1);
@@ -333,7 +333,7 @@ public sealed class IndexedObjectStoreTests
         store.Add(new Item("A", 1));
         store.Add(new Item("B", 2));
 
-        using var enumerator = store.AllFast().GetEnumerator();
+        using IEnumerator<Item> enumerator = store.AllFast().GetEnumerator();
         Assert.True(enumerator.MoveNext());
 
         store.Add(new Item("C", 3));

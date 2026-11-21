@@ -41,7 +41,7 @@ public static partial class NativeDependencyManifest
         NativeBuildRecipe recipe = products.aggregateRecipe
                                    ?? throw new InvalidDataException("An aggregate export must retain its producer recipe.");
         NativeBuildProduct product = products.Single();
-        var sources = await NativeDependencySource.CaptureAsync(
+        Dictionary<string, string> sources = await NativeDependencySource.CaptureAsync(
             context.engineRoot,
             recipe.inputs
                 .Where(
@@ -67,7 +67,7 @@ public static partial class NativeDependencyManifest
                 .Append(recipe.owner.toolchainProject),
             cancellation
         ).ConfigureAwait(false);
-        var bindings = products.bindingGenerations.ToDictionary(
+        Dictionary<string, BindingAsset> bindings = products.bindingGenerations.ToDictionary(
             static pair => pair.Key,
             pair => new BindingAsset(
                 pair.Value.fingerprint,
@@ -78,7 +78,7 @@ public static partial class NativeDependencyManifest
             ),
             StringComparer.Ordinal
         );
-        var directories = bindings.Values
+        HashSet<string> directories = bindings.Values
             .Select(static binding => binding.directory)
             .Append(Relative(product.directory))
             .ToHashSet(StringComparer.Ordinal);
@@ -164,7 +164,7 @@ public static partial class NativeDependencyManifest
         try
         {
             var bindings = new Dictionary<string, NativeBindingGenerationDescriptor>(StringComparer.Ordinal);
-            foreach (var pair in asset.bindings)
+            foreach (KeyValuePair<string, BindingAsset> pair in asset.bindings)
             {
                 BindingAsset binding = pair.Value;
                 string location = ResolveBinding(binding);

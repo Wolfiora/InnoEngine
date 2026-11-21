@@ -12,7 +12,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     /// <summary>
     /// Creates a GameObject, optionally parents it, and records only the new subtree state.

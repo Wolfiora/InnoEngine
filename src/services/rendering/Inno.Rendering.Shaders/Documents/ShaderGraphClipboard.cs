@@ -44,8 +44,9 @@ public static class ShaderGraphClipboard
             .ToHashSet(StringComparer.Ordinal);
         foreach (GraphNodeRecord node in fragment.nodes.ToArray())
         {
-            if (!selected.Contains(node.id) && !stages.Contains(ShaderGraphDocument.Read(node, "stage", "", serialization, context)))
-            {
+            if (!selected.Contains(node.id)
+                && !stages.Contains(ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context))
+            ) {
                 fragment.RemoveNode(node.id);
             }
         }
@@ -96,9 +97,9 @@ public static class ShaderGraphClipboard
             static _ => new GraphNodeId(Guid.NewGuid().ToString("N"))
         );
         var passes = new Dictionary<string, string>(StringComparer.Ordinal);
-        var programs = candidate.metadata.ContainsKey(ShaderGraphPrograms.bindingsKey)
-                       ? ShaderGraphPrograms.Read(candidate, serialization, context).ToList()
-                       : [];
+        List<ShaderGraphPassProgram> programs = candidate.metadata.ContainsKey(ShaderGraphPrograms.bindingsKey)
+                                                ? ShaderGraphPrograms.Read(candidate, serialization, context).ToList()
+                                                : [];
         if (definition is not null && source is not null)
         {
             foreach (ShaderGraphPassProgram program in ShaderGraphPrograms.Read(fragment, serialization, context))
@@ -156,11 +157,11 @@ public static class ShaderGraphClipboard
             {
                 position = new(node.position.x + 32, node.position.y + 32)
             };
-            foreach (var value in node.values)
+            foreach (KeyValuePair<string, GraphSerializedValue> value in node.values)
             {
                 clone.SetValue(value.Key, value.Value.Clone());
             }
-            string stage = ShaderGraphDocument.Read(node, "stage", "", serialization, context);
+            string stage = ShaderGraphDocument.Read(node, "stage", string.Empty, serialization, context);
             if (stage.Length != 0)
             {
                 if (remap.TryGetValue(new(stage), out GraphNodeId mapped))
@@ -247,8 +248,8 @@ public sealed class ShaderGraphPasteResult
         GraphDocument graph,
         GraphNodeId[] nodes
     ) {
-        document = graph;
-        insertedNodes = Array.AsReadOnly(nodes);
+        this.document = graph;
+        this.insertedNodes = Array.AsReadOnly(nodes);
     }
 
     /// <summary>

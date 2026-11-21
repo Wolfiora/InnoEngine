@@ -64,13 +64,17 @@ internal static class BgfxSourceLexer
             var position = new ShaderSourcePosition(source.assetPath, line, column);
             if (current == '/' && offset + 1 < text.Length && text[offset + 1] == '*')
             {
-                Advance(); Advance();
+                Advance();
+                Advance();
                 bool closed = false;
                 while (offset < text.Length)
                 {
                     if (text[offset] == '*' && offset + 1 < text.Length && text[offset + 1] == '/')
                     {
-                        Advance(); Advance(); closed = true; break;
+                        Advance();
+                        Advance();
+                        closed = true;
+                        break;
                     }
                     if (text[offset] == '\n')
                     {

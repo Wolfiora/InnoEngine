@@ -168,14 +168,9 @@ public sealed class BuildSettingsStore
     public void ValidateDocument(ReadOnlySpan<byte> document) => _ = Deserialize(document);
 
     private BuildSettings LoadLocked()
-    {
-        return m_documents.exists
-               ? m_documents.LoadRequired()
-               : m_defaultSettings.Copy();
-    }
+        => m_documents.exists
+           ? m_documents.LoadRequired()
+           : m_defaultSettings.Copy();
 
-    private BuildSettings Deserialize(ReadOnlySpan<byte> document)
-    {
-        return m_documents.Deserialize(document);
-    }
+    private BuildSettings Deserialize(ReadOnlySpan<byte> document) => m_documents.Deserialize(document);
 }

@@ -142,7 +142,7 @@ public sealed class EditorDropContext<TSource, TTarget>
         TSource source,
         TTarget target
     ) {
-        untyped = context;
+        this.untyped = context;
         this.source = source;
         this.target = target;
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Builds frame-local passes without prescribing a rendering model.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f3736feb-4238-54b6-9fe9-c40ffb095134")]
+[StableTypeId("f3736feb-4238-54b6-9fe9-c40ffb095134")]
 public abstract class RenderPipeline : IDisposable
 {
     private bool m_disposed;

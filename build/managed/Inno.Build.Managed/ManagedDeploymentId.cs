@@ -54,6 +54,6 @@ public readonly record struct ManagedDeploymentId
     /// </summary>
     public string value { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string ToString() => value ?? string.Empty;
 }

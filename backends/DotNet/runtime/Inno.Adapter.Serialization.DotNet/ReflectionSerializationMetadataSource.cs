@@ -14,7 +14,7 @@ public sealed class ReflectionSerializationMetadataSource : ISerializationMetada
 {
     private readonly ConditionalWeakTable<Type, SerializationTypeMetadata> m_metadata = new();
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public SerializationTypeMetadata GetMetadata(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);

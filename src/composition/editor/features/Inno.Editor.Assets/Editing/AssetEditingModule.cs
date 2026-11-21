@@ -11,6 +11,7 @@ using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
 using Inno.Plugins.Authoring;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Assets;
 
@@ -69,13 +70,13 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <summary>
     /// Gets the editor interaction owner used by source operations.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public EditorInteractions interactions => m_interactions;
 
     /// <summary>
     /// Gets the authoritative authoring pipeline; mutations must use its existing ownership protocol.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetPipeline pipeline => m_pipeline;
 
     /// <summary>
@@ -96,7 +97,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool CanCreateAsset(
         string directory,
         string templateId
@@ -124,7 +125,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// The committed source identity, or a validation result describing why the operation is unavailable.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetFileEntry CreateAsset(
         string directory,
         string templateId
@@ -181,7 +182,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool IsPluginSource(AssetSourceId source) => m_plugins.TryGet(source, out _);
 
     /// <summary>
@@ -193,7 +194,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool IsPluginRoot(AssetFileEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
@@ -215,7 +216,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool TryCreateContext(
         EditorContext editor,
         string relativePath,
@@ -251,7 +252,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool Open(AssetEditorContext context)
     {
         AssetEditor editor = m_editors.Resolve(context.assetType);
@@ -283,7 +284,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// The committed source identity, or a validation result describing why the operation is unavailable.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public EditorValidationResult ValidateRename(
         AssetEditorContext context,
         string newName
@@ -301,7 +302,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <param name="newName">
     /// The requested entry name without its protected file extension.
     /// </param>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public void Rename(
         AssetEditorContext context,
         string newName
@@ -357,7 +358,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool CanMoveToDirectory(
         string sourcePath,
         string targetDirectory
@@ -378,7 +379,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// The committed source identity, or a validation result describing why the operation is unavailable.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetFileEntry MoveToDirectoryWithHistory(
         string sourcePath,
         string targetDirectory,
@@ -405,7 +406,13 @@ public sealed partial class AssetEditingModule : EditorModule
         {
             throw new InvalidOperationException(result.message);
         }
-        var data = new AssetHistoryData(AssetHistoryOperationKind.Move, normalizedSource, targetPath, context.isDirectory, archive: []);
+        var data = new AssetHistoryData(
+            AssetHistoryOperationKind.Move,
+            normalizedSource,
+            targetPath,
+            context.isDirectory,
+            archive: []
+        );
         try
         {
             history.RecordApplied(
@@ -460,7 +467,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool DeleteWithHistory(
         AssetEditorContext asset,
         IEditorHistory history
@@ -533,7 +540,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <param name="relativePath">
     /// The isolated source-relative path to resolve.
     /// </param>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public void SelectPath(string relativePath)
     {
         object? target = m_pipeline.TryGetFileSystemEntry(AssetPath.Parse(relativePath), out AssetFileEntry entry) ? entry : null;
@@ -552,7 +559,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <returns>
     /// True when the request is accepted; otherwise false.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public bool TryCreateDragData(
         AssetEditorContext context,
         out EditorDragData? data
@@ -574,10 +581,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStart(EditorContext context)
-    {
-        m_context = context ?? throw new ArgumentNullException(nameof(context));
-    }
+    protected override void OnStart(EditorContext context) => m_context = context ?? throw new ArgumentNullException(nameof(context));
 
     /// <summary>
     /// Stops this feature before its owning runtime releases the active generation.
@@ -585,10 +589,7 @@ public sealed partial class AssetEditingModule : EditorModule
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context)
-    {
-        m_context = null;
-    }
+    protected override void OnStop(EditorContext context) => m_context = null;
 
     /// <summary>
     /// Releases resources retained by this feature after it has stopped.

@@ -10,7 +10,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void LaterScopeCannotChangeAnyPreviouslyAcceptedPassDeclaration()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         RasterPassBuilder accepted = graph.AddRasterPass("Accepted", new("first"), 0, Execute);
         accepted.HasSideEffect();
         using (RenderGraphMutationScope mutation = graph.BeginMutationScope())
@@ -27,7 +27,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void InvalidCommitRollsBackOutputsResourcesPhasesAndValidation()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         graph.AddRasterPass("Accepted", new("first"), 0, Execute).HasSideEffect();
         RenderGraphValidationResult baseline = graph.Validate();
         using (RenderGraphMutationScope mutation = graph.BeginMutationScope())
@@ -50,7 +50,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void RolledBackHandlesAndPassBuildersCannotAliasNewDeclarations()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         RenderTextureHandle retired;
         RenderBufferHandle retiredBuffer;
         RasterPassBuilder retiredPass;
@@ -75,7 +75,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void NestedCommitRemainsOwnedByOuterRollbackAndScopesEnforceNesting()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         RenderGraphMutationScope outer = graph.BeginMutationScope();
         RenderGraphMutationScope inner = graph.BeginMutationScope();
         graph.AddRasterPass("Nested", new("nested"), 0, Execute).HasSideEffect();
@@ -91,7 +91,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void RollbackRemovesNameScopeWithoutLateDisposalRemovingAnotherScope()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         RenderGraphNameScope retired;
         using (graph.BeginMutationScope())
         {
@@ -108,7 +108,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void MutationCannotCloseAnEarlierNameScopeOrChangeItsPrefix()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         using RenderGraphNameScope name = graph.BeginNameScope("Accepted");
         using (graph.BeginMutationScope())
         {
@@ -124,7 +124,7 @@ public sealed class RenderGraphMutationTests
             new GraphicsCapabilities(
                 GraphicsApi.Noop,
                 GraphicsCapability.None,
-                new GraphicsLimits(64, 8, 16384, 16),
+                new GraphicsLimits(64, 8, 16_384, 16),
                 Enum.GetValues<RenderTextureFormat>(),
                 Enum.GetValues<RenderTextureFormat>(),
                 [],
@@ -137,7 +137,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void AcceptedFuturePhaseOrderingStillDetectsALaterCycleAndRollsBack()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect().Before(new("future"));
         using (RenderGraphMutationScope accepted = graph.BeginMutationScope())
         {
@@ -161,7 +161,7 @@ public sealed class RenderGraphMutationTests
     {
         string[] Build(bool incremental)
         {
-            var graph = CreateGraph();
+            RenderGraphBuilder graph = CreateGraph();
             RenderTextureHandle texture = graph.CreateTexture("Shared", Descriptor());
             for (int index = 0; index < 12; index++)
             {
@@ -180,7 +180,7 @@ public sealed class RenderGraphMutationTests
     [Fact]
     public void EditingAnUncommittedValidatedPassRebuildsItsAnalysis()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         RasterPassBuilder first = graph.AddRasterPass("First", new("first"), 0, Execute);
         first.HasSideEffect();
         graph.AddRasterPass("Last", new("last"), 0, Execute).HasSideEffect();

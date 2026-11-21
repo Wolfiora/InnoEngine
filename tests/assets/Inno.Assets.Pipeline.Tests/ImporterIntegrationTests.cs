@@ -56,7 +56,7 @@ public sealed class ImporterIntegrationTests : IDisposable
         string relativePath,
         string languageHint
     ) {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.Write(relativePath, Encoding.UTF8.GetBytes("content"));
         using var loader = new AssetLoader(
             m_types,
@@ -78,7 +78,7 @@ public sealed class ImporterIntegrationTests : IDisposable
     [Fact]
     public void BinaryImporter_CreatesRuntimeDescriptor()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         workspace.Write("Data/blob.bytes", [1, 2, 3, 4]);
         using var loader = new AssetLoader(
             m_types,
@@ -98,7 +98,7 @@ public sealed class ImporterIntegrationTests : IDisposable
     [Fact]
     public void ExportableBuiltInAsset_RoundTripsThroughPublicLoaderContract()
     {
-        using TestWorkspace workspace = new();
+        using var workspace = new TestWorkspace();
         using var loader = new AssetLoader(
             m_types,
             m_serialization,
@@ -114,7 +114,7 @@ public sealed class ImporterIntegrationTests : IDisposable
         TextAsset loaded = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("Text/saved.txt"), typeof(TextAsset)));
 
         Assert.Same(source, loaded);
-        Assert.Equal("saved", System.IO.File.ReadAllText(Path.Combine(workspace.assetRoot, "Text/saved.txt")));
+        Assert.Equal("saved", File.ReadAllText(Path.Combine(workspace.assetRoot, "Text/saved.txt")));
     }
 
     private sealed class TestWorkspace : IDisposable
@@ -140,7 +140,7 @@ public sealed class ImporterIntegrationTests : IDisposable
         ) {
             string path = Path.Combine(assetRoot, relativePath);
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-            System.IO.File.WriteAllBytes(path, bytes);
+            File.WriteAllBytes(path, bytes);
         }
 
         public void Dispose()

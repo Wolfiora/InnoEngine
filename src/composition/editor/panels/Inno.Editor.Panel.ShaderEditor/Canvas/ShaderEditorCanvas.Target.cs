@@ -24,7 +24,7 @@ internal sealed partial class ShaderEditorCanvas
                 {
                     if (ImGuiApi.Selectable("Explicit Stages", current.Length == 0))
                     {
-                        Assign("");
+                        Assign(string.Empty);
                     }
                     if (owner.targets is { } targets)
                     {

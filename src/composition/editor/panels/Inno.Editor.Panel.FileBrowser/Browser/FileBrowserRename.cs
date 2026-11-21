@@ -36,10 +36,7 @@ internal sealed class FileBrowserRename(AssetBrowserModule assets)
         m_activePresentation = m_lastPresentation;
     }
 
-    internal void MarkInteraction(FileBrowserPresentation presentation)
-    {
-        m_lastPresentation = presentation;
-    }
+    internal void MarkInteraction(FileBrowserPresentation presentation) => m_lastPresentation = presentation;
 
     internal bool IsEditing(
         EditorContext context,

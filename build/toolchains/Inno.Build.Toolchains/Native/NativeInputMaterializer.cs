@@ -44,7 +44,7 @@ public static class NativeInputMaterializer
     ) {
         ArgumentNullException.ThrowIfNull(context);
         NativeBuildInput input = NativeBuildInput.FromPath(context.engineRoot, source);
-        NativeBuildInput output = new(input.logicalPath, destination);
+        var output = new NativeBuildInput(input.logicalPath, destination);
         cancellationToken.ThrowIfCancellationRequested();
         byte[] expected = context.inputState.GetFrozenHash(input.physicalPath);
         if (File.Exists(destination))
@@ -60,7 +60,7 @@ public static class NativeInputMaterializer
         try
         {
             await using (FileStream read = File.OpenRead(input.physicalPath))
-            await using (FileStream write = new(
+            await using (var write = new FileStream(
                 candidate,
                 FileMode.CreateNew,
                 FileAccess.Write,

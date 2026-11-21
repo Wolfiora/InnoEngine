@@ -181,7 +181,7 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T>
         T item,
         TKey key
     ) {
-        if (m_keyByItem.TryGetValue(item, out var oldKey))
+        if (m_keyByItem.TryGetValue(item, out TKey? oldKey))
         {
             if (EqualityComparer<TKey>.Default.Equals(oldKey, key))
             {
@@ -218,7 +218,7 @@ internal sealed class IndexedObjectIndex<T, TKey> : IIndexedObjectIndex<T>
     /// </param>
     public void Remove(T item)
     {
-        if (!m_keyByItem.TryGetValue(item, out var key))
+        if (!m_keyByItem.TryGetValue(item, out TKey? key))
         {
             return;
         }

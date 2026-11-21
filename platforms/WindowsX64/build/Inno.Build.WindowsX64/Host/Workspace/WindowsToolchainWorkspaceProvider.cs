@@ -14,10 +14,10 @@ namespace Inno.Build.WindowsX64;
 /// </summary>
 public sealed class WindowsToolchainWorkspaceProvider : IToolchainWorkspaceProvider
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string identity => Path.Combine(Path.GetTempPath(), "InnoTools");
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask<ToolchainWorkingDirectory> OpenAsync(
         string physicalPath,
         CancellationToken cancellationToken = default
@@ -68,7 +68,7 @@ public sealed class WindowsToolchainWorkspaceProvider : IToolchainWorkspaceProvi
         string leaf
     ) : IDisposable
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             try

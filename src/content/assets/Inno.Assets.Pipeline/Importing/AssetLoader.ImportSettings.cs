@@ -116,7 +116,7 @@ public sealed partial class AssetLoader
             {
                 if (metadata is null)
                 {
-                    System.IO.File.Delete(metaPath);
+                    File.Delete(metaPath);
                 }
                 else
                 {
@@ -134,7 +134,7 @@ public sealed partial class AssetLoader
 
     private AssetImporter RequireSettingsImporterLocked(string path)
     {
-        if (!System.IO.File.Exists(GetSourcePath(path)))
+        if (!File.Exists(GetSourcePath(path)))
         {
             throw new FileNotFoundException($"Import settings source '{path}' does not exist.");
         }
@@ -270,8 +270,13 @@ public sealed partial class AssetLoader
 
     private sealed class SerializedImportSettings : ISerializable
     {
-        [SerializableProperty] internal Guid stableTypeId { get; set; }
-        [SerializableProperty] internal byte[] properties { get; set; } = [];
-        [SerializableProperty] internal AssetDependency[] dependencies { get; set; } = [];
+        [SerializableProperty]
+        internal Guid stableTypeId { get; set; }
+
+        [SerializableProperty]
+        internal byte[] properties { get; set; } = [];
+
+        [SerializableProperty]
+        internal AssetDependency[] dependencies { get; set; } = [];
     }
 }

@@ -107,14 +107,17 @@ internal static class DotNetPublishExecutor
         private readonly StreamWriter m_log;
         private readonly Queue<string> m_tail = new();
 
-        internal TailLogWriter(string path) => m_log = new StreamWriter(path, append: false);
+        internal TailLogWriter(string path)
+        {
+            m_log = new StreamWriter(path, append: false);
+        }
 
         internal string tail => string.Join(Environment.NewLine, m_tail);
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override Encoding Encoding => Encoding.UTF8;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override async Task WriteLineAsync(string? value)
         {
             await m_log.WriteLineAsync(value).ConfigureAwait(false);
@@ -129,7 +132,7 @@ internal static class DotNetPublishExecutor
             }
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override ValueTask DisposeAsync() => m_log.DisposeAsync();
     }
 }

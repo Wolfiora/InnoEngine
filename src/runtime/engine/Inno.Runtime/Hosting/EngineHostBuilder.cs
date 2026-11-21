@@ -51,7 +51,7 @@ public sealed class EngineHostBuilder
         {
             throw new InvalidOperationException("The composition root must select module, type and serialization metadata sources.");
         }
-        EngineHost host = new(
+        var host = new EngineHost(
             m_retirementTimeout,
             m_logDeliveryMode,
             m_moduleSource,
@@ -73,12 +73,12 @@ public sealed class EngineHostBuilder
     /// <param name="types">
     /// The type metadata provider corresponding to the same code deployment strategy.
     /// </param>
-    /// <returns>
-    /// This builder for fluent composition.
-    /// </returns>
     /// <param name="serialization">
     /// The declaration access provider corresponding to the same managed deployment.
     /// </param>
+    /// <returns>
+    /// This builder for fluent composition.
+    /// </returns>
     public EngineHostBuilder UseMetadataSources(
         IAssemblyCatalogSource modules,
         ITypeCatalogSource types,

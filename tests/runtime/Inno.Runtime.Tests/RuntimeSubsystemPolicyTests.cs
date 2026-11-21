@@ -18,13 +18,15 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     private readonly EngineHost m_host;
 
     public RuntimeSubsystemPolicyTests()
-        => m_host = new EngineHostBuilder()
+    {
+        m_host = new EngineHostBuilder()
             .UseMetadataSources(
                 new DotNetAssemblyCatalogSource(typeof(RuntimeSubsystemPolicyTests).Assembly),
                 new ReflectionTypeCatalogSource(),
                 new ReflectionSerializationMetadataSource()
             )
             .Build();
+    }
 
     public void Dispose()
     {
@@ -38,7 +40,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void MissingRequiredCapabilityRejectsBeforeFactoryAllocation()
     {
-        var factory = Create("test.required", capabilities: [new RuntimeCapabilityId("test.output")]);
+        Factory factory = Create("test.required", capabilities: [new RuntimeCapabilityId("test.output")]);
         InvalidOperationException error = Assert.Throws<InvalidOperationException>(() => m_host.CreateHostPipeline([factory]));
         Assert.Contains("test.output", error.Message);
         Assert.Equal(0, factory.createCount);
@@ -49,7 +51,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     public void SuppliedCapabilitiesAndDescriptorCollectionsAreImmutableSnapshots()
     {
         RuntimeCapabilityId[] required = [new("test.output")];
-        var factory = Create("test.ready", capabilities: required);
+        Factory factory = Create("test.ready", capabilities: required);
         required[0] = new RuntimeCapabilityId("test.changed");
         RuntimeCapabilityId[] supplied = [new("test.output")];
         RuntimeSubsystemPipeline pipeline = m_host.CreateHostPipeline([factory], supplied);
@@ -65,18 +67,18 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [InlineData(true)]
     public void OptionalUnavailabilityPropagatesToOptionalConsumers(bool missingCapability)
     {
-        var unavailable = Create(
+        Factory unavailable = Create(
             "test.optional",
             RuntimeSubsystemRequirement.Optional,
             capabilities: missingCapability ? [new RuntimeCapabilityId("test.absent")] : []
         );
         unavailable.failCreate = !missingCapability;
-        var consumer = Create(
+        Factory consumer = Create(
             "test.consumer",
             RuntimeSubsystemRequirement.Optional,
             dependencies: [unavailable.descriptor.id]
         );
-        var available = Create("test.available");
+        Factory available = Create("test.available");
         RuntimeSubsystemPipeline pipeline = m_host.CreateHostPipeline([consumer, available, unavailable]);
         Assert.Equal("test.available", Assert.Single(pipeline.descriptors).id.value);
         Assert.Equal(2, pipeline.startupDiagnostics.Count);
@@ -88,9 +90,9 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void RequiredConsumerCannotRunWithoutFailedOptionalDependency()
     {
-        var optional = Create("test.optional", RuntimeSubsystemRequirement.Optional);
+        Factory optional = Create("test.optional", RuntimeSubsystemRequirement.Optional);
         optional.failCreate = true;
-        var required = Create("test.required", dependencies: [optional.descriptor.id]);
+        Factory required = Create("test.required", dependencies: [optional.descriptor.id]);
         Assert.Throws<InvalidOperationException>(() => m_host.CreateHostPipeline([required, optional]));
         Assert.Equal(0, required.createCount);
         Assert.Equal(1, optional.releaseCount);
@@ -101,7 +103,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [InlineData(true)]
     public void OptionalStartupIsUnavailableOnlyAfterFactoryResourcesRetire(bool failAttach)
     {
-        var optional = Create("test.optional", RuntimeSubsystemRequirement.Optional);
+        Factory optional = Create("test.optional", RuntimeSubsystemRequirement.Optional);
         optional.failCreate = !failAttach;
         optional.failAttach = failAttach;
         RuntimeSubsystemPipeline pipeline = m_host.CreateHostPipeline([optional]);
@@ -115,7 +117,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void OptionalRetirementFailureFaultsInsteadOfDegrading()
     {
-        var optional = Create("test.optional", RuntimeSubsystemRequirement.Optional);
+        Factory optional = Create("test.optional", RuntimeSubsystemRequirement.Optional);
         optional.failCreate = true;
         optional.failRelease = true;
         Assert.Throws<AggregateException>(() => m_host.CreateHostPipeline([optional]));
@@ -128,14 +130,14 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
     [Fact]
     public void OptionalMissingDependencyIsDiagnosedButCyclesStillReject()
     {
-        var missing = Create(
+        Factory missing = Create(
             "test.missing",
             RuntimeSubsystemRequirement.Optional,
             dependencies: [new RuntimeSubsystemId("test.absent")]
         );
         Assert.Single(m_host.CreateHostPipeline([missing]).startupDiagnostics);
-        var a = Create("test.a", RuntimeSubsystemRequirement.Optional, dependencies: [new RuntimeSubsystemId("test.b")]);
-        var b = Create("test.b", RuntimeSubsystemRequirement.Optional, dependencies: [a.descriptor.id]);
+        Factory a = Create("test.a", RuntimeSubsystemRequirement.Optional, dependencies: [new RuntimeSubsystemId("test.b")]);
+        Factory b = Create("test.b", RuntimeSubsystemRequirement.Optional, dependencies: [a.descriptor.id]);
         Assert.Throws<InvalidOperationException>(() => m_host.CreateHostPipeline([a, b]));
         Assert.Equal(0, a.createCount);
         Assert.Equal(0, b.createCount);
@@ -154,7 +156,7 @@ public sealed class RuntimeSubsystemPolicyTests : IDisposable
             .UseRetirementTimeout(TimeSpan.FromTicks(1))
             .Build();
         var pending = new TaskCompletionSource();
-        var factory = Create("test.timeout");
+        Factory factory = Create("test.timeout");
         factory.pending = pending.Task;
         factory.failCreate = true;
         Assert.Throws<RetirementTimeoutException>(() => host.CreateHostPipeline([factory]));

@@ -19,8 +19,8 @@ internal static class ValidationDocumentationInputs
         ) {
             return [];
         }
-        var contexts = plan.contexts[check.context ?? "managed"].sdkGraph.EnumerateArray().ToArray();
-        var owners = contexts
+        JsonElement[] contexts = plan.contexts[check.context ?? "managed"].sdkGraph.EnumerateArray().ToArray();
+        Dictionary<string, string> owners = contexts
             .SelectMany(snapshot => snapshot.GetProperty("Instances")
                 .EnumerateArray()
                 .Select(instance => new KeyValuePair<string, string>(
@@ -48,7 +48,7 @@ internal static class ValidationDocumentationInputs
             string[] inputSets = closure.Append("tooling")
                 .Concat(check.inputs.Contains("@native-sources", StringComparer.Ordinal) ? ["native-sources"] : [])
                 .ToArray();
-            var inputs = inputSets.SelectMany(owner => plan.inputSets[owner])
+            Dictionary<string, string> inputs = inputSets.SelectMany(owner => plan.inputSets[owner])
                 .Distinct(StringComparer.Ordinal)
                 .Select(path => new KeyValuePair<string, string>(path, plan.inputs.GetValueOrDefault(path, "missing")))
                 .ToDictionary(StringComparer.Ordinal);

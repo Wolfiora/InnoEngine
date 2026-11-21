@@ -45,32 +45,38 @@ public sealed class ShaderGraphNodeSettings : ISerializable
     /// <summary>
     /// Gets or sets the node title displayed to authors.
     /// </summary>
-    [SerializableProperty] public string displayName { get; set; } = "Graph Node";
+    [SerializableProperty]
+    public string displayName { get; set; } = "Graph Node";
 
     /// <summary>
     /// Gets or sets the slash-separated creation catalog beneath Graph Nodes.
     /// </summary>
-    [SerializableProperty] public string createPath { get; set; } = "General";
+    [SerializableProperty]
+    public string createPath { get; set; } = "General";
 
     /// <summary>
     /// Gets or sets the deterministic order within the creation catalog.
     /// </summary>
-    [SerializableProperty] public int createOrder { get; set; }
+    [SerializableProperty]
+    public int createOrder { get; set; }
 
     /// <summary>
     /// Gets or sets how a reference to this graph participates in compilation.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodeKind kind { get; set; }
+    [SerializableProperty]
+    public ShaderGraphNodeKind kind { get; set; }
 
     /// <summary>
     /// Gets or sets the observable computation behavior of an inline function.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodeEffect effect { get; set; }
+    [SerializableProperty]
+    public ShaderGraphNodeEffect effect { get; set; }
 
     /// <summary>
     /// Gets or sets the domain role consumed by a Target; empty for ordinary inline functions.
     /// </summary>
-    [SerializableProperty] public string role { get; set; } = "";
+    [SerializableProperty]
+    public string role { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -81,17 +87,20 @@ public sealed class ShaderGraphNodePortDefinition : ISerializable
     /// <summary>
     /// Gets or sets the stable node-local port identity.
     /// </summary>
-    [SerializableProperty] public string id { get; set; } = "value";
+    [SerializableProperty]
+    public string id { get; set; } = "value";
 
     /// <summary>
     /// Gets or sets the complete backend-neutral value type.
     /// </summary>
-    [SerializableProperty] public ShaderGraphType type { get; set; } = new() { id = "float" };
+    [SerializableProperty]
+    public ShaderGraphType type { get; set; } = new() { id = "float" };
 
     /// <summary>
     /// Gets or sets whether callers must connect the input instead of using an explicit/default zero.
     /// </summary>
-    [SerializableProperty] public bool required { get; set; } = true;
+    [SerializableProperty]
+    public bool required { get; set; } = true;
 
     internal ShaderNodePort ToPort(GraphPortDirection direction)
         => new(id, type.CreateType(), direction, direction == GraphPortDirection.Input && required);
@@ -105,7 +114,8 @@ public sealed class ShaderGraphNodeInputSettings : ISerializable
     /// <summary>
     /// Gets or sets values supplied by callers and exposed as outputs inside the node graph.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodePortDefinition[] ports { get; set; } = [];
+    [SerializableProperty]
+    public ShaderGraphNodePortDefinition[] ports { get; set; } = [];
 }
 
 /// <summary>
@@ -116,7 +126,8 @@ public sealed class ShaderGraphNodeOutputSettings : ISerializable
     /// <summary>
     /// Gets or sets values collected inside the node graph and exposed as outputs to callers.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodePortDefinition[] ports { get; set; } = [];
+    [SerializableProperty]
+    public ShaderGraphNodePortDefinition[] ports { get; set; } = [];
 }
 
 /// <summary>
@@ -127,42 +138,50 @@ public sealed class ShaderGraphNodeInterface : ISerializable
     /// <summary>
     /// Gets or sets the node title displayed to authors.
     /// </summary>
-    [SerializableProperty] public string displayName { get; set; } = "Graph Node";
+    [SerializableProperty]
+    public string displayName { get; set; } = "Graph Node";
 
     /// <summary>
     /// Gets or sets the slash-separated creation catalog beneath Graph Nodes.
     /// </summary>
-    [SerializableProperty] public string createPath { get; set; } = "General";
+    [SerializableProperty]
+    public string createPath { get; set; } = "General";
 
     /// <summary>
     /// Gets or sets the deterministic order within the creation catalog.
     /// </summary>
-    [SerializableProperty] public int createOrder { get; set; }
+    [SerializableProperty]
+    public int createOrder { get; set; }
 
     /// <summary>
     /// Gets or sets whether the graph is inline computation or a Target-owned output boundary.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodeKind kind { get; set; }
+    [SerializableProperty]
+    public ShaderGraphNodeKind kind { get; set; }
 
     /// <summary>
     /// Gets or sets whether an inline function is pure or intentionally emits ordered effects.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodeEffect effect { get; set; }
+    [SerializableProperty]
+    public ShaderGraphNodeEffect effect { get; set; }
 
     /// <summary>
     /// Gets or sets the Target-owned role for a domain output.
     /// </summary>
-    [SerializableProperty] public string role { get; set; } = "";
+    [SerializableProperty]
+    public string role { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets externally supplied inputs.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodePortDefinition[] inputs { get; set; } = [];
+    [SerializableProperty]
+    public ShaderGraphNodePortDefinition[] inputs { get; set; } = [];
 
     /// <summary>
     /// Gets or sets externally visible results.
     /// </summary>
-    [SerializableProperty] public ShaderGraphNodePortDefinition[] outputs { get; set; } = [];
+    [SerializableProperty]
+    public ShaderGraphNodePortDefinition[] outputs { get; set; } = [];
 
     /// <summary>
     /// Gets detached typed ports in deterministic input-then-output order.
@@ -428,7 +447,7 @@ public static class ShaderGraphNodes
         )) is { } call
         ) {
             Guid sourceId = ShaderGraphDocument.Read(call, "sourceId", Guid.Empty, serialization, context);
-            string sourcePath = ShaderGraphDocument.Read(call, "sourcePath", "", serialization, context);
+            string sourcePath = ShaderGraphDocument.Read(call, "sourcePath", string.Empty, serialization, context);
             if (sourceId == Guid.Empty)
             {
                 throw new InvalidOperationException("A graph-node reference has no Shader asset identity.");
@@ -462,7 +481,7 @@ public static class ShaderGraphNodes
     ) {
         GraphNodeRecord? inputNode = child.nodes.SingleOrDefault(static node => node.definitionId == inputDefinitionId);
         GraphNodeRecord? outputNode = child.nodes.SingleOrDefault(static node => node.definitionId == outputDefinitionId);
-        string stage = ShaderGraphDocument.Read(call, ShaderGraphDocument.stageKey, "", serialization, context);
+        string stage = ShaderGraphDocument.Read(call, ShaderGraphDocument.stageKey, string.Empty, serialization, context);
         MergeDefinition(parent, child, stage, serialization, context);
         var map = new Dictionary<GraphNodeId, GraphNodeId>();
         foreach (GraphNodeRecord node in child.nodes.Where(node => node.id != inputNode?.id && node.id != outputNode?.id))
@@ -490,10 +509,10 @@ public static class ShaderGraphNodes
             map.Add(node.id, mapped);
         }
 
-        var incoming = parent.edges.Where(edge => edge.input.nodeId == call.id)
+        Dictionary<string, GraphEdgeRecord[]> incoming = parent.edges.Where(edge => edge.input.nodeId == call.id)
             .GroupBy(static edge => edge.input.portId.value, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
-        var outgoing = parent.edges.Where(edge => edge.output.nodeId == call.id)
+        Dictionary<string, GraphEdgeRecord[]> outgoing = parent.edges.Where(edge => edge.output.nodeId == call.id)
             .GroupBy(static edge => edge.output.portId.value, StringComparer.Ordinal)
             .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
         HashSet<string> inputIds = nodeInterface.inputs.Select(static port => port.id).ToHashSet(StringComparer.Ordinal);
@@ -611,7 +630,7 @@ public static class ShaderGraphNodes
                 context
             ).stage;
         }
-        var properties = parentDefinition.properties.ToList();
+        List<ShaderPropertyDefinition> properties = parentDefinition.properties.ToList();
         foreach (ShaderPropertyDefinition childPropertyValue in childDefinition.properties)
         {
             ShaderPropertyDefinition childProperty = childPropertyValue;

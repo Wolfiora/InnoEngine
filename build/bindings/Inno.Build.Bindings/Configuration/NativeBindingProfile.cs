@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using BGCS;
 using BGCS.Configuration;
 using BGCS.Core;
+using BGCS.Core.Inputs;
 using BGCS.Core.Targets;
 using Inno.Build.Toolchains;
 
@@ -100,7 +102,7 @@ public sealed class NativeBindingProfile
 
     internal void Configure(BindingHostBuilder builder) => m_configureGenerator?.Invoke(builder);
 
-    internal IEnumerable<System.Reflection.Assembly> GetExtensionAssemblies()
+    internal IEnumerable<Assembly> GetExtensionAssemblies()
         => m_configureGenerator?.GetInvocationList().Select(static action => action.Method.Module.Assembly) ?? [];
 
     internal GenerationRequest Apply(
@@ -116,7 +118,7 @@ public sealed class NativeBindingProfile
             {
                 settings = selected.settings with
                 {
-                    compilerPath = request.configuration.source.language == BGCS.Core.Inputs.SourceLanguage.Cpp
+                    compilerPath = request.configuration.source.language == SourceLanguage.Cpp
                                    ? compiler.cppCompiler
                                    : compiler.cCompiler,
                     sysRoot = compiler.sysRoot,

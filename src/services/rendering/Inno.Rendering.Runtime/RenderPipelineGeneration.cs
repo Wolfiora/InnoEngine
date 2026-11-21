@@ -16,7 +16,7 @@ internal sealed class RenderPipelineGeneration : IDisposable
     ) {
         this.typeCacheVersion = typeCacheVersion;
         this.pipeline = m_lifetime.Own(pipeline);
-        features = new ReadOnlyDictionary<string, RenderPipelineFeature>(m_features);
+        this.features = new ReadOnlyDictionary<string, RenderPipelineFeature>(m_features);
     }
 
     internal long typeCacheVersion { get; }

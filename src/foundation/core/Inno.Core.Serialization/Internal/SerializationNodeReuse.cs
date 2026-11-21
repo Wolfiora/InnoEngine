@@ -45,7 +45,7 @@ internal static class SerializationNodeReuse
     {
         var result = new ObjectSerializationNode();
         result.values.EnsureCapacity(previous.values.Count);
-        foreach (var pair in previous.values)
+        foreach (KeyValuePair<string, SerializationNode> pair in previous.values)
         {
             result.values.Add(pair.Key, pair.Value);
         }

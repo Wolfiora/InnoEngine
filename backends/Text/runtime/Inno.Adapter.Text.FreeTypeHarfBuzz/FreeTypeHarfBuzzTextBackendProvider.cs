@@ -14,9 +14,6 @@ public sealed class FreeTypeHarfBuzzTextBackendProvider : TextBackendProvider
     public FreeTypeHarfBuzzTextBackendProvider()
         : base(TextBackendId.freeTypeHarfBuzz) {}
 
-    /// <inheritdoc />
-    public override ITextBackend CreateBackend()
-    {
-        return new FreeTypeHarfBuzzTextBackend();
-    }
+    /// <inheritdoc/>
+    public override ITextBackend CreateBackend() => new FreeTypeHarfBuzzTextBackend();
 }

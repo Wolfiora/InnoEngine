@@ -15,19 +15,27 @@ internal static class ValidationTestEvidence
         string directory
     ) {
         string[] reports = Directory.GetFiles(directory, "*.trx", SearchOption.AllDirectories);
-        var assemblies = projects.ToDictionary(
+        Dictionary<string, string> assemblies = projects.ToDictionary(
             static pair => Path.GetFileNameWithoutExtension(pair.Value),
             static pair => pair.Key,
             StringComparer.OrdinalIgnoreCase
         );
-        var hosts = projects.ToDictionary(
+        Dictionary<string, Dictionary<string, string[]>> hosts = projects.ToDictionary(
             static pair => pair.Key,
             static pair => ValidationTestHosts.Read(pair.Value),
             StringComparer.Ordinal
         );
-        var executed = projects.Keys.ToDictionary(static project => project, static _ => 0, StringComparer.Ordinal);
-        var excluded = projects.Keys.ToDictionary(static project => project, static _ => new List<string>(), StringComparer.Ordinal);
-        var failures = projects.Keys.ToDictionary(static project => project, static _ => new List<string>(), StringComparer.Ordinal);
+        Dictionary<string, int> executed = projects.Keys.ToDictionary(static project => project, static _ => 0, StringComparer.Ordinal);
+        Dictionary<string, List<string>> excluded = projects.Keys.ToDictionary(
+            static project => project,
+            static _ => new List<string>(),
+            StringComparer.Ordinal
+        );
+        Dictionary<string, List<string>> failures = projects.Keys.ToDictionary(
+            static project => project,
+            static _ => new List<string>(),
+            StringComparer.Ordinal
+        );
         foreach (string report in reports)
         {
             XDocument document = XDocument.Load(report);
@@ -44,7 +52,7 @@ internal static class ValidationTestEvidence
             ) {
                 throw new InvalidDataException($"Invalid or incomplete test execution: {report}");
             }
-            var definitions = document.Descendants()
+            Dictionary<string, XElement> definitions = document.Descendants()
                 .Where(static element => element.Name.LocalName == "UnitTest")
                 .ToDictionary(static definition => (string)definition.Attribute("id")!, StringComparer.Ordinal);
             foreach (XElement record in records)

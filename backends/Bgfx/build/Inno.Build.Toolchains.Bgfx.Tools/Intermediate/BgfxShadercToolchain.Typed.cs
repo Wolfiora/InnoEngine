@@ -24,7 +24,7 @@ public sealed partial class BgfxShadercToolchain
     private const int C_SHADER_BINARY_HEADER_SIZE = 12;
     private const int C_SHADER_UNIFORM_METADATA_SIZE = 10;
     private static readonly UTF8Encoding S_GLSL_ENCODING = new(false, true);
-    private static readonly IReadOnlyList<string> s_languages = Array.AsReadOnly(new[] { "inno.shader-language.bgfx-sc" });
+    private static readonly IReadOnlyList<string> s_languages = Array.AsReadOnly(["inno.shader-language.bgfx-sc"]);
 
     /// <summary>
     /// Gets shader source languages accepted by this toolchain.

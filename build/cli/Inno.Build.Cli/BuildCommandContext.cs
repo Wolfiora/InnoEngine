@@ -14,25 +14,25 @@ internal sealed class BuildCommandContext
 {
     internal BuildCommandContext(BuildCommandLine options)
     {
-        nativeDependencies = options.Read("native-dependencies", string.Empty);
-        root = ResolveEngineRoot(options.Read("engine-root", string.Empty));
+        this.nativeDependencies = options.Read("native-dependencies", string.Empty);
+        this.root = ResolveEngineRoot(options.Read("engine-root", string.Empty));
         if (nativeDependencies.Length > 0)
         {
-            nativeDependencies = Path.GetFullPath(nativeDependencies, root);
+            this.nativeDependencies = Path.GetFullPath(nativeDependencies, root);
         }
-        configuration = options.Read("configuration", "Release");
+        this.configuration = options.Read("configuration", "Release");
         ToolchainEnvironment.ValidateConfiguration(configuration.ToLowerInvariant());
-        configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
-        toolsTarget = new BuildTargetId(options.Require("tools-target"));
-        target = new BuildTargetId(options.Read("target", toolsTarget.value));
+        this.configuration = configuration.Equals("debug", StringComparison.OrdinalIgnoreCase) ? "Debug" : "Release";
+        this.toolsTarget = new BuildTargetId(options.Require("tools-target"));
+        this.target = new BuildTargetId(options.Read("target", toolsTarget.value));
         string dotnet = ToolchainEnvironment.ResolveExecutable(options.Read("dotnet", "dotnet"));
-        composition = StandardBuildEnvironment.Capture(
+        this.composition = StandardBuildEnvironment.Capture(
             Path.GetDirectoryName(typeof(BuildApplication).Assembly.Location)!,
             toolsTarget,
             dotnet,
             nativeDependencies.Length == 0 ? null : nativeDependencies
         );
-        distribution = StandardBuildDistribution.Create(composition).build;
+        this.distribution = StandardBuildDistribution.Create(composition).build;
     }
 
     internal string nativeDependencies { get; }

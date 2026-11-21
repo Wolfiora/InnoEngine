@@ -92,7 +92,7 @@ internal sealed class GameTagsSetting : ProjectSettingEditor<GameTagCatalog>
                                 | ImGuiTableFlags.NoPadOuterX
                                 | ImGuiTableFlags.NoSavedSettings;
         Ui.PushStyleVar((ImGuiStyleVar.CellPadding), EditorUI.current.widgets.style.cellPadding);
-        if (!Ui.BeginTable("##project_tag_definitions", 2, flags, default(System.Numerics.Vector2), 0f))
+        if (!Ui.BeginTable("##project_tag_definitions", 2, flags, default, 0f))
         {
             Ui.PopStyleVar();
             return;

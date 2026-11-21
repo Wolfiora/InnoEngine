@@ -10,8 +10,7 @@ internal static class MacOSArm64NativeProducts
     private const string C_INPUT = "platforms/MacOSArm64/integrations/Inno.Integration.MacOSArm64.Build/Products/MacOSArm64NativeProducts.cs";
 
     internal static NativeComponentBuildOptions Options(string component)
-    {
-        return new(
+        => new(
             NativeLibraryKind.Shared,
             inputPaths: [C_INPUT],
             bindingIncludeDirectories: component == "bgfx" ? ["extern/bx/include/compat/osx"] : [],
@@ -19,5 +18,4 @@ internal static class MacOSArm64NativeProducts
                       ? MacOSArm64LinkerSettings.Create(["@loader_path/../../cimgui/" + MacOSArm64BuildModule.target.id.value])
                       : null
         );
-    }
 }

@@ -25,7 +25,10 @@ public sealed partial class LargePanelPerformanceTests
     [Trait("Acceptance", "Workflows")]
     public unsafe void TenThousandEntriesKeepRangeRenameAndDragAcrossClippedRows(string view)
     {
-        using var host = new NativeProjectPanelHost(typeof(LargePanelPerformanceTests).Assembly, supportsVertexOffsets: true);
+        using var host = new NativeProjectPanelHost(
+            typeof(LargePanelPerformanceTests).Assembly,
+            supportsVertexOffsets: true
+        );
         bool hierarchy = view == "hierarchy";
         GameScene? scene = hierarchy ? LoadInteractionHierarchy(host) : null;
         if (!hierarchy)

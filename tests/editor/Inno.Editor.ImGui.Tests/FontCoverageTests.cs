@@ -37,10 +37,10 @@ public sealed unsafe class FontCoverageTests
             return;
         }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(
+        using Sdl3PlatformWindow window = application.CreateWindow(
             new PlatformWindowOptions { title = "Glyph coverage", width = 640, height = 480, visible = false }
         );
-        using var context = application.CreateImGuiContext(
+        using PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
@@ -72,7 +72,7 @@ public sealed unsafe class FontCoverageTests
                         Assert.Equal((uint)value, glyph->Codepoint);
                         Assert.Equal(0u, glyph->SourceIdx);
                     }
-                    ImFontGlyph* icon = NativeImGui.Raw.FindGlyphNoFallback(baked, 0xf0e2);
+                    ImFontGlyph* icon = NativeImGui.Raw.FindGlyphNoFallback(baked, 0xF0E2);
                     Assert.True(icon is not null);
                     Assert.InRange(icon->SourceIdx, 1u, 2u);
                     ImFontGlyph* logo = NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.Inno[0]);
@@ -81,7 +81,7 @@ public sealed unsafe class FontCoverageTests
                     Assert.Equal(3u, logo->SourceIdx);
                     Assert.True(logo->AdvanceX > 0 && logo->X1 > logo->X0 && logo->Y1 > logo->Y0);
                     Assert.Equal(4, font->Sources.Size);
-                    Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6f22) is null);
+                    Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6F22) is null);
                     NativeImGui.TextUnformatted(ImGuiIcon.Inno + " English / undo");
                 }
             }
@@ -102,10 +102,10 @@ public sealed unsafe class FontCoverageTests
             return;
         }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(
+        using Sdl3PlatformWindow window = application.CreateWindow(
             new PlatformWindowOptions { title = "Replacement context", width = 320, height = 240, visible = false }
         );
-        var original = application.CreateImGuiContext(
+        PlatformImGuiContext original = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
@@ -114,7 +114,7 @@ public sealed unsafe class FontCoverageTests
         original.SetIniFile(null);
         _ = CaptureSource(original);
         original.Dispose();
-        using var replacement = application.CreateImGuiContext(
+        using PlatformImGuiContext replacement = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
@@ -134,20 +134,20 @@ public sealed unsafe class FontCoverageTests
             return;
         }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var firstWindow = application.CreateWindow(
+        using Sdl3PlatformWindow firstWindow = application.CreateWindow(
             new PlatformWindowOptions { title = "First context", width = 320, height = 240, visible = false }
         );
-        using var secondWindow = application.CreateWindow(
+        using Sdl3PlatformWindow secondWindow = application.CreateWindow(
             new PlatformWindowOptions { title = "Second context", width = 320, height = 240, visible = false }
         );
-        var first = application.CreateImGuiContext(
+        PlatformImGuiContext first = application.CreateImGuiContext(
             firstWindow,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
             new NoOutputRenderer()
         );
         first.SetIniFile(null);
-        var second = application.CreateImGuiContext(
+        PlatformImGuiContext second = application.CreateImGuiContext(
             secondWindow,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
@@ -171,10 +171,10 @@ public sealed unsafe class FontCoverageTests
             return;
         }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(
+        using Sdl3PlatformWindow window = application.CreateWindow(
             new PlatformWindowOptions { title = "Retained font context", width = 320, height = 240, visible = false }
         );
-        using var retained = application.CreateImGuiContext(
+        using PlatformImGuiContext retained = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
@@ -203,10 +203,10 @@ public sealed unsafe class FontCoverageTests
             return;
         }
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(
+        using Sdl3PlatformWindow window = application.CreateWindow(
             new PlatformWindowOptions { title = "Custom font", width = 320, height = 240, visible = false }
         );
-        using var context = application.CreateImGuiContext(
+        using PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),
@@ -226,7 +226,7 @@ public sealed unsafe class FontCoverageTests
             Assert.Equal(24f, font->Sources.Data[0]->SizePixels);
             Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 'A') is not null);
             Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, ImGuiIcon.Inno[0]) is not null);
-            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6f22) is null);
+            Assert.True(NativeImGui.Raw.FindGlyphNoFallback(baked, 0x6F22) is null);
         });
         Assert.Throws<InvalidOperationException>(() => context.RegisterFontStyle(BackendFontStyle.Regular, fontPath));
     }
@@ -252,10 +252,10 @@ public sealed unsafe class FontCoverageTests
         Sdl3PlatformApplication application,
         nint retainedSource
     ) {
-        using var window = application.CreateWindow(
+        using Sdl3PlatformWindow window = application.CreateWindow(
             new PlatformWindowOptions { title = "Retired font context", width = 320, height = 240, visible = false }
         );
-        var context = application.CreateImGuiContext(
+        PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.None,
             new ImGuiInteractionOptions(false, 1),

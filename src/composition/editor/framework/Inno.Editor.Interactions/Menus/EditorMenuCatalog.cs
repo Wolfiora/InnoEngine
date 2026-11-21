@@ -36,11 +36,11 @@ internal sealed class EditorMenuCatalog(
                     continue;
                 }
                 var placements = new List<Placement>(builder.groups.Count + builder.items.Count);
-                foreach (var group in builder.groups)
+                foreach (EditorMenuGroupPlacement group in builder.groups)
                 {
                     placements.Add(CreatePlacement(group.path, null, group.order, group.separatorBefore, null));
                 }
-                foreach (var item in builder.items)
+                foreach (EditorMenuPlacement item in builder.items)
                 {
                     placements.Add(CreatePlacement(item.path, item.actionId, item.order, item.separatorBefore, item.argument));
                 }
@@ -255,7 +255,7 @@ internal sealed class EditorMenuCatalog(
             placements[insertion] = placement;
             Array.Copy(current.placements, insertion, placements, insertion + 1, current.placements.Length - insertion);
         }
-        TemplateNode replacement = new(
+        var replacement = new TemplateNode(
             label,
             current.order,
             current.separatorBefore,

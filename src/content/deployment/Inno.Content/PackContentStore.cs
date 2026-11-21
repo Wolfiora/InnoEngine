@@ -28,13 +28,13 @@ public sealed class PackContentStore : IRuntimeContentStore
         this.index = index;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackDescriptor descriptor { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentPackIndex index { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ContentReadLease Acquire(ContentKey key)
     {
         lock (m_sync)
@@ -99,33 +99,33 @@ public sealed class PackContentStore : IRuntimeContentStore
             m_input = input;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanRead => m_input is not null;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanSeek => false;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanWrite => false;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override long Length => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override long Position
         {
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int Read(
             byte[] buffer,
             int offset,
             int count
         ) => Read(buffer.AsSpan(offset, count));
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int Read(Span<byte> buffer)
         {
             lock (m_owner.m_sync)
@@ -134,7 +134,7 @@ public sealed class PackContentStore : IRuntimeContentStore
             }
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int ReadByte()
         {
             lock (m_owner.m_sync)
@@ -143,26 +143,26 @@ public sealed class PackContentStore : IRuntimeContentStore
             }
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Flush() => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override long Seek(
             long offset,
             SeekOrigin origin
         ) => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void SetLength(long value) => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Write(
             byte[] buffer,
             int offset,
             int count
         ) => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (disposing)

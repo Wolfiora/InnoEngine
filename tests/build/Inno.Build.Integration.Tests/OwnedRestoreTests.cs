@@ -11,6 +11,8 @@ using Xunit;
 using Inno.Build.TaskHosting;
 using Inno.Core.IO;
 
+using AsyncTask = System.Threading.Tasks.Task;
+
 namespace Inno.Build.Integration.Tests;
 
 public sealed class OwnedRestoreTests : IDisposable
@@ -28,7 +30,7 @@ public sealed class OwnedRestoreTests : IDisposable
     public void Dispose() => Directory.Delete(m_root, recursive: true);
 
     [Fact]
-    public async System.Threading.Tasks.Task WritersYieldAndNeverEnterRestoreTogether()
+    public async AsyncTask WritersYieldAndNeverEnterRestoreTogether()
     {
         using var entered = new ManualResetEventSlim();
         using var release = new ManualResetEventSlim();
@@ -39,9 +41,9 @@ public sealed class OwnedRestoreTests : IDisposable
             return true;
         });
         var secondEngine = new RecordingEngine(static () => true);
-        Task<bool> first = System.Threading.Tasks.Task.Run(Create(firstEngine).Execute);
+        Task<bool> first = AsyncTask.Run(Create(firstEngine).Execute);
         Assert.True(entered.Wait(TimeSpan.FromSeconds(10)));
-        Task<bool> second = System.Threading.Tasks.Task.Run(Create(secondEngine).Execute);
+        Task<bool> second = AsyncTask.Run(Create(secondEngine).Execute);
         try
         {
             Assert.True(SpinWait.SpinUntil(() => secondEngine.yielded, TimeSpan.FromSeconds(10)));
@@ -57,13 +59,13 @@ public sealed class OwnedRestoreTests : IDisposable
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CancellationDoesNotEnterRestoreOrRemoveAnotherOwnersLock()
+    public async AsyncTask CancellationDoesNotEnterRestoreOrRemoveAnotherOwnersLock()
     {
         var engine = new RecordingEngine(static () => true);
         RestoreOwnedProjectTask canceled = Create(engine);
         using (FileLease lease = await FileLease.AcquireAsync(Path.Combine(m_root, "write.lock"), TimeSpan.FromSeconds(5)))
         {
-            Task<bool> pending = System.Threading.Tasks.Task.Run(canceled.Execute);
+            Task<bool> pending = AsyncTask.Run(canceled.Execute);
             Assert.True(SpinWait.SpinUntil(() => engine.yielded, TimeSpan.FromSeconds(10)));
             canceled.Cancel();
             Assert.False(await pending);

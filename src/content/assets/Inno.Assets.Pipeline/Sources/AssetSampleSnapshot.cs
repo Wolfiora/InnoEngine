@@ -181,14 +181,14 @@ internal static class AssetSampleSnapshot
         CancellationToken cancellationToken
     ) {
         EnsureRegularFile(source);
-        FileInfo before = new(source);
+        var before = new FileInfo(source);
         long beforeLength = before.Length;
         DateTime beforeWriteTime = before.LastWriteTimeUtc;
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
         using (FileStream input = File.OpenRead(source))
-        using (FileStream output = new(target, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        using (var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None))
         {
-            byte[] buffer = new byte[81920];
+            var buffer = new byte[81_920];
             int count;
             while ((count = input.Read(buffer)) != 0)
             {
@@ -197,7 +197,7 @@ internal static class AssetSampleSnapshot
             }
         }
         EnsureRegularFile(source);
-        FileInfo after = new(source);
+        var after = new FileInfo(source);
         if (after.Length != beforeLength || after.LastWriteTimeUtc != beforeWriteTime)
         {
             throw new IOException($"Sample source file '{source}' changed while it was being imported.");
@@ -216,7 +216,7 @@ internal static class AssetSampleSnapshot
     ) {
         using FileStream stream = File.OpenRead(path);
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        byte[] buffer = new byte[81920];
+        var buffer = new byte[81_920];
         int count;
         while ((count = stream.Read(buffer)) != 0)
         {

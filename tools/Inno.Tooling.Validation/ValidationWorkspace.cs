@@ -47,7 +47,10 @@ internal static class ValidationWorkspace
         ValidationPlan plan,
         CancellationToken cancellation
     ) {
-        var publisher = new BuildCachePublisher(Path.GetDirectoryName(plan.artifacts)!, BuildCacheArtifactRole.ReusableWorkspace);
+        var publisher = new BuildCachePublisher(
+            Path.GetDirectoryName(plan.artifacts)!,
+            BuildCacheArtifactRole.ReusableWorkspace
+        );
         publisher.Record(plan.artifacts, plan.artifacts + ".lock", [], null, null, cancellation);
     }
 

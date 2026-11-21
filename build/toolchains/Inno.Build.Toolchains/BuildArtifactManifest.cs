@@ -55,7 +55,7 @@ public static class BuildArtifactManifest
             writer.WriteStartObject();
             writer.WriteString("fingerprint", fingerprint);
             writer.WriteStartObject("files");
-            foreach (var file in files.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
+            foreach (KeyValuePair<string, string> file in files.OrderBy(static pair => pair.Key, StringComparer.Ordinal))
             {
                 writer.WriteString(file.Key, file.Value);
             }
@@ -138,7 +138,7 @@ public static class BuildArtifactManifest
     ) {
         ArgumentNullException.ThrowIfNull(outputDirectories);
         string root = Path.GetFullPath(directory);
-        Dictionary<string, string> files = new(StringComparer.Ordinal);
+        var files = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string relative in outputDirectories)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(relative);

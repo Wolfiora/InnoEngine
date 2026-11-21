@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using Inno.Core.Identity;
 using Inno.Core.Serialization.Converters;
 
+using CoreIdentity = Inno.Core.Identity.Identity;
+
 namespace Inno.Core.Serialization;
 
 /// <summary>
@@ -34,7 +36,7 @@ public sealed class SerializationCaptureKeyBuilder
     internal SerializationCaptureKeyBuilder(
         SerializationOperation operation,
         Type rootType,
-        Inno.Core.Identity.Identity source,
+        CoreIdentity source,
         SerializationCaptureKey? previous
     ) : this(operation, previous)
     {
@@ -109,7 +111,7 @@ public sealed class SerializationCaptureKeyBuilder
     ) {
         RequireOperation();
         ArgumentNullException.ThrowIfNull(source);
-        Inno.Core.Identity.Identity snapshot = source.identity;
+        CoreIdentity snapshot = source.identity;
         if (!revision.HasValue || snapshot.runtimeIdentity is not { } identity)
         {
             return Decline();
@@ -142,7 +144,7 @@ public sealed class SerializationCaptureKeyBuilder
         {
             return Decline();
         }
-        Inno.Core.Identity.Identity snapshot = identified.identity;
+        CoreIdentity snapshot = identified.identity;
         if (snapshot.runtimeIdentity is not { } identity)
         {
             return Decline();
@@ -392,7 +394,7 @@ internal readonly record struct SerializationCaptureAttempt(
 }
 
 internal readonly record struct SerializationCaptureIdentity(
-    Inno.Core.Identity.Identity identity,
+    CoreIdentity identity,
     RuntimeIdentity expected
 ) {
     internal void Validate()

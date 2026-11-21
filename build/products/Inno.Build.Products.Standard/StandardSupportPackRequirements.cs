@@ -54,12 +54,12 @@ public static class StandardSupportPackRequirements
     /// <param name="target">
     /// The exact platform target.
     /// </param>
-    /// <returns>
-    /// Requirements matching the plan's actual component closure.
-    /// </returns>
     /// <param name="linkPlan">
     /// The explicit platform archive naming plan.
     /// </param>
+    /// <returns>
+    /// Requirements matching the plan's actual component closure.
+    /// </returns>
     public static PlayerSupportPackRequirements CreateStatic(
         ProductNativeBuildPlan plan,
         BuildTargetId target,

@@ -89,7 +89,7 @@ internal static class ValidationPlanTransport
         KeyValuePair<string, string>[] locations,
         bool bind
     ) {
-        foreach (var location in locations)
+        foreach (KeyValuePair<string, string> location in locations)
         {
             if (bind)
             {

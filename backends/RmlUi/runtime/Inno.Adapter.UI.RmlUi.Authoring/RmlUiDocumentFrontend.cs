@@ -88,7 +88,7 @@ public sealed class RmlUiDocumentFrontend : IUiDocumentFrontend
         string expanded;
         try
         {
-            expanded = ExpandStyles(source, documentPath, new HashSet<AssetPath>());
+            expanded = ExpandStyles(source, documentPath, []);
         }
         catch (Exception exception) when (exception is IOException or ArgumentException or InvalidOperationException)
         {

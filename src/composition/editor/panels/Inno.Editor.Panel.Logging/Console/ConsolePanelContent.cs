@@ -24,17 +24,15 @@ internal sealed class ConsolePanelContent
     }
 
     internal (Vector4 color, string icon) GetLevelVisual(LogLevel level)
+        => level switch
     {
-        return level switch
-        {
-            LogLevel.Debug => (ConsoleStyle.debug, C_ICON_BUG),
-            LogLevel.Info => (ConsoleStyle.info, C_ICON_INFO),
-            LogLevel.Warn => (ConsoleStyle.warning, C_ICON_WARN),
-            LogLevel.Error => (ConsoleStyle.error, C_ICON_ERROR),
-            LogLevel.Fatal => (ConsoleStyle.fatal, C_ICON_FATAL),
-            _ => (EditorPalette.text, C_ICON_DEFAULT)
-        };
-    }
+        LogLevel.Debug => (ConsoleStyle.debug, C_ICON_BUG),
+        LogLevel.Info => (ConsoleStyle.info, C_ICON_INFO),
+        LogLevel.Warn => (ConsoleStyle.warning, C_ICON_WARN),
+        LogLevel.Error => (ConsoleStyle.error, C_ICON_ERROR),
+        LogLevel.Fatal => (ConsoleStyle.fatal, C_ICON_FATAL),
+        _ => (EditorPalette.text, C_ICON_DEFAULT)
+    };
 
     internal Vector4 GetCollapsedBgColor() => ConsoleStyle.collapsedCard;
 

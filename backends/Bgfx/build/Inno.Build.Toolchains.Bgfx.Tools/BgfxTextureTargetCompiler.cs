@@ -22,7 +22,10 @@ public sealed class BgfxTextureTargetCompiler : ITextureTargetCompiler
     /// <param name="tools">
     /// The selected tool runner, or null for application-deployed tools.
     /// </param>
-    public BgfxTextureTargetCompiler(ToolRunner? tools = null) => m_tools = tools ?? new ToolRunner();
+    public BgfxTextureTargetCompiler(ToolRunner? tools = null)
+    {
+        m_tools = tools ?? new ToolRunner();
+    }
 
     /// <summary>
     /// Compiles the supplied source into a validated runtime artifact.
@@ -60,7 +63,7 @@ public sealed class BgfxTextureTargetCompiler : ITextureTargetCompiler
         try
         {
             string sourcePath = Path.Combine(temporaryDirectory, "source.image");
-            await using (FileStream inputFile = new(
+            await using (var inputFile = new FileStream(
                 sourcePath,
                 FileMode.CreateNew,
                 FileAccess.Write,

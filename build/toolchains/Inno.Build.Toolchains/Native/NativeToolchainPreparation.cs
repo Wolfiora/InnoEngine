@@ -53,11 +53,11 @@ public static class NativeToolchainPreparation
     /// <param name="cmakeArguments">
     /// Ordered target configuration arguments.
     /// </param>
-    /// <param name="multiConfiguration">
-    /// Whether configuration is chosen during build.
-    /// </param>
     /// <param name="linkPlan">
     /// The sole source of target library formats and linker capabilities.
+    /// </param>
+    /// <param name="multiConfiguration">
+    /// Whether configuration is chosen during build.
     /// </param>
     /// <param name="compilerInputs">
     /// The selected SDK parser inputs, or null for a selection without parsing capability.

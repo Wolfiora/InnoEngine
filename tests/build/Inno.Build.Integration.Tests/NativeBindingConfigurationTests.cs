@@ -25,7 +25,9 @@ public sealed class NativeBindingConfigurationTests
     /// <summary>
     /// Materializes every configured component without invoking native generation or selecting a platform SDK.
     /// </summary>
-    /// <returns>The completion of configuration validation for the declared product closure.</returns>
+    /// <returns>
+    /// The completion of configuration validation for the declared product closure.
+    /// </returns>
     [Fact]
     [Trait("ExternalDependency", "BGCS")]
     public async Task EveryDeclaredComponentConfigurationCanBeReadByTheInstalledSdk()

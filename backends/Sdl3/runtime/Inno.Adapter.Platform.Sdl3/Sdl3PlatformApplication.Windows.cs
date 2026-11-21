@@ -108,7 +108,14 @@ public sealed unsafe partial class Sdl3PlatformApplication
         {
             throw new ArgumentException("The SDL window is invalid or already registered.", nameof(nativeWindow));
         }
-        var window = new Sdl3PlatformWindow(nativeWindow, title, ownsNativeWindow, m_hostIntegration, RemoveWindow, m_ownerThreadId);
+        var window = new Sdl3PlatformWindow(
+            nativeWindow,
+            title,
+            ownsNativeWindow,
+            m_hostIntegration,
+            RemoveWindow,
+            m_ownerThreadId
+        );
         m_windows.Add(id, window);
         return window;
     }

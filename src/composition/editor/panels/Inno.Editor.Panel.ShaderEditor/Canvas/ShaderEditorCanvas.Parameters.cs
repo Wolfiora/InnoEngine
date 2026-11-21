@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
+using Inno.Editor.Inspection;
 using Inno.Editor.Shaders;
 using Inno.Editor.Shaders.ImGui;
 using Inno.Rendering;
@@ -344,9 +345,9 @@ internal sealed partial class ShaderEditorCanvas
         }
     }
 
-    private sealed class ParameterEdits(ShaderEditorCanvas canvas) : Inno.Editor.Inspection.IInspectionPropertyEditService
+    private sealed class ParameterEdits(ShaderEditorCanvas canvas) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,

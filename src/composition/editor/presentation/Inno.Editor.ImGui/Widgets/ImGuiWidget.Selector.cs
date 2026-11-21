@@ -109,7 +109,7 @@ public sealed unsafe partial class ImGuiWidget
         string popupId = $"##menu_selector_popup_{id}";
         Vector2 minimum = NativeImGui.GetCursorScreenPos();
         float height = NativeImGui.GetFrameHeight();
-        Vector2 size = new(width, height);
+        var size = new Vector2(width, height);
         bool pressed = NativeImGui.InvisibleButton($"##menu_selector_{id}", size);
         bool hovered = NativeImGui.IsItemHovered();
         bool active = NativeImGui.IsItemActive();
@@ -119,7 +119,7 @@ public sealed unsafe partial class ImGuiWidget
             NativeImGui.OpenPopup(popupId);
         }
         DrawMenuSelectorFrame(minimum, size, preview, hovered, active || open);
-        Vector2 popupOrigin = new(minimum.X, minimum.Y + height);
+        var popupOrigin = new Vector2(minimum.X, minimum.Y + height);
         NativeImGui.SetNextWindowPos(popupOrigin, (int)ImGuiCond.Always, Vector2.Zero);
         ImGuiViewport* parentViewport = NativeImGui.Raw.GetWindowViewport();
         NativeImGui.SetNextWindowViewport(parentViewport->ID);
@@ -181,7 +181,7 @@ public sealed unsafe partial class ImGuiWidget
             (int)(size.X <= arrowSlot ? ImDrawFlags.RoundCornersAll : ImDrawFlags.RoundCornersRight)
         );
         Vector2 textMinimum = minimum + ImGui.FromNative(nativeStyle->FramePadding);
-        Vector2 textMaximum = new(arrowMinimumX, maximum.Y);
+        var textMaximum = new Vector2(arrowMinimumX, maximum.Y);
         ImGui.PushNativeClipRectangle(drawList, textMinimum, textMaximum, 1);
         ImGui.DrawNativeText(drawList, textMinimum, NativeImGui.GetColorU32((int)(ImGuiCol.Text)), preview);
         NativeImGui.Raw.PopClipRect(drawList);

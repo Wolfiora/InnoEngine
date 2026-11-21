@@ -23,7 +23,10 @@ public sealed partial class ShaderIrBuilder
     /// <summary>
     /// Creates an independent typed region builder and value identity scope.
     /// </summary>
-    public ShaderIrBuilder() => m_root = this;
+    public ShaderIrBuilder()
+    {
+        m_root = this;
+    }
 
     private ShaderIrBuilder(ShaderIrBuilder parent)
     {

@@ -14,12 +14,12 @@ public interface IAnimationService
     /// <param name="clip">
     /// Valid imported animation clip.
     /// </param>
-    /// <returns>
-    /// A generation-checked playback handle.
-    /// </returns>
     /// <param name="target">
     /// The weak destination or explicit sampling-only policy.
     /// </param>
+    /// <returns>
+    /// A generation-checked playback handle.
+    /// </returns>
     AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target
@@ -31,15 +31,15 @@ public interface IAnimationService
     /// <param name="clip">
     /// Valid imported animation clip.
     /// </param>
+    /// <param name="target">
+    /// The weak destination or explicit sampling-only policy.
+    /// </param>
     /// <param name="options">
     /// Playback clock, speed, blend, layer, and looping policy.
     /// </param>
     /// <returns>
     /// A generation-checked playback handle.
     /// </returns>
-    /// <param name="target">
-    /// The weak destination or explicit sampling-only policy.
-    /// </param>
     AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target,

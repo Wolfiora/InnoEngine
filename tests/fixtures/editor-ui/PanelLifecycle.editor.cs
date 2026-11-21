@@ -46,7 +46,7 @@ public sealed class PanelLifecycle(
     private bool m_baselineCaptured;
     private bool m_completed;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnUpdate(EditorContext context)
     {
         if (m_completed)
@@ -188,7 +188,7 @@ public sealed class PanelLifecycle(
     {
         string value = Environment.GetEnvironmentVariable("INNO_ACCEPTANCE_PANEL_CYCLES") ?? "100";
         if (!int.TryParse(value, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int cycles)
-            || cycles < 100 || cycles > 10000 || cycles % 10 != 0
+            || cycles < 100 || cycles > 10_000 || cycles % 10 != 0
         ) {
             throw new InvalidOperationException("The lifecycle acceptance requires 100–10000 cycles in ten-cycle intervals.");
         }

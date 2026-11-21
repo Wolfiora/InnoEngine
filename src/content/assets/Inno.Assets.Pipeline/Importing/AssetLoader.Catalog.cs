@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Creates an isolated source-mount and catalog candidate without changing the active catalog.
@@ -422,7 +422,7 @@ sealed partial class AssetLoader
         {
             return record.asset.GetType();
         }
-        TypeRef typeRef = new(record.stableTypeId);
+        var typeRef = new TypeRef(record.stableTypeId);
         return m_types.TryResolve(typeRef, out Type? type) && typeof(AssetObject).IsAssignableFrom(type)
                ? type
                : m_importers.FindById(record.meta.importerId)?.targetAssetType;

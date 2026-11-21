@@ -27,11 +27,11 @@ public sealed class NativeComponentBuildOptionsTests
         foreach (string[] invalid in new[]
         {
             new[] { "-DCMAKE_TOOLCHAIN_FILE=other" },
-            new[] { "-DINNO_COMPONENT_BRIDGE=other" },
-            new[] { "-DINNO_LIBRARY_KIND=SHARED" },
-            new[] { "-DA=one", "-DA:STRING=two" },
-            new[] { "--build" },
-            new[] { "-DA=one\0two" }
+            ["-DINNO_COMPONENT_BRIDGE=other"],
+            ["-DINNO_LIBRARY_KIND=SHARED"],
+            ["-DA=one", "-DA:STRING=two"],
+            ["--build"],
+            ["-DA=one\0two"]
         }) {
             Assert.Throws<ArgumentException>(() => new NativeComponentBuildOptions(NativeLibraryKind.Shared, invalid));
         }
@@ -60,7 +60,7 @@ public sealed class NativeComponentBuildOptionsTests
                 new NativeLinkPlan(".dll"),
                 false
             );
-            var context = new NativeBuildContext(root, "debug").WithToolchain(selection).WithComponentOptions(
+            NativeBuildContext context = new NativeBuildContext(root, "debug").WithToolchain(selection).WithComponentOptions(
                 owner,
                 new NativeComponentBuildOptions(NativeLibraryKind.Shared, ["-DLINKAGE:BOOL=OFF"])
             );
@@ -125,11 +125,15 @@ public sealed class NativeComponentBuildOptionsTests
             File.WriteAllText(Path.Combine(root, "component/Toolchain.csproj"), "<Project />");
             string config = Path.Combine(root, "component/Profile.cs");
             File.WriteAllText(config, "one");
-            var owner = new NativeComponentDescriptor("fixture", "component/Native.csproj", "component/Toolchain.csproj");
+            var owner = new NativeComponentDescriptor(
+                "fixture",
+                "component/Native.csproj",
+                "component/Toolchain.csproj"
+            );
 
             string Identity(NativeComponentBuildOptions options)
             {
-                var context = new NativeBuildContext(root, "debug").WithComponentOptions(owner, options);
+                NativeBuildContext context = new NativeBuildContext(root, "debug").WithComponentOptions(owner, options);
                 NativeBuildRecipe recipe = NativeBuildRecipe.CreateForComponent(
                     context,
                     owner,
@@ -151,7 +155,11 @@ public sealed class NativeComponentBuildOptionsTests
                 return NativeBuildFingerprint.Create(recipe.declarations, recipe.inputs);
             }
 
-            var options = new NativeComponentBuildOptions(NativeLibraryKind.Shared, ["-DA=one", "-DB=two"], ["component/Profile.cs"]);
+            var options = new NativeComponentBuildOptions(
+                NativeLibraryKind.Shared,
+                ["-DA=one", "-DB=two"],
+                ["component/Profile.cs"]
+            );
             string identity = Identity(options);
             Assert.NotEqual(identity, Identity(new(NativeLibraryKind.Static, options.cmakeArguments, options.inputPaths)));
             Assert.NotEqual(identity, Identity(new(NativeLibraryKind.Shared, ["-DB=two", "-DA=one"], options.inputPaths)));

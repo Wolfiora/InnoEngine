@@ -32,13 +32,6 @@ public sealed class EditorSettings : EditorModule
     /// <param name="interactions">
     /// The runtime that owns the shared Undo and Redo history.
     /// </param>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name = "context"/> or <paramref name="interactions"/> is
-    /// <see langword="null"/>.
-    /// </exception>
-    /// <exception cref="InvalidDataException">
-    /// Thrown when the project-root Settings document is malformed.
-    /// </exception>
     /// <param name="types">
     /// The host-owned type catalog used to discover setting presentations.
     /// </param>
@@ -48,6 +41,13 @@ public sealed class EditorSettings : EditorModule
     /// <param name="serialization">
     /// The host-owned current-generation serialization registry used for the project document.
     /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name = "context"/> or <paramref name="interactions"/> is
+    /// <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// Thrown when the project-root Settings document is malformed.
+    /// </exception>
     internal EditorSettings(
         EditorContext context,
         EditorInteractions interactions,

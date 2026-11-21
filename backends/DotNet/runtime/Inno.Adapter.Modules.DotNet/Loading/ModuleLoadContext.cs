@@ -32,7 +32,7 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
             static path => path,
             StringComparer.OrdinalIgnoreCase
         );
-        Unloading += ReleaseSharedAssemblies;
+        this.Unloading += ReleaseSharedAssemblies;
     }
 
     /// <summary>
@@ -60,13 +60,11 @@ internal sealed class ModuleLoadContext : AssemblyLoadContext
         return null;
     }
 
-    private static void ReleaseSharedAssemblies(AssemblyLoadContext context)
-    {
+    private static void ReleaseSharedAssemblies(AssemblyLoadContext context) =>
         // The runtime retains an unloading context until its loader allocator can retire. Keeping
         // another collectible assembly in this resolver can turn cross-context generic dependencies
         // into a retention cycle, even after every engine registry has released its generation.
         ((ModuleLoadContext)context).m_sharedAssemblies = FrozenDictionary<string, Assembly>.Empty;
-    }
 
     private static void ValidateSharedIdentity(
         AssemblyName requested,

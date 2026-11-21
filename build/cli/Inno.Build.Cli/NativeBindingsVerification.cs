@@ -53,7 +53,7 @@ internal static partial class NativeBindingsVerification
                 );
             }
             NativeProductContribution contribution = distribution.ResolveNativeProduct(options.target, "editor");
-            var nativeContext = new NativeBuildContext(repositoryRoot, options.configuration.ToLowerInvariant())
+            NativeBuildContext nativeContext = new NativeBuildContext(repositoryRoot, options.configuration.ToLowerInvariant())
                 .WithBindingGenerator(distribution.ResolveBindingGenerator(options.target));
             NativeToolchainSelection sdk = await distribution.ResolveNativeToolchain(options.target)
                 .ResolveAsync(nativeContext, execution.host, options.target, cancellationToken)
@@ -131,7 +131,11 @@ internal static partial class NativeBindingsVerification
                 DotNetSdkEnvironment.Create(options.dotnet)
             );
 
-            var native = await BuildNativeDependenciesAsync(nativeContext, contribution, cancellationToken);
+            (ProductNativeBuildPlan plan, ProductNativeBuildResult products) native = await BuildNativeDependenciesAsync(
+                nativeContext,
+                contribution,
+                cancellationToken
+            );
             using ProductNativeBuildResult nativeOwnership = native.products;
 
             Console.WriteLine("[inno-bindings] Build the complete InnoEngine solution.");
@@ -300,7 +304,7 @@ internal static partial class NativeBindingsVerification
     private static IReadOnlyList<string> DiscoverTestProjects(string repositoryRoot)
     {
         string nativeTestsRoot = Path.Combine(repositoryRoot, "backends");
-        var projects = Directory.EnumerateFiles(nativeTestsRoot, "*.csproj", SearchOption.AllDirectories)
+        List<string> projects = Directory.EnumerateFiles(nativeTestsRoot, "*.csproj", SearchOption.AllDirectories)
             .Where(static path => (
                 Path.GetFileNameWithoutExtension(path).StartsWith("Inno.Native.", StringComparison.Ordinal)
                 && path.Contains(Path.DirectorySeparatorChar + "tests" + Path.DirectorySeparatorChar, StringComparison.Ordinal)

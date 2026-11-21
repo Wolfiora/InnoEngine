@@ -17,8 +17,8 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private static readonly Action<object?> s_parallelRangeInvoker = static state =>
     {
-        var rangeState = (ParallelForRangeState?)state
-                         ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
+        ParallelForRangeState rangeState = (ParallelForRangeState?)state
+                                           ?? throw new InvalidOperationException("Parallel-for state cannot be null.");
         rangeState.body(rangeState.startInclusive, rangeState.endExclusive);
     };
 
@@ -65,9 +65,9 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         int started = 0;
         try
         {
-            for (var i = 0; i < m_workers.Length; i++)
+            for (int i = 0; i < m_workers.Length; i++)
             {
-                var workerId = i;
+                int workerId = i;
                 m_workers[i] = new WorkerRuntime(workerId, () => WorkerLoop(workerId));
             }
             for (; started < m_workers.Length; started++)
@@ -152,10 +152,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             }
 
             handles.Capacity = m_frameJobs.Count;
-            for (var i = 0; i < m_frameJobs.Count; i++)
+            for (int i = 0; i < m_frameJobs.Count; i++)
             {
-                var index = m_frameJobs[i];
-                if (!TryGetActiveRecordNoLock(index, out var record))
+                int index = m_frameJobs[i];
+                if (!TryGetActiveRecordNoLock(index, out JobRecord record))
                 {
                     continue;
                 }
@@ -165,7 +165,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         }
 
         List<Exception>? exceptions = null;
-        for (var i = 0; i < handles.Count; i++)
+        for (int i = 0; i < handles.Count; i++)
         {
             try
             {
@@ -184,10 +184,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
         lock (m_jobsGate)
         {
-            for (var i = 0; i < m_frameJobs.Count; i++)
+            for (int i = 0; i < m_frameJobs.Count; i++)
             {
-                var index = m_frameJobs[i];
-                if (!TryGetActiveRecordNoLock(index, out var record))
+                int index = m_frameJobs[i];
+                if (!TryGetActiveRecordNoLock(index, out JobRecord record))
                 {
                     continue;
                 }
@@ -223,7 +223,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     public JobHandle Schedule(Action job)
     {
         ArgumentNullException.ThrowIfNull(job);
-        return Schedule(s_actionInvoker, job, ReadOnlySpan<JobHandle>.Empty);
+        return Schedule(s_actionInvoker, job, []);
     }
 
     /// <summary>
@@ -263,19 +263,19 @@ internal sealed class WorkStealingJobSystem : IJobSystem
                 }
                 _ = ResolveHandleNoLock(dependency);
             }
-            var index = AllocateJobIndexNoLock(job, state);
-            var record = m_jobs[index];
+            int index = AllocateJobIndexNoLock(job, state);
+            JobRecord record = m_jobs[index];
 
-            var dependencyCount = 0;
-            for (var i = 0; i < dependencies.Length; i++)
+            int dependencyCount = 0;
+            for (int i = 0; i < dependencies.Length; i++)
             {
-                var dependency = dependencies[i];
+                JobHandle dependency = dependencies[i];
                 if (!dependency.isValid)
                 {
                     throw new ArgumentException("Dependency handle is invalid.", nameof(dependencies));
                 }
 
-                var dependencyRecord = ResolveHandleNoLock(dependency);
+                JobRecord dependencyRecord = ResolveHandleNoLock(dependency);
                 if (dependencyRecord.executionState == JobExecutionState.Completed)
                 {
                     continue;
@@ -313,10 +313,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     /// <returns>
     /// The validated job handle that represents the completed operation.
     /// </returns>
-    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies)
-    {
-        return Schedule(s_noop, null, dependencies);
-    }
+    public JobHandle CombineDependencies(ReadOnlySpan<JobHandle> dependencies) => Schedule(s_noop, null, dependencies);
 
     /// <summary>
     /// Schedules the indexed range in batches and returns its completion handle.
@@ -351,22 +348,22 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
         if (length == 0)
         {
-            return Schedule(s_noop, null, ReadOnlySpan<JobHandle>.Empty);
+            return Schedule(s_noop, null, []);
         }
 
         ThrowIfDisposed();
         lock (m_jobsGate)
         {
             EnsureFrameActiveNoLock();
-            var chunkCount = 1 + (length - 1) / batchSize;
+            int chunkCount = 1 + (length - 1) / batchSize;
             RequireCapacityNoLock(checked(chunkCount + 1));
             var chunkHandles = new JobHandle[chunkCount];
-            var chunkIndex = 0;
-            for (var start = 0; start < length;)
+            int chunkIndex = 0;
+            for (int start = 0; start < length;)
             {
-                var end = start + Math.Min(batchSize, length - start);
+                int end = start + Math.Min(batchSize, length - start);
                 var rangeState = new ParallelForRangeState(body, start, end);
-                chunkHandles[chunkIndex++] = Schedule(s_parallelRangeInvoker, rangeState, ReadOnlySpan<JobHandle>.Empty);
+                chunkHandles[chunkIndex++] = Schedule(s_parallelRangeInvoker, rangeState, []);
                 start = end;
             }
 
@@ -392,7 +389,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         var spinner = new SpinWait();
         while (true)
         {
-            if (TryGetCompletion(handle, out var exception))
+            if (TryGetCompletion(handle, out Exception? exception))
             {
                 if (exception is not null)
                 {
@@ -428,7 +425,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     /// </param>
     public void CompleteAll(ReadOnlySpan<JobHandle> handles)
     {
-        for (var i = 0; i < handles.Length; i++)
+        for (int i = 0; i < handles.Length; i++)
         {
             Complete(handles[i]);
         }
@@ -502,12 +499,12 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         m_disposed = true;
         Interlocked.Exchange(ref m_running, 0);
 
-        for (var i = 0; i < m_workers.Length; i++)
+        for (int i = 0; i < m_workers.Length; i++)
         {
             m_wakeSignal.Release();
         }
 
-        for (var i = 0; i < m_workers.Length; i++)
+        for (int i = 0; i < m_workers.Length; i++)
         {
             m_workers[i].thread.Join();
         }
@@ -547,7 +544,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private bool TryExecuteOneAvailableJob()
     {
-        if (!TryDequeueWorkItem(out var jobIndex))
+        if (!TryDequeueWorkItem(out int jobIndex))
         {
             return false;
         }
@@ -556,7 +553,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         object? state = null;
         lock (m_jobsGate)
         {
-            if (!TryGetActiveRecordNoLock(jobIndex, out var record))
+            if (!TryGetActiveRecordNoLock(jobIndex, out JobRecord record))
             {
                 return false;
             }
@@ -584,7 +581,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         List<int>? readyIndices = null;
         lock (m_jobsGate)
         {
-            if (!TryGetActiveRecordNoLock(jobIndex, out var record))
+            if (!TryGetActiveRecordNoLock(jobIndex, out JobRecord record))
             {
                 return true;
             }
@@ -600,10 +597,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             if (record.dependents is { Count: > 0 })
             {
                 readyIndices = [];
-                for (var i = 0; i < record.dependents.Count; i++)
+                for (int i = 0; i < record.dependents.Count; i++)
                 {
-                    var dependentIndex = record.dependents[i];
-                    if (!TryGetActiveRecordNoLock(dependentIndex, out var dependent))
+                    int dependentIndex = record.dependents[i];
+                    if (!TryGetActiveRecordNoLock(dependentIndex, out JobRecord dependent))
                     {
                         continue;
                     }
@@ -631,7 +628,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private bool TryDequeueWorkItem(out int jobIndex)
     {
-        var workerId = m_currentWorkerId.Value;
+        int workerId = m_currentWorkerId.Value;
         if (workerId >= 0)
         {
             if (m_workers[workerId].localQueue.TryPopBottom(out jobIndex))
@@ -647,10 +644,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
         if (workerId >= 0)
         {
-            var startVictim = (workerId + 1) % m_workers.Length;
-            for (var i = 0; i < m_workers.Length - 1; i++)
+            int startVictim = (workerId + 1) % m_workers.Length;
+            for (int i = 0; i < m_workers.Length - 1; i++)
             {
-                var victim = (startVictim + i) % m_workers.Length;
+                int victim = (startVictim + i) % m_workers.Length;
                 if (m_workers[victim].localQueue.TryStealTop(out jobIndex))
                 {
                     return true;
@@ -659,7 +656,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
         }
         else
         {
-            for (var i = 0; i < m_workers.Length; i++)
+            for (int i = 0; i < m_workers.Length; i++)
             {
                 if (m_workers[i].localQueue.TryStealTop(out jobIndex))
                 {
@@ -674,10 +671,10 @@ internal sealed class WorkStealingJobSystem : IJobSystem
 
     private void QueueReadyJobs(List<int> readyIndices)
     {
-        var workerId = m_currentWorkerId.Value;
-        for (var i = 0; i < readyIndices.Count; i++)
+        int workerId = m_currentWorkerId.Value;
+        for (int i = 0; i < readyIndices.Count; i++)
         {
-            var index = readyIndices[i];
+            int index = readyIndices[i];
             if (workerId >= 0)
             {
                 m_workers[workerId].localQueue.PushBottom(index);
@@ -716,7 +713,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             m_jobs.Add(new JobRecord());
         }
 
-        var record = m_jobs[index];
+        JobRecord record = m_jobs[index];
         record.ResetForAllocation(callback, state);
         m_frameJobs.Add(index);
         m_peakFrameJobs = Math.Max(m_peakFrameJobs, m_frameJobs.Count);
@@ -729,7 +726,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
     ) {
         lock (m_jobsGate)
         {
-            var record = ResolveHandleNoLock(handle);
+            JobRecord record = ResolveHandleNoLock(handle);
             if (record.executionState != JobExecutionState.Completed)
             {
                 exception = null;
@@ -748,7 +745,7 @@ internal sealed class WorkStealingJobSystem : IJobSystem
             throw new InvalidOperationException("Job handle index is out of range.");
         }
 
-        var record = m_jobs[handle.index];
+        JobRecord record = m_jobs[handle.index];
         if (!record.inUse || record.version != handle.version)
         {
             throw new InvalidOperationException("Job handle is stale or no longer valid.");

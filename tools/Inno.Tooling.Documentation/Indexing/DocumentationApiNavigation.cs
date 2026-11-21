@@ -41,10 +41,10 @@ internal static class DocumentationApiNavigation
                 categories[current] = name;
             }
         }
-        foreach (var category in categories)
+        foreach (KeyValuePair<string, string> category in categories)
         {
             string path = "content/en/api/" + category.Key + "/index.md";
-            var text = new StringBuilder("---\nuid: api.directory.").Append(category.Key.Replace('/', '.'))
+            StringBuilder text = new StringBuilder("---\nuid: api.directory.").Append(category.Key.Replace('/', '.'))
                 .Append("\ntitle: ")
                 .Append(JsonSerializer.Serialize(category.Value))
                 .Append("\nkind: landing\nowners: []\n---\n\n# ")
@@ -74,11 +74,11 @@ internal static class DocumentationApiNavigation
                     )
                     .Append(". Each type links to its exact declarations and member contracts.\n\n");
             }
-            var children = categories.Where(child => Parent(child.Key) == category.Key).ToArray();
+            KeyValuePair<string, string>[] children = categories.Where(child => Parent(child.Key) == category.Key).ToArray();
             if (children.Length != 0)
             {
                 text.Append("## Categories\n\n| Category | Purpose |\n| --- | --- |\n");
-                foreach (var child in children)
+                foreach (KeyValuePair<string, string> child in children)
                 {
                     string prefix = "content/en/api/" + child.Key + "/";
                     string[] projects = types
@@ -144,7 +144,7 @@ internal static class DocumentationApiNavigation
             .Append(Relative(page, type.path))
             .Append(") | ")
             .Append(
-                fragments is not null && fragments.TryGetValue(type.symbol, out var fragment)
+                fragments is not null && fragments.TryGetValue(type.symbol, out DocumentationApiFragment? fragment)
                 ? fragment.TableDescription(facts[type.symbol][0].documentation)
                 : DocumentationApiPresentation.Cell(
                     DocumentationApiPresentation.Summary(DocumentationXml.Read(facts[type.symbol][0].documentation).summary)
@@ -162,7 +162,7 @@ internal static class DocumentationApiNavigation
 
     private static string Parent(string path)
     {
-        string parent = path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : "";
+        string parent = path.LastIndexOf('/') is int index && index >= 0 ? path[..index] : string.Empty;
         return parent.EndsWith("/_projects", StringComparison.Ordinal) ? parent[..^10] : parent;
     }
 

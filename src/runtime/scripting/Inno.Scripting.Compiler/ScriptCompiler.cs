@@ -49,7 +49,7 @@ public sealed class ScriptCompiler
         ArgumentException.ThrowIfNullOrWhiteSpace(options.projectRootDirectory);
         m_options = new ScriptCompilerOptions
         {
-            projectRootDirectory = System.IO.Path.GetFullPath(options.projectRootDirectory),
+            projectRootDirectory = Path.GetFullPath(options.projectRootDirectory),
             compilationEnvironment = options.compilationEnvironment
         };
         m_assets = assets;
@@ -63,26 +63,20 @@ public sealed class ScriptCompiler
     /// <exception cref="InvalidOperationException">
     /// Thrown when the authoring asset pipeline is not initialized.
     /// </exception>
-    public void GenerateProjectFiles()
-    {
-        ScriptProjectGenerator.Generate(m_options, m_assets, m_plugins);
-    }
+    public void GenerateProjectFiles() => ScriptProjectGenerator.Generate(m_options, m_assets, m_plugins);
 
     /// <summary>
     /// Compiles a complete runtime and editor candidate generation without activating it.
     /// </summary>
-    /// <remarks>
-    /// Source discovery captures live inputs on the owner thread. Reference generation, Roslyn and
-    /// artifact writes run in the background; progress observers must accept callbacks from either thread.
-    /// Retain the source generation until the returned operation drains, including after cancellation.
-    /// Complete cache trees use Core IO atomic publication and replacement. A committed cache remains
-    /// valid if cleanup of its previous tree fails; compilation does not activate either generation.
-    /// </remarks>
     /// <param name="progress">
     /// Optional observer for monotonic compiler progress.
     /// </param>
     /// <param name="cancellationToken">
     /// The token that cancels compilation before an artifact generation is committed.
+    /// </param>
+    /// <param name="sourceSnapshot">
+    /// Optional isolated authoring sources. Capture on its owner thread and keep its transaction
+    /// alive until compilation drains; null selects the current Plugin candidate or active sources.
     /// </param>
     /// <returns>
     /// The immutable diagnostics and artifacts produced by the compilation attempt.
@@ -99,10 +93,13 @@ public sealed class ScriptCompiler
     /// <exception cref="AggregateException">
     /// Cache replacement and restoration both fail; the exception identifies the preserved previous tree.
     /// </exception>
-    /// <param name="sourceSnapshot">
-    /// Optional isolated authoring sources. Capture on its owner thread and keep its transaction
-    /// alive until compilation drains; null selects the current Plugin candidate or active sources.
-    /// </param>
+    /// <remarks>
+    /// Source discovery captures live inputs on the owner thread. Reference generation, Roslyn and
+    /// artifact writes run in the background; progress observers must accept callbacks from either thread.
+    /// Retain the source generation until the returned operation drains, including after cancellation.
+    /// Complete cache trees use Core IO atomic publication and replacement. A committed cache remains
+    /// valid if cleanup of its previous tree fails; compilation does not activate either generation.
+    /// </remarks>
     public ValueTask<ScriptCompilationResult> CompileAuthoringGenerationAsync(
         IProgress<ScriptCompilationProgress>? progress = null,
         CancellationToken cancellationToken = default,
@@ -126,11 +123,6 @@ public sealed class ScriptCompiler
     /// <summary>
     /// Compiles only the runtime assembly closure required by a deployed Player and binds it to that Player runtime.
     /// </summary>
-    /// <remarks>
-    /// Complete cache trees use Core IO atomic publication and replacement. Cancellation before commit
-    /// preserves the previous tree; cancellation does not undo a committed cache. Cleanup failure after
-    /// commit preserves the installed tree and remaining backup without activating a generation.
-    /// </remarks>
     /// <param name="targetRuntimeDirectory">
     /// The verified Player Support Pack directory whose runtime assemblies will execute the emitted scripts.
     /// </param>
@@ -164,6 +156,11 @@ public sealed class ScriptCompiler
     /// <exception cref="AggregateException">
     /// Cache replacement and restoration both fail; the exception identifies the preserved previous tree.
     /// </exception>
+    /// <remarks>
+    /// Complete cache trees use Core IO atomic publication and replacement. Cancellation before commit
+    /// preserves the previous tree; cancellation does not undo a committed cache. Cleanup failure after
+    /// commit preserves the installed tree and remaining backup without activating a generation.
+    /// </remarks>
     public ValueTask<ScriptCompilationResult> CompileRuntimeDeploymentAsync(
         string targetRuntimeDirectory,
         IProgress<ScriptCompilationProgress>? progress = null,

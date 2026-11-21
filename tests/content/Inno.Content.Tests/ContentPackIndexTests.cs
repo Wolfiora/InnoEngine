@@ -11,7 +11,7 @@ public sealed class ContentPackIndexTests
     public void IndexCopiesSortsAndRejectsCollisionsAndFileDirectoryConflicts()
     {
         ContentEntry[] entries = [Entry("b/file", 2), Entry("a", 1)];
-        ContentPackIndex index = new(entries);
+        var index = new ContentPackIndex(entries);
         entries[0] = Entry("changed", 7);
         Assert.Equal("a", index.entries[0].key.value);
         Assert.Equal(3, index.totalLength);

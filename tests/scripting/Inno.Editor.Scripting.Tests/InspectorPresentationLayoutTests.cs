@@ -8,10 +8,10 @@ using Inno.Native.ImGui;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using EditorWidget = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
-using ImGuiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using NativeVector2 = Inno.Native.ImGui.ImVec2C;
 using NativeVector4 = Inno.Native.ImGui.ImVec4C;
+using UiWindowFlags = Inno.Editor.ImGui.ImGuiWindowFlags;
 
 namespace Inno.Editor.Scripting.Tests;
 
@@ -19,7 +19,7 @@ namespace Inno.Editor.Scripting.Tests;
 public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
 {
     private readonly ImGuiNativeContext* m_context = NativeImGui.Raw.CreateContext(null);
-    private readonly Inno.Editor.ImGui.EditorUiSession m_ui = new();
+    private readonly EditorUI m_ui = new();
     private readonly IDisposable m_uiScope;
 
     public InspectorPresentationLayoutTests()
@@ -107,7 +107,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         }
         using NativeStringLease nativeTestText2 = Utf8Codec.EncodeNullTerminated("##Tooltip_00", allowsNull: false);
         ImGuiWindow* tooltip = NativeImGui.Raw.FindWindowByName((sbyte*)nativeTestText2.pointer);
-        Assert.False((tooltip == null));
+        Assert.False((tooltip is null));
         Assert.True((tooltip->Active != 0));
         Assert.InRange(tooltip->Pos.X, 0, width);
         Assert.InRange(tooltip->Pos.Y, 0, height);
@@ -162,7 +162,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
             NativeImGui.SetNextWindowPos(new Vector2(30, 30));
             NativeImGui.SetNextWindowSize(new Vector2(320, 180));
             using NativeStringLease nativeTestText4 = Utf8Codec.EncodeNullTerminated("Opaque surface", allowsNull: false);
-            NativeImGui.Raw.Begin((sbyte*)nativeTestText4.pointer, null, (int)(ImGuiWindowFlags.NoCollapse));
+            NativeImGui.Raw.Begin((sbyte*)nativeTestText4.pointer, null, (int)(UiWindowFlags.NoCollapse));
             NativeImGui.End();
             NativeImGui.Render();
         }
@@ -174,7 +174,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         // conceal a transparent join between independently anti-aliased background shapes.
         for (int sample = -10; sample <= 10; sample++)
         {
-            Vector2 point = new(window->Pos.X + window->Size.X * 0.47f, seam + sample * 0.1f);
+            var point = new Vector2(window->Pos.X + window->Size.X * 0.47f, seam + sample * 0.1f);
             float coverage = CoverageAt(window->DrawList, point);
             Assert.True(
                 coverage >= 0.999f,
@@ -185,7 +185,7 @@ public sealed unsafe class InspectorPresentationLayoutTests : IDisposable
         for (int pixel = -2; pixel <= 2; pixel++)
         {
             float y = (MathF.Floor(seam * framebufferScale) + pixel + 0.5f) / framebufferScale;
-            Vector2 point = new(window->Pos.X + window->Size.X * 0.47f, y);
+            var point = new Vector2(window->Pos.X + window->Size.X * 0.47f, y);
             Assert.True(
                 CoverageAt(window->DrawList, point) >= 0.999f,
                 $"Transparent device pixel: zoom={zoom}, scale={framebufferScale}, y={y}"

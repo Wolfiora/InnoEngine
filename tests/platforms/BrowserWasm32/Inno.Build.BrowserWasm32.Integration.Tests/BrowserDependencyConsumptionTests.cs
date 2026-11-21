@@ -5,6 +5,7 @@ using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.SupportPacks;
 using Inno.Testing.Source;
@@ -22,8 +23,13 @@ public sealed class BrowserDependencyConsumptionTests
             ?? throw new InvalidOperationException("Browser product acceptance requires an explicit consume-only native selection.");
         Assert.True(File.Exists(manifest), "The selected immutable native dependency manifest must exist.");
         string dotnet = StandardBuildEnvironment.ResolveManagedHost();
-        var context = StandardBuildEnvironment.Capture(AppContext.BaseDirectory, new BuildTargetId("windows-x64"), dotnet, manifest);
-        var distribution = StandardBuildDistribution.Create(context).build;
+        BuildCompositionContext context = StandardBuildEnvironment.Capture(
+            AppContext.BaseDirectory,
+            new BuildTargetId("windows-x64"),
+            dotnet,
+            manifest
+        );
+        BuildDistribution distribution = StandardBuildDistribution.Create(context).build;
         var target = new BuildTargetId("browser-wasm");
         string output = Path.Combine(root, "artifacts", "validation", "browser-support-pack");
         using var cancellation = new CancellationTokenSource(TimeSpan.FromMinutes(20));

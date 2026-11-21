@@ -72,6 +72,6 @@ internal static class FileSystemRename
     private static bool IsTemporarilyBlocked(Exception exception)
         => OperatingSystem.IsWindows()
            && exception is IOException or UnauthorizedAccessException
-           && exception.HResult is unchecked((int)0x80070005)
-              or unchecked((int)0x80070020) or unchecked((int)0x80070021);
+           && exception.HResult is unchecked((int)0x8007_0005)
+              or unchecked((int)0x8007_0020) or unchecked((int)0x8007_0021);
 }

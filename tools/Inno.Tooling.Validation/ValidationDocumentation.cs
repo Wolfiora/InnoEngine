@@ -91,7 +91,7 @@ internal static class ValidationDocumentation
                 cancellationToken: cancellation
             ).ConfigureAwait(false);
             DocumentationCatalogReport prior = await previous.ExportCatalogAsync(cancellation).ConfigureAwait(false);
-            var pages = prior.pages.ToDictionary(static page => page.id, StringComparer.Ordinal);
+            Dictionary<string, DocumentationPageInfo> pages = prior.pages.ToDictionary(static page => page.id, StringComparer.Ordinal);
             var changedPaths = new HashSet<string>(StringComparer.Ordinal);
             foreach (DocumentationPageInfo page in catalog.pages)
             {
@@ -125,7 +125,7 @@ internal static class ValidationDocumentation
             }
             while (expanded);
             Dictionary<string, SourceFacts> earlier = await SourceIdentitiesAsync(previous, prior).ConfigureAwait(false);
-            foreach (var input in sourceIdentities)
+            foreach (KeyValuePair<string, SourceFacts> input in sourceIdentities)
             {
                 if (earlier.GetValueOrDefault(input.Key) != input.Value)
                 {
@@ -232,13 +232,15 @@ internal static class ValidationDocumentation
         IReadOnlyList<DocumentationPageInfo> pages,
         IReadOnlyList<string> references
     ) {
-        var selected = selection.catalog.references
+        DocumentationReferenceInfo[] selected = selection.catalog.references
             .Where(reference => references.Contains(reference.path, StringComparer.Ordinal))
             .ToArray();
-        var scriptOwners = selected.Where(static reference => reference.model is "runtime-script" or "editor-script")
+        HashSet<string> scriptOwners = selected.Where(static reference => reference.model is "runtime-script" or "editor-script")
             .SelectMany(static reference => reference.projects)
             .ToHashSet(StringComparer.Ordinal);
-        var inputs = pages.Select(static page => new KeyValuePair<string, string>(page.id, page.contentIdentity)).ToList();
+        List<KeyValuePair<string, string>> inputs = pages
+            .Select(static page => new KeyValuePair<string, string>(page.id, page.contentIdentity))
+            .ToList();
         foreach (DocumentationReferenceInfo reference in selected)
         {
             if (reference.model == "source-clr")
@@ -268,7 +270,7 @@ internal static class ValidationDocumentation
         DocumentationReferenceInfo[] projections = selection.catalog.references.Where(reference => (
             reference.model == "runtime-script" && runtime || reference.model == "editor-script" && editor
         )).ToArray();
-        var owners = projections.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> owners = projections.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
         return projections.Concat(
             selection.catalog.references.Where(reference => (
                 reference.model == "source-clr"

@@ -15,6 +15,7 @@ using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
 using NativeGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 
 namespace Inno.Editor.ImGui.Tests;
 
@@ -22,7 +23,10 @@ public sealed unsafe class DynamicModalTests
 {
     private readonly ITestOutputHelper m_output;
 
-    public DynamicModalTests(ITestOutputHelper output) => m_output = output;
+    public DynamicModalTests(ITestOutputHelper output)
+    {
+        m_output = output;
+    }
 
     [Fact]
     [Trait("Acceptance", "Visual")]
@@ -66,7 +70,7 @@ public sealed unsafe class DynamicModalTests
                 "First\nSecond",
                 new string('W', 600),
                 "中文状态 / café / Ελληνικά\n" + new string('x', 4000),
-                "",
+                string.Empty,
                 "Short"
             ];
             foreach (string text in messages)
@@ -148,7 +152,7 @@ public sealed unsafe class DynamicModalTests
         host.state.message = "Line one\nLine two\nLine three";
         host.Frame();
         Vector2 hit = (host.state.actionMin + host.state.actionMax) * 0.5f;
-        var io = NativeGui.Raw.GetIO();
+        ImGuiIO* io = NativeGui.Raw.GetIO();
         NativeGui.Raw.AddMousePosEvent(io, hit.X, hit.Y);
         NativeGui.Raw.AddMouseButtonEvent(io, 0, 1);
         host.Frame();
@@ -184,10 +188,10 @@ public sealed unsafe class DynamicModalTests
         host.state.showAction = true;
         host.state.message = "Cancel using the keyboard";
         host.Frame();
-        var io = NativeGui.Raw.GetIO();
-        NativeGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Escape, 1);
+        ImGuiIO* io = NativeGui.Raw.GetIO();
+        NativeGui.Raw.AddKeyEvent(io, NativeKey.Escape, 1);
         host.Frame();
-        NativeGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Escape, 0);
+        NativeGui.Raw.AddKeyEvent(io, NativeKey.Escape, 0);
         host.Frame();
         Assert.Equal(1, host.state.actions);
     }
@@ -197,17 +201,17 @@ public sealed unsafe class DynamicModalTests
     public void TabAndEnterActivateTheCurrentEnabledAction()
     {
         using var host = new ModalHost();
-        var io = NativeGui.Raw.GetIO();
-        io->ConfigFlags |= (int)Inno.Native.ImGui.ImGuiConfigFlags.NavEnableKeyboard;
+        ImGuiIO* io = NativeGui.Raw.GetIO();
+        io->ConfigFlags |= (int)ImGuiConfigFlags.NavEnableKeyboard;
         host.Frame();
         host.Frame();
-        NativeGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Tab, 1);
+        NativeGui.Raw.AddKeyEvent(io, NativeKey.Tab, 1);
         host.Frame();
-        NativeGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Tab, 0);
+        NativeGui.Raw.AddKeyEvent(io, NativeKey.Tab, 0);
         host.Frame();
-        NativeGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Enter, 1);
+        NativeGui.Raw.AddKeyEvent(io, NativeKey.Enter, 1);
         host.Frame();
-        NativeGui.Raw.AddKeyEvent(io, Inno.Native.ImGui.ImGuiKey.Enter, 0);
+        NativeGui.Raw.AddKeyEvent(io, NativeKey.Enter, 0);
         host.Frame();
         Assert.Equal(1, host.state.actions);
     }
@@ -246,14 +250,14 @@ public sealed unsafe class DynamicModalTests
         host.Frame();
         float originalActionWidth = host.state.actionMax.X - host.state.actionMin.X;
         float originalHeight = host.state.layout.size.Y;
-        var io = NativeGui.Raw.GetIO();
-        var configuration = NativeGui.Raw.ImFontConfig();
+        ImGuiIO* io = NativeGui.Raw.GetIO();
+        ImFontConfig* configuration = NativeGui.Raw.ImFontConfig();
         try
         {
             configuration->SizePixels = 16f;
             configuration->GlyphExtraAdvanceX = 8f;
             io->FontDefault = NativeGui.Raw.AddFontDefault(io->Fonts, configuration);
-            Assert.True(io->FontDefault != null);
+            Assert.True(io->FontDefault is not null);
         }
         finally
         {
@@ -334,7 +338,7 @@ public sealed unsafe class DynamicModalTests
             Directory.CreateDirectory(m_root);
             m_native = NativeGui.Raw.CreateContext(null);
             NativeGui.Raw.SetCurrentContext(m_native);
-            var io = NativeGui.Raw.GetIO();
+            ImGuiIO* io = NativeGui.Raw.GetIO();
             io->DisplaySize = new ImVec2C { X = width, Y = height };
             io->DeltaTime = 0.2f;
             io->IniFilename = null;
@@ -448,13 +452,13 @@ public sealed unsafe class DynamicTestModal(DynamicModalState state) : EditorMod
         }
         state.actionMin = NativeGui.GetItemRectMin();
         state.scrollMaxX = NativeGui.GetScrollMaxX();
-        var window = NativeGui.Raw.GetCurrentWindow();
+        ImGuiWindow* window = NativeGui.Raw.GetCurrentWindow();
         state.wrapWidth = NativeGui.GetContentRegionAvail().X;
         state.bodyHeight = state.message.Length == 0 ? 0f : NativeGui.CalcTextSize(state.message, false, state.wrapWidth).Y;
         state.bodyContentHeight = state.bodyHeight;
         if (window->DC.ChildWindows.Size > 0)
         {
-            var child = window->DC.ChildWindows.Data[0];
+            ImGuiWindow* child = window->DC.ChildWindows.Data[0];
             state.wrapWidth = child->WorkRect.Max.X - child->WorkRect.Min.X;
             state.bodyHeight = child->Size.Y;
             state.bodyContentHeight = child->ContentSize.Y;

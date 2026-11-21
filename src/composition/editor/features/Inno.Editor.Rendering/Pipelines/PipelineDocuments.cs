@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Editor.Assets;
 using Inno.Editor.Core;
@@ -9,6 +10,7 @@ using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Rendering;
 
@@ -24,19 +26,19 @@ public sealed class PipelineDocuments : EditorModule
     /// <summary>
     /// Gets the authoritative asset pipeline used by source inspectors.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetPipeline assets { get; }
 
     /// <summary>
     /// Gets the current owner serialization registry.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public SerializationRegistry serialization { get; }
 
     /// <summary>
     /// Gets the source draft owner shared by Pipeline inspectors.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetDraftDocuments<RenderPipelineAsset> drafts { get; }
 
     internal PipelineDocuments(
@@ -48,7 +50,7 @@ public sealed class PipelineDocuments : EditorModule
         this.assets = assets;
         this.serialization = serialization;
         m_types = types;
-        drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
+        this.drafts = new(assets, serialization, interactions, "inno.pipeline", C_HISTORY, ".irenderpipeline", "Pipeline");
     }
 
     /// <summary>
@@ -126,7 +128,7 @@ public sealed class PipelineDocuments : EditorModule
     /// <returns>
     /// The detached settings, or null when the extension is temporarily unavailable.
     /// </returns>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public ISerializable? RestoreSettings(SerializedRenderExtensionState state)
     {
         if (state.stableTypeId == Guid.Empty)
@@ -144,7 +146,7 @@ public sealed class PipelineDocuments : EditorModule
 
     internal static bool Recoverable(Exception error)
         => error is IOException or UnauthorizedAccessException or InvalidOperationException or ArgumentException or FormatException
-           && Inno.Core.Execution.RetirementPendingException.Find(error) is null;
+           && RetirementPendingException.Find(error) is null;
 
     /// <summary>
     /// Initializes this feature when its owning runtime becomes active.

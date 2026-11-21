@@ -27,7 +27,7 @@ public sealed class MiniAudioDeviceTests
                 AudioCodecId.wav,
                 AudioClipLoadMode.Decode,
                 1,
-                48000,
+                48_000,
                 4800,
                 new FileInfo(path).Length
             );
@@ -68,7 +68,7 @@ public sealed class MiniAudioDeviceTests
                     AudioCodecId.wav,
                     AudioClipLoadMode.Decode,
                     1,
-                    48000,
+                    48_000,
                     4800,
                     new FileInfo(clipPath).Length
                 ),
@@ -109,11 +109,11 @@ public sealed class MiniAudioDeviceTests
         string clipPath = CreateWaveFile(frameCount: 2400);
         try
         {
-            using MiniAudioDevice device = new(new MiniAudioDeviceOptions
+            using var device = new MiniAudioDevice(new MiniAudioDeviceOptions
             {
                 noDevice = true,
                 channels = 2,
-                sampleRate = 48000,
+                sampleRate = 48_000,
                 listenerCount = 2
             });
             IAudioDevice backend = device;
@@ -123,7 +123,7 @@ public sealed class MiniAudioDeviceTests
                     AudioCodecId.wav,
                     AudioClipLoadMode.Decode,
                     1,
-                    48000,
+                    48_000,
                     2400,
                     new FileInfo(clipPath).Length
                 ),
@@ -177,7 +177,7 @@ public sealed class MiniAudioDeviceTests
         string clipPath = CreateWaveFile(frameCount: 4800);
         try
         {
-            using MiniAudioDevice device = new(new MiniAudioDeviceOptions { noDevice = true });
+            using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
             IAudioDevice backend = device;
             AudioBusHandle master = backend.CreateBus(AudioBusId.master);
             AudioBusHandle effects = backend.CreateBus(new AudioBusId("test.effects"), master);
@@ -191,7 +191,7 @@ public sealed class MiniAudioDeviceTests
                     AudioCodecId.wav,
                     AudioClipLoadMode.Stream,
                     1,
-                    48000,
+                    48_000,
                     4800,
                     new FileInfo(clipPath).Length
                 ),
@@ -231,10 +231,10 @@ public sealed class MiniAudioDeviceTests
     [Fact]
     public void MixerGenerationsCanOverlapUntilOldVoicesReleaseTheirGraph()
     {
-        string clipPath = CreateWaveFile(frameCount: 48000);
+        string clipPath = CreateWaveFile(frameCount: 48_000);
         try
         {
-            using MiniAudioDevice device = new(new MiniAudioDeviceOptions { noDevice = true });
+            using var device = new MiniAudioDevice(new MiniAudioDeviceOptions { noDevice = true });
             IAudioDevice backend = device;
             AudioBusHandle oldMaster = backend.CreateBus(AudioBusId.master);
             AudioBusHandle oldMusic = backend.CreateBus(new AudioBusId("test.music"), oldMaster);
@@ -243,8 +243,8 @@ public sealed class MiniAudioDeviceTests
                     AudioCodecId.wav,
                     AudioClipLoadMode.Decode,
                     1,
-                    48000,
-                    48000,
+                    48_000,
+                    48_000,
                     new FileInfo(clipPath).Length
                 ),
                 new EncodedAudioTestSource(File.ReadAllBytes(clipPath))
@@ -282,14 +282,12 @@ public sealed class MiniAudioDeviceTests
     private static void WaitForVoice(
         IAudioDevice device,
         AudioDeviceVoiceHandle voice
-    ) {
-        Assert.True(
-            SpinWait.SpinUntil(() => (
-                device.TryGetVoiceState(voice, out AudioPlaybackState state)
-                && state != AudioPlaybackState.Preparing
-            ), TimeSpan.FromSeconds(5))
-        );
-    }
+    ) => Assert.True(
+        SpinWait.SpinUntil(() => (
+            device.TryGetVoiceState(voice, out AudioPlaybackState state)
+            && state != AudioPlaybackState.Preparing
+        ), TimeSpan.FromSeconds(5))
+    );
 
     private static IEnumerable<AudioProcessorId> StandardProcessors()
     {
@@ -329,12 +327,12 @@ public sealed class MiniAudioDeviceTests
     private static string CreateWaveFile(int frameCount)
     {
         string path = Path.Combine(Path.GetTempPath(), $"inno-miniaudio-{Guid.NewGuid():N}.wav");
-        const int sampleRate = 48000;
+        const int sampleRate = 48_000;
         const short channels = 1;
         const short bitsPerSample = 16;
         int dataLength = frameCount * channels * (bitsPerSample / 8);
         using FileStream stream = File.Create(path);
-        using BinaryWriter writer = new(stream);
+        using var writer = new BinaryWriter(stream);
         writer.Write("RIFF"u8);
         writer.Write(36 + dataLength);
         writer.Write("WAVE"u8);

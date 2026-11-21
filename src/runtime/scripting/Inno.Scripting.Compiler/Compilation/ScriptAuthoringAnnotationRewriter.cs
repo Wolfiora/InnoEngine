@@ -40,8 +40,8 @@ internal sealed class ScriptAuthoringAnnotationRewriter(
             .Select(export => export.type)
             .Distinct()
             .ToArray();
-        var names = types.Select(type => type.FullName!).ToHashSet(StringComparer.Ordinal);
-        var namespaces = types.Select(type => type.Namespace!).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> names = types.Select(type => type.FullName!).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> namespaces = types.Select(type => type.Namespace!).ToHashSet(StringComparer.Ordinal);
         return compilation.SyntaxTrees.Select(tree =>
         {
             var rewriter = new ScriptAuthoringAnnotationRewriter(compilation.GetSemanticModel(tree), names, namespaces);

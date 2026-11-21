@@ -81,7 +81,9 @@ public sealed class UiCapabilityUnavailableException : NotSupportedException
     /// </param>
     public UiCapabilityUnavailableException(UiBackendCapability capability)
         : base($"The selected UI backend does not support capability '{capability}'.")
-            => this.capability = capability;
+        {
+        this.capability = capability;
+    }
 
     /// <summary>
     /// Gets the unavailable capability.

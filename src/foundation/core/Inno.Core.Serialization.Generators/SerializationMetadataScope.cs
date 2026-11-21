@@ -13,7 +13,10 @@ internal sealed class SerializationMetadataScope
     private readonly List<SerializationMetadataScope> m_children = [];
     private int m_index;
 
-    internal SerializationMetadataScope(INamedTypeSymbol? owner) => this.owner = owner;
+    internal SerializationMetadataScope(INamedTypeSymbol? owner)
+    {
+        this.owner = owner;
+    }
 
     internal INamedTypeSymbol? owner { get; }
     internal StringBuilder registrations { get; } = new();
@@ -34,7 +37,7 @@ internal sealed class SerializationMetadataScope
         }
         string namespaceName = owner is null
                                ? assemblyName + ".Generated"
-                               : owner.ContainingNamespace.IsGlobalNamespace ? "" : owner.ContainingNamespace.ToDisplayString();
+                               : owner.ContainingNamespace.IsGlobalNamespace ? string.Empty : owner.ContainingNamespace.ToDisplayString();
         if (namespaceName.Length > 0)
         {
             code.Append("namespace ").Append(namespaceName).Append(";\n");
@@ -138,7 +141,7 @@ internal sealed class SerializationMetadataScope
             Accessibility.ProtectedAndInternal => "private protected",
             _ => "internal"
         };
-        string modifiers = type.IsStatic ? " static" : type.IsReadOnly ? " readonly" : "";
+        string modifiers = type.IsStatic ? " static" : type.IsReadOnly ? " readonly" : string.Empty;
         string kind = type.IsRecord
                       ? type.IsValueType ? "record struct" : "record class"
                       : type.TypeKind == TypeKind.Struct ? "struct" : "class";

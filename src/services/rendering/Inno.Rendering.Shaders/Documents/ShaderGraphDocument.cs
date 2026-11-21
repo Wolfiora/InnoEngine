@@ -39,7 +39,9 @@ public static class ShaderGraphDocument
         GraphDocument graph,
         SerializationRegistry serialization,
         SerializationContext context
-    ) => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value) ? Decode<string>(value, serialization, context) : "";
+    ) => graph.metadata.TryGetValue(targetKey, out GraphSerializedValue? value)
+         ? Decode<string>(value, serialization, context)
+         : string.Empty;
 
     /// <summary>
     /// Assigns a domain target by stable identity without retaining its current provider.
@@ -246,27 +248,32 @@ public sealed class ShaderGraphStageSettings : ISerializable
     /// <summary>
     /// Gets or sets the programmable stage.
     /// </summary>
-    [SerializableProperty] public ShaderStage stage { get; set; } = ShaderStage.Fragment;
+    [SerializableProperty]
+    public ShaderStage stage { get; set; } = ShaderStage.Fragment;
 
     /// <summary>
     /// Gets or sets output ports and their GPU destinations.
     /// </summary>
-    [SerializableProperty] public ShaderGraphOutput[] outputs { get; set; } = [];
+    [SerializableProperty]
+    public ShaderGraphOutput[] outputs { get; set; } = [];
 
     /// <summary>
     /// Gets or sets compute workgroup width.
     /// </summary>
-    [SerializableProperty] public int threadsX { get; set; } = 1;
+    [SerializableProperty]
+    public int threadsX { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets compute workgroup height.
     /// </summary>
-    [SerializableProperty] public int threadsY { get; set; } = 1;
+    [SerializableProperty]
+    public int threadsY { get; set; } = 1;
 
     /// <summary>
     /// Gets or sets compute workgroup depth.
     /// </summary>
-    [SerializableProperty] public int threadsZ { get; set; } = 1;
+    [SerializableProperty]
+    public int threadsZ { get; set; } = 1;
 }
 
 /// <summary>
@@ -303,27 +310,32 @@ public sealed class ShaderGraphInputSettings : ISerializable
     /// <summary>
     /// Gets or sets the stable logical binding identity.
     /// </summary>
-    [SerializableProperty] public string id { get; set; } = "input";
+    [SerializableProperty]
+    public string id { get; set; } = "input";
 
     /// <summary>
     /// Gets or sets the complete neutral type descriptor.
     /// </summary>
-    [SerializableProperty] public ShaderGraphType type { get; set; } = new();
+    [SerializableProperty]
+    public ShaderGraphType type { get; set; } = new();
 
     /// <summary>
     /// Gets or sets the stage input category.
     /// </summary>
-    [SerializableProperty] public ShaderIrInputKind kind { get; set; }
+    [SerializableProperty]
+    public ShaderIrInputKind kind { get; set; }
 
     /// <summary>
     /// Gets or sets the target semantic, not a native expression.
     /// </summary>
-    [SerializableProperty] public string semantic { get; set; } = "position";
+    [SerializableProperty]
+    public string semantic { get; set; } = "position";
 
     /// <summary>
     /// Gets or sets the interface index.
     /// </summary>
-    [SerializableProperty] public int location { get; set; }
+    [SerializableProperty]
+    public int location { get; set; }
 
     /// <summary>
     /// Validates the persisted descriptor and freezes its stage binding.

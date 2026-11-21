@@ -60,34 +60,34 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// <summary>
     /// Determines whether the supplied layer is contained in this mask.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the layer bit is enabled.
-    /// </returns>
     /// <param name="layer">
     /// The layer consumed by contains; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the layer bit is enabled.
+    /// </returns>
     public bool Contains(GameLayer layer) => (value & (1u << layer.index)) != 0u;
 
     /// <summary>
     /// Returns a mask with the supplied layer enabled.
     /// </summary>
-    /// <returns>
-    /// The updated immutable mask.
-    /// </returns>
     /// <param name="layer">
     /// The layer consumed by with; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The updated immutable mask.
+    /// </returns>
     public GameLayerMask With(GameLayer layer) => new(value | (1u << layer.index));
 
     /// <summary>
     /// Returns a mask with the supplied layer disabled.
     /// </summary>
-    /// <returns>
-    /// The updated immutable mask.
-    /// </returns>
     /// <param name="layer">
     /// The layer consumed by without; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// The updated immutable mask.
+    /// </returns>
     public GameLayerMask Without(GameLayer layer) => new(value & ~(1u << layer.index));
 
     /// <summary>
@@ -104,12 +104,12 @@ public readonly struct GameLayerMask : IEquatable<GameLayerMask>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is GameLayerMask other && Equals(other);
 
     /// <summary>

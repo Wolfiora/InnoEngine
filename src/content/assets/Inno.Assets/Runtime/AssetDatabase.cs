@@ -49,6 +49,9 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <summary>
     /// Restores serialized properties to the existing asset object.
     /// </summary>
+    /// <typeparam name="TValue">
+    /// Serialized asset object type receiving restored properties.
+    /// </typeparam>
     /// <param name="stableTypeId">
     /// The stable type id consumed by restore properties; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
@@ -58,9 +61,6 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <param name="target">
     /// The existing target that receives the validated result.
     /// </param>
-    /// <typeparam name="TValue">
-    /// Serialized asset object type receiving restored properties.
-    /// </typeparam>
     public void RestoreProperties<TValue>(
         Guid stableTypeId,
         byte[] propertyData,
@@ -89,11 +89,11 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
     /// <param name="serialization">
     /// The immutable converter generation pinned by the owning runtime session.
     /// </param>
-    /// <param name="identities">
-    /// The session-owned allocator used for canonical runtime asset identities.
-    /// </param>
     /// <param name="types">
     /// The immutable type generation pinned by this runtime session, without refreshing authoring registries.
+    /// </param>
+    /// <param name="identities">
+    /// The session-owned allocator used for canonical runtime asset identities.
     /// </param>
     /// <param name="residencyBudgetBytes">
     /// Maximum unpinned runtime payload bytes retained after lease release.
@@ -929,7 +929,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
 
     private RuntimeArtifactManifest ReadArtifactManifest(RuntimeAssetRecord record)
     {
-        ContentKey key = new(GetBundleRoot(record.artifactKey) + "/manifest");
+        var key = new ContentKey(GetBundleRoot(record.artifactKey) + "/manifest");
         return m_serialization.Deserialize<RuntimeArtifactManifest>(ReadContent(key));
     }
 
@@ -942,7 +942,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
         ) {
             throw new InvalidDataException($"Runtime artifact bundle '{record.artifactKey}' contains an invalid output path.");
         }
-        ContentKey key = new(GetBundleRoot(record.artifactKey) + "/outputs/" + output.fileName);
+        var key = new ContentKey(GetBundleRoot(record.artifactKey) + "/outputs/" + output.fileName);
         if (!m_content.index.TryGetEntry(key, out ContentEntry? entry))
         {
             throw new InvalidDataException($"Runtime artifact output '{record.artifactKey}/{output.name}' is missing.");
@@ -969,7 +969,7 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
             throw new InvalidDataException($"Content '{key}' exceeds the supported array budget.");
         }
         using Stream input = lease.OpenRead();
-        byte[] bytes = new byte[(int)lease.entry.length];
+        var bytes = new byte[(int)lease.entry.length];
         input.ReadExactly(bytes);
         if (input.ReadByte() != -1 || !string.Equals(
             Convert.ToHexString(SHA256.HashData(bytes)),
@@ -1067,56 +1067,121 @@ public sealed partial class AssetDatabase : AssetResidencyProvider,
 
     private sealed class RuntimeAssetData : ISerializable
     {
-        [SerializableProperty] internal Guid persistentId { get; set; }
-        [SerializableProperty] internal string relativePath { get; set; } = string.Empty;
-        [SerializableProperty] internal string sourceHash { get; set; } = string.Empty;
-        [SerializableProperty] internal long sourceLength { get; set; }
-        [SerializableProperty] internal long sourceLastWriteUtcTicks { get; set; }
-        [SerializableProperty] internal long sourceCreationTimeUtcTicks { get; set; }
-        [SerializableProperty] internal string importerId { get; set; } = string.Empty;
-        [SerializableProperty] internal int deploymentScope { get; set; }
-        [SerializableProperty] internal Guid stableAssetTypeId { get; set; }
-        [SerializableProperty] internal byte[] assetStateBytes { get; set; } = [];
-        [SerializableProperty] internal RuntimeDependencyData[] runtimeDependencies { get; set; } = [];
-        [SerializableProperty] internal RuntimeImportDependencyData[] importDependencies { get; set; } = [];
-        [SerializableProperty] internal int importStatus { get; set; }
-        [SerializableProperty] internal string importerImplementationFingerprint { get; set; } = string.Empty;
-        [SerializableProperty] internal string artifactKey { get; set; } = string.Empty;
-        [SerializableProperty] internal string lastSuccessfulArtifactKey { get; set; } = string.Empty;
-        [SerializableProperty] internal string[] diagnostics { get; set; } = [];
-        [SerializableProperty] internal bool isDirectory { get; set; }
-        [SerializableProperty] internal bool isTombstone { get; set; }
+        [SerializableProperty]
+        internal Guid persistentId { get; set; }
+
+        [SerializableProperty]
+        internal string relativePath { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal string sourceHash { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal long sourceLength { get; set; }
+
+        [SerializableProperty]
+        internal long sourceLastWriteUtcTicks { get; set; }
+
+        [SerializableProperty]
+        internal long sourceCreationTimeUtcTicks { get; set; }
+
+        [SerializableProperty]
+        internal string importerId { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal int deploymentScope { get; set; }
+
+        [SerializableProperty]
+        internal Guid stableAssetTypeId { get; set; }
+
+        [SerializableProperty]
+        internal byte[] assetStateBytes { get; set; } = [];
+
+        [SerializableProperty]
+        internal RuntimeDependencyData[] runtimeDependencies { get; set; } = [];
+
+        [SerializableProperty]
+        internal RuntimeImportDependencyData[] importDependencies { get; set; } = [];
+
+        [SerializableProperty]
+        internal int importStatus { get; set; }
+
+        [SerializableProperty]
+        internal string importerImplementationFingerprint { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal string artifactKey { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal string lastSuccessfulArtifactKey { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal string[] diagnostics { get; set; } = [];
+
+        [SerializableProperty]
+        internal bool isDirectory { get; set; }
+
+        [SerializableProperty]
+        internal bool isTombstone { get; set; }
     }
 
     private struct RuntimeDependencyData
     {
-        [SerializableProperty] internal Guid persistentId { get; set; }
-        [SerializableProperty] internal Guid stableTypeId { get; set; }
-        [SerializableProperty] internal string lastKnownPath { get; set; }
+        [SerializableProperty]
+        internal Guid persistentId { get; set; }
+
+        [SerializableProperty]
+        internal Guid stableTypeId { get; set; }
+
+        [SerializableProperty]
+        internal string lastKnownPath { get; set; }
     }
 
     private struct RuntimeImportDependencyData
     {
-        [SerializableProperty] internal int kind { get; set; }
-        [SerializableProperty] internal string key { get; set; }
-        [SerializableProperty] internal string fingerprint { get; set; }
-        [SerializableProperty] internal bool sourceStampValid { get; set; }
-        [SerializableProperty] internal long sourceLength { get; set; }
-        [SerializableProperty] internal long sourceLastWriteUtcTicks { get; set; }
-        [SerializableProperty] internal long sourceCreationTimeUtcTicks { get; set; }
+        [SerializableProperty]
+        internal int kind { get; set; }
+
+        [SerializableProperty]
+        internal string key { get; set; }
+
+        [SerializableProperty]
+        internal string fingerprint { get; set; }
+
+        [SerializableProperty]
+        internal bool sourceStampValid { get; set; }
+
+        [SerializableProperty]
+        internal long sourceLength { get; set; }
+
+        [SerializableProperty]
+        internal long sourceLastWriteUtcTicks { get; set; }
+
+        [SerializableProperty]
+        internal long sourceCreationTimeUtcTicks { get; set; }
     }
 
     private sealed class RuntimeArtifactManifest : ISerializable
     {
-        [SerializableProperty] internal string key { get; set; } = string.Empty;
-        [SerializableProperty] internal RuntimeArtifactOutput[] outputs { get; set; } = [];
+        [SerializableProperty]
+        internal string key { get; set; } = string.Empty;
+
+        [SerializableProperty]
+        internal RuntimeArtifactOutput[] outputs { get; set; } = [];
     }
 
     private struct RuntimeArtifactOutput
     {
-        [SerializableProperty] internal string name { get; set; }
-        [SerializableProperty] internal string fileName { get; set; }
-        [SerializableProperty] internal string contentHash { get; set; }
-        [SerializableProperty] internal long length { get; set; }
+        [SerializableProperty]
+        internal string name { get; set; }
+
+        [SerializableProperty]
+        internal string fileName { get; set; }
+
+        [SerializableProperty]
+        internal string contentHash { get; set; }
+
+        [SerializableProperty]
+        internal long length { get; set; }
     }
 }

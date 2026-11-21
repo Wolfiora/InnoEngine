@@ -90,7 +90,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
                     throw new InvalidDataException("The WAV format chunk is truncated.");
                 }
                 ushort format = BinaryPrimitives.ReadUInt16LittleEndian(bytes.Slice(chunkStart, 2));
-                if (format is not 1 and not 3 and not 0xfffe)
+                if (format is not 1 and not 3 and not 0xFFFE)
                 {
                     throw new InvalidDataException($"The WAV format code '{format}' is not supported.");
                 }
@@ -127,7 +127,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         while (offset <= bytes.Length - 4)
         {
             byte header = bytes[offset];
-            int blockType = header & 0x7f;
+            int blockType = header & 0x7F;
             int length = (bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3];
             int dataStart = checked(offset + 4);
             int dataEnd = checked(dataStart + length);
@@ -143,9 +143,9 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
                 }
                 ReadOnlySpan<byte> packed = bytes.Slice(dataStart + 10, 8);
                 ulong value = BinaryPrimitives.ReadUInt64BigEndian(packed);
-                sampleRate = (int)((value >> 44) & 0xfffff);
+                sampleRate = (int)((value >> 44) & 0xF_FFFF);
                 channels = (int)((value >> 41) & 0x7) + 1;
-                frameCount = (long)(value & 0xfffffffffUL);
+                frameCount = (long)(value & 0xF_FFFF_FFFFUL);
                 foundStreamInfo = true;
             }
             offset = dataEnd;
@@ -230,20 +230,20 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         sampleRate = 0;
         samples = 0;
         channels = 0;
-        if ((header & 0xffe00000) != 0xffe00000)
+        if ((header & 0xFFE0_0000) != 0xFFE0_0000)
         {
             return false;
         }
         int mpegBits = (int)((header >> 19) & 0x3);
         int layerBits = (int)((header >> 17) & 0x3);
-        int bitrateIndex = (int)((header >> 12) & 0xf);
+        int bitrateIndex = (int)((header >> 12) & 0xF);
         int sampleRateIndex = (int)((header >> 10) & 0x3);
         if (mpegBits == 1 || layerBits != 1 || bitrateIndex is 0 or 15 || sampleRateIndex == 3)
         {
             return false;
         }
 
-        int[] sampleRates = [44100, 48000, 32000];
+        int[] sampleRates = [44_100, 48_000, 32_000];
         sampleRate = sampleRates[sampleRateIndex];
         bool mpegOne = mpegBits == 3;
         if (mpegBits == 2)
@@ -258,7 +258,7 @@ public sealed class AudioClipImporter : AssetImporter<AudioClipAsset>
         int[] lowerBitrates = [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160];
         int bitrate = (mpegOne ? mpegOneBitrates : lowerBitrates)[bitrateIndex];
         int padding = (int)((header >> 9) & 1);
-        frameLength = ((mpegOne ? 144000 : 72000) * bitrate / sampleRate) + padding;
+        frameLength = ((mpegOne ? 144_000 : 72_000) * bitrate / sampleRate) + padding;
         samples = mpegOne ? 1152 : 576;
         channels = ((header >> 6) & 0x3) == 3 ? 1 : 2;
         return frameLength > 4;

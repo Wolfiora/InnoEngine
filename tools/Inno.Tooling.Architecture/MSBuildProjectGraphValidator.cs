@@ -215,7 +215,10 @@ internal static class MSBuildProjectGraphValidator
         IReadOnlyList<EvaluatedProject> projects,
         ICollection<string> failures
     ) {
-        var graph = projects.ToDictionary(static project => project.path, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, EvaluatedProject> graph = projects.ToDictionary(
+            static project => project.path,
+            StringComparer.OrdinalIgnoreCase
+        );
         // Reload fixtures intentionally compile distinct generations with the same assembly identity.
         foreach (IGrouping<string, EvaluatedProject> identity in projects
             .Where(static project => !RepositorySourceInventory.IsTestPath(project.path))

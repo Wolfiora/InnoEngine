@@ -142,7 +142,7 @@ internal sealed class InspectorCardControls
                 insertAfter
             ) =>
         {
-            var component = (GameComponent)source;
+            GameComponent component = (GameComponent)source;
             int sourceIndex = component.gameObject.GetComponentIndex(component);
             int insertionBoundary = targetIndex + (insertAfter ? 1 : 0);
             int destinationIndex = insertionBoundary > sourceIndex ? insertionBoundary - 1 : insertionBoundary;
@@ -181,7 +181,7 @@ internal sealed class InspectorCardControls
                 insertAfter
             ) =>
         {
-            var system = (GameSystem)source;
+            GameSystem system = (GameSystem)source;
             int sourceIndex = scene.GetSystemIndex(system);
             int insertionBoundary = targetIndex + (insertAfter ? 1 : 0);
             int destinationIndex = insertionBoundary > sourceIndex ? insertionBoundary - 1 : insertionBoundary;
@@ -201,7 +201,7 @@ internal sealed class InspectorCardControls
         Action<IdentityObject, bool> move,
         string operation
     ) {
-        if (!Inno.Editor.ImGui.ImGui.HasDragPayload(payloadType) || cardMaximum.X <= cardMinimum.X || cardMaximum.Y <= cardMinimum.Y)
+        if (!Ui.HasDragPayload(payloadType) || cardMaximum.X <= cardMinimum.X || cardMaximum.Y <= cardMinimum.Y)
         {
             return;
         }
@@ -245,7 +245,7 @@ internal sealed class InspectorCardControls
         Vector2 padding = EditorUI.current.widgets.style.cardHeaderPadding;
         Vector2 gripSize = Ui.MeasureText(ImGuiIcon.GripVertical);
         Vector2 titleSize = Ui.MeasureText(title);
-        Vector2 size = new(
+        var size = new Vector2(
             padding.X * 2f + gripSize.X + EditorUI.current.widgets.style.headerControlSpacing + titleSize.X,
             MathF.Max(gripSize.Y, titleSize.Y) + padding.Y * 2f
         );

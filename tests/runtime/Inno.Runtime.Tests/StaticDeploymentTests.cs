@@ -33,8 +33,8 @@ public sealed class StaticDeploymentTests
     [Fact]
     public void LinkedIdentityRejectsDifferentCodeBeforeModuleActivation()
     {
-        GameCodeDeployment linked = new([CreateModule("Game", "Game.Code", 'a')]);
-        GameCodeDeployment replaced = new([CreateModule("Game", "Game.Code", 'b')]);
+        var linked = new GameCodeDeployment([CreateModule("Game", "Game.Code", 'a')]);
+        var replaced = new GameCodeDeployment([CreateModule("Game", "Game.Code", 'b')]);
         Assert.Throws<InvalidDataException>(() => replaced.ValidateMatches(linked));
         linked.ValidateMatches(new GameCodeDeployment([CreateModule("Game", "Game.Code", 'a')]));
     }

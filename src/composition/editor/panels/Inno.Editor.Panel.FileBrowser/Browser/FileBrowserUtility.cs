@@ -260,7 +260,7 @@ internal static class FileBrowserUtility
         {
             elements.Add(enumerator.GetTextElement());
         }
-        List<string> lines = new(maxLines);
+        var lines = new List<string>(maxLines);
         int offset = 0;
         for (int lineIndex = 0; lineIndex < maxLines && offset < elements.Count; lineIndex++)
         {

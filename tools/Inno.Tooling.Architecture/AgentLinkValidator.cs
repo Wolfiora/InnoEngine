@@ -75,7 +75,7 @@ internal static class AgentLinkValidator
     private static HashSet<string> Anchors(string text)
     {
         MarkdownDocument document = Markdown.Parse(text, S_PIPELINE);
-        var result = document.Descendants<HeadingBlock>()
+        HashSet<string> result = document.Descendants<HeadingBlock>()
             .Select(static heading => heading.GetAttributes().Id!)
             .ToHashSet(StringComparer.Ordinal);
         foreach (string html in document.Descendants<HtmlBlock>()

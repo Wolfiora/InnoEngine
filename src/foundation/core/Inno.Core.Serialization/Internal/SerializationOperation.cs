@@ -23,7 +23,7 @@ internal sealed class SerializationOperation
         ArgumentNullException.ThrowIfNull(converters);
         this.context = context;
         m_converters = converters;
-        isSnapshotCapture = snapshotCapture;
+        this.isSnapshotCapture = snapshotCapture;
     }
 
     internal ConverterRegistryLease converters => m_converters;

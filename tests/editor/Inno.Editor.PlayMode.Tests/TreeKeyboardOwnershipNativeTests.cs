@@ -9,6 +9,7 @@ using Inno.Testing.Editor.Native;
 
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
+using UiInput = Inno.Editor.ImGui.EditorUiInput;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -99,7 +100,7 @@ public sealed unsafe class TreeKeyboardOwnershipNativeTests
         Assert.Equal(0, overlayPresses);
         host.Frame(() =>
         {
-            var input = Ui.GetInput();
+            UiInput input = Ui.GetInput();
             Assert.Equal(primaryModifier == KeyModifier.Control, input.control);
             Assert.Equal(primaryModifier == KeyModifier.Super, input.super);
             draw();

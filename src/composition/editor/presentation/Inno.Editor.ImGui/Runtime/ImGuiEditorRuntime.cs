@@ -13,6 +13,7 @@ using Inno.Extensibility.Types;
 using Inno.Native.ImGui;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using NativeFocusedFlags = Inno.Native.ImGui.ImGuiFocusedFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui;
@@ -120,13 +121,13 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
     /// Freezes automatic extension-state persistence and writes the final project state before editor
     /// modules begin shutting down.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after this runtime has been disposed.
+    /// </exception>
     /// <remarks>
     /// This operation is idempotent and prevents module teardown from overwriting the saved
     /// module sections with transient empty state.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown after this runtime has been disposed.
-    /// </exception>
     public void PrepareShutdown()
     {
         using IDisposable uiScope = m_ui.Enter();
@@ -203,7 +204,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
             uint hostId = ImGui.HashNativeId($"WindowOverViewport_{viewport->ID:X8}");
             m_dockspaceId = ImGui.HashNativeId("DockSpace", hostId);
             ImGuiDockNode* loaded = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
-            if (loaded != null)
+            if (loaded is not null)
             {
                 ResizeDockSplits(loaded, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
             }
@@ -212,7 +213,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
                  && (MathF.Abs(size.X - m_dockspaceSize.X) >= 0.5f || MathF.Abs(size.Y - m_dockspaceSize.Y) >= 0.5f)
         ) {
             ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
-            if (root != null)
+            if (root is not null)
             {
                 ResizeDockSplits(root, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
             }
@@ -236,7 +237,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
         if (m_dockspaceSize == Vector2.Zero)
         {
             ImGuiDockNode* root = NativeImGui.Raw.DockBuilderGetNode(m_dockspaceId);
-            if (root != null)
+            if (root is not null)
             {
                 ResizeDockSplits(root, size, style->DockingSeparatorSize, ImGui.FromNative(style->WindowMinSize));
             }
@@ -253,7 +254,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
     ) {
         ImGuiDockNode* first = node->ChildNodes[0];
         ImGuiDockNode* second = node->ChildNodes[1];
-        if (first == null || second == null || node->SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
+        if (first is null || second is null || node->SplitAxis is not (ImGuiAxis.X or ImGuiAxis.Y))
         {
             return;
         }
@@ -399,7 +400,7 @@ public sealed unsafe class ImGuiEditorRuntime : EditorRuntime
             }
             EditorUI.current.widgets.PanelWindow(extension.title, ref isOpen, () =>
             {
-                if (extension.Draw(context) && NativeImGui.IsWindowFocused((int)(Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows)))
+                if (extension.Draw(context) && NativeImGui.IsWindowFocused((int)(NativeFocusedFlags.RootAndChildWindows)))
                 {
                     interactions.For($"panel/{extension.id}", interactions.selection.selectedTarget).Focus();
                 }

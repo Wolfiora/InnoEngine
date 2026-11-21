@@ -11,7 +11,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Fact]
     public void PlatformPackRejectsAMissingContentSource()
     {
-        BuildTargetId target = new BuildTargetId("windows-x64");
+        var target = new BuildTargetId("windows-x64");
         string pack = GetSupportPackDirectory(target);
         string source = "WindowsX64PlayerContentSource.cs";
         File.Delete(Path.Combine(pack, "PlayerLink", source));
@@ -25,7 +25,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Fact]
     public void PlatformValidatorRejectsForeignAbiDespiteTheExpectedFilename()
     {
-        BuildTargetId target = new BuildTargetId("windows-x64");
+        var target = new BuildTargetId("windows-x64");
         string directory = GetSupportPackDirectory(target);
         string library = "miniaudio-release.dll";
         File.WriteAllBytes(

@@ -86,9 +86,6 @@ public abstract class EditorModule : IDisposable
     /// <summary>
     /// Stops the module before the containing extension generation is released.
     /// </summary>
-    /// <remarks>
-    /// Also compensates a partially failed Start. Completed stops are idempotent; pending stops may be retried.
-    /// </remarks>
     /// <param name="context">
     /// The shared editor context for the runtime being stopped.
     /// </param>
@@ -101,6 +98,9 @@ public abstract class EditorModule : IDisposable
     /// <exception cref="RetirementPendingException">
     /// Live work still depends on this module. Its owner must retain it and retry Stop before disposal.
     /// </exception>
+    /// <remarks>
+    /// Also compensates a partially failed Start. Completed stops are idempotent; pending stops may be retried.
+    /// </remarks>
     [ScriptingApiIgnore]
     public void Stop(EditorContext context)
     {
@@ -148,39 +148,39 @@ public abstract class EditorModule : IDisposable
     /// <summary>
     /// Runs before the module generation is released and its disposable instances are destroyed.
     /// </summary>
+    /// <param name="context">
+    /// The shared editor context for the runtime being stopped.
+    /// </param>
     /// <remarks>
     /// This includes partial startup compensation. Pending retirement must throw RetirementPendingException
     /// and preserve unfinished ownership; completed steps must be idempotent across retries.
     /// </remarks>
-    /// <param name="context">
-    /// The shared editor context for the runtime being stopped.
-    /// </param>
     protected virtual void OnStop(EditorContext context) {}
 
     /// <summary>
     /// Captures readable project state owned by this module.
     /// </summary>
+    /// <param name="state">
+    /// The writable parameter that receives the complete readable state for this module.
+    /// </param>
     /// <remarks>
     /// Overriding this method opts the module into project-state IO. Modules that keep the base
     /// implementation are never registered with the persistence coordinator and therefore perform
     /// no state reads or writes.
     /// </remarks>
-    /// <param name="state">
-    /// The writable parameter that receives the complete readable state for this module.
-    /// </param>
     protected virtual void Capture(EditorState state) {}
 
     /// <summary>
     /// Restores readable project state owned by this module.
     /// </summary>
-    /// <remarks>
-    /// This method is called only when <see cref="Capture"/> is overridden. It runs once after the
-    /// module is started and before the module is allowed to capture replacement state.
-    /// </remarks>
     /// <param name="state">
     /// The read-only state parameter for this module. Missing or incompatible values return the
     /// fallback supplied to <see cref="EditorState.Get{T}(string, T)"/>.
     /// </param>
+    /// <remarks>
+    /// This method is called only when <see cref="Capture"/> is overridden. It runs once after the
+    /// module is started and before the module is allowed to capture replacement state.
+    /// </remarks>
     protected virtual void Restore(EditorState state) {}
 
     /// <summary>

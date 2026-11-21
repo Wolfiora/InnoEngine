@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Inno.Native.ImGui;
 
+using NativeFocusedFlags = Inno.Native.ImGui.ImGuiFocusedFlags;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
@@ -228,7 +229,7 @@ public sealed unsafe partial class ImGuiWidget
         bool isOpen;
         try
         {
-            if (options.requestFocus && NativeImGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.ChildWindows))
+            if (options.requestFocus && NativeImGui.IsWindowFocused((int)NativeFocusedFlags.ChildWindows))
             {
                 NativeImGui.SetKeyboardFocusHere();
             }
@@ -341,7 +342,7 @@ public sealed unsafe partial class ImGuiWidget
 
     private TreeWidgetWindowState GetTreeWindowState()
     {
-        var windowKey = (m_session.owner, NativeImGui.Raw.GetCurrentWindow()->ID);
+        (string owner, uint) windowKey = (m_session.owner, NativeImGui.Raw.GetCurrentWindow()->ID);
         if (!m_treeStatesByWindow.TryGetValue(windowKey, out TreeWidgetWindowState? state))
         {
             state = new TreeWidgetWindowState();
@@ -380,12 +381,12 @@ public sealed unsafe partial class ImGuiWidget
 
         Vector2 contentMin = NativeImGui.GetItemRectMin();
         Vector2 contentMax = NativeImGui.GetItemRectMax();
-        TreeWidgetHighlightRect rect = new()
+        var rect = new TreeWidgetHighlightRect()
         {
             min = new Vector2(windowPos.X, MathF.Min(nodeCursor.Y, contentMin.Y)),
             max = new Vector2(contentRightX, MathF.Max(nativeRowMaxY, contentMax.Y))
         };
-        Vector2 hitMin = new(contentX, rect.min.Y);
+        var hitMin = new Vector2(contentX, rect.min.Y);
         Vector2 hitMax = rect.max;
         interactionMin = hitMin;
         DrawTreeNodeViewportOverlay(window, drawViewportOverlay);
@@ -523,7 +524,7 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 from,
         Vector2 to
     ) {
-        TreeWidgetLineSegment line = new()
+        var line = new TreeWidgetLineSegment()
         {
             from = SnapTreeLinePoint(from),
             to = SnapTreeLinePoint(to)
@@ -534,14 +535,11 @@ public sealed unsafe partial class ImGuiWidget
             line.from,
             line.to,
             NativeImGui.ColorConvertFloat4ToU32(EditorPalette.treeGuide),
-            this.style.borderSize
+            style.borderSize
         );
     }
 
-    private Vector2 SnapTreeLinePoint(Vector2 point)
-    {
-        return new Vector2(MathF.Floor(point.X) + 0.5f, MathF.Floor(point.Y) + 0.5f);
-    }
+    private Vector2 SnapTreeLinePoint(Vector2 point) => new Vector2(MathF.Floor(point.X) + 0.5f, MathF.Floor(point.Y) + 0.5f);
 
     private void DrawTreeRowBackground(
         ImDrawList* drawList,

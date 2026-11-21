@@ -27,7 +27,9 @@ public sealed class ToolRunner
     /// Explicit execution path policy, or null for physical execution.
     /// </param>
     public ToolRunner(IToolchainWorkspaceProvider? workspaces = null)
-        => m_workspaces = workspaces ?? new PhysicalToolchainWorkspaceProvider();
+    {
+        m_workspaces = workspaces ?? new PhysicalToolchainWorkspaceProvider();
+    }
 
     /// <summary>
     /// Freezes executables selected and validated by the host's toolchain operation.

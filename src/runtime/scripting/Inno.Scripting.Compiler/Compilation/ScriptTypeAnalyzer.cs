@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+using EngineSeverity = Inno.Core.Diagnostics.DiagnosticSeverity;
 
 namespace Inno.Scripting.Compiler;
 
@@ -20,7 +23,10 @@ internal static class ScriptTypeAnalyzer
         IReadOnlyDictionary<string, string> attachableTypes,
         CancellationToken cancellationToken
     ) {
-        var sourcesByPath = sources.ToDictionary(static source => source.sourcePath, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ScriptSourceInput> sourcesByPath = sources.ToDictionary(
+            static source => source.sourcePath,
+            StringComparer.OrdinalIgnoreCase
+        );
         var discovered = new Dictionary<INamedTypeSymbol, MutableScriptType>(SymbolEqualityComparer.Default);
         foreach (SyntaxTree tree in compilation.SyntaxTrees)
         {
@@ -54,7 +60,7 @@ internal static class ScriptTypeAnalyzer
         var diagnostics = new List<ScriptDiagnostic>();
         var manifestEntries = new List<ScriptTypeManifestEntry>();
         var mappings = new List<ScriptTypeMapping>();
-        var implicitTypesBySource = discovered.Values
+        Dictionary<Guid, int> implicitTypesBySource = discovered.Values
             .Where(static type => GetExplicitStableTypeId(type.symbol) is null)
             .SelectMany(static type => type.declarations.Select(declaration => (declaration.source.persistentId, type)))
             .GroupBy(static value => value.persistentId)
@@ -78,7 +84,7 @@ internal static class ScriptTypeAnalyzer
                     diagnostics.Add(
                         CreateDiagnostic(
                             "INNO2000",
-                            Inno.Core.Diagnostics.DiagnosticSeverity.Error,
+                            EngineSeverity.Error,
                             $"Type '{typeName}' has invalid StableTypeId '{explicitIdValue}'.",
                             declaration
                         )
@@ -110,7 +116,7 @@ internal static class ScriptTypeAnalyzer
                 diagnostics.Add(
                     CreateDiagnostic(
                         "INNO2003",
-                        Inno.Core.Diagnostics.DiagnosticSeverity.Error,
+                        EngineSeverity.Error,
                         $"Partial type '{typeName}' has more than one source file matching its type name. "
                         + "Keep one canonical source or add an explicit StableTypeId.",
                         matchingDeclarations[0]
@@ -130,7 +136,7 @@ internal static class ScriptTypeAnalyzer
                     diagnostics.Add(
                         CreateDiagnostic(
                             "INNO2002",
-                            Inno.Core.Diagnostics.DiagnosticSeverity.Warning,
+                            EngineSeverity.Warning,
                             $"Attachable type '{typeName}' does not match its canonical script file name. "
                             + "Its source identity is preserved, but matching names are recommended.",
                             canonical
@@ -143,7 +149,7 @@ internal static class ScriptTypeAnalyzer
                     diagnostics.Add(
                         CreateDiagnostic(
                             "INNO2001",
-                            Inno.Core.Diagnostics.DiagnosticSeverity.Error,
+                            EngineSeverity.Error,
                             $"Attachable type '{typeName}' has no unambiguous canonical script source. "
                             + "Move it to a matching file or add an explicit StableTypeId.",
                             declaration
@@ -173,7 +179,7 @@ internal static class ScriptTypeAnalyzer
             diagnostics.Add(
                 new ScriptDiagnostic(
                     "INNO2004",
-                    Inno.Core.Diagnostics.DiagnosticSeverity.Error,
+                    EngineSeverity.Error,
                     $"Script source '{entry.sourcePath}' owns more than one attachable type identity: "
                     + string.Join(", ", conflicting.Select(static value => value.typeName))
                     + ". Keep one canonical type or add explicit StableTypeId attributes.",
@@ -250,7 +256,7 @@ internal static class ScriptTypeAnalyzer
 
     private static string GetCanonicalFileName(string sourcePath)
     {
-        string name = System.IO.Path.GetFileNameWithoutExtension(sourcePath);
+        string name = Path.GetFileNameWithoutExtension(sourcePath);
         return name.EndsWith(".editor", StringComparison.OrdinalIgnoreCase)
                ? name[..^".editor".Length]
                : name;
@@ -289,7 +295,7 @@ internal static class ScriptTypeAnalyzer
 
     private static ScriptDiagnostic CreateDiagnostic(
         string id,
-        Inno.Core.Diagnostics.DiagnosticSeverity severity,
+        EngineSeverity severity,
         string message,
         ScriptDeclaration declaration
     ) {

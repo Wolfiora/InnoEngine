@@ -13,6 +13,6 @@ public sealed class RmlUiBackendProvider : UiBackendProvider
     public RmlUiBackendProvider()
         : base(UiBackendId.rmlUi) {}
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IUiBackend CreateBackend() => new RmlUiBackend();
 }

@@ -29,7 +29,7 @@ public sealed class EmscriptenNativeToolchainProvider : INativeToolchainProvider
         m_dotnetHost = dotnetHost;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public async ValueTask<NativeToolchainSelection> ResolveAsync(
         NativeBuildContext context,
         BuildHostDescriptor host,

@@ -31,7 +31,7 @@ public sealed class FileSystemStorageBackendProvider : StorageBackendProvider
         m_rootDirectory = Path.GetFullPath(rootDirectory);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IApplicationStorage CreateStorage(StorageScope scope)
     {
         if (!scope.isValid)

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Contains normalized CPU mesh data ready for backend upload.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("9590e0d3-f8d2-58b1-9288-d0a20448ceb6")]
+[StableTypeId("9590e0d3-f8d2-58b1-9288-d0a20448ceb6")]
 public sealed class GeometryData
 {
     /// <summary>

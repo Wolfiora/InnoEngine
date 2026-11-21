@@ -96,7 +96,7 @@ internal sealed class PluginCatalog
     {
         ArgumentNullException.ThrowIfNull(result);
         PluginCandidate[] ordered = PluginSourceService.GetActivatableCandidates(result).ToArray();
-        var bySource = ordered.ToFrozenDictionary(
+        FrozenDictionary<AssetSourceId, PluginCandidate> bySource = ordered.ToFrozenDictionary(
             static candidate => candidate.sourceMount.id,
             static candidate => candidate
         );

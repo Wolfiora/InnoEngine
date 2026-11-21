@@ -1,9 +1,14 @@
 using System;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
+using Inno.Editor.Interactions;
+using Inno.Editor.Rendering;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 using Inno.Rendering.Assets.Authoring;
@@ -54,7 +59,7 @@ internal sealed partial class ShaderEditorCanvas
                     "reroute.type",
                     "Type",
                     () => EditorUI.current.widgets.ColoredText(
-                        Inno.Editor.ImGui.EditorPalette.textDisabled,
+                        EditorPalette.textDisabled,
                         Read(node, "valueType", new ShaderGraphType { id = "float" }).CreateType().id
                     )
                 );
@@ -135,7 +140,7 @@ internal sealed partial class ShaderEditorCanvas
                 EditorUI.current.widgets.WrappedText("Discard fragments where condition is true.");
                 break;
             default:
-                EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Extension node");
+                EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Extension node");
                 break;
         }
     }
@@ -143,13 +148,13 @@ internal sealed partial class ShaderEditorCanvas
     private void GraphCall(GraphNodeRecord node)
     {
         Guid selected = Read(node, "sourceId", Guid.Empty);
-        string path = Read(node, "sourcePath", "");
+        string path = Read(node, "sourcePath", string.Empty);
         ShaderGraphNodeInterface nodeInterface = Read(node, ShaderGraphNodes.interfaceKey, new ShaderGraphNodeInterface());
         InspectorRow("graph-node.asset", "Node Graph", () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo(
                 "##graph-node",
-                selected == Guid.Empty ? "Choose Shader node…" : System.IO.Path.GetFileName(path)
+                selected == Guid.Empty ? "Choose Shader node…" : Path.GetFileName(path)
             )) {
                 return;
             }
@@ -171,7 +176,7 @@ internal sealed partial class ShaderEditorCanvas
                         candidate = owner.LoadGraphNodeInterface(id);
                     }
                     catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or FormatException)
-                                                    && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                                    && RetirementPendingException.Find(failure) is null)
                     {
                         continue;
                     }
@@ -180,7 +185,7 @@ internal sealed partial class ShaderEditorCanvas
                     {
                         continue;
                     }
-                    using var transaction = owner.interactions.history.BeginTransaction("Assign Graph Node");
+                    using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Assign Graph Node");
                     Set(node, "sourceId", id);
                     Set(node, "sourcePath", entry.assetPath.ToString());
                     Set(node, ShaderGraphNodes.interfaceKey, candidate);
@@ -199,19 +204,19 @@ internal sealed partial class ShaderEditorCanvas
         InspectorRow(
             "graph-node.kind",
             "Kind",
-            () => EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.kind.ToString())
+            () => EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, nodeInterface.kind.ToString())
         );
         InspectorRow(
             "graph-node.effect",
             "Effect",
-            () => EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.effect.ToString())
+            () => EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, nodeInterface.effect.ToString())
         );
         if (nodeInterface.kind == ShaderGraphNodeKind.DomainOutput)
         {
             InspectorRow(
                 "graph-node.role",
                 "Target Role",
-                () => EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, nodeInterface.role)
+                () => EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, nodeInterface.role)
             );
         }
         RepairPorts(node);
@@ -452,7 +457,7 @@ internal sealed partial class ShaderEditorCanvas
                     });
                 }
 
-                InspectorRow("node-port.remove", "", () =>
+                InspectorRow("node-port.remove", string.Empty, () =>
                 {
                     if (EditorImGui.SmallButton("Remove"))
                     {
@@ -507,7 +512,7 @@ internal sealed partial class ShaderEditorCanvas
                 ) {
                     if (EditorImGui.Selectable(candidate, type == candidate))
                     {
-                        using var transaction = owner.interactions.history.BeginTransaction("Change Constant Type");
+                        using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Change Constant Type");
                         Set(node, "type", candidate);
                         switch (candidate)
                         {
@@ -572,7 +577,7 @@ internal sealed partial class ShaderEditorCanvas
                 });
                 break;
             case "uint":
-                string unsigned = Read(node, "value", 0u).ToString(System.Globalization.CultureInfo.InvariantCulture);
+                string unsigned = Read(node, "value", 0u).ToString(CultureInfo.InvariantCulture);
                 InspectorRow("constant.value", "Value", () =>
                 {
                     bool unsignedChanged = EditorImGui.InputText("##value", ref unsigned, 32, ImGuiInputTextFlags.CharsDecimal);
@@ -589,13 +594,13 @@ internal sealed partial class ShaderEditorCanvas
     private void Source(GraphNodeRecord node)
     {
         Guid selected = Read(node, "sourceId", Guid.Empty);
-        string path = Read(node, "sourcePath", "");
-        string selectedFunction = Read(node, "function", "");
+        string path = Read(node, "sourcePath", string.Empty);
+        string selectedFunction = Read(node, "function", string.Empty);
         InspectorRow("source.library", "Library", () =>
         {
             if (!EditorUI.current.widgets.BeginBoundedCombo(
                 "##library",
-                selected == Guid.Empty ? "Choose source library…" : System.IO.Path.GetFileName(path)
+                selected == Guid.Empty ? "Choose source library…" : Path.GetFileName(path)
             )) {
                 return;
             }
@@ -607,12 +612,12 @@ internal sealed partial class ShaderEditorCanvas
                 ) {
                     if (EditorImGui.Selectable(entry.assetPath.ToString(), owner.AssetId(entry) == selected))
                     {
-                        using var transaction = owner.interactions.history.BeginTransaction("Assign Shader Function");
+                        using EditorHistoryTransaction transaction = owner.interactions.history.BeginTransaction("Assign Shader Function");
                         Set(node, "sourceId", owner.AssetId(entry));
                         Set(node, "sourcePath", entry.assetPath.ToString());
                         if (owner.assets.TryLoad(entry.assetPath, out ShaderFunctionAsset? library) && library is not null)
                         {
-                            Set(node, "function", library.exports.FirstOrDefault() ?? "");
+                            Set(node, "function", library.exports.FirstOrDefault() ?? string.Empty);
                         }
                         transaction.Commit();
                     }
@@ -627,7 +632,7 @@ internal sealed partial class ShaderEditorCanvas
         if (selected == Guid.Empty)
         {
             EditorUI.current.widgets.ColoredText(
-                Inno.Editor.ImGui.EditorPalette.textDisabled,
+                EditorPalette.textDisabled,
                 "Choose a library and one of its explicitly exported functions."
             );
         }
@@ -720,7 +725,7 @@ internal sealed partial class ShaderEditorCanvas
                         }
                         if (kind == ShaderIrInputKind.Builtin)
                         {
-                            string stageId = Read(node, "stage", "");
+                            string stageId = Read(node, "stage", string.Empty);
                             GraphNodeRecord? output = stageId.Length == 0 ? null : Controller.document.FindNode(new(stageId));
                             if (output is not null && Read(output, "settings", new ShaderGraphStageSettings()).stage == ShaderStage.Compute)
                             {
@@ -857,14 +862,14 @@ internal sealed partial class ShaderEditorCanvas
             {
                 ShaderDefinition definition = ShaderGraphDocument.ReadDefinition(Controller.document, owner.serialization, owner.context);
                 TextureAsset? texture = definition.properties.FirstOrDefault(value => value.id.value == input.id).defaultValue.texture;
-                if (texture is not null && owner.previews.TryGetTexture(texture, out var preview))
+                if (texture is not null && owner.previews.TryGetTexture(texture, out EditorPreviewHandle preview))
                 {
                     owner.previews.Draw(preview, new(120 * Canvas.zoom, 120 * Canvas.zoom));
                 }
                 else
                 {
                     EditorUI.current.widgets.ColoredText(
-                        Inno.Editor.ImGui.EditorPalette.textDisabled,
+                        EditorPalette.textDisabled,
                         texture is null ? "No default texture" : "Preparing preview…"
                     );
                 }
@@ -879,7 +884,7 @@ internal sealed partial class ShaderEditorCanvas
             "output.passes",
             "Passes",
             () => EditorUI.current.widgets.ColoredText(
-                Inno.Editor.ImGui.EditorPalette.textDisabled,
+                EditorPalette.textDisabled,
                 string.Join(
                     ", ",
                     ShaderGraphPrograms
@@ -899,7 +904,9 @@ internal sealed partial class ShaderEditorCanvas
         StageSettingsPopup(node, stage);
         if (stage.stage == ShaderStage.Compute)
         {
-            int x = stage.threadsX, y = stage.threadsY, z = stage.threadsZ;
+            int x = stage.threadsX;
+            int y = stage.threadsY;
+            int z = stage.threadsZ;
             InspectorRow("output.threads-x", "Threads X", () =>
             {
                 if (EditorImGui.InputInt("##threads-x", ref x, 1, 100, 0) && x > 0)

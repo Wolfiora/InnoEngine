@@ -7,7 +7,10 @@ internal readonly struct HierarchyStyle
 {
     private readonly float m_zoom;
 
-    internal HierarchyStyle(EditorStyleMetrics metrics) => m_zoom = metrics.zoom;
+    internal HierarchyStyle(EditorStyleMetrics metrics)
+    {
+        m_zoom = metrics.zoom;
+    }
 
     /// <summary>
     /// Gets the text color of inactive hierarchy entries.

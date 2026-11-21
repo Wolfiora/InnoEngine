@@ -9,8 +9,8 @@ namespace Inno.Build.WindowsX64;
 
 internal sealed class WindowsToolchainDirectory : IDisposable
 {
-    private const uint C_MOUNT_POINT_TAG = 0xA0000003;
-    private const uint C_SET_REPARSE_POINT = 0x000900A4;
+    private const uint C_MOUNT_POINT_TAG = 0xA000_0003;
+    private const uint C_SET_REPARSE_POINT = 0x0009_00A4;
     private readonly string m_physicalPath;
 
     private WindowsToolchainDirectory(
@@ -45,7 +45,7 @@ internal sealed class WindowsToolchainDirectory : IDisposable
                 : "\\??\\" + physicalPath
             );
             byte[] printable = Encoding.Unicode.GetBytes(physicalPath);
-            byte[] data = new byte[20 + substitute.Length + printable.Length];
+            var data = new byte[20 + substitute.Length + printable.Length];
             Write(data, 0, C_MOUNT_POINT_TAG);
             Write(data, 4, checked((ushort)(data.Length - 8)));
             Write(data, 10, checked((ushort)substitute.Length));
@@ -54,7 +54,7 @@ internal sealed class WindowsToolchainDirectory : IDisposable
             substitute.CopyTo(data, 16);
             printable.CopyTo(data, 18 + substitute.Length);
 
-            using SafeFileHandle handle = CreateFile(alias, 0x40000000, 7, nint.Zero, 3, 0x02200000, nint.Zero);
+            using SafeFileHandle handle = CreateFile(alias, 0x4000_0000, 7, nint.Zero, 3, 0x0220_0000, nint.Zero);
             if (handle.IsInvalid)
             {
                 throw new Win32Exception(Marshal.GetLastPInvokeError(), "Cannot open the owned toolchain directory alias.");
@@ -72,7 +72,7 @@ internal sealed class WindowsToolchainDirectory : IDisposable
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (toolPath == m_physicalPath || !Directory.Exists(toolPath))

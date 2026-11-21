@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
@@ -33,8 +34,8 @@ internal static class DocumentationProjectGuides
     {
         string path = DocumentationApiFacts.Resolve(root, C_REGISTRY);
         if (!File.Exists(path)) return [];
-        var registry = JsonSerializer.Deserialize<DocumentationProjectGuideRegistry>(File.ReadAllText(path))
-                       ?? throw new InvalidDataException("Missing project guide registry.");
+        DocumentationProjectGuideRegistry registry = JsonSerializer.Deserialize<DocumentationProjectGuideRegistry>(File.ReadAllText(path))
+                                                     ?? throw new InvalidDataException("Missing project guide registry.");
         if (registry.schema != "inno-project-guides/1"
             || registry.entries.Select(entry => entry.path).Distinct(StringComparer.OrdinalIgnoreCase).Count() != registry.entries.Length
             || registry.entries.Select(entry => entry.project).Distinct(StringComparer.Ordinal).Count() != registry.entries.Length
@@ -42,7 +43,7 @@ internal static class DocumentationProjectGuides
         ) {
             throw new InvalidDataException("Invalid project guide registry.");
         }
-        foreach (var entry in registry.entries)
+        foreach (DocumentationProjectGuide entry in registry.entries)
         {
             if (!IsGuidePath(entry.path)
                 || !entry.path.EndsWith(".md", StringComparison.Ordinal)
@@ -62,17 +63,17 @@ internal static class DocumentationProjectGuides
     ) {
         var edits = new List<DocumentationApiEdit>();
         var warnings = new List<DocumentationApiWarning>();
-        var projects = JsonSerializer
+        Dictionary<string, DocumentationProject> projects = JsonSerializer
             .Deserialize<DocumentationProject[]>(
                 File.ReadAllText(DocumentationApiFacts.Resolve(root, binding.projectManifest))
             )!
             .ToDictionary(project => project.name, StringComparer.Ordinal);
-        var registered = Entries(root);
+        DocumentationProjectGuide[] registered = Entries(root);
         string registryPath = DocumentationApiFacts.Resolve(root, C_REGISTRY);
         // A checkout without the registry does not manage project guides.
-        var created = File.Exists(registryPath) ? NewGuides(root, projects.Values, registered) : [];
+        DocumentationProjectGuide[] created = File.Exists(registryPath) ? NewGuides(root, projects.Values, registered) : [];
         var entries = new List<DocumentationProjectGuide>();
-        foreach (var entry in registered.Concat(created))
+        foreach (DocumentationProjectGuide entry in registered.Concat(created))
         {
             bool isNew = !registered.Contains(entry);
             string absolute = DocumentationApiFacts.Resolve(root, entry.path);
@@ -81,9 +82,15 @@ internal static class DocumentationProjectGuides
                 throw new InvalidDataException("Synchronization cannot overwrite an unregistered project guide: " + entry.path);
             }
             string? text = isNew ? null : File.ReadAllText(absolute);
-            var fragment = Read(entry, text ?? "---\nuid: " + entry.uid + "\nsymbol: project:" + entry.project + "\nsource: xml\n---\n");
-            projects.TryGetValue(entry.project, out var project);
-            var contexts = facts.Values.SelectMany(context => context).Where(fact => fact.project == entry.project).ToArray();
+            DocumentationApiFragment fragment = Read(
+                entry,
+                text ?? "---\nuid: " + entry.uid + "\nsymbol: project:" + entry.project + "\nsource: xml\n---\n"
+            );
+            projects.TryGetValue(entry.project, out DocumentationProject? project);
+            DocumentationApiFact[] contexts = facts.Values
+                .SelectMany(context => context)
+                .Where(fact => fact.project == entry.project)
+                .ToArray();
             string contract = Identity(project, contexts);
             bool manual = fragment.source != "xml";
             if (project is null && !manual)
@@ -157,7 +164,7 @@ internal static class DocumentationProjectGuides
         var owned = new HashSet<string>(registered.Select(entry => entry.project), StringComparer.Ordinal);
         owned.UnionWith(DocumentationApiPresentation.ProjectDescriptions(root).Keys);
         var guides = new List<DocumentationProjectGuide>();
-        foreach (var project in projects.OrderBy(project => project.name, StringComparer.Ordinal))
+        foreach (DocumentationProject project in projects.OrderBy(project => project.name, StringComparer.Ordinal))
         {
             if (project.path.StartsWith("platforms/", StringComparison.Ordinal) || owned.Contains(project.name))
             {
@@ -181,25 +188,28 @@ internal static class DocumentationProjectGuides
         IDictionary<string, string> pages,
         IDictionary<string, string> inputs
     ) {
-        var entries = Entries(root);
+        DocumentationProjectGuide[] entries = Entries(root);
         if (entries.Length == 0) return;
         inputs[C_REGISTRY] = DocumentationMarkdown.Hash(File.ReadAllText(DocumentationApiFacts.Resolve(root, C_REGISTRY)));
-        var projects = JsonSerializer
+        Dictionary<string, DocumentationProject> projects = JsonSerializer
             .Deserialize<DocumentationProject[]>(
                 File.ReadAllText(DocumentationApiFacts.Resolve(root, binding.projectManifest))
             )!
             .ToDictionary(project => project.name, StringComparer.Ordinal);
-        foreach (var entry in entries)
+        foreach (DocumentationProjectGuide entry in entries)
         {
-            var fragment = Read(entry, pages[entry.path]);
-            projects.TryGetValue(entry.project, out var project);
-            var contexts = facts.Values.SelectMany(context => context).Where(fact => fact.project == entry.project).ToArray();
+            DocumentationApiFragment fragment = Read(entry, pages[entry.path]);
+            projects.TryGetValue(entry.project, out DocumentationProject? project);
+            DocumentationApiFact[] contexts = facts.Values
+                .SelectMany(context => context)
+                .Where(fact => fact.project == entry.project)
+                .ToArray();
             bool stale = project is null || fragment.IsOutdated(StaleProse(fragment, project, contexts, Identity(project, contexts)));
             string status = fragment.source == "xml" ? "SYNCED" : stale ? "OUTDATED" : "AUTHORED";
-            string[] summaries = fragment.Summaries("");
+            string[] summaries = fragment.Summaries(string.Empty);
             fragment.metadata.Children.Remove(new YamlScalarNode("description"));
             string header = "---\n" + Serialize(fragment.metadata) + "\n---";
-            var text = new StringBuilder(header).Append("\n\n> [!")
+            StringBuilder text = new StringBuilder(header).Append("\n\n> [!")
                 .Append(status)
                 .Append("]\n> Project guide source status.\n\n# ")
                 .Append(entry.project)
@@ -213,7 +223,7 @@ internal static class DocumentationProjectGuides
                     )
                     .Append("\n\n");
             }
-            text.Append(Regex.Replace(fragment.body, @"\A\s*# [^\r\n]+\r?\n", ""));
+            text.Append(Regex.Replace(fragment.body, @"\A\s*# [^\r\n]+\r?\n", string.Empty));
             if (project is not null)
             {
                 text.Append("\n\n## Source project facts\n\n**Project:** `")
@@ -221,17 +231,17 @@ internal static class DocumentationProjectGuides
                     .Append("`  \n**Source:** `")
                     .Append(project.path)
                     .Append("`\n\n");
-                var types = contexts.Where(fact => fact.kind == "NamedType")
+                IGrouping<string, DocumentationApiFact>[] types = contexts.Where(fact => fact.kind == "NamedType")
                     .GroupBy(fact => fact.key, StringComparer.Ordinal)
                     .OrderBy(group => group.Key, StringComparer.Ordinal)
                     .ToArray();
                 if (types.Length != 0)
                 {
                     text.Append("| Type | API | Description |\n| --- | --- | --- |\n");
-                    foreach (var type in types)
+                    foreach (IGrouping<string, DocumentationApiFact> type in types)
                     {
-                        var fact = type.First();
-                        var api = apiEntries[fact.key];
+                        DocumentationApiFact fact = type.First();
+                        DocumentationApiContentEntry api = apiEntries[fact.key];
                         text.Append("| [")
                             .Append(DocumentationApiPresentation.Cell(api.title))
                             .Append("](")
@@ -262,8 +272,8 @@ internal static class DocumentationProjectGuides
         DocumentationProjectGuide entry,
         string text
     ) {
-        var fragment = DocumentationApiFragment.Read(entry.path, text)
-                       ?? throw new InvalidDataException("Registered project guide is missing ownership metadata: " + entry.path);
+        DocumentationApiFragment fragment = DocumentationApiFragment.Read(entry.path, text)
+            ?? throw new InvalidDataException("Registered project guide is missing ownership metadata: " + entry.path);
         if (fragment.symbol != "project:" + entry.project || fragment.uid != entry.uid)
         {
             throw new InvalidDataException("Project guide identity differs from registry: " + entry.path);
@@ -315,7 +325,7 @@ internal static class DocumentationProjectGuides
             { "kind", "project" },
             { "owners", new YamlSequenceNode(new YamlScalarNode(entry.project)) },
             { "sourceFingerprint", fingerprint },
-            { "contracts", fragment.metadata.Children.TryGetValue(new YamlScalarNode("contracts"), out var contracts)
+            { "contracts", fragment.metadata.Children.TryGetValue(new YamlScalarNode("contracts"), out YamlNode? contracts)
                            ? contracts
                            : new YamlSequenceNode() }
         };
@@ -323,12 +333,12 @@ internal static class DocumentationProjectGuides
         var authored = new YamlMappingNode
         {
             { "source", fragment.source },
-            { "description", fragment.metadata.Children.TryGetValue(new YamlScalarNode("description"), out var description)
+            { "description", fragment.metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
                              ? description
-                             : new YamlScalarNode("null") { Style = YamlDotNet.Core.ScalarStyle.Plain } },
+                             : new YamlScalarNode("null") { Style = ScalarStyle.Plain } },
             { "outdated", fragment.source != "xml" && fragment.ExplicitlyOutdated ? "true" : "false" }
         };
-        foreach (var field in fragment.metadata.Children)
+        foreach (KeyValuePair<YamlNode, YamlNode> field in fragment.metadata.Children)
         {
             if (((YamlScalarNode)field.Key).Value is not ("reviewed" or "outdatedFor")
                 && !generated.Children.ContainsKey(field.Key) && !authored.Children.ContainsKey(field.Key)
@@ -344,13 +354,13 @@ internal static class DocumentationProjectGuides
         DocumentationProjectGuide entry,
         DocumentationApiFact[] contexts
     ) {
-        var text = new StringBuilder("# ").Append(entry.project).Append("\n\n## Source contracts\n\n");
-        var types = contexts.Where(fact => fact.kind == "NamedType")
+        StringBuilder text = new StringBuilder("# ").Append(entry.project).Append("\n\n## Source contracts\n\n");
+        IOrderedEnumerable<IGrouping<string, DocumentationApiFact>> types = contexts.Where(fact => fact.kind == "NamedType")
             .GroupBy(fact => fact.key, StringComparer.Ordinal)
             .OrderBy(group => group.Key, StringComparer.Ordinal);
-        foreach (var type in types)
+        foreach (IGrouping<string, DocumentationApiFact> type in types)
         {
-            var fact = type.First();
+            DocumentationApiFact fact = type.First();
             text.Append("### ")
                 .Append(WebUtility.HtmlEncode(fact.id[2..]))
                 .Append(" (")

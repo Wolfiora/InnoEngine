@@ -113,16 +113,17 @@ public static class DocumentationExamples
                 throw new ArgumentException("Selected example page is missing: " + page);
             }
         }
-        var projects = RepositorySourceInventory.Projects(root)
+        Dictionary<string, string> projects = RepositorySourceInventory.Projects(root)
             .ToDictionary(static project => Path.GetFileNameWithoutExtension(project), StringComparer.Ordinal);
-        var groups = catalog.pages.Where(page => selected.Count == 0 || selected.Contains(page.id))
+        (DocumentationPageInfo page, DocumentationCodeBlockInfo[] blocks)[] groups = catalog.pages
+            .Where(page => selected.Count == 0 || selected.Contains(page.id))
             .Select(page => (page, blocks: page.codeBlocks.Where(static block => (
                 block.language is "csharp" or "cs"
                 && block.declarationSymbols.Count == 0
             )).ToArray()))
             .Where(static group => group.blocks.Length != 0)
             .ToArray();
-        var requested = groups.Where(static group => group.page.examples is not null)
+        HashSet<string> requested = groups.Where(static group => group.page.examples is not null)
             .SelectMany(static group => group.page.examples!.projects)
             .Where(projects.ContainsKey)
             .Select(name => projects[name])
@@ -168,7 +169,7 @@ public static class DocumentationExamples
         );
         var frozen = new Dictionary<string, FrozenReference>(StringComparer.OrdinalIgnoreCase);
         var results = new List<ExampleGroupResult>();
-        foreach (var group in groups)
+        foreach ((DocumentationPageInfo page, DocumentationCodeBlockInfo[] blocks) group in groups)
         {
             cancellationToken.ThrowIfCancellationRequested();
             DocumentationExampleContext? context = group.page.examples;
@@ -206,7 +207,7 @@ public static class DocumentationExamples
                     );
                     bool editor = context.mode == "editor-script";
                     IReadOnlyList<MetadataReference> references = scripts.GetReferences(editor);
-                    foreach (var identity in scripts.GetIdentities(editor))
+                    foreach (KeyValuePair<string, string> identity in scripts.GetIdentities(editor))
                     {
                         identities.Add(identity.Key, identity.Value);
                     }

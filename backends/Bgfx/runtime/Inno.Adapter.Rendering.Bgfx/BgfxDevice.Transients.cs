@@ -11,7 +11,7 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     private bgfx.TextureHandle AcquireTransientTexture(
         RenderTextureDescriptor descriptor,

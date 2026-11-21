@@ -35,7 +35,7 @@ internal sealed class BuildCacheInventoryProgress(
             using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(PathBoundary.RequireUnlinkedPath(root, checkpoint)));
             JsonElement saved = document.RootElement;
             string relative = saved.GetProperty("directory").GetString() ?? throw new InvalidDataException("Inventory owner is absent.");
-            var role = (BuildCacheArtifactRole)saved.GetProperty("role").GetInt32();
+            BuildCacheArtifactRole role = (BuildCacheArtifactRole)saved.GetProperty("role").GetInt32();
             string key = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(relative + "\0" + role)));
             if (Path.GetFileName(checkpoint) != key + ".inventory")
             {

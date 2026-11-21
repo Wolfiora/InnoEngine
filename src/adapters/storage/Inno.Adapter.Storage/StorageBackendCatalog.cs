@@ -34,16 +34,16 @@ public sealed class StorageBackendCatalog : IStorageBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<StorageBackendId>(new List<StorageBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<StorageBackendId>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<StorageBackendId> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IApplicationStorage CreateStorage(
         StorageBackendId backend,
         StorageScope scope

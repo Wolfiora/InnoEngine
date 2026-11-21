@@ -46,9 +46,9 @@ internal static partial class RenderGraphCompiler
         IReadOnlyList<RenderPassRecord> passes,
         IReadOnlyDictionary<int, int> schedulePositions
     ) {
-        int[] firstUses = new int[resourceCount];
-        int[] lastUses = new int[resourceCount];
-        int[] slots = new int[resourceCount];
+        var firstUses = new int[resourceCount];
+        var lastUses = new int[resourceCount];
+        var slots = new int[resourceCount];
         Array.Fill(firstUses, int.MaxValue);
         Array.Fill(lastUses, -1);
         Array.Fill(slots, -1);

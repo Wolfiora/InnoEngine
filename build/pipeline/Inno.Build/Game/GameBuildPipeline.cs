@@ -106,7 +106,7 @@ internal sealed class GameBuildPipeline
             cancellationToken
         ).ConfigureAwait(false);
         string staging = stagingOwner.directory;
-        using var stagingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using CancellationTokenSource stagingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         Task<AssetRuntimeContentInfo>? assetExportTask = null;
         Task? targetContentTask = null;
         var publicationDiagnostics = new List<BuildDiagnostic>();
@@ -418,7 +418,7 @@ internal sealed class GameBuildPipeline
             })
             .Where(static candidate => candidate.assemblies.Length > 0)
             .ToArray();
-        var includedNames = selected
+        HashSet<string> includedNames = selected
             .Select(static candidate => candidate.request.moduleName)
             .ToHashSet(StringComparer.Ordinal);
         GameRuntimeModule[] candidates = selected.Select(candidate => new GameRuntimeModule
@@ -434,7 +434,7 @@ internal sealed class GameBuildPipeline
                 .Where(includedNames.Contains)
                 .ToArray()
         }).ToArray();
-        var byName = candidates.ToDictionary(static module => module.name, StringComparer.Ordinal);
+        Dictionary<string, GameRuntimeModule> byName = candidates.ToDictionary(static module => module.name, StringComparer.Ordinal);
         var visiting = new HashSet<string>(StringComparer.Ordinal);
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var ordered = new List<GameRuntimeModule>(candidates.Length);
@@ -488,7 +488,7 @@ internal sealed class GameBuildPipeline
 
     private void ValidateOutputRoot(string outputRoot)
     {
-        var protectedRoots = m_assets.sourceMounts
+        List<string> protectedRoots = m_assets.sourceMounts
             .Select(static mount => mount.rootPath)
             .Append(m_assets.libraryRoot)
             .ToList();

@@ -59,7 +59,7 @@ internal static class DocumentationMarkdown
         }
         var facts = new DocumentationMetadata(
             uid,
-            Scalar("kind") ?? "",
+            Scalar("kind") ?? string.Empty,
             Sequence("owners"),
             Sequence("aliases"),
             Sequence("contracts"),
@@ -181,7 +181,7 @@ internal static class DocumentationMarkdown
             string identity = Hash(code);
             string? section = sections.LastOrDefault(candidate => candidate.start <= block.Span.Start)?.anchor;
             return new DocumentationCodeBlockInfo(
-                block.Info ?? "",
+                block.Info ?? string.Empty,
                 code,
                 identity,
                 block.Line + 1,
@@ -230,7 +230,7 @@ internal static class DocumentationMarkdown
             {
                 throw new InvalidDataException("Expected string sequence " + key + ": " + path);
             }
-            return sequence.Children.Cast<YamlScalarNode>().Select(static scalar => scalar.Value ?? "").ToArray();
+            return sequence.Children.Cast<YamlScalarNode>().Select(static scalar => scalar.Value ?? string.Empty).ToArray();
         }
     }
 

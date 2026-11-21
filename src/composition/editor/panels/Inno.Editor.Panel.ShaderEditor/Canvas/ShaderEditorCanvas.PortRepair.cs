@@ -55,7 +55,7 @@ internal sealed partial class ShaderEditorCanvas
                                           || old.type.IsEquivalentTo(replacement.type);
                         ImGuiApi.BeginDisabled(occupied || !compatible);
                         bool selected = ImGuiApi.Selectable(
-                            replacement.id + (occupied ? " · connected" : !compatible ? " · different type" : "")
+                            replacement.id + (occupied ? " · connected" : !compatible ? " · different type" : string.Empty)
                         );
                         ImGuiApi.EndDisabled();
                         if (!selected)

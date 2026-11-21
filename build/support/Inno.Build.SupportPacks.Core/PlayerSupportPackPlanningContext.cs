@@ -16,12 +16,12 @@ public sealed class PlayerSupportPackPlanningContext
     /// <param name="dotnetHost">
     /// The explicitly selected managed host executable.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// A required input is blank.
-    /// </exception>
     /// <param name="nativeDependencies">
     /// An exact dependency selection; null permits local source preparation.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// A required input is blank.
+    /// </exception>
     public PlayerSupportPackPlanningContext(
         string engineRoot,
         string dotnetHost,

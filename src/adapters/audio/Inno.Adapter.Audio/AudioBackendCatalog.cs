@@ -34,16 +34,16 @@ public sealed class AudioBackendCatalog : IAudioBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<AudioBackendId>(new List<AudioBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<AudioBackendId>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<AudioBackendId> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IAudioDevice CreateDevice(
         AudioBackendId backend,
         AudioBackendOptions options

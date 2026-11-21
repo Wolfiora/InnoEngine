@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Inno.Core.IO;
 using Inno.Testing.Source;
 using Inno.Testing.Validation;
 using Inno.Tooling.Documentation;
@@ -26,7 +28,9 @@ public sealed class ValidationCompletionTests
         bool variant,
         bool lateSelection = false
     ) {
-        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
+        using var repository = new ValidationRepository(
+            TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly)
+        );
         // Source capture and three real compilation cycles prove content correctness, not a short latency budget.
         using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
         const string C_FIXTURE = "tests/input/fixtures/Inno.Input.CompilationFixture";
@@ -145,7 +149,7 @@ public sealed class ValidationCompletionTests
                 repository.Git("add", C_PROJECT);
                 repository.Git("commit", "-m", "Consume a second effective property instance");
                 // The first real run has established workspace ownership. Restore the extra NuGet output instance before measuring it.
-                using (await Inno.Core.IO.CoordinatedFileLease.AcquireAsync(
+                using (await CoordinatedFileLease.AcquireAsync(
                     Path.Combine(Path.GetDirectoryName(workspace)!, "owner.lock"),
                     workspace + ".lock",
                     Timeout.InfiniteTimeSpan,
@@ -344,7 +348,9 @@ public sealed class ValidationCompletionTests
     [Fact]
     public async Task ChangedCompilationInputsCannotPublishReusableBuildIdentity()
     {
-        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
+        using var repository = new ValidationRepository(
+            TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly)
+        );
         // Five real SDK validation cycles exercise identity correctness; their aggregate duration is not a latency contract.
         // Keep a generous runaway safeguard without canceling a healthy final build on a slower hosted runner.
         using var cancellation = new CancellationTokenSource(TimeSpan.FromHours(1));
@@ -464,7 +470,9 @@ public sealed class ValidationCompletionTests
     [Fact]
     public async Task FailedClosingReadCannotCertifyOtherwisePassingIntermediateResults()
     {
-        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly));
+        using var repository = new ValidationRepository(
+            TestRepository.GetRoot(typeof(ValidationCompletionTests).Assembly)
+        );
         using var external = new ValidationRepository();
         string dependency = external.PathOf("Shared.props");
         const string C_PROJECT = "tests/input/Inno.Input.Tests/Inno.Input.Tests.csproj";
@@ -472,7 +480,7 @@ public sealed class ValidationCompletionTests
             C_PROJECT,
             File.ReadAllText(repository.PathOf(C_PROJECT)).Replace(
                 "</Project>",
-                "<Import Project=\"" + System.Security.SecurityElement.Escape(dependency) + "\" /></Project>",
+                "<Import Project=\"" + SecurityElement.Escape(dependency) + "\" /></Project>",
                 StringComparison.Ordinal
             )
         );

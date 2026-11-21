@@ -29,7 +29,11 @@ internal sealed partial class BgfxShaderIrGenerator
             Fail("The frozen source interface differs from its analyzed snapshot.");
         }
         string prefix = "inno_module_" + implementation.contentHash.ToLowerInvariant() + "_";
-        var symbols = parser.globals.ToDictionary(static value => value, value => prefix + value, StringComparer.Ordinal);
+        Dictionary<string, string> symbols = parser.globals.ToDictionary(
+            static value => value,
+            value => prefix + value,
+            StringComparer.Ordinal
+        );
         // Shaderc injects varying macros before function declarations. Isolate module-local names
         // that collide with those generated bindings, including exported function parameters.
         foreach (string varying in stage.inputs.Where(static input => input.kind == ShaderIrInputKind.Varying)
@@ -101,7 +105,7 @@ internal sealed partial class BgfxShaderIrGenerator
             if (!m_structures.TryGetValue(name, out ShaderSourceType? previous))
             {
                 m_structures.Add(name, type);
-                var declaration = new StringBuilder("struct ").Append(name).AppendLine(" {");
+                StringBuilder declaration = new StringBuilder("struct ").Append(name).AppendLine(" {");
                 foreach (ShaderSourceField field in type.fields)
                 {
                     declaration.Append("    ").Append(Declaration(field.type, FieldName(field.name))).AppendLine(";");

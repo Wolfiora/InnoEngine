@@ -74,7 +74,7 @@ internal sealed class BuildCacheInventory
             }
         }
         var leasePaths = new HashSet<string>(pathComparer);
-        foreach (var entry in result.artifacts.Values)
+        foreach ((BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry in result.artifacts.Values)
         {
             if (!leasePaths.Add(entry.artifact.leasePath)
                 || owners.Any(owner => pathComparer.Equals(owner.coordinationPath, entry.artifact.leasePath))
@@ -90,8 +90,8 @@ internal sealed class BuildCacheInventory
                 throw new InvalidDataException($"Protected cache root '{root}' has no registered artifact owner.");
             }
         }
-        var incoming = result.artifacts.Keys.ToDictionary(static path => path, static _ => 0, pathComparer);
-        foreach (var entry in result.artifacts.Values)
+        Dictionary<string, int> incoming = result.artifacts.Keys.ToDictionary(static path => path, static _ => 0, pathComparer);
+        foreach ((BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry in result.artifacts.Values)
         {
             foreach (string dependency in entry.artifact.dependencies.Distinct(pathComparer))
             {
@@ -133,7 +133,7 @@ internal sealed class BuildCacheInventory
         var pending = new Stack<string>(roots);
         while (pending.TryPop(out string? path))
         {
-            if (!artifacts.TryGetValue(path, out var entry))
+            if (!artifacts.TryGetValue(path, out (BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) entry))
             {
                 throw new InvalidDataException($"Protected cache path '{path}' has no registered artifact owner.");
             }

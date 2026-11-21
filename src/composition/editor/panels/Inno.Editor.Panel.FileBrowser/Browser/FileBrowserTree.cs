@@ -53,7 +53,7 @@ internal sealed partial class FileBrowserTree
         AssetFileEntry? entry = null;
         if (row.identity is { } identity)
         {
-            if (!m_assets.edits.interactions.TryResolveIdentity(identity, out Inno.Core.Identity.IdentityObject? resolved)
+            if (!m_assets.edits.interactions.TryResolveIdentity(identity, out IdentityObject? resolved)
                 || resolved is not AssetFileEntry current
             ) {
                 Ui.Dummy(new(1f, Ui.GetFrameHeight()));

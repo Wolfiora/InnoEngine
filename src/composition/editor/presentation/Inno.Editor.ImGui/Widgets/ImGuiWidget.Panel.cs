@@ -230,24 +230,24 @@ public sealed unsafe partial class ImGuiWidget
         }
         uint dockId = NativeImGui.GetWindowDockID();
         ImGuiDockNode* dockNode = NativeImGui.Raw.DockBuilderGetNode(dockId);
-        if (dockNode == null || NativeImGui.Raw.DockNodeBeginAmendTabBar(dockNode) == 0)
+        if (dockNode is null || NativeImGui.Raw.DockNodeBeginAmendTabBar(dockNode) == 0)
         {
             return false;
         }
         try
         {
             ImGuiTabBar* tabBar = dockNode->TabBar;
-            if (tabBar == null)
+            if (tabBar is null)
             {
                 return false;
             }
             ImRect tabBarBounds = tabBar->BarRect;
             float tabBarHeight = MathF.Max(1f, tabBarBounds.Max.Y - tabBarBounds.Min.Y);
             float iconSlotSize = MathF.Min(GetCompactIconSize().X, tabBarHeight);
-            Vector2 itemCenter = new(tabBarBounds.Max.X - iconSlotSize * 0.5f, (tabBarBounds.Min.Y + tabBarBounds.Max.Y) * 0.5f);
+            var itemCenter = new Vector2(tabBarBounds.Max.X - iconSlotSize * 0.5f, (tabBarBounds.Min.Y + tabBarBounds.Max.Y) * 0.5f);
             Vector2 itemMinimum = itemCenter - new Vector2(iconSlotSize * 0.5f);
             Vector2 itemMaximum = itemCenter + new Vector2(iconSlotSize * 0.5f);
-            ImRect itemBounds = new()
+            var itemBounds = new ImRect()
             {
                 Min = ImGui.ToNative(itemMinimum),
                 Max = ImGui.ToNative(itemMaximum)
@@ -259,7 +259,7 @@ public sealed unsafe partial class ImGuiWidget
                                                               | (int)ImGuiButtonFlagsPrivate.NoNavFocus
                                                               | (int)ImGuiButtonFlagsPrivate.PressedOnClickRelease);
             ImGuiWindow* hoveredWindow = NativeImGui.Raw.GetCurrentContext()->HoveredWindow;
-            bool hostHovered = hoveredWindow != null && hoveredWindow->RootWindowDockTree == dockNode->HostWindow->RootWindowDockTree;
+            bool hostHovered = hoveredWindow is not null && hoveredWindow->RootWindowDockTree == dockNode->HostWindow->RootWindowDockTree;
             bool mouseHovered = hostHovered && NativeImGui.IsMouseHoveringRect(itemMinimum, itemMaximum);
             bool itemAdded = NativeImGui.Raw.ItemAdd(&itemBounds, itemId, null, 0) != 0;
             bool pressed = hostHovered
@@ -294,12 +294,12 @@ public sealed unsafe partial class ImGuiWidget
         }
         ImGuiStyle* nativeStyle = NativeImGui.Raw.GetStyle();
         float size = GetCompactIconSize().X;
-        Vector2 maximum = new(
+        var maximum = new Vector2(
             window->Pos.X + window->Size.X - nativeStyle->WindowBorderSize - nativeStyle->FramePadding.X,
             window->Pos.Y + (window->TitleBarHeight + size) * 0.5f
         );
         Vector2 minimum = maximum - new Vector2(size);
-        ImRect bounds = new()
+        var bounds = new ImRect()
         {
             Min = ImGui.ToNative(minimum),
             Max = ImGui.ToNative(maximum)
@@ -316,7 +316,8 @@ public sealed unsafe partial class ImGuiWidget
         try
         {
             uint id = NativeImGui.GetID("##floating_panel_close");
-            bool hovered = false, held = false;
+            bool hovered = false;
+            bool held = false;
             bool pressed = NativeImGui.Raw.ItemAdd(&bounds, id, null, 0) != 0
                            && NativeImGui.ButtonBehavior(
                                bounds,

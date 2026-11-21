@@ -97,7 +97,7 @@ public static class StandardNativeDeployment
         string extension
     ) : IPlayerSupportPackValidator
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Validate(string directory)
         {
             string root = PathBoundary.Resolve(directory, "native");

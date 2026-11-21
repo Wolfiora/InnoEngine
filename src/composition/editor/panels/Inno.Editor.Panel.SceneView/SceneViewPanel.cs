@@ -17,9 +17,11 @@ using Inno.Scene;
 using Inno.Scene.Components;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
+using EngineColor = Inno.Core.Mathematics.Color;
 using EngineMatrix = Inno.Core.Mathematics.Matrix;
 using EngineQuaternion = Inno.Core.Mathematics.Quaternion;
 using EngineVector3 = Inno.Core.Mathematics.Vector3;
+using EngineVector4 = Inno.Core.Mathematics.Vector4;
 using ImGuizmoMode = Inno.Editor.ImGui.ImGuiWidget.TransformGizmoSpace;
 using ImGuizmoOperation = Inno.Editor.ImGui.ImGuiWidget.TransformGizmoOperation;
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -339,10 +341,7 @@ internal sealed class SceneViewPanel : EditorPanel
             EngineVector3 world,
             out Vector2 screen
         ) {
-            Inno.Core.Mathematics.Vector4 clip = Inno.Core.Mathematics.Vector4.Transform(
-                new Inno.Core.Mathematics.Vector4(world.x, world.y, world.z, 1f),
-                worldToClip
-            );
+            EngineVector4 clip = EngineVector4.Transform(new EngineVector4(world.x, world.y, world.z, 1f), worldToClip);
             if (clip.w <= 0.000001f)
             {
                 screen = default;
@@ -735,7 +734,7 @@ internal sealed class SceneViewPanel : EditorPanel
         }
     }
 
-    private static Inno.Core.Mathematics.Color ToEngineColor(Vector4 value) => new(value.X, value.Y, value.Z, value.W);
+    private static EngineColor ToEngineColor(Vector4 value) => new(value.X, value.Y, value.Z, value.W);
 
     private bool DrawManipulationToolbar(ManipulationToolbarLayout layout)
     {
@@ -888,7 +887,7 @@ internal sealed class SceneViewPanel : EditorPanel
         float spacing = 2f * zoom;
         float sectionSpacing = 8f * zoom;
         float itemExtent = MathF.Max(Ui.GetFrameHeight(), 26f * zoom);
-        Vector2 itemSize = new(itemExtent);
+        var itemSize = new Vector2(itemExtent);
         float width = itemExtent + padding * 2f;
         float height = padding * 2f + itemExtent * C_MANIPULATION_TOOL_COUNT + spacing * 2f + sectionSpacing;
         Vector2 minimum = viewportMinimum + new Vector2(inset);
@@ -986,7 +985,14 @@ internal sealed class SceneViewPanel : EditorPanel
                         throw new InvalidOperationException("A transform gesture target is no longer available.");
                     }
                     EngineMatrix next = delta * transform.localToWorldMatrix;
-                    if (!TryReadManipulatedTransform(next, transform, m_operation, out var position, out var rotation, out var scale)
+                    if (!TryReadManipulatedTransform(
+                        next,
+                        transform,
+                        m_operation,
+                        out EngineVector3 position,
+                        out EngineQuaternion rotation,
+                        out EngineVector3 scale
+                    )
                         || !IsUsable(position, rotation, scale)
                     ) {
                         throw new InvalidOperationException("The manipulated transform is not invertible or finite.");
@@ -1026,7 +1032,7 @@ internal sealed class SceneViewPanel : EditorPanel
             GameComponent component => component.transform,
             _ => null
         }).OfType<Transform>().Distinct().ToArray();
-        var set = transforms.ToHashSet();
+        HashSet<Transform> set = transforms.ToHashSet();
         return transforms.Where(value => !HasSelectedAncestor(value, set)).ToArray();
     }
 
@@ -1064,11 +1070,11 @@ internal sealed class SceneViewPanel : EditorPanel
         EngineMatrix matrix,
         Transform target,
         ImGuizmoOperation operation,
-        out Inno.Core.Mathematics.Vector3 position,
+        out EngineVector3 position,
         out EngineQuaternion rotation,
-        out Inno.Core.Mathematics.Vector3 scale
+        out EngineVector3 scale
     ) {
-        position = new Inno.Core.Mathematics.Vector3(matrix.m14, matrix.m24, matrix.m34);
+        position = new EngineVector3(matrix.m14, matrix.m24, matrix.m34);
         rotation = target.worldRotation;
         scale = target.worldScale;
         if (operation == ImGuizmoOperation.Translate)
@@ -1078,7 +1084,7 @@ internal sealed class SceneViewPanel : EditorPanel
         if (operation == ImGuizmoOperation.Scale)
         {
             EngineMatrix original = target.localToWorldMatrix;
-            scale = new Inno.Core.Mathematics.Vector3(
+            scale = new EngineVector3(
                 scale.x * SignedColumnRatio(original.m11, original.m21, original.m31, matrix.m11, matrix.m21, matrix.m31),
                 scale.y * SignedColumnRatio(original.m12, original.m22, original.m32, matrix.m12, matrix.m22, matrix.m32),
                 scale.z * SignedColumnRatio(original.m13, original.m23, original.m33, matrix.m13, matrix.m23, matrix.m33)
@@ -1090,7 +1096,7 @@ internal sealed class SceneViewPanel : EditorPanel
         {
             return false;
         }
-        EngineMatrix normalized = new(
+        var normalized = new EngineMatrix(
             matrix.m11 / scale.x,
             matrix.m12 / scale.y,
             matrix.m13 / scale.z,
@@ -1151,9 +1157,9 @@ internal sealed class SceneViewPanel : EditorPanel
     }
 
     private static bool IsUsable(
-        Inno.Core.Mathematics.Vector3 position,
+        EngineVector3 position,
         EngineQuaternion rotation,
-        Inno.Core.Mathematics.Vector3 scale
+        EngineVector3 scale
     ) => float.IsFinite(position.x)
          && float.IsFinite(position.y)
          && float.IsFinite(position.z)

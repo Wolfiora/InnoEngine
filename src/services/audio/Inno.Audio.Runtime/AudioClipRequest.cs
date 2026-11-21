@@ -13,10 +13,10 @@ internal sealed class AudioClipRequest : IDisposable
         AudioClipAsset clip,
         IAssetArtifactLookup artifacts
     ) {
-        persistentId = clip.identity.persistentId;
-        contentVersion = clip.contentVersion;
-        assetPath = clip.assetPath;
-        metadata = clip.metadata;
+        this.persistentId = clip.identity.persistentId;
+        this.contentVersion = clip.contentVersion;
+        this.assetPath = clip.assetPath;
+        this.metadata = clip.metadata;
         try
         {
             if (clip.isMissing || metadata is null)

@@ -130,7 +130,7 @@ public sealed class ListPanelKeyboardNativeTests
         NativePanelInput.Key(host.native, panel, ImGuiKey.End);
         Assert.Same(entries[^1], interactions.selection.selectedTarget);
         NativePanelInput.Key(host.native, panel, ImGuiKey.Enter);
-        Assert.True(interactions.TryGetModule<AssetBrowserModule>(out var browser));
+        Assert.True(interactions.TryGetModule<AssetBrowserModule>(out AssetBrowserModule? browser));
         Assert.Equal(entries[^1].assetPath.ToString(), browser!.browser.currentDirectory);
         Assert.False(interactions.history.canUndo);
     }

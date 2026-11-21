@@ -44,13 +44,13 @@ public sealed class SerializationWriter
     /// <summary>
     /// Borrows the immutable type snapshot pinned by this operation's converter generation.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The writer no longer belongs to an active capture.
+    /// </exception>
     /// <remarks>
     /// Use this snapshot for consistent type identities during a complete capture. It must not be retained beyond
     /// the writer's operation; keeping it would retain its collectible types after the converter lease is released.
     /// </remarks>
-    /// <exception cref="InvalidOperationException">
-    /// The writer no longer belongs to an active capture.
-    /// </exception>
     [ScriptingApiIgnore]
     public TypeCacheSnapshot typeSnapshot
     {
@@ -165,7 +165,12 @@ public sealed class SerializationWriter
         ValidateName(name);
         EnsureActive();
         SerializationNode? previous = Previous(name);
-        var child = new SerializationWriter(m_operation, previous as ObjectSerializationNode, AppendPath(name), typeof(object));
+        var child = new SerializationWriter(
+            m_operation,
+            previous as ObjectSerializationNode,
+            AppendPath(name),
+            typeof(object)
+        );
         AddNode(name, previous ?? child.m_node!);
         write(child);
         ReplaceNode(name, child.Complete());
@@ -191,11 +196,6 @@ public sealed class SerializationWriter
     /// a current Core identity owner and return true only for a complete proof. Snapshot capture alone
     /// can reuse a matching element; ordinary serialization always executes writeElement.
     /// </param>
-    /// <remarks>
-    /// The key builder belongs only to its synchronous callback. Uncertified rows and rows that invoke
-    /// nested converters execute the ordinary element writer on every capture. Callback failures and
-    /// changed declared inputs abort publication without modifying a previous snapshot.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// Values or writeElement is null.
     /// </exception>
@@ -205,6 +205,11 @@ public sealed class SerializationWriter
     /// <exception cref="InvalidOperationException">
     /// The writer has retired, a member is duplicated, or declared capture inputs change during writing.
     /// </exception>
+    /// <remarks>
+    /// The key builder belongs only to its synchronous callback. Uncertified rows and rows that invoke
+    /// nested converters execute the ordinary element writer on every capture. Callback failures and
+    /// changed declared inputs abort publication without modifying a previous snapshot.
+    /// </remarks>
     public void WriteObjectArray<TValue>(
         string name,
         IEnumerable<TValue> values,

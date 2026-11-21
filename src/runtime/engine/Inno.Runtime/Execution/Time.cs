@@ -121,10 +121,7 @@ internal sealed class RuntimeClock
 
     internal long fixedStepCount { get; private set; }
 
-    internal IDisposable EnterScope()
-    {
-        return S_CURRENT_SCOPE.Enter(this);
-    }
+    internal IDisposable EnterScope() => S_CURRENT_SCOPE.Enter(this);
 
     internal RuntimeFrame Update(float unscaledDeltaTime)
     {

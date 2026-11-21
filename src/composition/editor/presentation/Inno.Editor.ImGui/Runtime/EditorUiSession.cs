@@ -2,6 +2,7 @@ using System;
 using Inno.Core.Events;
 using Inno.Editor.Interactions;
 using Inno.Native.ImGui;
+using Inno.Scripting.Api;
 
 using EditorControls = Inno.Editor.ImGui.ImGuiWidget.ImGuiWidget;
 using NativeImGui = Inno.Native.ImGui.ImGui;
@@ -30,8 +31,8 @@ public sealed unsafe class EditorUiSession : IDisposable
     /// </summary>
     public EditorUiSession()
     {
-        widgets = new EditorControls(this);
-        menus = new EditorMenuRenderer(this);
+        this.widgets = new EditorControls(this);
+        this.menus = new EditorMenuRenderer(this);
     }
 
     /// <summary>
@@ -51,7 +52,7 @@ public sealed unsafe class EditorUiSession : IDisposable
     /// <summary>
     /// Gets the menu presenter whose search state belongs exclusively to this session.
     /// </summary>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public EditorMenuRenderer menus { get; }
 
     /// <summary>
@@ -232,7 +233,7 @@ public sealed unsafe class EditorUiSession : IDisposable
     {
         private bool m_disposed;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             owner.EnsureOwner();
@@ -258,7 +259,7 @@ public sealed unsafe class EditorUiSession : IDisposable
     {
         private bool m_disposed;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             if (m_disposed)

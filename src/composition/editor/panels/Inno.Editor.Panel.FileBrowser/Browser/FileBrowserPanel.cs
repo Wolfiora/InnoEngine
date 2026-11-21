@@ -125,7 +125,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     ) {
         m_assets = assets;
         m_ui = ui ?? throw new ArgumentNullException(nameof(ui));
-        AssetBrowserStyle style = new(ui.widgets.style);
+        var style = new AssetBrowserStyle(ui.widgets.style);
         m_gridScale = style.gridDefaultScale;
         m_listNameSeparatorPosition = style.listNameSeparatorPosition;
         m_listTypeSeparatorPosition = style.listTypeSeparatorPosition;
@@ -144,10 +144,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnAttach(EditorContext context)
-    {
-        m_changeTracker.Attach(context);
-    }
+    protected override void OnAttach(EditorContext context) => m_changeTracker.Attach(context);
 
     /// <summary>
     /// Detaches this feature and releases generation-scoped state.
@@ -155,10 +152,7 @@ internal sealed partial class FileBrowserPanel : EditorPanel
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnDetach(EditorContext context)
-    {
-        m_changeTracker.Detach();
-    }
+    protected override void OnDetach(EditorContext context) => m_changeTracker.Detach();
 
     /// <summary>
     /// Draws this feature using the current editor presentation context.

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Inno.Editor.Annotations;
 
 namespace Inno.Editor.Inspection;
 
@@ -38,7 +39,7 @@ internal static class InspectorMemberMetadata
                 index
             ) => new OrderedAttribute(
                 attribute,
-                attribute is Inno.Editor.Annotations.InspectorPresentationAttribute presentation
+                attribute is InspectorPresentationAttribute presentation
                 ? presentation.order
                 : 0,
                 index
@@ -50,7 +51,10 @@ internal static class InspectorMemberMetadata
 
     private sealed class AttributesBox
     {
-        internal AttributesBox(MemberInfo member) => attributes = BuildAttributes(member);
+        internal AttributesBox(MemberInfo member)
+        {
+            this.attributes = BuildAttributes(member);
+        }
 
         internal Attribute[] attributes { get; }
     }
@@ -75,7 +79,7 @@ internal static class InspectorMemberMetadata
                     }
                 }
             }
-            members = result;
+            this.members = result;
         }
 
         internal IReadOnlyDictionary<string, MemberInfo> members { get; }

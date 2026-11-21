@@ -15,40 +15,56 @@ public static unsafe class NativePanelInput
     /// <summary>
     /// Focuses the actual active native window matching the requested fragment.
     /// </summary>
-    /// <param name="host">The current thread's live native host.</param>
-    /// <param name="panel">The panel drawn to discover its window.</param>
-    /// <param name="windowFragment">The required fragment of the actual native window name.</param>
-    /// <exception cref="InvalidOperationException">No active native window matches the fragment.</exception>
+    /// <param name="host">
+    /// The current thread's live native host.
+    /// </param>
+    /// <param name="panel">
+    /// The panel drawn to discover its window.
+    /// </param>
+    /// <param name="windowFragment">
+    /// The required fragment of the actual native window name.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// No active native window matches the fragment.
+    /// </exception>
     public static void Focus(
         NativePanelHost host,
         EditorPanelExtension panel,
         string windowFragment
-    ) {
-        host.DrawPanel(panel, () =>
+    ) => host.DrawPanel(panel, () =>
+    {
+        ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
+        for (int index = 0; index < context->Windows.Size; index++)
         {
-            ImGuiNativeContext* context = NativeImGui.Raw.GetCurrentContext();
-            for (int index = 0; index < context->Windows.Size; index++)
+            ImGuiWindow* window = context->Windows.Data[index];
+            string? name = Marshal.PtrToStringUTF8((nint)window->Name);
+            if (window->Active != 0 && name?.Contains(windowFragment, StringComparison.Ordinal) == true)
             {
-                ImGuiWindow* window = context->Windows.Data[index];
-                string? name = Marshal.PtrToStringUTF8((nint)window->Name);
-                if (window->Active != 0 && name?.Contains(windowFragment, StringComparison.Ordinal) == true)
-                {
-                    NativeImGui.Raw.SetWindowFocus(window->Name);
-                    return;
-                }
+                NativeImGui.Raw.SetWindowFocus(window->Name);
+                return;
             }
-            throw new InvalidOperationException("The actual input owner window is absent: " + windowFragment);
-        });
-    }
+        }
+        throw new InvalidOperationException("The actual input owner window is absent: " + windowFragment);
+    });
 
     /// <summary>
     /// Delivers a complete key press and release through actual native frames.
     /// </summary>
-    /// <param name="host">The current thread's live native host.</param>
-    /// <param name="panel">The panel receiving input.</param>
-    /// <param name="key">The native key to press.</param>
-    /// <param name="shift">Whether to hold Shift during the key press.</param>
-    /// <param name="primary">Whether to hold the fixture's Control convention during the key press.</param>
+    /// <param name="host">
+    /// The current thread's live native host.
+    /// </param>
+    /// <param name="panel">
+    /// The panel receiving input.
+    /// </param>
+    /// <param name="key">
+    /// The native key to press.
+    /// </param>
+    /// <param name="shift">
+    /// Whether to hold Shift during the key press.
+    /// </param>
+    /// <param name="primary">
+    /// Whether to hold the fixture's Control convention during the key press.
+    /// </param>
     public static void Key(
         NativePanelHost host,
         EditorPanelExtension panel,

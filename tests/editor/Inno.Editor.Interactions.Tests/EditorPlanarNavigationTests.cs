@@ -30,7 +30,8 @@ public sealed class EditorPlanarNavigationTests
     [Fact]
     public void ZoomPreservesPointerAnchorAndIsIndependentOfDisplayDensity()
     {
-        Vector2 origin = new(50, 30), pivot = new(110, 150);
+        var origin = new Vector2(50, 30);
+        var pivot = new Vector2(110, 150);
         float scale = EditorPlanarNavigation.WheelFactor(3);
         Vector2 updated = EditorPlanarNavigation.ZoomOrigin(origin, pivot, 1, scale);
         Assert.True(Vector2.Distance(pivot - origin, (pivot - updated) / scale) < 0.0001f);

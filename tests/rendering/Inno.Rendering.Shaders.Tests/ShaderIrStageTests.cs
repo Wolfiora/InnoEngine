@@ -47,8 +47,8 @@ public sealed class ShaderIrStageTests
         var builder = new ShaderIrBuilder();
         ShaderIrValue position = builder.Input("position", ShaderSourceType.Atomic("float4"));
         ShaderIrBlock body = builder.Build(new Dictionary<string, ShaderIrValue> { ["clip"] = position });
-        ShaderIrStageInput input = new("position", position.type, ShaderIrInputKind.VertexAttribute, "position");
-        ShaderIrStageOutput output = new("clip", ShaderIrOutputKind.ClipPosition);
+        var input = new ShaderIrStageInput("position", position.type, ShaderIrInputKind.VertexAttribute, "position");
+        var output = new ShaderIrStageOutput("clip", ShaderIrOutputKind.ClipPosition);
         var stage = new ShaderIrStage(ShaderStage.Vertex, body, [input], [output]);
         Assert.Same(body, stage.body);
         Assert.Throws<ArgumentException>(() => new ShaderIrStage(ShaderStage.Vertex, body, [], [output]));

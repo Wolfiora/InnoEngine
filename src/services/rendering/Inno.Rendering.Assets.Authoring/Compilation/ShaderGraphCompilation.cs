@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Inno.Assets;
 using Inno.Core.Diagnostics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Types;
@@ -54,7 +55,7 @@ public sealed partial class ShaderCompiler
         TypeCatalog types,
         SerializationRegistry serialization,
         SerializationContext context,
-        Inno.Assets.IAssetArtifactLookup artifacts,
+        IAssetArtifactLookup artifacts,
         CancellationToken cancellationToken = default
     ) {
         ArgumentNullException.ThrowIfNull(shader);
@@ -109,12 +110,15 @@ public sealed partial class ShaderCompiler
         using var nodes = new ShaderNodeCompilerRegistry(types);
         using var frontends = new ShaderSourceFrontendRegistry(types);
         ShaderDefinition definition = ShaderGraphArtifact.ReadDefinition(artifact.Span, serialization, context);
-        var diagnostics = ShaderDefinitionValidator.Validate(definition, target.capabilities).ToList();
+        List<ShaderDiagnostic> diagnostics = ShaderDefinitionValidator.Validate(definition, target.capabilities).ToList();
         if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
         {
             return ValueTask.FromResult(new ShaderCompilationResult(null, diagnostics));
         }
-        var keywords = definition.keywords.ToDictionary(static value => value.id, StringComparer.Ordinal);
+        Dictionary<string, ShaderKeywordDefinition> keywords = definition.keywords.ToDictionary(
+            static value => value.id,
+            StringComparer.Ordinal
+        );
         foreach ((string id, string value) in variant.options)
         {
             if (!keywords.TryGetValue(id, out ShaderKeywordDefinition keyword) || !keyword.options.Contains(value, StringComparer.Ordinal))
@@ -181,7 +185,7 @@ public sealed partial class ShaderCompiler
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(program);
         ArgumentNullException.ThrowIfNull(target);
-        var diagnostics = ShaderDefinitionValidator.Validate(definition, target.capabilities).ToList();
+        List<ShaderDiagnostic> diagnostics = ShaderDefinitionValidator.Validate(definition, target.capabilities).ToList();
         if (diagnostics.Any(static value => value.severity == DiagnosticSeverity.Error))
         {
             return ValueTask.FromResult(new ShaderCompilationResult(null, diagnostics));
@@ -241,7 +245,7 @@ public sealed partial class ShaderCompiler
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentNullException.ThrowIfNull(program);
         ArgumentNullException.ThrowIfNull(target);
-        var diagnostics = program.diagnostics
+        List<ShaderDiagnostic> diagnostics = program.diagnostics
             .Select(static value => new ShaderDiagnostic(value.code, value.severity, value.message))
             .ToList();
         diagnostics.AddRange(ShaderDefinitionValidator.Validate(definition, target.capabilities));
@@ -265,7 +269,7 @@ public sealed partial class ShaderCompiler
             value.storageAccess,
             value.bindingOwner
         )).ToArray();
-        var passes = definition.passes.Select(static value => new ShaderPassDefinition(
+        Dictionary<string, ShaderPassDefinition> passes = definition.passes.Select(static value => new ShaderPassDefinition(
             value.name,
             value.programKind,
             requiredFeatures: value.requiredFeatures,

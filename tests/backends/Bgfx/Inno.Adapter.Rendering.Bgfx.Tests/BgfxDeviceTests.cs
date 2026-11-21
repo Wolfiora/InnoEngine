@@ -24,7 +24,7 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_ExecutesOneGraphAndSubmitsOneFrame()
     {
-        RenderGraphBuilder builder = new(1, m_device.capabilities);
+        var builder = new RenderGraphBuilder(1, m_device.capabilities);
         builder
             .AddRasterPass("Noop Clear", C_FIRST, 0, static (
                 _,
@@ -59,7 +59,7 @@ public sealed class BgfxDeviceTests
         m_device.BeginFrame();
 
         Assert.Throws<NotSupportedException>(() => m_device.CreateWindowSurface(
-            new PlatformNativeHandles(new IntPtr(1), handleKind: default(PlatformNativeHandleId)),
+            new PlatformNativeHandles(new IntPtr(1), handleKind: default),
             32,
             32,
             "Unsupported"
@@ -71,7 +71,7 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_CreatesAndDefersPersistentTextureDestruction()
     {
-        RenderTextureDescriptor descriptor = new(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
+        var descriptor = new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
 
         m_device.BeginFrame();
         PersistentTextureHandle texture = m_device.CreateTexture(descriptor, "Persistent Test");
@@ -90,7 +90,7 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_UploadsCompletePersistentTextureSubresource()
     {
-        RenderTextureDescriptor descriptor = new(4, 4, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
+        var descriptor = new RenderTextureDescriptor(4, 4, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled);
 
         m_device.BeginFrame();
         PersistentTextureHandle texture = m_device.CreateTexture(descriptor, "Upload Test");
@@ -105,7 +105,7 @@ public sealed class BgfxDeviceTests
         Assert.True(m_device.capabilities.Supports(GraphicsCapability.Texture3D));
         Assert.True(m_device.capabilities.SupportsSampled(RenderTextureFormat.RGBA8, RenderTextureDimension.Texture3D));
         Assert.True(m_device.capabilities.SupportsSampled(RenderTextureFormat.RGBA8, RenderTextureDimension.Cube));
-        RenderTextureDescriptor volumeDescriptor = new(
+        var volumeDescriptor = new RenderTextureDescriptor(
             4,
             4,
             RenderTextureFormat.RGBA8,
@@ -113,7 +113,7 @@ public sealed class BgfxDeviceTests
             dimension: RenderTextureDimension.Texture3D,
             depth: 2
         );
-        RenderTextureDescriptor cubeDescriptor = new(
+        var cubeDescriptor = new RenderTextureDescriptor(
             4,
             4,
             RenderTextureFormat.RGBA8,
@@ -134,18 +134,18 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_UpdatesDynamicVertexBuffer()
     {
-        RenderVertexLayout layout = new(
+        var layout = new RenderVertexLayout(
             [
                 new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
             ]
         );
-        PersistentBufferDescriptor descriptor = new(
+        var descriptor = new PersistentBufferDescriptor(
             new RenderBufferDescriptor(3, layout.stride, RenderBufferUsage.Vertex | RenderBufferUsage.Dynamic),
             layout
         );
 
         m_device.BeginFrame();
-        PersistentBufferHandle buffer = m_device.CreateBuffer(descriptor, ReadOnlySpan<byte>.Empty, "Dynamic");
+        PersistentBufferHandle buffer = m_device.CreateBuffer(descriptor, [], "Dynamic");
         m_device.UpdateBuffer(buffer, new byte[layout.stride * 3]);
         m_device.DestroyBuffer(buffer);
         m_device.EndFrame();
@@ -154,14 +154,14 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_CreatesVertexBufferWithExplicitPadding()
     {
-        RenderVertexLayout layout = new(
+        var layout = new RenderVertexLayout(
             [
                 new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3, 0),
                 new RenderVertexAttribute(RenderVertexSemantic.Color0, RenderVertexFormat.UInt8Normalized4, 16)
             ],
             stride: 32
         );
-        PersistentBufferDescriptor descriptor = new(
+        var descriptor = new PersistentBufferDescriptor(
             new RenderBufferDescriptor(3, layout.stride, RenderBufferUsage.Vertex),
             layout
         );
@@ -181,16 +181,16 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_CreatesVertexAndIndexBuffersAtFrameSafetyPoint()
     {
-        RenderVertexLayout layout = new(
+        var layout = new RenderVertexLayout(
             [
                 new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
             ]
         );
-        PersistentBufferDescriptor vertices = new(
+        var vertices = new PersistentBufferDescriptor(
             new RenderBufferDescriptor(3, layout.stride, RenderBufferUsage.Vertex),
             layout
         );
-        PersistentBufferDescriptor indices = new(
+        var indices = new PersistentBufferDescriptor(
             new RenderBufferDescriptor(3, sizeof(ushort), RenderBufferUsage.Index),
             indexFormat: RenderIndexFormat.UInt16
         );
@@ -209,7 +209,7 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_AllocatesTransientStorageBufferForCompiledGraph()
     {
-        RenderGraphBuilder builder = new(8, m_device.capabilities);
+        var builder = new RenderGraphBuilder(8, m_device.capabilities);
         RenderBufferHandle buffer = builder.CreateBuffer(
             "Cluster Light List",
             new RenderBufferDescriptor(64, 16, RenderBufferUsage.Storage)
@@ -235,7 +235,7 @@ public sealed class BgfxDeviceTests
     {
         Assert.True(m_device.capabilities.Supports(GraphicsCapability.StorageTexture));
         Assert.True(m_device.capabilities.SupportsStorage(RenderTextureFormat.RGBA8, RenderStorageAccess.Write));
-        RenderGraphBuilder builder = new(9, m_device.capabilities);
+        var builder = new RenderGraphBuilder(9, m_device.capabilities);
         RenderTextureHandle texture = builder.CreateTexture(
             "Compute Output",
             new RenderTextureDescriptor(8, 8, RenderTextureFormat.RGBA8, RenderTextureUsage.Storage)
@@ -298,7 +298,7 @@ public sealed class BgfxDeviceTests
         const int passCount = 16;
         for (uint frame = 0; frame < 32; frame++)
         {
-            RenderGraphBuilder builder = new(1000 + frame, m_device.capabilities);
+            var builder = new RenderGraphBuilder(1000 + frame, m_device.capabilities);
             int extent = 64 + checked((int)frame);
             for (int passIndex = 0; passIndex < passCount; passIndex++)
             {
@@ -335,12 +335,12 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void CreateBuffer_WithPartialInitialData_FailsWithoutClosingFrame()
     {
-        RenderVertexLayout layout = new(
+        var layout = new RenderVertexLayout(
             [
                 new RenderVertexAttribute(RenderVertexSemantic.Position, RenderVertexFormat.Float3)
             ]
         );
-        PersistentBufferDescriptor descriptor = new(
+        var descriptor = new PersistentBufferDescriptor(
             new RenderBufferDescriptor(3, layout.stride, RenderBufferUsage.Vertex),
             layout
         );
@@ -353,7 +353,7 @@ public sealed class BgfxDeviceTests
     [Fact]
     public void NoopDevice_BindsRequestedTextureArrayLayer()
     {
-        RenderGraphBuilder builder = new(4, m_device.capabilities);
+        var builder = new RenderGraphBuilder(4, m_device.capabilities);
         RenderTextureHandle texture = builder.CreateTexture(
             "Layered Target",
             new RenderTextureDescriptor(
@@ -381,10 +381,7 @@ public sealed class BgfxDeviceTests
     }
 
     [Fact]
-    public void EndFrame_WithoutBeginFrame_Throws()
-    {
-        Assert.Throws<InvalidOperationException>(() => m_device.EndFrame());
-    }
+    public void EndFrame_WithoutBeginFrame_Throws() => Assert.Throws<InvalidOperationException>(() => m_device.EndFrame());
 
     [Fact]
     public void WindowlessDeviceDoesNotAdvertiseAnInternalBackbufferAsPresentation()
@@ -419,7 +416,7 @@ public sealed class BgfxDeviceTests
         uint generation,
         string passName = "Stable Color Pass"
     ) {
-        RenderGraphBuilder builder = new(generation, m_device.capabilities);
+        var builder = new RenderGraphBuilder(generation, m_device.capabilities);
         RenderTextureHandle texture = builder.CreateTexture(
             "Stable Color Target",
             new RenderTextureDescriptor(
@@ -450,7 +447,7 @@ public sealed class BgfxDeviceFixture : IDisposable
 {
     public BgfxDeviceFixture()
     {
-        device = CreateDevice();
+        this.device = CreateDevice();
     }
 
     public BgfxDevice device { get; }

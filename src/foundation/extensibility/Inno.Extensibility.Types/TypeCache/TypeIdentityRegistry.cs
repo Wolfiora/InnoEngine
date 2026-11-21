@@ -117,7 +117,7 @@ internal sealed class TypeIdentityRegistry
             stableByType[type] = stableId;
         }
 
-        var orderedTypes = sourceTypes
+        Type[] orderedTypes = sourceTypes
             .OrderBy(t => t.Assembly.GetName().Name, StringComparer.Ordinal)
             .ThenBy(t => t.FullName, StringComparer.Ordinal)
             .ToArray();
@@ -453,7 +453,7 @@ internal sealed class TypeIdentityRegistry
                 continue;
             }
 
-            var availableTypes = group.ToDictionary(static type => type.FullName ?? type.Name, StringComparer.Ordinal);
+            Dictionary<string, Type> availableTypes = group.ToDictionary(static type => type.FullName ?? type.Name, StringComparer.Ordinal);
             var mappings = new Dictionary<string, GeneratedStableTypeMapping>(StringComparer.Ordinal);
             foreach (AssemblyMetadataAttribute attribute in attributes)
             {
@@ -506,7 +506,7 @@ internal sealed class TypeIdentityRegistry
         SwapGuidByteOrder(ns);
 
         byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-        byte[] data = new byte[ns.Length + nameBytes.Length];
+        var data = new byte[ns.Length + nameBytes.Length];
         Buffer.BlockCopy(ns, 0, data, 0, ns.Length);
         Buffer.BlockCopy(nameBytes, 0, data, ns.Length, nameBytes.Length);
 

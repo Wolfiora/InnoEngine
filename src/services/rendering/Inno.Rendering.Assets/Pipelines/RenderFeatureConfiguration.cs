@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Stores one ordered feature extension selection using only stable data.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("aa788bff-6891-5055-8762-899971ba3bed")]
+[StableTypeId("aa788bff-6891-5055-8762-899971ba3bed")]
 public struct RenderFeatureConfiguration
 {
     /// <summary>

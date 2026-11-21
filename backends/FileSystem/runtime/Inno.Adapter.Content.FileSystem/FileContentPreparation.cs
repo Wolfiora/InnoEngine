@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,7 +77,7 @@ public static class FileContentPreparation
         ).ConfigureAwait(false);
         try
         {
-            var diagnostics = await ContentCacheRetirement.RetireAsync(cache, current!).ConfigureAwait(false);
+            IReadOnlyList<string> diagnostics = await ContentCacheRetirement.RetireAsync(cache, current!).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             return new FileContentStore(
                 source.descriptor,

@@ -84,7 +84,7 @@ internal sealed class SettingsWindowModule(
     /// </param>
     protected override void OnStart(EditorContext context) => m_reloadGuard = reloads.RegisterGuard(this);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnStop(EditorContext context)
     {
         Close();

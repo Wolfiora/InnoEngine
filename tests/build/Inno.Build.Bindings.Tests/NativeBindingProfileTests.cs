@@ -24,7 +24,9 @@ public sealed class NativeBindingProfileTests : IDisposable
     /// <summary>
     /// Requires an explicit Browser extension and publishes aggregate pointer adapters with remappable inputs.
     /// </summary>
-    /// <returns>The completion of generation, verification and a repeated cache hit.</returns>
+    /// <returns>
+    /// The completion of generation, verification and a repeated cache hit.
+    /// </returns>
     [Fact]
     public async Task BrowserAggregateBridgeRequiresExplicitExtensionAndReusesVerifiedGeneration()
     {
@@ -46,8 +48,17 @@ public sealed class NativeBindingProfileTests : IDisposable
              "api":{"namespace":"Fixture.Native","name":"Api"},
              "output":{"layout":"singleFile","singleFileName":"Bindings.cs"}}
             """);
-        var component = new NativeComponentDescriptor("fixture", "Fixture.csproj", "Fixture.csproj", bindingDefinition: "bindings.props");
-        var request = new NativeBindingGenerationRequest([component], "fixture-target", NativeBindingOutputMode.TargetArtifacts);
+        var component = new NativeComponentDescriptor(
+            "fixture",
+            "Fixture.csproj",
+            "Fixture.csproj",
+            bindingDefinition: "bindings.props"
+        );
+        var request = new NativeBindingGenerationRequest(
+            [component],
+            "fixture-target",
+            NativeBindingOutputMode.TargetArtifacts
+        );
         var target = new TargetConfiguration { id = "emscripten-wasm32-emscripten" };
         var runtime = new ManagedRuntimeId("dotnet.mono-wasm");
         var missing = new NativeBindingGenerator(
@@ -72,7 +83,7 @@ public sealed class NativeBindingProfileTests : IDisposable
                 importMode: BindingImportMode.LibraryImport
             )
         );
-        NativeBuildContext cold = new(m_root, "release");
+        var cold = new NativeBuildContext(m_root, "release");
         using NativeBindingGenerationResult first = await generator.GenerateAsync(cold, request, CancellationToken.None);
         NativeBindingGenerationDescriptor generation = first[component.nativeProject];
         NativeBindingCompilation compilation = NativeBindingCompilation.Load(generation.nativeDirectory);
@@ -107,7 +118,7 @@ public sealed class NativeBindingProfileTests : IDisposable
         Assert.Contains("FunctionTable", importFailure.Message, StringComparison.Ordinal);
         Assert.Equal(published, File.ReadAllBytes(generation.bindingsPath));
 
-        NativeBuildContext hot = new(m_root, "release");
+        var hot = new NativeBuildContext(m_root, "release");
         using NativeBindingGenerationResult repeated = await generator.GenerateAsync(hot, request, CancellationToken.None);
         Assert.Equal(generation.fingerprint, repeated[component.nativeProject].fingerprint);
         Assert.Equal(0, hot.statistics.bindingGenerations);

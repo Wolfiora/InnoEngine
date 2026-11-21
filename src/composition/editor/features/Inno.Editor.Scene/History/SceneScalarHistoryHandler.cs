@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using Inno.Editor.Interactions;
 using Inno.Scene;
 using Inno.Scene.Layers;
@@ -184,9 +185,7 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
         SceneScalarKind.GameObjectName => ((GameObject)target).name,
         SceneScalarKind.GameObjectActive => ((GameObject)target).activeSelf ? "1" : "0",
         SceneScalarKind.GameObjectTag => ((GameObject)target).tag,
-        SceneScalarKind.GameObjectLayer => ((GameObject)target).layer.index.ToString(
-            System.Globalization.CultureInfo.InvariantCulture
-        ),
+        SceneScalarKind.GameObjectLayer => ((GameObject)target).layer.index.ToString(CultureInfo.InvariantCulture),
         _ => throw new InvalidOperationException($"Unsupported scene scalar '{kind}'.")
     };
 
@@ -210,9 +209,7 @@ internal sealed class SceneScalarHistoryHandler : EditorHistoryHandler
                 ((GameObject)target).tag = value;
                 break;
             case SceneScalarKind.GameObjectLayer:
-                ((GameObject)target).layer = new GameLayer(
-                    int.Parse(value, System.Globalization.CultureInfo.InvariantCulture)
-                );
+                ((GameObject)target).layer = new GameLayer(int.Parse(value, CultureInfo.InvariantCulture));
                 break;
             default:
                 throw new InvalidOperationException($"Unsupported scene scalar '{kind}'.");

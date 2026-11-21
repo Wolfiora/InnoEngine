@@ -1,12 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 
 namespace Inno.Build.TaskHosting;
@@ -20,7 +22,7 @@ internal static class TaskRuntimeRequestKey
         IDictionary properties,
         CancellationToken cancellation
     ) {
-        var globals = properties.Cast<DictionaryEntry>().ToDictionary(
+        Dictionary<string, string> globals = properties.Cast<DictionaryEntry>().ToDictionary(
             static entry => (string)entry.Key,
             static entry => (string)entry.Value!,
             StringComparer.OrdinalIgnoreCase
@@ -39,14 +41,17 @@ internal static class TaskRuntimeRequestKey
                 .OrderBy(static entry => entry.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(static entry => entry.Key + "=" + entry.Value)
         );
-        foreach (var node in graph.ProjectNodes.OrderBy(static node => node.ProjectInstance.FullPath, paths))
+        foreach (ProjectGraphNode node in graph.ProjectNodes.OrderBy(static node => node.ProjectInstance.FullPath, paths))
         {
             cancellation.ThrowIfCancellationRequested();
-            var instance = node.ProjectInstance;
-            foreach (var item in instance.GetItems("InnoBuildInputRestoreProject"))
+            ProjectInstance instance = node.ProjectInstance;
+            foreach (ProjectItemInstance item in instance.GetItems("InnoBuildInputRestoreProject"))
             {
                 string restoreProject = Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(instance.FullPath)!);
-                var restoreProperties = new Dictionary<string, string>(instance.GlobalProperties, StringComparer.OrdinalIgnoreCase);
+                var restoreProperties = new Dictionary<string, string>(
+                    instance.GlobalProperties,
+                    StringComparer.OrdinalIgnoreCase
+                );
                 string[] removedProperties = item.GetMetadataValue("GlobalPropertiesToRemove")
                     .Split(';', StringSplitOptions.RemoveEmptyEntries);
                 foreach (string removedProperty in removedProperties)
@@ -64,11 +69,7 @@ internal static class TaskRuntimeRequestKey
                     restoreProperties[declaration[..separator]] = ProjectCollection.Unescape(declaration[(separator + 1)..]);
                 }
                 restoreRequests.Add(
-                    new(
-                        restoreProject,
-                        new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(restoreProperties),
-                        removedProperties
-                    )
+                    new(restoreProject, new ReadOnlyDictionary<string, string>(restoreProperties), removedProperties)
                 );
             }
             inputs.Add(instance.FullPath);
@@ -99,7 +100,7 @@ internal static class TaskRuntimeRequestKey
             }) {
                 declarations.Add(instance.FullPath + "|" + property + "=" + instance.GetPropertyValue(property));
             }
-            foreach (var item in instance.Items)
+            foreach (ProjectItemInstance item in instance.Items)
             {
                 bool source = item.ItemType is "Compile" or "EmbeddedResource" or "Analyzer"
                               or "AdditionalFiles" or "EditorConfigFiles" or "GlobalAnalyzerConfigFiles" or "AdditionalCompileInputs";
@@ -155,7 +156,7 @@ internal static class TaskRuntimeRequestKey
                 inputs.Add(path);
             }
         }
-        using var digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        using IncrementalHash digest = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         var hashes = new Dictionary<string, string>(paths);
         foreach (string declaration in declarations)
         {
@@ -173,7 +174,7 @@ internal static class TaskRuntimeRequestKey
         return new TaskRuntimeRequestSnapshot(
             Convert.ToHexString(digest.GetHashAndReset()),
             needsRestore,
-            new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(hashes),
+            new ReadOnlyDictionary<string, string>(hashes),
             declarations.AsReadOnly(),
             restoreRequests.AsReadOnly()
         );

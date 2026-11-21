@@ -18,7 +18,7 @@ using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetPipeline
+public sealed partial class AssetPipeline
 {
     /// <summary>
     /// Releases watchers, catalog participants, canonical objects, and rebuildable staging state.

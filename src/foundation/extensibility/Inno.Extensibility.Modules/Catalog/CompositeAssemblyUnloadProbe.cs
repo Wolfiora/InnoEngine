@@ -12,11 +12,13 @@ internal sealed class CompositeAssemblyUnloadProbe : IAssemblyUnloadProbe
     private readonly IAssemblyUnloadProbe[] m_children;
 
     internal CompositeAssemblyUnloadProbe(IReadOnlyList<IAssemblyUnloadProbe> children)
-        => m_children = children.ToArray();
+    {
+        m_children = children.ToArray();
+    }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public string description => string.Join(", ", m_children.Select(static child => child.description));
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool isCompleted => m_children.All(static child => child.isCompleted);
 }

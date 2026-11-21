@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 using Inno.Core.IO;
 
@@ -64,7 +65,8 @@ internal static class DocumentationApiContent
         {
             throw new InvalidDataException("Unsupported API content registry.");
         }
-        var prior = (previous?.entries ?? []).ToDictionary(entry => entry.symbol, StringComparer.Ordinal);
+        Dictionary<string, DocumentationApiContentEntry> prior = (previous?.entries
+                                                                  ?? []).ToDictionary(entry => entry.symbol, StringComparer.Ordinal);
         var registeredPaths = new HashSet<string>(
             (previous?.navigation ?? []).Concat(prior.Values.Select(entry => entry.path)),
             StringComparer.Ordinal
@@ -76,7 +78,7 @@ internal static class DocumentationApiContent
         var edits = new Dictionary<string, DocumentationApiEdit>(StringComparer.Ordinal);
         var warnings = new List<DocumentationApiWarning>();
         var entries = new List<DocumentationApiContentEntry>();
-        var typePaths = facts.Values.Where(contexts => contexts[0].kind == "NamedType")
+        Dictionary<string, string> typePaths = facts.Values.Where(contexts => contexts[0].kind == "NamedType")
             .ToDictionary(contexts => contexts[0].key, contexts => TypePath(contexts[0]), StringComparer.Ordinal);
         var categoryPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (string typePath in typePaths.Values)
@@ -88,7 +90,7 @@ internal static class DocumentationApiContent
                 directory = Path.GetDirectoryName(directory);
             }
         }
-        foreach (var collision in typePaths.Where(pair => categoryPaths.Contains(pair.Value)).ToArray())
+        foreach (KeyValuePair<string, string> collision in typePaths.Where(pair => categoryPaths.Contains(pair.Value)).ToArray())
         {
             typePaths[collision.Key] = collision.Value.Replace(
                 "/index.md",
@@ -96,12 +98,12 @@ internal static class DocumentationApiContent
                 StringComparison.Ordinal
             );
         }
-        foreach (var duplicates in typePaths
+        foreach (IGrouping<string, KeyValuePair<string, string>> duplicates in typePaths
             .GroupBy(pair => pair.Value, StringComparer.OrdinalIgnoreCase)
             .Where(group => group.Count() > 1)
             .ToArray()
         ) {
-            foreach (var duplicate in duplicates)
+            foreach (KeyValuePair<string, string> duplicate in duplicates)
             {
                 typePaths[duplicate.Key] = duplicate.Value.Replace(
                     "/index.md",
@@ -110,7 +112,7 @@ internal static class DocumentationApiContent
                 );
             }
         }
-        foreach (var pair in facts.OrderBy(pair => pair.Key, StringComparer.Ordinal))
+        foreach (KeyValuePair<string, DocumentationApiFact[]> pair in facts.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
             DocumentationApiFact fact = pair.Value[0];
             string type = fact.kind == "NamedType" ? fact.key : fact.family + ":" + fact.project + ":" + fact.containingType;
@@ -119,7 +121,7 @@ internal static class DocumentationApiContent
                 throw new InvalidDataException("API member has no eligible declaring type: " + fact.key);
             }
             string title = DocumentationApiPresentation.Name(fact, facts);
-            string fileName = string.Join('.', title.Split('.').Select(part => Slug(Regex.Replace(part, "<[^<>]+>", ""))));
+            string fileName = string.Join('.', title.Split('.').Select(part => Slug(Regex.Replace(part, "<[^<>]+>", string.Empty))));
             string path = fact.kind == "NamedType"
                           ? typePath
                           : typePath.Replace(
@@ -206,7 +208,7 @@ internal static class DocumentationApiContent
             facts,
             DocumentationApiPresentation.ProjectDescriptions(root)
         );
-        foreach (var page in navigation)
+        foreach (KeyValuePair<string, string> page in navigation)
         {
             Edit(page.Key, page.Value);
         }
@@ -214,20 +216,21 @@ internal static class DocumentationApiContent
         {
             Edit(removed, null);
         }
-        var moves = entries.Where(entry => prior.TryGetValue(entry.symbol, out var old) && old.path != entry.path)
+        Dictionary<string, string> moves = entries
+            .Where(entry => prior.TryGetValue(entry.symbol, out DocumentationApiContentEntry? old) && old.path != entry.path)
             .ToDictionary(entry => prior[entry.symbol].path, entry => entry.path, StringComparer.Ordinal);
         var anchors = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (DocumentationApiContentEntry entry in entries.Where(
             entry => entry.type != entry.symbol && facts.ContainsKey(entry.symbol)
         )) {
-            if (prior.TryGetValue(entry.type, out var oldType))
+            if (prior.TryGetValue(entry.type, out DocumentationApiContentEntry? oldType))
             {
                 anchors[oldType.path + "#api-" + DocumentationMarkdown.Hash(facts[entry.symbol][0].id)[..16]] = entry.path;
             }
         }
         if (moves.Count != 0)
         {
-            var reverse = moves.ToDictionary(pair => pair.Value, pair => pair.Key, StringComparer.Ordinal);
+            Dictionary<string, string> reverse = moves.ToDictionary(pair => pair.Value, pair => pair.Key, StringComparer.Ordinal);
             string[] paths = Directory.EnumerateFiles(Path.Combine(root, "content/en"), "*.md", SearchOption.AllDirectories)
                 .Select(path => Path.GetRelativePath(root, path).Replace('\\', '/'))
                 .Concat(edits.Keys.Where(path => path.EndsWith(".md", StringComparison.Ordinal)))
@@ -235,7 +238,7 @@ internal static class DocumentationApiContent
                 .ToArray();
             foreach (string path in paths)
             {
-                string? text = edits.TryGetValue(path, out var edit)
+                string? text = edits.TryGetValue(path, out DocumentationApiEdit? edit)
                                ? edit.text
                                : File.ReadAllText(DocumentationApiFacts.Resolve(root, path));
                 if (text is null) continue;
@@ -258,7 +261,7 @@ internal static class DocumentationApiContent
             ) + "\n"
         );
         DocumentationApiPlan guides = DocumentationProjectGuides.Plan(root, binding, facts);
-        foreach (var edit in guides.edits)
+        foreach (DocumentationApiEdit edit in guides.edits)
         {
             edits[edit.path] = edit;
         }
@@ -313,12 +316,12 @@ internal static class DocumentationApiContent
             { "description", previous is not null
                              && previous.metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? description)
                              ? description
-                             : new YamlScalarNode("null") { Style = YamlDotNet.Core.ScalarStyle.Plain } },
+                             : new YamlScalarNode("null") { Style = ScalarStyle.Plain } },
             { "outdated", manual && previous!.ExplicitlyOutdated ? "true" : "false" }
         };
         if (previous is not null)
         {
-            foreach (var field in previous.metadata.Children)
+            foreach (KeyValuePair<YamlNode, YamlNode> field in previous.metadata.Children)
             {
                 string key = ((YamlScalarNode)field.Key).Value!;
                 if (generated.Children.ContainsKey(field.Key) || authored.Children.ContainsKey(field.Key)
@@ -387,7 +390,7 @@ internal static class DocumentationApiContent
     private static string PathName(DocumentationApiFact fact)
     {
         string name = fact.id[2..].Split('(')[0];
-        return Regex.Replace(name[(name.LastIndexOf('.') + 1)..], "`+[0-9]+", "")
+        return Regex.Replace(name[(name.LastIndexOf('.') + 1)..], "`+[0-9]+", string.Empty)
             .Replace("#ctor", "Constructor", StringComparison.Ordinal)
             .Replace("#cctor", "Static constructor", StringComparison.Ordinal);
     }

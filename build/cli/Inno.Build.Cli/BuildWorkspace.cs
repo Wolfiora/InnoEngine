@@ -126,7 +126,7 @@ internal sealed class BuildWorkspace : IDisposable
         }
         cancellationToken.ThrowIfCancellationRequested();
         string[] assemblies = result.moduleDeployments
-            .Where(static request => request.domain == Inno.Extensibility.Modules.AssemblyDomain.InnoScripting)
+            .Where(static request => request.domain == AssemblyDomain.InnoScripting)
             .SelectMany(static request => new[] { request.mainAssemblyPath }.Concat(request.preloadAssemblyPaths))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -309,7 +309,7 @@ internal sealed class BuildWorkspace : IDisposable
                 + string.Join(Environment.NewLine, result.diagnostics.Select(static diagnostic => diagnostic.message))
             );
         }
-        using Inno.Extensibility.Modules.AssemblyReloadSession reload = engine.modules.BeginReload(
+        using AssemblyReloadSession reload = engine.modules.BeginReload(
             result.moduleDeployments.Select(deployment => CreateScriptModuleSource(deployment, artifactRootDirectory)).ToArray()
         );
         _ = engine.generations.Execute("Build authoring generation", reload, [plugins.CreateReloadChange()]);

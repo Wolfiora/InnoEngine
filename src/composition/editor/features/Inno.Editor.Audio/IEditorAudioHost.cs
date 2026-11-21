@@ -13,12 +13,12 @@ public interface IEditorAudioHost : IDisposable
     /// <summary>
     /// Creates the reusable factory that contributes isolated audio runtimes to Editor sessions.
     /// </summary>
-    /// <returns>
-    /// A factory whose features are owned and released by their runtime sessions.
-    /// </returns>
     /// <param name="session">
     /// The explicit session being composed.
     /// </param>
+    /// <returns>
+    /// A factory whose features are owned and released by their runtime sessions.
+    /// </returns>
     IRuntimeSubsystemFactory CreateRuntimeSubsystemFactory(RuntimeSession session);
 
     /// <summary>

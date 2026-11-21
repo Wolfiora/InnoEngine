@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Maps one provider-defined role to one concrete shader pass.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("5ca78007-1d3e-53a0-a5e3-dce6b61088b4")]
+[StableTypeId("5ca78007-1d3e-53a0-a5e3-dce6b61088b4")]
 public struct ShaderTechniquePass
 {
     /// <summary>

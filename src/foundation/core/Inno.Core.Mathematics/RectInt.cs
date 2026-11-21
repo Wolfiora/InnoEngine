@@ -11,9 +11,24 @@ namespace Inno.Core.Mathematics;
 public struct RectInt : IEquatable<RectInt>
 {
     /// <summary>
-    /// The horizontal or first component.
+    /// The horizontal position of the origin corner.
     /// </summary>
-    public int x, y, width, height;
+    public int x;
+
+    /// <summary>
+    /// The vertical position of the origin corner.
+    /// </summary>
+    public int y;
+
+    /// <summary>
+    /// The horizontal extent.
+    /// </summary>
+    public int width;
+
+    /// <summary>
+    /// The vertical extent.
+    /// </summary>
+    public int height;
 
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
@@ -92,13 +107,10 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Overlaps(RectInt other)
-    {
-        return !(right <= other.left
-                 || left >= other.right
-                 || bottom <= other.top
-                 || top >= other.bottom);
-    }
+    public bool Overlaps(RectInt other) => !(right <= other.left
+                                             || left >= other.right
+                                             || bottom <= other.top
+                                             || top >= other.bottom);
 
     /// <summary>
     /// Checks if this rectangle fully contains another rectangle.
@@ -110,13 +122,10 @@ public struct RectInt : IEquatable<RectInt>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(RectInt other)
-    {
-        return left <= other.left
-               && top <= other.top
-               && right >= other.right
-               && bottom >= other.bottom;
-    }
+    public bool Contains(RectInt other) => left <= other.left
+                                           && top <= other.top
+                                           && right >= other.right
+                                           && bottom >= other.bottom;
 
     /// <summary>
     /// Checks if this rectangle contains a point.
@@ -134,10 +143,8 @@ public struct RectInt : IEquatable<RectInt>
     public bool Contains(
         int px,
         int py
-    ) {
-        return px >= left && px < right
-               && py >= top && py < bottom;
-    }
+    ) => px >= left && px < right
+         && py >= top && py < bottom;
 
     /// <summary>
     /// Determines whether current state contains the requested value value.
@@ -167,9 +174,7 @@ public struct RectInt : IEquatable<RectInt>
     public static RectInt FromMinMax(
         Vector2Int min,
         Vector2Int max
-    ) {
-        return new RectInt(min.x, min.y, max.x - min.x, max.y - min.y);
-    }
+    ) => new RectInt(min.x, min.y, max.x - min.x, max.y - min.y);
 
     /// <summary>
     /// Returns the smallest axis-aligned rectangle containing both supplied rectangles.

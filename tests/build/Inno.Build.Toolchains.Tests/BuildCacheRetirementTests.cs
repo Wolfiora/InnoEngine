@@ -403,7 +403,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             string id
         ) {
             Directory.CreateDirectory(directory);
-            descriptor = new(
+            this.descriptor = new(
                 id,
                 directory,
                 Path.Combine(directory, "owner.lock"),
@@ -433,7 +433,7 @@ public sealed class BuildCacheRetirementTests : IDisposable
             string directory = Path.Combine(descriptor.directory, name);
             Directory.CreateDirectory(Path.Combine(directory, "Outputs"));
             File.WriteAllBytes(Path.Combine(directory, "Outputs", "payload.bin"), new byte[bytes]);
-            var used = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(artifacts.Count);
+            DateTime used = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(artifacts.Count);
             var artifact = new BuildCacheArtifactDescriptor(
                 directory,
                 directory + ".read.lock",

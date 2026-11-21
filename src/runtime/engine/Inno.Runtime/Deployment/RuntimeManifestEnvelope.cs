@@ -43,8 +43,8 @@ public static class RuntimeManifestEnvelope
             manifest.persistentDataPath.Length == 0 ? manifest.applicationId : manifest.persistentDataPath
         );
         byte[] payload = serialization.Serialize(manifest);
-        byte[] result = new byte[checked(magic.Length + sizeof(int) * 3
-                                         + applicationId.Length + persistentDataPath.Length + payload.Length)];
+        var result = new byte[checked(magic.Length + sizeof(int) * 3
+                                      + applicationId.Length + persistentDataPath.Length + payload.Length)];
         int offset = 0;
         magic.CopyTo(result);
         offset += magic.Length;

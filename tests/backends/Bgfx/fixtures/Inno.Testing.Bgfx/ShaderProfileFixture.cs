@@ -4,10 +4,14 @@ using Inno.Rendering;
 
 namespace Inno.Testing.Bgfx;
 
-/// <summary>Defines explicit shader target fixtures shared by metadata and real compiler tests.</summary>
+/// <summary>
+/// Defines explicit shader target fixtures shared by metadata and real compiler tests.
+/// </summary>
 public static class ShaderProfileFixture
 {
-    /// <summary>Gets the explicit windows shader profile used by the tests.</summary>
+    /// <summary>
+    /// Gets the explicit windows shader profile used by the tests.
+    /// </summary>
     public static BgfxShaderTargetProfile windows { get; } = new(
         "fixture-windows",
         [
@@ -17,7 +21,9 @@ public static class ShaderProfileFixture
         ]
     );
 
-    /// <summary>Gets the explicit mac shader profile used by the tests.</summary>
+    /// <summary>
+    /// Gets the explicit mac shader profile used by the tests.
+    /// </summary>
     public static BgfxShaderTargetProfile mac { get; } = new(
         "fixture-mac",
         [
@@ -27,7 +33,9 @@ public static class ShaderProfileFixture
         ]
     );
 
-    /// <summary>Gets the explicit browser shader profile used by the tests.</summary>
+    /// <summary>
+    /// Gets the explicit browser shader profile used by the tests.
+    /// </summary>
     public static BgfxShaderTargetProfile browser { get; } = new(
         "fixture-browser",
         [new(
@@ -45,14 +53,22 @@ public static class ShaderProfileFixture
             "asm.js",
             "300_es",
             "300_es",
-            ""
+            string.Empty
         )]
     );
 
-    /// <summary>Creates the declared rendering capabilities without loading a native runtime.</summary>
-    /// <param name="backend">The explicit graphics API.</param>
-    /// <param name="features">The capabilities required by the test.</param>
-    /// <returns>The immutable capability description.</returns>
+    /// <summary>
+    /// Creates the declared rendering capabilities without loading a native runtime.
+    /// </summary>
+    /// <param name="backend">
+    /// The explicit graphics API.
+    /// </param>
+    /// <param name="features">
+    /// The capabilities required by the test.
+    /// </param>
+    /// <returns>
+    /// The immutable capability description.
+    /// </returns>
 
     public static GraphicsCapabilities CreateCapabilities(
         GraphicsApi backend,

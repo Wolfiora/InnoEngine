@@ -25,8 +25,10 @@ public sealed class AudioRuntimeTests : IDisposable
     public void ConsumedApplicationLifecycleStillSuspendsAudioAndUnsubscribesOnStop()
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension.consumed", "Suspension"));
-        using var consumer = m_events.CreateHub(int.MaxValue);
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(
+            new DiagnosticSource("test.suspension.consumed", "Suspension")
+        );
+        using EventHub consumer = m_events.CreateHub(int.MaxValue);
         consumer.Listen<ApplicationSuspensionChangedEvent>(e => e.HandleInGlobal());
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         runtime.Attach();
@@ -46,10 +48,12 @@ public sealed class AudioRuntimeTests : IDisposable
     public void FailedSuspensionRollsBackRetainedMixerRootsAndRemainsRetryable()
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension.rollback", "Suspension"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(
+            new DiagnosticSource("test.suspension.rollback", "Suspension")
+        );
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         runtime.Attach();
-        runtime.Play(CreateClip(480000), new AudioPlayOptions(loop: true));
+        runtime.Play(CreateClip(480_000), new AudioPlayOptions(loop: true));
         runtime.Update(0);
         Assert.True(runtime.ApplyMixer(new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" }));
         device.failBusPauseAt = device.busPauseCalls + 2;
@@ -67,7 +71,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public void ApplicationSuspensionPreservesUserPauseAndReplacementMixerState()
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension", "Suspension"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.suspension", "Suspension"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         runtime.Attach();
         Assert.True(runtime.SetBusPaused(AudioBusId.master, true));
@@ -95,10 +99,10 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void InvalidPlaybackOptionsDoNotStealOrAcquireAnArtifact()
     {
-        using var runtime = CreateRuntime(maxVoices: 1);
-        AudioVoiceHandle previous = runtime.Play(CreateClip(48000), new AudioPlayOptions(loop: true));
+        using AudioRuntime runtime = CreateRuntime(maxVoices: 1);
+        AudioVoiceHandle previous = runtime.Play(CreateClip(48_000), new AudioPlayOptions(loop: true));
         runtime.Update(0);
-        AudioClipAsset next = CreateClip(48000);
+        AudioClipAsset next = CreateClip(48_000);
         int acquisitions = m_artifacts.acquisitions;
         Assert.Throws<ArgumentException>(() => runtime.Play(next, default));
         Assert.Equal(acquisitions, m_artifacts.acquisitions);
@@ -112,10 +116,10 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void ArtifactAcquisitionRetirementBarrierDoesNotStealOrBecomeDecodeFailure()
     {
-        using var runtime = CreateRuntime(maxVoices: 1);
-        AudioVoiceHandle previous = runtime.Play(CreateClip(48000), new AudioPlayOptions(loop: true));
+        using AudioRuntime runtime = CreateRuntime(maxVoices: 1);
+        AudioVoiceHandle previous = runtime.Play(CreateClip(48_000), new AudioPlayOptions(loop: true));
         runtime.Update(0);
-        AudioClipAsset next = CreateClip(48000);
+        AudioClipAsset next = CreateClip(48_000);
         m_artifacts.acquisitionFailure = new RetirementPendingException("Expected artifact retirement barrier.");
         Assert.Throws<RetirementPendingException>(() => runtime.Play(next));
         Assert.Equal(0, runtime.statistics.stolenVoiceCount);
@@ -130,7 +134,7 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         var events = new EventDispatcher(queueCapacity: 1);
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.admission", "Admission"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.admission", "Admission"));
         using var runtime = new AudioRuntime(
             m_types,
             device,
@@ -142,9 +146,9 @@ public sealed class AudioRuntimeTests : IDisposable
         using EventHub hub = events.CreateHub();
         var completions = new List<AudioVoiceCompletedEvent>();
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
-        AudioVoiceHandle previous = runtime.Play(CreateClip(48000), new AudioPlayOptions(loop: true));
+        AudioVoiceHandle previous = runtime.Play(CreateClip(48_000), new AudioPlayOptions(loop: true));
         runtime.Update(0);
-        AudioClipAsset next = CreateClip(48000);
+        AudioClipAsset next = CreateClip(48_000);
         events.Enqueue(new AudioVoiceCompletedEvent(new AudioVoiceAllocator().Allocate(), AudioCompletionReason.Stopped));
         m_artifacts.pendingReleaseId = next.identity.persistentId;
         m_artifacts.pendingReleases = 1;
@@ -171,7 +175,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void OrdinaryMissingMetadataStillCompletesThroughTheAsynchronousVoiceProtocol()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         using EventHub hub = m_events.CreateHub();
         var completed = new List<AudioVoiceCompletedEvent>();
         hub.Listen<AudioVoiceCompletedEvent>(completed.Add);
@@ -187,8 +191,8 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void UndefinedPreloadModeIsRejectedBeforeArtifactAcquisition()
     {
-        using var runtime = CreateRuntime();
-        AudioClipAsset clip = CreateClip(48000);
+        using AudioRuntime runtime = CreateRuntime();
+        AudioClipAsset clip = CreateClip(48_000);
         Assert.Throws<ArgumentOutOfRangeException>(() => runtime.PreloadAsync(clip, (AudioClipLoadMode)999));
         Assert.Equal(0, m_artifacts.acquisitions);
         Assert.Equal(0, runtime.statistics.loadedClips);
@@ -199,11 +203,11 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         using var device = new MutedAudioDevice();
         IAudioDevice backend = device;
-        AudioClipAsset asset = CreateClip(48000);
+        AudioClipAsset asset = CreateClip(48_000);
         using ArtifactLease artifact = m_artifacts.AcquireArtifact(asset.identity.persistentId, "audio-data");
         AudioBusHandle master = backend.CreateBus(AudioBusId.master);
         AudioClipHandle clip = backend.CreateClip(
-            new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48000, 48000, artifact.info.length),
+            new AudioClipDescriptor(            AudioCodecId.wav, AudioClipLoadMode.Decode, 2, 48_000, 48_000, artifact.info.length),
             new LeaseAudioTestSource(artifact)
         );
         Assert.False(backend.Play(clip, master, default).isValid);
@@ -230,7 +234,7 @@ public sealed class AudioRuntimeTests : IDisposable
         var content = new TestAudioContent();
         var identities = new IdentityAllocator();
         identities.Register(content);
-        AudioClipAsset clip = CreateClip(48000);
+        AudioClipAsset clip = CreateClip(48_000);
         var emitter = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         var listener = new AudioListenerSnapshot(Guid.NewGuid(), 0, default, true);
         content.first = context =>
@@ -247,7 +251,7 @@ public sealed class AudioRuntimeTests : IDisposable
         var diagnostics = new DiagnosticHub();
         var sink = new RecordingSink();
         diagnostics.RegisterSink(sink);
-        using var reporter = diagnostics.CreateReporter(new DiagnosticSource("test.content", "Content"));
+        using DiagnosticReporter reporter = diagnostics.CreateReporter(new DiagnosticSource("test.content", "Content"));
         var device = new ReadyAudioDevice();
         using var runtime = new AudioRuntime(
             m_types,
@@ -275,7 +279,7 @@ public sealed class AudioRuntimeTests : IDisposable
         var content = new TestAudioContent();
         var identities = new IdentityAllocator();
         identities.Register(content);
-        AudioClipAsset clip = CreateClip(48000);
+        AudioClipAsset clip = CreateClip(48_000);
         var first = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         var second = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         content.first = context => context.Submit(first);
@@ -285,7 +289,7 @@ public sealed class AudioRuntimeTests : IDisposable
             context.Submit(first);
         };
         content.third = context => context.Submit(second);
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.duplicate", "Duplicate"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.duplicate", "Duplicate"));
         using var runtime = new AudioRuntime(
             m_types,
             new ReadyAudioDevice(),
@@ -306,7 +310,7 @@ public sealed class AudioRuntimeTests : IDisposable
         var content = new TestAudioContent();
         var identities = new IdentityAllocator();
         identities.Register(content);
-        AudioClipAsset clip = CreateClip(48000);
+        AudioClipAsset clip = CreateClip(48_000);
         var first = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         var overflow = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
         var last = new AudioEmitterSnapshot(Guid.NewGuid(), clip, new AudioPlayOptions(loop: true), true);
@@ -321,7 +325,7 @@ public sealed class AudioRuntimeTests : IDisposable
             catch (InvalidOperationException) { }
         };
         content.third = context => context.Submit(last);
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.capacity", "Capacity"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.capacity", "Capacity"));
         var options = new AudioRuntimeOptions { maxContentSnapshots = 2 };
         using var runtime = new AudioRuntime(
             m_types,
@@ -360,7 +364,7 @@ public sealed class AudioRuntimeTests : IDisposable
             captured = context;
             capturedScope = context.content;
         };
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.scope", "Scope"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.scope", "Scope"));
         using var runtime = new AudioRuntime(
             m_types,
             new ReadyAudioDevice(),
@@ -390,7 +394,7 @@ public sealed class AudioRuntimeTests : IDisposable
             throw new RetirementPendingException("Expected provider work drain.");
         };
         content.second = _ => nextInvoked = true;
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.pending-content", "Pending"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.pending-content", "Pending"));
         using var runtime = new AudioRuntime(
             m_types,
             new ReadyAudioDevice(),
@@ -411,7 +415,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [InlineData(float.PositiveInfinity)]
     public void InvalidUpdateTimeIsRejectedBeforeProviderExecution(float deltaTime)
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         Assert.Throws<ArgumentOutOfRangeException>(() => runtime.Update(deltaTime));
     }
 
@@ -464,9 +468,9 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task PendingClipRetirementPreservesDeviceAndRetriesExactlyOnce(bool playing)
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.pending", "Pending"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.pending", "Pending"));
         var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
-        AudioClipAsset clip = CreateClip(48000);
+        AudioClipAsset clip = CreateClip(48_000);
         if (playing)
         {
             runtime.Play(clip);
@@ -495,7 +499,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public void PendingBusRetirementDoesNotDestroyTheDeviceBeforeRetry()
     {
         var device = new ReadyAudioDevice { pendingBusRetirements = 1 };
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.bus", "Bus"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.bus", "Bus"));
         var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         Assert.Throws<RetirementPendingException>(runtime.Dispose);
         Assert.Equal(0, device.disposals);
@@ -509,9 +513,9 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         var previous = new ReadyAudioDevice { pendingBusRetirements = 1 };
         var replacement = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.replacement", "Replacement"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.replacement", "Replacement"));
         using var runtime = new AudioRuntime(m_types, previous, m_artifacts, m_events, reporter);
-        AudioVoiceHandle oldVoice = runtime.Play(CreateClip(48000));
+        AudioVoiceHandle oldVoice = runtime.Play(CreateClip(48_000));
         runtime.ReplaceDevice(replacement);
         Assert.Equal(2, previous.busRetirements);
         Assert.Equal(1, previous.disposals);
@@ -525,7 +529,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void PendingProviderIsRetriedBeforeItsGenerationIsReleased()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         runtime.Update(0);
         RetirementProviderFirst.disposals = 0;
         RetirementProviderFirst.pendingRetirements = 1;
@@ -545,7 +549,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public void CompletionBackpressureRetainsTheVoiceUntilItsEventIsAccepted()
     {
         var events = new EventDispatcher(queueCapacity: 1);
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.completion", "Completion"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.completion", "Completion"));
         using var runtime = new AudioRuntime(m_types, new ReadyAudioDevice(), m_artifacts, events, reporter);
         using EventHub hub = events.CreateHub();
         var completed = new List<AudioVoiceCompletedEvent>();
@@ -569,7 +573,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void CandidateCleanupFailureFaultsInsteadOfReportingRecoverableMixerFailure()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         runtime.Update(0);
         RetirementProviderFirst.fail = true;
         RetirementProviderSecond.failConstruction = true;
@@ -590,7 +594,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task CacheRetirementAttemptsEveryClipBeforeDeviceDisposal()
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.retire", "Retire"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.retire", "Retire"));
         var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         await runtime.PreloadAsync(CreateClip(4800));
         await runtime.PreloadAsync(CreateClip(9600));
@@ -606,7 +610,7 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         var previous = new ReadyAudioDevice { failDisposal = true };
         var candidate = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.replace", "Replace"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.replace", "Replace"));
         var runtime = new AudioRuntime(m_types, previous, m_artifacts, m_events, reporter);
         Assert.Throws<AggregateException>(() => runtime.ReplaceDevice(candidate));
         Assert.Equal(1, previous.disposals);
@@ -623,7 +627,7 @@ public sealed class AudioRuntimeTests : IDisposable
         var diagnostics = new DiagnosticHub();
         var sink = new RecordingSink();
         diagnostics.RegisterSink(sink);
-        using var reporter = diagnostics.CreateReporter(new DiagnosticSource("test.device", "Device"));
+        using DiagnosticReporter reporter = diagnostics.CreateReporter(new DiagnosticSource("test.device", "Device"));
         using var runtime = new AudioRuntime(m_types, new MutedAudioDevice(), m_artifacts, m_events, reporter);
         Assert.Contains(sink.issues, issue => issue.code == "AUDIO_NO_DEVICE");
         Assert.False(runtime.TryRecoverDevice(static () => throw new InvalidOperationException("Device unavailable.")));
@@ -635,7 +639,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void ProviderRetirementAttemptsEveryInstanceAndFaultsSharedGeneration()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         runtime.Update(0);
         RetirementProviderFirst.disposals = 0;
         RetirementProviderSecond.disposals = 0;
@@ -701,7 +705,7 @@ public sealed class AudioRuntimeTests : IDisposable
         var diagnostics = new DiagnosticHub();
         var sink = new RecordingSink();
         diagnostics.RegisterSink(sink);
-        using var reporter = diagnostics.CreateReporter(new DiagnosticSource("test.mixer", "Mixer"));
+        using DiagnosticReporter reporter = diagnostics.CreateReporter(new DiagnosticSource("test.mixer", "Mixer"));
         using var runtime = new AudioRuntime(m_types, new MutedAudioDevice(), m_artifacts, m_events, reporter);
         var mixer = new AudioMixerAsset { mixerTypeId = "tests.unavailable" };
         Assert.False(runtime.ApplyMixer(mixer));
@@ -753,7 +757,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public void PlayTransitionsFromPreparingToNaturalCompletionOnMainThread()
     {
         AudioClipAsset clip = CreateClip(frameCount: 4800);
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         using EventHub hub = m_events.CreateHub();
         var completions = new List<AudioVoiceCompletedEvent>();
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
@@ -778,7 +782,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public void ScheduledLoopingVoiceSupportsPauseResumeAndSeek()
     {
         AudioClipAsset clip = CreateClip(frameCount: 4800);
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         AudioVoiceHandle voice = runtime.PlayScheduled(clip, 1d, new AudioPlayOptions(loop: true));
 
         runtime.Update(0.1f);
@@ -797,8 +801,8 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void VoiceBudgetStealsLowestPriorityThenOldestVoice()
     {
-        AudioClipAsset clip = CreateClip(frameCount: 480000);
-        using var runtime = CreateRuntime(maxVoices: 2);
+        AudioClipAsset clip = CreateClip(frameCount: 480_000);
+        using AudioRuntime runtime = CreateRuntime(maxVoices: 2);
         using EventHub hub = m_events.CreateHub();
         var completions = new List<AudioVoiceCompletedEvent>();
         hub.Listen<AudioVoiceCompletedEvent>(completions.Add);
@@ -823,7 +827,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task PreloadRetainsDistinctDecodeAndStreamEntriesUntilReleased()
     {
         AudioClipAsset clip = CreateClip(frameCount: 4800);
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
 
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Decode);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Stream);
@@ -838,7 +842,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task AutomaticPreparationStreamsWhenDecodedFootprintExceedsBudget()
     {
         AudioClipAsset clip = CreateClip(frameCount: 4800);
-        using var runtime = CreateRuntime(
+        using AudioRuntime runtime = CreateRuntime(
             decodedCacheBudgetBytes: 1024,
             automaticStreamingThresholdBytes: long.MaxValue
         );
@@ -853,7 +857,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void MixerExtensionBuildsOpenBusGraphAndMissingCandidateKeepsLastGood()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         var mixer = new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" };
 
         Assert.True(runtime.ApplyMixer(mixer));
@@ -867,8 +871,8 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void DeviceReplacementCompletesOldHandlesAndUsesANewGeneration()
     {
-        AudioClipAsset clip = CreateClip(frameCount: 480000);
-        using var runtime = CreateRuntime();
+        AudioClipAsset clip = CreateClip(frameCount: 480_000);
+        using AudioRuntime runtime = CreateRuntime();
         AudioVoiceHandle oldVoice = runtime.Play(clip);
         runtime.Update(0f);
 
@@ -884,10 +888,10 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public void RecoveryCandidatePreservesTheLastGoodMixerGraph()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         var mixer = new AudioMixerAsset { mixerTypeId = "tests.audio.mixer" };
         Assert.True(runtime.ApplyMixer(mixer));
-        AudioBusId music = new("tests.audio.bus.music");
+        var music = new AudioBusId("tests.audio.bus.music");
         Assert.True(runtime.SetBusVolume(music, 0.25f));
         Assert.True(runtime.SetBusPaused(music, true));
         var replacement = new ReadyAudioDevice();
@@ -908,7 +912,7 @@ public sealed class AudioRuntimeTests : IDisposable
             device,
             m_artifacts,
             m_events,
-            new Inno.Core.Diagnostics.DiagnosticHub().CreateReporter(new Inno.Core.Diagnostics.DiagnosticSource("test.preload", "Preload"))
+            new DiagnosticHub().CreateReporter(new DiagnosticSource("test.preload", "Preload"))
         );
         AudioClipAsset clip = CreateClip(4800);
         ValueTask ready = runtime.PreloadAsync(clip);
@@ -933,7 +937,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task PreloadedArtifactRetirementResumesWithoutDestroyingTheNativeClipTwice(bool shutdown)
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.artifact", "Artifact"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.artifact", "Artifact"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
@@ -964,7 +968,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public void CanceledPreloadDoesNotCompleteBeforeItsPendingArtifactRetires()
     {
         var device = new ReadyAudioDevice { clipState = AudioClipState.Preparing };
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.cancel", "Cancel"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.cancel", "Cancel"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         using var cancellation = new CancellationTokenSource();
@@ -987,7 +991,7 @@ public sealed class AudioRuntimeTests : IDisposable
     public async Task APartiallyRetiredClipCannotBeReusedByANewVoice()
     {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.reuse", "Reuse"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.reuse", "Reuse"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
@@ -1009,7 +1013,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public async Task CacheHitRequestRetiresItsExtraArtifactThroughTheSharedGenerationBarrier()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip);
         m_artifacts.pendingReleaseId = clip.identity.persistentId;
@@ -1025,7 +1029,7 @@ public sealed class AudioRuntimeTests : IDisposable
     [Fact]
     public async Task RetryingPreloadReleaseDoesNotConsumeAnotherLoadModeReservation()
     {
-        using var runtime = CreateRuntime();
+        using AudioRuntime runtime = CreateRuntime();
         AudioClipAsset clip = CreateClip(4800);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Decode);
         await runtime.PreloadAsync(clip, AudioClipLoadMode.Stream);
@@ -1050,7 +1054,7 @@ public sealed class AudioRuntimeTests : IDisposable
         bool queryThrows
     ) {
         var device = new ReadyAudioDevice();
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.query", "Query"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.query", "Query"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         if (cached)
@@ -1094,7 +1098,7 @@ public sealed class AudioRuntimeTests : IDisposable
             clipQueryFailure = new InvalidOperationException("Expected clip query failure."),
             failClipRetirement = true
         };
-        using var reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.rollback", "Rollback"));
+        using DiagnosticReporter reporter = new DiagnosticHub().CreateReporter(new DiagnosticSource("test.rollback", "Rollback"));
         using var runtime = new AudioRuntime(m_types, device, m_artifacts, m_events, reporter);
         AudioClipAsset clip = CreateClip(4800);
         AggregateException failure = Assert.Throws<AggregateException>(() => runtime.PreloadAsync(clip));
@@ -1117,7 +1121,7 @@ public sealed class AudioRuntimeTests : IDisposable
         new MutedAudioDevice(),
         m_artifacts,
         m_events,
-        new Inno.Core.Diagnostics.DiagnosticHub().CreateReporter(new Inno.Core.Diagnostics.DiagnosticSource("tests.audio", "Audio")),
+        new DiagnosticHub().CreateReporter(new DiagnosticSource("tests.audio", "Audio")),
         options: new AudioRuntimeOptions
         {
             maxVoices = maxVoices,
@@ -1130,7 +1134,7 @@ public sealed class AudioRuntimeTests : IDisposable
     {
         var clip = new AudioClipAsset();
         byte[] payload = AudioClipMetadataCodec.Encode(
-            new AudioClipMetadata(AudioCodecId.wav, 2, 48000, frameCount, 256)
+            new AudioClipMetadata(AudioCodecId.wav, 2, 48_000, frameCount, 256)
         );
         new AssetRuntimeOwner().Initialize(
             clip,
@@ -1199,7 +1203,7 @@ public sealed class AudioRuntimeTests : IDisposable
             Guid id,
             string path
         ) {
-            byte[] bytes = new byte[256];
+            var bytes = new byte[256];
             File.WriteAllBytes(path, bytes);
             m_paths[id] = path;
             m_artifacts[id] = new AssetArtifactInfo(

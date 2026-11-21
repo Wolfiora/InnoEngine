@@ -1,5 +1,7 @@
 using System;
 
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
+
 namespace Inno.Editor.ImGui;
 
 /// <summary>
@@ -10,661 +12,661 @@ public enum ImGuiKey : int
     /// <summary>
     /// Uses the ordinary behavior without additional options.
     /// </summary>
-    None = (int)Inno.Native.ImGui.ImGuiKey.None,
+    None = (int)NativeKey.None,
     /// <summary>
     /// Identifies the NamedKeyBegin presentation key or modifier.
     /// </summary>
-    NamedKeyBegin = (int)Inno.Native.ImGui.ImGuiKey.NamedKeyBegin,
+    NamedKeyBegin = (int)NativeKey.NamedKeyBegin,
     /// <summary>
     /// == ImGuiKey_NamedKey_BEGIN
     /// </summary>
-    Tab = (int)Inno.Native.ImGui.ImGuiKey.Tab,
+    Tab = (int)NativeKey.Tab,
     /// <summary>
     /// Identifies the LeftArrow presentation key or modifier.
     /// </summary>
-    LeftArrow = (int)Inno.Native.ImGui.ImGuiKey.LeftArrow,
+    LeftArrow = (int)NativeKey.LeftArrow,
     /// <summary>
     /// Identifies the RightArrow presentation key or modifier.
     /// </summary>
-    RightArrow = (int)Inno.Native.ImGui.ImGuiKey.RightArrow,
+    RightArrow = (int)NativeKey.RightArrow,
     /// <summary>
     /// Identifies the UpArrow presentation key or modifier.
     /// </summary>
-    UpArrow = (int)Inno.Native.ImGui.ImGuiKey.UpArrow,
+    UpArrow = (int)NativeKey.UpArrow,
     /// <summary>
     /// Identifies the DownArrow presentation key or modifier.
     /// </summary>
-    DownArrow = (int)Inno.Native.ImGui.ImGuiKey.DownArrow,
+    DownArrow = (int)NativeKey.DownArrow,
     /// <summary>
     /// Identifies the PageUp presentation key or modifier.
     /// </summary>
-    PageUp = (int)Inno.Native.ImGui.ImGuiKey.PageUp,
+    PageUp = (int)NativeKey.PageUp,
     /// <summary>
     /// Identifies the PageDown presentation key or modifier.
     /// </summary>
-    PageDown = (int)Inno.Native.ImGui.ImGuiKey.PageDown,
+    PageDown = (int)NativeKey.PageDown,
     /// <summary>
     /// Identifies the Home presentation key or modifier.
     /// </summary>
-    Home = (int)Inno.Native.ImGui.ImGuiKey.Home,
+    Home = (int)NativeKey.Home,
     /// <summary>
     /// Identifies the End presentation key or modifier.
     /// </summary>
-    End = (int)Inno.Native.ImGui.ImGuiKey.End,
+    End = (int)NativeKey.End,
     /// <summary>
     /// Identifies the Insert presentation key or modifier.
     /// </summary>
-    Insert = (int)Inno.Native.ImGui.ImGuiKey.Insert,
+    Insert = (int)NativeKey.Insert,
     /// <summary>
     /// Identifies the Delete presentation key or modifier.
     /// </summary>
-    Delete = (int)Inno.Native.ImGui.ImGuiKey.Delete,
+    Delete = (int)NativeKey.Delete,
     /// <summary>
     /// Identifies the Backspace presentation key or modifier.
     /// </summary>
-    Backspace = (int)Inno.Native.ImGui.ImGuiKey.Backspace,
+    Backspace = (int)NativeKey.Backspace,
     /// <summary>
     /// Identifies the Space presentation key or modifier.
     /// </summary>
-    Space = (int)Inno.Native.ImGui.ImGuiKey.Space,
+    Space = (int)NativeKey.Space,
     /// <summary>
     /// Identifies the Enter presentation key or modifier.
     /// </summary>
-    Enter = (int)Inno.Native.ImGui.ImGuiKey.Enter,
+    Enter = (int)NativeKey.Enter,
     /// <summary>
     /// Identifies the Escape presentation key or modifier.
     /// </summary>
-    Escape = (int)Inno.Native.ImGui.ImGuiKey.Escape,
+    Escape = (int)NativeKey.Escape,
     /// <summary>
     /// Identifies the LeftCtrl presentation key or modifier.
     /// </summary>
-    LeftCtrl = (int)Inno.Native.ImGui.ImGuiKey.LeftCtrl,
+    LeftCtrl = (int)NativeKey.LeftCtrl,
     /// <summary>
     /// Identifies the LeftShift presentation key or modifier.
     /// </summary>
-    LeftShift = (int)Inno.Native.ImGui.ImGuiKey.LeftShift,
+    LeftShift = (int)NativeKey.LeftShift,
     /// <summary>
     /// Identifies the LeftAlt presentation key or modifier.
     /// </summary>
-    LeftAlt = (int)Inno.Native.ImGui.ImGuiKey.LeftAlt,
+    LeftAlt = (int)NativeKey.LeftAlt,
     /// <summary>
     /// Identifies the LeftSuper presentation key or modifier.
     /// </summary>
-    LeftSuper = (int)Inno.Native.ImGui.ImGuiKey.LeftSuper,
+    LeftSuper = (int)NativeKey.LeftSuper,
     /// <summary>
     /// Identifies the RightCtrl presentation key or modifier.
     /// </summary>
-    RightCtrl = (int)Inno.Native.ImGui.ImGuiKey.RightCtrl,
+    RightCtrl = (int)NativeKey.RightCtrl,
     /// <summary>
     /// Identifies the RightShift presentation key or modifier.
     /// </summary>
-    RightShift = (int)Inno.Native.ImGui.ImGuiKey.RightShift,
+    RightShift = (int)NativeKey.RightShift,
     /// <summary>
     /// Identifies the RightAlt presentation key or modifier.
     /// </summary>
-    RightAlt = (int)Inno.Native.ImGui.ImGuiKey.RightAlt,
+    RightAlt = (int)NativeKey.RightAlt,
     /// <summary>
     /// Identifies the RightSuper presentation key or modifier.
     /// </summary>
-    RightSuper = (int)Inno.Native.ImGui.ImGuiKey.RightSuper,
+    RightSuper = (int)NativeKey.RightSuper,
     /// <summary>
     /// Identifies the Menu presentation key or modifier.
     /// </summary>
-    Menu = (int)Inno.Native.ImGui.ImGuiKey.Menu,
+    Menu = (int)NativeKey.Menu,
     /// <summary>
     /// Identifies the _0 presentation key or modifier.
     /// </summary>
-    _0 = (int)Inno.Native.ImGui.ImGuiKey._0,
+    _0 = (int)NativeKey._0,
     /// <summary>
     /// Identifies the _1 presentation key or modifier.
     /// </summary>
-    _1 = (int)Inno.Native.ImGui.ImGuiKey._1,
+    _1 = (int)NativeKey._1,
     /// <summary>
     /// Identifies the _2 presentation key or modifier.
     /// </summary>
-    _2 = (int)Inno.Native.ImGui.ImGuiKey._2,
+    _2 = (int)NativeKey._2,
     /// <summary>
     /// Identifies the _3 presentation key or modifier.
     /// </summary>
-    _3 = (int)Inno.Native.ImGui.ImGuiKey._3,
+    _3 = (int)NativeKey._3,
     /// <summary>
     /// Identifies the _4 presentation key or modifier.
     /// </summary>
-    _4 = (int)Inno.Native.ImGui.ImGuiKey._4,
+    _4 = (int)NativeKey._4,
     /// <summary>
     /// Identifies the _5 presentation key or modifier.
     /// </summary>
-    _5 = (int)Inno.Native.ImGui.ImGuiKey._5,
+    _5 = (int)NativeKey._5,
     /// <summary>
     /// Identifies the _6 presentation key or modifier.
     /// </summary>
-    _6 = (int)Inno.Native.ImGui.ImGuiKey._6,
+    _6 = (int)NativeKey._6,
     /// <summary>
     /// Identifies the _7 presentation key or modifier.
     /// </summary>
-    _7 = (int)Inno.Native.ImGui.ImGuiKey._7,
+    _7 = (int)NativeKey._7,
     /// <summary>
     /// Identifies the _8 presentation key or modifier.
     /// </summary>
-    _8 = (int)Inno.Native.ImGui.ImGuiKey._8,
+    _8 = (int)NativeKey._8,
     /// <summary>
     /// Identifies the _9 presentation key or modifier.
     /// </summary>
-    _9 = (int)Inno.Native.ImGui.ImGuiKey._9,
+    _9 = (int)NativeKey._9,
     /// <summary>
     /// Identifies the A presentation key or modifier.
     /// </summary>
-    A = (int)Inno.Native.ImGui.ImGuiKey.A,
+    A = (int)NativeKey.A,
     /// <summary>
     /// Identifies the B presentation key or modifier.
     /// </summary>
-    B = (int)Inno.Native.ImGui.ImGuiKey.B,
+    B = (int)NativeKey.B,
     /// <summary>
     /// Identifies the C presentation key or modifier.
     /// </summary>
-    C = (int)Inno.Native.ImGui.ImGuiKey.C,
+    C = (int)NativeKey.C,
     /// <summary>
     /// Identifies the D presentation key or modifier.
     /// </summary>
-    D = (int)Inno.Native.ImGui.ImGuiKey.D,
+    D = (int)NativeKey.D,
     /// <summary>
     /// Identifies the E presentation key or modifier.
     /// </summary>
-    E = (int)Inno.Native.ImGui.ImGuiKey.E,
+    E = (int)NativeKey.E,
     /// <summary>
     /// Identifies the F presentation key or modifier.
     /// </summary>
-    F = (int)Inno.Native.ImGui.ImGuiKey.F,
+    F = (int)NativeKey.F,
     /// <summary>
     /// Identifies the G presentation key or modifier.
     /// </summary>
-    G = (int)Inno.Native.ImGui.ImGuiKey.G,
+    G = (int)NativeKey.G,
     /// <summary>
     /// Identifies the H presentation key or modifier.
     /// </summary>
-    H = (int)Inno.Native.ImGui.ImGuiKey.H,
+    H = (int)NativeKey.H,
     /// <summary>
     /// Identifies the I presentation key or modifier.
     /// </summary>
-    I = (int)Inno.Native.ImGui.ImGuiKey.I,
+    I = (int)NativeKey.I,
     /// <summary>
     /// Identifies the J presentation key or modifier.
     /// </summary>
-    J = (int)Inno.Native.ImGui.ImGuiKey.J,
+    J = (int)NativeKey.J,
     /// <summary>
     /// Identifies the K presentation key or modifier.
     /// </summary>
-    K = (int)Inno.Native.ImGui.ImGuiKey.K,
+    K = (int)NativeKey.K,
     /// <summary>
     /// Identifies the L presentation key or modifier.
     /// </summary>
-    L = (int)Inno.Native.ImGui.ImGuiKey.L,
+    L = (int)NativeKey.L,
     /// <summary>
     /// Identifies the M presentation key or modifier.
     /// </summary>
-    M = (int)Inno.Native.ImGui.ImGuiKey.M,
+    M = (int)NativeKey.M,
     /// <summary>
     /// Identifies the N presentation key or modifier.
     /// </summary>
-    N = (int)Inno.Native.ImGui.ImGuiKey.N,
+    N = (int)NativeKey.N,
     /// <summary>
     /// Identifies the O presentation key or modifier.
     /// </summary>
-    O = (int)Inno.Native.ImGui.ImGuiKey.O,
+    O = (int)NativeKey.O,
     /// <summary>
     /// Identifies the P presentation key or modifier.
     /// </summary>
-    P = (int)Inno.Native.ImGui.ImGuiKey.P,
+    P = (int)NativeKey.P,
     /// <summary>
     /// Identifies the Q presentation key or modifier.
     /// </summary>
-    Q = (int)Inno.Native.ImGui.ImGuiKey.Q,
+    Q = (int)NativeKey.Q,
     /// <summary>
     /// Identifies the R presentation key or modifier.
     /// </summary>
-    R = (int)Inno.Native.ImGui.ImGuiKey.R,
+    R = (int)NativeKey.R,
     /// <summary>
     /// Identifies the S presentation key or modifier.
     /// </summary>
-    S = (int)Inno.Native.ImGui.ImGuiKey.S,
+    S = (int)NativeKey.S,
     /// <summary>
     /// Identifies the T presentation key or modifier.
     /// </summary>
-    T = (int)Inno.Native.ImGui.ImGuiKey.T,
+    T = (int)NativeKey.T,
     /// <summary>
     /// Identifies the U presentation key or modifier.
     /// </summary>
-    U = (int)Inno.Native.ImGui.ImGuiKey.U,
+    U = (int)NativeKey.U,
     /// <summary>
     /// Identifies the V presentation key or modifier.
     /// </summary>
-    V = (int)Inno.Native.ImGui.ImGuiKey.V,
+    V = (int)NativeKey.V,
     /// <summary>
     /// Identifies the W presentation key or modifier.
     /// </summary>
-    W = (int)Inno.Native.ImGui.ImGuiKey.W,
+    W = (int)NativeKey.W,
     /// <summary>
     /// Identifies the X presentation key or modifier.
     /// </summary>
-    X = (int)Inno.Native.ImGui.ImGuiKey.X,
+    X = (int)NativeKey.X,
     /// <summary>
     /// Identifies the Y presentation key or modifier.
     /// </summary>
-    Y = (int)Inno.Native.ImGui.ImGuiKey.Y,
+    Y = (int)NativeKey.Y,
     /// <summary>
     /// Identifies the Z presentation key or modifier.
     /// </summary>
-    Z = (int)Inno.Native.ImGui.ImGuiKey.Z,
+    Z = (int)NativeKey.Z,
     /// <summary>
     /// Identifies the F1 presentation key or modifier.
     /// </summary>
-    F1 = (int)Inno.Native.ImGui.ImGuiKey.F1,
+    F1 = (int)NativeKey.F1,
     /// <summary>
     /// Identifies the F2 presentation key or modifier.
     /// </summary>
-    F2 = (int)Inno.Native.ImGui.ImGuiKey.F2,
+    F2 = (int)NativeKey.F2,
     /// <summary>
     /// Identifies the F3 presentation key or modifier.
     /// </summary>
-    F3 = (int)Inno.Native.ImGui.ImGuiKey.F3,
+    F3 = (int)NativeKey.F3,
     /// <summary>
     /// Identifies the F4 presentation key or modifier.
     /// </summary>
-    F4 = (int)Inno.Native.ImGui.ImGuiKey.F4,
+    F4 = (int)NativeKey.F4,
     /// <summary>
     /// Identifies the F5 presentation key or modifier.
     /// </summary>
-    F5 = (int)Inno.Native.ImGui.ImGuiKey.F5,
+    F5 = (int)NativeKey.F5,
     /// <summary>
     /// Identifies the F6 presentation key or modifier.
     /// </summary>
-    F6 = (int)Inno.Native.ImGui.ImGuiKey.F6,
+    F6 = (int)NativeKey.F6,
     /// <summary>
     /// Identifies the F7 presentation key or modifier.
     /// </summary>
-    F7 = (int)Inno.Native.ImGui.ImGuiKey.F7,
+    F7 = (int)NativeKey.F7,
     /// <summary>
     /// Identifies the F8 presentation key or modifier.
     /// </summary>
-    F8 = (int)Inno.Native.ImGui.ImGuiKey.F8,
+    F8 = (int)NativeKey.F8,
     /// <summary>
     /// Identifies the F9 presentation key or modifier.
     /// </summary>
-    F9 = (int)Inno.Native.ImGui.ImGuiKey.F9,
+    F9 = (int)NativeKey.F9,
     /// <summary>
     /// Identifies the F10 presentation key or modifier.
     /// </summary>
-    F10 = (int)Inno.Native.ImGui.ImGuiKey.F10,
+    F10 = (int)NativeKey.F10,
     /// <summary>
     /// Identifies the F11 presentation key or modifier.
     /// </summary>
-    F11 = (int)Inno.Native.ImGui.ImGuiKey.F11,
+    F11 = (int)NativeKey.F11,
     /// <summary>
     /// Identifies the F12 presentation key or modifier.
     /// </summary>
-    F12 = (int)Inno.Native.ImGui.ImGuiKey.F12,
+    F12 = (int)NativeKey.F12,
     /// <summary>
     /// Identifies the F13 presentation key or modifier.
     /// </summary>
-    F13 = (int)Inno.Native.ImGui.ImGuiKey.F13,
+    F13 = (int)NativeKey.F13,
     /// <summary>
     /// Identifies the F14 presentation key or modifier.
     /// </summary>
-    F14 = (int)Inno.Native.ImGui.ImGuiKey.F14,
+    F14 = (int)NativeKey.F14,
     /// <summary>
     /// Identifies the F15 presentation key or modifier.
     /// </summary>
-    F15 = (int)Inno.Native.ImGui.ImGuiKey.F15,
+    F15 = (int)NativeKey.F15,
     /// <summary>
     /// Identifies the F16 presentation key or modifier.
     /// </summary>
-    F16 = (int)Inno.Native.ImGui.ImGuiKey.F16,
+    F16 = (int)NativeKey.F16,
     /// <summary>
     /// Identifies the F17 presentation key or modifier.
     /// </summary>
-    F17 = (int)Inno.Native.ImGui.ImGuiKey.F17,
+    F17 = (int)NativeKey.F17,
     /// <summary>
     /// Identifies the F18 presentation key or modifier.
     /// </summary>
-    F18 = (int)Inno.Native.ImGui.ImGuiKey.F18,
+    F18 = (int)NativeKey.F18,
     /// <summary>
     /// Identifies the F19 presentation key or modifier.
     /// </summary>
-    F19 = (int)Inno.Native.ImGui.ImGuiKey.F19,
+    F19 = (int)NativeKey.F19,
     /// <summary>
     /// Identifies the F20 presentation key or modifier.
     /// </summary>
-    F20 = (int)Inno.Native.ImGui.ImGuiKey.F20,
+    F20 = (int)NativeKey.F20,
     /// <summary>
     /// Identifies the F21 presentation key or modifier.
     /// </summary>
-    F21 = (int)Inno.Native.ImGui.ImGuiKey.F21,
+    F21 = (int)NativeKey.F21,
     /// <summary>
     /// Identifies the F22 presentation key or modifier.
     /// </summary>
-    F22 = (int)Inno.Native.ImGui.ImGuiKey.F22,
+    F22 = (int)NativeKey.F22,
     /// <summary>
     /// Identifies the F23 presentation key or modifier.
     /// </summary>
-    F23 = (int)Inno.Native.ImGui.ImGuiKey.F23,
+    F23 = (int)NativeKey.F23,
     /// <summary>
     /// Identifies the F24 presentation key or modifier.
     /// </summary>
-    F24 = (int)Inno.Native.ImGui.ImGuiKey.F24,
+    F24 = (int)NativeKey.F24,
     /// <summary>
     /// Identifies the Apostrophe presentation key or modifier.
     /// </summary>
-    Apostrophe = (int)Inno.Native.ImGui.ImGuiKey.Apostrophe,
+    Apostrophe = (int)NativeKey.Apostrophe,
     /// <summary>
     /// Identifies the Comma presentation key or modifier.
     /// </summary>
-    Comma = (int)Inno.Native.ImGui.ImGuiKey.Comma,
+    Comma = (int)NativeKey.Comma,
     /// <summary>
     /// Identifies the Minus presentation key or modifier.
     /// </summary>
-    Minus = (int)Inno.Native.ImGui.ImGuiKey.Minus,
+    Minus = (int)NativeKey.Minus,
     /// <summary>
     /// Identifies the Period presentation key or modifier.
     /// </summary>
-    Period = (int)Inno.Native.ImGui.ImGuiKey.Period,
+    Period = (int)NativeKey.Period,
     /// <summary>
     /// Identifies the Slash presentation key or modifier.
     /// </summary>
-    Slash = (int)Inno.Native.ImGui.ImGuiKey.Slash,
+    Slash = (int)NativeKey.Slash,
     /// <summary>
     /// Identifies the Semicolon presentation key or modifier.
     /// </summary>
-    Semicolon = (int)Inno.Native.ImGui.ImGuiKey.Semicolon,
+    Semicolon = (int)NativeKey.Semicolon,
     /// <summary>
     /// Identifies the Equal presentation key or modifier.
     /// </summary>
-    Equal = (int)Inno.Native.ImGui.ImGuiKey.Equal,
+    Equal = (int)NativeKey.Equal,
     /// <summary>
     /// Identifies the LeftBracket presentation key or modifier.
     /// </summary>
-    LeftBracket = (int)Inno.Native.ImGui.ImGuiKey.LeftBracket,
+    LeftBracket = (int)NativeKey.LeftBracket,
     /// <summary>
     /// Identifies the Backslash presentation key or modifier.
     /// </summary>
-    Backslash = (int)Inno.Native.ImGui.ImGuiKey.Backslash,
+    Backslash = (int)NativeKey.Backslash,
     /// <summary>
     /// Identifies the RightBracket presentation key or modifier.
     /// </summary>
-    RightBracket = (int)Inno.Native.ImGui.ImGuiKey.RightBracket,
+    RightBracket = (int)NativeKey.RightBracket,
     /// <summary>
     /// Identifies the GraveAccent presentation key or modifier.
     /// </summary>
-    GraveAccent = (int)Inno.Native.ImGui.ImGuiKey.GraveAccent,
+    GraveAccent = (int)NativeKey.GraveAccent,
     /// <summary>
     /// Identifies the CapsLock presentation key or modifier.
     /// </summary>
-    CapsLock = (int)Inno.Native.ImGui.ImGuiKey.CapsLock,
+    CapsLock = (int)NativeKey.CapsLock,
     /// <summary>
     /// Identifies the ScrollLock presentation key or modifier.
     /// </summary>
-    ScrollLock = (int)Inno.Native.ImGui.ImGuiKey.ScrollLock,
+    ScrollLock = (int)NativeKey.ScrollLock,
     /// <summary>
     /// Identifies the NumLock presentation key or modifier.
     /// </summary>
-    NumLock = (int)Inno.Native.ImGui.ImGuiKey.NumLock,
+    NumLock = (int)NativeKey.NumLock,
     /// <summary>
     /// Identifies the PrintScreen presentation key or modifier.
     /// </summary>
-    PrintScreen = (int)Inno.Native.ImGui.ImGuiKey.PrintScreen,
+    PrintScreen = (int)NativeKey.PrintScreen,
     /// <summary>
     /// Identifies the Pause presentation key or modifier.
     /// </summary>
-    Pause = (int)Inno.Native.ImGui.ImGuiKey.Pause,
+    Pause = (int)NativeKey.Pause,
     /// <summary>
     /// Identifies the Keypad0 presentation key or modifier.
     /// </summary>
-    Keypad0 = (int)Inno.Native.ImGui.ImGuiKey.Keypad0,
+    Keypad0 = (int)NativeKey.Keypad0,
     /// <summary>
     /// Identifies the Keypad1 presentation key or modifier.
     /// </summary>
-    Keypad1 = (int)Inno.Native.ImGui.ImGuiKey.Keypad1,
+    Keypad1 = (int)NativeKey.Keypad1,
     /// <summary>
     /// Identifies the Keypad2 presentation key or modifier.
     /// </summary>
-    Keypad2 = (int)Inno.Native.ImGui.ImGuiKey.Keypad2,
+    Keypad2 = (int)NativeKey.Keypad2,
     /// <summary>
     /// Identifies the Keypad3 presentation key or modifier.
     /// </summary>
-    Keypad3 = (int)Inno.Native.ImGui.ImGuiKey.Keypad3,
+    Keypad3 = (int)NativeKey.Keypad3,
     /// <summary>
     /// Identifies the Keypad4 presentation key or modifier.
     /// </summary>
-    Keypad4 = (int)Inno.Native.ImGui.ImGuiKey.Keypad4,
+    Keypad4 = (int)NativeKey.Keypad4,
     /// <summary>
     /// Identifies the Keypad5 presentation key or modifier.
     /// </summary>
-    Keypad5 = (int)Inno.Native.ImGui.ImGuiKey.Keypad5,
+    Keypad5 = (int)NativeKey.Keypad5,
     /// <summary>
     /// Identifies the Keypad6 presentation key or modifier.
     /// </summary>
-    Keypad6 = (int)Inno.Native.ImGui.ImGuiKey.Keypad6,
+    Keypad6 = (int)NativeKey.Keypad6,
     /// <summary>
     /// Identifies the Keypad7 presentation key or modifier.
     /// </summary>
-    Keypad7 = (int)Inno.Native.ImGui.ImGuiKey.Keypad7,
+    Keypad7 = (int)NativeKey.Keypad7,
     /// <summary>
     /// Identifies the Keypad8 presentation key or modifier.
     /// </summary>
-    Keypad8 = (int)Inno.Native.ImGui.ImGuiKey.Keypad8,
+    Keypad8 = (int)NativeKey.Keypad8,
     /// <summary>
     /// Identifies the Keypad9 presentation key or modifier.
     /// </summary>
-    Keypad9 = (int)Inno.Native.ImGui.ImGuiKey.Keypad9,
+    Keypad9 = (int)NativeKey.Keypad9,
     /// <summary>
     /// Identifies the KeypadDecimal presentation key or modifier.
     /// </summary>
-    KeypadDecimal = (int)Inno.Native.ImGui.ImGuiKey.KeypadDecimal,
+    KeypadDecimal = (int)NativeKey.KeypadDecimal,
     /// <summary>
     /// Identifies the KeypadDivide presentation key or modifier.
     /// </summary>
-    KeypadDivide = (int)Inno.Native.ImGui.ImGuiKey.KeypadDivide,
+    KeypadDivide = (int)NativeKey.KeypadDivide,
     /// <summary>
     /// Identifies the KeypadMultiply presentation key or modifier.
     /// </summary>
-    KeypadMultiply = (int)Inno.Native.ImGui.ImGuiKey.KeypadMultiply,
+    KeypadMultiply = (int)NativeKey.KeypadMultiply,
     /// <summary>
     /// Identifies the KeypadSubtract presentation key or modifier.
     /// </summary>
-    KeypadSubtract = (int)Inno.Native.ImGui.ImGuiKey.KeypadSubtract,
+    KeypadSubtract = (int)NativeKey.KeypadSubtract,
     /// <summary>
     /// Identifies the KeypadAdd presentation key or modifier.
     /// </summary>
-    KeypadAdd = (int)Inno.Native.ImGui.ImGuiKey.KeypadAdd,
+    KeypadAdd = (int)NativeKey.KeypadAdd,
     /// <summary>
     /// Identifies the KeypadEnter presentation key or modifier.
     /// </summary>
-    KeypadEnter = (int)Inno.Native.ImGui.ImGuiKey.KeypadEnter,
+    KeypadEnter = (int)NativeKey.KeypadEnter,
     /// <summary>
     /// Identifies the KeypadEqual presentation key or modifier.
     /// </summary>
-    KeypadEqual = (int)Inno.Native.ImGui.ImGuiKey.KeypadEqual,
+    KeypadEqual = (int)NativeKey.KeypadEqual,
     /// <summary>
     /// Identifies the AppBack presentation key or modifier.
     /// </summary>
-    AppBack = (int)Inno.Native.ImGui.ImGuiKey.AppBack,
+    AppBack = (int)NativeKey.AppBack,
     /// <summary>
     /// Identifies the AppForward presentation key or modifier.
     /// </summary>
-    AppForward = (int)Inno.Native.ImGui.ImGuiKey.AppForward,
+    AppForward = (int)NativeKey.AppForward,
     /// <summary>
     /// Identifies the Oem102 presentation key or modifier.
     /// </summary>
-    Oem102 = (int)Inno.Native.ImGui.ImGuiKey.Oem102,
+    Oem102 = (int)NativeKey.Oem102,
     /// <summary>
     /// Identifies the GamepadStart presentation key or modifier.
     /// </summary>
-    GamepadStart = (int)Inno.Native.ImGui.ImGuiKey.GamepadStart,
+    GamepadStart = (int)NativeKey.GamepadStart,
     /// <summary>
     /// Identifies the GamepadBack presentation key or modifier.
     /// </summary>
-    GamepadBack = (int)Inno.Native.ImGui.ImGuiKey.GamepadBack,
+    GamepadBack = (int)NativeKey.GamepadBack,
     /// <summary>
     /// Identifies the GamepadFaceLeft presentation key or modifier.
     /// </summary>
-    GamepadFaceLeft = (int)Inno.Native.ImGui.ImGuiKey.GamepadFaceLeft,
+    GamepadFaceLeft = (int)NativeKey.GamepadFaceLeft,
     /// <summary>
     /// Identifies the GamepadFaceRight presentation key or modifier.
     /// </summary>
-    GamepadFaceRight = (int)Inno.Native.ImGui.ImGuiKey.GamepadFaceRight,
+    GamepadFaceRight = (int)NativeKey.GamepadFaceRight,
     /// <summary>
     /// Identifies the GamepadFaceUp presentation key or modifier.
     /// </summary>
-    GamepadFaceUp = (int)Inno.Native.ImGui.ImGuiKey.GamepadFaceUp,
+    GamepadFaceUp = (int)NativeKey.GamepadFaceUp,
     /// <summary>
     /// Identifies the GamepadFaceDown presentation key or modifier.
     /// </summary>
-    GamepadFaceDown = (int)Inno.Native.ImGui.ImGuiKey.GamepadFaceDown,
+    GamepadFaceDown = (int)NativeKey.GamepadFaceDown,
     /// <summary>
     /// Identifies the GamepadDpadLeft presentation key or modifier.
     /// </summary>
-    GamepadDpadLeft = (int)Inno.Native.ImGui.ImGuiKey.GamepadDpadLeft,
+    GamepadDpadLeft = (int)NativeKey.GamepadDpadLeft,
     /// <summary>
     /// Identifies the GamepadDpadRight presentation key or modifier.
     /// </summary>
-    GamepadDpadRight = (int)Inno.Native.ImGui.ImGuiKey.GamepadDpadRight,
+    GamepadDpadRight = (int)NativeKey.GamepadDpadRight,
     /// <summary>
     /// Identifies the GamepadDpadUp presentation key or modifier.
     /// </summary>
-    GamepadDpadUp = (int)Inno.Native.ImGui.ImGuiKey.GamepadDpadUp,
+    GamepadDpadUp = (int)NativeKey.GamepadDpadUp,
     /// <summary>
     /// Identifies the GamepadDpadDown presentation key or modifier.
     /// </summary>
-    GamepadDpadDown = (int)Inno.Native.ImGui.ImGuiKey.GamepadDpadDown,
+    GamepadDpadDown = (int)NativeKey.GamepadDpadDown,
     /// <summary>
     /// Identifies the GamepadL1 presentation key or modifier.
     /// </summary>
-    GamepadL1 = (int)Inno.Native.ImGui.ImGuiKey.GamepadL1,
+    GamepadL1 = (int)NativeKey.GamepadL1,
     /// <summary>
     /// Identifies the GamepadR1 presentation key or modifier.
     /// </summary>
-    GamepadR1 = (int)Inno.Native.ImGui.ImGuiKey.GamepadR1,
+    GamepadR1 = (int)NativeKey.GamepadR1,
     /// <summary>
     /// Identifies the GamepadL2 presentation key or modifier.
     /// </summary>
-    GamepadL2 = (int)Inno.Native.ImGui.ImGuiKey.GamepadL2,
+    GamepadL2 = (int)NativeKey.GamepadL2,
     /// <summary>
     /// Identifies the GamepadR2 presentation key or modifier.
     /// </summary>
-    GamepadR2 = (int)Inno.Native.ImGui.ImGuiKey.GamepadR2,
+    GamepadR2 = (int)NativeKey.GamepadR2,
     /// <summary>
     /// Identifies the GamepadL3 presentation key or modifier.
     /// </summary>
-    GamepadL3 = (int)Inno.Native.ImGui.ImGuiKey.GamepadL3,
+    GamepadL3 = (int)NativeKey.GamepadL3,
     /// <summary>
     /// Identifies the GamepadR3 presentation key or modifier.
     /// </summary>
-    GamepadR3 = (int)Inno.Native.ImGui.ImGuiKey.GamepadR3,
+    GamepadR3 = (int)NativeKey.GamepadR3,
     /// <summary>
     /// Identifies the GamepadLStickLeft presentation key or modifier.
     /// </summary>
-    GamepadLStickLeft = (int)Inno.Native.ImGui.ImGuiKey.GamepadLStickLeft,
+    GamepadLStickLeft = (int)NativeKey.GamepadLStickLeft,
     /// <summary>
     /// Identifies the GamepadLStickRight presentation key or modifier.
     /// </summary>
-    GamepadLStickRight = (int)Inno.Native.ImGui.ImGuiKey.GamepadLStickRight,
+    GamepadLStickRight = (int)NativeKey.GamepadLStickRight,
     /// <summary>
     /// Identifies the GamepadLStickUp presentation key or modifier.
     /// </summary>
-    GamepadLStickUp = (int)Inno.Native.ImGui.ImGuiKey.GamepadLStickUp,
+    GamepadLStickUp = (int)NativeKey.GamepadLStickUp,
     /// <summary>
     /// Identifies the GamepadLStickDown presentation key or modifier.
     /// </summary>
-    GamepadLStickDown = (int)Inno.Native.ImGui.ImGuiKey.GamepadLStickDown,
+    GamepadLStickDown = (int)NativeKey.GamepadLStickDown,
     /// <summary>
     /// Identifies the GamepadRStickLeft presentation key or modifier.
     /// </summary>
-    GamepadRStickLeft = (int)Inno.Native.ImGui.ImGuiKey.GamepadRStickLeft,
+    GamepadRStickLeft = (int)NativeKey.GamepadRStickLeft,
     /// <summary>
     /// Identifies the GamepadRStickRight presentation key or modifier.
     /// </summary>
-    GamepadRStickRight = (int)Inno.Native.ImGui.ImGuiKey.GamepadRStickRight,
+    GamepadRStickRight = (int)NativeKey.GamepadRStickRight,
     /// <summary>
     /// Identifies the GamepadRStickUp presentation key or modifier.
     /// </summary>
-    GamepadRStickUp = (int)Inno.Native.ImGui.ImGuiKey.GamepadRStickUp,
+    GamepadRStickUp = (int)NativeKey.GamepadRStickUp,
     /// <summary>
     /// Identifies the GamepadRStickDown presentation key or modifier.
     /// </summary>
-    GamepadRStickDown = (int)Inno.Native.ImGui.ImGuiKey.GamepadRStickDown,
+    GamepadRStickDown = (int)NativeKey.GamepadRStickDown,
     /// <summary>
     /// Identifies the MouseLeft presentation key or modifier.
     /// </summary>
-    MouseLeft = (int)Inno.Native.ImGui.ImGuiKey.MouseLeft,
+    MouseLeft = (int)NativeKey.MouseLeft,
     /// <summary>
     /// Identifies the MouseRight presentation key or modifier.
     /// </summary>
-    MouseRight = (int)Inno.Native.ImGui.ImGuiKey.MouseRight,
+    MouseRight = (int)NativeKey.MouseRight,
     /// <summary>
     /// Identifies the MouseMiddle presentation key or modifier.
     /// </summary>
-    MouseMiddle = (int)Inno.Native.ImGui.ImGuiKey.MouseMiddle,
+    MouseMiddle = (int)NativeKey.MouseMiddle,
     /// <summary>
     /// Identifies the MouseX1 presentation key or modifier.
     /// </summary>
-    MouseX1 = (int)Inno.Native.ImGui.ImGuiKey.MouseX1,
+    MouseX1 = (int)NativeKey.MouseX1,
     /// <summary>
     /// Identifies the MouseX2 presentation key or modifier.
     /// </summary>
-    MouseX2 = (int)Inno.Native.ImGui.ImGuiKey.MouseX2,
+    MouseX2 = (int)NativeKey.MouseX2,
     /// <summary>
     /// Identifies the MouseWheelX presentation key or modifier.
     /// </summary>
-    MouseWheelX = (int)Inno.Native.ImGui.ImGuiKey.MouseWheelX,
+    MouseWheelX = (int)NativeKey.MouseWheelX,
     /// <summary>
     /// Identifies the MouseWheelY presentation key or modifier.
     /// </summary>
-    MouseWheelY = (int)Inno.Native.ImGui.ImGuiKey.MouseWheelY,
+    MouseWheelY = (int)NativeKey.MouseWheelY,
     /// <summary>
     /// Identifies the ReservedForModCtrl presentation key or modifier.
     /// </summary>
-    ReservedForModCtrl = (int)Inno.Native.ImGui.ImGuiKey.ReservedForModCtrl,
+    ReservedForModCtrl = (int)NativeKey.ReservedForModCtrl,
     /// <summary>
     /// Identifies the ReservedForModShift presentation key or modifier.
     /// </summary>
-    ReservedForModShift = (int)Inno.Native.ImGui.ImGuiKey.ReservedForModShift,
+    ReservedForModShift = (int)NativeKey.ReservedForModShift,
     /// <summary>
     /// Identifies the ReservedForModAlt presentation key or modifier.
     /// </summary>
-    ReservedForModAlt = (int)Inno.Native.ImGui.ImGuiKey.ReservedForModAlt,
+    ReservedForModAlt = (int)NativeKey.ReservedForModAlt,
     /// <summary>
     /// Identifies the ReservedForModSuper presentation key or modifier.
     /// </summary>
-    ReservedForModSuper = (int)Inno.Native.ImGui.ImGuiKey.ReservedForModSuper,
+    ReservedForModSuper = (int)NativeKey.ReservedForModSuper,
     /// <summary>
     /// Identifies the NamedKeyEnd presentation key or modifier.
     /// </summary>
-    NamedKeyEnd = (int)Inno.Native.ImGui.ImGuiKey.NamedKeyEnd,
+    NamedKeyEnd = (int)NativeKey.NamedKeyEnd,
     /// <summary>
     /// Identifies the NamedKeyCount presentation key or modifier.
     /// </summary>
-    NamedKeyCount = (int)Inno.Native.ImGui.ImGuiKey.NamedKeyCount,
+    NamedKeyCount = (int)NativeKey.NamedKeyCount,
     /// <summary>
     /// Identifies the ImGuiModNone presentation key or modifier.
     /// </summary>
-    ImGuiModNone = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModNone,
+    ImGuiModNone = (int)NativeKey.ImGuiModNone,
     /// <summary>
     /// Identifies the ImGuiModCtrl presentation key or modifier.
     /// </summary>
-    ImGuiModCtrl = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModCtrl,
+    ImGuiModCtrl = (int)NativeKey.ImGuiModCtrl,
     /// <summary>
     /// Identifies the ImGuiModShift presentation key or modifier.
     /// </summary>
-    ImGuiModShift = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModShift,
+    ImGuiModShift = (int)NativeKey.ImGuiModShift,
     /// <summary>
     /// Identifies the ImGuiModAlt presentation key or modifier.
     /// </summary>
-    ImGuiModAlt = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModAlt,
+    ImGuiModAlt = (int)NativeKey.ImGuiModAlt,
     /// <summary>
     /// Identifies the ImGuiModSuper presentation key or modifier.
     /// </summary>
-    ImGuiModSuper = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModSuper,
+    ImGuiModSuper = (int)NativeKey.ImGuiModSuper,
     /// <summary>
     /// Identifies the ImGuiModMask presentation key or modifier.
     /// </summary>
-    ImGuiModMask = (int)Inno.Native.ImGui.ImGuiKey.ImGuiModMask
+    ImGuiModMask = (int)NativeKey.ImGuiModMask
 }

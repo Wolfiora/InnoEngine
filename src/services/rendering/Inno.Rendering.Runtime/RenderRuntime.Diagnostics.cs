@@ -14,12 +14,10 @@ using Inno.Runtime.Contracts;
 
 namespace Inno.Rendering.Runtime;
 
-sealed partial class RenderRuntime
+public sealed partial class RenderRuntime
 {
     private void PublishModelDiagnostic(string message)
-    {
-        PublishFrameIssue(new Diagnostic("RENDER_OUTPUT_MODEL_UNAVAILABLE", message, DiagnosticSeverity.Warning));
-    }
+        => PublishFrameIssue(new Diagnostic("RENDER_OUTPUT_MODEL_UNAVAILABLE", message, DiagnosticSeverity.Warning));
 
     private void PublishFrameIssue(Diagnostic diagnostic)
     {

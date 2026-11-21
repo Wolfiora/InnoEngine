@@ -26,7 +26,8 @@ internal sealed partial class ShaderEditorCanvas
             try
             {
                 ShaderTechniqueDefinition technique = definition.techniques[i];
-                string id = technique.id.value ?? "", contract = technique.contract.value ?? "";
+                string id = technique.id.value ?? string.Empty;
+                string contract = technique.contract.value ?? string.Empty;
                 bool idChanged = false;
                 InspectorRow("technique.id", "ID", () => idChanged = EditorImGui.InputText("##id", ref id, 128));
                 if (idChanged)
@@ -68,7 +69,7 @@ internal sealed partial class ShaderEditorCanvas
                     try
                     {
                         ShaderTechniquePass mapping = technique.passes[j];
-                        string role = mapping.role.value ?? "";
+                        string role = mapping.role.value ?? string.Empty;
                         bool roleChanged = false;
                         InspectorRow("technique.role", "Role", () => roleChanged = EditorImGui.InputText("##role", ref role, 128));
                         if (roleChanged)
@@ -130,7 +131,7 @@ internal sealed partial class ShaderEditorCanvas
                         new()
                         {
                             role = new("role-" + technique.passes.Length),
-                            passName = definition.passes.FirstOrDefault().name ?? ""
+                            passName = definition.passes.FirstOrDefault().name ?? string.Empty
                         }
                     ];
                     changed = true;

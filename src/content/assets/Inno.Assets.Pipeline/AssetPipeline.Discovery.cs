@@ -18,7 +18,7 @@ using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetPipeline
+public sealed partial class AssetPipeline
 {
     /// <summary>
     /// Ends initial authoring extension discovery and strictly retries dependent imports.

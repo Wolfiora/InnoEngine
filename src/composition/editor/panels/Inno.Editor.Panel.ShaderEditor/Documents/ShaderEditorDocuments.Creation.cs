@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Inno.Assets;
+using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -25,10 +26,13 @@ internal sealed partial class ShaderEditorDocuments
     ) {
         GraphDocument graph = Controller(draft).document;
         GraphNodeId? stage = draft.createFromPort is GraphEndpoint endpoint
-            ? new(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeId)!, "stage", "", serialization, context))
+            ? new(ShaderGraphDocument.Read(graph.FindNode(endpoint.nodeId)!, "stage", string.Empty, serialization, context))
             : draft.activeStage
               ?? graph.nodes.FirstOrDefault(static node => node.definitionId == ShaderGraphDocument.outputDefinitionId)?.id;
-        var node = new GraphNodeRecord(new(Guid.NewGuid().ToString("N")), creation.definitionId) { position = draft.menuPosition };
+        var node = new GraphNodeRecord(
+            new(Guid.NewGuid().ToString("N")),
+            creation.definitionId
+        ) { position = draft.menuPosition };
         if (stage is GraphNodeId id)
         {
             node.SetValue("stage", ShaderGraphDocument.Encode(id.value, serialization, context));
@@ -50,7 +54,7 @@ internal sealed partial class ShaderEditorDocuments
                     id = name,
                     kind = ShaderIrInputKind.Uniform,
                     type = new() { id = "float4" },
-                    semantic = ""
+                    semantic = string.Empty
                 }, serialization, context)
             );
         }
@@ -104,7 +108,7 @@ internal sealed partial class ShaderEditorDocuments
     internal IReadOnlyList<ShaderNodePort> Describe(GraphNodeRecord node)
     {
         ShaderSourceModuleAnalysis? module = null;
-        string implementation = "";
+        string implementation = string.Empty;
         ShaderIrStageInput? input = node.definitionId == "inno.shader.stage-input"
             ? ShaderGraphDocument.Read(node, "settings", new ShaderGraphInputSettings(), serialization, context).CreateBinding()
             : null;
@@ -120,7 +124,7 @@ internal sealed partial class ShaderEditorDocuments
             }
             if (id != Guid.Empty && assets.TryLoad(id, out ShaderFunctionAsset? function) && function is not null && !function.isMissing)
             {
-                string selected = ShaderGraphDocument.Read(node, "function", "", serialization, context);
+                string selected = ShaderGraphDocument.Read(node, "function", string.Empty, serialization, context);
                 module = frontends.AnalyzeModule(
                     ShaderSourceBundle.Decode(ShaderSourceBundle.Read(function, assets), selected, serialization)
                 );
@@ -148,11 +152,9 @@ internal sealed partial class ShaderEditorDocuments
     }
 
     internal ShaderGraphNodeInterface LoadGraphNodeInterface(Guid id)
-    {
-        return TryLoadGraphNodeInterface(id, out ShaderGraphNodeInterface? nodeInterface)
-               ? nodeInterface!
-               : throw new InvalidOperationException("Graph node Shader is unavailable or has import diagnostics.");
-    }
+        => TryLoadGraphNodeInterface(id, out ShaderGraphNodeInterface? nodeInterface)
+           ? nodeInterface!
+           : throw new InvalidOperationException("Graph node Shader is unavailable or has import diagnostics.");
 
     private bool TryLoadGraphNodeInterface(
         Guid id,
@@ -205,7 +207,7 @@ internal sealed partial class ShaderEditorDocuments
             return CompatibleInput(draft, PrepareNode(draft, creation)) is not null;
         }
         catch (Exception failure) when ((failure is InvalidOperationException or ArgumentException or IOException or FormatException)
-                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                        && RetirementPendingException.Find(failure) is null)
         {
             return false;
         }

@@ -19,7 +19,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
     public FreeTypeHarfBuzzTextBackend()
     {
         InnoTextFontAdapterRuntime* context = TextNativeOperations.CreateSession();
-        if (context == null)
+        if (context is null)
         {
             throw new InvalidOperationException("The native text backend returned a null context.");
         }
@@ -123,7 +123,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                 ),
                 "query shaped glyph count"
             );
-            InnoTextFontAdapterGlyph[] nativeGlyphs = new InnoTextFontAdapterGlyph[checked((int)glyphCount)];
+            var nativeGlyphs = new InnoTextFontAdapterGlyph[checked((int)glyphCount)];
             if (nativeGlyphs.Length > 0)
             {
                 fixed (InnoTextFontAdapterGlyph* glyphPointer = nativeGlyphs)
@@ -147,7 +147,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
                 }
             }
 
-            TextGlyph[] glyphs = new TextGlyph[nativeGlyphs.Length];
+            var glyphs = new TextGlyph[nativeGlyphs.Length];
             float width = 0f;
             for (int index = 0; index < nativeGlyphs.Length; index++)
             {
@@ -219,7 +219,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
             TextNativeOperations.RasterizeGlyph(m_context, font.value, glyphId, fontSize, null, 0, &bitmap),
             "query glyph bitmap"
         );
-        byte[] pixels = new byte[checked((int)bitmap.ByteLength)];
+        var pixels = new byte[checked((int)bitmap.ByteLength)];
         if (pixels.Length > 0)
         {
             fixed (byte* pixelPointer = pixels)
@@ -257,7 +257,7 @@ public sealed unsafe class FreeTypeHarfBuzzTextBackend : ITextBackend
 
     private static byte[] Utf8(string value)
     {
-        byte[] bytes = new byte[Encoding.UTF8.GetByteCount(value) + 1];
+        var bytes = new byte[Encoding.UTF8.GetByteCount(value) + 1];
         Encoding.UTF8.GetBytes(value, bytes);
         return bytes;
     }

@@ -35,6 +35,7 @@ using Inno.Runtime.Contracts;
 using Inno.Scene;
 using Inno.Scripting.Compiler;
 using Inno.Shell;
+using Inno.Storage;
 using Inno.Storage.Runtime;
 using Inno.UI.Runtime;
 
@@ -415,7 +416,7 @@ internal sealed class EditorHost : ShellHost
             () => engineHost.diagnostics.CreateReporter(new DiagnosticSource("inno.editor.rendering", "Rendering")),
             static sink => sink.Dispose()
         );
-        var renderArtifacts = m_resources.Acquire(
+        EditorRenderTargetArtifactProvider renderArtifacts = m_resources.Acquire(
             () => new EditorRenderTargetArtifactProvider(
                 activeAuthoring.assets,
                 engineHost.serialization,
@@ -469,7 +470,7 @@ internal sealed class EditorHost : ShellHost
         m_resources.Register(hostPipeline.Dispose);
         UseHostPipeline(hostPipeline);
         var reloadCoordinator = new EditorReloadCoordinator();
-        var renderingHost = m_resources.Acquire(
+        EditorRenderingHostService renderingHost = m_resources.Acquire(
             () => new EditorRenderingHostService(renderingLayer, presentation, reloadCoordinator),
             static service => service.Dispose()
         );
@@ -490,7 +491,7 @@ internal sealed class EditorHost : ShellHost
             createSubsystems = owner => CreateStandardRuntimeSubsystems(activeAudio, gameInputSource, owner),
             referenceResolvers = [activeAuthoring.assets]
         };
-        EditorLayer layer = new EditorLayer(
+        var layer = new EditorLayer(
             presentation,
             editorContext,
             engineHost.types,
@@ -578,7 +579,7 @@ internal sealed class EditorHost : ShellHost
                 ),
                 () => adapters.storage.CreateStorage(
                     adapterSelection.storage,
-                    new Inno.Storage.StorageScope(owner.options.applicationId)
+                    new StorageScope(owner.options.applicationId)
                 ),
                 activeAudio.CreateRuntimeSubsystemFactory(owner)
             )
@@ -681,12 +682,10 @@ internal sealed class EditorHost : ShellHost
         /// The current immutable report whose error messages are copied into the smoke snapshot.
         /// </param>
         public void Replace(DiagnosticReport report)
-        {
-            m_reports[report.source] = report.diagnostics
+            => m_reports[report.source] = report.diagnostics
                 .Where(static diagnostic => diagnostic.severity == DiagnosticSeverity.Error)
                 .Select(diagnostic => report.source.id + "/" + diagnostic.code + ": " + diagnostic.message)
                 .ToArray();
-        }
 
         /// <summary>
         /// Removes errors when their diagnostic source is retired.

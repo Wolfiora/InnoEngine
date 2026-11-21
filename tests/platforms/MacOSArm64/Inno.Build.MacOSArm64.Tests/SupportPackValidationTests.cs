@@ -11,7 +11,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Fact]
     public void PlatformPackRejectsAMissingContentSource()
     {
-        BuildTargetId target = new BuildTargetId("macos-arm64");
+        var target = new BuildTargetId("macos-arm64");
         string pack = GetSupportPackDirectory(target);
         string source = "MacOSArm64PlayerContentSource.cs";
         File.Delete(Path.Combine(pack, "PlayerLink", source));
@@ -30,7 +30,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new MacOSArm64SupportPackValidator())
         );
 
         Assert.Contains("forbidden build-time file", exception.Message, StringComparison.OrdinalIgnoreCase);
@@ -44,7 +44,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new MacOSArm64SupportPackValidator())
         );
 
         Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);
@@ -53,7 +53,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
     [Fact]
     public void PlatformValidatorRejectsForeignAbiDespiteTheExpectedFilename()
     {
-        BuildTargetId target = new BuildTargetId("macos-arm64");
+        var target = new BuildTargetId("macos-arm64");
         string directory = GetSupportPackDirectory(target);
         string library = "libminiaudio-release.dylib";
         File.WriteAllBytes(
@@ -73,7 +73,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new MacOSArm64SupportPackValidator())
         );
 
         Assert.Contains("foreign native runtime", exception.Message, StringComparison.Ordinal);
@@ -89,7 +89,7 @@ public sealed class SupportPackValidationTests : PlayerSupportPackFixture
         var catalog = new PlayerSupportPackCatalog(m_supportPackRoot);
 
         InvalidDataException exception = Assert.Throws<InvalidDataException>(
-            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator())
+            () => catalog.Acquire(new BuildTargetId("macos-arm64"), new MacOSArm64SupportPackValidator())
         );
 
         Assert.Contains("no longer matches", exception.Message, StringComparison.Ordinal);

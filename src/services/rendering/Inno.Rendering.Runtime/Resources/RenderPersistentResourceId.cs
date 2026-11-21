@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -12,7 +13,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Identifies one provider-owned persistent GPU resource without exposing a native handle.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("c060d558-f0f1-5653-a77f-526e6b078507")]
+[StableTypeId("c060d558-f0f1-5653-a77f-526e6b078507")]
 public readonly record struct RenderPersistentResourceId
 {
     /// <summary>

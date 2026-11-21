@@ -16,19 +16,19 @@ namespace Inno.Testing.Discovery;
 [FriendlyName("InnoDiscovery")]
 public sealed class DiscoveryLogger : ITestLoggerWithParameters
 {
-    /// <inheritdoc/>
     /// <exception cref="ArgumentException">
     /// The logger requires the parameterized overload with an explicit receipt path.
     /// </exception>
+    /// <inheritdoc/>
     public void Initialize(
         TestLoggerEvents events,
         string testRunDirectory
     ) => throw new ArgumentException("Discovery requires an explicit receipt path.");
 
-    /// <inheritdoc/>
     /// <exception cref="ArgumentException">
     /// The Receipt parameter is missing or does not identify an absolute output path.
     /// </exception>
+    /// <inheritdoc/>
     public void Initialize(
         TestLoggerEvents events,
         Dictionary<string, string?> parameters
@@ -38,7 +38,9 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
             throw new ArgumentException("Discovery requires an absolute receipt path.");
         }
 
-        var owners = new Dictionary<string, Owner>(OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
+        var owners = new Dictionary<string, Owner>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+        );
         var errors = new List<string>();
         events.DiscoveryMessage += (
             _,
@@ -74,7 +76,7 @@ public sealed class DiscoveryLogger : ITestLoggerWithParameters
             completion
         ) =>
         {
-            using FileStream output = new(receipt!, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+            using var output = new FileStream(receipt!, FileMode.CreateNew, FileAccess.Write, FileShare.None);
             JsonSerializer.Serialize(output, new
             {
                 completed = !completion.IsAborted && errors.Count == 0

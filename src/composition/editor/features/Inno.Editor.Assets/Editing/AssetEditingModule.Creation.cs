@@ -44,8 +44,17 @@ public sealed partial class AssetEditingModule
         }
         while (m_pipeline.TryGetFileSystemEntry(candidate, out _));
         m_pipeline.CreateDirectory(candidate);
-        var data = new AssetHistoryData(AssetHistoryOperationKind.CreateDirectory, candidate.ToString(), string.Empty, true, []);
-        using var change = new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()));
+        var data = new AssetHistoryData(
+            AssetHistoryOperationKind.CreateDirectory,
+            candidate.ToString(),
+            string.Empty,
+            true,
+            []
+        );
+        using var change = new EditorHistoryChange(
+            AssetHistoryKinds.SourceOperation,
+            EditorHistoryPayload.FromBytes(data.Encode())
+        );
         try
         {
             m_interactions.history.RecordApplied("Create Folder", change);
@@ -102,8 +111,17 @@ public sealed partial class AssetEditingModule
         {
             _ = m_pipeline.Import(path);
             byte[] archive = AssetSourceArchive.Capture(m_pipeline, path.ToString(), out bool isDirectory);
-            var data = new AssetHistoryData(AssetHistoryOperationKind.CreateAsset, path.ToString(), string.Empty, isDirectory, archive);
-            var change = new EditorHistoryChange(AssetHistoryKinds.SourceOperation, EditorHistoryPayload.FromBytes(data.Encode()));
+            var data = new AssetHistoryData(
+                AssetHistoryOperationKind.CreateAsset,
+                path.ToString(),
+                string.Empty,
+                isDirectory,
+                archive
+            );
+            var change = new EditorHistoryChange(
+                AssetHistoryKinds.SourceOperation,
+                EditorHistoryPayload.FromBytes(data.Encode())
+            );
             try
             {
                 m_interactions.history.RecordApplied("Create Asset", change);

@@ -13,17 +13,20 @@ public struct Vector3Int : IEquatable<Vector3Int>
     /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public int x;
+    [DataMember]
+    public int x;
 
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public int y;
+    [DataMember]
+    public int y;
 
     /// <summary>
     /// The depth or third component.
     /// </summary>
-    [DataMember] public int z;
+    [DataMember]
+    public int z;
 
     /// <summary>
     /// Creates a vector from explicit component values.

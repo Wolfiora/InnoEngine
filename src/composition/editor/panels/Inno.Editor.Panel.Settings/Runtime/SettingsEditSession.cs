@@ -25,37 +25,37 @@ internal sealed class SettingsField
     internal SettingsField(EditorSetting definition)
     {
         m_editor = definition;
-        scope = SettingsScope.Editor;
-        path = definition.path;
-        pagePath = definition.pagePath;
-        label = definition.label;
-        order = definition.order;
-        section = definition.section ?? string.Empty;
-        description = definition.description;
+        this.scope = SettingsScope.Editor;
+        this.path = definition.path;
+        this.pagePath = definition.pagePath;
+        this.label = definition.label;
+        this.order = definition.order;
+        this.section = definition.section ?? string.Empty;
+        this.description = definition.description;
     }
 
     internal SettingsField(ProjectSettingEditor definition)
     {
         m_project = definition;
-        scope = SettingsScope.Project;
-        path = definition.path;
-        pagePath = definition.pagePath;
-        label = definition.label;
-        order = definition.order;
-        section = definition.section ?? string.Empty;
-        description = definition.description;
+        this.scope = SettingsScope.Project;
+        this.path = definition.path;
+        this.pagePath = definition.pagePath;
+        this.label = definition.label;
+        this.order = definition.order;
+        this.section = definition.section ?? string.Empty;
+        this.description = definition.description;
     }
 
     internal SettingsField(BuildSettingsField definition)
     {
         m_build = definition;
-        scope = SettingsScope.Build;
-        path = definition.path;
-        pagePath = definition.pagePath;
-        label = definition.label;
-        order = 0;
-        section = definition.section;
-        description = definition.description;
+        this.scope = SettingsScope.Build;
+        this.path = definition.path;
+        this.pagePath = definition.pagePath;
+        this.label = definition.label;
+        this.order = 0;
+        this.section = definition.section;
+        this.description = definition.description;
     }
 
     internal SettingsScope scope { get; }
@@ -105,8 +105,8 @@ internal sealed class SettingsEditSession : IDisposable
         m_buildPipeline = buildPipeline ?? throw new ArgumentNullException(nameof(buildPipeline));
         m_buildSettings = buildSettings ?? throw new ArgumentNullException(nameof(buildSettings));
         m_history = history ?? throw new ArgumentNullException(nameof(history));
-        editorCatalogRevision = editorSettings.catalogRevision;
-        projectCatalogRevision = projectSettings.catalogRevision;
+        this.editorCatalogRevision = editorSettings.catalogRevision;
+        this.projectCatalogRevision = projectSettings.catalogRevision;
         m_buildDefault = buildSettings.defaultSettings;
         m_buildOriginal = buildSettings.Load();
         m_buildValue = m_buildOriginal.Copy();
@@ -154,14 +154,14 @@ internal sealed class SettingsEditSession : IDisposable
             throw new InvalidOperationException($"Settings field path '{duplicatePath}' is registered more than once.");
         }
 
-        definitions = fields
+        this.definitions = fields
             .OrderBy(static field => field.path, StringComparer.Ordinal)
             .ThenBy(static field => field.order)
             .ToArray();
-        pages = BuildPages(editorSettings.definitions, definitions);
+        this.pages = BuildPages(editorSettings.definitions, definitions);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         m_applyTransaction?.Dispose();
@@ -384,7 +384,11 @@ internal sealed class SettingsEditSession : IDisposable
 
     private bool ApplyEditor()
     {
-        var values = m_editorModified.ToDictionary(path => path, path => m_editorValues[path], StringComparer.Ordinal);
+        Dictionary<string, EditorSettingObject> values = m_editorModified.ToDictionary(
+            path => path,
+            path => m_editorValues[path],
+            StringComparer.Ordinal
+        );
         return m_editorSettings.Apply(values, m_editorResets);
     }
 
@@ -408,7 +412,7 @@ internal sealed class SettingsEditSession : IDisposable
 
     private bool ApplyProject()
     {
-        var values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
+        Dictionary<ProjectSettingId, ISerializable> values = m_projectModified.ToDictionary(id => id, id => m_projectValues[id]);
         return m_projectSettings.Apply(values, m_projectResets);
     }
 

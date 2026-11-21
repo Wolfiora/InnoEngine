@@ -168,7 +168,8 @@ public sealed partial class SerializationBehaviorTests
                 writer.Write((byte)14);
                 writer.Write(scalar.ToByteArray());
                 break;
-            default: throw new InvalidOperationException("The independent byte oracle received an unsupported scalar.");
+            default:
+                throw new InvalidOperationException("The independent byte oracle received an unsupported scalar.");
         }
         writer.Flush();
         return stream.ToArray();

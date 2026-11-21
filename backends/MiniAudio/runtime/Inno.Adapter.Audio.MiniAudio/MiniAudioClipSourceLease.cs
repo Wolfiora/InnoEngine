@@ -16,7 +16,7 @@ internal sealed class MiniAudioClipSourceLease : IDisposable
 
     internal MiniAudioClipPreparation preparation { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         m_owner?.Release(preparation);

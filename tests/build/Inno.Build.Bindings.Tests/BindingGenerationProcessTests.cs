@@ -22,7 +22,9 @@ public sealed class BindingGenerationProcessTests
     /// <summary>
     /// Keeps unchanged mapping identities stable across processes and rejects a real mapping change.
     /// </summary>
-    /// <returns>A task completing after all independent hosts have exited and their identities agree.</returns>
+    /// <returns>
+    /// A task completing after all independent hosts have exited and their identities agree.
+    /// </returns>
     [Fact]
     public async Task DictionaryMappingsRemainStableAcrossIndependentProcesses()
     {
@@ -35,7 +37,11 @@ public sealed class BindingGenerationProcessTests
                 "Fixture.csproj",
                 bindingDefinition: "bindings.props"
             );
-            var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
+            var request = new NativeBindingGenerationRequest(
+                [component],
+                "fixture",
+                NativeBindingOutputMode.TargetArtifacts
+            );
             string identity = await BindingTestProfiles.Generator().ComputeInputFingerprintAsync(
                 new NativeBuildContext(inherited, "release"),
                 request,
@@ -60,7 +66,7 @@ public sealed class BindingGenerationProcessTests
                 Path.Combine(root, "Native", "fixture.h"),
                 Enumerable.Range(0, 64).Select(static index => $"int sample_{index}(int value);")
             );
-            var names = Enumerable.Range(0, 64)
+            Dictionary<string, string> names = Enumerable.Range(0, 64)
                 .ToDictionary(static index => $"sample_{index}", static index => $"Sample{index}", StringComparer.Ordinal);
             WriteConfiguration(root, names);
             string first = await RunHost(root, "first");

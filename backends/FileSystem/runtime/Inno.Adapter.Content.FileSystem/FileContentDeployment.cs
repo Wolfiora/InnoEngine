@@ -155,7 +155,7 @@ public sealed class FileContentDeployment
         {
             throw new InvalidDataException($"Deployment metadata '{fileName}' exceeds its document budget.");
         }
-        byte[] bytes = new byte[checked((int)stream.Length)];
+        var bytes = new byte[checked((int)stream.Length)];
         await stream.ReadExactlyAsync(bytes, cancellationToken).ConfigureAwait(false);
         if (stream.ReadByte() != -1)
         {

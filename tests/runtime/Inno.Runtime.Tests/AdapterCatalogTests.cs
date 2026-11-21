@@ -36,7 +36,12 @@ public sealed class AdapterCatalogTests
         Assert.Equal(first.id, Assert.Single(catalog.supportedBackends));
         Assert.Equal(0, first.creationCount);
         // This provider intentionally does not consume host resources; the catalog validates its return contract.
-        var options = new PresentationBackendOptions { window = null!, platformApplication = null!, renderDevice = null! };
+        var options = new PresentationBackendOptions
+        {
+            window = null!,
+            platformApplication = null!,
+            renderDevice = null!
+        };
         Assert.Throws<NotSupportedException>(() => catalog.CreateContext(second.id, options));
         Assert.Throws<ArgumentNullException>(() => catalog.CreateContext(first.id, null!));
         Assert.Throws<InvalidOperationException>(() => catalog.CreateContext(first.id, options));
@@ -140,13 +145,13 @@ public sealed class AdapterCatalogTests
 
         public TestCatalog()
         {
-            platform = new PlatformBackendCatalog([m_platform]);
-            input = new InputBackendCatalog([m_input]);
-            storage = new StorageBackendCatalog([m_storage]);
-            audio = new AudioBackendCatalog([m_audio]);
-            text = new TextBackendCatalog([m_text]);
-            rendering = new RenderingBackendCatalog([m_rendering]);
-            ui = new UiBackendCatalog([m_ui]);
+            this.platform = new PlatformBackendCatalog([m_platform]);
+            this.input = new InputBackendCatalog([m_input]);
+            this.storage = new StorageBackendCatalog([m_storage]);
+            this.audio = new AudioBackendCatalog([m_audio]);
+            this.text = new TextBackendCatalog([m_text]);
+            this.rendering = new RenderingBackendCatalog([m_rendering]);
+            this.ui = new UiBackendCatalog([m_ui]);
         }
 
         public AdapterSelection selection

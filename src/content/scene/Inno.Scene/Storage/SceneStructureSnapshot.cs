@@ -26,7 +26,10 @@ internal sealed class SceneStructureSnapshot
     private Dictionary<EngineObject, Guid>? m_sourceIds;
     private IReadOnlyDictionary<EngineObject, Guid>? m_frozenSourceIds;
 
-    internal SceneStructureSnapshot(IReadOnlyList<SceneObjectStructureSnapshot> objects) => this.objects = objects;
+    internal SceneStructureSnapshot(IReadOnlyList<SceneObjectStructureSnapshot> objects)
+    {
+        this.objects = objects;
+    }
 
     internal IReadOnlyList<SceneObjectStructureSnapshot> objects { get; }
 

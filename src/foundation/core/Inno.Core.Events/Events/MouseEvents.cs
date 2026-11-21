@@ -13,7 +13,10 @@ public abstract class MouseEvent : Event
     /// <param name="windowId">
     /// The platform window that produced the event.
     /// </param>
-    protected MouseEvent(uint windowId) => this.windowId = windowId;
+    protected MouseEvent(uint windowId)
+    {
+        this.windowId = windowId;
+    }
 
     /// <summary>
     /// Creates a routed mouse event sharing its source's window and global consumption.
@@ -25,7 +28,10 @@ public abstract class MouseEvent : Event
     /// The source event is null.
     /// </exception>
     protected MouseEvent(MouseEvent source)
-        : base(source) => windowId = source.windowId;
+        : base(source)
+        {
+        this.windowId = source.windowId;
+    }
 
     /// <summary>
     /// Gets the source window id for this event.

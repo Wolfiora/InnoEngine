@@ -149,7 +149,7 @@ public sealed class StaticGraphRestoreTests
         Directory.CreateDirectory(fixture);
         string project = Path.Combine(root, "platforms", "WindowsX64", "editor", "Inno.Editor.WindowsX64", "Inno.Editor.WindowsX64.csproj");
         string driver = Path.Combine(fixture, "Restore.proj");
-        string inheritedMetadata = new('R', 65536);
+        var inheritedMetadata = new string('R', 65_536);
         try
         {
             await File.WriteAllTextAsync(driver, $"""

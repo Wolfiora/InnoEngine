@@ -338,16 +338,14 @@ internal static class ReflectionCollectionMetadata
     private static MethodInfo? FindFactory(
         Type targetType,
         Type argumentType
-    ) {
-        return targetType
-            .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-            .FirstOrDefault(method => (
-                (method.Name == "CreateRange" || method.Name == "Create")
-                && targetType.IsAssignableFrom(method.ReturnType)
-                && method.GetParameters().Length == 1
-                && method.GetParameters()[0].ParameterType.IsAssignableFrom(argumentType)
-            ));
-    }
+    ) => targetType
+        .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+        .FirstOrDefault(method => (
+            (method.Name == "CreateRange" || method.Name == "Create")
+            && targetType.IsAssignableFrom(method.ReturnType)
+            && method.GetParameters().Length == 1
+            && method.GetParameters()[0].ParameterType.IsAssignableFrom(argumentType)
+        ));
 
     private static MethodInfo? ResolveSequenceAddMethod(
         Type targetType,

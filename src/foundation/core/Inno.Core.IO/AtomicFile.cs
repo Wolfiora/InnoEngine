@@ -19,12 +19,12 @@ public static class AtomicFile
     /// <returns>
     /// True for a nonempty destination name followed by the reserved marker and a complete hexadecimal operation identity.
     /// </returns>
-    /// <remarks>
-    /// Recognition excludes transient payloads from source discovery. It does not establish ownership or authorize deletion.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// The path is null.
     /// </exception>
+    /// <remarks>
+    /// Recognition excludes transient payloads from source discovery. It does not establish ownership or authorize deletion.
+    /// </remarks>
     public static bool IsCandidatePath(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -96,12 +96,6 @@ public static class AtomicFile
     /// <param name="overwrite">
     /// Whether an existing destination may be replaced; false never overwrites an external creator.
     /// </param>
-    /// <remarks>
-    /// A failed create-only publication preserves the candidate. After successful publication the
-    /// candidate is removed; a subsequent cleanup failure reports that the complete target exists.
-    /// Unix create-only publication requires same-directory hard-link support. The caller must own
-    /// the candidate and parent directory until the operation completes.
-    /// </remarks>
     /// <exception cref="IOException">
     /// Publication fails, create-only mode finds an existing destination, or candidate retirement
     /// fails after the complete destination has been published.
@@ -109,6 +103,12 @@ public static class AtomicFile
     /// <exception cref="PlatformNotSupportedException">
     /// The host does not provide an atomic create-only filesystem primitive.
     /// </exception>
+    /// <remarks>
+    /// A failed create-only publication preserves the candidate. After successful publication the
+    /// candidate is removed; a subsequent cleanup failure reports that the complete target exists.
+    /// Unix create-only publication requires same-directory hard-link support. The caller must own
+    /// the candidate and parent directory until the operation completes.
+    /// </remarks>
     public static void Install(
         string source,
         string destination,

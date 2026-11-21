@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Gets direct or transitive runtime dependencies of an asset.
@@ -113,7 +113,7 @@ sealed partial class AssetLoader
 
     private AssetDependency[] ResolveDeclaredDependenciesLocked(AssetImportContext context)
     {
-        var result = context.runtimeDependencies.ToDictionary(static value => value.persistentId);
+        Dictionary<Guid, AssetDependency> result = context.runtimeDependencies.ToDictionary(static value => value.persistentId);
         foreach (Guid persistentId in result.Keys.ToArray())
         {
             AssetDependency dependency = result[persistentId];

@@ -30,7 +30,7 @@ internal sealed record SceneHierarchyHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream);
-        Guid selectedId = new(reader.ReadBytes(16));
+        var selectedId = new Guid(reader.ReadBytes(16));
         SceneObjectPlacement[] before = ReadPlacements(reader);
         SceneObjectPlacement[] after = ReadPlacements(reader);
         if (stream.Position != stream.Length)
@@ -69,8 +69,8 @@ internal sealed record SceneHierarchyHistoryData(
         var placements = new SceneObjectPlacement[count];
         for (int i = 0; i < placements.Length; i++)
         {
-            Guid sceneId = new(reader.ReadBytes(16));
-            Guid objectId = new(reader.ReadBytes(16));
+            var sceneId = new Guid(reader.ReadBytes(16));
+            var objectId = new Guid(reader.ReadBytes(16));
             Guid? parentId = reader.ReadBoolean() ? new Guid(reader.ReadBytes(16)) : null;
             placements[i] = new SceneObjectPlacement(sceneId, objectId, parentId, reader.ReadInt32());
         }

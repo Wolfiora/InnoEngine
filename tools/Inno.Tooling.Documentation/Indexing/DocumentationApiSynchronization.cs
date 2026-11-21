@@ -113,7 +113,7 @@ internal static class DocumentationApiSynchronization
         }
         catch
         {
-            foreach (var original in originals)
+            foreach (KeyValuePair<string, byte[]?> original in originals)
             {
                 if (original.Value is null)
                 {

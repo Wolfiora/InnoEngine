@@ -11,8 +11,8 @@ internal static class ValidationTestHosts
 {
     internal static string[] ExcludedSources(ValidationProject[] projects)
     {
-        var referenced = projects.SelectMany(static project => project.references).ToHashSet(StringComparer.Ordinal);
-        var candidates = projects.Where(project => (
+        HashSet<string> referenced = projects.SelectMany(static project => project.references).ToHashSet(StringComparer.Ordinal);
+        ValidationProject[] candidates = projects.Where(project => (
             project.test && !referenced.Contains(project.path)
             && project.environment.Length != 0 && project.environment is not ("any" or "native-host")
             && !Applies(project.environment.Split(';'))

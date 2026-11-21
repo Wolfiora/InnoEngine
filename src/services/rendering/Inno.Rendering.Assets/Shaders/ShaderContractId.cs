@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies an open shader and pipeline compatibility contract.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("741c24fb-b13e-5582-98b0-c13e12921fda")]
+[StableTypeId("741c24fb-b13e-5582-98b0-c13e12921fda")]
 public record struct ShaderContractId
 {
     /// <summary>
@@ -44,5 +44,5 @@ public record struct ShaderContractId
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public readonly override string ToString() => value ?? string.Empty;
+    public override readonly string ToString() => value ?? string.Empty;
 }

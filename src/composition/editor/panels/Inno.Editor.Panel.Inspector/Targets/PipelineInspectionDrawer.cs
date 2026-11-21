@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Editor.Assets;
 using Inno.Editor.ImGui;
@@ -21,7 +23,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => Inno.Editor.ImGui.ImGuiIcon.File;
+    public override string icon => ImGuiIcon.File;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -38,7 +40,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
     protected override string GetIcon(
         InspectionDrawContext context,
         RenderPipelineAsset target
-    ) => context.interactions.TryGetModule<PipelineDocuments>(out var documents)
+    ) => context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents)
          && documents is not null
          && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
          && info is not null
@@ -77,7 +79,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         RenderPipelineAsset target
     ) {
-        if (context.interactions.TryGetModule<PipelineDocuments>(out var documents)
+        if (context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents)
             && documents is not null
             && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
             && info is not null
@@ -99,7 +101,7 @@ internal sealed class PipelineInspectionDrawer(IInspectionIconProvider<AssetFile
         InspectionDrawContext context,
         RenderPipelineAsset target
     ) {
-        if (context.interactions.TryGetModule<PipelineDocuments>(out var documents)
+        if (context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents)
             && documents is not null
             && documents.assets.TryGetInfo(target.identity.persistentId, out AssetInfo? info)
             && info is not null
@@ -115,7 +117,7 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
     /// <summary>
     /// Gets the icon glyph used to represent this item in the editor.
     /// </summary>
-    public override string icon => Inno.Editor.ImGui.ImGuiIcon.File;
+    public override string icon => ImGuiIcon.File;
 
     /// <summary>
     /// Retrieves the current icon from authoritative state.
@@ -176,7 +178,7 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) {
-        if (context.interactions.TryGetModule<PipelineDocuments>(out var documents) && documents is not null)
+        if (context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents) && documents is not null)
         {
             PipelineInspector.DrawHeader(context, documents, documents.Open(target.assetPath));
         }
@@ -195,7 +197,7 @@ internal sealed class PipelineSourceDrawer(IInspectionIconProvider<AssetFileEntr
         InspectionDrawContext context,
         AssetFileEntry target
     ) {
-        if (context.interactions.TryGetModule<PipelineDocuments>(out var documents) && documents is not null)
+        if (context.interactions.TryGetModule<PipelineDocuments>(out PipelineDocuments? documents) && documents is not null)
         {
             PipelineInspector.Draw(context, documents, documents.Open(target.assetPath));
         }
@@ -368,12 +370,12 @@ internal static class PipelineInspector
                     );
                 }
             }
-            catch (Exception error) when ((error is System.IO.IOException
+            catch (Exception error) when ((error is IOException
                                            or UnauthorizedAccessException
                                            or InvalidOperationException
                                            or ArgumentException
                                            or FormatException)
-                                          && Inno.Core.Execution.RetirementPendingException.Find(error) is null)
+                                          && RetirementPendingException.Find(error) is null)
             {
                 EditorUI.current.widgets.Hint(
                     "Settings unavailable · " + state.stableTypeId + " · " + error.Message + " · Stored properties and dependencies are retained."
@@ -388,7 +390,7 @@ internal static class PipelineInspector
         RenderPipelineAsset pipeline
     ) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,
@@ -408,7 +410,7 @@ internal static class PipelineInspector
         Action capture
     ) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,

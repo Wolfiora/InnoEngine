@@ -37,7 +37,7 @@ public sealed class AgentDocumentTests : IDisposable
         File.WriteAllText(Path.Combine(m_root, ".agents/rulebook/README.md"), "# Hello *World*\n\n<a id=\"contract\"></a>\n");
         Assert.Equal(0, ArchitectureCommandFixture.Run(m_root, "--agent-documents-only").exitCode);
         File.AppendAllText(Path.Combine(m_root, "AGENTS.md"), "\n[Broken](.agents/rulebook/README.md#absent)\n");
-        var rejected = ArchitectureCommandFixture.Run(m_root, "--agent-documents-only");
+        (int exitCode, string output) rejected = ArchitectureCommandFixture.Run(m_root, "--agent-documents-only");
         Assert.Equal(1, rejected.exitCode);
         Assert.Contains("missing anchor", rejected.output);
         File.AppendAllText(Path.Combine(m_root, "AGENTS.md"), "\n[Missing](absent.md)\n");
@@ -51,7 +51,7 @@ public sealed class AgentDocumentTests : IDisposable
         Directory.CreateDirectory(skill);
         File.WriteAllText(Path.Combine(skill, "SKILL.md"), "---\nname: example\ndescription: Example workflow.\n---\n\nSteps.\n");
         File.WriteAllText(Path.Combine(m_root, "AGENTS.md"), "# Entry\n");
-        var rejected = ArchitectureCommandFixture.Run(m_root, "--agent-documents-only");
+        (int exitCode, string output) rejected = ArchitectureCommandFixture.Run(m_root, "--agent-documents-only");
         Assert.Equal(1, rejected.exitCode);
         Assert.Contains("Skill is not listed in AGENTS.md: example", rejected.output);
         File.AppendAllText(Path.Combine(m_root, "AGENTS.md"), "\n- [example](.agents/skills/example/SKILL.md): example workflow.\n");

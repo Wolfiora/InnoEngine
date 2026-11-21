@@ -18,8 +18,8 @@ public sealed class ShaderSourceType
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         this.id = id;
-        elementType = element;
-        elementCount = count;
+        this.elementType = element;
+        this.elementCount = count;
         this.fields = Array.AsReadOnly(fields);
         this.storage = storage;
     }

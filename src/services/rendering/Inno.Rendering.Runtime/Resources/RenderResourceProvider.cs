@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -13,7 +14,7 @@ namespace Inno.Rendering.Runtime;
 /// The boundary lets a runtime resource service create generation-scoped values while their mutable
 /// representation remains private to the Rendering assembly.
 /// </remarks>
-[Inno.Extensibility.Types.StableTypeId("c06ff3f1-8280-52cc-a57a-8d864eb358c6")]
+[StableTypeId("c06ff3f1-8280-52cc-a57a-8d864eb358c6")]
 public abstract class RenderResourceProvider
 {
     /// <summary>

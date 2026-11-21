@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -81,7 +82,7 @@ internal static class PlayerCodeCompositionWriter
             }
             else if (char.IsControl(character))
             {
-                literal.Append("\\u").Append(((int)character).ToString("x4", System.Globalization.CultureInfo.InvariantCulture));
+                literal.Append("\\u").Append(((int)character).ToString("x4", CultureInfo.InvariantCulture));
             }
             else
             {

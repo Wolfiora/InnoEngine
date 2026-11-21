@@ -25,11 +25,9 @@ public sealed class ShaderControlFlowIrTests
             builder.Constant(true),
             region =>
             {
-                retained = region; leaked = region.Binary(
-                    ShaderIrOperation.Add,
-                    input,
-                    input
-                ); return Values(("result", leaked));
+                retained = region;
+                leaked = region.Binary(ShaderIrOperation.Add, input, input);
+                return Values(("result", leaked));
             },
             region => Values(("result", region.Constant(3f)))
         );
@@ -229,7 +227,7 @@ public sealed class ShaderControlFlowIrTests
 
     private static async Task Compile(ShaderIrStage stage)
     {
-        var toolchain = new BgfxShadercToolchain(Inno.Integration.MacOSArm64.Bgfx.MacOSArm64BgfxShaderProfiles.target);
+        var toolchain = new BgfxShadercToolchain(MacOSArm64BgfxShaderProfiles.target);
         var capabilities = new GraphicsCapabilities(
             GraphicsApi.Metal,
             GraphicsCapability.Compute | GraphicsCapability.StorageBuffer,

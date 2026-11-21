@@ -135,7 +135,7 @@ public sealed class AssetSourceMountTransaction : IDisposable, IAssetSourceSnaps
         return candidateLoader.TryGetInfo(path, out info);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     [ScriptingApiIgnore]
     public ArtifactLease AcquireArtifact(
         Guid persistentId,

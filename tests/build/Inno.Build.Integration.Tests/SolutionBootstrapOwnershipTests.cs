@@ -43,7 +43,7 @@ public sealed class SolutionBootstrapOwnershipTests
                     "--artifacts-path",
                     artifacts,
                     "-p:InnoTaskArtifacts=" + tasks,
-                    .. (explicitlyDisablePreparation ? new[] { "-p:InnoPrepareProductNative=false" } : Array.Empty<string>()),
+                    .. (explicitlyDisablePreparation ? ["-p:InnoPrepareProductNative=false"] : Array.Empty<string>()),
                     "--disable-build-servers",
                     "-m:1",
                     "-nr:false"

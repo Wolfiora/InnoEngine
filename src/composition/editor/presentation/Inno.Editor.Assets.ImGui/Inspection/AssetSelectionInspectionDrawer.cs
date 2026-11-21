@@ -117,7 +117,5 @@ internal sealed class AssetSelectionInspectionDrawer : InspectionDrawer<AssetFil
     private static void DrawMetadata(
         string label,
         string value
-    ) {
-        EditorUI.current.widgets.PropertyRow("asset.metadata." + label, label, () => EditorUI.current.widgets.Hint(value));
-    }
+    ) => EditorUI.current.widgets.PropertyRow("asset.metadata." + label, label, () => EditorUI.current.widgets.Hint(value));
 }

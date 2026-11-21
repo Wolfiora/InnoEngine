@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Inno.Core.Serialization;
 
@@ -42,7 +43,7 @@ internal static class PropertySnapshotPipeline
                 operation.RetireCaptureMember();
                 if (captured is null && !ReferenceEquals(node, prior))
                 {
-                    captured = new(before!);
+                    captured = [.. before!];
                     captured.RemoveRange(count, captured.Count - count);
                 }
                 captured?.Add(new(member.name, node));
@@ -64,7 +65,7 @@ internal static class PropertySnapshotPipeline
         }
         if (captured is null)
         {
-            captured = new(before!);
+            captured = [.. before!];
             captured.RemoveRange(count, captured.Count - count);
         }
         var state = new PropertyDataCapture([.. captured]) { hasConverters = operation.converterWrites != 0 };
@@ -243,7 +244,7 @@ internal static class PropertySnapshotPipeline
            and not OperationCanceledException;
 
     private static Exception Unwrap(Exception exception)
-        => exception is System.Reflection.TargetInvocationException { InnerException: not null } invocation
+        => exception is TargetInvocationException { InnerException: not null } invocation
            ? invocation.InnerException!
            : exception;
 

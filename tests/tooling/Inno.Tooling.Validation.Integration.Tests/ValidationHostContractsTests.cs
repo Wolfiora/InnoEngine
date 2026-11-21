@@ -14,12 +14,17 @@ public sealed class ValidationHostContractsTests
 {
     private readonly ITestOutputHelper m_output;
 
-    public ValidationHostContractsTests(ITestOutputHelper output) => m_output = output;
+    public ValidationHostContractsTests(ITestOutputHelper output)
+    {
+        m_output = output;
+    }
 
     [Fact]
     public async Task ActualTrxDistinguishesCompiledHostExclusionsFromMissingRequiredExecution()
     {
-        using var repository = new ValidationRepository(TestRepository.GetRoot(typeof(ValidationHostContractsTests).Assembly));
+        using var repository = new ValidationRepository(
+            TestRepository.GetRoot(typeof(ValidationHostContractsTests).Assembly)
+        );
         string currentHost = OperatingSystem.IsWindows() ? "windows" : OperatingSystem.IsMacOS() ? "macos" : "linux";
         string otherHost = currentHost == "linux" ? "windows" : "linux";
         string source = $$"""

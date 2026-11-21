@@ -14,9 +14,6 @@ public sealed class BrowserWasm32StorageBackendProvider : StorageBackendProvider
     public BrowserWasm32StorageBackendProvider()
         : base(StorageBackendId.browser) {}
 
-    /// <inheritdoc />
-    public override IApplicationStorage CreateStorage(StorageScope scope)
-    {
-        return new BrowserWasm32ApplicationStorage(scope);
-    }
+    /// <inheritdoc/>
+    public override IApplicationStorage CreateStorage(StorageScope scope) => new BrowserWasm32ApplicationStorage(scope);
 }

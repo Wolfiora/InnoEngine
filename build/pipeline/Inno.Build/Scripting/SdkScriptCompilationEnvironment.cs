@@ -41,7 +41,7 @@ public sealed class SdkScriptCompilationEnvironment : IScriptCompilationEnvironm
         m_projectRoot = Path.GetFullPath(projectRoot);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ScriptCompilationInputs Capture(CancellationToken cancellationToken = default)
         => CaptureAsync(cancellationToken).GetAwaiter().GetResult();
 

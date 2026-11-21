@@ -57,7 +57,7 @@ public sealed class LogRouter : IDisposable
     /// A capacity or budget is not positive, or the delivery policy is not a defined mode.
     /// </exception>
     public LogRouter(
-        int queueCapacity = 65536,
+        int queueCapacity = 65_536,
         int drainBudget = 4096,
         LogDeliveryMode deliveryMode = LogDeliveryMode.Background
     ) {
@@ -127,17 +127,17 @@ public sealed class LogRouter : IDisposable
     /// <summary>
     /// Removes a sink from subsequent delivery snapshots without disposing it.
     /// </summary>
-    /// <remarks>
-    /// An in-flight batch may still borrow the previous snapshot. This operation does not wait
-    /// for its callbacks; the host must coordinate quiescence before releasing sink resources.
-    /// Router disposal releases only sinks that remain registered.
-    /// </remarks>
     /// <param name="sink">
     /// The sink to remove when registered.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="sink"/> is null.
     /// </exception>
+    /// <remarks>
+    /// An in-flight batch may still borrow the previous snapshot. This operation does not wait
+    /// for its callbacks; the host must coordinate quiescence before releasing sink resources.
+    /// Router disposal releases only sinks that remain registered.
+    /// </remarks>
     public void UnregisterSink(ILogSink sink)
     {
         ArgumentNullException.ThrowIfNull(sink);
@@ -218,13 +218,13 @@ public sealed class LogRouter : IDisposable
     /// <returns>
     /// True when accepted or filtered by policy; false when bounded queue capacity is exhausted.
     /// </returns>
+    /// <exception cref="ObjectDisposedException">
+    /// The router has stopped accepting work.
+    /// </exception>
     /// <remarks>
     /// Inline callers serialize delivery. Entries written by a sink callback are queued until
     /// every sink has received the current entry, without recursively invoking callbacks.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException">
-    /// The router has stopped accepting work.
-    /// </exception>
     public bool TryDispatch(LogEntry entry)
     {
         lock (m_queueSync)

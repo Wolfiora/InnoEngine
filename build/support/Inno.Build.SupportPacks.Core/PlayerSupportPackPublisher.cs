@@ -58,13 +58,12 @@ public sealed class PlayerSupportPackPublisher
     /// <param name="cancellationToken">
     /// Cancels preparation before directory installation begins.
     /// </param>
+    /// <param name="nativeDependencies">
+    /// An explicit native selection disabling third-party production, or null for local source preparation.
+    /// </param>
     /// <returns>
     /// Reading ownership of the selected Pack and any post-commit diagnostics. Dispose after consuming its files.
     /// </returns>
-    /// <remarks>
-    /// Writers targeting the same pack share an exclusive, cancelable preparation lease.
-    /// Publication atomically selects a fingerprint directory; previous generations remain valid for readers.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// A required path is blank or the target has no registered source.
     /// </exception>
@@ -80,9 +79,10 @@ public sealed class PlayerSupportPackPublisher
     /// <exception cref="OperationCanceledException">
     /// Preparation was canceled; the installed pack is unchanged.
     /// </exception>
-    /// <param name="nativeDependencies">
-    /// An explicit native selection disabling third-party production, or null for local source preparation.
-    /// </param>
+    /// <remarks>
+    /// Writers targeting the same pack share an exclusive, cancelable preparation lease.
+    /// Publication atomically selects a fingerprint directory; previous generations remain valid for readers.
+    /// </remarks>
     public async ValueTask<PlayerSupportPackPublication> PublishAsync(
         string engineRoot,
         string outputRoot,

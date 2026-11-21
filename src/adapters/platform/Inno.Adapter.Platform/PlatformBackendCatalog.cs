@@ -34,16 +34,16 @@ public sealed class PlatformBackendCatalog : IPlatformBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<PlatformBackendId>(new List<PlatformBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<PlatformBackendId>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<PlatformBackendId> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IPlatformApplication CreateApplication(PlatformBackendId backend)
     {
         if (!m_providers.TryGetValue(backend, out PlatformBackendProvider? provider))

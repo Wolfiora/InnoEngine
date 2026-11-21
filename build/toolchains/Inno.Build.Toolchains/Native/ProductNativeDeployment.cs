@@ -21,6 +21,12 @@ public static class ProductNativeDeployment
     /// Validated runtime and optional authoring products returned by the declared product plan.
     /// All products must use the same target; each component can appear once.
     /// </param>
+    /// <param name="plan">
+    /// The explicit component closure and deployment mapping used to produce these products.
+    /// </param>
+    /// <param name="applicationDirectory">
+    /// The managed output directory receiving the complete native tree.
+    /// </param>
     /// <param name="cancellationToken">
     /// Cancels ownership acquisition or staging before the atomic installation starts.
     /// </param>
@@ -28,12 +34,6 @@ public static class ProductNativeDeployment
     /// Completion after the complete native tree has been validated under exclusive publication ownership.
     /// Identical deployments retain their files, including libraries loaded by a running application.
     /// </returns>
-    /// <param name="plan">
-    /// The explicit component closure and deployment mapping used to produce these products.
-    /// </param>
-    /// <param name="applicationDirectory">
-    /// The managed output directory receiving the complete native tree.
-    /// </param>
     /// <exception cref="ArgumentException">
     /// The product closure is empty, contains duplicate components or mixes targets.
     /// </exception>
@@ -68,10 +68,6 @@ public static class ProductNativeDeployment
     /// <returns>
     /// Completion after copying and verifying payload, without creating transaction metadata in the candidate.
     /// </returns>
-    /// <remarks>
-    /// The caller must retain exclusive ownership and discard the entire candidate on failure or cancellation.
-    /// This operation neither selects a publication nor replaces an existing native tree.
-    /// </remarks>
     /// <exception cref="ArgumentException">
     /// The product closure or candidate path is invalid.
     /// </exception>
@@ -84,6 +80,10 @@ public static class ProductNativeDeployment
     /// <exception cref="OperationCanceledException">
     /// Cancellation prevents completing the unpublished candidate.
     /// </exception>
+    /// <remarks>
+    /// The caller must retain exclusive ownership and discard the entire candidate on failure or cancellation.
+    /// This operation neither selects a publication nor replaces an existing native tree.
+    /// </remarks>
     public static ValueTask StageAsync(
         IReadOnlyList<NativeBuildProduct> products,
         ProductNativeBuildPlan plan,
@@ -136,7 +136,7 @@ public static class ProductNativeDeployment
                                                           ?? new Dictionary<string, byte[]>();
         var metadata = new Dictionary<string, byte[]>(StringComparer.Ordinal);
         StringComparer paths = OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-        var payloadPaths = files.Keys.Select(relative => PathBoundary.Resolve(destination, relative)).ToHashSet(paths);
+        HashSet<string> payloadPaths = files.Keys.Select(relative => PathBoundary.Resolve(destination, relative)).ToHashSet(paths);
         var metadataPaths = new HashSet<string>(paths);
         foreach ((string relative, byte[] content) in contributed)
         {
@@ -173,7 +173,7 @@ public static class ProductNativeDeployment
                 string output = Path.Combine(staging, relative);
                 Directory.CreateDirectory(Path.GetDirectoryName(output)!);
                 await using (FileStream source = File.OpenRead(file))
-                await using (FileStream target = new(output, FileMode.CreateNew))
+                await using (var target = new FileStream(output, FileMode.CreateNew))
                 {
                     await source.CopyToAsync(target, cancellationToken).ConfigureAwait(false);
                 }

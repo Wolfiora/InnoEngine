@@ -56,7 +56,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     public MiniAudioDevice(MiniAudioDeviceOptions options)
     {
         m_options = (options ?? throw new ArgumentNullException(nameof(options))).Validate();
-        generation = NextGeneration();
+        this.generation = NextGeneration();
         m_state = AudioDeviceState.Initializing;
         m_engine = (MaEngine*)NativeMemory.AllocZeroed((nuint)sizeof(MaEngine));
 
@@ -75,7 +75,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
 
             m_engineInitialized = true;
             int actualSampleRate = checked((int)NativeApi.Raw.EngineGetSampleRate(m_engine));
-            capabilities = new AudioCapabilities(true, true, true, m_options.listenerCount, actualSampleRate);
+            this.capabilities = new AudioCapabilities(true, true, true, m_options.listenerCount, actualSampleRate);
             if (m_options.noDevice)
             {
                 m_processBuffer = (float*)NativeMemory.AllocZeroed(
@@ -1012,7 +1012,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
     private void UpdateOutputDeviceState()
     {
         MaDevice* device = NativeApi.Raw.EngineGetDevice(m_engine);
-        if (device == null)
+        if (device is null)
         {
             m_state = AudioDeviceState.Lost;
             return;
@@ -1137,7 +1137,7 @@ public sealed unsafe class MiniAudioDevice : AudioDevice, IAudioDevice
             this.parent = parent;
             this.group = group;
             this.target = target;
-            tail = group;
+            this.tail = group;
         }
     }
 

@@ -1,3 +1,4 @@
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Runtime;
@@ -5,7 +6,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Describes the current availability of one target-specific rendering artifact.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("f3865bb4-5ff5-55c1-a910-27d7a65f84f2")]
+[StableTypeId("f3865bb4-5ff5-55c1-a910-27d7a65f84f2")]
 public enum RenderTargetArtifactStatus
 {
     /// <summary>

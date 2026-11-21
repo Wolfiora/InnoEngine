@@ -23,8 +23,8 @@ public sealed class AudioDeviceLimits
     /// A capacity is not positive.
     /// </exception>
     public AudioDeviceLimits(
-        int clips = 16384,
-        int voices = 65536,
+        int clips = 16_384,
+        int voices = 65_536,
         int buses = 4096
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(clips);

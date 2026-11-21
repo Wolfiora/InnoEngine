@@ -15,7 +15,7 @@ namespace Inno.UI;
 [StableTypeId("8b34bafb-f34a-4c19-9853-282485c40b78")]
 public sealed class UiDocumentAsset : AssetObject
 {
-    private const uint C_PAYLOAD_MAGIC = 0x44495549;
+    private const uint C_PAYLOAD_MAGIC = 0x4449_5549;
     private UiDocumentSource? m_source;
     private IReadOnlyList<UiDocumentFontFace> m_fonts = [];
     private string m_implementationId = string.Empty;

@@ -24,10 +24,10 @@ public sealed class ImportSettingsTests
     {
         using var fixture = new Fixture();
         using AssetLoader loader = fixture.CreateLoader();
-        var asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
+        ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
         Guid identity = asset.identity.persistentId;
         AssetImportSettingsSnapshot snapshot = loader.GetImportSettings(Fixture.path);
-        var settings = Assert.IsType<ConfiguredSettings>(snapshot.value);
+        ConfiguredSettings settings = Assert.IsType<ConfiguredSettings>(snapshot.value);
         Assert.Equal(1, settings.multiplier);
         settings.multiplier = 7;
         Assert.Equal(1, Assert.IsType<ConfiguredSettings>(loader.GetImportSettings(Fixture.path).value).multiplier);
@@ -54,7 +54,7 @@ public sealed class ImportSettingsTests
             identity = loader.Load(Fixture.path, typeof(ConfiguredAsset))!.identity.persistentId;
         }
         using AssetLoader cold = fixture.CreateLoader("OtherLibrary");
-        var asset = Assert.IsType<ConfiguredAsset>(cold.Load(Fixture.path, typeof(ConfiguredAsset)));
+        ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(cold.Load(Fixture.path, typeof(ConfiguredAsset)));
         Assert.Equal("12:source", asset.value);
         Assert.Equal(identity, asset.identity.persistentId);
     }
@@ -81,7 +81,7 @@ public sealed class ImportSettingsTests
     {
         using var fixture = new Fixture();
         using AssetLoader loader = fixture.CreateLoader();
-        var asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
+        ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
         Assert.True(loader.TryGetInfo(Fixture.path, out AssetInfo? original));
         AssetImportSettingsSnapshot snapshot = loader.GetImportSettings(Fixture.path);
         Assert.False(loader.SaveImportSettings(Fixture.path, new ConfiguredSettings { multiplier = -1 }, snapshot.fingerprint));
@@ -98,7 +98,7 @@ public sealed class ImportSettingsTests
     {
         using var fixture = new Fixture();
         using AssetLoader loader = fixture.CreateLoader();
-        var asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
+        ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
         byte[] first = File.ReadAllBytes(fixture.sourcePath + ".imeta");
         AssetImportSettingsSnapshot snapshot = loader.GetImportSettings(Fixture.path);
         Assert.True(loader.SaveImportSettings(Fixture.path, new ConfiguredSettings { multiplier = 2 }, snapshot.fingerprint));
@@ -117,8 +117,8 @@ public sealed class ImportSettingsTests
         using var fixture = new Fixture();
         File.WriteAllText(Path.Combine(fixture.assetRoot, "lookup.txt"), "first");
         using AssetLoader loader = fixture.CreateLoader();
-        var dependency = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("lookup.txt"), typeof(TextAsset)));
-        var asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
+        TextAsset dependency = Assert.IsType<TextAsset>(loader.Load(AssetPath.Project("lookup.txt"), typeof(TextAsset)));
+        ConfiguredAsset asset = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
         AssetImportSettingsSnapshot snapshot = loader.GetImportSettings(Fixture.path);
         Assert.True(loader.SaveImportSettings(Fixture.path, new ConfiguredSettings { lookup = dependency }, snapshot.fingerprint));
         Assert.Contains(AssetPath.Project("lookup.txt"), loader.GetImportDependencies(asset));
@@ -126,7 +126,7 @@ public sealed class ImportSettingsTests
         Assert.Equal("1:source:first", asset.value);
         File.WriteAllText(Path.Combine(fixture.assetRoot, "lookup.txt"), "second");
         Assert.True(loader.Import(AssetPath.Project("lookup.txt")));
-        var reloaded = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
+        ConfiguredAsset reloaded = Assert.IsType<ConfiguredAsset>(loader.Load(Fixture.path, typeof(ConfiguredAsset)));
         Assert.Equal("1:source:second", reloaded.value);
     }
 
@@ -154,7 +154,7 @@ public sealed class ImportSettingsTests
         using var fixture = new Fixture();
         using AssetLoader loader = fixture.CreateLoader();
         Assert.True(loader.Import(Fixture.path));
-        byte[] corrupt = [0xff, 0xee, 0xdd];
+        byte[] corrupt = [0xFF, 0xEE, 0xDD];
         File.WriteAllBytes(fixture.sourcePath + ".imeta", corrupt);
         Assert.False(loader.Import(Fixture.path));
         Assert.Equal(corrupt, File.ReadAllBytes(fixture.sourcePath + ".imeta"));
@@ -220,14 +220,18 @@ public sealed class ImportSettingsTests
 [StableTypeId("f58eaeea-4bd5-4f3a-a7c0-c5a5414a6bb4")]
 internal sealed class ConfiguredSettings : ISerializable
 {
-    [SerializableProperty] internal int multiplier { get; set; } = 1;
-    [SerializableProperty] internal TextAsset? lookup { get; set; }
+    [SerializableProperty]
+    internal int multiplier { get; set; } = 1;
+
+    [SerializableProperty]
+    internal TextAsset? lookup { get; set; }
 }
 
 [StableTypeId("bdb3db71-e9cb-4d46-839b-3cbe302c5555")]
 internal sealed class ConfiguredAsset : AssetObject
 {
-    [SerializableProperty] internal string value { get; set; } = string.Empty;
+    [SerializableProperty]
+    internal string value { get; set; } = string.Empty;
 }
 
 [AssetImporter("tests.configured")]
@@ -242,7 +246,7 @@ internal sealed class ConfiguredImporter : AssetImporter<ConfiguredAsset>
         AssetImportWriter<ConfiguredAsset> output,
         CancellationToken cancellationToken
     ) {
-        var settings = (ConfiguredSettings)context.importSettings!;
+        ConfiguredSettings settings = (ConfiguredSettings)context.importSettings!;
         if (settings.multiplier < 0) throw new InvalidOperationException("A negative multiplier is invalid.");
         string value = $"{settings.multiplier}:{context.ReadUtf8Text()}";
         if (settings.lookup is not null) value += ":" + settings.lookup.content;

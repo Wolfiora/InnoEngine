@@ -3,7 +3,9 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using Inno.Native.ImGui;
 
+using NativeFocusedFlags = Inno.Native.ImGui.ImGuiFocusedFlags;
 using NativeGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
 
@@ -123,7 +125,7 @@ public sealed unsafe partial class ImGuiWidget
         Vector2 availableSize
     ) {
         ImGuiNativeContext* native = m_session.RequireContext();
-        if (native->WithinFrameScope == 0 || native->Font == null || native->FontBaked == null)
+        if (native->WithinFrameScope == 0 || native->Font is null || native->FontBaked is null)
         {
             throw new InvalidOperationException("Dialog measurement requires an active native frame and font.");
         }
@@ -148,7 +150,7 @@ public sealed unsafe partial class ImGuiWidget
         bool memoize = font->OwnerAtlas->OwnerContext == native && font->RemapPairs.Data.Size == 0
                        && (long)presentation.message.Length + (presentation.details?.Length ?? 0) + (presentation.actionLabel?.Length ?? 0)
                           <= C_MAX_CACHED_DIALOG_CHARS;
-        DialogMeasurementKey key = new(
+        var key = new DialogMeasurementKey(
             presentation.message,
             presentation.details,
             presentation.actionLabel,
@@ -192,7 +194,7 @@ public sealed unsafe partial class ImGuiWidget
         float actionWidth = hasAction
                             ? ImGuiUtf8Buffer.MeasureText(presentation.actionLabel!, -1f).X + nativeStyle->FramePadding.X * 2f
                             : 0f;
-        DialogLayout result = new(new Vector2(width, MathF.Ceiling(height)), textWidth, visibleBody, body, spacing, frame, actionWidth);
+        var result = new DialogLayout(new Vector2(width, MathF.Ceiling(height)), textWidth, visibleBody, body, spacing, frame, actionWidth);
         if (memoize)
         {
             m_previousDialogKey = m_dialogKey;
@@ -307,9 +309,9 @@ public sealed unsafe partial class ImGuiWidget
                 activated = DrawCenteredButton(presentation.actionLabel, origin + new Vector2(0f, y), layout.size.X, layout.actionWidth);
                 if (presentation.cancelOnEscape
                     && presentation.actionEnabled
-                    && NativeGui.IsWindowFocused((int)Inno.Native.ImGui.ImGuiFocusedFlags.RootAndChildWindows)
+                    && NativeGui.IsWindowFocused((int)NativeFocusedFlags.RootAndChildWindows)
                     &&
-                    NativeGui.IsKeyPressed(Inno.Native.ImGui.ImGuiKey.Escape, false)
+                    NativeGui.IsKeyPressed(NativeKey.Escape, false)
                 ) {
                     activated = true;
                 }

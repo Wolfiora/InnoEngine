@@ -47,8 +47,8 @@ public sealed class TransformTests : IDisposable
         Assert.Equal(worldRotation, child.worldRotation);
         Assert.Equal(worldScale, child.worldScale);
 
-        Vector3 expectedLocalPosition = new Vector3(-0.5f, -0.33333334f, -0.25f);
-        Vector3 expectedLocalScale = new Vector3(1f, 0.6666667f, 0.5f);
+        var expectedLocalPosition = new Vector3(-0.5f, -0.33333334f, -0.25f);
+        var expectedLocalScale = new Vector3(1f, 0.6666667f, 0.5f);
 
         AssertEqualWithTolerance(worldPosition, child.worldPosition, 1e-5f);
         AssertEqualWithTolerance(worldRotation.normalized, child.worldRotation.normalized, 1e-5f);
@@ -79,7 +79,7 @@ public sealed class TransformTests : IDisposable
 
         child.SetParent(parent);
 
-        Vector3 expectedLocalPosition = new Vector3(0f, 2f, 0f);
+        var expectedLocalPosition = new Vector3(0f, 2f, 0f);
         Quaternion expectedLocalRotation = Quaternion.Inverse(parent.localRotation) * worldRotation;
         Quaternion normalizedExpectedRotation = expectedLocalRotation.normalized;
 

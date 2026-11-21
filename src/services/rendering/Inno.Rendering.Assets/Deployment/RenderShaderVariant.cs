@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Identifies one deterministic selection of static shader keyword options shared by authoring and runtime.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("c6c7b7a6-5e4f-5822-af8f-e894d7bb2d38")]
+[StableTypeId("c6c7b7a6-5e4f-5822-af8f-e894d7bb2d38")]
 public readonly struct RenderShaderVariant : IEquatable<RenderShaderVariant>
 {
     private static readonly IReadOnlyDictionary<string, string> S_EMPTY_OPTIONS =

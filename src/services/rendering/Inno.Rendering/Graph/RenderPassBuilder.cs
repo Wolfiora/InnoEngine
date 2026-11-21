@@ -70,13 +70,13 @@ public abstract class RenderPassBuilder
     /// <summary>
     /// Opts this pass into worker-thread recording through an isolated backend-neutral command list.
     /// </summary>
+    /// <returns>
+    /// This builder for fluent declarations.
+    /// </returns>
     /// <remarks>
     /// Pass data and code reached by the callback must be safe for worker-thread access. GPU execution
     /// and backend view order remain identical to the compiled graph order.
     /// </remarks>
-    /// <returns>
-    /// This builder for fluent declarations.
-    /// </returns>
     public RenderPassBuilder AllowParallelRecording()
     {
         m_graph.EnsurePassMutable(m_pass);

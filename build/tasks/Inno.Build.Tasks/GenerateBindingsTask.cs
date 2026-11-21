@@ -201,7 +201,10 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
                     plan,
                     cancellation
                 ).GetAwaiter().GetResult();
-                NativeBindingGenerationDescriptor imported = products.bindingGenerations.TryGetValue(project, out var binding)
+                NativeBindingGenerationDescriptor imported = products.bindingGenerations.TryGetValue(
+                    project,
+                    out NativeBindingGenerationDescriptor? binding
+                )
                     ? binding
                     : throw new InvalidDataException("The selected dependency does not contain its required bindings.");
                 if (ExpectedFingerprint.Length != 0 && ExpectedFingerprint != imported.fingerprint)
@@ -247,7 +250,14 @@ public sealed class GenerateBindingsTask : BuildTask, ICancelableTask
             Dictionary<string, NativeComponentBuildOptions>? componentOptions = selectedOptions is null
                 ? null
                 : new(StringComparer.Ordinal) { [owner.nativeProject] = selectedOptions };
-            var request = new NativeBindingGenerationRequest([owner], TargetId, mode, CheckOnly, expected, componentOptions);
+            var request = new NativeBindingGenerationRequest(
+                [owner],
+                TargetId,
+                mode,
+                CheckOnly,
+                expected,
+                componentOptions
+            );
             using NativeBindingGenerationResult closure = generator.GenerateAsync(context, request, cancellation)
                 .AsTask()
                 .GetAwaiter()

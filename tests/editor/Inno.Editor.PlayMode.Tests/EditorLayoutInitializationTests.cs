@@ -29,7 +29,7 @@ public sealed class EditorLayoutInitializationTests : IDisposable
         Assert.Equal(template, File.ReadAllText(context.layoutPath));
         Assert.False(context.SaveLayoutIfChanged());
         Assert.Equal(["Panels"], context.GetLayoutSectionNames());
-        Assert.True(context.TryGetLayoutSection("Panels", out var panels));
+        Assert.True(context.TryGetLayoutSection("Panels", out IReadOnlyDictionary<string, string> panels));
         Assert.Equal(8, panels.Count);
         Assert.All(panels.Values, value => Assert.Equal("true", value));
         Assert.DoesNotContain("Module.", template, StringComparison.Ordinal);
@@ -47,7 +47,7 @@ public sealed class EditorLayoutInitializationTests : IDisposable
     {
         string path = Path.Combine(m_root, "editor.ini");
         File.WriteAllText(path, document);
-        DateTime timestamp = new(2020, 2, 3, 4, 5, 6, DateTimeKind.Utc);
+        var timestamp = new DateTime(2020, 2, 3, 4, 5, 6, DateTimeKind.Utc);
         File.SetLastWriteTimeUtc(path, timestamp);
         byte[] bytes = File.ReadAllBytes(path);
         EditorContext context = CreateContext(ReadTemplate());
@@ -89,9 +89,9 @@ public sealed class EditorLayoutInitializationTests : IDisposable
         byte[] saved = File.ReadAllBytes(context.layoutPath);
         EditorContext reopened = CreateContext(ReadTemplate());
         Assert.Contains("[Window][User layout]", reopened.imguiLayout);
-        Assert.True(reopened.TryGetLayoutSection("Module.fixture", out var values));
+        Assert.True(reopened.TryGetLayoutSection("Module.fixture", out IReadOnlyDictionary<string, string> values));
         Assert.Equal("42", values["value"]);
-        Assert.True(reopened.TryGetLayoutSection("Panels", out var panels));
+        Assert.True(reopened.TryGetLayoutSection("Panels", out IReadOnlyDictionary<string, string> panels));
         Assert.Equal(8, panels.Count);
         Assert.Equal(saved, File.ReadAllBytes(reopened.layoutPath));
         Assert.Single(Directory.GetFiles(m_root));

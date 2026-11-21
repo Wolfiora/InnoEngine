@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// Gets one model's prepared pipeline data for a host-owned target.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("3954390f-0d08-5114-82e4-5e35aa777472")]
+[StableTypeId("3954390f-0d08-5114-82e4-5e35aa777472")]
 public sealed class RenderModelOutput
 {
     /// <summary>

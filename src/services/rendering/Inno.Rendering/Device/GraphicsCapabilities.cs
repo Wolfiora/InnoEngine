@@ -371,13 +371,13 @@ public sealed class GraphicsCapabilities
         this.limits = limits;
         this.originBottomLeft = originBottomLeft;
         this.homogeneousDepth = homogeneousDepth;
-        m_sampledFormats = new HashSet<RenderTextureFormat>(sampledFormats);
-        m_sampled3DFormats = new HashSet<RenderTextureFormat>(sampled3DFormats ?? []);
-        m_sampledCubeFormats = new HashSet<RenderTextureFormat>(sampledCubeFormats ?? []);
-        m_renderTargetFormats = new HashSet<RenderTextureFormat>(renderTargetFormats);
-        m_multisampleRenderTargetFormats = new HashSet<RenderTextureFormat>(multisampleRenderTargetFormats ?? []);
-        m_storageReadFormats = new HashSet<RenderTextureFormat>(storageReadFormats);
-        m_storageWriteFormats = new HashSet<RenderTextureFormat>(storageWriteFormats);
+        m_sampledFormats = [.. sampledFormats];
+        m_sampled3DFormats = [.. sampled3DFormats ?? []];
+        m_sampledCubeFormats = [.. sampledCubeFormats ?? []];
+        m_renderTargetFormats = [.. renderTargetFormats];
+        m_multisampleRenderTargetFormats = [.. multisampleRenderTargetFormats ?? []];
+        m_storageReadFormats = [.. storageReadFormats];
+        m_storageWriteFormats = [.. storageWriteFormats];
     }
 
     /// <summary>
@@ -408,12 +408,12 @@ public sealed class GraphicsCapabilities
     /// <summary>
     /// Tests whether every requested optional feature is supported.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when every requested feature is available.
-    /// </returns>
     /// <param name="required">
     /// The required consumed by supports; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when every requested feature is available.
+    /// </returns>
     public bool Supports(GraphicsCapability required) => (features & required) == required;
 
     /// <summary>
@@ -453,12 +453,12 @@ public sealed class GraphicsCapabilities
     /// <summary>
     /// Tests whether a format is valid as a raster attachment.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the format can be attached.
-    /// </returns>
     /// <param name="format">
     /// The format consumed by supports render target; ownership remains with the caller unless explicitly stated otherwise.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the format can be attached.
+    /// </returns>
     public bool SupportsRenderTarget(RenderTextureFormat format) => m_renderTargetFormats.Contains(format);
 
     /// <summary>

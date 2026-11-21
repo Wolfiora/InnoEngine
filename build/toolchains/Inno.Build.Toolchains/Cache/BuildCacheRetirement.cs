@@ -24,11 +24,14 @@ internal static class BuildCacheRetirement
         var failures = new Dictionary<string, string>(BuildCacheInventory.pathComparer);
         var ownerLeases = new List<FileLease>();
         var artifactLeases = new Dictionary<string, FileLease>(BuildCacheInventory.pathComparer);
-        var proposed = candidates.ToDictionary(static entry => entry.directory, BuildCacheInventory.pathComparer);
+        Dictionary<string, BuildCacheArtifactDescriptor> proposed = candidates.ToDictionary(
+            static entry => entry.directory,
+            BuildCacheInventory.pathComparer
+        );
         long reclaimed = 0;
         Stopwatch elapsed = Stopwatch.StartNew();
         bool limited = false;
-        using var bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        using CancellationTokenSource bounded = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         bounded.CancelAfter(policy.timeBudget);
         try
         {
@@ -104,7 +107,7 @@ internal static class BuildCacheRetirement
                     limited = true;
                     break;
                 }
-                var current = fresh.artifacts[path];
+                (BuildCacheOwnerDescriptor owner, BuildCacheArtifactDescriptor artifact) current = fresh.artifacts[path];
                 BuildCacheArtifactDescriptor original = proposed[path];
                 if (protectedPaths.Contains(path) || !artifactLeases.ContainsKey(path)
                     || original.bytes != current.artifact.bytes || original.lastUseUtc != current.artifact.lastUseUtc

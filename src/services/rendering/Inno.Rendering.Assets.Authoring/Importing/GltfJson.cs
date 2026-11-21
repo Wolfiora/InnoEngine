@@ -1,10 +1,11 @@
 using System;
 using System.Text.Json;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets.Authoring;
 
-[Inno.Extensibility.Types.StableTypeId("d5d5c69c-6d36-541f-bdd6-305af58d8e18")]
+[StableTypeId("d5d5c69c-6d36-541f-bdd6-305af58d8e18")]
 internal static class GltfJson
 {
     internal static JsonElement RequireObject(

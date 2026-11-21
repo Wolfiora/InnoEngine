@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Inno.Tooling.Architecture;
 using Inno.Tooling.Validation;
 
-using DocumentationCommand = Inno.Tooling.Documentation.DocumentationCommand;
+using ToolingCommand = Inno.Tooling.Documentation.DocumentationCommand;
 
 namespace Inno.Build.Cli;
 
@@ -89,7 +89,7 @@ public static partial class BuildApplication
                     {
                         return await DocumentationExamples.ExecuteAsync([..options[1..], "--operation", "plan"], cancellationToken);
                     }
-                    return await DocumentationCommand.ExecuteAsync(options, cancellationToken);
+                    return await ToolingCommand.ExecuteAsync(options, cancellationToken);
                 case "validate":
                     return await ValidationCommand.ExecuteAsync(options, cancellationToken);
                 case "verify-native":
@@ -128,13 +128,27 @@ public static partial class BuildApplication
                     var context = new BuildCommandContext(parsed);
                     switch (command)
                     {
-                        case "native-dependencies": await NativeDependenciesCommand.RunAsync(context, parsed, cancellationToken); break;
-                        case "support": await SupportBuildCommand.RunAsync(context, parsed, cancellationToken); break;
-                        case "editor": await EditorBuildCommand.RunAsync(context, parsed, cancellationToken); break;
-                        case "clean": await CleanCommand.RunAsync(context, parsed, cancellationToken); break;
-                        case "bindings": await BindingCommand.RunAsync(context, parsed, cancellationToken); break;
-                        case "support-pack": await SupportPackCommand.RunAsync(context, parsed, cancellationToken); break;
-                        case "shader": await ShaderCommand.RunAsync(context, parsed, cancellationToken); break;
+                        case "native-dependencies":
+                            await NativeDependenciesCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
+                        case "support":
+                            await SupportBuildCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
+                        case "editor":
+                            await EditorBuildCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
+                        case "clean":
+                            await CleanCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
+                        case "bindings":
+                            await BindingCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
+                        case "support-pack":
+                            await SupportPackCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
+                        case "shader":
+                            await ShaderCommand.RunAsync(context, parsed, cancellationToken);
+                            break;
                     }
                     if (command is "support" or "editor" or "support-pack" or "bindings" or "shader")
                     {

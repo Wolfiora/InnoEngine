@@ -58,7 +58,7 @@ public sealed class StaticPlayerModuleActivator : IPlayerModuleActivator
         m_sources = sources.AsReadOnly();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Activate(
         ModuleHost modules,
         GameCodeDeployment deployment

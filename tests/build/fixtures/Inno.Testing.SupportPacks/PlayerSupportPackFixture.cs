@@ -2,6 +2,9 @@ using System;
 using System.IO;
 using System.Linq;
 using Inno.Build;
+using Inno.Build.MacOSArm64;
+using Inno.Build.WindowsX64;
+using Inno.Core.Identity;
 
 namespace Inno.Testing.SupportPacks;
 
@@ -12,7 +15,7 @@ public abstract class PlayerSupportPackFixture : IDisposable
     private readonly string[] m_referenceAssemblies;
 
     protected PlayerSupportPackFixture()
-        : this([typeof(Inno.Core.Identity.IdentityAllocator).Assembly.Location]) {}
+        : this([typeof(IdentityAllocator).Assembly.Location]) {}
 
     protected PlayerSupportPackFixture(string[] referenceAssemblies)
     {
@@ -96,8 +99,8 @@ public abstract class PlayerSupportPackFixture : IDisposable
             File.WriteAllBytes(Path.Combine(linkNative, file), CreateNativeImage(target));
         }
         IPlayerSupportPackValidator validator = target == new BuildTargetId("macos-arm64")
-                                                ? new Inno.Build.MacOSArm64.MacOSArm64SupportPackValidator()
-                                                : new Inno.Build.WindowsX64.WindowsX64SupportPackValidator();
+                                                ? new MacOSArm64SupportPackValidator()
+                                                : new WindowsX64SupportPackValidator();
         using PlayerSupportPackLease published = new PlayerSupportPackCatalog(m_supportPackRoot).PublishAsync(
             target,
             directory,
@@ -117,22 +120,22 @@ public abstract class PlayerSupportPackFixture : IDisposable
         using var writer = new BinaryWriter(output);
         if (target == new BuildTargetId("macos-arm64"))
         {
-            writer.Write(0xfeedfacfu);
-            writer.Write(0x0100000cu);
+            writer.Write(0xFEED_FACFu);
+            writer.Write(0x0100_000Cu);
             writer.Write(0u);
             writer.Write(6u);
             writer.Write(new byte[16]);
         }
         else
         {
-            writer.Write((ushort)0x5a4d);
+            writer.Write((ushort)0x5A4D);
             writer.Write(new byte[58]);
             writer.Write(64);
-            writer.Write(0x00004550u);
+            writer.Write(0x0000_4550u);
             writer.Write((ushort)0x8664);
             writer.Write(new byte[16]);
             writer.Write((ushort)0x2000);
-            writer.Write((ushort)0x020b);
+            writer.Write((ushort)0x020B);
         }
         return output.ToArray();
     }

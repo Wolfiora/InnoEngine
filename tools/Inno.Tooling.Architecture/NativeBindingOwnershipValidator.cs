@@ -14,7 +14,7 @@ internal static class NativeBindingOwnershipValidator
         IEnumerable<string> projects,
         ICollection<string> failures
     ) {
-        Dictionary<string, string> components = new(StringComparer.Ordinal);
+        var components = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (string projectPath in projects)
         {
             if (!Path.GetFileName(projectPath).StartsWith("Inno.Native.", StringComparison.Ordinal))
@@ -49,7 +49,7 @@ internal static class NativeBindingOwnershipValidator
                 {
                     throw new InvalidDataException("The binding definition must contain declarative Project data.");
                 }
-                Dictionary<string, string> properties = new(StringComparer.Ordinal);
+                var properties = new Dictionary<string, string>(StringComparer.Ordinal);
                 foreach (XElement group in root.Elements())
                 {
                     if (group.HasAttributes)

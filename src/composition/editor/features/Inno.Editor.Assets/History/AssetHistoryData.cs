@@ -29,7 +29,7 @@ internal sealed record AssetHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        var kind = (AssetHistoryOperationKind)reader.ReadByte();
+        AssetHistoryOperationKind kind = (AssetHistoryOperationKind)reader.ReadByte();
         if (!Enum.IsDefined(kind))
         {
             throw new InvalidDataException($"Unknown asset history operation kind '{kind}'.");

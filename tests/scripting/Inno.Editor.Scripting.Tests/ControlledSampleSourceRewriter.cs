@@ -21,7 +21,7 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
         set => m_current.Value = value;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Transform(AssetSampleTransformContext context)
     {
         if (m_control is null)
@@ -45,7 +45,7 @@ internal sealed class ControlledSampleSourceRewriter : IAssetSampleSourceRewrite
         internal ManualResetEventSlim canceled { get; } = new();
         internal int workerThread { get; set; }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public void Dispose()
         {
             started.Dispose();

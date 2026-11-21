@@ -13,7 +13,7 @@ internal readonly struct AssetSourceFileStamp : IEquatable<AssetSourceFileStamp>
         this.length = length;
         this.lastWriteUtcTicks = lastWriteUtcTicks;
         this.creationTimeUtcTicks = creationTimeUtcTicks;
-        isValid = true;
+        this.isValid = true;
     }
 
     internal bool isValid { get; }

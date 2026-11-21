@@ -11,22 +11,16 @@ namespace Inno.Integration.MacOSArm64.Sdl3;
 /// </summary>
 public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public Sdl3HostCapabilities capabilities { get; } = new(multipleWindows: true, liveResize: true);
 
-    /// <inheritdoc />
-    public void ConfigureInitialization()
-    {
-        _ = SDL.SetHint("SDL_MAC_PRESS_AND_HOLD", "0");
-    }
+    /// <inheritdoc/>
+    public void ConfigureInitialization() => _ = SDL.SetHint("SDL_MAC_PRESS_AND_HOLD", "0");
 
-    /// <inheritdoc />
-    public nint CreateWindow(PlatformWindowOptions options)
-    {
-        return Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
-    }
+    /// <inheritdoc/>
+    public nint CreateWindow(PlatformWindowOptions options) => Sdl3WindowOperations.CreateWindow(options, requireOpenGl: false);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public unsafe PlatformNativeHandles ResolveNativeSurface(nint windowHandle)
     {
         if (windowHandle == 0)
@@ -47,9 +41,6 @@ public sealed class MacOSArm64Sdl3HostIntegration : ISdl3HostIntegration
         return new PlatformNativeHandles(surface, handleKind: PlatformNativeHandleId.cocoa);
     }
 
-    /// <inheritdoc />
-    public bool GetInitialFocus(nint windowHandle)
-    {
-        return Sdl3WindowOperations.ReadFocus(windowHandle);
-    }
+    /// <inheritdoc/>
+    public bool GetInitialFocus(nint windowHandle) => Sdl3WindowOperations.ReadFocus(windowHandle);
 }

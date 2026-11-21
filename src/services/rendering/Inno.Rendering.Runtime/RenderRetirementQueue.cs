@@ -43,7 +43,10 @@ internal sealed class RenderRetirementQueue : IDisposable
         }
         if (m_failures.Count > 0)
         {
-            var failure = new AggregateException("Rendering retirement failed after all quiescent owners were attempted.", m_failures);
+            var failure = new AggregateException(
+                "Rendering retirement failed after all quiescent owners were attempted.",
+                m_failures
+            );
             m_failures.Clear();
             throw failure;
         }

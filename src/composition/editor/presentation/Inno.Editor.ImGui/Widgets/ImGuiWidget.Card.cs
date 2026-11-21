@@ -82,8 +82,8 @@ public sealed unsafe partial class ImGuiWidget
         {
             Vector2 headerCursor = NativeImGui.GetCursorScreenPos();
             (float cardLeft, float cardRight) = GetFullWidthCardBounds(headerCursor);
-            Vector2 persistentHeaderMin = new(cardLeft, headerCursor.Y);
-            Vector2 persistentHeaderMax = new(cardRight, headerCursor.Y + NativeImGui.GetFrameHeight());
+            var persistentHeaderMin = new Vector2(cardLeft, headerCursor.Y);
+            var persistentHeaderMax = new Vector2(cardRight, headerCursor.Y + NativeImGui.GetFrameHeight());
             ImGui.DrawNativeFilledRectangle(
                 NativeImGui.Raw.GetWindowDrawList(),
                 persistentHeaderMin,

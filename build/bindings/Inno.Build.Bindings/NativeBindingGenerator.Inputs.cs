@@ -9,10 +9,10 @@ namespace Inno.Build.Bindings;
 /// </summary>
 public sealed partial class NativeBindingGenerator
 {
-    /// <inheritdoc />
     /// <exception cref="System.NotSupportedException">
     /// Configuration inheritance uses a remote input without local build ownership.
     /// </exception>
+    /// <inheritdoc/>
     public ValueTask<string> ComputeInputFingerprintAsync(
         NativeBuildContext context,
         NativeBindingGenerationRequest request,

@@ -6,7 +6,7 @@ namespace Inno.Editor.Panel.Settings;
 [EditorMenu(SettingsInteractionIds.C_MAIN_MENU_AREA, "Edit/Settings...", order: 1000)]
 internal sealed class OpenSettingsAction(SettingsWindowModule window) : EditorAction
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override EditorActionState Query(EditorActionContext context)
         => new(true, window.canOpen, unavailableReason: window.unavailableReason);
 

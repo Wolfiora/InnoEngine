@@ -7,6 +7,7 @@ using Inno.Testing.Editor.Native;
 
 using NativeImGui = Inno.Native.ImGui.ImGui;
 using Ui = Inno.Editor.ImGui.ImGui;
+using UiCol = Inno.Editor.ImGui.ImGuiCol;
 
 namespace Inno.Editor.PlayMode.Tests;
 
@@ -65,9 +66,9 @@ public sealed unsafe class StatisticsPanelNativeTests
             NativeImGui.SetNextWindowSize(new(1000f, 800f), (int)ImGuiCond.Always);
             bool open = true;
             _ = NativeImGui.Begin("Statistics acceptance", ref open, (int)ImGuiWindowFlags.NoSavedSettings);
-            Vector4 color = new(0.93f, 0.17f, 0.73f, 1f);
+            var color = new Vector4(0.93f, 0.17f, 0.73f, 1f);
             uint packed = Ui.ToPackedColor(color);
-            Ui.PushStyleColor(Inno.Editor.ImGui.ImGuiCol.PlotLines, color);
+            Ui.PushStyleColor(UiCol.PlotLines, color);
             try
             {
                 Assert.True(panel.Draw(host.runtime.context));
@@ -75,7 +76,7 @@ public sealed unsafe class StatisticsPanelNativeTests
                 for (int index = 0; index < draw->VtxBuffer.Size; index++)
                 {
                     uint vertex = draw->VtxBuffer.Data[index].Col;
-                    if ((vertex & 0x00ffffff) == (packed & 0x00ffffff) && (vertex >> 24) != 0)
+                    if ((vertex & 0x00FF_FFFF) == (packed & 0x00FF_FFFF) && (vertex >> 24) != 0)
                     {
                         count++;
                     }

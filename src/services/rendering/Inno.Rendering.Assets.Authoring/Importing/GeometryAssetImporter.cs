@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Mathematics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Assets.Authoring;
 
 [AssetImporter("inno.rendering.geometry")]
-[Inno.Extensibility.Types.StableTypeId("a7278025-7d95-5fb3-a309-25458cef8765")]
+[StableTypeId("a7278025-7d95-5fb3-a309-25458cef8765")]
 internal sealed class GeometryAssetImporter : AssetImporter<GeometryAsset>
 {
     /// <summary>

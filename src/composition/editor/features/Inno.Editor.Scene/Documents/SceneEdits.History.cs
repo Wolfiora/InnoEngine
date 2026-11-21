@@ -12,7 +12,7 @@ using Inno.Scene.Layers;
 
 namespace Inno.Editor.Scene;
 
-sealed partial class SceneEdits
+public sealed partial class SceneEdits
 {
     private void RecordDocument(
         string name,

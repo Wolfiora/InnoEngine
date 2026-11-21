@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Maps a shader diagnostic back to an asset, pass, stage, and source position.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("ab6474ed-51d0-570c-b15d-c477b5e9fecc")]
+[StableTypeId("ab6474ed-51d0-570c-b15d-c477b5e9fecc")]
 public readonly record struct ShaderSourceLocation
 {
     /// <summary>

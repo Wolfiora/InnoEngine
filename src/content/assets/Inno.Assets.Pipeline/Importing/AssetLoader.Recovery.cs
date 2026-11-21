@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     private bool IsSourceBackedTypeUnavailableLocked(Guid persistentId)
     {
@@ -102,16 +102,14 @@ sealed partial class AssetLoader
                 string path,
                 Guid stableTypeId,
                 byte[] payload
-            ) {
-                states.Add(
-                    id,
-                    new SerializedMissingState(
-                        new ReferenceKey(id, "$asset"),
-                        new ReferenceDescriptor(AssetReferenceProtocol.id, id, stableTypeId, lastKnownPath: path),
-                        payload
-                    )
-                );
-            }
+            ) => states.Add(
+                id,
+                new SerializedMissingState(
+                    new ReferenceKey(id, "$asset"),
+                    new ReferenceDescriptor(AssetReferenceProtocol.id, id, stableTypeId, lastKnownPath: path),
+                    payload
+                )
+            );
         });
 
     internal void PreserveMissingRecoveryStates(IReadOnlyList<ReferenceRecoveryChange> changes)

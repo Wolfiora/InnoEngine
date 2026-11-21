@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -311,7 +312,7 @@ public sealed class AssetSampleImportTransaction : IDisposable
     internal IReadOnlyList<SerializedMissingState> recovery { get; set; } = [];
     internal AssetSourceMountTransaction? candidate { get; set; }
     internal string transactionRoot { get; }
-    internal string stagedSource => System.IO.Path.Combine(transactionRoot, "sample");
+    internal string stagedSource => Path.Combine(transactionRoot, "sample");
     internal List<string> entries { get; private set; } = [];
     internal bool isIndexed { get; private set; }
     internal bool sourceMoved { get; set; }

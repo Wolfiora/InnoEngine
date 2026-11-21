@@ -652,9 +652,9 @@ internal sealed class EditorRenderingHostService :
         ) {
             this.documentId = documentId;
             this.revision = revision;
-            contentHash = artifact.contentHash;
+            this.contentHash = artifact.contentHash;
             this.artifact = artifact;
-            snapshot = new(EditorShaderCompilationState.Compiling, []);
+            this.snapshot = new(EditorShaderCompilationState.Compiling, []);
         }
 
         internal Guid documentId { get; set; }

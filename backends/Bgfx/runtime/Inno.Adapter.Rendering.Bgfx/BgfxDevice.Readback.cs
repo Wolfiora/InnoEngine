@@ -11,7 +11,7 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Schedules asynchronous texture readback into caller-provided destination storage.
@@ -114,7 +114,7 @@ sealed unsafe partial class BgfxDevice
             {
                 return false;
             }
-            byte[] bytes = new byte[pending.byteCount];
+            var bytes = new byte[pending.byteCount];
             Marshal.Copy(pending.data, bytes, 0, bytes.Length);
             result = new RenderTextureReadbackResult(pending.descriptor, pending.mipLevel, pending.rowPitch, bytes);
             return true;

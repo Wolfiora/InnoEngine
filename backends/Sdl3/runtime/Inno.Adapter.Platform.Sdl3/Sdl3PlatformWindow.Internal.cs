@@ -47,8 +47,8 @@ public sealed unsafe partial class Sdl3PlatformWindow
         m_ownsNativeWindow = ownsNativeWindow;
         m_windowId = SDL.Raw.GetWindowId(m_window);
 
-        var currentWidth = 0;
-        var currentHeight = 0;
+        int currentWidth = 0;
+        int currentHeight = 0;
         if (SDL.Raw.GetWindowSize(m_window, &currentWidth, &currentHeight) == 0)
         {
             throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSize failed.");
@@ -56,7 +56,7 @@ public sealed unsafe partial class Sdl3PlatformWindow
         m_width = currentWidth;
         m_height = currentHeight;
         RefreshPixelSize();
-        var flags = (SDLWindowFlags)SDL.Raw.GetWindowFlags(m_window);
+        SDLWindowFlags flags = (SDLWindowFlags)SDL.Raw.GetWindowFlags(m_window);
         m_isFocused = hostIntegration.GetInitialFocus(m_sdlWindowHandle);
         m_hidden = (flags & SDLWindowFlags.Hidden) != 0;
         m_minimized = (flags & SDLWindowFlags.Minimized) != 0;
@@ -82,15 +82,9 @@ public sealed unsafe partial class Sdl3PlatformWindow
         m_pixelHeight = height;
     }
 
-    internal void MarkClosed()
-    {
-        m_isClosed = true;
-    }
+    internal void MarkClosed() => m_isClosed = true;
 
-    internal void UpdateFocus(bool isFocused)
-    {
-        m_isFocused = isFocused;
-    }
+    internal void UpdateFocus(bool isFocused) => m_isFocused = isFocused;
 
     internal void UpdateVisibility(SDLEventType eventType)
     {
@@ -113,8 +107,8 @@ public sealed unsafe partial class Sdl3PlatformWindow
 
     private void RefreshPixelSize()
     {
-        var pixelWidth = 0;
-        var pixelHeight = 0;
+        int pixelWidth = 0;
+        int pixelHeight = 0;
         if (SDL.Raw.GetWindowSizeInPixels(m_window, &pixelWidth, &pixelHeight) == 0)
         {
             throw new InvalidOperationException(Sdl3NativeText.ReadError() ?? "SDL_GetWindowSizeInPixels failed.");
@@ -125,10 +119,7 @@ public sealed unsafe partial class Sdl3PlatformWindow
     /// <summary>
     /// Queues a close request for processing at the next platform safety point.
     /// </summary>
-    public partial void RequestClose()
-    {
-        m_isClosed = true;
-    }
+    public partial void RequestClose() => m_isClosed = true;
 
     /// <summary>
     /// Releases the resources owned by this instance.
@@ -144,7 +135,7 @@ public sealed unsafe partial class Sdl3PlatformWindow
             return;
         }
 
-        if (m_window != null && m_ownsNativeWindow)
+        if (m_window is not null && m_ownsNativeWindow)
         {
             SDL.Raw.DestroyWindow(m_window);
         }

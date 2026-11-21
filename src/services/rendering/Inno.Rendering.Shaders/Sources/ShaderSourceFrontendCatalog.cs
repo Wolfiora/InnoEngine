@@ -33,7 +33,7 @@ public sealed class ShaderSourceFrontendCatalog
                 throw new ArgumentException("Source frontends require unique, assigned language IDs.", nameof(frontends));
             }
         }
-        languageIds = new ReadOnlyCollection<string>(new List<string>(m_frontends.Keys));
+        this.languageIds = new ReadOnlyCollection<string>([.. m_frontends.Keys]);
     }
 
     /// <summary>

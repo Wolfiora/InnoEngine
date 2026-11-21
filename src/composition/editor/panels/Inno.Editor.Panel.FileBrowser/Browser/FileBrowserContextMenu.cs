@@ -4,6 +4,7 @@ using Inno.Editor.Assets;
 using Inno.Editor.Assets.ImGui;
 using Inno.Editor.Core;
 using Inno.Editor.ImGui;
+using Inno.Editor.Interactions;
 
 using static Inno.Editor.Panel.FileBrowser.FileBrowserUtility;
 
@@ -75,6 +76,6 @@ internal sealed class FileBrowserContextMenu(
         }
     }
 
-    private Inno.Editor.Interactions.EditorInteraction CreateDirectoryInteraction(string relativePath)
+    private EditorInteraction CreateDirectoryInteraction(string relativePath)
         => assets.edits.interactions.For(FileBrowserInteractionIds.C_AREA, NormalizePath(relativePath));
 }

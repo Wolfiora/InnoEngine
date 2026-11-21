@@ -49,8 +49,8 @@ public sealed class EditorContext
         ArgumentNullException.ThrowIfNull(keyboard);
         this.keyboard = keyboard;
         this.projectDirectory = Path.GetFullPath(projectDirectory);
-        layout = new EditorLayoutSettings(this.projectDirectory, initialLayoutDocument);
-        statistics = new EditorStatistics();
+        this.layout = new EditorLayoutSettings(this.projectDirectory, initialLayoutDocument);
+        this.statistics = new EditorStatistics();
     }
 
     /// <summary>

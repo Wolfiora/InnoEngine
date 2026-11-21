@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Inno.Core.Diagnostics;
 
@@ -114,7 +115,7 @@ public sealed class ShaderSourceRequest
         ArgumentException.ThrowIfNullOrWhiteSpace(entryPoint);
         this.entryPoint = entryPoint;
         this.resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
-        this.defines = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
+        this.defines = new ReadOnlyDictionary<string, string>(
             defines is null
             ? new Dictionary<string, string>(StringComparer.Ordinal)
             : new Dictionary<string, string>(defines, StringComparer.Ordinal)

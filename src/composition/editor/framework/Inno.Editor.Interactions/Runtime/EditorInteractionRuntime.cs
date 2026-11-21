@@ -13,7 +13,7 @@ namespace Inno.Editor.Interactions;
 /// <summary>
 /// Hosts attribute-discovered editor extensions without depending on a presentation backend.
 /// </summary>
-public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
+public sealed class EditorInteractionRuntime : EditorRuntime
 {
     private readonly EditorInteractions m_interactions;
     private readonly EditorExtensionCatalog m_catalog;
@@ -76,14 +76,14 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     /// <param name="context">
     /// The passive editor context shared with the presentation backend.
     /// </param>
-    /// <param name="hostServices">
-    /// Stable host-owned services that editor extension constructors may request by assignable contract.
+    /// <param name="types">
+    /// The type catalog that owns editor extension generations.
     /// </param>
     /// <param name="logs">
     /// The host-owned logging router used by editor infrastructure.
     /// </param>
-    /// <param name="types">
-    /// The type catalog that owns editor extension generations.
+    /// <param name="hostServices">
+    /// Stable host-owned services that editor extension constructors may request by assignable contract.
     /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="context"/> or <paramref name="hostServices"/> is <see langword="null"/>.
@@ -208,13 +208,13 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
     /// Freezes automatic extension-state persistence and writes the final state before modules
     /// begin shutting down.
     /// </summary>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after this runtime has been disposed.
+    /// </exception>
     /// <remarks>
     /// This operation is idempotent. After it succeeds, later disposal cannot recapture transient
     /// teardown state such as an empty scene workspace.
     /// </remarks>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown after this runtime has been disposed.
-    /// </exception>
     public void PrepareShutdown()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -260,10 +260,18 @@ public sealed class EditorInteractionRuntime : Inno.Editor.Core.EditorRuntime
         {
             switch (m_shutdownStage)
             {
-                case 0: TryShutdownStage(m_catalog.PrepareShutdown, m_shutdownFailures); break;
-                case 1: TryShutdownStage(() => m_catalog.Shutdown(saveState: false), m_shutdownFailures); break;
-                case 2: TryShutdownStage(() => m_interactions.Shutdown(m_shutdownActions), m_shutdownFailures); break;
-                case 3: TryShutdownStage(m_catalog.Dispose, m_shutdownFailures); break;
+                case 0:
+                    TryShutdownStage(m_catalog.PrepareShutdown, m_shutdownFailures);
+                    break;
+                case 1:
+                    TryShutdownStage(() => m_catalog.Shutdown(saveState: false), m_shutdownFailures);
+                    break;
+                case 2:
+                    TryShutdownStage(() => m_interactions.Shutdown(m_shutdownActions), m_shutdownFailures);
+                    break;
+                case 3:
+                    TryShutdownStage(m_catalog.Dispose, m_shutdownFailures);
+                    break;
             }
             m_shutdownStage++;
         }

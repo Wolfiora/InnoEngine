@@ -36,9 +36,13 @@ public sealed class BindingGenerationBatchTests : IDisposable
         );
         string unselected = Path.Combine(directory, "bindgen.unselected.json");
         File.WriteAllText(unselected, "{}");
-        var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
-        var generator = BindingTestProfiles.Generator();
-        NativeBuildContext initial = new(m_root, "release");
+        var request = new NativeBindingGenerationRequest(
+            [component],
+            "fixture",
+            NativeBindingOutputMode.TargetArtifacts
+        );
+        NativeBindingGenerator generator = BindingTestProfiles.Generator();
+        var initial = new NativeBuildContext(m_root, "release");
         string identity = await generator.ComputeInputFingerprintAsync(initial, request, CancellationToken.None);
         File.WriteAllText(unselected, "{\"changed\":true}");
         Assert.Equal(
@@ -62,11 +66,15 @@ public sealed class BindingGenerationBatchTests : IDisposable
     [Fact]
     public async Task OneBatchReusesSharedReadsOnlyWithinEachFreshPhase()
     {
-        var components = new[] { CreateComponent("first"), CreateComponent("second") };
+        NativeComponentDescriptor[] components = new[] { CreateComponent("first"), CreateComponent("second") };
         var context = new NativeBuildContext(m_root, "release");
-        var generator = BindingTestProfiles.Generator();
-        var request = new NativeBindingGenerationRequest(components, "fixture", NativeBindingOutputMode.TargetArtifacts);
-        using var result = await generator.GenerateAsync(context, request, CancellationToken.None);
+        NativeBindingGenerator generator = BindingTestProfiles.Generator();
+        var request = new NativeBindingGenerationRequest(
+            components,
+            "fixture",
+            NativeBindingOutputMode.TargetArtifacts
+        );
+        using NativeBindingGenerationResult result = await generator.GenerateAsync(context, request, CancellationToken.None);
         Assert.Equal(2, result.Count);
         Assert.Equal(1, context.statistics.bindingBatches);
         Assert.Equal(2, context.statistics.bindingGenerations);
@@ -75,23 +83,31 @@ public sealed class BindingGenerationBatchTests : IDisposable
         long expectedBytes = File.ReadAllBytes(Path.Combine(m_root, "Source", "shared.h")).Length;
         Assert.All(context.statistics.phases, phase => Assert.True(phase.bytes >= expectedBytes));
         var hot = new NativeBuildContext(m_root, "release");
-        using var hotResult = await generator.GenerateAsync(hot, request, CancellationToken.None);
+        using NativeBindingGenerationResult hotResult = await generator.GenerateAsync(hot, request, CancellationToken.None);
         Assert.Equal(0, hot.statistics.bindingGenerations);
         Assert.Equal(1, hot.statistics.bindingBatches);
         string header = Path.Combine(m_root, "Source", "shared.h");
         DateTime timestamp = File.GetLastWriteTimeUtc(header);
         File.WriteAllText(header, "int change(int value);");
         File.SetLastWriteTimeUtc(header, timestamp);
-        using var changed = await generator.GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+        using NativeBindingGenerationResult changed = await generator.GenerateAsync(
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        );
         Assert.All(result, entry => Assert.NotEqual(entry.Value.fingerprint, changed[entry.Key].fingerprint));
     }
 
     [Fact]
     public async Task ActiveConsumersBlockReplacementAndReleaseAllowsRepair()
     {
-        var component = CreateComponent("reader");
-        var generator = BindingTestProfiles.Generator();
-        var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
+        NativeComponentDescriptor component = CreateComponent("reader");
+        NativeBindingGenerator generator = BindingTestProfiles.Generator();
+        var request = new NativeBindingGenerationRequest(
+            [component],
+            "fixture",
+            NativeBindingOutputMode.TargetArtifacts
+        );
         var context = new NativeBuildContext(m_root, "release");
         using NativeBindingGenerationResult first = await generator.GenerateAsync(context, request, CancellationToken.None);
         NativeBindingGenerationDescriptor descriptor = first[component.nativeProject];
@@ -133,11 +149,19 @@ public sealed class BindingGenerationBatchTests : IDisposable
     [Fact]
     public async Task AFailedBatchPublishesNoPartialClosureAndPreservesEarlierOutputs()
     {
-        var first = CreateComponent("first");
-        var second = CreateComponent("second");
-        var generator = BindingTestProfiles.Generator();
-        var request = new NativeBindingGenerationRequest([first, second], "fixture", NativeBindingOutputMode.TargetArtifacts);
-        using var completed = await generator.GenerateAsync(new NativeBuildContext(m_root, "release"), request, CancellationToken.None);
+        NativeComponentDescriptor first = CreateComponent("first");
+        NativeComponentDescriptor second = CreateComponent("second");
+        NativeBindingGenerator generator = BindingTestProfiles.Generator();
+        var request = new NativeBindingGenerationRequest(
+            [first, second],
+            "fixture",
+            NativeBindingOutputMode.TargetArtifacts
+        );
+        using NativeBindingGenerationResult completed = await generator.GenerateAsync(
+            new NativeBuildContext(m_root, "release"),
+            request,
+            CancellationToken.None
+        );
         string original = File.ReadAllText(completed[first.nativeProject].bindingsPath);
         File.WriteAllText(Path.Combine(m_root, "Source", "shared.h"), "int different(int value);");
         File.WriteAllText(Path.Combine(m_root, "second", "broken.h"), "invalid C grammar;");
@@ -163,15 +187,27 @@ public sealed class BindingGenerationBatchTests : IDisposable
     public async Task FrozenSdkPathsSelectIndependentHeadersWithoutChangingTheProcessEnvironment()
     {
         string variable = "INNO_BINDING_SDK_" + Guid.NewGuid().ToString("N");
-        var component = CreateSdkComponent();
+        NativeComponentDescriptor component = CreateSdkComponent();
         string firstSdk = CreateSdk("sdk-first", "int");
         string secondSdk = CreateSdk("sdk-second", "long long");
         string? original = Environment.GetEnvironmentVariable(variable);
-        var generator = BindingTestProfiles.Generator();
-        var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
+        NativeBindingGenerator generator = BindingTestProfiles.Generator();
+        var request = new NativeBindingGenerationRequest(
+            [component],
+            "fixture",
+            NativeBindingOutputMode.TargetArtifacts
+        );
 
-        using var first = await generator.GenerateAsync(SdkContext(variable, firstSdk), request, CancellationToken.None);
-        using var second = await generator.GenerateAsync(SdkContext(variable, secondSdk), request, CancellationToken.None);
+        using NativeBindingGenerationResult first = await generator.GenerateAsync(
+            SdkContext(variable, firstSdk),
+            request,
+            CancellationToken.None
+        );
+        using NativeBindingGenerationResult second = await generator.GenerateAsync(
+            SdkContext(variable, secondSdk),
+            request,
+            CancellationToken.None
+        );
 
         Assert.NotEqual(first[component.nativeProject].fingerprint, second[component.nativeProject].fingerprint);
         Assert.Contains("int Sample(int value)", File.ReadAllText(first[component.nativeProject].bindingsPath));
@@ -183,14 +219,22 @@ public sealed class BindingGenerationBatchTests : IDisposable
     public async Task MissingSelectedSdkFailsBeforeCreatingCandidatesAndPreservesPublishedBindings()
     {
         string variable = "INNO_BINDING_SDK_" + Guid.NewGuid().ToString("N");
-        var component = CreateSdkComponent();
+        NativeComponentDescriptor component = CreateSdkComponent();
         string sdk = CreateSdk("sdk", "int");
-        var generator = BindingTestProfiles.Generator();
-        var request = new NativeBindingGenerationRequest([component], "fixture", NativeBindingOutputMode.TargetArtifacts);
-        using var result = await generator.GenerateAsync(SdkContext(variable, sdk), request, CancellationToken.None);
+        NativeBindingGenerator generator = BindingTestProfiles.Generator();
+        var request = new NativeBindingGenerationRequest(
+            [component],
+            "fixture",
+            NativeBindingOutputMode.TargetArtifacts
+        );
+        using NativeBindingGenerationResult result = await generator.GenerateAsync(
+            SdkContext(variable, sdk),
+            request,
+            CancellationToken.None
+        );
         string source = File.ReadAllText(result[component.nativeProject].bindingsPath);
 
-        var failure = await Assert.ThrowsAsync<InvalidDataException>(async () => await generator.GenerateAsync(
+        InvalidDataException failure = await Assert.ThrowsAsync<InvalidDataException>(async () => await generator.GenerateAsync(
             new NativeBuildContext(m_root, "release"),
             request,
             CancellationToken.None
@@ -206,7 +250,7 @@ public sealed class BindingGenerationBatchTests : IDisposable
 
     private NativeComponentDescriptor CreateSdkComponent()
     {
-        var component = CreateComponent("sdk-component");
+        NativeComponentDescriptor component = CreateComponent("sdk-component");
         File.WriteAllText(Path.Combine(m_root, "Source", "shared.h"), "#include <owned.h>\nOWNED_SDK_TYPE sample(OWNED_SDK_TYPE value);");
         return component;
     }

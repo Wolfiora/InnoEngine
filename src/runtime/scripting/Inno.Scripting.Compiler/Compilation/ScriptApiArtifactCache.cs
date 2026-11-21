@@ -18,7 +18,7 @@ internal static class ScriptApiArtifactCache
         {
             return 0;
         }
-        var protectedPaths = protectedDirectories
+        HashSet<string> protectedPaths = protectedDirectories
             .Where(static path => !string.IsNullOrWhiteSpace(path))
             .Select(static path => Path.GetFullPath(path!))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);

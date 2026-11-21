@@ -32,7 +32,7 @@ internal static class ContentPackWriter
         _ = new ContentPackIndex(keys.Select(static key => new ContentEntry(key, 0, new string('0', 64))));
         try
         {
-            await using (FileStream stream = new(
+            await using (var stream = new FileStream(
                 temporary,
                 FileMode.CreateNew,
                 FileAccess.Write,
@@ -49,7 +49,7 @@ internal static class ContentPackWriter
                     ZipArchiveEntry entry = archive.CreateEntry(keys[index].value!, CompressionLevel.Optimal);
                     entry.LastWriteTime = S_ARCHIVE_TIME;
                     await using Stream output = entry.Open();
-                    await using FileStream input = new(
+                    await using var input = new FileStream(
                         files[index],
                         FileMode.Open,
                         FileAccess.Read,
@@ -76,7 +76,7 @@ internal static class ContentPackWriter
                         ArrayPool<byte>.Shared.Return(buffer);
                     }
                 }
-                ContentPackIndex inventory = new(entries);
+                var inventory = new ContentPackIndex(entries);
                 ZipArchiveEntry indexEntry = archive.CreateEntry(ContentPackIndex.C_INDEX_KEY, CompressionLevel.Optimal);
                 indexEntry.LastWriteTime = S_ARCHIVE_TIME;
                 await using Stream indexOutput = indexEntry.Open();
@@ -87,7 +87,7 @@ internal static class ContentPackWriter
             }
             cancellationToken.ThrowIfCancellationRequested();
             string contentHash;
-            await using (FileStream input = new(
+            await using (var input = new FileStream(
                 temporary,
                 FileMode.Open,
                 FileAccess.Read,

@@ -52,7 +52,7 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
         string outputs = Path.Combine(artifact, "Outputs");
         Directory.CreateDirectory(outputs);
         File.WriteAllText(Path.Combine(outputs, "tool.bin"), "immutable");
-        string fingerprint = new('c', 64);
+        var fingerprint = new string('c', 64);
         BuildArtifactManifest.Write(artifact, fingerprint, ["Outputs"]);
         Assert.True(BuildArtifactManifest.IsComplete(artifact, fingerprint, ["Outputs"]));
         using (ToolchainWorkingDirectory owner = await CreateProvider().OpenAsync(outputs))
@@ -74,7 +74,7 @@ public sealed class ToolchainWorkingDirectoryTests : IDisposable
         }
         string physical = Path.Combine(m_root, "Owned");
         using ToolchainWorkingDirectory owner = await CreateProvider().OpenAsync(physical);
-        using CancellationTokenSource cancellation = new(TimeSpan.FromMilliseconds(150));
+        using var cancellation = new CancellationTokenSource(TimeSpan.FromMilliseconds(150));
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await new WindowsToolchainWorkspaceProvider().OpenAsync(physical, cancellation.Token));
         Assert.True(Directory.Exists(owner.toolPath));

@@ -55,7 +55,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     public AnimationRuntime(
         EventDispatcher events,
         IAnimationBindingSink bindings,
-        int maxPlaybacks = 16384
+        int maxPlaybacks = 16_384
     ) {
         m_events = events ?? throw new ArgumentNullException(nameof(events));
         m_bindings = bindings ?? throw new ArgumentNullException(nameof(bindings));
@@ -70,6 +70,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <param name="clip">
     /// Valid clip to sample until completion or explicit stop.
     /// </param>
+    /// <param name="target">
+    /// The weak destination or explicit sampling-only policy.
+    /// </param>
     /// <returns>
     /// A generation-checked handle owned by this runtime.
     /// </returns>
@@ -82,9 +85,6 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <exception cref="InvalidOperationException">
     /// Thrown when the clip is structurally invalid.
     /// </exception>
-    /// <param name="target">
-    /// The weak destination or explicit sampling-only policy.
-    /// </param>
     public AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target
@@ -95,6 +95,9 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// </summary>
     /// <param name="clip">
     /// Valid clip to sample until completion or explicit stop.
+    /// </param>
+    /// <param name="target">
+    /// The weak destination or explicit sampling-only policy.
     /// </param>
     /// <param name="options">
     /// Playback options validated before a runtime slot is allocated.
@@ -114,9 +117,6 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
     /// <exception cref="InvalidOperationException">
     /// Thrown when the clip is structurally invalid.
     /// </exception>
-    /// <param name="target">
-    /// The weak destination or explicit sampling-only policy.
-    /// </param>
     public AnimationPlaybackHandle Play(
         AnimationClipAsset clip,
         AnimationTarget target,
@@ -184,7 +184,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         {
             return false;
         }
-        var identity = m_handles.Decode(handle);
+        (int slot, uint generation) identity = m_handles.Decode(handle);
         Retire(identity.slot, playback);
         return true;
     }
@@ -432,7 +432,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         {
             AnimationTrack track = playback.clip.tracks[index];
             var binding = new AnimationBindingId(track.bindingId);
-            var destination = (playback.target, binding);
+            (AnimationTarget target, AnimationBindingId binding) destination = (playback.target, binding);
             AnimationValue value = SampleTrack(track, playback.time);
             if (!samples.TryGetValue(destination, out BlendAccumulator accumulator)
                 || playback.options.layer > accumulator.layer
@@ -483,7 +483,7 @@ public sealed class AnimationRuntime : RuntimeSubsystem, IAnimationService
         [NotNullWhen(true)] out Playback? playback
     ) {
         playback = null;
-        var identity = m_handles.Decode(handle);
+        (int slot, uint generation) identity = m_handles.Decode(handle);
         if (m_disposed || !handle.isValid || handle.runtimeGeneration != m_runtimeGeneration
             || identity.slot < 0 || identity.slot >= m_playbacks.Count
         ) {

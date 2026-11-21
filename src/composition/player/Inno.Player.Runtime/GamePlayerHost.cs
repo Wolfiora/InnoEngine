@@ -175,7 +175,7 @@ internal sealed class GamePlayerHost : ShellHost
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnSuspensionChanged(bool isSuspended)
         => session.events.Emit(new ApplicationSuspensionChangedEvent(isSuspended));
 
@@ -292,7 +292,7 @@ internal sealed class GamePlayerHost : ShellHost
             {
                 using ContentReadLease document = m_content!.Acquire(new ContentKey(SettingsFileNames.project));
                 using Stream documentStream = document.OpenRead();
-                byte[] documentBytes = new byte[checked((int)document.entry.length)];
+                var documentBytes = new byte[checked((int)document.entry.length)];
                 documentStream.ReadExactly(documentBytes);
                 m_settings = new ProjectSettingsStore(
                     new ReadOnlyByteDocumentStore(document.entry.key.value!, documentBytes),

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 
 namespace Inno.Scene.Layers;
 
@@ -43,12 +44,12 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     /// <summary>
     /// Compares this layer with another layer by index.
     /// </summary>
-    /// <returns>
-    /// A signed value describing the relative index ordering.
-    /// </returns>
     /// <param name="other">
     /// The value to compare with this instance.
     /// </param>
+    /// <returns>
+    /// A signed value describing the relative index ordering.
+    /// </returns>
     public int CompareTo(GameLayer other) => index.CompareTo(other.index);
 
     /// <summary>
@@ -65,12 +66,12 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => obj is GameLayer other && Equals(other);
 
     /// <summary>
@@ -87,7 +88,7 @@ public readonly struct GameLayer : IEquatable<GameLayer>, IComparable<GameLayer>
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public override string ToString() => index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public override string ToString() => index.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Determines whether two layer identifiers contain the same index.

@@ -12,10 +12,13 @@ using Inno.Assets;
 using Inno.Core.Diagnostics;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
+using Inno.Core.Input;
+using Inno.Core.Mathematics;
 using Inno.Core.Serialization;
 using Inno.Extensibility.Modules;
 using Inno.Extensibility.Reload;
 using Inno.Extensibility.Types;
+using Inno.Input;
 using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -382,7 +385,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice backend = TestDeviceProxy.Create(out TestDeviceProxy device);
         using var targets = new RenderTargetStore(backend, capacity: 1);
         backend.BeginFrame();
-        var descriptor = new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment);
+        var descriptor = new RenderTextureDescriptor(
+            16,
+            16,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.ColorAttachment
+        );
         var first = new RenderTexture("First", descriptor);
         var second = new RenderTexture("Second", descriptor);
         var graph = new RenderGraphBuilder(1, backend.capabilities);
@@ -426,7 +434,12 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         var targets = new RenderTargetStore(device);
         device.BeginFrame();
-        var descriptor = new RenderTextureDescriptor(16, 16, RenderTextureFormat.RGBA8, RenderTextureUsage.ColorAttachment);
+        var descriptor = new RenderTextureDescriptor(
+            16,
+            16,
+            RenderTextureFormat.RGBA8,
+            RenderTextureUsage.ColorAttachment
+        );
         var graph = new RenderGraphBuilder(1, device.capabilities);
         targets.Import(graph, new RenderTexture("First", descriptor));
         targets.Import(graph, new RenderTexture("Second", descriptor));
@@ -781,10 +794,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         IRenderDevice device = TestDeviceProxy.Create(out TestDeviceProxy proxy);
         proxy.presentationSize = new RenderPresentationSize(2560, 1440);
         TestRequestProvider.enabled = true;
-        var snapshot = new Inno.Input.InputSnapshot(
+        var snapshot = new InputSnapshot(
             1,
-            mousePosition: new Inno.Core.Mathematics.Vector2(400f, 274f),
-            mouseButtonsPressed: [Inno.Core.Input.MouseButton.Left]
+            mousePosition: new Vector2(400f, 274f),
+            mouseButtonsPressed: [MouseButton.Left]
         );
         using var runtime = new RenderRuntime(
             m_types,
@@ -799,7 +812,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         runtime.AfterRender(default);
         runtime.EndFrame(default);
 
-        Assert.Equal(new Inno.Core.Mathematics.Vector2(800f, 548f), TestRequestProvider.lastInput.pointerPosition);
+        Assert.Equal(new Vector2(800f, 548f), TestRequestProvider.lastInput.pointerPosition);
         Assert.Single(TestRequestProvider.lastInput.buttonsPressed);
     }
 
@@ -1567,7 +1580,10 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal static int retirementAttempts { get; private set; }
         internal static bool retirementExpired { get; set; }
 
-        public DisposablePipeline() => createdCount++;
+        public DisposablePipeline()
+        {
+            createdCount++;
+        }
 
         public override void Build(RenderPipelineContext context) => _ = context;
 
@@ -1707,8 +1723,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
         internal const string extensionId = "tests.runtime.side-effect";
 
         public override void Build(RenderPipelineContext context)
-        {
-            context.graph
+            => context.graph
                 .AddRasterPass(
                     "Visible",
                     new RenderPhaseId("tests.runtime.visible"),
@@ -1719,7 +1734,6 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                     ) => {}
                 )
                 .HasSideEffect();
-        }
     }
 
     [RenderPipelineExtension(extensionId)]
@@ -2089,10 +2103,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
             return checked((uint)endFrameCount);
         }
 
-        public void SetPrimaryPresentationSize(RenderPresentationSize? size)
-        {
-            primaryPresentationSize = size;
-        }
+        public void SetPrimaryPresentationSize(RenderPresentationSize? size) => primaryPresentationSize = size;
 
         public PersistentTextureHandle CreateTexture(
             RenderTextureDescriptor descriptor,
@@ -2261,7 +2272,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
 
         internal RecordingRenderDevice(bool supportsReadback = false)
         {
-            capabilities = new GraphicsCapabilities(
+            this.capabilities = new GraphicsCapabilities(
                 GraphicsApi.Noop,
                 supportsReadback ? GraphicsCapability.TextureReadback : GraphicsCapability.None,
                 new GraphicsLimits(64, 4, 4096, 8),
@@ -2272,7 +2283,7 @@ public sealed partial class RenderRuntimeGenerationTests : IDisposable
                 originBottomLeft: false,
                 homogeneousDepth: false
             );
-            textureHandle = CreatePersistentTextureHandle(1UL, generation);
+            this.textureHandle = CreatePersistentTextureHandle(1UL, generation);
             m_readbackHandle = CreateRenderTextureReadbackHandle(1UL, generation);
         }
 

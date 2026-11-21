@@ -2,10 +2,12 @@ using System;
 using System.IO;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Core.Execution;
 using Inno.Core.Serialization;
 using Inno.Editor.Core;
 using Inno.Editor.Interactions;
 using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Assets;
 
@@ -36,7 +38,7 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
     /// <param name="interactions">
     /// Shared Editor history owner.
     /// </param>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetImportSettingsEdits(
         AssetPipeline assets,
         SerializationRegistry serialization,
@@ -100,7 +102,7 @@ public sealed partial class AssetImportSettingsEdits : EditorModule
         {
             m_interactions.history.RecordApplied("Change Import Settings", change);
         }
-        catch (Exception failure) when (Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+        catch (Exception failure) when (RetirementPendingException.Find(failure) is null)
         {
             change.Dispose();
             try
@@ -216,7 +218,7 @@ internal sealed class AssetImportSettingsHistory(AssetImportSettingsEdits edits)
             return EditorHistoryAvailability.Available();
         }
         catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException)
-                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                        && RetirementPendingException.Find(failure) is null)
         {
             return EditorHistoryAvailability.Unavailable(failure.Message);
         }
@@ -248,7 +250,7 @@ internal sealed class AssetImportSettingsHistory(AssetImportSettingsEdits edits)
             return EditorHistoryResult.Success();
         }
         catch (Exception failure) when ((failure is IOException or InvalidOperationException or ArgumentException or FormatException)
-                                        && Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                                        && RetirementPendingException.Find(failure) is null)
         {
             return EditorHistoryResult.Failure(failure.Message);
         }

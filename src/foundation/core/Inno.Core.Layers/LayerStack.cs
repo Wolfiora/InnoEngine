@@ -66,10 +66,7 @@ public sealed class LayerStack : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// Thrown when this stack has been disposed.
     /// </exception>
-    public void PushLayer(Layer layer)
-    {
-        Insert(layer, m_baseLayerCount, isBaseLayer: true);
-    }
+    public void PushLayer(Layer layer) => Insert(layer, m_baseLayerCount, isBaseLayer: true);
 
     /// <summary>
     /// Attaches an overlay above all base layers and existing overlays.

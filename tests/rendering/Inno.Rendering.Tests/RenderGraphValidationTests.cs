@@ -10,7 +10,7 @@ public sealed class RenderGraphValidationTests
     [Fact]
     public void ValidationIsFrozenAndReusedUntilAnyPassDeclarationChanges()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         RasterPassBuilder pass = graph.AddRasterPass("Visible", new("visible"), 0, Execute);
         RenderGraphValidationResult culled = graph.Validate();
         Assert.True(culled.isValid);
@@ -35,7 +35,7 @@ public sealed class RenderGraphValidationTests
     [Fact]
     public void LaterPhaseDeclarationInvalidatesCachedScheduleAndDetectsCycle()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect().After(new("second"));
         Assert.True(graph.Validate().isValid);
         graph.AddRasterPass("Second", new("second"), 0, Execute).HasSideEffect().After(new("first"));
@@ -51,7 +51,7 @@ public sealed class RenderGraphValidationTests
     [Fact]
     public void ValidationAndCompilationApplyTheSameViewLimit()
     {
-        var graph = CreateGraph(1);
+        RenderGraphBuilder graph = CreateGraph(1);
         graph.AddRasterPass("First", new("first"), 0, Execute).HasSideEffect();
         graph.AddRasterPass("Second", new("second"), 0, Execute).HasSideEffect();
         RenderGraphValidationResult validation = graph.Validate();
@@ -63,7 +63,7 @@ public sealed class RenderGraphValidationTests
     [Fact]
     public void ValidationDoesNotInvokeCommandCallbacks()
     {
-        var graph = CreateGraph();
+        RenderGraphBuilder graph = CreateGraph();
         int calls = 0;
         graph.AddRasterPass("Visible", new("visible"), 0, (
             payload,
@@ -83,7 +83,7 @@ public sealed class RenderGraphValidationTests
             new GraphicsCapabilities(
                 GraphicsApi.Noop,
                 GraphicsCapability.None,
-                new GraphicsLimits(maxViews, 8, 16384, 16),
+                new GraphicsLimits(maxViews, 8, 16_384, 16),
                 Enum.GetValues<RenderTextureFormat>(),
                 Enum.GetValues<RenderTextureFormat>(),
                 [],

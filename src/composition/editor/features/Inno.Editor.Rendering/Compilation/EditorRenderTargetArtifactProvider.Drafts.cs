@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Inno.Assets;
 using Inno.Core.Diagnostics;
+using Inno.Core.Execution;
 using Inno.Core.Graphs;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -104,22 +105,25 @@ public sealed partial class EditorRenderTargetArtifactProvider
                         ), entry.cancellation.Token);
                     }
                 }
-                catch (Exception failure) when (Inno.Core.Execution.RetirementPendingException.Find(failure) is null)
+                catch (Exception failure) when (RetirementPendingException.Find(failure) is null)
                 {
                     Retire(entry.pending, entry.cancellation);
-                    entry.pending = null; entry.cancellation = null; entry.semanticHash = "";
+                    entry.pending = null;
+                    entry.cancellation = null;
+                    entry.semanticHash = string.Empty;
                     entry.latestSucceeded = false;
                     entry.sourceDiagnostics = [new("SHADER_PREVIEW_CAPTURE", DiagnosticSeverity.Error, failure.Message)];
                 }
             }
             if (entry.pending is { IsCompleted: true } pending)
             {
-                if (pending.Exception is Exception failure && Inno.Core.Execution.RetirementPendingException.Find(failure) is not null)
+                if (pending.Exception is Exception failure && RetirementPendingException.Find(failure) is not null)
                 {
                     throw failure;
                 }
                 entry.pending = null;
-                entry.cancellation?.Dispose(); entry.cancellation = null;
+                entry.cancellation?.Dispose();
+                entry.cancellation = null;
                 ShaderCompilationResult result = pending.IsCompletedSuccessfully ? pending.Result : new(
                     null,
                     [new(
@@ -164,7 +168,7 @@ public sealed partial class EditorRenderTargetArtifactProvider
         internal bool attempted;
         internal ulong revision;
         internal long assetRevision;
-        internal string targetVariant = "";
+        internal string targetVariant = string.Empty;
         internal readonly ShaderEntry compilation = new();
     }
 }

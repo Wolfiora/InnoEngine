@@ -13,7 +13,8 @@ internal static class ValidationCompiledGraph
         ValidationCheck check
     ) {
         JsonElement[] snapshots = plan.contexts[check.context ?? "managed"].sdkGraph.EnumerateArray().ToArray();
-        var instances = snapshots.SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
+        Dictionary<string, JsonElement> instances = snapshots
+            .SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
             .ToDictionary(static instance => instance.GetProperty("Identity").GetString()!, StringComparer.Ordinal);
         string[] roots = check.kind is "build" or "test"
             ? [check.owner]

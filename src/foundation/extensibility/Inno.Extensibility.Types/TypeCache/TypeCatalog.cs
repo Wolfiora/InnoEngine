@@ -30,15 +30,15 @@ public sealed class TypeCatalog : IDisposable
     /// <param name="modules">
     /// The module host that owns the assembly generations visible to this catalog.
     /// </param>
+    /// <param name="source">
+    /// The metadata provider selected by the composition root for every contributed assembly.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="modules"/> is null.
     /// </exception>
     /// <exception cref="InvalidOperationException">
     /// Thrown when <paramref name="modules"/> has already been disposed.
     /// </exception>
-    /// <param name="source">
-    /// The metadata provider selected by the composition root for every contributed assembly.
-    /// </param>
     public TypeCatalog(
         ModuleHost modules,
         ITypeCatalogSource source
@@ -179,6 +179,9 @@ public sealed class TypeCatalog : IDisposable
     /// <summary>
     /// Gets the reference for an active CLR type.
     /// </summary>
+    /// <param name="type">
+    /// The type consumed by get type ref; ownership remains with the caller unless explicitly stated otherwise.
+    /// </param>
     /// <returns>
     /// Its logical and generation-local identity.
     /// </returns>
@@ -188,9 +191,6 @@ public sealed class TypeCatalog : IDisposable
     /// <exception cref="InvalidOperationException">
     /// Thrown when the type does not belong to the active catalog.
     /// </exception>
-    /// <param name="type">
-    /// The type consumed by get type ref; ownership remains with the caller unless explicitly stated otherwise.
-    /// </param>
     public TypeRef GetTypeRef(Type type) => current.GetTypeRef(type);
 
     /// <summary>

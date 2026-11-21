@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 using Inno.Tooling.Architecture;
 using Inno.Tooling.Documentation;
 
@@ -45,8 +46,8 @@ internal static partial class ValidationPlanner
             {
                 throw new ArgumentException("The backend store owns the native selection for this plan.");
             }
-            string store = Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(backendStore, root));
-            Inno.Core.IO.PathBoundary.RequireContained(Path.Combine(root, "artifacts"), store);
+            string store = PathBoundary.RequireUnlinkedPath(root, Path.GetFullPath(backendStore, root));
+            PathBoundary.RequireContained(Path.Combine(root, "artifacts"), store);
             backendStore = Path.GetRelativePath(root, store).Replace('\\', '/');
             nativeDependencies = backendStore + "/selection.json";
         }
@@ -59,14 +60,14 @@ internal static partial class ValidationPlanner
         if (nativeDependencies is not null)
         {
             string selected = Path.GetFullPath(nativeDependencies, root);
-            nativeDependencies = Path.GetRelativePath(root, Inno.Core.IO.PathBoundary.RequireUnlinkedPath(root, selected))
+            nativeDependencies = Path.GetRelativePath(root, PathBoundary.RequireUnlinkedPath(root, selected))
                 .Replace('\\', '/');
             if (extended)
             {
                 throw new ArgumentException("Consume-only validation cannot certify a cold third-party rebuild.");
             }
         }
-        var elapsed = Stopwatch.StartNew();
+        Stopwatch elapsed = Stopwatch.StartNew();
         var timings = new Dictionary<string, double>(StringComparer.Ordinal);
         double previousStage = 0;
         Dictionary<string, string> inputs = await ValidationInputs.CaptureAsync(root, cancellation).ConfigureAwait(false);
@@ -157,7 +158,7 @@ internal static partial class ValidationPlanner
             .EnumerateArray()
             .Select(snapshot => ValidationProject.Read(root, snapshot))
             .ToArray();
-        var byPath = projects.ToDictionary(static project => project.path, StringComparer.Ordinal);
+        Dictionary<string, ValidationProject> byPath = projects.ToDictionary(static project => project.path, StringComparer.Ordinal);
         RecordStage("managed-graph");
         var affected = new HashSet<string>(StringComparer.Ordinal);
         var documentationOwners = new HashSet<string>(StringComparer.Ordinal);
@@ -201,8 +202,8 @@ internal static partial class ValidationPlanner
                 && previous.contexts.ContainsKey("managed")
             ) {
                 var mapped = new HashSet<string>(StringComparer.Ordinal);
-                var deleted = removed.ToHashSet(StringComparer.Ordinal);
-                foreach (var pair in previous.contexts)
+                HashSet<string> deleted = removed.ToHashSet(StringComparer.Ordinal);
+                foreach (KeyValuePair<string, ValidationContext> pair in previous.contexts)
                 {
                     var sets = new Dictionary<string, string[]>(StringComparer.Ordinal);
                     var graphInputs = new ValidationEntryInputs(
@@ -212,7 +213,7 @@ internal static partial class ValidationPlanner
                         sets,
                         paths => paths.Where(deleted.Contains).ToArray()
                     );
-                    var matches = sets
+                    HashSet<string> matches = sets
                         .Where(static set => set.Value.Length > 0)
                         .Select(static set => set.Key)
                         .ToHashSet(StringComparer.Ordinal);
@@ -359,10 +360,10 @@ internal static partial class ValidationPlanner
                 documentationOwners.Add(documentation.owners[owner].path);
             }
         }
-        var scriptPages = examplePages.Where(static page => page.examples?.mode is "runtime-script" or "editor-script")
+        HashSet<string> scriptPages = examplePages.Where(static page => page.examples?.mode is "runtime-script" or "editor-script")
             .Select(static page => page.id)
             .ToHashSet(StringComparer.Ordinal);
-        var nativeDocumentOwners = examplePages.Where(page => scriptPages.Contains(page.id))
+        HashSet<string> nativeDocumentOwners = examplePages.Where(page => scriptPages.Contains(page.id))
             .SelectMany(static page => page.examples!.projects)
             .Select(owner => documentation!.owners[owner].path)
             .ToHashSet(StringComparer.Ordinal);
@@ -525,7 +526,7 @@ internal static partial class ValidationPlanner
                 ["InnoProductBuildProperties"] = productProperties
             };
             var evaluationProperties = new Dictionary<string, string>(properties);
-            foreach (var pair in nativeProperties)
+            foreach (KeyValuePair<string, string> pair in nativeProperties)
             {
                 evaluationProperties[pair.Key] = pair.Value;
             }
@@ -552,12 +553,12 @@ internal static partial class ValidationPlanner
             ))
             .Order(StringComparer.Ordinal)
             .ToArray();
-        var inputSets = projects.ToDictionary(
+        Dictionary<string, string[]> inputSets = projects.ToDictionary(
             static project => project.path,
             project => CapturedInputs(project.inputs.Concat(nativeProjects[project.path].inputs)),
             StringComparer.Ordinal
         );
-        var entryInputs = contexts.ToDictionary(
+        Dictionary<string, ValidationEntryInputs> entryInputs = contexts.ToDictionary(
             static pair => pair.Key,
             pair => new ValidationEntryInputs(root, pair.Value.sdkGraph, pair.Key, inputSets, CapturedInputs),
             StringComparer.Ordinal
@@ -574,13 +575,14 @@ internal static partial class ValidationPlanner
                 ))
             )
         ).Order(StringComparer.Ordinal).ToArray();
-        var changedSets = inputSets.Where(pair => pair.Value.Any(changes.Contains)).ToDictionary(
+        Dictionary<string, string> changedSets = inputSets.Where(pair => pair.Value.Any(changes.Contains)).ToDictionary(
             static pair => pair.Key,
             pair => pair.Value.First(changes.Contains),
             StringComparer.Ordinal
         );
         bool toolingChanged = toolingInputs.Any(changes.Contains)
-                              || removedEntries.TryGetValue("managed", out var priorTooling) && priorTooling.Contains(C_VALIDATOR);
+                              || removedEntries.TryGetValue("managed", out HashSet<string>? priorTooling)
+                                 && priorTooling.Contains(C_VALIDATOR);
         bool effectiveBuildChange = changes.Count > 0
                                     && changes.All(path => (
                                         path != ValidationRunner.C_TEST_EXECUTOR && !IsCiContractInput(path)
@@ -722,7 +724,8 @@ internal static partial class ValidationPlanner
             bool selected = affected.Contains(project.path);
             string? matchedSet = sourceSets?.FirstOrDefault(changedSets.ContainsKey);
             bool baselineMatch = removed.Length > 0
-                                 && (!removedEntries.TryGetValue(context, out var priorEntries) || priorEntries.Contains(project.path));
+                                 && (!removedEntries.TryGetValue(context, out HashSet<string>? priorEntries)
+                                     || priorEntries.Contains(project.path));
             if (selected && !full && effectiveBuildChange && sourceSets is not null
                 && profile is ValidationProfile.PullRequest or ValidationProfile.Fast
                 && matchedSet is null && !baselineMatch && !toolingChanged
@@ -938,7 +941,10 @@ internal static partial class ValidationPlanner
             {
                 if (backendStore is not null)
                 {
-                    var releaseInputsProperties = new Dictionary<string, string>(properties) { ["Configuration"] = "Release" };
+                    var releaseInputsProperties = new Dictionary<string, string>(properties)
+                    {
+                        ["Configuration"] = "Release"
+                    };
                     string backendCapture = await ManagedProjectGraphCapture.CaptureSelectedAsync(
                         root,
                         sdk,
@@ -956,7 +962,7 @@ internal static partial class ValidationPlanner
                     ["ArtifactsPath"] = Path.Combine(artifacts, "native-release", target)
                 };
                 var evaluationProperties = new Dictionary<string, string>(properties);
-                foreach (var pair in releaseProperties)
+                foreach (KeyValuePair<string, string> pair in releaseProperties)
                 {
                     evaluationProperties[pair.Key] = pair.Value;
                 }
@@ -1161,7 +1167,7 @@ internal static partial class ValidationPlanner
             toolSnapshot
         ).ConfigureAwait(false);
         RecordStage("execution-environment");
-        var phases = contexts.Keys
+        Dictionary<string, int> phases = contexts.Keys
             .Select(static (
                 string context,
                 int index
@@ -1321,15 +1327,17 @@ internal static partial class ValidationPlanner
             {
                 entryInputs.Add(id, entries = new(root, context.sdkGraph, id, inputSets, CapturedInputs));
             }
-            var pending = new Stack<(string instance, bool productOwned)>(roots.Select(owner => (entries.Entry(owner), false)));
+            var pending = new Stack<(string instance, bool productOwned)>(
+                roots.Select(owner => (entries.Entry(owner), false))
+            );
             var visited = new HashSet<(string instance, bool productOwned)>();
-            while (pending.TryPop(out var request))
+            while (pending.TryPop(out (string instance, bool productOwned) request))
             {
                 if (!visited.Add(request))
                 {
                     continue;
                 }
-                var node = entries.Instance(request.instance);
+                (string key, JsonElement variant, string[] references) node = entries.Instance(request.instance);
                 JsonElement variant = node.variant;
                 string owner = variant.GetProperty("Path").GetString()!;
                 JsonElement declared = variant.GetProperty("Properties");
@@ -1381,7 +1389,7 @@ internal static partial class ValidationPlanner
         void AddDocumentationChecks()
         {
             ValidationDocumentation.Selection selected = documentation!;
-            foreach (var excluded in exampleExclusions)
+            foreach (KeyValuePair<DocumentationPageInfo, string> excluded in exampleExclusions)
             {
                 checks.Add(
                     new(
@@ -1405,7 +1413,7 @@ internal static partial class ValidationPlanner
                     )
                 );
             }
-            var owners = affected.Concat(selected.changedReferenceOwners.Select(owner => selected.owners[owner].path))
+            HashSet<string> owners = affected.Concat(selected.changedReferenceOwners.Select(owner => selected.owners[owner].path))
                 .Where(owner => (
                     !byPath[owner].test && !executionExclusions.ContainsKey(owner)
                     && (byPath[owner].productTarget.Length == 0 || byPath[owner].productTarget == target)
@@ -1413,7 +1421,12 @@ internal static partial class ValidationPlanner
                 .Where(owner => selected.owners.GetValueOrDefault(Path.GetFileNameWithoutExtension(owner))?.nativeReference != true)
                 .ToHashSet(StringComparer.Ordinal);
             var covered = new HashSet<string>(StringComparer.Ordinal);
-            var captures = selected.catalog.references
+            IEnumerable<
+                IGrouping<
+                    (string context, string? configuration, string? target),
+                    (DocumentationReferenceInfo reference, string name, string path)
+                >
+            > captures = selected.catalog.references
                 .Where(reference => (
                     reference.model == "source-clr" && reference.configuration == configuration
                     && (reference.target is null || reference.target == target)
@@ -1429,8 +1442,12 @@ internal static partial class ValidationPlanner
                                       ? "native"
                                       : "managed", item.reference.configuration, item.reference.target)
                 );
-            foreach (var group in captures)
-            {
+            foreach (
+                IGrouping<
+                    (string context, string? configuration, string? target),
+                    (DocumentationReferenceInfo reference, string name, string path)
+                > group in captures
+            ) {
                 string[] paths = group
                     .Select(static item => item.path)
                     .Distinct(StringComparer.Ordinal)
@@ -1494,7 +1511,7 @@ internal static partial class ValidationPlanner
                         prepared is null ? null : new(
                             [],
                             [],
-                            "",
+                            string.Empty,
                             configuration,
                             prepared.context == "native" ? target : null
                         )
@@ -1503,7 +1520,9 @@ internal static partial class ValidationPlanner
             }
             // Foreign product execution stays excluded. Its explicitly empty authored public surface
             // can still be checked against actual SDK-selected source without borrowing host binaries.
-            var emptyForeign = selected.catalog.references
+            IEnumerable<
+                IGrouping<string?, (DocumentationReferenceInfo reference, string name, string path)>
+            > emptyForeign = selected.catalog.references
                 .Where(reference => (reference.model == "source-clr" && reference.configuration == configuration))
                 .SelectMany(reference => reference.projects
                     .Where(name => (
@@ -1515,7 +1534,7 @@ internal static partial class ValidationPlanner
                     ))
                     .Select(name => (reference, name, path: selected.owners[name].path)))
                 .GroupBy(static item => item.reference.target);
-            foreach (var group in emptyForeign)
+            foreach (IGrouping<string?, (DocumentationReferenceInfo reference, string name, string path)> group in emptyForeign)
             {
                 string[] paths = group
                     .Select(static item => item.path)
@@ -1554,7 +1573,7 @@ internal static partial class ValidationPlanner
                     )
                 );
             }
-            foreach (var group in examplePages.GroupBy(page => (
+            foreach (IGrouping<string, DocumentationPageInfo> group in examplePages.GroupBy(page => (
                 scriptPages.Contains(page.id)
                 || (page.examples?.projects ?? []).Any(name => (
                     nativeOwners.Contains(selected.owners[name].path)

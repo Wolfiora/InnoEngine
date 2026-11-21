@@ -34,16 +34,16 @@ public sealed class InputBackendCatalog : IInputBackendFactory
                 throw new ArgumentException("Providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<InputBackendId>(new List<InputBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<InputBackendId>([.. m_providers.Keys]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<InputBackendId> supportedBackends { get; }
 
-    /// <inheritdoc />
     /// <exception cref="InvalidOperationException">
     /// The selected provider returned no service.
     /// </exception>
+    /// <inheritdoc/>
     public IInputEventSource CreateEventSource(
         InputBackendId backend,
         IPlatformWindow window,

@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using Markdig;
 using Markdig.Extensions.Yaml;
+using YamlDotNet.Core;
 using YamlDotNet.RepresentationModel;
 
 namespace Inno.Tooling.Documentation.Indexing;
@@ -92,15 +94,15 @@ internal sealed record DocumentationApiFragment(
 
     private string ProseFingerprint()
         => DocumentationMarkdown.Hash(
-            System.Text.Json.JsonSerializer.Serialize(new
+            JsonSerializer.Serialize(new
             {
                 body = body.ReplaceLineEndings("\n").Trim(),
-                description = Summaries("").Select(value => value.ReplaceLineEndings("\n").Trim())
+                description = Summaries(string.Empty).Select(value => value.ReplaceLineEndings("\n").Trim())
             })
         );
 
     internal static bool IsNull(YamlNode node)
-        => node is YamlScalarNode { Style: YamlDotNet.Core.ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };
+        => node is YamlScalarNode { Style: ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };
 
     internal string[] Summaries(string documentation)
     {

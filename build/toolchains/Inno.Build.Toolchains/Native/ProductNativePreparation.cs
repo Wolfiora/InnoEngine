@@ -58,7 +58,8 @@ public static class ProductNativePreparation
             .ToArray();
         if (components.Length != 0)
         {
-            var options = plan.steps.Where(static step => step.component.bindingDefinition is not null)
+            Dictionary<string, NativeComponentBuildOptions> options = plan.steps
+                .Where(static step => step.component.bindingDefinition is not null)
                 .GroupBy(static step => step.component.nativeProject, StringComparer.Ordinal)
                 .ToDictionary(static group => group.Key, static group => group.First().options, StringComparer.Ordinal);
             var request = new NativeBindingGenerationRequest(

@@ -18,9 +18,11 @@ public sealed class ShaderTargetAttribute : Attribute
     /// Stable target identity persisted by Shader assets.
     /// </param>
     public ShaderTargetAttribute(string id)
-        => this.id = string.IsNullOrWhiteSpace(id)
-                     ? throw new ArgumentException("Shader target identity cannot be empty.", nameof(id))
-                     : id;
+    {
+        this.id = string.IsNullOrWhiteSpace(id)
+                  ? throw new ArgumentException("Shader target identity cannot be empty.", nameof(id))
+                  : id;
+    }
 
     /// <summary>
     /// Gets the stable target identity persisted by Shader assets.

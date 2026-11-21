@@ -6,13 +6,13 @@ internal sealed class AnimationClipSnapshot
 {
     private AnimationClipSnapshot(AnimationClipAsset clip)
     {
-        duration = clip.duration;
-        tracks = clip.tracks.Select(static track => new AnimationTrack(
+        this.duration = clip.duration;
+        this.tracks = clip.tracks.Select(static track => new AnimationTrack(
             track.bindingId,
             track.interpolation,
             track.keyframes
         )).ToArray();
-        events = clip.events.Select(static marker => new AnimationEventMarker
+        this.events = clip.events.Select(static marker => new AnimationEventMarker
         {
             time = marker.time,
             eventId = marker.eventId,

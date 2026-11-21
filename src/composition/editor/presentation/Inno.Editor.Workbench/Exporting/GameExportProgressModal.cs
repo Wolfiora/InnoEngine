@@ -1,5 +1,6 @@
 using System.Numerics;
 using Inno.Editor.Core;
+using Inno.Editor.Exporting;
 using Inno.Editor.ImGui;
 using Inno.Editor.ImGui.ImGuiWidget;
 
@@ -12,18 +13,18 @@ internal sealed class GameExportProgressModal(ExportWindowModule window) : Edito
     private DialogLayout m_layout;
     private long m_operation;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool isVisible => window.isGameProgressVisible;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override bool allowScrolling => false;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override Vector2? OnPrepare(
         EditorContext context,
         Vector2 availableContentSize
     ) {
-        var snapshot = window.progress;
+        EditorExportProgress snapshot = window.progress;
         m_operation = snapshot.operationId;
         m_content = new(
             string.IsNullOrEmpty(snapshot.error) ? snapshot.status : snapshot.error,
@@ -37,7 +38,7 @@ internal sealed class GameExportProgressModal(ExportWindowModule window) : Edito
         return m_layout.size;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDraw(EditorContext context)
     {
         if (EditorUiSession.current.widgets.DrawDialog(m_content, m_layout))

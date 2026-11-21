@@ -8,32 +8,32 @@ namespace Inno.Integration.MacOSArm64.Bgfx;
 
 internal sealed class MacOSArm64BgfxBuildProfile : BgfxNativeBuildProfile
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override NativeToolchainSelection SelectTools(
         NativeBuildContext context,
         bool includeTools
     ) => MacOSArm64BgfxToolContribution.Select(context, includeTools);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string targetId => MacOSArm64BuildModule.target.id.value;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IReadOnlyList<string> generatorArguments => ["--gcc=osx-arm64", "gmake"];
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string artifactPathToken => "/osx-arm64/bin/";
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override IReadOnlyList<string> bindingCmakeArguments => [];
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override (string reference, IReadOnlyList<string> arguments) CreateBindingLinkSettings(string archivePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(archivePath);
         return (archivePath, ["-Xlinker", "-force_load", "-Xlinker", "\"" + archivePath + "\""]);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override BgfxBuildInvocation CreateBuildInvocation(
         NativeBuildContext context,
         bool includeTools

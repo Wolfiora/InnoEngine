@@ -11,13 +11,13 @@ public sealed class ContentCacheCancellationTests
     [Fact]
     public async Task CancellationDuringCopyDiscardsCandidateAndPreservesThePreviousPointer()
     {
-        using ContentCacheFixture fixture = new();
+        using var fixture = new ContentCacheFixture();
         using (FileContentStore first = await FileContentPreparation.PrepareAsync(fixture.source, fixture.options))
         {
         }
         string previous = fixture.current;
         File.Delete(Path.Combine(previous, "AssetDatabase", "Catalog.snapshot"));
-        using CancellationTokenSource cancellation = new();
+        using var cancellation = new CancellationTokenSource();
         fixture.source.onRead = cancellation.Cancel;
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => FileContentPreparation.PrepareAsync(
             fixture.source,
@@ -34,7 +34,7 @@ public sealed class ContentCacheCancellationTests
     [Fact]
     public async Task PriorCancellationCreatesNoCacheDirectory()
     {
-        using ContentCacheFixture fixture = new();
+        using var fixture = new ContentCacheFixture();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() => FileContentPreparation.PrepareAsync(
             fixture.source,
             fixture.options,

@@ -104,7 +104,7 @@ public sealed class DocumentationExampleTests : IDisposable
         Assert.Equal("inno-documentation-examples/1", report.RootElement.GetProperty("schema").GetString());
         Assert.Matches("^[a-f0-9]{64}$", report.RootElement.GetProperty("validatorIdentity").GetString()!);
         Assert.Matches("^[a-f0-9]{64}$", report.RootElement.GetProperty("compilerIdentity").GetString()!);
-        var results = report.RootElement.GetProperty("results")
+        Dictionary<string, JsonElement> results = report.RootElement.GetProperty("results")
             .EnumerateArray()
             .ToDictionary(static group => group.GetProperty("page").GetString()!);
         Assert.Equal("Passed", results["working"].GetProperty("status").GetString());
@@ -225,7 +225,12 @@ public sealed class DocumentationExampleTests : IDisposable
             EmitReference("Foreign", "public static class Foreign { public static int Read() => 7; }"),
             Path.Combine(directory, "Foreign.dll")
         );
-        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string argument in new[]
         {
             "restore",
@@ -263,7 +268,7 @@ public sealed class DocumentationExampleTests : IDisposable
         string output = Path.Combine(m_root, "fences.json");
         Assert.Equal(1, await DocumentationExamples.ExecuteAsync(Arguments(index.snapshot, output)));
         using JsonDocument report = JsonDocument.Parse(File.ReadAllBytes(output));
-        var results = report.RootElement
+        Dictionary<string, JsonElement> results = report.RootElement
             .GetProperty("results")
             .EnumerateArray()
             .ToDictionary(static item => item.GetProperty("page").GetString()!);
@@ -281,7 +286,12 @@ public sealed class DocumentationExampleTests : IDisposable
     [Fact]
     public async Task LogicalExamplesRetainBothScriptSurfacesAndNeverBorrowHostImplementation()
     {
-        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string argument in new[]
         {
             "restore",
@@ -393,7 +403,12 @@ public sealed class DocumentationExampleTests : IDisposable
                 public sealed class Owned { private Owned() { } }
             }
             """);
-        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string argument in new[]
         {
             "restore",
@@ -481,7 +496,7 @@ public sealed class DocumentationExampleTests : IDisposable
             Assert.Single(captured.RootElement.GetProperty("projectionIdentities").EnumerateObject());
             JsonElement project = captured.RootElement.GetProperty("projects")[0];
             Assert.Equal("Inno.Probe", project.GetProperty("name").GetString());
-            var symbols = project
+            Dictionary<string, JsonElement> symbols = project
                 .GetProperty("symbols")
                 .EnumerateArray()
                 .ToDictionary(static symbol => symbol.GetProperty("id").GetString()!);
@@ -664,7 +679,7 @@ public sealed class DocumentationExampleTests : IDisposable
         string output = Path.Combine(m_root, name + ".dll");
         string[] references = File.ReadAllLines(Path.Combine(AppContext.BaseDirectory, "DocumentationFrameworkReferences.txt"));
         Assert.NotEmpty(references);
-        var compilation = CSharpCompilation.Create(
+        CSharpCompilation compilation = CSharpCompilation.Create(
             name,
             [CSharpSyntaxTree.ParseText(sourceText)],
             references.Select(static path => MetadataReference.CreateFromFile(path)),
@@ -686,8 +701,8 @@ public sealed class DocumentationExampleTests : IDisposable
     ) => Write(
         "documentation/content/en/" + id + ".md",
         "---\nuid: " + id + "\nkind: tutorial\n"
-        + (mode is null ? "" : "exampleMode: " + mode + "\nexampleProjects: [Inno.Probe]\n")
-        + "---\n# " + id + "\n\nExample contract.\n" + (code is null ? "" : "\n```csharp\n" + code + "\n```\n")
+        + (mode is null ? string.Empty : "exampleMode: " + mode + "\nexampleProjects: [Inno.Probe]\n")
+        + "---\n# " + id + "\n\nExample contract.\n" + (code is null ? string.Empty : "\n```csharp\n" + code + "\n```\n")
     );
 
     private void Write(

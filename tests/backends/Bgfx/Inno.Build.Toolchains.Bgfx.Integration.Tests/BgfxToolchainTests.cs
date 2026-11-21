@@ -38,7 +38,10 @@ public sealed class BgfxToolchainTests : IDisposable
         Guid.NewGuid().ToString("N")
     );
 
-    public BgfxToolchainTests() => Directory.CreateDirectory(m_root);
+    public BgfxToolchainTests()
+    {
+        Directory.CreateDirectory(m_root);
+    }
 
     [Fact]
     [SupportedOSPlatform("windows")]
@@ -188,7 +191,7 @@ public sealed class BgfxToolchainTests : IDisposable
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task TextureCompilerProducesValidatedPortableContainer()
+    public async Task TextureCompilerProducesValidatedPortableContainer()
     {
         string sourcePath = Path.Combine(m_root, "checker.tga");
         File.WriteAllBytes(sourcePath, CreateTga());
@@ -289,7 +292,7 @@ public sealed class BgfxToolchainTests : IDisposable
 
     private static byte[] CreateTga()
     {
-        byte[] bytes = new byte[18 + (2 * 2 * 4)];
+        var bytes = new byte[18 + (2 * 2 * 4)];
         bytes[2] = 2;
         bytes[12] = 2;
         bytes[14] = 2;

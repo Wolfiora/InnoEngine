@@ -56,7 +56,7 @@ public sealed unsafe partial class ImGuiWidget
         }
         NativeImGui.TextUnformatted(label);
         Vector2 origin = NativeImGui.GetCursorScreenPos();
-        Vector2 size = new(MathF.Max(1f, NativeImGui.GetContentRegionAvail().X), style.trendHeight);
+        var size = new Vector2(MathF.Max(1f, NativeImGui.GetContentRegionAvail().X), style.trendHeight);
         _ = NativeImGui.InvisibleButton(label, size);
         EditorDrawList draw = ImGui.GetDrawList();
         draw.FilledRectangle(origin, origin + size, NativeImGui.ColorConvertFloat4ToU32(EditorPalette.collectionRow));

@@ -87,7 +87,7 @@ public readonly record struct AudioClipMetadata
 /// </summary>
 public static class AudioClipMetadataCodec
 {
-    private const uint C_MAGIC = 0x44554149;
+    private const uint C_MAGIC = 0x4455_4149;
     private const int C_FIXED_SIZE = 32;
 
     /// <summary>
@@ -106,7 +106,7 @@ public static class AudioClipMetadataCodec
         {
             throw new ArgumentException("The codec identifier is too long.", nameof(metadata));
         }
-        byte[] output = new byte[C_FIXED_SIZE + codec.Length];
+        var output = new byte[C_FIXED_SIZE + codec.Length];
         BinaryPrimitives.WriteUInt32LittleEndian(output.AsSpan(0, 4), C_MAGIC);
         output[4] = (byte)codec.Length;
         BinaryPrimitives.WriteInt32LittleEndian(output.AsSpan(8, 4), metadata.channels);
@@ -187,9 +187,7 @@ public sealed class AudioClipAsset : AssetObject
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
         ReadOnlyMemory<byte> currentPayload
-    ) {
-        m_metadata = currentPayload.IsEmpty
-                     ? null
-                     : AudioClipMetadataCodec.Decode(currentPayload.Span);
-    }
+    ) => m_metadata = currentPayload.IsEmpty
+                      ? null
+                      : AudioClipMetadataCodec.Decode(currentPayload.Span);
 }

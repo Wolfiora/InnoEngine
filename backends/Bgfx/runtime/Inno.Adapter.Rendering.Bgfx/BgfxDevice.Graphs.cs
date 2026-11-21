@@ -11,7 +11,7 @@ using Inno.Rendering;
 
 namespace Inno.Adapter.Rendering.Bgfx;
 
-sealed unsafe partial class BgfxDevice
+public sealed unsafe partial class BgfxDevice
 {
     /// <summary>
     /// Begins recording commands for one validated compiled render graph.
@@ -120,7 +120,7 @@ sealed unsafe partial class BgfxDevice
     public RenderCommandEncoder BeginPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeGraph is null || m_activeEncoder != null)
+        if (m_activeGraph is null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("Pass execution is outside a valid BGFX graph scope.");
         }
@@ -140,7 +140,7 @@ sealed unsafe partial class BgfxDevice
         ApplyViewTransform(viewId, pass.viewTransform);
         ConfigureViewTarget(viewId, pass);
         m_activeEncoder = bgfx.Raw.encoder_begin(0);
-        if (m_activeEncoder == null)
+        if (m_activeEncoder is null)
         {
             throw new InvalidOperationException($"BGFX could not acquire an encoder for pass '{pass.name}'.");
         }
@@ -158,7 +158,7 @@ sealed unsafe partial class BgfxDevice
     public void EndPass(CompiledRenderPass pass)
     {
         ArgumentNullException.ThrowIfNull(pass);
-        if (m_activeEncoder == null)
+        if (m_activeEncoder is null)
         {
             throw new InvalidOperationException("No BGFX encoder is active.");
         }
@@ -176,7 +176,7 @@ sealed unsafe partial class BgfxDevice
     public void EndGraph(CompiledRenderGraph graph)
     {
         ArgumentNullException.ThrowIfNull(graph);
-        if (!ReferenceEquals(m_activeGraph, graph) || m_activeEncoder != null)
+        if (!ReferenceEquals(m_activeGraph, graph) || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("BGFX graph cleanup does not match the active graph state.");
         }

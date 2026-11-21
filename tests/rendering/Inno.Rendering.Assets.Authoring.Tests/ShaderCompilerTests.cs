@@ -111,7 +111,7 @@ public sealed class ShaderCompilerTests : IDisposable
                 node.SetValue(
                     "stage",
                     ShaderGraphDocument.Encode(
-                        "alternate." + ShaderGraphDocument.Read(node, "stage", "", m_serialization, SerializationContext.empty),
+                        "alternate." + ShaderGraphDocument.Read(node, "stage", string.Empty, m_serialization, SerializationContext.empty),
                         m_serialization,
                         SerializationContext.empty
                     )

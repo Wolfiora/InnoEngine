@@ -335,7 +335,7 @@ internal sealed partial class EditorSceneWorkspace
         {
             return document.observedHash!;
         }
-        using var algorithm = SHA256.Create();
+        using SHA256 algorithm = SHA256.Create();
         using (var digest = new CryptoStream(Stream.Null, algorithm, CryptoStreamMode.Write, leaveOpen: true))
         using (var output = new BufferedStream(digest, 64 * 1024))
         {
@@ -373,7 +373,7 @@ internal sealed partial class EditorSceneWorkspace
     private static string CreateUniqueSceneName(IReadOnlyList<GameScene> scenes)
     {
         const string c_baseName = "Untitled Scene";
-        var names = scenes.Select(static scene => scene.name).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> names = scenes.Select(static scene => scene.name).ToHashSet(StringComparer.Ordinal);
         if (!names.Contains(c_baseName))
         {
             return c_baseName;
@@ -397,7 +397,7 @@ internal sealed partial class EditorSceneWorkspace
     private static string SanitizeFileName(string value)
     {
         char[] invalid = Path.GetInvalidFileNameChars();
-        string sanitized = new(
+        var sanitized = new string(
             (value ?? string.Empty)
                 .Trim()
                 .Select(character => invalid.Contains(character) ? '_' : character)

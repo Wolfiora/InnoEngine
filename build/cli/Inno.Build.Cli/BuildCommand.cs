@@ -30,10 +30,10 @@ internal sealed class BuildCommand
         {
             _ = Require(values, "target");
         }
-        projectDirectory = Require(values, "project");
-        supportPackRoot = kind == BuildCommandKind.Game
-                          ? Require(values, "support-packs")
-                          : values.GetValueOrDefault("support-packs", Path.Combine(AppContext.BaseDirectory, "SupportPacks"));
+        this.projectDirectory = Require(values, "project");
+        this.supportPackRoot = kind == BuildCommandKind.Game
+                               ? Require(values, "support-packs")
+                               : values.GetValueOrDefault("support-packs", Path.Combine(AppContext.BaseDirectory, "SupportPacks"));
     }
 
     internal BuildCommandKind kind { get; }
@@ -149,7 +149,7 @@ internal sealed class BuildCommand
         outputPath = Require(m_values, "output"),
         dependencies = m_values.TryGetValue("dependencies", out string? dependencyList)
                        ? dependencyList.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                       : Array.Empty<string>(),
+                       : [],
         includeDependencies = m_values.ContainsKey("include-dependencies")
     };
 

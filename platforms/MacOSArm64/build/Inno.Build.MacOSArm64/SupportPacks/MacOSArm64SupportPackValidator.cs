@@ -29,7 +29,7 @@ public sealed class MacOSArm64SupportPackValidator : IPlayerSupportPackValidator
             if (foreignNativeExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             {
                 throw new InvalidDataException(
-                    $"Player Support Pack '{Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id}' contains foreign native runtime '{Path.GetFileName(file)}'."
+                    $"Player Support Pack '{MacOSArm64BuildModule.target.id}' contains foreign native runtime '{Path.GetFileName(file)}'."
                 );
             }
             if (Path.GetExtension(file).Equals(".dylib", StringComparison.OrdinalIgnoreCase))
@@ -58,8 +58,8 @@ public sealed class MacOSArm64SupportPackValidator : IPlayerSupportPackValidator
     private static void ValidateLibrary(string file)
     {
         using var input = new BinaryReader(File.OpenRead(file));
-        if (input.BaseStream.Length < 32 || input.ReadUInt32() != 0xfeedfacf
-            || input.ReadUInt32() != 0x0100000c
+        if (input.BaseStream.Length < 32 || input.ReadUInt32() != 0xFEED_FACF
+            || input.ReadUInt32() != 0x0100_000C
         ) {
             throw new InvalidDataException($"MacOSArm64 native library '{file}' does not target the Mach-O ARM64 ABI.");
         }

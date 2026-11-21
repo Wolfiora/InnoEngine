@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Inno.Runtime.Generators;
 
@@ -12,10 +13,12 @@ namespace Inno.Runtime.Generators;
 [Generator]
 public sealed class RuntimeFactoryGenerator : IIncrementalGenerator
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var inputs = context.CompilationProvider.Combine(context.AnalyzerConfigOptionsProvider);
+        IncrementalValueProvider<(Compilation Left, AnalyzerConfigOptionsProvider Right)> inputs = context.CompilationProvider.Combine(
+            context.AnalyzerConfigOptionsProvider
+        );
         context.RegisterSourceOutput(inputs, static (
             output,
             input
@@ -67,14 +70,14 @@ public sealed class RuntimeFactoryGenerator : IIncrementalGenerator
             .Append("internal static class PlayerMetadataComposition\n{\n")
             .Append("    internal static global::Inno.Extensibility.Modules.IAssemblyCatalogSource CreateModules() =>\n")
             .Append("        new global::Inno.Runtime.StaticAssemblyCatalogSource([\n");
-        foreach (var catalog in catalogs.Where(static catalog => catalog.host))
+        foreach ((string name, bool host) catalog in catalogs.Where(static catalog => catalog.host))
         {
             code.Append("            global::").Append(catalog.name).Append(".Generated.RuntimeModuleCatalog.assembly,\n");
         }
         code.Append("        ], [typeof(object).Assembly]);\n\n")
             .Append("    internal static global::Inno.Extensibility.Types.ITypeCatalogSource CreateTypes() =>\n")
             .Append("        new global::Inno.Runtime.StaticTypeCatalogSource([\n");
-        foreach (var catalog in catalogs)
+        foreach ((string name, bool host) catalog in catalogs)
         {
             code.Append("            global::").Append(catalog.name).Append(".Generated.RuntimeModuleCatalog.Register,\n");
         }

@@ -13,7 +13,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Declares one contract-compatible pass mapping selectable by materials.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("461d82ac-0279-5044-b17b-776085f2ba35")]
+[StableTypeId("461d82ac-0279-5044-b17b-776085f2ba35")]
 public struct ShaderTechniqueDefinition
 {
     /// <summary>

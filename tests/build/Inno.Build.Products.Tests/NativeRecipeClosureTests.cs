@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
+using Xunit.Sdk;
 using Inno.Build.Toolchains;
 using Inno.Build.Toolchains.MiniAudio;
 using Inno.Build.Toolchains.Sdl3;
@@ -108,7 +110,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                         context,
                         completed,
                         cancellation
-                    ) => throw new Xunit.Sdk.XunitException("Input declaration must not compile."),
+                    ) => throw new XunitException("Input declaration must not compile."),
                     context =>
                     {
                         declarations++;
@@ -131,7 +133,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
         var plan = new ProductNativeBuildPlan("fixture", steps);
         IReadOnlyList<NativeBuildRecipe> recipes = plan.CreateRecipes(Context());
         Assert.Equal(2, declarations);
-        Assert.Equal(new[] { "first", "second" }, System.Linq.Enumerable.Select(recipes, static recipe => recipe.component));
+        Assert.Equal(new[] { "first", "second" }, Enumerable.Select(recipes, static recipe => recipe.component));
         Assert.False(Directory.Exists(Path.Combine(m_root, "artifacts")));
     }
 
@@ -147,7 +149,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                 context,
                 completed,
                 cancellation
-            ) => throw new Xunit.Sdk.XunitException("Validation must not compile."),
+            ) => throw new XunitException("Validation must not compile."),
             null,
             static (
                 relative,
@@ -163,7 +165,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                 context,
                 completed,
                 cancellation
-            ) => throw new Xunit.Sdk.XunitException("Validation must not compile."),
+            ) => throw new XunitException("Validation must not compile."),
             context => new NativeBuildRecipe(m_owner, "foreign", context.RequireToolchain().targetId, [], []),
             static (
                 relative,
@@ -296,7 +298,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
             Path.Combine(bridge, "compilation.json"),
             JsonSerializer.Serialize(new NativeBindingCompilation
             {
-                roots = [new("generated", "", true, true)],
+                roots = [new("generated", string.Empty, true, true)],
                 files = [],
                 includeDirectories = [],
                 defines = [],
@@ -305,7 +307,7 @@ public sealed class NativeRecipeClosureTests : IDisposable
                 cStandard = 0,
                 requiredExports = [],
                 staticExportSymbols = [],
-                staticExportAbi = "",
+                staticExportAbi = string.Empty,
                 staticExportNames = []
             })
         );

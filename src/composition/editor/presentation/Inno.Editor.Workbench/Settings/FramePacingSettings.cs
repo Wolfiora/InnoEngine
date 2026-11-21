@@ -1,5 +1,6 @@
 using System;
 using Inno.Editor.Core;
+using Inno.Editor.ImGui;
 using Inno.Editor.Settings;
 using Inno.Platform;
 
@@ -100,7 +101,7 @@ internal sealed class MaximumFrameRateSetting : EditorSetting
         }
         if (rate == 0)
         {
-            EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, "Unlimited");
+            EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, "Unlimited");
         }
     }
 }

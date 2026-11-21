@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -38,8 +39,8 @@ public sealed class ValidationShardExecutionTests
         repository.Write(
             "Directory.Build.props",
             "<Project><PropertyGroup><RestoreSources>"
-            + System.Security.SecurityElement.Escape(feed) + "</RestoreSources><RestorePackagesPath>"
-            + System.Security.SecurityElement.Escape(packages) + "</RestorePackagesPath></PropertyGroup></Project>"
+            + SecurityElement.Escape(feed) + "</RestoreSources><RestorePackagesPath>"
+            + SecurityElement.Escape(packages) + "</RestorePackagesPath></PropertyGroup></Project>"
         );
         repository.Write(
             "src/Example/Example.csproj",
@@ -150,7 +151,7 @@ public sealed class ValidationShardExecutionTests
         using var repository = new ValidationRepository();
         repository.Write(
             "Shared.props",
-            "<Project><Import Project=\"" + System.Security.SecurityElement.Escape(sdkInput.PathOf("Environment.props")) + "\" /></Project>"
+            "<Project><Import Project=\"" + SecurityElement.Escape(sdkInput.PathOf("Environment.props")) + "\" /></Project>"
         );
         repository.Write("tests/ci/Test-AgentRules.ps1", "Add-Content -LiteralPath artifacts/policy-executions.txt -Value executed");
         using JsonDocument before = await repository.PlanAsync(profile: "full");

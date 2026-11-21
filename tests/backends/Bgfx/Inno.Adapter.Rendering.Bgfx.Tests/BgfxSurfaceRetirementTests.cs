@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Platform;
 using Inno.Adapter.Platform.Sdl3;
@@ -43,7 +44,7 @@ public sealed class BgfxSurfaceRetirementTests
         }
 
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Invalid integration",
             width = 100,
@@ -69,14 +70,14 @@ public sealed class BgfxSurfaceRetirementTests
     private static void VerifyRetirement(bool inline)
     {
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var primary = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow primary = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Primary surface",
             width = 100,
             height = 90,
             visible = false
         });
-        using var additional = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow additional = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Additional surface",
             width = 100,
@@ -101,7 +102,7 @@ public sealed class BgfxSurfaceRetirementTests
         RenderSurfaceHandle surface = device.CreateWindowSurface(handles, 100, 90, "Custom surface");
         device.ResizeWindowSurface(surface, 110, 95);
         device.ResizeWindowSurface(surface, 120, 100);
-        var retirement = device.RetireWindowSurface(surface);
+        Task retirement = device.RetireWindowSurface(surface);
         Assert.False(retirement.IsCompleted);
         Assert.Equal(2, integration.resolveCount);
         Assert.Throws<ArgumentException>(() => device.ResizeWindowSurface(surface, 120, 100));
@@ -119,7 +120,7 @@ public sealed class BgfxSurfaceRetirementTests
         for (int cycle = 0; cycle < 8; cycle++)
         {
             RenderSurfaceHandle final = device.CreateWindowSurface(handles, 100, 90, "Drained surface");
-            var drained = device.RetireWindowSurface(final);
+            Task drained = device.RetireWindowSurface(final);
             device.DrainWindowSurfaceRetirements();
             Assert.True(drained.IsCompletedSuccessfully);
             Assert.False(primary.isClosed);

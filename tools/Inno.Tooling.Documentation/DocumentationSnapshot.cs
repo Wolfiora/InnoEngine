@@ -17,7 +17,7 @@ namespace Inno.Tooling.Documentation;
 /// </summary>
 public sealed class DocumentationSnapshot : IDisposable
 {
-    private const int C_MAX_CONTENT = 16000;
+    private const int C_MAX_CONTENT = 16_000;
     private readonly string m_cache;
     private readonly DocumentationManifest m_manifest;
     private readonly FileLease m_reading;
@@ -196,10 +196,6 @@ public sealed class DocumentationSnapshot : IDisposable
     /// <summary>
     /// Searches, reads, resolves symbols or resources, or reports binding status without mutating the index.
     /// </summary>
-    /// <remarks>
-    /// Equally ranked multiword heading matches prefer task guides. Exact symbol and identifier searches
-    /// retain their reference priority; excerpts still require explicit contract reads.
-    /// </remarks>
     /// <param name="request">
     /// A structured operation against this snapshot. Search excerpts are never returned as complete contracts.
     /// </param>
@@ -221,6 +217,10 @@ public sealed class DocumentationSnapshot : IDisposable
     /// <exception cref="ObjectDisposedException">
     /// The session has released its reading protection.
     /// </exception>
+    /// <remarks>
+    /// Equally ranked multiword heading matches prefer task guides. Exact symbol and identifier searches
+    /// retain their reference priority; excerpts still require explicit contract reads.
+    /// </remarks>
     public async Task<DocumentationResult> QueryAsync(
         DocumentationRequest request,
         CancellationToken cancellationToken = default
@@ -333,7 +333,7 @@ public sealed class DocumentationSnapshot : IDisposable
                 end--;
             }
         }
-        var continuations = Contracts(page);
+        List<DocumentationContinuation> continuations = Contracts(page);
         if (end < text.Length)
         {
             continuations.Insert(
@@ -348,7 +348,7 @@ public sealed class DocumentationSnapshot : IDisposable
             "Original Markdown from the selected snapshot. Related contracts and continuations remain explicit.",
             [Hit(
                 page,
-                section?.anchor ?? "",
+                section?.anchor ?? string.Empty,
                 section?.line ?? 1,
                 null,
                 "Exact page or section",
@@ -421,7 +421,8 @@ public sealed class DocumentationSnapshot : IDisposable
             }
             selected = selected is null ? postings : selected.Intersect(postings);
         }
-        var ranked = selected!.Select(index => m_manifest.search[index])
+        (DocumentationSearchEntry entry, (int score, bool taskGuide, string reason) match)[] ranked = selected!
+            .Select(index => m_manifest.search[index])
             .Where(entry => Scope(m_manifest.pages[m_paths[entry.pageId]].metadata, request))
             .Select(entry => (entry, match: Score(entry, request.value, tokens)))
             .OrderByDescending(static pair => pair.match.score)
@@ -430,8 +431,10 @@ public sealed class DocumentationSnapshot : IDisposable
             .ThenBy(static pair => pair.entry.section, StringComparer.Ordinal)
             .ToArray();
         var hits = new List<DocumentationHit>();
-        foreach (var pair in ranked.Skip(request.offset).Take(request.limit))
-        {
+        foreach ((DocumentationSearchEntry entry, (int score, bool taskGuide, string reason) match) pair in ranked
+            .Skip(request.offset)
+            .Take(request.limit)
+        ) {
             DocumentationPage page = await LoadAsync(pair.entry.pageId, cancellation).ConfigureAwait(false);
             DocumentationSection section = page.sections.Single(candidate => candidate.anchor == pair.entry.section);
             string body = DocumentationMarkdown.OwnText(page, section);
@@ -540,7 +543,7 @@ public sealed class DocumentationSnapshot : IDisposable
         DocumentationPage owner = await LoadAsync(matches[0].pageId, cancellation).ConfigureAwait(false);
         DocumentationSymbol selected = owner.symbols.Single(symbol => symbol.id == request.value);
         DocumentationSection section = owner.sections.Single(candidate => candidate.anchor == selected.section);
-        var continuations = Contracts(owner);
+        List<DocumentationContinuation> continuations = Contracts(owner);
         bool independentPage = m_origins.ContainsKey(owner.path + "\0" + selected.id) && owner.symbols.Count == 1;
         string text = independentPage ? owner.text : selected.declaration;
         if (text.Length > C_MAX_CONTENT)
@@ -656,7 +659,7 @@ public sealed class DocumentationSnapshot : IDisposable
             completeness,
             text,
             "inno-doc://innoengine/snapshots/" + identity + "/pages/" + Uri.EscapeDataString(page.metadata.uid)
-            + (section.Length == 0 ? "" : "#" + Uri.EscapeDataString(section))
+            + (section.Length == 0 ? string.Empty : "#" + Uri.EscapeDataString(section))
         )
         {
             scope = page.metadata.apiScope,

@@ -18,7 +18,7 @@ internal sealed class ImGuizmoModuleProvider : INativeModuleProvider
         m_dependency = dependency;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool TryGetExport(
         string name,
         out nint address

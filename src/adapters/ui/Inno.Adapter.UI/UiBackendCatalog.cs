@@ -28,7 +28,7 @@ public sealed class UiBackendCatalog : IUiBackendFactory
                 throw new ArgumentException("UI providers require unique, assigned backend IDs.", nameof(providers));
             }
         }
-        supportedBackends = new ReadOnlyCollection<UiBackendId>([.. m_providers.Keys]);
+        this.supportedBackends = new ReadOnlyCollection<UiBackendId>([.. m_providers.Keys]);
     }
 
     /// <summary>

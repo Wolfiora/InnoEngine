@@ -157,7 +157,7 @@ public sealed class DiagnosticHubTests : IDisposable
     {
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
-        using var reporter = m_hub.CreateReporter(new DiagnosticSource("tests.audio", "Audio"));
+        using DiagnosticReporter reporter = m_hub.CreateReporter(new DiagnosticSource("tests.audio", "Audio"));
         reporter.Publish(new Diagnostic("LOAD", "First", DiagnosticSeverity.Warning, objectId: m_assetId));
         reporter.Publish(new Diagnostic("LOAD", "Updated", DiagnosticSeverity.Error, objectId: m_assetId));
         Assert.Equal("Updated", Assert.Single(Assert.Single(sink.reports).diagnostics).message);
@@ -173,7 +173,7 @@ public sealed class DiagnosticHubTests : IDisposable
     {
         var sink = new CountingSink();
         m_hub.RegisterSink(sink);
-        using var reporter = m_hub.CreateReporter(new DiagnosticSource("tests.frame", "Frame"));
+        using DiagnosticReporter reporter = m_hub.CreateReporter(new DiagnosticSource("tests.frame", "Frame"));
         reporter.Publish(Diagnostic.Error("FRAME", "Same failure"));
         int published = sink.replaceCount;
 
@@ -193,9 +193,9 @@ public sealed class DiagnosticHubTests : IDisposable
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
         var source = new DiagnosticSource("tests.renderer", "Renderer");
-        using var previous = m_hub.CreateReporter(source);
+        using DiagnosticReporter previous = m_hub.CreateReporter(source);
         previous.Publish(Diagnostic.Error("OLD", "Old generation"));
-        using var current = m_hub.CreateReporter(source);
+        using DiagnosticReporter current = m_hub.CreateReporter(source);
         current.Publish(Diagnostic.Warning("NEW", "Current generation"));
         Assert.Throws<ObjectDisposedException>(() => previous.Publish(Diagnostic.Error("OLD", "Stale")));
         previous.Dispose();
@@ -207,7 +207,7 @@ public sealed class DiagnosticHubTests : IDisposable
     {
         var sink = new ProbeSink();
         m_hub.RegisterSink(sink);
-        using var reporter = m_hub.CreateReporter(new DiagnosticSource("tests.graph", "Graph"));
+        using DiagnosticReporter reporter = m_hub.CreateReporter(new DiagnosticSource("tests.graph", "Graph"));
         reporter.Publish(Diagnostic.Info("GOOD", "Last good"));
         Diagnostic duplicate = Diagnostic.Error("BAD", "Duplicate");
         Assert.Throws<ArgumentException>(() => reporter.Replace([duplicate, duplicate]));

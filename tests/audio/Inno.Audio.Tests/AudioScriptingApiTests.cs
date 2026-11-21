@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Xunit;
 using Inno.Adapter.Modules.DotNet;
@@ -8,6 +9,7 @@ using Inno.Adapter.Serialization.DotNet;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Audio.Runtime;
+using Inno.Build;
 using Inno.Core.IO;
 using Inno.Core.Identity;
 using Inno.Core.Settings;
@@ -29,7 +31,7 @@ public sealed class AudioScriptingApiTests
         Directory.CreateDirectory(Path.Combine(projectRoot, "Library"));
         try
         {
-            _ = typeof(Inno.Audio.Audio);
+            _ = typeof(Audio);
             _ = typeof(AudioProjectSettings);
             var identities = new IdentityAllocator();
             using IDisposable identityScope = identities.EnterScope();
@@ -78,14 +80,14 @@ public sealed class AudioScriptingApiTests
                 host.modules.generations
             );
             string dotnetHost = Path.Combine(
-                Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+                Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
                 OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
             );
             var compiler = new ScriptCompiler(
                 new ScriptCompilerOptions
                 {
                     projectRootDirectory = projectRoot,
-                    compilationEnvironment = new Inno.Build.SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
+                    compilationEnvironment = new SdkScriptCompilationEnvironment(dotnetHost, projectRoot)
                 },
                 assets,
                 plugins

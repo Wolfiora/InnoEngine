@@ -33,17 +33,17 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
     /// Optional finite device resource capacities.
     /// </param>
     public MutedAudioDevice(
-        int sampleRate = 48000,
+        int sampleRate = 48_000,
         AudioDeviceLimits? limits = null
     ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(sampleRate);
         m_limits = limits ?? new AudioDeviceLimits();
-        generation = unchecked(++S_NEXT_GENERATION);
+        this.generation = unchecked(++S_NEXT_GENERATION);
         if (generation == 0)
         {
-            generation = unchecked(++S_NEXT_GENERATION);
+            this.generation = unchecked(++S_NEXT_GENERATION);
         }
-        capabilities = new AudioCapabilities(true, true, true, 4, sampleRate);
+        this.capabilities = new AudioCapabilities(true, true, true, 4, sampleRate);
     }
 
     /// <summary>
@@ -480,8 +480,8 @@ public sealed class MutedAudioDevice : AudioDevice, IAudioDevice
         ) {
             this.clip = clip;
             this.duration = duration;
-            loop = options.loop;
-            parameters = new AudioVoiceParameters(options.volume, options.pitch, options.pan, options.spatial);
+            this.loop = options.loop;
+            this.parameters = new AudioVoiceParameters(options.volume, options.pitch, options.pan, options.spatial);
             this.state = state;
             this.scheduledDspTime = scheduledDspTime;
         }

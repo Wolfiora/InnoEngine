@@ -13,7 +13,7 @@ public sealed class IndexedObjectQuery<T>
     where T : class
 {
     private readonly IndexedObjectStore<T> m_store;
-    private readonly List<IIndexedObjectQueryCondition<T>> m_conditions = new();
+    private readonly List<IIndexedObjectQueryCondition<T>> m_conditions = [];
     private Func<IEnumerable<T>>? m_orderedFastExec;
     private Func<IReadOnlyList<T>>? m_orderedSnapshotExec;
     private Func<T?>? m_orderedFirstExec;
@@ -34,7 +34,7 @@ public sealed class IndexedObjectQuery<T>
     /// </returns>
     public IndexedObjectQuery<T> Where(IIndexedObjectQueryCondition<T> condition)
     {
-        if (condition == null)
+        if (condition is null)
         {
             throw new ArgumentNullException(nameof(condition));
         }
@@ -63,12 +63,12 @@ public sealed class IndexedObjectQuery<T>
     /// <param name="key">
     /// Key handle.
     /// </param>
-    /// <returns>
-    /// The same query instance.
-    /// </returns>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
+    /// <returns>
+    /// The same query instance.
+    /// </returns>
     public IndexedObjectQuery<T> Find<TKey>(
         IndexedObjectKey<TKey> key,
         TKey value
@@ -103,13 +103,13 @@ public sealed class IndexedObjectQuery<T>
     /// <summary>
     /// Executes the query and returns a lazy fail-fast enumerable of results.
     /// </summary>
-    /// <remarks>
-    /// Enumeration is fail-fast and throws if the store is modified during iteration.
-    /// </remarks>
     /// <returns>
     /// Lazy fail-fast enumerable of matching items.
     /// </returns>
-    public IEnumerable<T> GetFast() => m_orderedFastExec != null ? m_orderedFastExec() : m_store.ExecuteQueryFast(m_conditions);
+    /// <remarks>
+    /// Enumeration is fail-fast and throws if the store is modified during iteration.
+    /// </remarks>
+    public IEnumerable<T> GetFast() => m_orderedFastExec is not null ? m_orderedFastExec() : m_store.ExecuteQueryFast(m_conditions);
 
     /// <summary>
     /// Executes the query and returns a stable snapshot.
@@ -117,7 +117,8 @@ public sealed class IndexedObjectQuery<T>
     /// <returns>
     /// A snapshot list detached from subsequent store mutations.
     /// </returns>
-    public IReadOnlyList<T> Get() => m_orderedSnapshotExec != null ? m_orderedSnapshotExec() : m_store.ExecuteQuerySnapshot(m_conditions);
+    public IReadOnlyList<T> Get()
+        => m_orderedSnapshotExec is not null ? m_orderedSnapshotExec() : m_store.ExecuteQuerySnapshot(m_conditions);
 
     /// <summary>
     /// Executes the query and returns the first matching item or null.
@@ -125,5 +126,5 @@ public sealed class IndexedObjectQuery<T>
     /// <returns>
     /// The first matching item or null.
     /// </returns>
-    public T? First() => m_orderedFirstExec != null ? m_orderedFirstExec() : m_store.ExecuteFirst(m_conditions);
+    public T? First() => m_orderedFirstExec is not null ? m_orderedFirstExec() : m_store.ExecuteFirst(m_conditions);
 }

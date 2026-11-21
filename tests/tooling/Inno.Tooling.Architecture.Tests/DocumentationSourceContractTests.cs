@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -55,7 +56,7 @@ public sealed class DocumentationSourceContractTests : IDisposable
         string facts = Path.Combine(m_root, "scope.json");
         Assert.Equal(0, DocumentationReferences.ExportApi(ExportArguments(facts)));
         using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(facts));
-        var symbols = document.RootElement.GetProperty("projects")[0]
+        Dictionary<string, JsonElement> symbols = document.RootElement.GetProperty("projects")[0]
             .GetProperty("symbols")
             .EnumerateArray()
             .ToDictionary(symbol => symbol.GetProperty("id").GetString()!);
@@ -138,7 +139,7 @@ public sealed class DocumentationSourceContractTests : IDisposable
     public async Task CompileOnlyPackageContractsNeedNoRuntimeDeploymentAndCannotDisappear()
     {
         string reference = Path.Combine(m_root, "PackageContract.dll");
-        var compilation = CSharpCompilation.Create(
+        CSharpCompilation compilation = CSharpCompilation.Create(
             "PackageContract",
             [CSharpSyntaxTree.ParseText("namespace PackageContract; public abstract class BaseContract { }")],
             ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
@@ -350,7 +351,7 @@ public sealed class DocumentationSourceContractTests : IDisposable
         string cache = Path.Combine(m_root, "artifacts/documentation-export/extraction-cache/entries");
         string[] originals = Directory.GetFiles(cache, "project.json", SearchOption.AllDirectories);
         Assert.Equal(2, originals.Length);
-        DateTime retainedTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var retainedTime = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         foreach (string file in originals)
         {
             File.SetLastWriteTimeUtc(file, retainedTime);
@@ -419,7 +420,7 @@ public sealed class DocumentationSourceContractTests : IDisposable
         string payload = Assert.Single(
             Directory.GetFiles(Path.Combine(consumer.m_root, C_ENTRIES), "project.json", SearchOption.AllDirectories)
         );
-        DateTime retainedTime = new(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var retainedTime = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         File.SetLastWriteTimeUtc(payload, retainedTime);
         string result = Path.Combine(consumer.m_root, "facts.json");
         Assert.Equal(0, DocumentationReferences.ExportApi(consumer.ExportArguments(result)));
@@ -434,7 +435,7 @@ public sealed class DocumentationSourceContractTests : IDisposable
     public async Task ExtractionInvalidatesInheritedXmlWithoutChangingTheReferenceAssembly()
     {
         string reference = Path.Combine(m_root, "BaseContract.dll");
-        var compilation = CSharpCompilation.Create(
+        CSharpCompilation compilation = CSharpCompilation.Create(
             "BaseContract",
             [CSharpSyntaxTree.ParseText("namespace BaseContract; public abstract class Parent { public abstract void Read(); }")],
             ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator)

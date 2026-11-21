@@ -28,10 +28,6 @@ public static class EmscriptenToolchainResolver
     /// <returns>
     /// Variables for native builds and binding generation, without changing the parent process.
     /// </returns>
-    /// <remarks>
-    /// Compiler worker budgets remain inherited from the host environment or tool defaults.
-    /// Runtime threading policy does not constrain build-time parallelism.
-    /// </remarks>
     /// <exception cref="FileNotFoundException">
     /// The SDK host or a required Emscripten workload component is missing.
     /// </exception>
@@ -47,6 +43,10 @@ public static class EmscriptenToolchainResolver
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>
+    /// <remarks>
+    /// Compiler worker budgets remain inherited from the host environment or tool defaults.
+    /// Runtime threading policy does not constrain build-time parallelism.
+    /// </remarks>
     public static async Task<IReadOnlyDictionary<string, string>> ResolveAsync(
         string dotnetHost,
         string projectPath,

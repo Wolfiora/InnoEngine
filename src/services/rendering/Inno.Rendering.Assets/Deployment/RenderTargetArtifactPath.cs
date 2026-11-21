@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Defines deterministic relative paths shared by target-artifact producers and runtime consumers.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("85da30f1-a679-56d0-9cdf-7d6cf19b83f0")]
+[StableTypeId("85da30f1-a679-56d0-9cdf-7d6cf19b83f0")]
 public static class RenderTargetArtifactPath
 {
     /// <summary>

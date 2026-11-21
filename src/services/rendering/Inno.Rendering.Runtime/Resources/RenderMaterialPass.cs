@@ -4,19 +4,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Inno.Core.Diagnostics;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
 namespace Inno.Rendering.Runtime;
 
-[Inno.Extensibility.Types.StableTypeId("b5677cc4-c195-5f52-a52f-5efecec8314e")]
+[StableTypeId("b5677cc4-c195-5f52-a52f-5efecec8314e")]
 internal enum RenderMaterialBindingKind
 {
     Uniform,
     Texture
 }
 
-[Inno.Extensibility.Types.StableTypeId("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
+[StableTypeId("702a1ec9-219b-5d44-b322-1a433e7e41b5")]
 internal sealed record RenderMaterialBinding(
     RenderMaterialBindingKind kind,
     RenderBindingId id,
@@ -32,7 +33,7 @@ internal sealed record RenderMaterialBinding(
 /// The instance is scoped to the active render device generation. Pipeline-owned graph textures and
 /// buffers remain explicit and are bound by the caller after this material state is applied.
 /// </remarks>
-[Inno.Extensibility.Types.StableTypeId("b1566a8a-dd0a-5dca-8f43-6bb12aa86973")]
+[StableTypeId("b1566a8a-dd0a-5dca-8f43-6bb12aa86973")]
 public sealed class RenderMaterialPass
 {
     private readonly ShaderPassDefinition m_definition;

@@ -329,12 +329,12 @@ public sealed class RenderTextureDescriptor : IEquatable<RenderTextureDescriptor
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => Equals(obj as RenderTextureDescriptor);
 
     /// <summary>
@@ -345,7 +345,7 @@ public sealed class RenderTextureDescriptor : IEquatable<RenderTextureDescriptor
     /// </returns>
     public override int GetHashCode()
     {
-        HashCode hash = new();
+        var hash = new HashCode();
         hash.Add(width);
         hash.Add(height);
         hash.Add(format);
@@ -421,12 +421,12 @@ public sealed class RenderBufferDescriptor : IEquatable<RenderBufferDescriptor>
     /// <summary>
     /// Determines whether this instance and the supplied value represent the same logical state.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when both values represent the same logical state; otherwise, <see langword="false"/>.
+    /// </returns>
     public override bool Equals(object? obj) => Equals(obj as RenderBufferDescriptor);
 
     /// <summary>

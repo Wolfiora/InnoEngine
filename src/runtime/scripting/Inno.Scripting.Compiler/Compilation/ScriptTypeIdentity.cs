@@ -25,7 +25,7 @@ internal static class ScriptTypeIdentity
         byte[] namespaceBytes = namespaceId.ToByteArray();
         SwapGuidByteOrder(namespaceBytes);
         byte[] nameBytes = Encoding.UTF8.GetBytes(name);
-        byte[] data = new byte[namespaceBytes.Length + nameBytes.Length];
+        var data = new byte[namespaceBytes.Length + nameBytes.Length];
         Buffer.BlockCopy(namespaceBytes, 0, data, 0, namespaceBytes.Length);
         Buffer.BlockCopy(nameBytes, 0, data, namespaceBytes.Length, nameBytes.Length);
 

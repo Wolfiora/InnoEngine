@@ -45,7 +45,7 @@ public readonly record struct FontMetadata
 /// </summary>
 public static class FontMetadataCodec
 {
-    private const uint C_MAGIC = 0x544E4649;
+    private const uint C_MAGIC = 0x544E_4649;
     private const int C_SIZE = 16;
 
     /// <summary>
@@ -59,7 +59,7 @@ public static class FontMetadataCodec
     /// </returns>
     public static byte[] Encode(FontMetadata metadata)
     {
-        byte[] output = new byte[C_SIZE];
+        var output = new byte[C_SIZE];
         BinaryPrimitives.WriteUInt32LittleEndian(output, C_MAGIC);
         BinaryPrimitives.WriteInt32LittleEndian(output.AsSpan(4), metadata.faceCount);
         BinaryPrimitives.WriteInt64LittleEndian(output.AsSpan(8), metadata.encodedByteLength);
@@ -120,7 +120,5 @@ public sealed class FontAsset : AssetObject
     protected override void OnRuntimePayloadChanged(
         ReadOnlyMemory<byte> previousPayload,
         ReadOnlyMemory<byte> currentPayload
-    ) {
-        m_metadata = currentPayload.IsEmpty ? null : FontMetadataCodec.Decode(currentPayload.Span);
-    }
+    ) => m_metadata = currentPayload.IsEmpty ? null : FontMetadataCodec.Decode(currentPayload.Span);
 }

@@ -14,7 +14,7 @@ internal static class BuildSettingsHistory
         ReadOnlySpan<byte> before,
         ReadOnlySpan<byte> after
     ) {
-        byte[] payload = new byte[sizeof(int) + before.Length + after.Length];
+        var payload = new byte[sizeof(int) + before.Length + after.Length];
         BinaryPrimitives.WriteInt32LittleEndian(payload, before.Length);
         before.CopyTo(payload.AsSpan(sizeof(int), before.Length));
         after.CopyTo(payload.AsSpan(sizeof(int) + before.Length));

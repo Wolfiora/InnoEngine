@@ -13,8 +13,10 @@ using System.Xml.Linq;
 using Xunit;
 using Inno.Assets;
 using Inno.Assets.Pipeline;
+using Inno.Build;
 using Inno.Build.Toolchains;
 using Inno.Plugins;
+using Inno.Scene;
 using Inno.Scripting.Compiler;
 
 namespace Inno.Scripting.Compiler.Tests;
@@ -318,7 +320,7 @@ public sealed class CSharp14ScriptingTests
             Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
         );
-        ScriptCompilationInputs selected = new Inno.Build.SdkScriptCompilationEnvironment(host, fixture.projectRoot).Capture();
+        ScriptCompilationInputs selected = new SdkScriptCompilationEnvironment(host, fixture.projectRoot).Capture();
         string destination = Path.Combine(fixture.projectRoot, "Framework");
         Directory.CreateDirectory(destination);
         foreach (string path in selected.frameworkReferences)
@@ -334,7 +336,7 @@ public sealed class CSharp14ScriptingTests
         Assert.True(first.success, string.Join(Environment.NewLine, first.diagnostics));
         string referenceRoot = Path.Combine(fixture.projectRoot, "Library", "ScriptApi", "Runtime");
         string[] references = Directory.GetDirectories(referenceRoot);
-        using (FileStream changed = new(Path.Combine(destination, "System.Runtime.dll"), FileMode.Append))
+        using (var changed = new FileStream(Path.Combine(destination, "System.Runtime.dll"), FileMode.Append))
         {
             changed.WriteByte(0);
         }
@@ -352,7 +354,7 @@ public sealed class CSharp14ScriptingTests
     public void SourceDocumentationContentSelectsANewReferenceGeneration()
     {
         // This suite is serial. Only its own deployed XML sidecar is changed, and it is restored on failure.
-        string source = Path.ChangeExtension(typeof(Inno.Scene.SceneManager).Assembly.Location, ".xml");
+        string source = Path.ChangeExtension(typeof(SceneManager).Assembly.Location, ".xml");
         Assert.StartsWith(Path.GetFullPath(AppContext.BaseDirectory), Path.GetFullPath(source), StringComparison.OrdinalIgnoreCase);
         byte[] original = File.ReadAllBytes(source);
         DateTime timestamp = File.GetLastWriteTimeUtc(source);

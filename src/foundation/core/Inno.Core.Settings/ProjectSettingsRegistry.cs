@@ -72,13 +72,15 @@ internal sealed class ProjectSettingsRegistry : TypeRegistry<ProjectSettingsRegi
             }
             ProjectSettingComposerAttribute attribute =
                 types.GetAttribute<ProjectSettingComposerAttribute>(typeRef, inherit: false)!;
-            if (!settingTypes.TryGetValue(attribute.settingId, out var setting))
-            {
+            if (!settingTypes.TryGetValue(
+                attribute.settingId,
+                out (Guid stableTypeId, Type runtimeType, bool allowPluginContributions) setting
+            )) {
                 throw new InvalidOperationException(
                     $"Project setting composer '{type.FullName}' targets undefined setting '{attribute.settingId}'."
                 );
             }
-            var composer = OwnCandidateExtension((ProjectSettingComposer)types.CreateInstance(type));
+            ProjectSettingComposer composer = OwnCandidateExtension((ProjectSettingComposer)types.CreateInstance(type));
             if (composer.settingType != setting.runtimeType)
             {
                 throw new InvalidOperationException(

@@ -5,6 +5,7 @@ using Xunit;
 using Inno.Core.Events;
 using Inno.Core.Input;
 using Inno.Editor.Core;
+using Inno.Editor.Interactions;
 
 namespace Inno.Editor.Presentation.Tests;
 
@@ -14,7 +15,7 @@ public sealed partial class EditorRuntimeTests
     [Trait("Category", "Performance")]
     public void PublicCommandAndStatisticsPathsProduceRepeatableSamples()
     {
-        var interaction = m_runtime.interactions.For("tests/menu");
+        EditorInteraction interaction = m_runtime.interactions.For("tests/menu");
         Measure("menu-open", () => Assert.NotEmpty(interaction.BuildMenu().items));
         m_runtime.interactions.For("tests/multiple-shortcuts").Focus();
         int beforeDispatch = MultiShortcutAction.executeCount;

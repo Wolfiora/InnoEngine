@@ -40,7 +40,7 @@ public sealed unsafe partial class PlatformImGuiContext
     ) {
         try
         {
-            if (text != null && FindClipboardContext(context) is not null)
+            if (text is not null && FindClipboardContext(context) is not null)
             {
                 _ = SDL.Raw.SetClipboardText(text);
             }
@@ -53,7 +53,7 @@ public sealed unsafe partial class PlatformImGuiContext
 
     private static PlatformImGuiContext? FindClipboardContext(ImGuiNativeContext* context)
     {
-        if (context == null)
+        if (context is null)
         {
             return null;
         }

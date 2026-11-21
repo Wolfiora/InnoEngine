@@ -43,7 +43,7 @@ public sealed class RenderingAuthoringBackendCatalog : IRenderingAuthoringBacken
         {
             throw new ArgumentException("Runtime and authoring rendering providers must register the same backend IDs.", nameof(providers));
         }
-        supportedBackends = new ReadOnlyCollection<RenderingBackendId>(new List<RenderingBackendId>(m_providers.Keys));
+        this.supportedBackends = new ReadOnlyCollection<RenderingBackendId>([.. m_providers.Keys]);
     }
 
     /// <summary>

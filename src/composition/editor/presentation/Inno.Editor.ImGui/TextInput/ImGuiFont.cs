@@ -1,6 +1,7 @@
 using System;
 
 using HostFont = Inno.Adapter.Presentation.ImGui.ImGuiFont;
+using HostScope = Inno.Adapter.Presentation.ImGui.ImGuiFontScope;
 using HostStyle = Inno.Adapter.Presentation.ImGui.ImGuiFontStyle;
 using NativeImGui = Inno.Native.ImGui.ImGui;
 
@@ -59,7 +60,7 @@ public static unsafe class ImGuiFont
     {
         EditorUiSession session = EditorUiSession.current;
         session.EnsureDrawing();
-        var scope = HostFont.PushStyle((HostStyle)style);
+        HostScope scope = HostFont.PushStyle((HostStyle)style);
         return new ImGuiFontScope(session, scope, NativeImGui.GetFrameCount(), NativeImGui.Raw.GetCurrentContext()->FontStack.Size);
     }
 }
@@ -70,13 +71,13 @@ public static unsafe class ImGuiFont
 public unsafe ref struct ImGuiFontScope : IDisposable
 {
     private EditorUiSession? m_session;
-    private Inno.Adapter.Presentation.ImGui.ImGuiFontScope m_scope;
+    private HostScope m_scope;
     private readonly int m_frame;
     private readonly int m_depth;
 
     internal ImGuiFontScope(
         EditorUiSession session,
-        Inno.Adapter.Presentation.ImGui.ImGuiFontScope scope,
+        HostScope scope,
         int frame,
         int depth
     ) {

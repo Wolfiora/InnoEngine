@@ -76,7 +76,7 @@ public sealed class ModuleHost : IDisposable
             ArgumentNullException.ThrowIfNull(m_options.catalogSource);
             m_options.catalogSource.changed += OnAssemblyLoaded;
             m_assemblyLoadSubscribed = true;
-            isInitialized = true;
+            this.isInitialized = true;
             m_hostCatalogDirty = true;
             try
             {
@@ -182,7 +182,7 @@ public sealed class ModuleHost : IDisposable
                 ValidateUniqueReloadBoundary(request.domain, request.scope);
             }
 
-            AssemblyModuleHandle handle = new(Guid.NewGuid());
+            var handle = new AssemblyModuleHandle(Guid.NewGuid());
             IReadOnlyDictionary<string, PlannedAssembly> plannedAssemblies =
                 BuildPlannedAssemblyMap([request]);
             AssemblyModuleEntry module = StageModule(
@@ -259,7 +259,7 @@ public sealed class ModuleHost : IDisposable
                 );
             }
 
-            AssemblyModuleHandle handle = new(Guid.NewGuid());
+            var handle = new AssemblyModuleHandle(Guid.NewGuid());
             var module = new AssemblyModuleEntry
             {
                 handle = handle,
@@ -487,7 +487,7 @@ public sealed class ModuleHost : IDisposable
                     : module.scope == AssemblyScope.Runtime ? 1 : 2
                 ))
                 .ToArray();
-            var monitors = unloadOrder.Select(BeginUnload).ToArray();
+            IAssemblyUnloadProbe[] monitors = unloadOrder.Select(BeginUnload).ToArray();
             return monitors.Length == 1
                    ? monitors[0]
                    : new CompositeAssemblyUnloadProbe(monitors);
@@ -595,7 +595,11 @@ public sealed class ModuleHost : IDisposable
                 }
                 catch (Exception rollbackFailure)
                 {
-                    var failure = new AggregateException("Module activation and rollback failed.", activationFailure, rollbackFailure);
+                    var failure = new AggregateException(
+                        "Module activation and rollback failed.",
+                        activationFailure,
+                        rollbackFailure
+                    );
                     generations.Fault(failure);
                     throw failure;
                 }
@@ -753,7 +757,7 @@ public sealed class ModuleHost : IDisposable
                 candidates.Add(StageModule(handle, request, generation, upstream, plannedAssemblies));
             }
 
-            var replacements = candidates.ToDictionary(static module => module.handle);
+            Dictionary<AssemblyModuleHandle, AssemblyModuleEntry> replacements = candidates.ToDictionary(static module => module.handle);
             AssemblyCatalogSnapshot previousCatalog = m_currentCatalog;
             AssemblyCatalogSnapshot candidateCatalog = BuildCatalog(
                 replacements,
@@ -991,7 +995,11 @@ public sealed class ModuleHost : IDisposable
                     }
                     catch (Exception rollbackFailure)
                     {
-                        var aggregate = new AggregateException("Catalog activation and rollback failed.", failure, rollbackFailure);
+                        var aggregate = new AggregateException(
+                            "Catalog activation and rollback failed.",
+                            failure,
+                            rollbackFailure
+                        );
                         generations.Fault(aggregate);
                         throw aggregate;
                     }
@@ -1256,7 +1264,7 @@ public sealed class ModuleHost : IDisposable
 
     private void ValidateUnloadClosure(IReadOnlyList<AssemblyModuleHandle> handles)
     {
-        var removed = handles.ToHashSet();
+        HashSet<AssemblyModuleHandle> removed = handles.ToHashSet();
         bool removesPlugin = m_modules.Values.Any(module => (
             removed.Contains(module.handle) && module.domain == AssemblyDomain.InnoPlugin
         ));

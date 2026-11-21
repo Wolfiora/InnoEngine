@@ -42,7 +42,7 @@ public sealed class ReferenceCatalogTests
         var target = new Target();
         Assert.True(allocator.Register(target));
         var descriptor = new ReferenceDescriptor(S_KIND, target.identity.persistentId);
-        var catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
+        ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var first = new RecordingParticipant("first", events);
         var second = new RecordingParticipant("second", events, failApply: true);
@@ -68,10 +68,14 @@ public sealed class ReferenceCatalogTests
         var target = new Target();
         allocator.Register(target);
         var descriptor = new ReferenceDescriptor(S_KIND, target.identity.persistentId);
-        var catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
+        ReferenceCatalog catalog = ReferenceCatalog.Create(1, [new FixedResolver(S_KIND, target.identity.runtimeIdentity)]);
         var events = new List<string>();
         var state = new SerializedMissingState(new ReferenceKey(Guid.NewGuid(), "asset"), descriptor, [1]);
-        var transaction = new ReferenceRecoveryTransaction(catalog, [state], [new RecordingParticipant("owner", events)]);
+        var transaction = new ReferenceRecoveryTransaction(
+            catalog,
+            [state],
+            [new RecordingParticipant("owner", events)]
+        );
         Assert.Empty(events);
         Assert.Empty(transaction.changes);
         transaction.PrepareForActivation();

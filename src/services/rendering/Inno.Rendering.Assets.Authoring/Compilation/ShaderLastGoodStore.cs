@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
 
@@ -9,7 +10,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Describes the artifact selected after evaluating a candidate compilation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("2cbb2378-91ef-5c66-866e-e651e80a79a7")]
+[StableTypeId("2cbb2378-91ef-5c66-866e-e651e80a79a7")]
 public sealed class ShaderArtifactSelection
 {
     /// <summary>
@@ -64,7 +65,7 @@ public sealed class ShaderArtifactSelection
 /// <summary>
 /// Atomically preserves last-good CPU shader artifacts by asset, target and variant.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("b238055f-335a-528f-bdee-cf0044f8e75e")]
+[StableTypeId("b238055f-335a-528f-bdee-cf0044f8e75e")]
 public sealed class ShaderLastGoodStore
 {
     private readonly object m_gate = new();

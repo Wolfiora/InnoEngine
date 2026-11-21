@@ -40,7 +40,7 @@ internal sealed class ContentCacheFixture : IDisposable
         internal MemoryContentStore(Dictionary<string, byte[]> content)
         {
             m_content = content.ToDictionary(static pair => new ContentKey(pair.Key), static pair => (byte[])pair.Value.Clone());
-            index = new ContentPackIndex(
+            this.index = new ContentPackIndex(
                 m_content.Select(static pair => new ContentEntry(
                     pair.Key,
                     pair.Value.Length,
@@ -54,7 +54,7 @@ internal sealed class ContentCacheFixture : IDisposable
                     )
                 )
             );
-            descriptor = new ContentPackDescriptor(hash, $"content-{hash}.pack");
+            this.descriptor = new ContentPackDescriptor(hash, $"content-{hash}.pack");
         }
 
         public ContentPackDescriptor descriptor { get; }

@@ -48,7 +48,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
     public RmlUiBackend()
     {
         m_runtime = RmlUiNativeErrors.CreateSession();
-        if (m_runtime == null)
+        if (m_runtime is null)
         {
             throw CreateNativeException("create UI runtime", Result.UnknownError);
         }
@@ -586,11 +586,11 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             {
                 InnoUIRmlUiAdapterMeshInfo mesh = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetMeshInfo(m_runtime, handle, checked((ulong)meshIndex), ref mesh), "query UI mesh");
-                InnoUIRmlUiAdapterVertex[] nativeVertices = new InnoUIRmlUiAdapterVertex[checked((int)mesh.VertexCount)];
-                uint[] indices = new uint[checked((int)mesh.IndexCount)];
+                var nativeVertices = new InnoUIRmlUiAdapterVertex[checked((int)mesh.VertexCount)];
+                var indices = new uint[checked((int)mesh.IndexCount)];
                 CopyMeshVertices(handle, mesh.Id, nativeVertices);
                 CopyMeshIndices(handle, mesh.Id, indices);
-                UiVertex[] vertices = new UiVertex[nativeVertices.Length];
+                var vertices = new UiVertex[nativeVertices.Length];
                 for (int vertexIndex = 0; vertexIndex < vertices.Length; ++vertexIndex)
                 {
                     InnoUIRmlUiAdapterVertex value = nativeVertices[vertexIndex];
@@ -603,7 +603,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
                 builder.AddReleasedMesh(new(mesh));
             }
 
-            InnoUIRmlUiAdapterDrawCommand[] nativeCommands = new InnoUIRmlUiAdapterDrawCommand[checked((int)info.CommandCount)];
+            var nativeCommands = new InnoUIRmlUiAdapterDrawCommand[checked((int)info.CommandCount)];
             CopyCommands(handle, nativeCommands);
             foreach (InnoUIRmlUiAdapterDrawCommand value in nativeCommands)
             {
@@ -621,7 +621,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
             {
                 InnoUIRmlUiAdapterTextureInfo texture = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetTextureInfo(m_runtime, handle, checked((ulong)index), ref texture), "query UI texture");
-                byte[] pixels = new byte[checked((int)texture.ByteLength)];
+                var pixels = new byte[checked((int)texture.ByteLength)];
                 if (pixels.Length > 0)
                 {
                     ThrowIfFailed(
@@ -662,14 +662,14 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ulong handle = Require(context);
         ulong eventCount = 0;
         ThrowIfFailed(RmlUiNativeFrames.GetEventCount(m_runtime, handle, ref eventCount), "query UI events");
-        UiEvent[] events = new UiEvent[checked((int)eventCount)];
+        var events = new UiEvent[checked((int)eventCount)];
         try
         {
             for (int index = 0; index < events.Length; index++)
             {
                 InnoUIRmlUiAdapterEventInfo info = default;
                 ThrowIfFailed(RmlUiNativeFrames.GetEventInfo(m_runtime, handle, checked((ulong)index), ref info), "query UI event");
-                byte[] targetBytes = new byte[checked((int)info.TargetIdLength + 1)];
+                var targetBytes = new byte[checked((int)info.TargetIdLength + 1)];
                 ThrowIfFailed(
                     RmlUiNativeFrames.CopyEventTargetId(m_runtime, handle, checked((ulong)index), targetBytes.AsSpan()),
                     "copy UI event target"
@@ -744,7 +744,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ulong context,
         ulong count
     ) {
-        ulong[] values = new ulong[checked((int)count)];
+        var values = new ulong[checked((int)count)];
         if (values.Length > 0)
         {
             ThrowIfFailed(
@@ -759,7 +759,7 @@ public sealed unsafe class RmlUiBackend : IUiBackend
         ulong context,
         ulong count
     ) {
-        ulong[] values = new ulong[checked((int)count)];
+        var values = new ulong[checked((int)count)];
         if (values.Length > 0)
         {
             ThrowIfFailed(

@@ -47,7 +47,7 @@ internal sealed class SortedKeyOrdering<TKey> : IKeyOrdering<TKey>
     /// </returns>
     public IEnumerable<TKey> Enumerate()
     {
-        foreach (var key in m_keys)
+        foreach (TKey key in m_keys)
         {
             yield return key;
         }

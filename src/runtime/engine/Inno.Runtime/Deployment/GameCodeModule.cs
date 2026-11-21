@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Inno.Extensibility.Modules;
 
@@ -38,7 +39,7 @@ public sealed class GameCodeModule
         ArgumentNullException.ThrowIfNull(dependencies);
         if (assemblies.Any(static assembly => assembly is null))
         {
-            throw new System.IO.InvalidDataException("A code module contains a null assembly identity.");
+            throw new InvalidDataException("A code module contains a null assembly identity.");
         }
         var declaration = new GameRuntimeModule
         {

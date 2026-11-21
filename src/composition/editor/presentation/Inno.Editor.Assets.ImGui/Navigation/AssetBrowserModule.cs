@@ -8,6 +8,7 @@ using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Settings;
 using Inno.Extensibility.Types;
+using Inno.Scripting.Api;
 
 namespace Inno.Editor.Assets.ImGui;
 
@@ -38,7 +39,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// <exception cref="ArgumentNullException">
     /// A required owner is null.
     /// </exception>
-    [Inno.Scripting.Api.ScriptingApiIgnore]
+    [ScriptingApiIgnore]
     public AssetBrowserModule(
         AssetEditingModule edits,
         EditorInteractions interactions,
@@ -48,7 +49,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
         this.edits = edits ?? throw new ArgumentNullException(nameof(edits));
         m_settings = settings ?? throw new ArgumentNullException(nameof(settings));
         m_icons = new AssetIconRegistry(settings, types);
-        browser = new AssetBrowserState(interactions, edits.pipeline);
+        this.browser = new AssetBrowserState(interactions, edits.pipeline);
     }
 
     /// <summary>
@@ -64,7 +65,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
     /// <summary>
     /// Gets the configured folder glyph used by asset navigation.
     /// </summary>
-    public string folderIcon => m_settings.Get("Editor/Appearance/Icons/Folder").GetAsString("value", Inno.Editor.ImGui.ImGuiIcon.Folder)!;
+    public string folderIcon => m_settings.Get("Editor/Appearance/Icons/Folder").GetAsString("value", ImGuiIcon.Folder)!;
 
     /// <summary>
     /// Captures an immutable snapshot of the current observable state.
@@ -151,7 +152,7 @@ public sealed class AssetBrowserModule : EditorModule, IInspectionIconProvider<A
             return icon;
         }
 
-        return m_settings.Get("Editor/Appearance/Icons/File").GetAsString("value", Inno.Editor.ImGui.ImGuiIcon.File)!;
+        return m_settings.Get("Editor/Appearance/Icons/File").GetAsString("value", ImGuiIcon.File)!;
     }
 
     /// <inheritdoc/>

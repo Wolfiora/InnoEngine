@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using BGCS.Runtime;
 using Xunit;
 using Inno.Build;
 using Inno.Build.Distribution.Standard;
@@ -104,7 +106,7 @@ public sealed class NativeBindingCompilationTests
                         new XElement(
                             "Reference",
                             new XAttribute("Include", "BGCS.Runtime"),
-                            new XElement("HintPath", typeof(BGCS.Runtime.NativeModuleSession).Assembly.Location)
+                            new XElement("HintPath", typeof(NativeModuleSession).Assembly.Location)
                         )
                     ),
                     new XElement(
@@ -231,8 +233,11 @@ public sealed class NativeBindingCompilationTests
     ) {
         string middle = Path.Combine(root, "Consumers", "Middle", "Middle.csproj");
         string host = Path.Combine(root, "Consumers", "Host", "Host.csproj");
-        foreach (var entry in new[] { (path: middle, reference: nativeProject), (path: host, reference: middle) })
+        foreach ((string path, string reference) entry in new[]
         {
+            (path: middle, reference: nativeProject),
+            (path: host, reference: middle)
+        }) {
             Directory.CreateDirectory(Path.GetDirectoryName(entry.path)!);
             var document = new XElement(
                 "Project",
@@ -282,7 +287,7 @@ public sealed class NativeBindingCompilationTests
         string[] arguments
     ) {
         string host = Path.Combine(
-            Path.GetFullPath("../../..", System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory()),
+            Path.GetFullPath("../../..", RuntimeEnvironment.GetRuntimeDirectory()),
             OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
         );
         var start = new ProcessStartInfo(host)

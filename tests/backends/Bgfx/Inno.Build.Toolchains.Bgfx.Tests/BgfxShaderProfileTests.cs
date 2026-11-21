@@ -2,6 +2,7 @@ using System;
 using Xunit;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Rendering;
+using Inno.Rendering.Assets.Authoring;
 
 namespace Inno.Build.Toolchains.Bgfx.Tests;
 
@@ -15,7 +16,7 @@ public sealed class BgfxShaderProfileTests
         var profile = new BgfxShaderCompilerProfile(capabilities, "fixture-sdk", "vertex", "fragment", "compute");
         var configuration = new BgfxShaderTargetProfile("fixture-console", [profile]);
 
-        var target = new BgfxShadercToolchain(configuration).CreateTarget(capabilities);
+        ShaderCompileTarget target = new BgfxShadercToolchain(configuration).CreateTarget(capabilities);
 
         Assert.Same(profile, configuration.Resolve(api));
         Assert.Contains("fixture-console", target.profileKey, StringComparison.Ordinal);
@@ -85,7 +86,7 @@ public sealed class BgfxShaderProfileTests
             "osx",
             "metal",
             "metal",
-            ""
+            string.Empty
         ));
         Assert.Throws<ArgumentNullException>(() => new BgfxShadercToolchain(null!));
     }

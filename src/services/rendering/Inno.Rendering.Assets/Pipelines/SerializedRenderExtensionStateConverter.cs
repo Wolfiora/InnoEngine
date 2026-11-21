@@ -1,11 +1,13 @@
+using System;
 using Inno.Assets;
 using Inno.Core.Serialization;
 using Inno.Core.Serialization.Converters;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets;
 
-[Inno.Extensibility.Types.StableTypeId("a1b58cb9-3923-52f8-aa05-e9f282e5bdbd")]
+[StableTypeId("a1b58cb9-3923-52f8-aa05-e9f282e5bdbd")]
 internal sealed class SerializedRenderExtensionStateConverter : SerializationConverter<SerializedRenderExtensionState>
 {
     /// <summary>
@@ -45,7 +47,7 @@ internal sealed class SerializedRenderExtensionStateConverter : SerializationCon
     public override SerializedRenderExtensionState Read(SerializationReader reader)
         => new()
     {
-        stableTypeId = reader.Read<System.Guid>("stableTypeId"),
+        stableTypeId = reader.Read<Guid>("stableTypeId"),
         propertyData = reader.Read<byte[]>("propertyData"),
         dependencies = reader.Read<AssetDependency[]>("dependencies")
     };

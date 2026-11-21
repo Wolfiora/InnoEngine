@@ -4,6 +4,7 @@ using Inno.Assets;
 using Inno.Assets.Pipeline;
 using Inno.Core.Graphs;
 using Inno.Core.Serialization;
+using Inno.Extensibility.Types;
 using Inno.Rendering;
 
 namespace Inno.Rendering.Assets.Authoring;
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Assets.Authoring;
 /// <summary>
 /// Reads and atomically saves the sole shader graph source format without requiring successful compilation.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("dcfd81b7-a22d-5b35-a79a-a608e69b7ad8")]
+[StableTypeId("dcfd81b7-a22d-5b35-a79a-a608e69b7ad8")]
 public sealed class ShaderGraphSourceStore
 {
     private readonly AssetSourceStore m_sources;
@@ -94,7 +95,7 @@ public sealed class ShaderGraphSourceStore
 /// <summary>
 /// Contains detached graph source state, not a compiled or live runtime asset.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("fb1d9ba2-d37c-59f1-a7ef-17feeb3beb0e")]
+[StableTypeId("fb1d9ba2-d37c-59f1-a7ef-17feeb3beb0e")]
 public sealed class ShaderGraphSourceSnapshot
 {
     private readonly GraphDocument m_document;
@@ -105,8 +106,8 @@ public sealed class ShaderGraphSourceSnapshot
         bool readOnly
     ) {
         m_document = document;
-        contentHash = hash;
-        isReadOnly = readOnly;
+        this.contentHash = hash;
+        this.isReadOnly = readOnly;
     }
 
     /// <summary>

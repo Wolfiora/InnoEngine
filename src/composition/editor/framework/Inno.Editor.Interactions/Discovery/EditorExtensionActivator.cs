@@ -50,7 +50,7 @@ internal sealed class EditorExtensionActivator
     internal bool CanCreate(Type type)
     {
         ArgumentNullException.ThrowIfNull(type);
-        return CanCreate(type, new HashSet<Type>());
+        return CanCreate(type, []);
     }
 
     internal EditorModule CreateModule(Type type) => (EditorModule)Create(type, typeof(EditorModule));

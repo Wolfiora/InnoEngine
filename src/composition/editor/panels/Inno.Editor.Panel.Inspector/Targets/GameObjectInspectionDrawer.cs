@@ -195,7 +195,7 @@ internal sealed class GameObjectInspectionDrawer : InspectionDrawer<GameObject>
                                                            : Array.Empty<SerializedProperty>();
             string componentId = component.identity.persistentId.ToString("N");
             GameBehavior? behavior = component as GameBehavior;
-            var editorTarget = component;
+            GameComponent editorTarget = component;
             string title = missing?.missingTypeName ?? componentType.Name;
             bool canRemove = componentType != typeof(Transform);
             bool dimmed = behavior is { enabled: false };

@@ -41,5 +41,5 @@ public record struct ShaderPropertyId
     /// <returns>
     /// The human-readable representation of this value.
     /// </returns>
-    public readonly override string ToString() => value ?? string.Empty;
+    public override readonly string ToString() => value ?? string.Empty;
 }

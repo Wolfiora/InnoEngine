@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Inno.Editor.ImGui;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using Ui = Inno.Editor.ImGui.ImGui;
@@ -60,7 +61,7 @@ internal sealed partial class ConsolePanel
     private void RetireCardWindows()
     {
         m_retiredCardKeys.Clear();
-        foreach (var entry in m_cardSlots)
+        foreach (KeyValuePair<string, CardWindowSlot> entry in m_cardSlots)
         {
             if (entry.Value.lastFrame != m_cardFrame)
             {
@@ -103,9 +104,14 @@ internal sealed partial class ConsolePanel
 
     private void RefreshLayout()
     {
-        var layout = Ui.GetLayout();
-        var shape = (width: Ui.GetContentRegionAvailable().X, frameHeight: Ui.GetFrameHeight(), padding: layout.framePadding.Y,
-            spacing: layout.itemSpacing.Y, zoom: EditorUI.current.widgets.style.zoom);
+        EditorUiLayout layout = Ui.GetLayout();
+        (float width, float frameHeight, float padding, float spacing, float zoom) shape = (
+            width: Ui.GetContentRegionAvailable().X,
+            frameHeight: Ui.GetFrameHeight(),
+            padding: layout.framePadding.Y,
+            spacing: layout.itemSpacing.Y,
+            zoom: EditorUI.current.widgets.style.zoom
+        );
         if (ReferenceEquals(m_layoutRows, m_view.rows) && m_layoutShape == shape && m_layoutOpenRevision == m_openRevision)
         {
             return;
@@ -153,7 +159,7 @@ internal sealed partial class ConsolePanel
 
     private void DrawVisibleEntries()
     {
-        var clip = Ui.GetClipBounds();
+        (Vector2 minimum, Vector2 maximum) clip = Ui.GetClipBounds();
         if (clip.maximum.Y <= clip.minimum.Y || clip.maximum.X <= clip.minimum.X)
         {
             return;

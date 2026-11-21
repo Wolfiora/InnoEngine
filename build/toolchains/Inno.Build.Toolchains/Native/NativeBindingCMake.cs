@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,7 +19,8 @@ internal static class NativeBindingCMake
         CancellationToken cancellationToken
     ) {
         var text = new StringBuilder("include_guard(GLOBAL)\nfunction(inno_apply_binding target owner)\n");
-        foreach (var entry in context.selectedBindings.Where(entry => target is null || entry.Key == owner.nativeProject)
+        foreach (KeyValuePair<string, NativeBindingGenerationDescriptor> entry in context.selectedBindings
+            .Where(entry => target is null || entry.Key == owner.nativeProject)
             .OrderBy(static entry => entry.Key, StringComparer.Ordinal)
         ) {
             NativeBindingGenerationDescriptor generation = entry.Value;

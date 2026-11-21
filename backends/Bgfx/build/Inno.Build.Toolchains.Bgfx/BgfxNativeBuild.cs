@@ -30,12 +30,6 @@ public static class BgfxNativeBuild
     /// <param name="context">
     /// The checkout and configuration whose sources and outputs belong to this operation.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// The configuration is not debug or release.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// A native build process fails.
-    /// </exception>
     /// <param name="profile">
     /// The platform-owned project generation, SDK invocation and output selection.
     /// </param>
@@ -45,6 +39,12 @@ public static class BgfxNativeBuild
     /// <returns>
     /// The validated product with an exact graphics library or offline-tool output closure.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The configuration is not debug or release.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A native build process fails.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>

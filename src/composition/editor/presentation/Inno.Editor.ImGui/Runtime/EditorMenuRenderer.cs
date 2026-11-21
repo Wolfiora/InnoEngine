@@ -8,6 +8,7 @@ using Inno.Native.ImGui;
 
 using EditorUI = Inno.Editor.ImGui.EditorUiSession;
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeMouseButton = Inno.Native.ImGui.ImGuiMouseButton;
 
 namespace Inno.Editor.ImGui;
 
@@ -19,11 +20,14 @@ public sealed unsafe class EditorMenuRenderer
     private readonly EditorUiSession m_session;
     private readonly Dictionary<(string Owner, uint Popup), string> m_contextSearches = [];
 
-    internal EditorMenuRenderer(EditorUiSession session) => m_session = session;
+    internal EditorMenuRenderer(EditorUiSession session)
+    {
+        m_session = session;
+    }
 
     internal void RetireOwner(string owner)
     {
-        foreach (var key in m_contextSearches.Keys.Where(value => value.Owner == owner).ToArray())
+        foreach ((string Owner, uint Popup) key in m_contextSearches.Keys.Where(value => value.Owner == owner).ToArray())
         {
             m_contextSearches.Remove(key);
         }
@@ -235,13 +239,13 @@ public sealed unsafe class EditorMenuRenderer
     private bool ShouldResolveItemContextMenu(string id)
         => NativeImGui.IsPopupOpen(id)
            || NativeImGui.IsItemHovered()
-              && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
+              && NativeImGui.IsMouseReleased((int)(NativeMouseButton.Right));
 
     private bool ShouldResolveWindowContextMenu(string id)
         => NativeImGui.IsPopupOpen(id)
            || NativeImGui.IsWindowHovered()
               && !NativeImGui.IsAnyItemHovered()
-              && NativeImGui.IsMouseReleased((int)(Inno.Native.ImGui.ImGuiMouseButton.Right));
+              && NativeImGui.IsMouseReleased((int)(NativeMouseButton.Right));
 
     /// <summary>
     /// Draws the complete editor main menu bar for the supplied menu context.

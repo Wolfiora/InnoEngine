@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Inno.Assets.Pipeline;
@@ -68,12 +69,12 @@ public sealed class BuildDistribution
         {
             throw new ArgumentException("Platform target identities must be unique.", nameof(games));
         }
-        var native = m_platforms.ToDictionary(
+        Dictionary<string, INativeToolchainProvider> native = m_platforms.ToDictionary(
             static platform => platform.descriptor.id.value,
             static platform => platform.toolchainProvider,
             StringComparer.Ordinal
         );
-        var products = m_platforms.ToDictionary(
+        Dictionary<string, IReadOnlyDictionary<string, NativeProductContribution>> products = m_platforms.ToDictionary(
             static platform => platform.descriptor.id.value,
             static platform => platform.nativeProducts,
             StringComparer.Ordinal
@@ -93,12 +94,14 @@ public sealed class BuildDistribution
                 m_bindingGenerators.Add(contribution.descriptor.id.value, contribution.bindingGenerator);
             }
         }
-        m_nativeProducts = new System.Collections.ObjectModel.ReadOnlyDictionary<string,
+        m_nativeProducts = new ReadOnlyDictionary<string,
             IReadOnlyDictionary<string, NativeProductContribution>>(products);
-        m_nativeToolchains = new System.Collections.ObjectModel.ReadOnlyDictionary<string, INativeToolchainProvider>(native);
-        availableTargets = Array.AsReadOnly(m_targetIds.OrderBy(static id => id.value, StringComparer.Ordinal).ToArray());
-        managedDeployments = new ManagedDeploymentCatalog(managedCompilers);
-        supportPacks = new PlayerSupportPackPublisher(m_platforms.Select(static contribution => contribution.supportPackSource).ToArray());
+        m_nativeToolchains = new ReadOnlyDictionary<string, INativeToolchainProvider>(native);
+        this.availableTargets = Array.AsReadOnly(m_targetIds.OrderBy(static id => id.value, StringComparer.Ordinal).ToArray());
+        this.managedDeployments = new ManagedDeploymentCatalog(managedCompilers);
+        this.supportPacks = new PlayerSupportPackPublisher(
+            m_platforms.Select(static contribution => contribution.supportPackSource).ToArray()
+        );
     }
 
     /// <summary>

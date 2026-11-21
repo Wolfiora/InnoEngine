@@ -679,7 +679,11 @@ public abstract class TypeRegistry<TSnapshot> : IDisposable
                 }
                 catch (Exception rollbackFailure)
                 {
-                    var combined = new AggregateException("Registry activation and rollback failed.", activationFailure, rollbackFailure);
+                    var combined = new AggregateException(
+                        "Registry activation and rollback failed.",
+                        activationFailure,
+                        rollbackFailure
+                    );
                     if (RetirementPendingException.Find(combined) is not null)
                     {
                         owner.RetainFailedRetirement(combined, this, "activation rollback");

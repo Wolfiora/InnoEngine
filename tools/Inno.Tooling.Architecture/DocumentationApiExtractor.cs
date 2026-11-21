@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -74,7 +75,7 @@ internal static class DocumentationApiExtractor
     ) {
         var result = new List<DocumentationApiEntry>();
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var scopes = ReadExports(compilation).Where(export => export.assembly == compilation?.AssemblyName)
+        Dictionary<string, string> scopes = ReadExports(compilation).Where(export => export.assembly == compilation?.AssemblyName)
             .ToDictionary(export => export.type, export => export.scope, StringComparer.Ordinal);
         foreach (SyntaxTree tree in compilation?.SyntaxTrees ?? [])
         {
@@ -261,8 +262,8 @@ internal static class DocumentationApiExtractor
         {
             return signature;
         }
-        var modifiers = new List<string>();
-        modifiers.Add(
+        var modifiers = new List<string>
+        {
             type.DeclaredAccessibility switch
             {
                 Accessibility.Public => "public",
@@ -270,7 +271,7 @@ internal static class DocumentationApiExtractor
                 Accessibility.ProtectedOrInternal => "protected internal",
                 _ => throw new InvalidOperationException("A Wiki type signature must have externally visible accessibility.")
             }
-        );
+        };
         if (type.IsStatic)
         {
             modifiers.Add("static");
@@ -324,7 +325,7 @@ internal static class DocumentationApiExtractor
         {
             own = string.IsNullOrWhiteSpace(xml) ? null : XElement.Parse(xml);
         }
-        catch (System.Xml.XmlException)
+        catch (XmlException)
         {
             // The XML validator reports malformed source; inventory capture must still complete.
             return string.Empty;

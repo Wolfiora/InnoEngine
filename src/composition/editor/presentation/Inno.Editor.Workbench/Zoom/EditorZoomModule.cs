@@ -8,11 +8,11 @@ namespace Inno.Editor.Workbench;
 /// <summary>
 /// Applies the configured actual UI size and preserves project-local zoom multiples around it.
 /// </summary>
-/// <param name="ui">
-/// The host-owned presentation session receiving the selected scale.
-/// </param>
 /// <param name="settings">
 /// The validated configuration that controls this operation.
+/// </param>
+/// <param name="ui">
+/// The host-owned presentation session receiving the selected scale.
 /// </param>
 [EditorModule("editor-zoom", order: 10)]
 internal sealed class EditorZoomModule(
@@ -54,10 +54,7 @@ internal sealed class EditorZoomModule(
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
-    protected override void OnStop(EditorContext context)
-    {
-        m_settingsSubscription?.Dispose();
-    }
+    protected override void OnStop(EditorContext context) => m_settingsSubscription?.Dispose();
 
     /// <summary>
     /// Captures the zoom step relative to the configured actual UI size.
@@ -65,10 +62,7 @@ internal sealed class EditorZoomModule(
     /// <param name="state">
     /// The project-local module state that receives the zoom step.
     /// </param>
-    protected override void Capture(EditorState state)
-    {
-        state.Set("step", m_zoomStep);
-    }
+    protected override void Capture(EditorState state) => state.Set("step", m_zoomStep);
 
     /// <summary>
     /// Restores the bounded project-local zoom step after settings initialize.

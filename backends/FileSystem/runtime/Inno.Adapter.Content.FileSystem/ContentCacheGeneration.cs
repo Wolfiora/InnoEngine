@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Threading;
 using Inno.Content;
 using Inno.Core.IO;
 
@@ -94,63 +95,63 @@ internal sealed class ContentCacheGeneration
             m_release = release;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanRead => m_release is not null;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanSeek => m_release is not null;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override bool CanWrite => false;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override long Length => m_input.Length;
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override long Position
         {
             get => m_input.Position;
             set => m_input.Position = value;
         }
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int Read(
             byte[] buffer,
             int offset,
             int count
         ) => m_input.Read(buffer, offset, count);
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int Read(Span<byte> buffer) => m_input.Read(buffer);
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override int ReadByte() => m_input.ReadByte();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override long Seek(
             long offset,
             SeekOrigin origin
         ) => m_input.Seek(offset, origin);
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Flush() => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void SetLength(long value) => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public override void Write(
             byte[] buffer,
             int offset,
             int count
         ) => throw new NotSupportedException();
 
-        /// <inheritdoc />
+        /// <inheritdoc/>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                Action? release = System.Threading.Interlocked.Exchange(ref m_release, null);
+                Action? release = Interlocked.Exchange(ref m_release, null);
                 if (release is not null)
                 {
                     try

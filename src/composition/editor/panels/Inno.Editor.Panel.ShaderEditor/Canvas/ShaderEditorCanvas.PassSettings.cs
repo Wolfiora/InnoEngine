@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Inno.Core.Graphs;
 using Inno.Editor.ImGui;
@@ -44,7 +45,7 @@ internal sealed partial class ShaderEditorCanvas
             {
                 activePass = programs.FirstOrDefault(program => program.stages.Contains(node.id.value, StringComparer.Ordinal)).pass
                              ?? definition.passes.FirstOrDefault().name
-                             ?? "";
+                             ?? string.Empty;
             }
             InspectorRow("settings.pass", "Pass State", () =>
             {
@@ -81,7 +82,10 @@ internal sealed partial class ShaderEditorCanvas
             }
             if (assignmentChanged)
             {
-                var stageIds = (assignment.stages ?? []).Where(id => id != node.id.value).Select(static id => new GraphNodeId(id)).ToList();
+                List<GraphNodeId> stageIds = (assignment.stages ?? [])
+                    .Where(id => id != node.id.value)
+                    .Select(static id => new GraphNodeId(id))
+                    .ToList();
                 if (assigned)
                 {
                     stageIds.RemoveAll(
@@ -124,7 +128,7 @@ internal sealed partial class ShaderEditorCanvas
                         changed = true;
                     }
 
-                    string semantic = output.semantic ?? "";
+                    string semantic = output.semantic ?? string.Empty;
                     bool semanticChanged = false;
                     InspectorRow(
                         "output.semantic",
@@ -226,8 +230,10 @@ internal sealed partial class ShaderEditorCanvas
                     changed = true;
                 }
 
-                bool depthWrite = state.depthWrite, multisampling = state.multisampling;
-                bool depthWriteChanged = false, multisamplingChanged = false;
+                bool depthWrite = state.depthWrite;
+                bool multisampling = state.multisampling;
+                bool depthWriteChanged = false;
+                bool multisamplingChanged = false;
                 InspectorRow(
                     "state.depth-write",
                     "Depth Write",
@@ -316,7 +322,8 @@ internal sealed partial class ShaderEditorCanvas
                     RenderBlendFactor colorDestination = blend.colorDestination;
                     RenderBlendFactor alphaSource = blend.alphaSource;
                     RenderBlendFactor alphaDestination = blend.alphaDestination;
-                    RenderBlendEquation colorEquation = blend.colorEquation, alphaEquation = blend.alphaEquation;
+                    RenderBlendEquation colorEquation = blend.colorEquation;
+                    RenderBlendEquation alphaEquation = blend.alphaEquation;
                     if (EnumControl("RGB Source", ref colorSource))
                     {
                         blend.colorSource = colorSource;
@@ -394,7 +401,8 @@ internal sealed partial class ShaderEditorCanvas
                         for (int j = 0; j < keyword.options.Length; j++)
                         {
                             string option = keyword.options[j];
-                            bool optionChanged = false, remove = false;
+                            bool optionChanged = false;
+                            bool remove = false;
                             InspectorRow("variant.option", "Option " + (j + 1), () =>
                             {
                                 optionChanged = EditorImGui.InputText("##option", ref option, 128);

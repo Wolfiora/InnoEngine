@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Inno.Assets;
 using Inno.Core.Execution;
 using Inno.Core.Identity;
@@ -82,7 +83,7 @@ public interface IAssetReferenceResolver : IReferenceResolver
         {
             throw;
         }
-        catch (Exception exception) when (exception is InvalidOperationException or System.IO.InvalidDataException)
+        catch (Exception exception) when (exception is InvalidOperationException or InvalidDataException)
         {
             return new ReferenceResolution(descriptor, ReferenceResolutionState.Missing, diagnostic: exception.Message);
         }

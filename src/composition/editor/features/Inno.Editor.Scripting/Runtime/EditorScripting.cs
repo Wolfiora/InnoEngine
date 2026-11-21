@@ -199,10 +199,10 @@ internal sealed class EditorScripting : EditorModule, IEditorScriptCompilation
         }
     }
 
-    /// <inheritdoc />
     /// <param name="operationId">
     /// The observed request identity; stale actions are ignored.
     /// </param>
+    /// <inheritdoc/>
     public void CancelCompilation(long operationId)
     {
         if (m_manager?.progress.operationId == operationId)

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
@@ -57,5 +58,5 @@ internal static class PlayerSupportPackPreparationIndex
 
     private static bool IsIdentity(string identity)
         => identity.Length == 64
-           && !System.Linq.Enumerable.Any(identity, static character => !char.IsAsciiHexDigitLower(character));
+           && !Enumerable.Any(identity, static character => !char.IsAsciiHexDigitLower(character));
 }

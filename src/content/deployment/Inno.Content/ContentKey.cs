@@ -42,7 +42,7 @@ public readonly record struct ContentKey
     /// </summary>
     public string? value { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string ToString() => value ?? string.Empty;
 
     private static bool IsReserved(string segment)

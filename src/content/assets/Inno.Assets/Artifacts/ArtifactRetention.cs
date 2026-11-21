@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using Inno.Core.IO;
 
 namespace Inno.Assets;
@@ -20,12 +21,12 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     /// <param name="artifact">
     /// Verified immutable metadata; the provider must serialize acquisition with collection.
     /// </param>
-    /// <returns>
-    /// A lease that releases exactly one reference, including when disposed from another thread.
-    /// </returns>
     /// <param name="openRead">
     /// Opens immutable bytes; this retention owner adds an independent stream pin before invoking it.
     /// </param>
+    /// <returns>
+    /// A lease that releases exactly one reference, including when disposed from another thread.
+    /// </returns>
     public ArtifactLease Retain(
         AssetArtifactInfo artifact,
         Func<Stream> openRead
@@ -98,6 +99,6 @@ public sealed class ArtifactRetention : AssetResidencyProvider
     {
         private ArtifactRetention? m_owner = owner;
 
-        public void Dispose() => System.Threading.Interlocked.Exchange(ref m_owner, null)?.Release(key);
+        public void Dispose() => Interlocked.Exchange(ref m_owner, null)?.Release(key);
     }
 }

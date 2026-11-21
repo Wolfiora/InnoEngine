@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,8 @@ using System.Threading;
 using BGCS;
 using BGCS.Core.Artifacts;
 using BGCS.Core.Inputs;
+using BGCS.Core.Requests;
+using BGCS.Core.Targets;
 using Inno.Build.Toolchains;
 
 namespace Inno.Build.Bindings;
@@ -21,7 +24,8 @@ internal static class BindingNativeCompilation
         string nativeOutput,
         CancellationToken cancellation
     ) {
-        var bindings = result.nativeInputRoots.Where(binding => binding.targetId == manifest.targetId)
+        Dictionary<string, NativeInputRootBinding> bindings = result.nativeInputRoots
+            .Where(binding => binding.targetId == manifest.targetId)
             .ToDictionary(static binding => binding.rootId, StringComparer.Ordinal);
         NativeBindingSourceRoot[] roots = manifest.inputRoots.Select(root => new NativeBindingSourceRoot(
             root.id,
@@ -29,8 +33,8 @@ internal static class BindingNativeCompilation
             root.kind == "generated",
             root.kind is "generated" or "project" or "user"
         )).ToArray();
-        var sources = manifest.sources.Select(static source => source.relativePath).ToHashSet(StringComparer.Ordinal);
-        var files = manifest.inputs.Select(input => new NativeBindingSourceFile(
+        HashSet<string> sources = manifest.sources.Select(static source => source.relativePath).ToHashSet(StringComparer.Ordinal);
+        List<NativeBindingSourceFile> files = manifest.inputs.Select(input => new NativeBindingSourceFile(
             input.rootId,
             input.relativePath,
             input.length,
@@ -53,11 +57,12 @@ internal static class BindingNativeCompilation
                 );
             }
         }
-        var table = manifest.staticExportTable;
-        var target = result.targetModels.Single(model => model.targetId == manifest.targetId).resolvedTarget
-                     ?? throw new InvalidDataException("The SDK must return the resolved target used for generation.");
-        var parserDefines = target.toolchain.defines.ToHashSet(StringComparer.Ordinal);
-        var explicitDefines = request.configuration.source.defines.Concat(request.configuration.targets.Single().settings.defines)
+        StaticExportTableDescriptor? table = manifest.staticExportTable;
+        NativeTargetDescriptor target = result.targetModels.Single(model => model.targetId == manifest.targetId).resolvedTarget
+                                        ?? throw new InvalidDataException("The SDK must return the resolved target used for generation.");
+        HashSet<string> parserDefines = target.toolchain.defines.ToHashSet(StringComparer.Ordinal);
+        HashSet<string> explicitDefines = request.configuration.source.defines
+            .Concat(request.configuration.targets.Single().settings.defines)
             .ToHashSet(StringComparer.Ordinal);
         var compilation = new NativeBindingCompilation
         {

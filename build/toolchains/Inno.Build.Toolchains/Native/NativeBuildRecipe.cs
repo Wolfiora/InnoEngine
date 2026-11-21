@@ -271,7 +271,7 @@ public sealed class NativeBuildRecipe
             targetId,
             inputs.Append(input),
             declarations.Append("dependency=" + fingerprint)
-        ) { toolchain = this.toolchain };
+        ) { toolchain = toolchain };
     }
 
     /// <summary>
@@ -294,7 +294,7 @@ public sealed class NativeBuildRecipe
             inputs.Concat(generated),
             declarations.Append("bindings=" + generation.fingerprint)
                 .Append("bindingNativeRoot=" + generation.nativeDirectory)
-        ) { toolchain = this.toolchain };
+        ) { toolchain = toolchain };
     }
 
     private static void ValidateSegment(string value)

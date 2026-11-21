@@ -12,7 +12,7 @@ namespace Inno.Rendering.Assets;
 /// <summary>
 /// Holds frame-local material overrides without modifying a shared asset.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("aa10e23b-3f29-525e-af70-e48b77746037")]
+[StableTypeId("aa10e23b-3f29-525e-af70-e48b77746037")]
 public sealed class MaterialPropertyBlock
 {
     private readonly Dictionary<ShaderPropertyId, MaterialValue> m_values = [];
@@ -48,12 +48,12 @@ public sealed class MaterialPropertyBlock
     /// <param name="id">
     /// Stable shader property identifier.
     /// </param>
-    /// <returns>
-    /// <see langword="true"/> when the override exists.
-    /// </returns>
     /// <param name="value">
     /// The concrete value read or transformed by this operation.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the override exists.
+    /// </returns>
     public bool TryGet(
         ShaderPropertyId id,
         out MaterialValue value

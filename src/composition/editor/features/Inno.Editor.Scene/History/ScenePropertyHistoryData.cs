@@ -55,7 +55,7 @@ internal sealed record ScenePropertyHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        Guid targetId = new(reader.ReadBytes(16));
+        var targetId = new Guid(reader.ReadBytes(16));
         string propertyName = reader.ReadString();
         int count = reader.ReadInt32();
         if (count <= 0)

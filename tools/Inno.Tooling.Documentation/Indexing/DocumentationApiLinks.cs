@@ -22,7 +22,7 @@ internal static class DocumentationApiLinks
             text,
             new MarkdownPipelineBuilder().UseYamlFrontMatter().UsePreciseSourceLocation().EnableTrackTrivia().Build()
         );
-        var links = document.Descendants<LinkInline>()
+        IEnumerable<(string url, SourceSpan span)> links = document.Descendants<LinkInline>()
             .Where(link => link.Url is not null && link.Reference is null)
             .Select(link => (url: link.Url!, span: link.UrlSpan))
             .Concat(
@@ -31,7 +31,7 @@ internal static class DocumentationApiLinks
                     .Select(link => (url: link.Url!, span: link.UrlSpan))
             );
         var changes = new List<(int start, int length, string value)>();
-        foreach (var link in links)
+        foreach ((string url, SourceSpan span) link in links)
         {
             if (Uri.TryCreate(link.url, UriKind.Absolute, out _) || link.url.StartsWith('/')) continue;
             string[] parts = link.url.Split('#', 2);
@@ -39,7 +39,7 @@ internal static class DocumentationApiLinks
                 root,
                 Path.GetFullPath(Uri.UnescapeDataString(parts[0]), Path.GetDirectoryName(Path.Combine(root, originalPath))!)
             ).Replace('\\', '/');
-            string suffix = parts.Length == 2 ? "#" + parts[1] : "";
+            string suffix = parts.Length == 2 ? "#" + parts[1] : string.Empty;
             string mapped = anchors.GetValueOrDefault(target + suffix) ?? moves.GetValueOrDefault(target) ?? target;
             if (mapped == target && originalPath == destinationPath) continue;
             // Moving prose may rebase local references; only paths are changed, never its explanation.
@@ -52,7 +52,7 @@ internal static class DocumentationApiLinks
             }
             changes.Add((link.span.Start, link.span.Length, url));
         }
-        foreach (var change in changes.OrderByDescending(change => change.start))
+        foreach ((int start, int length, string value) change in changes.OrderByDescending(change => change.start))
         {
             text = text.Remove(change.start, change.length).Insert(change.start, change.value);
         }

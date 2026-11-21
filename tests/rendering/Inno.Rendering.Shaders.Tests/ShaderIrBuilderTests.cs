@@ -25,7 +25,7 @@ public sealed class ShaderIrBuilderTests
             ShaderIrOperation.Minimum
         ], block.instructions.Select(static value => value.operation));
         Assert.Equal("float", block.outputs["color"].type.id);
-        Assert.Equal(0x40000000UL, block.instructions[1].constantBits);
+        Assert.Equal(0x4000_0000UL, block.instructions[1].constantBits);
         Assert.Same(input, builder.Input("brightness", ShaderSourceType.Atomic("float")));
         Assert.Throws<ArgumentException>(() => builder.Input("brightness", ShaderSourceType.Atomic("int")));
     }
@@ -39,7 +39,7 @@ public sealed class ShaderIrBuilderTests
         _ = builder.Constant(int.MinValue);
         _ = builder.Constant(true);
         ShaderIrBlock block = builder.Build(new Dictionary<string, ShaderIrValue>());
-        Assert.Equal([0x80000000UL, 0xffffffffUL, 0x80000000UL, 1UL], block.instructions.Select(static value => value.constantBits));
+        Assert.Equal([0x8000_0000UL, 0xFFFF_FFFFUL, 0x8000_0000UL, 1UL], block.instructions.Select(static value => value.constantBits));
         Assert.Throws<ArgumentOutOfRangeException>(() => builder.Constant(float.NaN));
         Assert.Throws<ArgumentOutOfRangeException>(() => builder.Constant(float.PositiveInfinity));
     }

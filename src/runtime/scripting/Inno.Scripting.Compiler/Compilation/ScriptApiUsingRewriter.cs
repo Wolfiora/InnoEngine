@@ -169,7 +169,7 @@ internal sealed class ScriptApiUsingRewriter : CSharpSyntaxRewriter
         SyntaxList<UsingDirectiveSyntax> usings,
         IReadOnlyDictionary<string, string> inherited
     ) {
-        var candidates = inherited
+        Dictionary<string, string> candidates = inherited
             .ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.Ordinal);
         var ambiguous = new HashSet<string>(StringComparer.Ordinal);
         foreach (UsingDirectiveSyntax usingDirective in usings)

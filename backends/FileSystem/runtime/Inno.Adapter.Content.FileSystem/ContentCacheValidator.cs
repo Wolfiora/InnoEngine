@@ -20,8 +20,8 @@ internal static class ContentCacheValidator
         {
             return false;
         }
-        HashSet<string> files = new(StringComparer.Ordinal);
-        HashSet<string> directories = new(StringComparer.Ordinal);
+        var files = new HashSet<string>(StringComparer.Ordinal);
+        var directories = new HashSet<string>(StringComparer.Ordinal);
         foreach (ContentEntry entry in index.entries)
         {
             string key = entry.key.value!;
@@ -31,7 +31,7 @@ internal static class ContentCacheValidator
                 directories.Add(key[..separator]);
             }
         }
-        Stack<string> pending = new();
+        var pending = new Stack<string>();
         pending.Push(root);
         while (pending.TryPop(out string? directory))
         {
@@ -68,7 +68,7 @@ internal static class ContentCacheValidator
             cancellationToken.ThrowIfCancellationRequested();
             try
             {
-                using FileStream input = new(Resolve(root, entry.key), FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var input = new FileStream(Resolve(root, entry.key), FileMode.Open, FileAccess.Read, FileShare.Read);
                 if (input.Length != entry.length)
                 {
                     return false;

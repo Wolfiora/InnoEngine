@@ -40,7 +40,7 @@ internal sealed class EditorSettingsCatalog : TypeRegistry<EditorSettingsCatalog
             throw new InvalidOperationException($"Editor setting path '{duplicatePath}' is registered more than once.");
         }
 
-        var byPath = definitions.ToDictionary(static setting => setting.path, StringComparer.Ordinal);
+        Dictionary<string, EditorSetting> byPath = definitions.ToDictionary(static setting => setting.path, StringComparer.Ordinal);
         return new Snapshot(types.version, definitions, byPath);
     }
 

@@ -38,14 +38,14 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     where T : class
 {
     private readonly WeakReference<IIndexedObjectStore> m_storeRef;
-    private readonly List<T> m_activeList = new();
+    private readonly List<T> m_activeList = [];
     private readonly Dictionary<T, int> m_activeIndex = new(ReferenceEqualityComparer<T>.INSTANCE);
     private readonly Dictionary<T, IndexedObjectRuntimeHandle> m_handleByItem = new(ReferenceEqualityComparer<T>.INSTANCE);
-    private readonly List<int> m_sparseToDense = new();
-    private readonly List<uint> m_generations = new();
-    private readonly List<int> m_denseToSlot = new();
+    private readonly List<int> m_sparseToDense = [];
+    private readonly List<uint> m_generations = [];
+    private readonly List<int> m_denseToSlot = [];
     private Stack<int> m_freeSlots = new();
-    private readonly Dictionary<int, IIndexedObjectIndex<T>> m_indexes = new();
+    private readonly Dictionary<int, IIndexedObjectIndex<T>> m_indexes = [];
     private readonly Dictionary<string, int> m_indexByName = new(StringComparer.Ordinal);
     private readonly ReaderWriterLockSlim m_lock = new(LockRecursionPolicy.NoRecursion);
     private int m_nextIndexId = 1;
@@ -130,7 +130,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
             m_activeIndex.Clear();
             m_handleByItem.Clear();
             m_denseToSlot.Clear();
-            foreach (var index in m_indexes.Values)
+            foreach (IIndexedObjectIndex<T> index in m_indexes.Values)
             {
                 index.Clear();
             }
@@ -153,7 +153,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     /// </returns>
     public IndexedObjectEntry<T> Add(T item)
     {
-        if (item == null)
+        if (item is null)
         {
             throw new ArgumentNullException(nameof(item));
         }
@@ -192,7 +192,7 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
     /// </returns>
     public bool Remove(T item)
     {
-        if (item == null)
+        if (item is null)
         {
             throw new ArgumentNullException(nameof(item));
         }
@@ -200,20 +200,20 @@ public sealed partial class IndexedObjectStore<T> : IIndexedObjectStore
         m_lock.EnterWriteLock();
         try
         {
-            if (!m_activeIndex.TryGetValue(item, out var index))
+            if (!m_activeIndex.TryGetValue(item, out int index))
             {
                 return false;
             }
 
-            foreach (var objectIndex in m_indexes.Values)
+            foreach (IIndexedObjectIndex<T> objectIndex in m_indexes.Values)
             {
                 objectIndex.Remove(item);
             }
 
-            var lastIndex = m_activeList.Count - 1;
-            var lastItem = m_activeList[lastIndex];
-            var removedSlot = m_denseToSlot[index];
-            var lastSlot = m_denseToSlot[lastIndex];
+            int lastIndex = m_activeList.Count - 1;
+            T lastItem = m_activeList[lastIndex];
+            int removedSlot = m_denseToSlot[index];
+            int lastSlot = m_denseToSlot[lastIndex];
             m_activeList.RemoveAt(lastIndex);
             m_denseToSlot.RemoveAt(lastIndex);
             m_activeIndex.Remove(item);

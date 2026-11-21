@@ -20,7 +20,10 @@ internal sealed class NativeBuildInputState
     private long m_managedProcesses;
     private readonly Dictionary<string, (long files, long bytes, long reused)> m_phases = new(StringComparer.Ordinal);
 
-    internal NativeBuildInputState() => m_initialInputs = new(this);
+    internal NativeBuildInputState()
+    {
+        m_initialInputs = new(this);
+    }
 
     internal NativeBuildStatistics statistics
         => new()
@@ -60,7 +63,7 @@ internal sealed class NativeBuildInputState
         Interlocked.Add(ref m_hashedBytes, bytes);
         lock (m_gate)
         {
-            m_phases.TryGetValue(phase, out var value);
+            m_phases.TryGetValue(phase, out (long files, long bytes, long reused) value);
             m_phases[phase] = (value.files + 1, value.bytes + bytes, value.reused);
         }
     }
@@ -93,7 +96,7 @@ internal sealed class NativeBuildInputState
     {
         lock (m_gate)
         {
-            m_phases.TryGetValue(phase, out var value);
+            m_phases.TryGetValue(phase, out (long files, long bytes, long reused) value);
             m_phases[phase] = (value.files, value.bytes, value.reused + 1);
         }
     }

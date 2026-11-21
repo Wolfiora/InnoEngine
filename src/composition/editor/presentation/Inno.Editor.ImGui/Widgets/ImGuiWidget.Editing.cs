@@ -4,6 +4,7 @@ using Inno.Native.ImGui;
 using Inno.Scripting.Api;
 
 using NativeImGui = Inno.Native.ImGui.ImGui;
+using NativeKey = Inno.Native.ImGui.ImGuiKey;
 
 namespace Inno.Editor.ImGui.ImGuiWidget;
 
@@ -72,7 +73,7 @@ public sealed unsafe partial class ImGuiWidget
         m_session.EnsureDrawing();
         ArgumentNullException.ThrowIfNull(history);
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
-        var key = (m_session.owner, path);
+        (string owner, string path) key = (m_session.owner, path);
         if (m_propertyGesture is not null && m_propertyEditKey != key)
         {
             CommitEdits();
@@ -113,7 +114,7 @@ public sealed unsafe partial class ImGuiWidget
             return;
         }
         m_propertyEditTouched = true;
-        if (NativeImGui.IsKeyPressed((Inno.Native.ImGui.ImGuiKey)ImGuiKey.Escape, false))
+        if (NativeImGui.IsKeyPressed((NativeKey)ImGuiKey.Escape, false))
         {
             CancelEdits();
         }

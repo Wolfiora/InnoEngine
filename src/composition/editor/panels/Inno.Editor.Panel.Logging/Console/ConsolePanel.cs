@@ -71,10 +71,7 @@ internal sealed partial class ConsolePanel : EditorPanel
     /// <param name="state">
     /// The project-level panel state that receives stable presentation values.
     /// </param>
-    protected override void Capture(EditorState state)
-    {
-        state.Set("collapse", m_collapse);
-    }
+    protected override void Capture(EditorState state) => state.Set("collapse", m_collapse);
 
     /// <summary>
     /// Restores persistent Console layout preferences without restoring historical log content.
@@ -82,12 +79,9 @@ internal sealed partial class ConsolePanel : EditorPanel
     /// <param name="state">
     /// The project-level panel state containing stable presentation values.
     /// </param>
-    protected override void Restore(EditorState state)
-    {
-        m_collapse = state.Get("collapse", true);
-    }
+    protected override void Restore(EditorState state) => m_collapse = state.Get("collapse", true);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDetach(EditorContext context)
     {
         ClearFocus();
@@ -414,7 +408,7 @@ internal sealed partial class ConsolePanel : EditorPanel
             content = m_content.FitTextWithEllipsis(m_content.GetFirstLine(entry.displayMessage), contentW);
         }
 
-        Vector2 tableOuterSize = new(tableOuterW, 0f);
+        var tableOuterSize = new Vector2(tableOuterW, 0f);
         ImGuiTableFlags flags = ImGuiTableFlags.SizingFixedFit
                                 | ImGuiTableFlags.NoHostExtendX
                                 | ImGuiTableFlags.NoPadOuterX
@@ -635,7 +629,7 @@ internal sealed partial class ConsolePanel : EditorPanel
     ) {
         Ui.TableNextRow();
         _ = Ui.TableSetColumnIndex(0);
-        EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
+        EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, label);
         _ = Ui.TableSetColumnIndex(1);
         EditorUI.current.widgets.WrappedText(value);
     }
@@ -644,7 +638,7 @@ internal sealed partial class ConsolePanel : EditorPanel
         string label,
         string value
     ) {
-        EditorUI.current.widgets.ColoredText(Inno.Editor.ImGui.EditorPalette.textDisabled, label);
+        EditorUI.current.widgets.ColoredText(EditorPalette.textDisabled, label);
         EditorUI.current.widgets.WrappedText(value);
     }
 #endregion

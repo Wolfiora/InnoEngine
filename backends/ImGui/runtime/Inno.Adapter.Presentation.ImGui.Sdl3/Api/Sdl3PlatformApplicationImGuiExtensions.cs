@@ -26,10 +26,7 @@ public static class Sdl3PlatformApplicationImGuiExtensions
         internal Dictionary<uint, PlatformImGuiContext> contexts { get; } = [];
         internal bool isRetiring => m_isRetiring;
 
-        internal void Register()
-        {
-            m_registration = m_application.RegisterExtension(this);
-        }
+        internal void Register() => m_registration = m_application.RegisterExtension(this);
 
         internal void Release(
             uint windowId,
@@ -94,11 +91,11 @@ public static class Sdl3PlatformApplicationImGuiExtensions
     /// <param name="window">
     /// Target platform window.
     /// </param>
-    /// <param name="interaction">
-    /// Explicit immutable keyboard and wheel conventions supplied by the product.
-    /// </param>
     /// <param name="contextFlags">
     /// ImGui context feature flags.
+    /// </param>
+    /// <param name="interaction">
+    /// Explicit immutable keyboard and wheel conventions supplied by the product.
     /// </param>
     /// <param name="renderer">
     /// Optional presentation backend; ownership transfers on success and remains with the caller on failure.

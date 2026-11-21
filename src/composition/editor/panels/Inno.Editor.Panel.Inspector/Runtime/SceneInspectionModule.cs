@@ -75,16 +75,16 @@ internal sealed class SceneInspectionModule : EditorModule
         RuntimeSession runtimeSession,
         LogRouter logs
     ) {
-        System.ArgumentNullException.ThrowIfNull(interactions);
-        System.ArgumentNullException.ThrowIfNull(edits);
-        System.ArgumentNullException.ThrowIfNull(assetIcons);
-        System.ArgumentNullException.ThrowIfNull(classificationSettings);
-        System.ArgumentNullException.ThrowIfNull(settings);
-        System.ArgumentNullException.ThrowIfNull(assets);
-        System.ArgumentNullException.ThrowIfNull(types);
-        System.ArgumentNullException.ThrowIfNull(serialization);
-        System.ArgumentNullException.ThrowIfNull(runtimeSession);
-        System.ArgumentNullException.ThrowIfNull(logs);
+        ArgumentNullException.ThrowIfNull(interactions);
+        ArgumentNullException.ThrowIfNull(edits);
+        ArgumentNullException.ThrowIfNull(assetIcons);
+        ArgumentNullException.ThrowIfNull(classificationSettings);
+        ArgumentNullException.ThrowIfNull(settings);
+        ArgumentNullException.ThrowIfNull(assets);
+        ArgumentNullException.ThrowIfNull(types);
+        ArgumentNullException.ThrowIfNull(serialization);
+        ArgumentNullException.ThrowIfNull(runtimeSession);
+        ArgumentNullException.ThrowIfNull(logs);
         m_assets = assets;
         var activator = new InspectionDrawerActivator(
             interactions,

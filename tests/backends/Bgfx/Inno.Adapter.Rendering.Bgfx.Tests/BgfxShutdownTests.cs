@@ -25,7 +25,7 @@ public sealed class BgfxShutdownTests
                               ? OperatingSystem.IsWindows() ? GraphicsApi.Direct3D11 : GraphicsApi.Metal
                               : new GraphicsApi(requestedBackend);
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Resource retirement",
             width = 100,
@@ -42,8 +42,8 @@ public sealed class BgfxShutdownTests
         using (var device = new BgfxDevice(options))
         {
             Assert.Equal(backend, device.capabilities.backend);
-            RenderGraphBuilder builder = new(1, device.capabilities);
-            RenderTextureDescriptor descriptor = new(
+            var builder = new RenderGraphBuilder(1, device.capabilities);
+            var descriptor = new RenderTextureDescriptor(
                 32,
                 32,
                 RenderTextureFormat.RGBA8,

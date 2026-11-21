@@ -20,9 +20,6 @@ public static class StandardNativeComponents
     /// <summary>
     /// Composes the standard Player's reusable native components with explicit deployment policies.
     /// </summary>
-    /// <returns>
-    /// A fresh immutable Player plan without resolving tools or touching source files.
-    /// </returns>
     /// <param name="profile">
     /// The selected integration-owned BGFX SDK invocation for standalone component builds.
     /// </param>
@@ -32,6 +29,9 @@ public static class StandardNativeComponents
     /// <param name="layout">
     /// The platform-owned destination of each component output, or null to exclude it.
     /// </param>
+    /// <returns>
+    /// A fresh immutable Player plan without resolving tools or touching source files.
+    /// </returns>
     public static ProductNativeBuildPlan CreatePlayer(
         BgfxNativeBuildProfile profile,
         Func<string, NativeComponentBuildOptions> options,
@@ -41,9 +41,6 @@ public static class StandardNativeComponents
     /// <summary>
     /// Selects only the offline graphics compiler component needed for shader publication.
     /// </summary>
-    /// <returns>
-    /// An immutable tool product without runtime or Editor presentation dependencies.
-    /// </returns>
     /// <param name="profile">
     /// The selected integration-owned BGFX SDK invocation for standalone component builds.
     /// </param>
@@ -53,6 +50,9 @@ public static class StandardNativeComponents
     /// <param name="layout">
     /// The platform-owned destination of each component output, or null to exclude it.
     /// </param>
+    /// <returns>
+    /// An immutable tool product without runtime or Editor presentation dependencies.
+    /// </returns>
     public static ProductNativeBuildPlan CreateShaderTools(
         BgfxNativeBuildProfile profile,
         Func<string, NativeComponentBuildOptions> options,
@@ -62,9 +62,6 @@ public static class StandardNativeComponents
     /// <summary>
     /// Composes the shared runtime closure and the Editor's presentation and authoring tools.
     /// </summary>
-    /// <returns>
-    /// A fresh immutable Editor plan with the ImGuizmo dependency declared explicitly.
-    /// </returns>
     /// <param name="profile">
     /// The selected integration-owned BGFX SDK invocation for standalone component builds.
     /// </param>
@@ -74,6 +71,9 @@ public static class StandardNativeComponents
     /// <param name="layout">
     /// The platform-owned destination of each component output, or null to exclude it.
     /// </param>
+    /// <returns>
+    /// A fresh immutable Editor plan with the ImGuizmo dependency declared explicitly.
+    /// </returns>
     public static ProductNativeBuildPlan CreateEditor(
         BgfxNativeBuildProfile profile,
         Func<string, NativeComponentBuildOptions> options,
@@ -128,15 +128,15 @@ public static class StandardNativeComponents
     /// <summary>
     /// Declares the real static component closure consumed by an explicit aggregate executor.
     /// </summary>
-    /// <returns>
-    /// A Player closure with static recipes and no unused standalone producers.
-    /// </returns>
     /// <param name="options">
     /// The platform-owned configuration for each named component.
     /// </param>
     /// <param name="layout">
     /// The platform-owned destination of each component output, or null to exclude it.
     /// </param>
+    /// <returns>
+    /// A Player closure with static recipes and no unused standalone producers.
+    /// </returns>
     public static ProductNativeBuildPlan CreateStaticPlayer(
         Func<string, NativeComponentBuildOptions> options,
         Func<string, string, string, string?> layout

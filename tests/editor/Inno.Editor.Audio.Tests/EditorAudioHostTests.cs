@@ -11,6 +11,8 @@ using Inno.Core.Logging;
 using Inno.Runtime;
 using Inno.Runtime.Contracts;
 
+using RuntimeAudio = Inno.Audio.Audio;
+
 namespace Inno.Editor.Audio.Tests;
 
 public sealed class EditorAudioHostTests : IDisposable
@@ -53,21 +55,21 @@ public sealed class EditorAudioHostTests : IDisposable
         using RuntimeSession edit = m_engine.CreateSession(CreateOptions(host, RuntimeSessionKind.Edit, "edit"));
         using (host.EnterExecutionScope(edit))
         {
-            Assert.Equal(AudioDeviceState.Muted, Inno.Audio.Audio.deviceState);
+            Assert.Equal(AudioDeviceState.Muted, RuntimeAudio.deviceState);
         }
 
         using (RuntimeSession play = m_engine.CreateSession(CreateOptions(host, RuntimeSessionKind.Play, "play")))
         {
             using (host.EnterExecutionScope(play))
             {
-                Assert.Equal(AudioDeviceState.Muted, Inno.Audio.Audio.deviceState);
+                Assert.Equal(AudioDeviceState.Muted, RuntimeAudio.deviceState);
             }
             play.Tick(0.016f);
         }
 
         using (host.EnterExecutionScope(edit))
         {
-            Assert.Equal(AudioDeviceState.Muted, Inno.Audio.Audio.deviceState);
+            Assert.Equal(AudioDeviceState.Muted, RuntimeAudio.deviceState);
         }
         edit.Tick(0.016f);
     }
@@ -112,7 +114,7 @@ public sealed class EditorAudioHostTests : IDisposable
     private AudioClipAsset CreateClip()
     {
         var clip = new AudioClipAsset();
-        byte[] payload = AudioClipMetadataCodec.Encode(new AudioClipMetadata(AudioCodecId.wav, 1, 48000, 480000, 128));
+        byte[] payload = AudioClipMetadataCodec.Encode(new AudioClipMetadata(AudioCodecId.wav, 1, 48_000, 480_000, 128));
         new AssetRuntimeOwner().Initialize(
             clip,
             AssetPath.Project("Audio/Preview.wav"),
@@ -151,7 +153,7 @@ public sealed class EditorAudioHostTests : IDisposable
             string outputName,
             out AssetArtifactInfo? artifact
         ) {
-            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out var found))
+            if (outputName == "audio-data" && m_artifacts.TryGetValue(persistentId, out (AssetArtifactInfo info, string path) found))
             {
                 artifact = found.info;
                 return true;

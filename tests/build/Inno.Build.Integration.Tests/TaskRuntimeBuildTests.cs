@@ -14,7 +14,7 @@ using Inno.Build.TaskHosting;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
-using TaskItem = Microsoft.Build.Utilities.TaskItem;
+using BuildTaskItem = Microsoft.Build.Utilities.TaskItem;
 
 namespace Inno.Build.Integration.Tests;
 
@@ -106,15 +106,15 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     [Fact]
     public async Task SharedBuildsYieldWhileWaitingAndSerializeWrites()
     {
-        using ManualResetEventSlim entered = new();
-        using ManualResetEventSlim release = new();
-        RecordingEngine firstEngine = new(() =>
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var firstEngine = new RecordingEngine(() =>
         {
             entered.Set();
             Assert.True(release.Wait(TimeSpan.FromSeconds(10)));
             return true;
         });
-        RecordingEngine secondEngine = new(() => true);
+        var secondEngine = new RecordingEngine(() => true);
         BuildTaskRuntimeTask first = CreateTask(firstEngine);
         BuildTaskRuntimeTask second = CreateTask(secondEngine);
         Task<bool> firstRun = Task.Factory.StartNew(
@@ -155,7 +155,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     [Fact]
     public async Task CancellationReleasesWaitAndAllowsTheNextBuild()
     {
-        RecordingEngine engine = new(() => true);
+        var engine = new RecordingEngine(() => true);
         BuildTaskRuntimeTask canceled = CreateTask(engine);
         using (FileLease lease = await FileLease.AcquireAsync(
             Path.Combine(m_root, "bootstrap") + ".lock",
@@ -212,7 +212,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     {
         var engine = new RecordingEngine(static () => true);
         Assert.True(CreateTask(engine).Execute(), string.Join("\n", engine.errors));
-        var reused = CreateTask(engine);
+        BuildTaskRuntimeTask reused = CreateTask(engine);
         Assert.True(reused.Execute(), string.Join("\n", engine.errors));
         Assert.Equal(1, engine.builds);
         Assert.Contains(Path.Combine(m_root, "hosts"), reused.TargetOutputs[0].ItemSpec);
@@ -231,10 +231,10 @@ public sealed class TaskRuntimeBuildTests : IDisposable
     public void CorruptedImmutableRuntimeIsRepairedBeforeReuse()
     {
         var engine = new RecordingEngine(static () => true);
-        var first = CreateTask(engine);
+        BuildTaskRuntimeTask first = CreateTask(engine);
         Assert.True(first.Execute(), string.Join("\n", engine.errors));
         File.WriteAllText(first.TargetOutputs[0].ItemSpec, "corrupted");
-        var second = CreateTask(engine);
+        BuildTaskRuntimeTask second = CreateTask(engine);
         Assert.True(second.Execute(), string.Join("\n", engine.errors));
         Assert.Equal(2, engine.builds);
         Assert.Equal("prepared-runtime", File.ReadAllText(second.TargetOutputs[0].ItemSpec));
@@ -471,7 +471,7 @@ public sealed class TaskRuntimeBuildTests : IDisposable
             }
             properties = globalProperties[0];
             removed = removeGlobalProperties[0];
-            TaskItem output = new(outputPath);
+            var output = new BuildTaskItem(outputPath);
             output.SetMetadata("FileHash", Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(outputPath))));
             output.SetMetadata("RelativePath", "Inno.Build.Tasks.dll");
             return new(!returnTargetOutputs || m_build(), [new Dictionary<string, ITaskItem[]> { [targets[^1]] = [output] }]);

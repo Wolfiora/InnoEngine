@@ -106,12 +106,10 @@ internal sealed class EngineObjectReferencePropertyDrawer : IPropertyDrawer
     }
 
     private static string GetDisplayName(EngineObject target)
+        => target switch
     {
-        return target switch
-        {
-            GameObject gameObject => gameObject.name,
-            GameComponent component => $"{component.gameObject.name} ({component.GetType().Name})",
-            _ => target.GetType().Name
-        };
-    }
+        GameObject gameObject => gameObject.name,
+        GameComponent component => $"{component.gameObject.name} ({component.GetType().Name})",
+        _ => target.GetType().Name
+    };
 }

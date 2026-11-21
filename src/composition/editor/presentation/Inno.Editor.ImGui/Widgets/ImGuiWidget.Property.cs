@@ -487,13 +487,11 @@ public sealed unsafe partial class ImGuiWidget
     }
 
     private Vector4 GetAxisColor(string axis)
+        => axis.ToUpperInvariant() switch
     {
-        return axis.ToUpperInvariant() switch
-        {
-            "X" or "R" => EditorPalette.axisX,
-            "Y" or "G" => EditorPalette.axisY,
-            "Z" or "B" => EditorPalette.axisZ,
-            _ => EditorPalette.axisW
-        };
-    }
+        "X" or "R" => EditorPalette.axisX,
+        "Y" or "G" => EditorPalette.axisY,
+        "Z" or "B" => EditorPalette.axisZ,
+        _ => EditorPalette.axisW
+    };
 }

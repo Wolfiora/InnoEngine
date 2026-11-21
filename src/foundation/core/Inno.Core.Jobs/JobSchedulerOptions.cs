@@ -31,10 +31,10 @@ public readonly struct JobSchedulerOptions
     /// </summary>
     public int mainThreadDrainBudget { get; init; }
 
-    internal int ResolveFrameCapacity() => ResolvePositive(maxFrameJobs, 65536);
+    internal int ResolveFrameCapacity() => ResolvePositive(maxFrameJobs, 65_536);
 
     internal MainThreadWorkQueue CreateMainThreadQueue()
-        => new(ResolvePositive(mainThreadCapacity, 65536), ResolvePositive(mainThreadDrainBudget, 4096));
+        => new(ResolvePositive(mainThreadCapacity, 65_536), ResolvePositive(mainThreadDrainBudget, 4096));
 
     private static int ResolvePositive(
         int value,
@@ -53,8 +53,8 @@ public readonly struct JobSchedulerOptions
 
         if (workerCount == 0)
         {
-            var cpuCount = Environment.ProcessorCount;
-            var resolved = cpuCount > 1 ? cpuCount - 1 : 1;
+            int cpuCount = Environment.ProcessorCount;
+            int resolved = cpuCount > 1 ? cpuCount - 1 : 1;
             return Math.Clamp(resolved, 1, DEFAULT_MAX_WORKER_THREADS);
         }
 

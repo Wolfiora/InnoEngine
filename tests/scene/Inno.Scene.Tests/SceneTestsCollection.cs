@@ -34,21 +34,21 @@ public sealed class SceneTestsFixture : IDisposable
     public IdentityAllocator identities { get; } = new();
     public DiagnosticHub diagnostics { get; } = new();
     public LogRouter logs { get; } = new();
-    public Inno.Scene.SceneWorld world { get; }
+    public SceneWorld world { get; }
     public SerializationContext serializationContext { get; }
 
     public SceneTestsFixture()
     {
-        _ = typeof(Inno.Scene.SceneAsset);
-        modules = new ModuleHost(new ModuleHostOptions
+        _ = typeof(SceneAsset);
+        this.modules = new ModuleHost(new ModuleHostOptions
         {
             catalogSource = new DotNetAssemblyCatalogSource(typeof(SceneTestsCollection).Assembly)
         });
-        types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
-        serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
-        world = new Inno.Scene.SceneWorld(identities, types);
-        assets = new RejectingAssetReferenceResolver();
-        serializationContext = AssetSerializationContext.Create(assets);
+        this.types = new TypeCatalog(modules, new ReflectionTypeCatalogSource());
+        this.serialization = new SerializationRegistry(types, new ReflectionSerializationMetadataSource());
+        this.world = new SceneWorld(identities, types);
+        this.assets = new RejectingAssetReferenceResolver();
+        this.serializationContext = AssetSerializationContext.Create(assets);
     }
 
     public void Dispose()

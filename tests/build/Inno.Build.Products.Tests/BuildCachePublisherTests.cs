@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Inno.Build.Distribution.Standard;
 using Inno.Build.Toolchains;
+using Inno.Core.IO;
 
 namespace Inno.Build.Products.Tests;
 
@@ -15,7 +16,10 @@ public sealed class BuildCachePublisherTests : IDisposable
     [Fact]
     public async Task StandardOwnersPreserveReadersAndIgnoreUnregisteredDirectories()
     {
-        var publisher = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
+        var publisher = new BuildCachePublisher(
+            Path.Combine(m_root, "artifacts", "native"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         string old = Create("native", "old");
         string current = Create("native", "current");
         string unrelated = Create("native", "unregistered");
@@ -44,8 +48,14 @@ public sealed class BuildCachePublisherTests : IDisposable
     [Fact]
     public async Task NativeCurrentRetainsItsExactOlderBindingGeneration()
     {
-        var bindings = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "bindings"), BuildCacheArtifactRole.ImmutableArtifact);
-        var native = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
+        var bindings = new BuildCachePublisher(
+            Path.Combine(m_root, "artifacts", "bindings"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
+        var native = new BuildCachePublisher(
+            Path.Combine(m_root, "artifacts", "native"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         string oldBinding = Create("bindings", "old");
         string newBinding = Create("bindings", "current");
         string oldNative = Create("native", "old");
@@ -75,9 +85,12 @@ public sealed class BuildCachePublisherTests : IDisposable
     [Fact]
     public async Task ActivePublisherPreventsRetirementDuringReadingHandoff()
     {
-        var publisher = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
+        var publisher = new BuildCachePublisher(
+            Path.Combine(m_root, "artifacts", "native"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         string artifact = Create("native", "candidate");
-        using var activity = await publisher.AcquireUseAsync();
+        using FileLease activity = await publisher.AcquireUseAsync();
         publisher.Record(artifact, artifact + ".read.lock", [], null, null);
         BuildCacheCleanupResult result = await Plan().ExecuteAsync();
         Assert.Empty(result.retired);
@@ -117,7 +130,10 @@ public sealed class BuildCachePublisherTests : IDisposable
     [Fact]
     public async Task SizeAccountingIsRecordedByTheProducerWithoutServingAsIntegrityValidation()
     {
-        var publisher = new BuildCachePublisher(Path.Combine(m_root, "artifacts", "native"), BuildCacheArtifactRole.ImmutableArtifact);
+        var publisher = new BuildCachePublisher(
+            Path.Combine(m_root, "artifacts", "native"),
+            BuildCacheArtifactRole.ImmutableArtifact
+        );
         string artifact = Create("native", "owned");
         using (await publisher.AcquireUseAsync())
         {

@@ -20,7 +20,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     {
         using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
-        var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
+        Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         logger.Write(LogLevel.Info, "Original context record");
         host.logs.Flush();
@@ -71,7 +71,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     {
         using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
-        var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
+        Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         ImGuiIO* io = NativeGui.Raw.GetIO();
         for (int iteration = 0; iteration < 100; iteration++)
@@ -113,7 +113,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     {
         using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 10_000;
-        var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
+        Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         for (int index = 0; index < 10_000; index++)
         {
             logger.Write(LogLevel.Info, "Entry " + index.ToString("D5") + "\nDetails / 资源信息");
@@ -145,7 +145,7 @@ public sealed unsafe class ConsoleVirtualizationNativeTests(ITestOutputHelper ou
     {
         using var host = new NativePanelHost(typeof(ConsoleVirtualizationNativeTests).Assembly, "Inno.Editor.Panel.Logging");
         host.console.capacity = 16;
-        var logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
+        Logger logger = host.logs.CreateLogger<ConsoleVirtualizationNativeTests>();
         EditorPanelExtension panel = host.GetPanel("diagnostics.console");
         for (int iteration = 0; iteration < 150; iteration++)
         {

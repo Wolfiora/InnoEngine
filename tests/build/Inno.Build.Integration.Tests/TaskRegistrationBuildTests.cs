@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Security;
 using System.Text.Json;
@@ -166,7 +167,7 @@ public sealed class TaskRegistrationBuildTests
                 """);
             string dotnet = ToolchainEnvironment.ResolveExecutable("dotnet");
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            var environment = DotNetSdkEnvironment.Create(dotnet);
+            IReadOnlyDictionary<string, string?> environment = DotNetSdkEnvironment.Create(dotnet);
             await ToolchainEnvironment.RunAsync(
                 dotnet,
                 ["build", project, "--disable-build-servers", "-m:1", "-nr:false", "-p:UseSharedCompilation=false"],

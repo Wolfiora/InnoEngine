@@ -49,10 +49,10 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
         AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public event Action? changed;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> GetAssemblies()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -65,7 +65,7 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public IReadOnlyList<Assembly> GetSharedAssemblies()
     {
         ObjectDisposedException.ThrowIf(m_disposed, this);
@@ -78,13 +78,13 @@ public sealed class DotNetAssemblyCatalogSource : IAssemblyCatalogSource
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool IsFrameworkReference(string assemblyName) => m_trustedPlatformAssemblies.Contains(assemblyName);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public bool IsFrameworkAssembly(Assembly assembly) => IsTrustedFrameworkAssembly(assembly);
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (m_disposed)

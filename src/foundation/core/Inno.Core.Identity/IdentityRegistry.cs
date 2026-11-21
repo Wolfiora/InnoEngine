@@ -16,12 +16,12 @@ internal sealed class IdentityRegistry
 
     private readonly ConditionalWeakTable<object, RegistrySlot> m_slotByObject = new();
 
-    private readonly List<int> m_denseToSlot = new();
-    private readonly List<int> m_sparseToDense = new();
-    private readonly List<int> m_generations = new();
+    private readonly List<int> m_denseToSlot = [];
+    private readonly List<int> m_sparseToDense = [];
+    private readonly List<int> m_generations = [];
     private readonly Stack<int> m_freeSlots = new();
 
-    private readonly Dictionary<Guid, int> m_slotByPersistent = new();
+    private readonly Dictionary<Guid, int> m_slotByPersistent = [];
 
     internal IdentityRegistry(IdentityDomainId domainId)
     {
@@ -398,9 +398,7 @@ internal sealed class IdentityRegistry
     private bool TryGetDenseIndexByRuntimeIdNoLock(
         int runtimeId,
         out int denseIndex
-    ) {
-        return TryResolveDenseIndexNoLock(runtimeId, out denseIndex) && TryGetEntryByDenseNoLock(denseIndex, out _);
-    }
+    ) => TryResolveDenseIndexNoLock(runtimeId, out denseIndex) && TryGetEntryByDenseNoLock(denseIndex, out _);
 
     private bool TryGetEntryByDenseNoLock(
         int denseIndex,
@@ -499,9 +497,7 @@ internal sealed class IdentityRegistry
     private bool TryGetLiveObject(
         RegistryEntry entry,
         out IdentityObject? obj
-    ) {
-        return entry.TryGetObject(out obj);
-    }
+    ) => entry.TryGetObject(out obj);
 
     private void CleanupStaleSlotBySlotNoLock(int slot)
     {
@@ -662,6 +658,9 @@ internal sealed class IdentityRegistry
         /// <param name="slot">
         /// The dense storage slot encoded in this runtime handle.
         /// </param>
-        public RegistrySlot(int slot) => this.slot = slot;
+        public RegistrySlot(int slot)
+        {
+            this.slot = slot;
+        }
     }
 }

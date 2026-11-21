@@ -90,7 +90,7 @@ public readonly struct AssetPipelineOptions
             enableFileSystemWatcher = true,
             fileWatcherFlushDelayMs = 80,
             sourcePolicy = AssetSourcePolicy.defaultPolicy,
-            sourceMounts = [new AssetSourceMount(Inno.Assets.AssetSourceId.project, assetRoot, isReadOnly: false)],
+            sourceMounts = [new AssetSourceMount(AssetSourceId.project, assetRoot, isReadOnly: false)],
             cacheOptions = AssetCacheOptions.CreateDefault()
         };
     }

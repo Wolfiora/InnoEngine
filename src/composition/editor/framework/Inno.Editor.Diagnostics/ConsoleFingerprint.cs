@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -17,8 +18,8 @@ internal static class ConsoleFingerprint
         Append(builder, occurrence.category);
         Append(builder, occurrence.message);
         Append(builder, occurrence.file);
-        Append(builder, occurrence.line.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        Append(builder, occurrence.column.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Append(builder, occurrence.line.ToString(CultureInfo.InvariantCulture));
+        Append(builder, occurrence.column.ToString(CultureInfo.InvariantCulture));
         Append(builder, occurrence.stackTrace);
         Append(builder, occurrence.sessionId.ToString());
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString())));

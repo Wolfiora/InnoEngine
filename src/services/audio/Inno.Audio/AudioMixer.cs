@@ -321,7 +321,7 @@ public struct SerializedAudioExtensionState
     /// </summary>
     public SerializedAudioExtensionState()
     {
-        propertyData = [];
+        this.propertyData = [];
     }
 
     /// <summary>

@@ -12,7 +12,7 @@ internal sealed class EncodedAudioTestSource : IAudioClipSource
     internal EncodedAudioTestSource(byte[] bytes)
     {
         m_bytes = (byte[])bytes.Clone();
-        contentHash = Convert.ToHexString(SHA256.HashData(m_bytes));
+        this.contentHash = Convert.ToHexString(SHA256.HashData(m_bytes));
     }
 
     public string contentHash { get; }

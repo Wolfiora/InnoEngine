@@ -22,6 +22,8 @@ using Inno.Storage;
 using Inno.Text;
 using Inno.UI;
 
+using ShellHost = Inno.Shell.Shell;
+
 namespace Inno.Input.Tests;
 
 public sealed class ShellLifecycleTests
@@ -30,7 +32,7 @@ public sealed class ShellLifecycleTests
     public async Task SuspensionReasonsComposeWithoutFramesOrBackgroundClockCatchUp()
     {
         var catalog = new TestCatalog();
-        var elapsed = Stopwatch.StartNew();
+        Stopwatch elapsed = Stopwatch.StartNew();
         using var shell = new TestShell(catalog, suspendWhenHidden: true);
         Assert.Equal(ShellState.Ready, shell.state);
         int opportunities = 0;
@@ -123,22 +125,22 @@ public sealed class ShellLifecycleTests
         Assert.Equal(0, catalog.application.redrawSubscribers);
     }
 
-    private sealed class TestShell : Inno.Shell.Shell
+    private sealed class TestShell : ShellHost
     {
         public TestShell(
             TestCatalog catalog,
             bool suspendWhenHidden
         ) : base(catalog, new ShellOptions
         {
-            adapters = new Inno.Adapter.AdapterSelection
+            adapters = new AdapterSelection
             {
-                platform = Inno.Adapter.Platform.PlatformBackendId.sdl3,
-                input = Inno.Adapter.Input.InputBackendId.events,
-                rendering = Inno.Adapter.Rendering.RenderingBackendId.bgfx,
-                storage = Inno.Adapter.Storage.StorageBackendId.fileSystem,
-                audio = Inno.Adapter.Audio.AudioBackendId.miniAudio,
-                text = Inno.Adapter.Text.TextBackendId.freeTypeHarfBuzz,
-                ui = Inno.Adapter.UI.UiBackendId.rmlUi
+                platform = PlatformBackendId.sdl3,
+                input = InputBackendId.events,
+                rendering = RenderingBackendId.bgfx,
+                storage = StorageBackendId.fileSystem,
+                audio = AudioBackendId.miniAudio,
+                text = TextBackendId.freeTypeHarfBuzz,
+                ui = UiBackendId.rmlUi
             },
             suspendWhenHidden = suspendWhenHidden
         })
@@ -177,7 +179,10 @@ public sealed class ShellLifecycleTests
     private sealed class TestCatalog : IAdapterCatalog, IPlatformBackendFactory, IInputBackendFactory,
         IRenderingBackendFactory, IStorageBackendFactory, IAudioBackendFactory, ITextBackendFactory, IUiBackendFactory
     {
-        public TestCatalog() => application = new TestApplication(retired);
+        public TestCatalog()
+        {
+            this.application = new TestApplication(retired);
+        }
 
         public TestApplication application { get; }
         public List<string> retired { get; } = [];

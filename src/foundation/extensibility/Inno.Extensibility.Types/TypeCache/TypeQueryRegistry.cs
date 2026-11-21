@@ -76,12 +76,10 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetSubTypesOf<T>(TypeIdentityRegistry typeIdentityRegistry)
-    {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(T), out int keyId)
-               && m_subclassCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-               ? set
-               : [];
-    }
+        => typeIdentityRegistry.TryGetRuntimeTypeId(typeof(T), out int keyId)
+           && m_subclassCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+           ? set
+           : [];
 
     /// <summary>
     /// Retrieves the requested types implementing value from current authoritative state.
@@ -96,12 +94,10 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesImplementing<TInterface>(TypeIdentityRegistry typeIdentityRegistry)
-    {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TInterface), out int keyId)
-               && m_interfaceCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-               ? set
-               : [];
-    }
+        => typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TInterface), out int keyId)
+           && m_interfaceCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+           ? set
+           : [];
 
     /// <summary>
     /// Retrieves the requested types with attribute value from current authoritative state.
@@ -116,13 +112,10 @@ internal sealed class TypeQueryRegistry
     /// An immutable snapshot of the values selected by the operation.
     /// </returns>
     public IReadOnlyList<TypeRef> GetTypesWithAttribute<TAttr>(TypeIdentityRegistry typeIdentityRegistry)
-        where TAttr : Attribute
-    {
-        return typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TAttr), out int keyId)
-               && m_attributeCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
-               ? set
-               : [];
-    }
+        where TAttr : Attribute => typeIdentityRegistry.TryGetRuntimeTypeId(typeof(TAttr), out int keyId)
+                                   && m_attributeCache.TryGetValue(keyId, out IReadOnlyList<TypeRef>? set)
+                                   ? set
+                                   : [];
 
     private static void AddToIndex(
         Dictionary<int, HashSet<Type>> index,
@@ -133,7 +126,7 @@ internal sealed class TypeQueryRegistry
         int keyId = typeIdentityRegistry.GetOrAddRuntimeTypeId(keyType);
         if (!index.TryGetValue(keyId, out HashSet<Type>? set))
         {
-            set = new HashSet<Type>();
+            set = [];
             index[keyId] = set;
         }
 

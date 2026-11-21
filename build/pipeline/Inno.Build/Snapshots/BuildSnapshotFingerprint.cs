@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -20,7 +21,7 @@ internal static class BuildSnapshotFingerprint
         CancellationToken cancellationToken
     ) {
         using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        Append(hash, assetRevision.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        Append(hash, assetRevision.ToString(CultureInfo.InvariantCulture));
         hash.AppendData(projectSettings.Span);
         foreach (PluginCandidate plugin in plugins)
         {
@@ -31,7 +32,7 @@ internal static class BuildSnapshotFingerprint
         {
             cancellationToken.ThrowIfCancellationRequested();
             Append(hash, Path.GetFileName(assembly));
-            await using FileStream stream = new(
+            await using var stream = new FileStream(
                 assembly,
                 FileMode.Open,
                 FileAccess.Read,

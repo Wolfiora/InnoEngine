@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Xml;
 using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 
@@ -80,7 +81,7 @@ internal sealed class AssemblyDocumentationProvider : DocumentationProvider
                 .GroupBy(static element => (string)element.Attribute("name")!, StringComparer.Ordinal)
                 .ToDictionary(static group => group.Key, static group => group.First().ToString(), StringComparer.Ordinal);
         }
-        catch (System.Xml.XmlException failure)
+        catch (XmlException failure)
         {
             throw new InvalidDataException($"The required inherited assembly documentation is invalid: '{path}'.", failure);
         }

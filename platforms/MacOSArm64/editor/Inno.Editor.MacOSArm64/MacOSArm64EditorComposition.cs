@@ -14,7 +14,9 @@ using Inno.Adapter.Serialization.DotNet;
 using Inno.Adapter.Storage;
 using Inno.Adapter.Storage.FileSystem;
 using Inno.Build;
+using Inno.Build.Composition;
 using Inno.Build.Distribution.Standard;
+using Inno.Build.MacOSArm64;
 using Inno.Build.Toolchains.Bgfx.Tools;
 using Inno.Core.Execution;
 using Inno.Core.Input;
@@ -44,13 +46,13 @@ public static class MacOSArm64EditorComposition
     /// <param name="arguments">
     /// An optional project directory and the shared Editor command-line options.
     /// </param>
-    /// <returns>
-    /// Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.
-    /// </returns>
     /// <param name="cancellationToken">
     /// Cancels preparation or requests orderly shutdown of the shared Editor host.
     /// An open native folder dialog retains its callback owner until the user completes or closes it.
     /// </param>
+    /// <returns>
+    /// Zero on normal exit or dialog cancellation, two on cancellation or invalid arguments, or one on startup failure.
+    /// </returns>
     public static int Run(
         string[] arguments,
         CancellationToken cancellationToken
@@ -83,14 +85,14 @@ public static class MacOSArm64EditorComposition
                 [new BgfxAuthoringProvider(MacOSArm64BgfxIntegration.shaderProfile)],
                 [new ImGuiPresentationProvider(new ImGuiInteractionOptions(commandKeyBehavior: true, horizontalWheelDirection: -1))]
             );
-            var buildContext = StandardBuildEnvironment.Capture(
+            BuildCompositionContext buildContext = StandardBuildEnvironment.Capture(
                 Path.GetDirectoryName(typeof(MacOSArm64EditorComposition).Assembly.Location)!,
-                Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id,
+                MacOSArm64BuildModule.target.id,
                 nativeDependencies: command.nativeDependencies
             );
             var launch = new EditorLaunchOptions
             {
-                defaultBuildTarget = Inno.Build.MacOSArm64.MacOSArm64BuildModule.target.id,
+                defaultBuildTarget = MacOSArm64BuildModule.target.id,
                 projectDirectory = project,
                 keyboard = new EditorKeyboardPolicy(KeyModifier.Super, "Cmd"),
                 adapterCatalog = adapters,

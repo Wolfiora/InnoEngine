@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Extensibility.Types;
 using Inno.References;
 using Inno.Rendering;
 using Inno.Rendering.Assets;
@@ -11,7 +12,7 @@ namespace Inno.Rendering.Runtime;
 /// <summary>
 /// States the exact model order and exclusive world-content assignment for one output.
 /// </summary>
-[Inno.Extensibility.Types.StableTypeId("313e9d03-9423-53a6-8dd8-f4faad999439")]
+[StableTypeId("313e9d03-9423-53a6-8dd8-f4faad999439")]
 public sealed class RenderOutputRoute
 {
     /// <summary>

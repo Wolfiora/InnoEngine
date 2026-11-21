@@ -220,12 +220,12 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
     /// <summary>
     /// Evaluates the operation's current availability and presentation state.
     /// </summary>
-    /// <returns>
-    /// The validated editor action state that represents the completed operation.
-    /// </returns>
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
+    /// <returns>
+    /// The validated editor action state that represents the completed operation.
+    /// </returns>
     protected sealed override EditorActionState Query(EditorActionContext context)
         => TryCreate(
             context,
@@ -253,12 +253,12 @@ public abstract class EditorAction<TTarget, TArgument> : EditorAction
     /// <summary>
     /// Presents this action through the current editor interaction surface.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
-    /// </returns>
     /// <param name="context">
     /// The context that supplies state and services for this operation.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
+    /// </returns>
     protected sealed override bool Present(EditorActionContext context)
         => TryCreate(context, out EditorActionContext<TTarget, TArgument> typed) && Present(typed);
 

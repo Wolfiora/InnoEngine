@@ -31,7 +31,7 @@ public sealed unsafe class ViewportRetirementTests
         // A failed retirement intentionally retains dependencies until the host process restarts.
         // Run this contract in its own test process, rather than forcing unsafe cleanup.
         var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        var window = application.CreateWindow(new PlatformWindowOptions
+        Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Faulted retirement",
             width = 320,
@@ -39,7 +39,7 @@ public sealed unsafe class ViewportRetirementTests
             visible = false
         });
         var renderer = new PendingRenderer();
-        var context = application.CreateImGuiContext(
+        PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.EnableViewports,
             new ImGuiInteractionOptions(false, 1),
@@ -47,7 +47,7 @@ public sealed unsafe class ViewportRetirementTests
         );
         context.SetIniFile(null);
         var viewport = new ImGuiViewport { ID = 4221, Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)) };
-        var io = NativeImGui.Raw.GetPlatformIO();
+        ImGuiPlatformIO* io = NativeImGui.Raw.GetPlatformIO();
         io->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
         io->PlatformDestroyWindow(&viewport);
@@ -56,7 +56,7 @@ public sealed unsafe class ViewportRetirementTests
         Assert.Throws<RetirementPendingException>(() => context.RenderFrame(static () => {}));
         Assert.Throws<RetirementPendingException>(() => application.DestroyImGuiContext(window));
         Assert.Throws<RetirementPendingException>(() => application.Dispose());
-        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.False((SDL.Raw.GetWindowFromId(id) is null));
         Assert.Equal(0, renderer.disposeCount);
         GC.KeepAlive(context);
         GC.KeepAlive(application);
@@ -72,7 +72,7 @@ public sealed unsafe class ViewportRetirementTests
         }
 
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Retirement owner",
             width = 320,
@@ -80,7 +80,7 @@ public sealed unsafe class ViewportRetirementTests
             visible = false
         });
         var renderer = new PendingRenderer();
-        using var context = application.CreateImGuiContext(
+        using PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.EnableViewports,
             new ImGuiInteractionOptions(false, 1),
@@ -93,7 +93,7 @@ public sealed unsafe class ViewportRetirementTests
             Size = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(100, 90)),
             Pos = Unsafe.BitCast<Vector2, NativeVector2>(new Vector2(30, 30))
         };
-        var io = NativeImGui.Raw.GetPlatformIO();
+        ImGuiPlatformIO* io = NativeImGui.Raw.GetPlatformIO();
         io->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
 
@@ -101,15 +101,15 @@ public sealed unsafe class ViewportRetirementTests
 
         Assert.Single(application.GetWindows());
         Assert.False(context.TryGetWindowId(viewport.ID, out _));
-        Assert.True(viewport.PlatformUserData == null);
-        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.True(viewport.PlatformUserData is null);
+        Assert.False((SDL.Raw.GetWindowFromId(id) is null));
         context.RenderFrame(static () => {});
-        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.False((SDL.Raw.GetWindowFromId(id) is null));
         Assert.Equal(1, renderer.retireCount);
 
         renderer.Complete();
         context.RenderFrame(static () => {});
-        Assert.True((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.True((SDL.Raw.GetWindowFromId(id) is null));
         context.RenderFrame(static () => {});
         Assert.Equal(1, renderer.retireCount);
     }
@@ -124,7 +124,7 @@ public sealed unsafe class ViewportRetirementTests
         }
 
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Pending drain",
             width = 320,
@@ -132,7 +132,7 @@ public sealed unsafe class ViewportRetirementTests
             visible = false
         });
         var renderer = new PendingRenderer();
-        var context = application.CreateImGuiContext(
+        PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.EnableViewports,
             new ImGuiInteractionOptions(false, 1),
@@ -149,7 +149,7 @@ public sealed unsafe class ViewportRetirementTests
         uint id = renderer.target!.windowId;
 
         Assert.Throws<RetirementPendingException>(() => application.DestroyImGuiContext(window));
-        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.False((SDL.Raw.GetWindowFromId(id) is null));
         Assert.Equal(0, renderer.disposeCount);
         var replacement = new PendingRenderer();
         Assert.Throws<InvalidOperationException>(() => application.CreateImGuiContext(
@@ -162,7 +162,7 @@ public sealed unsafe class ViewportRetirementTests
 
         renderer.Complete();
         application.DestroyImGuiContext(window);
-        Assert.True((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.True((SDL.Raw.GetWindowFromId(id) is null));
         Assert.Equal(1, renderer.disposeCount);
         context.Dispose();
         application.DestroyImGuiContext(window);
@@ -180,7 +180,7 @@ public sealed unsafe class ViewportRetirementTests
         }
 
         using var application = new Sdl3PlatformApplication(NativeHostFixture.Create());
-        using var window = application.CreateWindow(new PlatformWindowOptions
+        using Sdl3PlatformWindow window = application.CreateWindow(new PlatformWindowOptions
         {
             title = "Failed creation",
             width = 320,
@@ -188,7 +188,7 @@ public sealed unsafe class ViewportRetirementTests
             visible = false
         });
         var renderer = new PendingRenderer { failCreation = true };
-        using var context = application.CreateImGuiContext(
+        using PlatformImGuiContext context = application.CreateImGuiContext(
             window,
             ImGuiContextFlags.EnableViewports,
             new ImGuiInteractionOptions(false, 1),
@@ -199,11 +199,11 @@ public sealed unsafe class ViewportRetirementTests
         NativeImGui.Raw.GetPlatformIO()->PlatformCreateWindow(&viewport);
         uint id = renderer.target!.windowId;
         Assert.Single(application.GetWindows());
-        Assert.False((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.False((SDL.Raw.GetWindowFromId(id) is null));
 
         renderer.Complete();
         Assert.Throws<InvalidOperationException>(() => context.RenderFrame(static () => {}));
-        Assert.True((SDL.Raw.GetWindowFromId(id) == null));
+        Assert.True((SDL.Raw.GetWindowFromId(id) is null));
         context.RenderFrame(static () => {});
     }
 

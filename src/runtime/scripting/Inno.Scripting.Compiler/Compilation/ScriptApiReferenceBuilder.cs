@@ -374,7 +374,7 @@ internal static class ScriptApiReferenceBuilder
         HashSet<Type> exportedTypes = allExports
             .Select(static export => export.type)
             .ToHashSet();
-        var builder = new StringBuilder("Inno.ScriptApi.PublicContract")
+        StringBuilder builder = new StringBuilder("Inno.ScriptApi.PublicContract")
             .Append('|')
             .Append(profile.name);
         foreach (ScriptApiAssembly export in profile.exports

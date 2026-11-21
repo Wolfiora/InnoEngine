@@ -59,7 +59,7 @@ public sealed unsafe class Sdl3WindowOperationsTests
         {
             SDL.Raw.DestroyWindow(native);
         }
-        Assert.True(SDL.Raw.GetWindowFromId(id) == null);
+        Assert.True(SDL.Raw.GetWindowFromId(id) is null);
     }
 
     [Fact]

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -98,7 +99,7 @@ public sealed class PlayerSupportPackPreparationIdentity
         ArgumentNullException.ThrowIfNull(properties);
         ArgumentNullException.ThrowIfNull(preparationInputs);
         ArgumentException.ThrowIfNullOrWhiteSpace(project);
-        var frozen = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
+        var frozen = new ReadOnlyDictionary<string, string>(
             properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase)
         );
         var result = new PlayerSupportPackPreparationIdentity(

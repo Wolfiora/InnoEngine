@@ -38,7 +38,7 @@ internal sealed class ValidationBuildInputs
             {
                 variantInputs.UnionWith(plan.inputSets[check.owner]);
             }
-            var dependencyPaths = check.inputs.Where(input => input != "@" + check.owner)
+            HashSet<string> dependencyPaths = check.inputs.Where(input => input != "@" + check.owner)
                 .SelectMany(input => input.StartsWith('@') ? plan.inputSets[input[1..]] : [input])
                 .ToHashSet(StringComparer.Ordinal);
             m_selectedSources.UnionWith(

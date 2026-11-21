@@ -65,7 +65,7 @@ internal static class BuildFileSystem
         string destination,
         CancellationToken cancellationToken
     ) {
-        await using FileStream input = new(
+        await using var input = new FileStream(
             source,
             FileMode.Open,
             FileAccess.Read,
@@ -73,7 +73,7 @@ internal static class BuildFileSystem
             128 * 1024,
             FileOptions.Asynchronous | FileOptions.SequentialScan
         );
-        await using FileStream output = new(
+        await using var output = new FileStream(
             destination,
             FileMode.CreateNew,
             FileAccess.Write,

@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Inno.Assets;
 using Inno.Extensibility.Types;
+using Inno.Text;
 
 namespace Inno.UI.Assets;
 
@@ -21,7 +23,7 @@ namespace Inno.UI.Assets;
 public sealed record UiDocumentSourceFile(
     string assetPath,
     string text,
-    Func<Inno.Assets.AssetPath, string>? readSource = null
+    Func<AssetPath, string>? readSource = null
 );
 
 /// <summary>
@@ -64,7 +66,7 @@ public sealed record UiDocumentDiagnostic(
 public sealed record UiDocumentFontDeclaration(
     string assetPath,
     string family,
-    Inno.Text.TextFontStyle style,
+    TextFontStyle style,
     int weight
 );
 
@@ -164,7 +166,7 @@ public sealed class UiDocumentFrontendCatalog
                 throw new ArgumentException("UI document frontends require unique, assigned language IDs.", nameof(frontends));
             }
         }
-        languageIds = new ReadOnlyCollection<UiDocumentLanguageId>([.. m_frontends.Keys]);
+        this.languageIds = new ReadOnlyCollection<UiDocumentLanguageId>([.. m_frontends.Keys]);
     }
 
     /// <summary>
@@ -208,7 +210,10 @@ public sealed class UiDocumentFrontendRegistry : TypeRegistry<UiDocumentFrontend
     /// Catalog that outlives this registry.
     /// </param>
     public UiDocumentFrontendRegistry(TypeCatalog types)
-        : base(types) => m_types = types;
+        : base(types)
+        {
+        m_types = types;
+    }
 
     /// <summary>
     /// Analyzes source while preventing provider retirement.

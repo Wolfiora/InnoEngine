@@ -50,8 +50,8 @@ public sealed class DocumentationReferenceTests : IDisposable
         }) {
             string product = owner.StartsWith("build/", StringComparison.Ordinal)
                              ? "<InnoProductTarget>fixture-foreign</InnoProductTarget>"
-                             : "";
-            string test = owner == "src/Fixture" ? "<IsTestProject>true</IsTestProject>" : "";
+                             : string.Empty;
+            string test = owner == "src/Fixture" ? "<IsTestProject>true</IsTestProject>" : string.Empty;
             Write(
                 owner + "/" + Path.GetFileName(owner) + ".csproj",
                 "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup>" + product + test
@@ -194,7 +194,12 @@ public sealed class DocumentationReferenceTests : IDisposable
                 OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
             )
         );
-        var start = new ProcessStartInfo(host) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true };
+        var start = new ProcessStartInfo(host)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
         foreach (string argument in new[]
         {
             "restore",
@@ -528,21 +533,20 @@ public sealed class DocumentationReferenceTests : IDisposable
     [Theory]
     [InlineData("--cache-root")]
     [InlineData("--snapshot")]
-    public async Task IncompleteSnapshotSelectionDoesNotOpenLocalFiles(string option)
-    {
-        await Assert.ThrowsAsync<ArgumentException>(() => DocumentationReferences.ValidateApiAsync([
-            "--engine-root",
-            m_root,
-            "--dotnet",
-            "not-invoked",
-            "--reference",
-            "absent.json",
-            "--output",
-            "report.json",
-            option,
-            "missing"
-        ]));
-    }
+    public async Task IncompleteSnapshotSelectionDoesNotOpenLocalFiles(
+        string option
+    ) => await Assert.ThrowsAsync<ArgumentException>(() => DocumentationReferences.ValidateApiAsync([
+        "--engine-root",
+        m_root,
+        "--dotnet",
+        "not-invoked",
+        "--reference",
+        "absent.json",
+        "--output",
+        "report.json",
+        option,
+        "missing"
+    ]));
 
     [Fact]
     public async Task RetiringSnapshotsPreservesReferencePayloadsForActiveReaders()
@@ -645,8 +649,8 @@ public sealed class DocumentationReferenceTests : IDisposable
             new { name = "Inno.Probe", path = selected, entry = "probe", surfaces = new[] { "source-clr" } },
             new { name = "Inno.Unrelated", path = unrelated, entry = "unrelated", surfaces = new[] { "source-clr" } }
         });
-        string revision = new('a', 40);
-        string tree = new('b', 40);
+        var revision = new string('a', 40);
+        var tree = new string('b', 40);
         Write("documentation/reference/projects/catalog.json", Encoding.UTF8.GetString(projects));
         Write("documentation/reference/api/probe.json", Encoding.UTF8.GetString(facts));
         Write(

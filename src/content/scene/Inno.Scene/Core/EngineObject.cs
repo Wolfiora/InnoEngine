@@ -67,12 +67,12 @@ public abstract class EngineObject : IdentityObject
     /// <summary>
     /// Compares this instance to another object using reference identity.
     /// </summary>
-    /// <returns>
-    /// <see langword="true"/> when <paramref name="obj"/> is this instance.
-    /// </returns>
     /// <param name="obj">
     /// The object to compare with this instance.
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> when <paramref name="obj"/> is this instance.
+    /// </returns>
     public override bool Equals(object? obj) => ReferenceEquals(this, obj);
 
     /// <summary>

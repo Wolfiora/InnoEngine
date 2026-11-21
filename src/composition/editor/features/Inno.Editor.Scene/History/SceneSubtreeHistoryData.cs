@@ -45,8 +45,8 @@ internal sealed record SceneSubtreeHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        Guid sceneId = new(reader.ReadBytes(16));
-        Guid rootId = new(reader.ReadBytes(16));
+        var sceneId = new Guid(reader.ReadBytes(16));
+        var rootId = new Guid(reader.ReadBytes(16));
         Guid? parentId = ReadGuid(reader);
         int siblingIndex = reader.ReadInt32();
         bool existsBefore = reader.ReadBoolean();

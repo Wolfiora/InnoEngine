@@ -4,10 +4,14 @@ using System.Linq;
 using Inno.Core.Identity;
 using Inno.Core.Serialization;
 using Inno.Editor.ImGui;
+using Inno.Editor.ImGui.ImGuiWidget;
 using Inno.Editor.Inspection;
 using Inno.Editor.Interactions;
 using Inno.Editor.Scene;
 using Inno.Scene;
+using Inno.Scene.Components;
+
+using Ui = Inno.Editor.ImGui.ImGui;
 
 namespace Inno.Editor.Panel.Inspector;
 
@@ -20,7 +24,7 @@ internal sealed class SelectionInspectionDrawer(
 {
     private readonly GameObjectTagSelector m_tags = new(settings, edits);
     private readonly GameObjectLayerSelector m_layers = new(settings, edits);
-    private string m_componentSearch = "";
+    private string m_componentSearch = string.Empty;
 
     /// <inheritdoc/>
     public override string icon => ImGuiIcon.LayerGroup;
@@ -103,7 +107,7 @@ internal sealed class SelectionInspectionDrawer(
             transaction.Commit();
         });
         EditorUiSession.current.widgets.Hint(mixed ? "Active \u00b7 Mixed values" : "Active");
-        float width = MathF.Max(1, Inno.Editor.ImGui.ImGui.GetContentRegionAvailable().X);
+        float width = MathF.Max(1, Ui.GetContentRegionAvailable().X);
         m_tags.Draw(targets, context.interactions, width);
         m_layers.Draw(targets, context.interactions, width);
         IReadOnlyList<GameComponent> primary = targets[0].GetComponents();
@@ -126,7 +130,7 @@ internal sealed class SelectionInspectionDrawer(
             )) {
                 string id = $"selection.{type.FullName}.{occurrence}";
                 DrawCommon(context, state, matches.Cast<EngineObject>().ToArray(), id);
-                if (Inno.Editor.ImGui.ImGui.Button("Reset Selected##" + id))
+                if (Ui.Button("Reset Selected##" + id))
                 {
                     using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Reset Components");
                     foreach (GameComponent match in matches.Cast<GameComponent>())
@@ -136,10 +140,10 @@ internal sealed class SelectionInspectionDrawer(
                     transaction.Commit();
                 }
 
-                if (matches.All(value => value is not Inno.Scene.Components.Transform))
+                if (matches.All(value => value is not Transform))
                 {
-                    Inno.Editor.ImGui.ImGui.SameLine(0, -1);
-                    if (Inno.Editor.ImGui.ImGui.Button("Remove Selected##" + id))
+                    Ui.SameLine(0, -1);
+                    if (Ui.Button("Remove Selected##" + id))
                     {
                         using EditorHistoryTransaction transaction = context.interactions.history.BeginTransaction("Remove Components");
                         foreach (GameComponent match in matches.Cast<GameComponent>())
@@ -160,11 +164,11 @@ internal sealed class SelectionInspectionDrawer(
         InspectionDrawContext context,
         GameObject primary
     ) {
-        var widgets = EditorUiSession.current.widgets;
+        ImGuiWidget widgets = EditorUiSession.current.widgets;
         if (widgets.CenteredButton("Add Component to Selection", widgets.style.addButtonTopPadding))
         {
-            m_componentSearch = "";
-            Inno.Editor.ImGui.ImGui.OpenPopup("selection.add-component");
+            m_componentSearch = string.Empty;
+            Ui.OpenPopup("selection.add-component");
         }
 
         if (!widgets.BeginSearchPopup("selection.add-component", ref m_componentSearch, "Search components...", 256))
@@ -176,7 +180,7 @@ internal sealed class SelectionInspectionDrawer(
             EditorInteraction interaction = context.interactions.For(InspectorInteractionIds.C_COMPONENT_AREA, primary);
             if (EditorUiSession.current.menus.DrawSearchItems(interaction, interaction.BuildMenu().items, m_componentSearch))
             {
-                Inno.Editor.ImGui.ImGui.CloseCurrentPopup();
+                Ui.CloseCurrentPopup();
             }
         }
         finally
@@ -207,7 +211,7 @@ internal sealed class SelectionInspectionDrawer(
             {
                 continue;
             }
-            var availability = properties.Select((
+            (bool isVisible, bool isReadOnly)[] availability = properties.Select((
                 values,
                 index
             ) => context.properties.GetPropertyAvailability(
@@ -250,7 +254,7 @@ internal sealed class SelectionInspectionDrawer(
         IReadOnlyList<EngineObject> targets
     ) : IInspectionPropertyEditService
     {
-        /// <inheritdoc />
+        /// <inheritdoc/>
         public bool ChangeProperty(
             object owner,
             string propertyName,

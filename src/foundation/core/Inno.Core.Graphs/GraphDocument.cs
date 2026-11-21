@@ -272,7 +272,7 @@ public sealed class GraphDocument
             edges.Add(new GraphEdgeRecord(sourceEdge.id, sourceEdge.output, sourceEdge.input));
         }
 
-        Dictionary<string, GraphSerializedValue> metadata = new(StringComparer.Ordinal);
+        var metadata = new Dictionary<string, GraphSerializedValue>(StringComparer.Ordinal);
         foreach ((string key, GraphSerializedValue value) in source.metadata)
         {
             metadata.Add(key, value.Clone());

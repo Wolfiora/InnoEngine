@@ -14,7 +14,7 @@ public sealed class CoroutineSchedulerTests
     public void StartCoroutine_NullYield_RunsOnNextTick()
     {
         using var scheduler = new CoroutineScheduler();
-        var ran = false;
+        bool ran = false;
 
         scheduler.StartCoroutine(Routine());
         scheduler.Tick(0.016f);
@@ -34,7 +34,7 @@ public sealed class CoroutineSchedulerTests
     public void WaitForSeconds_WaitsByTime()
     {
         using var scheduler = new CoroutineScheduler();
-        var ran = false;
+        bool ran = false;
 
         scheduler.StartCoroutine(Routine());
         scheduler.Tick(0.3f);
@@ -49,7 +49,7 @@ public sealed class CoroutineSchedulerTests
 
         IEnumerator Routine()
         {
-            yield return new WaitForSeconds(1.0f);
+            yield return new WaitForSeconds(1f);
             ran = true;
         }
     }
@@ -58,8 +58,8 @@ public sealed class CoroutineSchedulerTests
     public void WaitUntil_And_WaitWhile_Work()
     {
         using var scheduler = new CoroutineScheduler();
-        var flag = false;
-        var done = false;
+        bool flag = false;
+        bool done = false;
 
         scheduler.StartCoroutine(Routine());
         scheduler.Tick(0.016f);
@@ -86,7 +86,7 @@ public sealed class CoroutineSchedulerTests
     public void StopCoroutine_StopsTarget()
     {
         using var scheduler = new CoroutineScheduler();
-        var count = 0;
+        int count = 0;
         CoroutineHandle handle = scheduler.StartCoroutine(Routine());
 
         scheduler.Tick(0.016f);
@@ -112,8 +112,8 @@ public sealed class CoroutineSchedulerTests
         using var scheduler = new CoroutineScheduler();
         var ownerA = new object();
         var ownerB = new object();
-        var a = 0;
-        var b = 0;
+        int a = 0;
+        int b = 0;
 
         CoroutineHandle handleA = scheduler.StartCoroutine(ownerA, Loop(() => a++));
         scheduler.StartCoroutine(ownerB, Loop(() => b++));
@@ -144,7 +144,7 @@ public sealed class CoroutineSchedulerTests
     public void NestedCoroutine_Works()
     {
         using var scheduler = new CoroutineScheduler();
-        var order = "";
+        string order = string.Empty;
 
         scheduler.StartCoroutine(Routine());
         scheduler.Tick(0.016f);
@@ -173,7 +173,7 @@ public sealed class CoroutineSchedulerTests
     {
         using var scheduler = new CoroutineScheduler();
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var completed = false;
+        bool completed = false;
 
         scheduler.StartCoroutine(Routine());
         scheduler.Tick(0.016f);
@@ -195,7 +195,7 @@ public sealed class CoroutineSchedulerTests
     public void ListenOnceStyle_YieldCoroutineHandle_WaitsTarget()
     {
         using var scheduler = new CoroutineScheduler();
-        var done = false;
+        bool done = false;
 
         CoroutineHandle child = scheduler.StartCoroutine(Child());
         scheduler.StartCoroutine(Parent(child));
@@ -223,7 +223,7 @@ public sealed class CoroutineSchedulerTests
         using var scheduler = new CoroutineScheduler();
         const int workers = 8;
         const int perWorker = 4000;
-        var count = 0;
+        int count = 0;
 
         Parallel.For(0, workers, _ =>
         {
@@ -251,8 +251,8 @@ public sealed class CoroutineSchedulerTests
     {
         using var scheduler = new CoroutineScheduler();
         const int count = 3000;
-        CoroutineHandle[] handles = new CoroutineHandle[count];
-        var ran = 0;
+        var handles = new CoroutineHandle[count];
+        int ran = 0;
 
         for (int i = 0; i < count; i++)
         {
@@ -312,7 +312,7 @@ public sealed class CoroutineSchedulerTests
     {
         using var schedulerA = new CoroutineScheduler();
         using var schedulerB = new CoroutineScheduler();
-        var count = 0;
+        int count = 0;
 
         CoroutineHandle handleA = schedulerA.StartCoroutine(Loop(() => Interlocked.Increment(ref count)));
         schedulerA.Tick(0.016f);

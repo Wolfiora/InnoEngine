@@ -25,8 +25,8 @@ public sealed class NativeBuildContextTests : IDisposable
         NativeBuildContext Context(string path)
             => new NativeBuildContext(path, "release")
                 .WithComponentOptions(owner, new(NativeLibraryKind.Shared));
-        var plain = Context(m_root);
-        var separated = Context(m_root + Path.DirectorySeparatorChar);
+        NativeBuildContext plain = Context(m_root);
+        NativeBuildContext separated = Context(m_root + Path.DirectorySeparatorChar);
         Assert.Equal(plain.engineRoot, separated.engineRoot);
         NativeBuildRecipe first = NativeBuildRecipe.CreateForComponent(plain, owner, "fixture", "fixture-target", [], [], []);
         NativeBuildRecipe second = NativeBuildRecipe.CreateForComponent(separated, owner, "fixture", "fixture-target", [], [], []);

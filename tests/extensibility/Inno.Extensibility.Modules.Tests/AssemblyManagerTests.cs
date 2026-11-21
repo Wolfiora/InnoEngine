@@ -165,7 +165,7 @@ public sealed class ModuleHostTests : IDisposable
     public void LoadAndReloadPublishOnlyTheActiveGeneration()
     {
         AssemblyModuleHandle handle = LoadVersion("V1");
-        TypeRef previousRef = new(S_RELOADABLE_TYPE_ID);
+        var previousRef = new TypeRef(S_RELOADABLE_TYPE_ID);
         Type previous = previousRef.Resolve(m_types);
         Assert.Equal(1, ReadVersion(previous));
         int previousRuntimeId = m_types.GetTypeRef(previous).runtimeId;
@@ -394,7 +394,7 @@ public sealed class ModuleHostTests : IDisposable
         Assert.Equal(1, throwing.completeCount);
         Assert.Equal(1, following.completeCount);
         Assert.Equal(2, m_modules.modules.Single().generation);
-        Assert.Equal(Inno.Extensibility.Reload.GenerationState.Faulted, m_modules.generations.state);
+        Assert.Equal(GenerationState.Faulted, m_modules.generations.state);
         throwing.throwOnComplete = false;
     }
 
@@ -445,7 +445,7 @@ public sealed class ModuleHostTests : IDisposable
         Assert.Equal(1, observer.rollbackCount);
         Assert.Equal(1, throwing.rollbackCount);
         Assert.Equal(1, m_modules.modules.Single().generation);
-        Assert.Equal(Inno.Extensibility.Reload.GenerationState.Faulted, m_modules.generations.state);
+        Assert.Equal(GenerationState.Faulted, m_modules.generations.state);
     }
 
     [Fact]

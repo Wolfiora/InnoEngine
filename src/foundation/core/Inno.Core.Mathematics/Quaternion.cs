@@ -2,6 +2,8 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
+using NumericsQuaternion = System.Numerics.Quaternion;
+
 namespace Inno.Core.Mathematics;
 
 /// <summary>
@@ -13,22 +15,26 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public float x;
+    [DataMember]
+    public float x;
 
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public float y;
+    [DataMember]
+    public float y;
 
     /// <summary>
     /// The depth or third component.
     /// </summary>
-    [DataMember] public float z;
+    [DataMember]
+    public float z;
 
     /// <summary>
     /// The homogeneous or fourth component.
     /// </summary>
-    [DataMember] public float w;
+    [DataMember]
+    public float w;
 
     /// <summary>
     /// Creates a validated quaternion instance.
@@ -134,7 +140,7 @@ public struct Quaternion : IEquatable<Quaternion>
         {
             return identity;
         }
-        var conj = Conjugate(q);
+        Quaternion conj = Conjugate(q);
         return new Quaternion(conj.x / lenSq, conj.y / lenSq, conj.z / lenSq, conj.w / lenSq);
     }
 
@@ -169,7 +175,7 @@ public struct Quaternion : IEquatable<Quaternion>
         if (dot > 0.9995f)
         {
             // Linear interpolation fallback
-            Quaternion result = new Quaternion(
+            var result = new Quaternion(
                 a.x + t * (b.x - a.x),
                 a.y + t * (b.y - a.y),
                 a.z + t * (b.z - a.z),
@@ -438,7 +444,7 @@ public struct Quaternion : IEquatable<Quaternion>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Quaternion FromEulerAnglesXYZDegrees(Vector3 eulerDegrees)
     {
-        var euler = eulerDegrees * (MathF.PI / 180f);
+        Vector3 euler = eulerDegrees * (MathF.PI / 180f);
 
         float cx = MathF.Cos(euler.x * 0.5f);
         float sx = MathF.Sin(euler.x * 0.5f);
@@ -494,7 +500,7 @@ public struct Quaternion : IEquatable<Quaternion>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Quaternion FromEulerAnglesZYXDegrees(Vector3 eulerDegrees)
     {
-        var euler = eulerDegrees * (MathF.PI / 180f);
+        Vector3 euler = eulerDegrees * (MathF.PI / 180f);
 
         float cz = MathF.Cos(euler.z * 0.5f);
         float sz = MathF.Sin(euler.z * 0.5f);
@@ -526,14 +532,12 @@ public struct Quaternion : IEquatable<Quaternion>
     public static Quaternion operator *(
         Quaternion a,
         Quaternion b
-    ) {
-        return new Quaternion(
-            a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
-            a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
-            a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
-            a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
-        );
-    }
+    ) => new Quaternion(
+        a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+        a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+        a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+        a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z
+    );
 
     /// <summary>
     /// Determines whether the supplied values are equal under the type's equality tolerance.
@@ -581,7 +585,7 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The validated system.numerics.quaternion that represents the completed operation.
     /// </returns>
-    public static implicit operator System.Numerics.Quaternion(Quaternion q) => new(q.x, q.y, q.z, q.w);
+    public static implicit operator NumericsQuaternion(Quaternion q) => new(q.x, q.y, q.z, q.w);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Quaternion"/>.
@@ -592,7 +596,7 @@ public struct Quaternion : IEquatable<Quaternion>
     /// <returns>
     /// The validated quaternion that represents the completed operation.
     /// </returns>
-    public static implicit operator Quaternion(System.Numerics.Quaternion q) => new(q.X, q.Y, q.Z, q.W);
+    public static implicit operator Quaternion(NumericsQuaternion q) => new(q.X, q.Y, q.Z, q.W);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

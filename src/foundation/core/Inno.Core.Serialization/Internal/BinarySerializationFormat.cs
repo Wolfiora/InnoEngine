@@ -148,19 +148,58 @@ internal static partial class BinarySerializationFormat
     ) {
         switch (value)
         {
-            case bool typed: writer.Write((byte)NodeKind.Boolean); writer.Write(typed); return;
-            case byte typed: writer.Write((byte)NodeKind.Byte); writer.Write(typed); return;
-            case sbyte typed: writer.Write((byte)NodeKind.SByte); writer.Write(typed); return;
-            case short typed: writer.Write((byte)NodeKind.Int16); writer.Write(typed); return;
-            case ushort typed: writer.Write((byte)NodeKind.UInt16); writer.Write(typed); return;
-            case int typed: writer.Write((byte)NodeKind.Int32); writer.Write(typed); return;
-            case uint typed: writer.Write((byte)NodeKind.UInt32); writer.Write(typed); return;
-            case long typed: writer.Write((byte)NodeKind.Int64); writer.Write(typed); return;
-            case ulong typed: writer.Write((byte)NodeKind.UInt64); writer.Write(typed); return;
-            case float typed: writer.Write((byte)NodeKind.Single); writer.Write(typed); return;
-            case double typed: writer.Write((byte)NodeKind.Double); writer.Write(typed); return;
-            case decimal typed: writer.Write((byte)NodeKind.Decimal); writer.Write(typed); return;
-            case string typed: writer.Write((byte)NodeKind.String); writer.Write(typed); return;
+            case bool typed:
+                writer.Write((byte)NodeKind.Boolean);
+                writer.Write(typed);
+                return;
+            case byte typed:
+                writer.Write((byte)NodeKind.Byte);
+                writer.Write(typed);
+                return;
+            case sbyte typed:
+                writer.Write((byte)NodeKind.SByte);
+                writer.Write(typed);
+                return;
+            case short typed:
+                writer.Write((byte)NodeKind.Int16);
+                writer.Write(typed);
+                return;
+            case ushort typed:
+                writer.Write((byte)NodeKind.UInt16);
+                writer.Write(typed);
+                return;
+            case int typed:
+                writer.Write((byte)NodeKind.Int32);
+                writer.Write(typed);
+                return;
+            case uint typed:
+                writer.Write((byte)NodeKind.UInt32);
+                writer.Write(typed);
+                return;
+            case long typed:
+                writer.Write((byte)NodeKind.Int64);
+                writer.Write(typed);
+                return;
+            case ulong typed:
+                writer.Write((byte)NodeKind.UInt64);
+                writer.Write(typed);
+                return;
+            case float typed:
+                writer.Write((byte)NodeKind.Single);
+                writer.Write(typed);
+                return;
+            case double typed:
+                writer.Write((byte)NodeKind.Double);
+                writer.Write(typed);
+                return;
+            case decimal typed:
+                writer.Write((byte)NodeKind.Decimal);
+                writer.Write(typed);
+                return;
+            case string typed:
+                writer.Write((byte)NodeKind.String);
+                writer.Write(typed);
+                return;
             case Guid typed:
                 Span<byte> bytes = stackalloc byte[16];
                 _ = typed.TryWriteBytes(bytes);

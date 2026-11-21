@@ -97,7 +97,7 @@ public sealed partial class SerializationBehaviorTests
         for (int index = 0; index < 12; index++)
         {
             value.count++;
-            value.ratio = BitConverter.Int32BitsToSingle(index % 2 == 0 ? unchecked((int)0x80000000) : 0x7fc00001 + index);
+            value.ratio = BitConverter.Int32BitsToSingle(index % 2 == 0 ? unchecked((int)0x8000_0000) : 0x7FC0_0001 + index);
             value.bytes[index % 2]++;
             value.values.Add(index);
             SerializationSnapshot next = m_serialization.CaptureSnapshot(value, previous: snapshot);
@@ -258,8 +258,11 @@ internal sealed class MutatingPropertyCapture : ISerializable
 {
     private readonly byte[] m_bytes = [1];
 
-    [SerializableProperty(PropertyVisibility.Serialize)] public byte[] bytes => m_bytes;
-    [SerializableProperty(PropertyVisibility.Serialize)] public int mutate => m_bytes[0] = 2;
+    [SerializableProperty(PropertyVisibility.Serialize)]
+    public byte[] bytes => m_bytes;
+
+    [SerializableProperty(PropertyVisibility.Serialize)]
+    public int mutate => m_bytes[0] = 2;
 
     internal void Reset() => m_bytes[0] = 1;
 }
@@ -284,7 +287,7 @@ internal sealed class SnapshotEnvelopeConverter : SerializationConverter<Snapsho
     ) {
         value.writeCalls++;
         value.observedTypeGeneration = writer.typeSnapshot.version;
-        foreach (var pair in value.fields)
+        foreach (KeyValuePair<string, int> pair in value.fields)
         {
             writer.Write(pair.Key, pair.Value);
         }

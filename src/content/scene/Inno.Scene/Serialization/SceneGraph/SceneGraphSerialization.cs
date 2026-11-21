@@ -423,12 +423,11 @@ internal static class SceneGraphSerialization
         SerializationWriter writer,
         IReadOnlyCollection<GameSystem> systems,
         IReadOnlyDictionary<EngineObject, Guid> sourceIds
-    ) {
-        writer.WriteObjectArray(C_SYSTEMS_KEY, systems, (
-            systemWriter,
-            system
-        ) =>
-        {
+    ) => writer.WriteObjectArray(C_SYSTEMS_KEY, systems, (
+        systemWriter,
+        system
+    ) =>
+    {
             systemWriter.Write(C_SYSTEM_ID_KEY, GetSourceId(sourceIds, system));
             if (system is MissingGameSystem missing)
             {
@@ -443,7 +442,6 @@ internal static class SceneGraphSerialization
             AssetDependency[] dependencies = WriteState(systemWriter, system);
             WriteStateDependencies(systemWriter, dependencies);
         });
-    }
 
     internal static IReadOnlyList<(GameSystem system, byte[] state)> CreateSystems(
         GameScene scene,
@@ -680,7 +678,7 @@ internal static class SceneGraphSerialization
             return;
         }
 
-        var targetByPersistentId = sourceIds.Keys.ToDictionary(
+        Dictionary<Guid, Guid> targetByPersistentId = sourceIds.Keys.ToDictionary(
             static engineObject => engineObject.identity.persistentId,
             engineObject => sourceIds[engineObject]
         );
@@ -914,9 +912,7 @@ internal static class SceneGraphSerialization
         TypeRef typeRef,
         SerializationContext context,
         out Type? type
-    ) {
-        return context.GetRequired<TypeCatalog>().TryResolve(typeRef, out type);
-    }
+    ) => context.GetRequired<TypeCatalog>().TryResolve(typeRef, out type);
 
     private static void WriteComponent(
         SerializationWriter writer,

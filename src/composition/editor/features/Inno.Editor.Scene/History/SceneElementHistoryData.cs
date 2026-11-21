@@ -50,15 +50,15 @@ internal sealed record SceneElementHistoryData(
     {
         using var stream = new MemoryStream(bytes.ToArray(), writable: false);
         using var reader = new BinaryReader(stream, Encoding.UTF8, leaveOpen: false);
-        var elementKind = (SceneElementKind)reader.ReadByte();
+        SceneElementKind elementKind = (SceneElementKind)reader.ReadByte();
         if (!Enum.IsDefined(elementKind))
         {
             throw new InvalidDataException($"Unknown scene element history kind '{elementKind}'.");
         }
-        Guid sceneId = new(reader.ReadBytes(16));
-        Guid ownerId = new(reader.ReadBytes(16));
-        Guid elementId = new(reader.ReadBytes(16));
-        TypeRef type = new(new Guid(reader.ReadBytes(16)));
+        var sceneId = new Guid(reader.ReadBytes(16));
+        var ownerId = new Guid(reader.ReadBytes(16));
+        var elementId = new Guid(reader.ReadBytes(16));
+        var type = new TypeRef(new Guid(reader.ReadBytes(16)));
         int beforeIndex = reader.ReadInt32();
         int afterIndex = reader.ReadInt32();
         bool existsBefore = reader.ReadBoolean();

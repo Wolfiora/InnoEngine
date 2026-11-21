@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -101,11 +102,11 @@ public sealed class BuildCachePublisher
     /// <param name="currentKey">
     /// A product/target/configuration root identity, or null for an unselected generation.
     /// </param>
-    /// <param name="cancellationToken">
-    /// Cancels before metadata selection.
-    /// </param>
     /// <param name="targetId">
     /// The producer's product target, or null for a shared host generation.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels before metadata selection.
     /// </param>
     /// <exception cref="IOException">
     /// An owned path escapes the boundary, crosses a directory link, or contains an invalid file link.
@@ -177,11 +178,6 @@ public sealed class BuildCachePublisher
     /// <param name="cancellationToken">
     /// Cancels inspection or initial registration before publication.
     /// </param>
-    /// <remarks>
-    /// This confirms ownership, not content integrity. The producer must verify the immutable payload itself.
-    /// Existing registration age is retained; use an active lease or a current generation dependency to protect
-    /// consumers. This operation neither selects a current root nor records a new use time.
-    /// </remarks>
     /// <exception cref="InvalidOperationException">
     /// This publisher does not own immutable artifacts.
     /// </exception>
@@ -194,6 +190,11 @@ public sealed class BuildCachePublisher
     /// <exception cref="OperationCanceledException">
     /// Inspection or registration was canceled.
     /// </exception>
+    /// <remarks>
+    /// This confirms ownership, not content integrity. The producer must verify the immutable payload itself.
+    /// Existing registration age is retained; use an active lease or a current generation dependency to protect
+    /// consumers. This operation neither selects a current root nor records a new use time.
+    /// </remarks>
     public void EnsureImmutableRegistration(
         string directory,
         string leasePath,
@@ -351,7 +352,7 @@ public sealed class BuildCachePublisher
         string owners = Path.Combine(directory, "owners");
         Directory.CreateDirectory(owners);
         ProcessOwnerStamp stamp = ProcessOwnerStamp.CaptureCurrent();
-        string process = stamp.processId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        string process = stamp.processId.ToString(CultureInfo.InvariantCulture);
         AtomicFile.WriteAllBytes(Path.Combine(owners, process + ".pid"), JsonSerializer.SerializeToUtf8Bytes(stamp));
         Record(directory, leasePath, closure, null, null, cancellationToken);
     }
@@ -393,7 +394,7 @@ public sealed class BuildCachePublisher
         HashSet<string> currents = ReadRoots(cancellation).ToHashSet(BuildCacheInventory.pathComparer);
         foreach (string pointer in m_role == BuildCacheArtifactRole.ImmutableArtifact
                                    ? Directory.EnumerateFiles(m_root, "*.current")
-                                   : Enumerable.Empty<string>()
+                                   : []
         ) {
             string selected = PathBoundary.Resolve(m_root, File.ReadAllText(PathBoundary.RequireUnlinkedPath(m_root, pointer)));
             if (!Directory.Exists(selected))
@@ -567,7 +568,10 @@ public sealed class BuildCachePublisher
             ) {
                 return true;
             }
-            var stamp = new ProcessOwnerStamp(root.GetProperty("processId").GetInt32(), root.GetProperty("startedUtcTicks").GetInt64());
+            var stamp = new ProcessOwnerStamp(
+                root.GetProperty("processId").GetInt32(),
+                root.GetProperty("startedUtcTicks").GetInt64()
+            );
             return stamp.Query() != ProcessOwnerState.Exited;
         }
         catch (Exception exception) when (exception is JsonException or ArgumentException or InvalidOperationException

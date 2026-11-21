@@ -42,18 +42,18 @@ public sealed class Logger
     /// <param name="arguments">
     /// Optional composite-format arguments.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// Thrown when <paramref name="message"/> is empty.
-    /// </exception>
-    /// <exception cref="ObjectDisposedException">
-    /// Thrown after the owning router has been disposed.
-    /// </exception>
     /// <param name="filePath">
     /// Source file supplied by the caller information attribute.
     /// </param>
     /// <param name="lineNumber">
     /// Source line supplied by the caller information attribute.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="message"/> is empty.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// Thrown after the owning router has been disposed.
+    /// </exception>
     public void Write(
         LogLevel level,
         string message,

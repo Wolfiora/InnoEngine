@@ -26,13 +26,13 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
         TKey key,
         T item
     ) {
-        if (!m_map.TryGetValue(key, out var set))
+        if (!m_map.TryGetValue(key, out HashSet<T>? set))
         {
             set = new HashSet<T>(IndexedObjectStore<T>.ReferenceEqualityComparer<T>.INSTANCE);
             m_map[key] = set;
         }
 
-        var added = set.Add(item);
+        bool added = set.Add(item);
         return added && set.Count == 1;
     }
 
@@ -49,7 +49,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
         TKey key,
         T item
     ) {
-        if (!m_map.TryGetValue(key, out var set))
+        if (!m_map.TryGetValue(key, out HashSet<T>? set))
         {
             return;
         }
@@ -78,12 +78,12 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
         out T? item
     ) {
         item = null;
-        if (!m_map.TryGetValue(key, out var set) || set.Count == 0)
+        if (!m_map.TryGetValue(key, out HashSet<T>? set) || set.Count == 0)
         {
             return false;
         }
 
-        using var e = set.GetEnumerator();
+        using HashSet<T>.Enumerator e = set.GetEnumerator();
         if (!e.MoveNext())
         {
             return false;
@@ -103,7 +103,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
     /// The scalar result calculated from the supplied inputs.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public int GetCount(TKey key) => m_map.TryGetValue(key, out var set) ? set.Count : 0;
+    public int GetCount(TKey key) => m_map.TryGetValue(key, out HashSet<T>? set) ? set.Count : 0;
 
     /// <summary>
     /// Determines whether current state contains the requested value value.
@@ -121,7 +121,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
     public bool Contains(
         TKey key,
         T item
-    ) => m_map.TryGetValue(key, out var set) && set.Contains(item);
+    ) => m_map.TryGetValue(key, out HashSet<T>? set) && set.Contains(item);
 
     /// <summary>
     /// Determines whether a key currently has no indexed values.
@@ -133,7 +133,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
     /// <see langword="true"/> when the requested condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsKeyEmpty(TKey key) => !m_map.TryGetValue(key, out var set) || set.Count == 0;
+    public bool IsKeyEmpty(TKey key) => !m_map.TryGetValue(key, out HashSet<T>? set) || set.Count == 0;
 
     /// <summary>
     /// Retrieves the requested set value from current authoritative state.
@@ -145,7 +145,7 @@ internal sealed class MultiKeyStorage<TKey, T> : IKeyStorage<TKey, T>
     /// The validated hash sett? that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public HashSet<T>? GetSet(TKey key) => m_map.TryGetValue(key, out var set) ? set : EMPTY_SET;
+    public HashSet<T>? GetSet(TKey key) => m_map.TryGetValue(key, out HashSet<T>? set) ? set : EMPTY_SET;
 
     /// <summary>
     /// Removes all retained entries and returns the instance to an empty reusable state.

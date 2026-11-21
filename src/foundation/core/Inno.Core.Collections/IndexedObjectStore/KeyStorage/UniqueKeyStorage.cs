@@ -26,7 +26,7 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T>
         TKey key,
         T item
     ) {
-        if (m_map.TryGetValue(key, out var existing) && !ReferenceEquals(existing, item))
+        if (m_map.TryGetValue(key, out T? existing) && !ReferenceEquals(existing, item))
         {
             throw new InvalidOperationException($"Duplicate key '{key}' in unique index.");
         }
@@ -48,7 +48,7 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T>
         TKey key,
         T item
     ) {
-        if (m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item))
+        if (m_map.TryGetValue(key, out T? existing) && ReferenceEquals(existing, item))
         {
             m_map.Remove(key);
         }
@@ -99,7 +99,7 @@ internal sealed class UniqueKeyStorage<TKey, T> : IKeyStorage<TKey, T>
     public bool Contains(
         TKey key,
         T item
-    ) => m_map.TryGetValue(key, out var existing) && ReferenceEquals(existing, item);
+    ) => m_map.TryGetValue(key, out T? existing) && ReferenceEquals(existing, item);
 
     /// <summary>
     /// Determines whether a key currently has no indexed values.

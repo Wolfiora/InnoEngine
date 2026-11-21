@@ -139,9 +139,9 @@ public sealed partial class AssetPipeline
         string destination = Path.Combine(assetRoot, transaction.target.localPath);
         Directory.Move(transaction.stagedSource, destination);
         transaction.sourceMoved = true;
-        if (System.IO.File.Exists(transaction.stagedSource + ".imeta"))
+        if (File.Exists(transaction.stagedSource + ".imeta"))
         {
-            System.IO.File.Move(transaction.stagedSource + ".imeta", destination + ".imeta");
+            File.Move(transaction.stagedSource + ".imeta", destination + ".imeta");
             transaction.metaMoved = true;
         }
         AssetLoader activeLoader = GetLoader();
@@ -223,9 +223,9 @@ public sealed partial class AssetPipeline
         EnsureSampleImportOwner(transaction);
         transaction.candidate?.Rollback();
         string destination = Path.Combine(assetRoot, transaction.target.localPath);
-        if (transaction.metaMoved && System.IO.File.Exists(destination + ".imeta"))
+        if (transaction.metaMoved && File.Exists(destination + ".imeta"))
         {
-            System.IO.File.Move(destination + ".imeta", transaction.stagedSource + ".imeta");
+            File.Move(destination + ".imeta", transaction.stagedSource + ".imeta");
             transaction.metaMoved = false;
         }
         if (transaction.sourceMoved && Directory.Exists(destination))
@@ -258,7 +258,7 @@ public sealed partial class AssetPipeline
     private void RequireSampleDestination(AssetPath target)
     {
         string destination = Path.Combine(assetRoot, target.localPath);
-        if (Directory.Exists(destination) || System.IO.File.Exists(destination) || System.IO.File.Exists(destination + ".imeta"))
+        if (Directory.Exists(destination) || File.Exists(destination) || File.Exists(destination + ".imeta"))
         {
             throw new IOException($"Sample import target '{target}' already exists.");
         }

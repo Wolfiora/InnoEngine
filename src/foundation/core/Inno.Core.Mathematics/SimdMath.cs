@@ -26,13 +26,13 @@ internal static class SimdMath
     ) {
         if (Sse.IsSupported)
         {
-            var mul = Sse.Multiply(a, b);
+            Vector128<float> mul = Sse.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
         }
 
         if (AdvSimd.IsSupported)
         {
-            var mul = AdvSimd.Multiply(a, b);
+            Vector128<float> mul = AdvSimd.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
         }
 
@@ -69,17 +69,17 @@ internal static class SimdMath
     ) {
         if (Sse.IsSupported)
         {
-            var a = Vector128.Create(ax, ay, 0f, 0f);
-            var b = Vector128.Create(bx, by, 0f, 0f);
-            var mul = Sse.Multiply(a, b);
+            Vector128<float> a = Vector128.Create(ax, ay, 0f, 0f);
+            Vector128<float> b = Vector128.Create(bx, by, 0f, 0f);
+            Vector128<float> mul = Sse.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1);
         }
 
         if (AdvSimd.IsSupported)
         {
-            var a = Vector128.Create(ax, ay, 0f, 0f);
-            var b = Vector128.Create(bx, by, 0f, 0f);
-            var mul = AdvSimd.Multiply(a, b);
+            Vector128<float> a = Vector128.Create(ax, ay, 0f, 0f);
+            Vector128<float> b = Vector128.Create(bx, by, 0f, 0f);
+            Vector128<float> mul = AdvSimd.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1);
         }
 
@@ -121,17 +121,17 @@ internal static class SimdMath
     ) {
         if (Sse.IsSupported)
         {
-            var a = Vector128.Create(ax, ay, az, 0f);
-            var b = Vector128.Create(bx, by, bz, 0f);
-            var mul = Sse.Multiply(a, b);
+            Vector128<float> a = Vector128.Create(ax, ay, az, 0f);
+            Vector128<float> b = Vector128.Create(bx, by, bz, 0f);
+            Vector128<float> mul = Sse.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2);
         }
 
         if (AdvSimd.IsSupported)
         {
-            var a = Vector128.Create(ax, ay, az, 0f);
-            var b = Vector128.Create(bx, by, bz, 0f);
-            var mul = AdvSimd.Multiply(a, b);
+            Vector128<float> a = Vector128.Create(ax, ay, az, 0f);
+            Vector128<float> b = Vector128.Create(bx, by, bz, 0f);
+            Vector128<float> mul = AdvSimd.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2);
         }
 
@@ -181,17 +181,17 @@ internal static class SimdMath
     ) {
         if (Sse.IsSupported)
         {
-            var a = Vector128.Create(ax, ay, az, aw);
-            var b = Vector128.Create(bx, by, bz, bw);
-            var mul = Sse.Multiply(a, b);
+            Vector128<float> a = Vector128.Create(ax, ay, az, aw);
+            Vector128<float> b = Vector128.Create(bx, by, bz, bw);
+            Vector128<float> mul = Sse.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
         }
 
         if (AdvSimd.IsSupported)
         {
-            var a = Vector128.Create(ax, ay, az, aw);
-            var b = Vector128.Create(bx, by, bz, bw);
-            var mul = AdvSimd.Multiply(a, b);
+            Vector128<float> a = Vector128.Create(ax, ay, az, aw);
+            Vector128<float> b = Vector128.Create(bx, by, bz, bw);
+            Vector128<float> mul = AdvSimd.Multiply(a, b);
             return mul.GetElement(0) + mul.GetElement(1) + mul.GetElement(2) + mul.GetElement(3);
         }
 

@@ -53,7 +53,10 @@ internal sealed record ArraySerializationNode : SerializationNode
     internal ArraySerializationNode()
         : this([]) {}
 
-    internal ArraySerializationNode(List<SerializationNode> values) => this.values = values;
+    internal ArraySerializationNode(List<SerializationNode> values)
+    {
+        this.values = values;
+    }
 
     internal List<SerializationNode> values { get; }
 }

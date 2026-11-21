@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using BGCS.Runtime;
 using Xunit;
+using Xunit.Sdk;
 using Inno.Build.Toolchains;
 using Inno.Testing.Source;
 
@@ -152,7 +153,7 @@ public sealed class NuGetLoadedIdentityTests
             string mismatch = Path.Combine(root, "mismatched", "BGCS.Runtime.dll");
             Directory.CreateDirectory(Path.GetDirectoryName(mismatch)!);
             File.WriteAllBytes(mismatch, File.ReadAllBytes(runtime));
-            await using (FileStream altered = new(mismatch, FileMode.Append, FileAccess.Write))
+            await using (var altered = new FileStream(mismatch, FileMode.Append, FileAccess.Write))
             {
                 await altered.WriteAsync(new byte[] { 0x49, 0x4E, 0x4E, 0x4F }, cancellation.Token);
             }
@@ -214,7 +215,7 @@ public sealed class NuGetLoadedIdentityTests
             Assembly different = context.LoadFromAssemblyPath(mismatch);
             Assert.Equal(loaded.GetName().FullName, different.GetName().FullName);
             Assert.Equal(loaded.ManifestModule.ModuleVersionId, different.ManifestModule.ModuleVersionId);
-            Assert.Throws<Xunit.Sdk.EqualException>(() => AssertLoadedContent(expected, different));
+            Assert.Throws<EqualException>(() => AssertLoadedContent(expected, different));
             return (new WeakReference(context), new WeakReference(different));
         }
         finally

@@ -622,7 +622,7 @@ public static partial class ArchitectureValidator
             return;
         }
 
-        var declaredTestProjects = paths
+        Dictionary<string, string> declaredTestProjects = paths
             .Where(static pair => (
                 pair.Value.StartsWith("tests/", StringComparison.Ordinal)
                 && pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
@@ -730,7 +730,7 @@ public static partial class ArchitectureValidator
             }
         }
 
-        var declaredSourceProjects = paths
+        Dictionary<string, string> declaredSourceProjects = paths
             .Where(static pair => (
                 S_PRODUCTION_ROOTS.Any(root => pair.Value.StartsWith(root + "/", StringComparison.Ordinal))
                 && pair.Value.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)

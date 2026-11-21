@@ -79,7 +79,7 @@ internal sealed class MiniAudioEncodedArtifactCache : IDisposable
         }
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (m_disposed)

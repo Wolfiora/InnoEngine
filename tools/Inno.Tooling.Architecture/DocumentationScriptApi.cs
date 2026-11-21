@@ -91,7 +91,7 @@ internal static class DocumentationScriptApi
             cancellationToken
         );
         capture = capture with { target = options.GetValueOrDefault("--target") };
-        var inventory = RepositorySourceInventory.Projects(root).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        HashSet<string> inventory = RepositorySourceInventory.Projects(root).ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (Project project in capture.projects)
         {
             if (!inventory.Contains(PathBoundary.RequireUnlinkedPath(root, PathBoundary.Resolve(root, project.project))))
@@ -99,7 +99,7 @@ internal static class DocumentationScriptApi
                 throw new InvalidDataException("Projected owner is absent from the actual project inventory: " + project.project);
             }
         }
-        foreach (var source in sources)
+        foreach (KeyValuePair<string, byte[]> source in sources)
         {
             if (!File.ReadAllBytes(source.Key).AsSpan().SequenceEqual(source.Value))
             {
@@ -145,7 +145,9 @@ internal static class DocumentationScriptApi
             string,
             List<(string path, string assembly, DocumentationApiExtractor.DocumentationApiEntry symbol)>
         >(StringComparer.Ordinal);
-        var sourceMembers = new Dictionary<string, DocumentationApiExtractor.DocumentationApiEntry>(StringComparer.Ordinal);
+        var sourceMembers = new Dictionary<string, DocumentationApiExtractor.DocumentationApiEntry>(
+            StringComparer.Ordinal
+        );
         var ambiguousMembers = new HashSet<string>(StringComparer.Ordinal);
         var declaredScopes = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (byte[] bytes in sourceReferences)
@@ -179,7 +181,8 @@ internal static class DocumentationScriptApi
                 }
                 foreach (JsonElement element in project.GetProperty("symbols").EnumerateArray())
                 {
-                    var symbol = element.Deserialize<DocumentationApiExtractor.DocumentationApiEntry>()!;
+                    DocumentationApiExtractor.DocumentationApiEntry symbol = element
+                        .Deserialize<DocumentationApiExtractor.DocumentationApiEntry>()!;
                     string path = project.GetProperty("project").GetString()!;
                     string memberKey = path + "\0" + symbol.id;
                     if (!sourceMembers.TryAdd(memberKey, symbol)
@@ -192,8 +195,10 @@ internal static class DocumentationScriptApi
                     {
                         continue;
                     }
-                    if (!sourceTypes.TryGetValue(symbol.id, out var candidates))
-                    {
+                    if (!sourceTypes.TryGetValue(
+                        symbol.id,
+                        out List<(string path, string assembly, DocumentationApiExtractor.DocumentationApiEntry symbol)>? candidates
+                    )) {
                         sourceTypes.Add(symbol.id, candidates = []);
                     }
                     if (!candidates.Any(prior => prior.path == path && prior.symbol.signature == symbol.signature))
@@ -218,12 +223,12 @@ internal static class DocumentationScriptApi
         {
             throw new InvalidDataException("Unsupported script documentation provenance.");
         }
-        var origins = provenance.Elements("type").ToDictionary(
+        Dictionary<string, string> origins = provenance.Elements("type").ToDictionary(
             static origin => (string)origin.Attribute("id")!,
             static origin => (string)origin.Attribute("source")!,
             StringComparer.Ordinal
         );
-        var originAssemblies = provenance.Elements("type").ToDictionary(
+        Dictionary<string, string> originAssemblies = provenance.Elements("type").ToDictionary(
             static origin => (string)origin.Attribute("id")!,
             static origin => (
                 (string?)origin.Attribute("assembly")
@@ -241,7 +246,7 @@ internal static class DocumentationScriptApi
             }
         }
         var toSource = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var mapping in mappings)
+        foreach (KeyValuePair<string, string> mapping in mappings)
         {
             toSource.Add(mapping.Key[2..], mapping.Value[2..]);
             if (mapping.Key.Contains('`'))
@@ -255,17 +260,17 @@ internal static class DocumentationScriptApi
                 toSource[name] = original;
             }
         }
-        var toLogical = toSource.GroupBy(static pair => pair.Value, StringComparer.Ordinal)
+        Dictionary<string, string> toLogical = toSource.GroupBy(static pair => pair.Value, StringComparer.Ordinal)
             .Where(static group => group.Count() == 1)
             .ToDictionary(static group => group.Key, static group => group.Single().Key, StringComparer.Ordinal);
         Regex reverseNames = IdentityPattern(toSource.Keys);
         Regex forwardNames = IdentityPattern(toLogical.Keys);
-        var selected = (PortableExecutableReference)references[editor ? 1 : 0];
+        PortableExecutableReference selected = (PortableExecutableReference)references[editor ? 1 : 0];
         selected = ((AssemblyMetadata)selected.GetMetadata()).GetReference(
             documentation: new AssemblyDocumentationProvider(xmlPath, xmlBytes),
             filePath: selectedPath
         );
-        var compilation = CSharpCompilation.Create(
+        CSharpCompilation compilation = CSharpCompilation.Create(
             "DocumentationScriptReference",
             references: frameworkReferences.Concat(references.Where(reference => reference != references[editor ? 1 : 0])).Append(selected),
             options: new CSharpCompilationOptions(
@@ -274,8 +279,8 @@ internal static class DocumentationScriptApi
                 metadataImportOptions: MetadataImportOptions.Public
             )
         );
-        var assembly = (IAssemblySymbol?)compilation.GetAssemblyOrModuleSymbol(selected)
-                       ?? throw new InvalidDataException("The selected logical script assembly cannot be read.");
+        IAssemblySymbol assembly = (IAssemblySymbol?)compilation.GetAssemblyOrModuleSymbol(selected)
+                                   ?? throw new InvalidDataException("The selected logical script assembly cannot be read.");
         var paths = new Dictionary<string, string>(StringComparer.Ordinal);
         IReadOnlyList<DocumentationApiExtractor.DocumentationApiEntry> symbols = DocumentationApiExtractor.CaptureReference(
             assembly,
@@ -314,16 +319,22 @@ internal static class DocumentationScriptApi
         {
             INamedTypeSymbol type = symbol as INamedTypeSymbol ?? symbol.ContainingType;
             string id = type.GetDocumentationCommentId()!;
-            if (!origins.TryGetValue(id, out string? original) || !sourceTypes.TryGetValue(original, out var allCandidates))
-            {
+            if (!origins.TryGetValue(id, out string? original)
+                || !sourceTypes.TryGetValue(
+                    original,
+                    out List<(string path, string assembly, DocumentationApiExtractor.DocumentationApiEntry symbol)>? allCandidates
+                )
+            ) {
                 throw new InvalidDataException("Projected type has no unambiguous compiler origin and captured engine owner: " + id);
             }
-            var candidates = allCandidates.Where(candidate => candidate.assembly == originAssemblies[id]).ToArray();
+            (string path, string assembly, DocumentationApiExtractor.DocumentationApiEntry symbol)[] candidates = allCandidates
+                .Where(candidate => candidate.assembly == originAssemblies[id])
+                .ToArray();
             if (candidates.Length != 1)
             {
                 throw new InvalidDataException("Projected type origin does not resolve to one captured assembly: " + id);
             }
-            var origin = candidates[0];
+            (string path, string assembly, DocumentationApiExtractor.DocumentationApiEntry symbol) origin = candidates[0];
             if (!declaredScopes.TryGetValue(origin.assembly + "\0" + original, out string? scope))
             {
                 throw new InvalidDataException("Projected type lacks its actual export scope declaration: " + id);
@@ -338,7 +349,7 @@ internal static class DocumentationScriptApi
             {
                 throw new InvalidDataException("Projected member has conflicting captured source contracts: " + originalId);
             }
-            if (!sourceMembers.TryGetValue(origin.path + "\0" + originalId, out var member))
+            if (!sourceMembers.TryGetValue(origin.path + "\0" + originalId, out DocumentationApiExtractor.DocumentationApiEntry? member))
             {
                 if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor, Parameters.Length: 0, ContainingType.IsValueType: true })
                 {
@@ -420,7 +431,7 @@ internal static class DocumentationScriptApi
         }
         if (selected.Length == 0) return [];
         var sourceFacts = new List<byte[]>();
-        var requiredOwners = selected.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> requiredOwners = selected.SelectMany(static reference => reference.projects).ToHashSet(StringComparer.Ordinal);
         foreach (DocumentationReferenceInfo source in catalog.references.Where(reference => (
             reference.model == "source-clr"
             && reference.configuration == configuration && (reference.target is null || reference.target == target)
@@ -457,7 +468,7 @@ internal static class DocumentationScriptApi
                 using JsonDocument expected = JsonDocument.Parse(
                     await snapshot.ReadReferenceAsync(reference.path, cancellationToken).ConfigureAwait(false)
                 );
-                var previous = expected.RootElement.GetProperty("projects")
+                Dictionary<string, JsonElement> previous = expected.RootElement.GetProperty("projects")
                     .EnumerateArray()
                     .ToDictionary(static project => project.GetProperty("name").GetString()!, StringComparer.Ordinal);
                 foreach (Project project in actual.projects)
@@ -471,7 +482,7 @@ internal static class DocumentationScriptApi
                     {
                         differences.Add("Projected owner path changed: " + project.name);
                     }
-                    var symbols = old.GetProperty("symbols")
+                    Dictionary<string, JsonElement> symbols = old.GetProperty("symbols")
                         .EnumerateArray()
                         .ToDictionary(static symbol => symbol.GetProperty("id").GetString()!, StringComparer.Ordinal);
                     foreach (DocumentationApiExtractor.DocumentationApiEntry symbol in project.symbols)

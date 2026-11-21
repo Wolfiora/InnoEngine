@@ -46,7 +46,7 @@ internal static class ManagedBuildInputReader
         ).ConfigureAwait(false);
         _ = await EvaluateAsync(context, sdk, project, evaluation.properties, true, cancellation).ConfigureAwait(false);
         XElement captured = await EvaluateAsync(context, sdk, project, evaluation.properties, false, cancellation).ConfigureAwait(false);
-        var inputs = captured.Elements("Input").Select(element => NativeBuildInput.FromPath(
+        List<NativeBuildInput> inputs = captured.Elements("Input").Select(element => NativeBuildInput.FromPath(
             context.engineRoot,
             (string?)element.Attribute("Path") ?? throw new InvalidDataException("A managed input has no physical location.")
         )).ToList();

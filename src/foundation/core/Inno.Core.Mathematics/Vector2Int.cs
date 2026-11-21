@@ -13,12 +13,14 @@ public struct Vector2Int : IEquatable<Vector2Int>
     /// <summary>
     /// The horizontal or first component.
     /// </summary>
-    [DataMember] public int x;
+    [DataMember]
+    public int x;
 
     /// <summary>
     /// The vertical or second component.
     /// </summary>
-    [DataMember] public int y;
+    [DataMember]
+    public int y;
 
     /// <summary>
     /// Creates a vector from explicit component values.

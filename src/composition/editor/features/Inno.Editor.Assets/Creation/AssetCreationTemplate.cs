@@ -180,7 +180,10 @@ public sealed class AssetCreationContext
     /// Source serializer carrying the active reference context.
     /// </param>
     [ScriptingApiIgnore]
-    public AssetCreationContext(AssetSourceStore sources) => m_sources = sources ?? throw new ArgumentNullException(nameof(sources));
+    public AssetCreationContext(AssetSourceStore sources)
+    {
+        m_sources = sources ?? throw new ArgumentNullException(nameof(sources));
+    }
 
     /// <summary>
     /// Encodes an Asset value through the current native structured source serializer.

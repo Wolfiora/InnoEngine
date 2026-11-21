@@ -31,18 +31,18 @@ public static class ImGuizmoToolchain
     /// <param name="imGui">
     /// The matching published ImGui product providing the native link dependency.
     /// </param>
-    /// <exception cref="ArgumentException">
-    /// The configuration is invalid.
-    /// </exception>
-    /// <exception cref="InvalidOperationException">
-    /// A native build process fails.
-    /// </exception>
     /// <param name="cancellationToken">
     /// Cancels child processes and prevents artifact installation after cancellation.
     /// </param>
     /// <returns>
     /// The validated gizmo library linked against the explicitly supplied ImGui product.
     /// </returns>
+    /// <exception cref="ArgumentException">
+    /// The configuration is invalid.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A native build process fails.
+    /// </exception>
     /// <exception cref="OperationCanceledException">
     /// The operation was canceled.
     /// </exception>

@@ -57,7 +57,7 @@ internal sealed class ConsoleView
             {
                 if (Matches(occurrence, query, levels))
                 {
-                    filtered.Add(new Row("occurrence/" + occurrence.sequence, occurrence, Array.AsReadOnly(new[] { occurrence })));
+                    filtered.Add(new Row("occurrence/" + occurrence.sequence, occurrence, Array.AsReadOnly([occurrence])));
                 }
             }
         }
@@ -128,7 +128,7 @@ internal sealed class ConsoleView
             this.key = key;
             this.latest = latest;
             this.occurrences = occurrences;
-            copyTarget = new ConsoleEntryCopyTarget(latest, occurrences.Count);
+            this.copyTarget = new ConsoleEntryCopyTarget(latest, occurrences.Count);
         }
 
         internal string key { get; }

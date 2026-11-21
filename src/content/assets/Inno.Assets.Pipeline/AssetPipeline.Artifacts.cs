@@ -18,7 +18,7 @@ using Inno.Scripting.Api;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetPipeline
+public sealed partial class AssetPipeline
 {
     /// <summary>
     /// Tries to resolve a named artifact output.
@@ -115,10 +115,6 @@ sealed partial class AssetPipeline
     /// <summary>
     /// Exports a runtime-only artifact snapshot on a worker without loading artifact files into memory.
     /// </summary>
-    /// <remarks>
-    /// Keeps generation admission and serialization pinned until the worker completes, fails or cancels.
-    /// A pending or faulted generation cannot start a new export.
-    /// </remarks>
     /// <param name="destinationContentRoot">
     /// The empty destination that receives the runtime asset database.
     /// </param>
@@ -135,6 +131,10 @@ sealed partial class AssetPipeline
     /// <exception cref="OperationCanceledException">
     /// Thrown when cancellation is requested before export completes.
     /// </exception>
+    /// <remarks>
+    /// Keeps generation admission and serialization pinned until the worker completes, fails or cancels.
+    /// A pending or faulted generation cannot start a new export.
+    /// </remarks>
     [ScriptingApiIgnore]
     public async Task<AssetRuntimeContentInfo> ExportRuntimeArtifactsAsync(
         string destinationContentRoot,

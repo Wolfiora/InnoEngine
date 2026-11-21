@@ -1,6 +1,8 @@
 using System;
 using System.Runtime.CompilerServices;
 
+using NumericsVector4 = System.Numerics.Vector4;
+
 namespace Inno.Core.Mathematics;
 
 /// <summary>
@@ -10,9 +12,24 @@ namespace Inno.Core.Mathematics;
 public struct Rect : IEquatable<Rect>
 {
     /// <summary>
-    /// The horizontal or first component.
+    /// The horizontal position of the origin corner.
     /// </summary>
-    public float x, y, width, height;
+    public float x;
+
+    /// <summary>
+    /// The vertical position of the origin corner.
+    /// </summary>
+    public float y;
+
+    /// <summary>
+    /// The horizontal extent.
+    /// </summary>
+    public float width;
+
+    /// <summary>
+    /// The vertical extent.
+    /// </summary>
+    public float height;
 
     /// <summary>
     /// Gets the scalar measurement or identity associated with the current state.
@@ -91,13 +108,10 @@ public struct Rect : IEquatable<Rect>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Overlaps(Rect other)
-    {
-        return !(right <= other.left
-                 || left >= other.right
-                 || bottom <= other.top
-                 || top >= other.bottom);
-    }
+    public bool Overlaps(Rect other) => !(right <= other.left
+                                          || left >= other.right
+                                          || bottom <= other.top
+                                          || top >= other.bottom);
 
     /// <summary>
     /// Checks if this rectangle fully contains another rectangle.
@@ -109,13 +123,10 @@ public struct Rect : IEquatable<Rect>
     /// <see langword="true"/> when the operation succeeds or its condition is satisfied; otherwise, <see langword="false"/>.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(Rect other)
-    {
-        return left <= other.left
-               && top <= other.top
-               && right >= other.right
-               && bottom >= other.bottom;
-    }
+    public bool Contains(Rect other) => left <= other.left
+                                        && top <= other.top
+                                        && right >= other.right
+                                        && bottom >= other.bottom;
 
     /// <summary>
     /// Checks if this rectangle contains a point.
@@ -133,10 +144,8 @@ public struct Rect : IEquatable<Rect>
     public bool Contains(
         float px,
         float py
-    ) {
-        return px >= left && px < right
-               && py >= top && py < bottom;
-    }
+    ) => px >= left && px < right
+         && py >= top && py < bottom;
 
     /// <summary>
     /// Determines whether current state contains the requested value value.
@@ -166,9 +175,7 @@ public struct Rect : IEquatable<Rect>
     public static Rect FromMinMax(
         Vector2 min,
         Vector2 max
-    ) {
-        return new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
-    }
+    ) => new Rect(min.x, min.y, max.x - min.x, max.y - min.y);
 
     /// <summary>
     /// Returns the smallest axis-aligned rectangle containing both supplied rectangles.
@@ -312,7 +319,7 @@ public struct Rect : IEquatable<Rect>
     /// The validated system.numerics.vector4 that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator System.Numerics.Vector4(Rect r) => new System.Numerics.Vector4(r.x, r.y, r.width, r.height);
+    public static implicit operator NumericsVector4(Rect r) => new NumericsVector4(r.x, r.y, r.width, r.height);
 
     /// <summary>
     /// Converts the supplied value to <see cref="Rect"/>.
@@ -324,7 +331,7 @@ public struct Rect : IEquatable<Rect>
     /// The validated rect that represents the completed operation.
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Rect(System.Numerics.Vector4 v) => new Rect(v.X, v.Y, v.Z, v.W);
+    public static implicit operator Rect(NumericsVector4 v) => new Rect(v.X, v.Y, v.Z, v.W);
 
     /// <summary>
     /// Determines whether this value and the supplied value represent the same logical state.

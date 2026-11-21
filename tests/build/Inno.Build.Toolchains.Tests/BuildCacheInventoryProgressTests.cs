@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
@@ -38,7 +39,7 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
         await PrepareAsync("second", "second payload");
         await MaintainAsync();
         string[] checkpoints = Directory.GetFiles(Path.Combine(m_root, "artifacts", "cache-owners", "inventory"), "*.inventory");
-        var before = checkpoints.ToDictionary(static path => path, File.ReadAllText);
+        Dictionary<string, string> before = checkpoints.ToDictionary(static path => path, File.ReadAllText);
         await PrepareAsync("first", "a longer changed payload");
         await MaintainAsync();
         Assert.Single(checkpoints.Where(path => before[path] != File.ReadAllText(path)));
@@ -142,14 +143,14 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
             completed.Length < C_COUNT,
             "The first checkpoint must interrupt discovery before the complete protection graph exists."
         );
-        var snapshots = completed.ToDictionary(
+        Dictionary<string, (string, DateTime)> snapshots = completed.ToDictionary(
             static path => path,
             static path => (File.ReadAllText(path), File.GetLastWriteTimeUtc(path))
         );
         Assert.Equal(C_COUNT, Directory.GetDirectories(Path.Combine(m_root, "cache")).Length);
         await MaintainAsync();
         Assert.Equal(C_COUNT, Directory.GetFiles(directory, "*.inventory").Length);
-        foreach (var snapshot in snapshots)
+        foreach (KeyValuePair<string, (string, DateTime)> snapshot in snapshots)
         {
             Assert.Equal(snapshot.Value.Item1, File.ReadAllText(snapshot.Key));
             Assert.Equal(snapshot.Value.Item2, File.GetLastWriteTimeUtc(snapshot.Key));
@@ -176,9 +177,9 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
     private Task MaintainAsync(
         bool dryRun = false,
         bool retireAll = false
-    ) {
+    ) =>
         // Full inventory and retirement assertions are foreground work, not a five-second automatic maintenance slice.
-        return BuildMaintenanceApplication.CleanAsync(
+        BuildMaintenanceApplication.CleanAsync(
             m_root,
             new(long.MaxValue, 0, TimeSpan.FromMinutes(2)),
             retireAll,
@@ -186,7 +187,6 @@ public sealed class BuildCacheInventoryProgressTests : IDisposable
             null,
             CancellationToken.None
         );
-    }
 
     public void Dispose()
     {

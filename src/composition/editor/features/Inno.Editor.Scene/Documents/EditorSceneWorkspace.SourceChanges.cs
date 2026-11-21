@@ -71,7 +71,7 @@ internal sealed partial class EditorSceneWorkspace
     ) {
         string oldPath = NormalizePath(oldRelativePath);
         string newPath = NormalizePath(newRelativePath);
-        if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(newPath), out Inno.Assets.Pipeline.AssetFileEntry entry)
+        if (m_assets.TryGetFileSystemEntry(AssetPath.Parse(newPath), out AssetFileEntry entry)
             && entry.isDirectory
         ) {
             ApplyDirectoryRename(oldPath, newPath);

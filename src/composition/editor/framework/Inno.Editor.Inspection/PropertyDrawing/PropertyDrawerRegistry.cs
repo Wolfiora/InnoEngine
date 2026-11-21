@@ -186,7 +186,7 @@ public sealed class PropertyDrawerRegistry : IDisposable
             throw new InvalidOperationException($"Property drawer '{type.FullName}' must declare exactly one constructor.");
         }
         ParameterInfo[] parameters = constructors[0].GetParameters();
-        object?[] arguments = new object?[parameters.Length];
+        var arguments = new object?[parameters.Length];
         for (int index = 0; index < parameters.Length; index++)
         {
             Type parameterType = parameters[index].ParameterType;

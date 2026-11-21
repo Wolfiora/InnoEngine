@@ -231,7 +231,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WhenViewLimitExceeded_FailsClearly()
     {
-        RenderGraphBuilder graph = new(1, CreateCapabilities(maxViews: 1));
+        var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 1));
         graph.AddRasterPass("A", C_GEOMETRY, 0, static (
             _,
             _
@@ -250,8 +250,8 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WithPhaseCycle_FailsClearly()
     {
-        RenderPhaseId left = new("tests.left");
-        RenderPhaseId right = new("tests.right");
+        var left = new RenderPhaseId("tests.left");
+        var right = new RenderPhaseId("tests.right");
         RenderGraphBuilder graph = CreateGraph();
         RenderPassBuilder leftPass = graph.AddRasterPass("Left", left, 0, static (
             _,
@@ -369,7 +369,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WhenSampledFormatIsMissing_FailsClearly()
     {
-        RenderGraphBuilder graph = new(
+        var graph = new RenderGraphBuilder(
             1,
             CreateCapabilities(maxViews: 64, sampledFormats: [RenderTextureFormat.RGBA8])
         );
@@ -387,7 +387,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WhenTextureArrayCapabilityIsMissing_FailsClearly()
     {
-        RenderGraphBuilder graph = new(
+        var graph = new RenderGraphBuilder(
             1,
             CreateCapabilities(
                 maxViews: 64,
@@ -411,7 +411,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WhenUnsigned32BitIndexCapabilityIsMissing_FailsClearly()
     {
-        RenderGraphBuilder graph = new(
+        var graph = new RenderGraphBuilder(
             1,
             CreateCapabilities(
                 maxViews: 64,
@@ -434,7 +434,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WhenVolumeTextureCapabilityIsMissing_FailsClearly()
     {
-        RenderGraphBuilder graph = new(1, CreateCapabilities(maxViews: 64));
+        var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 64));
         _ = graph.CreateTexture(
             "Unsupported Volume",
             new RenderTextureDescriptor(
@@ -456,7 +456,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WithSupportedVolumeAndCubemapTextures_Succeeds()
     {
-        RenderGraphBuilder graph = new(
+        var graph = new RenderGraphBuilder(
             1,
             CreateCapabilities(
                 maxViews: 64,
@@ -494,7 +494,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_WhenMultisampleFormatCapabilityIsMissing_FailsClearly()
     {
-        RenderGraphBuilder graph = new(1, CreateCapabilities(maxViews: 64));
+        var graph = new RenderGraphBuilder(1, CreateCapabilities(maxViews: 64));
         RenderTextureHandle target = graph.CreateTexture(
             "Unsupported MSAA",
             new RenderTextureDescriptor(
@@ -522,7 +522,7 @@ public sealed class RenderGraphCompilerTests
     [Fact]
     public void Compile_StorageTextureAccessHonorsReadAndWriteFormatCapabilities()
     {
-        RenderGraphBuilder readGraph = new(
+        var readGraph = new RenderGraphBuilder(
             1,
             CreateCapabilities(maxViews: 64, storageReadFormats: [RenderTextureFormat.RGBA8], storageWriteFormats: [])
         );
@@ -553,7 +553,7 @@ public sealed class RenderGraphCompilerTests
 
         Assert.True(readResult.succeeded);
 
-        RenderGraphBuilder writeGraph = new(
+        var writeGraph = new RenderGraphBuilder(
             2,
             CreateCapabilities(maxViews: 64, storageReadFormats: [], storageWriteFormats: [RenderTextureFormat.RGBA8])
         );
@@ -573,7 +573,7 @@ public sealed class RenderGraphCompilerTests
 
         Assert.True(writeResult.succeeded);
 
-        RenderGraphBuilder readWriteGraph = new(
+        var readWriteGraph = new RenderGraphBuilder(
             3,
             CreateCapabilities(maxViews: 64, storageReadFormats: [], storageWriteFormats: [RenderTextureFormat.RGBA8])
         );
@@ -614,7 +614,7 @@ public sealed class RenderGraphCompilerTests
             )
             .HasSideEffect();
         CompiledRenderGraph compiled = graph.Compile().graph!;
-        RecordingBackend backend = new();
+        var backend = new RecordingBackend();
 
         Assert.Throws<InvalidOperationException>(() => compiled.Execute(backend, 12));
 
@@ -659,7 +659,7 @@ public sealed class RenderGraphCompilerTests
         graph.AddRasterPass("Serial", C_FINAL, 3, Record)
             .HasSideEffect();
         CompiledRenderGraph compiled = graph.Compile().graph!;
-        RecordingBackend backend = new();
+        var backend = new RecordingBackend();
 
         compiled.Execute(backend, 42);
 
@@ -702,7 +702,7 @@ public sealed class RenderGraphCompilerTests
             | GraphicsCapability.TextureBlit
             | GraphicsCapability.Texture2DArray
             | GraphicsCapability.Index32),
-        new GraphicsLimits(maxViews, 8, 16384, 16),
+        new GraphicsLimits(maxViews, 8, 16_384, 16),
         sampledFormats ?? Enum.GetValues<RenderTextureFormat>(),
         Enum.GetValues<RenderTextureFormat>(),
         storageReadFormats

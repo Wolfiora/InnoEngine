@@ -41,7 +41,7 @@ public sealed class CoreClrDeploymentCompiler : IManagedDeploymentCompiler
         ArgumentNullException.ThrowIfNull(workspaces);
         m_hostPath = hostPath;
         m_workspaces = workspaces;
-        capabilities = new ManagedDeploymentCapabilities(
+        this.capabilities = new ManagedDeploymentCapabilities(
             runtimeIdentifiers,
             dynamicCode: true,
             aheadOfTime: false,
@@ -49,13 +49,13 @@ public sealed class CoreClrDeploymentCompiler : IManagedDeploymentCompiler
         );
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentId id => ManagedDeploymentId.coreClr;
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ManagedDeploymentCapabilities capabilities { get; }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public ValueTask<ManagedDeploymentResult> CompileAsync(
         ManagedDeploymentRequest request,
         CancellationToken cancellationToken = default

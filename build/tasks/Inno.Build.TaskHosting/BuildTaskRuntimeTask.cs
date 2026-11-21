@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using Inno.Build.Toolchains;
 using Inno.Core.IO;
 
@@ -13,7 +14,7 @@ namespace Inno.Build.TaskHosting;
 /// <summary>
 /// Coordinates shared task-runtime compilation before immutable publication and private loading.
 /// </summary>
-public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICancelableTask
+public sealed class BuildTaskRuntimeTask : Task, ICancelableTask
 {
     private readonly object m_cancellationGate = new();
     private readonly CancellationTokenSource m_cancellation = new();
@@ -95,7 +96,10 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
             // MSBuild's API applies undefinitions to the final request. Explicit task
             // properties must survive removal of identically named parent globals.
             removed = removed.Where(name => !properties.Contains(name)).ToArray();
-            var workspaces = new BuildCachePublisher(Path.GetDirectoryName(artifacts)!, BuildCacheArtifactRole.ReusableWorkspace);
+            var workspaces = new BuildCachePublisher(
+                Path.GetDirectoryName(artifacts)!,
+                BuildCacheArtifactRole.ReusableWorkspace
+            );
             ownerUses = AcquireOwnerUses(
                 [
                     new(cache, BuildCacheArtifactRole.ImmutableArtifact),
@@ -174,7 +178,7 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
                     ))
                 ) {
                     var inputProperties = new Hashtable(StringComparer.OrdinalIgnoreCase);
-                    foreach (var property in inputRestore.properties)
+                    foreach (KeyValuePair<string, string> property in inputRestore.properties)
                     {
                         inputProperties[property.Key] = property.Value;
                     }
@@ -340,10 +344,10 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
         string artifacts,
         IReadOnlyList<string> removed
     ) {
-        Hashtable properties = new(StringComparer.OrdinalIgnoreCase);
+        var properties = new Hashtable(StringComparer.OrdinalIgnoreCase);
         if (BuildEngine is IBuildEngine6 engine)
         {
-            foreach (var property in engine.GetGlobalProperties())
+            foreach (KeyValuePair<string, string> property in engine.GetGlobalProperties())
             {
                 if (!removed.Contains(property.Key, StringComparer.OrdinalIgnoreCase))
                 {
@@ -375,10 +379,12 @@ public sealed class BuildTaskRuntimeTask : Microsoft.Build.Utilities.Task, ICanc
 
     private static IDictionary RestoreProperties(IDictionary compilationProperties)
     {
-        var properties = new Hashtable(compilationProperties, StringComparer.OrdinalIgnoreCase);
-        // NuGet restore must not populate the build engine's compilation evaluation cache
-        // with package content items from the imports it is about to replace.
-        properties["ExcludeRestorePackageImports"] = "true";
+        var properties = new Hashtable(compilationProperties, StringComparer.OrdinalIgnoreCase)
+        {
+            // NuGet restore must not populate the build engine's compilation evaluation cache
+            // with package content items from the imports it is about to replace.
+            ["ExcludeRestorePackageImports"] = "true"
+        };
         return properties;
     }
 

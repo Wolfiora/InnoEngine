@@ -360,7 +360,7 @@ internal sealed class SceneElementHistoryHandler : EditorHistoryHandler
         IReadOnlyList<SceneReferenceRollbackState> rollbackReferences,
         string failure
     ) {
-        var failures = new System.Collections.Generic.List<string>();
+        var failures = new List<string>();
         try
         {
             SceneElementSerialization.RestoreState(

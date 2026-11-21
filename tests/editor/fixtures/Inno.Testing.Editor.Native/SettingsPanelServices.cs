@@ -49,7 +49,7 @@ internal sealed class SettingsPanelServices
             engine.serialization,
             BuildSettings.CreateDefault("Settings acceptance", string.Empty, target.id)
         );
-        services = [pipeline, build];
+        this.services = [pipeline, build];
     }
 
     internal IReadOnlyList<object> services { get; }

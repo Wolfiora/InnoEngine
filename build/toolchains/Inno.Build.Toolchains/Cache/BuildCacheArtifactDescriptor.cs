@@ -20,12 +20,12 @@ public sealed class BuildCacheArtifactDescriptor
     /// <param name="leasePath">
     /// The absolute persistent file used by this entry's actual producer and readers for Core.IO coordination.
     /// </param>
+    /// <param name="targetId">
+    /// The explicit product target, or null for a shared host artifact that target-scoped cleanup must preserve.
+    /// </param>
     /// <param name="bytes">
     /// The publisher-recorded sum of owned file lengths, captured under writing ownership for cache budgeting.
     /// It does not measure allocated disk blocks or count shared hardlinks as recovered volume space.
-    /// </param>
-    /// <param name="targetId">
-    /// The explicit product target, or null for a shared host artifact that target-scoped cleanup must preserve.
     /// </param>
     /// <param name="lastUseUtc">
     /// The publisher's last recorded use, used only to order retirement.

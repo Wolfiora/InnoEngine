@@ -50,13 +50,13 @@ public readonly struct EditorUiLayout
 
     internal unsafe EditorUiLayout(ImGuiStyle* style)
     {
-        itemSpacing = ImGui.FromNative(style->ItemSpacing);
-        windowPadding = ImGui.FromNative(style->WindowPadding);
-        cellPadding = ImGui.FromNative(style->CellPadding);
-        itemInnerSpacing = ImGui.FromNative(style->ItemInnerSpacing);
-        framePadding = ImGui.FromNative(style->FramePadding);
-        dockingSeparatorSize = style->DockingSeparatorSize;
-        scrollbarSize = style->ScrollbarSize;
-        frameRounding = style->FrameRounding;
+        this.itemSpacing = ImGui.FromNative(style->ItemSpacing);
+        this.windowPadding = ImGui.FromNative(style->WindowPadding);
+        this.cellPadding = ImGui.FromNative(style->CellPadding);
+        this.itemInnerSpacing = ImGui.FromNative(style->ItemInnerSpacing);
+        this.framePadding = ImGui.FromNative(style->FramePadding);
+        this.dockingSeparatorSize = style->DockingSeparatorSize;
+        this.scrollbarSize = style->ScrollbarSize;
+        this.frameRounding = style->FrameRounding;
     }
 }

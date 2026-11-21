@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Inno.Adapter.Platform;
+using Inno.Core.Execution;
 using Inno.Native.Bgfx;
 using Inno.Platform;
 using Inno.Rendering;
@@ -24,7 +25,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     private readonly int m_deferredDestroyFrames;
     private readonly bool m_hasPrimarySurface;
     private readonly List<BgfxSurfaceRetirement> m_surfaceRetirements = [];
-    private Inno.Core.Execution.RetirementBarrier? m_surfaceRetirementBarrier;
+    private RetirementBarrier? m_surfaceRetirementBarrier;
     private ulong m_submissionSequence;
     private readonly IBgfxSurfaceIntegration? m_surfaceIntegration;
     private readonly Dictionary<ulong, bgfx.TextureHandle> m_persistentTextures = [];
@@ -91,9 +92,9 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
         m_hasPrimarySurface = options.window is not null;
         int pixelWidth = options.backbufferWidth;
         int pixelHeight = options.backbufferHeight;
-        primaryPresentationSize = m_hasPrimarySurface && pixelWidth > 0 && pixelHeight > 0
-                                  ? new RenderPresentationSize(pixelWidth, pixelHeight)
-                                  : null;
+        this.primaryPresentationSize = m_hasPrimarySurface && pixelWidth > 0 && pixelHeight > 0
+                                       ? new RenderPresentationSize(pixelWidth, pixelHeight)
+                                       : null;
         m_backbufferWidth = Math.Max(1, pixelWidth);
         m_backbufferHeight = Math.Max(1, pixelHeight);
         m_resetFlags = (uint)(
@@ -135,13 +136,13 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
             }
             nativeInitialized = true;
 
-            generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
+            this.generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
             if (generation == 0)
             {
-                generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
+                this.generation = unchecked((uint)Interlocked.Increment(ref s_nextGeneration));
             }
 
-            capabilities = BgfxCapabilityMapper.FromNative(bgfx.Raw.get_caps());
+            this.capabilities = BgfxCapabilityMapper.FromNative(bgfx.Raw.get_caps());
         }
         catch
         {
@@ -240,7 +241,7 @@ public sealed unsafe partial class BgfxDevice : RenderDevice, IRenderDevice, IRe
     {
         EnsureApiThread();
         ObjectDisposedException.ThrowIf(m_disposed, this);
-        if (!m_frameOpen || m_activeGraph is not null || m_activeEncoder != null)
+        if (!m_frameOpen || m_activeGraph is not null || m_activeEncoder is not null)
         {
             throw new InvalidOperationException("Operation requires an open frame before graph execution.");
         }

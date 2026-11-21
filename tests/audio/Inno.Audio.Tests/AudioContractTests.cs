@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -29,8 +30,8 @@ public sealed class AudioContractTests
     public void MixerBuilder_ProducesParentBeforeChildGraphWithMasterBus()
     {
         var builder = new AudioMixerBuilder();
-        AudioBusId music = new("game.audio.bus.music");
-        AudioBusId ambience = new("game.audio.bus.ambience");
+        var music = new AudioBusId("game.audio.bus.music");
+        var ambience = new AudioBusId("game.audio.bus.ambience");
         builder.AddBus(ambience, music);
         builder.AddBus(music, AudioBusId.master);
         builder.AddProcessor(
@@ -43,10 +44,7 @@ public sealed class AudioContractTests
 
         AudioMixer mixer = builder.Build();
 
-        Assert.Equal(
-            [AudioBusId.master, music, ambience],
-            System.Linq.Enumerable.Select(mixer.buses, static bus => bus.id)
-        );
+        Assert.Equal([AudioBusId.master, music, ambience], Enumerable.Select(mixer.buses, static bus => bus.id));
         Assert.Single(mixer.buses[1].processors);
     }
 
@@ -58,8 +56,8 @@ public sealed class AudioContractTests
         Assert.Throws<InvalidOperationException>(missingParent.Build);
 
         var cycle = new AudioMixerBuilder();
-        AudioBusId first = new("game.audio.bus.first");
-        AudioBusId second = new("game.audio.bus.second");
+        var first = new AudioBusId("game.audio.bus.first");
+        var second = new AudioBusId("game.audio.bus.second");
         cycle.AddBus(first, second);
         cycle.AddBus(second, first);
         Assert.Throws<InvalidOperationException>(cycle.Build);
@@ -68,7 +66,7 @@ public sealed class AudioContractTests
     [Fact]
     public void MetadataCodec_RoundTripsCompactRuntimeHeader()
     {
-        var expected = new AudioClipMetadata(AudioCodecId.flac, 2, 48000, 96000, 123456);
+        var expected = new AudioClipMetadata(AudioCodecId.flac, 2, 48_000, 96_000, 123_456);
 
         byte[] payload = AudioClipMetadataCodec.Encode(expected);
         AudioClipMetadata actual = AudioClipMetadataCodec.Decode(payload);
@@ -93,7 +91,7 @@ public sealed class AudioContractTests
     {
         private readonly AudioVoiceAllocator m_voices = new();
 
-        public AudioCapabilities capabilities { get; } = new(true, true, true, 4, 48000);
+        public AudioCapabilities capabilities { get; } = new(true, true, true, 4, 48_000);
 
         public AudioDeviceState deviceState => AudioDeviceState.Ready;
 
@@ -103,10 +101,7 @@ public sealed class AudioContractTests
 
         public AudioVoiceHandle CreateTestVoice() => m_voices.Allocate();
 
-        public bool Owns(AudioVoiceHandle voice)
-        {
-            return voice.isValid && voice.ownerGeneration == m_voices.generation;
-        }
+        public bool Owns(AudioVoiceHandle voice) => voice.isValid && voice.ownerGeneration == m_voices.generation;
 
         public AudioVoiceHandle Play(AudioClipAsset clip)
         {

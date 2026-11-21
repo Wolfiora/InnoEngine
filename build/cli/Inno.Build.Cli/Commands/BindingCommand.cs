@@ -45,7 +45,7 @@ internal static class BindingCommand
             ).ConfigureAwait(false);
             return;
         }
-        NativeBuildContext bindings = new(root, configuration.ToLowerInvariant());
+        var bindings = new NativeBuildContext(root, configuration.ToLowerInvariant());
         bindings = bindings.WithBindingGenerator(distribution.ResolveBindingGenerator(target.value));
         bindings = bindings.WithToolchain(
             await distribution.ResolveNativeToolchain(target.value)

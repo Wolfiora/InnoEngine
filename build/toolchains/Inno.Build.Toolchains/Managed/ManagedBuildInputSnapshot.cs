@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -31,7 +32,7 @@ public sealed class ManagedBuildInputSnapshot
         m_sdk = sdk;
         m_project = project;
         m_properties = properties;
-        fingerprint = captured.fingerprint;
+        this.fingerprint = captured.fingerprint;
         m_declarations = captured.declarations;
     }
 
@@ -80,10 +81,6 @@ public sealed class ManagedBuildInputSnapshot
     /// <returns>
     /// A snapshot that can be freshly verified after waiting or executing; no Player compilation is performed.
     /// </returns>
-    /// <remarks>
-    /// Restore and evaluation use an owned SDK output layout, independently of ordinary IDE outputs.
-    /// An explicit ArtifactsPath remains the caller's responsibility, including its concurrency protection.
-    /// </remarks>
     /// <exception cref="ArgumentNullException">
     /// A required operation, SDK or property collection is null.
     /// </exception>
@@ -99,6 +96,10 @@ public sealed class ManagedBuildInputSnapshot
     /// <exception cref="OperationCanceledException">
     /// Evaluation or hashing was canceled.
     /// </exception>
+    /// <remarks>
+    /// Restore and evaluation use an owned SDK output layout, independently of ordinary IDE outputs.
+    /// An explicit ArtifactsPath remains the caller's responsibility, including its concurrency protection.
+    /// </remarks>
     public static async ValueTask<ManagedBuildInputSnapshot> CaptureAsync(
         NativeBuildContext context,
         DotNetSdkDescriptor sdk,
@@ -117,7 +118,7 @@ public sealed class ManagedBuildInputSnapshot
         {
             throw new FileNotFoundException("The managed input entry project is absent.", selected);
         }
-        var frozen = new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
+        var frozen = new ReadOnlyDictionary<string, string>(
             properties.ToDictionary(static pair => pair.Key, static pair => pair.Value, StringComparer.OrdinalIgnoreCase)
         );
         ManagedBuildInputCapture identity = await ManagedBuildInputReader.CaptureAsync(

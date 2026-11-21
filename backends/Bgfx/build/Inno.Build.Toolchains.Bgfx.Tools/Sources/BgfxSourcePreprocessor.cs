@@ -11,7 +11,7 @@ namespace Inno.Build.Toolchains.Bgfx.Tools;
 internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
 {
     private const int C_MAX_DEPTH = 128;
-    private const int C_MAX_TOKENS = 1000000;
+    private const int C_MAX_TOKENS = 1_000_000;
     private readonly Dictionary<string, Macro> m_macros = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_dependencies = new(StringComparer.Ordinal);
     private readonly HashSet<string> m_once = new(StringComparer.Ordinal);
@@ -138,7 +138,9 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
             {
                 switch (directive.text)
                 {
-                    case "define": Define(arguments, directive); break;
+                    case "define":
+                        Define(arguments, directive);
+                        break;
                     case "undef":
                         if (arguments.Count != 1 || !arguments[0].isIdentifier)
                         {
@@ -194,8 +196,12 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
                             Fail("Unsupported module pragma; stage configuration belongs to the graph target.", directive);
                         }
                         break;
-                    case "error": Fail(string.Join(" ", arguments.Select(static token => token.text)), directive); break;
-                    default: Fail($"Unsupported module preprocessor directive '#{directive.text}'.", directive); break;
+                    case "error":
+                        Fail(string.Join(" ", arguments.Select(static token => token.text)), directive);
+                        break;
+                    default:
+                        Fail($"Unsupported module preprocessor directive '#{directive.text}'.", directive);
+                        break;
                 }
             }
         }
@@ -328,7 +334,7 @@ internal sealed class BgfxSourcePreprocessor(ShaderSourceRequest request)
         {
             Fail("Shader macro expansion exceeded its depth budget.", tokens[0]);
         }
-        var pending = tokens.Select(token => new ExpansionToken(token, disabled)).ToList();
+        List<ExpansionToken> pending = tokens.Select(token => new ExpansionToken(token, disabled)).ToList();
         var result = new List<BgfxSourceToken>();
         for (int i = 0; i < pending.Count; i++)
         {

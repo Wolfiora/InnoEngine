@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Globalization;
+using System.Numerics;
 using System.Reflection;
 using Inno.Core.Serialization;
 using Inno.Editor.Annotations;
@@ -23,7 +24,7 @@ internal sealed class HeaderInspectorAttributeDrawer : IInspectorAttributeDrawer
     /// </param>
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
-        var header = (HeaderAttribute)context.attribute;
+        HeaderAttribute header = (HeaderAttribute)context.attribute;
         EditorUI.current.widgets.SectionHeader(header.title, header.description);
     }
 }
@@ -64,7 +65,7 @@ internal sealed class SpaceInspectorAttributeDrawer : IInspectorAttributeDrawer
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
         float height = ((SpaceAttribute)context.attribute).height;
-        Ui.Dummy(new System.Numerics.Vector2(0f, height));
+        Ui.Dummy(new Vector2(0f, height));
     }
 }
 
@@ -103,7 +104,7 @@ internal sealed class RangeInspectorAttributeDrawer : IInspectorAttributeDrawer
     /// </param>
     public void Update(InspectorAttributeDrawContext context)
     {
-        var range = (RangeAttribute)context.attribute;
+        RangeAttribute range = (RangeAttribute)context.attribute;
         context.minimum = range.minimum;
         context.maximum = range.maximum;
     }
@@ -132,7 +133,7 @@ internal sealed class ShowIfInspectorAttributeDrawer : IInspectorAttributeDrawer
     /// </param>
     public void Update(InspectorAttributeDrawContext context)
     {
-        var condition = (ShowIfAttribute)context.attribute;
+        ShowIfAttribute condition = (ShowIfAttribute)context.attribute;
         context.isVisible &= InspectorConditionEvaluator.Evaluate(
             context.GetSiblingValue(condition.memberName),
             condition.condition,
@@ -152,7 +153,7 @@ internal sealed class HideIfInspectorAttributeDrawer : IInspectorAttributeDrawer
     /// </param>
     public void Update(InspectorAttributeDrawContext context)
     {
-        var condition = (HideIfAttribute)context.attribute;
+        HideIfAttribute condition = (HideIfAttribute)context.attribute;
         context.isVisible &= !InspectorConditionEvaluator.Evaluate(
             context.GetSiblingValue(condition.memberName),
             condition.condition,
@@ -172,7 +173,7 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
     /// </param>
     public void DrawBefore(InspectorAttributeDrawContext context)
     {
-        var help = (HelpBoxAttribute)context.attribute;
+        HelpBoxAttribute help = (HelpBoxAttribute)context.attribute;
         if (!string.IsNullOrWhiteSpace(help.conditionMember)
             && !InspectorConditionEvaluator.Evaluate(
                 context.GetSiblingValue(help.conditionMember),
@@ -183,11 +184,11 @@ internal sealed class HelpBoxInspectorAttributeDrawer : IInspectorAttributeDrawe
             return;
         }
 
-        System.Numerics.Vector4 color = help.messageType switch
+        Vector4 color = help.messageType switch
         {
             InspectorMessageType.Warning => EditorPalette.warning,
             InspectorMessageType.Error => EditorPalette.error,
-            _ => new System.Numerics.Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)
+            _ => new Vector4(0.42f, 0.66f, 0.88f, EditorPalette.opacityOpaque)
         };
         string icon = help.messageType switch
         {
@@ -205,32 +206,28 @@ internal static class InspectorConditionEvaluator
         object? value,
         InspectorCondition condition,
         object? expected
-    ) {
-        return condition switch
-        {
-            InspectorCondition.Truthy => IsTruthy(value),
-            InspectorCondition.Falsy => !IsTruthy(value),
-            InspectorCondition.Equal => AreEqual(value, expected),
-            InspectorCondition.NotEqual => !AreEqual(value, expected),
-            InspectorCondition.Null => value is null,
-            InspectorCondition.NotNull => value is not null,
-            InspectorCondition.Assigned => IsAssigned(value),
-            InspectorCondition.NotAssigned => !IsAssigned(value),
-            _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Unknown Inspector condition.")
-        };
-    }
+    ) => condition switch
+    {
+        InspectorCondition.Truthy => IsTruthy(value),
+        InspectorCondition.Falsy => !IsTruthy(value),
+        InspectorCondition.Equal => AreEqual(value, expected),
+        InspectorCondition.NotEqual => !AreEqual(value, expected),
+        InspectorCondition.Null => value is null,
+        InspectorCondition.NotNull => value is not null,
+        InspectorCondition.Assigned => IsAssigned(value),
+        InspectorCondition.NotAssigned => !IsAssigned(value),
+        _ => throw new ArgumentOutOfRangeException(nameof(condition), condition, "Unknown Inspector condition.")
+    };
 
     private static bool IsTruthy(object? value)
+        => value switch
     {
-        return value switch
-        {
-            null => false,
-            bool boolean => boolean,
-            string text => !string.IsNullOrWhiteSpace(text),
-            ICollection collection => collection.Count > 0,
-            _ => true
-        };
-    }
+        null => false,
+        bool boolean => boolean,
+        string text => !string.IsNullOrWhiteSpace(text),
+        ICollection collection => collection.Count > 0,
+        _ => true
+    };
 
     private static bool IsAssigned(object? value)
     {

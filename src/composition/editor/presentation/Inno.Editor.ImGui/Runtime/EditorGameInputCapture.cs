@@ -116,14 +116,14 @@ public sealed class EditorGameInputCapture
     /// <returns>
     /// A routed event or a synthetic focus reset, or null when the Game View must not receive input.
     /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when the event is null.
+    /// </exception>
     /// <remarks>
     /// A globally consumed key, button, focus or close release is not replayed to the game.
     /// It returns a new focus-reset event so previously held input is released before simulation.
     /// Consumed pointer movement still updates hit-test bounds without reaching the game backend.
     /// </remarks>
-    /// <exception cref="ArgumentNullException">
-    /// Thrown when the event is null.
-    /// </exception>
     public Event? Route(Event evnt)
     {
         ArgumentNullException.ThrowIfNull(evnt);
@@ -209,7 +209,7 @@ public sealed class EditorGameInputCapture
 
     private Event? RouteMove(MouseMovedEvent moved)
     {
-        Vector2 local = new(moved.x - m_origin.X, moved.y - m_origin.Y);
+        var local = new Vector2(moved.x - m_origin.X, moved.y - m_origin.Y);
         return m_pointerInside || m_pressedButtons.Count > 0
                ? moved.WithPosition(local.X, local.Y)
                : null;
@@ -217,7 +217,7 @@ public sealed class EditorGameInputCapture
 
     private void UpdatePointerBounds(MouseMovedEvent moved)
     {
-        Vector2 local = new(moved.x - m_origin.X, moved.y - m_origin.Y);
+        var local = new Vector2(moved.x - m_origin.X, moved.y - m_origin.Y);
         m_pointerInside = m_hovered && local.X >= 0f && local.Y >= 0f
                           && local.X < m_size.X && local.Y < m_size.Y;
     }
@@ -232,8 +232,5 @@ public sealed class EditorGameInputCapture
         return pressed;
     }
 
-    private Event? RouteRelease(MouseButtonReleasedEvent released)
-    {
-        return m_pressedButtons.Remove(released.button) ? released : null;
-    }
+    private Event? RouteRelease(MouseButtonReleasedEvent released) => m_pressedButtons.Remove(released.button) ? released : null;
 }

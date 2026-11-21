@@ -54,7 +54,7 @@ public readonly partial struct GraphCanvasView
         for (int index = layout.nodes.Count - 1; index >= 0; index--)
         {
             GraphCanvasNode node = layout.nodes[index];
-            var bounds = NodeBounds(node);
+            (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node);
             if (Contains(bounds, point))
             {
                 return node;
@@ -148,7 +148,7 @@ public readonly partial struct GraphCanvasView
         var nodes = new List<GraphNodeId>();
         foreach (GraphCanvasNode node in layout.nodes)
         {
-            var bounds = NodeBounds(node);
+            (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node);
             if (bounds.maximum.X >= minimum.X && bounds.minimum.X <= maximum.X
                 && bounds.maximum.Y >= minimum.Y && bounds.minimum.Y <= maximum.Y
             ) {
@@ -196,7 +196,7 @@ public readonly partial struct GraphCanvasView
         Action? drawContent = null,
         GraphPosition? previewPosition = null
     ) {
-        var bounds = NodeBounds(node, previewPosition);
+        (Vector2 minimum, Vector2 maximum) bounds = NodeBounds(node, previewPosition);
         Vector2 minimum = bounds.minimum;
         Vector2 maximum = bounds.maximum;
         if (m_size.X == 0f || m_size.Y == 0f || maximum.X < m_origin.X || minimum.X > m_origin.X + m_size.X
@@ -204,7 +204,7 @@ public readonly partial struct GraphCanvasView
         ) {
             return false;
         }
-        var clip = CanvasDrawing.GetClipBounds();
+        (Vector2 minimum, Vector2 maximum) clip = CanvasDrawing.GetClipBounds();
         if (maximum.X < clip.minimum.X || minimum.X > clip.maximum.X || maximum.Y < clip.minimum.Y || minimum.Y > clip.maximum.Y)
         {
             return false;
@@ -237,7 +237,7 @@ public readonly partial struct GraphCanvasView
             foreach (GraphCanvasPort port in node.ports)
             {
                 Vector2 point = minimum + port.position * zoom;
-                uint color = port.isMissing ? Pack(0.95f, 0.35f, 0.3f) : Pack(0.60f, 0.48f, 0.84f);
+                uint color = port.isMissing ? Pack(0.95f, 0.35f, 0.3f) : Pack(0.6f, 0.48f, 0.84f);
                 draw.FilledCircle(point, 5f * zoom, color);
                 if (port.isOptional && !port.isMissing)
                 {
@@ -250,7 +250,7 @@ public readonly partial struct GraphCanvasView
                 Vector2 labelMinimum = minimum + labelBounds.minimum * zoom;
                 Vector2 labelMaximum = minimum + labelBounds.maximum * zoom;
                 float padding = 12f * zoom;
-                var label = FitLabel(port.label, labelMaximum.X - labelMinimum.X - padding * 2f, zoom);
+                (string text, float width) label = FitLabel(port.label, labelMaximum.X - labelMinimum.X - padding * 2f, zoom);
                 float textX = port.direction == GraphPortDirection.Input
                               ? labelMinimum.X + padding
                               : labelMaximum.X - padding - label.width;

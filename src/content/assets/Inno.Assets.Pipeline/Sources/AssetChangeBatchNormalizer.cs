@@ -161,7 +161,7 @@ internal static class AssetChangeBatchNormalizer
         string relativePath
     ) {
         string full = Path.Combine(rootPath, relativePath);
-        return System.IO.File.Exists(full) || Directory.Exists(full);
+        return File.Exists(full) || Directory.Exists(full);
     }
 
     private static string NormalizeRelativePath(string relativePath)

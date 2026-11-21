@@ -13,7 +13,10 @@ namespace Inno.Editor.Graph;
 /// </summary>
 public sealed class GraphClipboardData
 {
-    internal GraphClipboardData(GraphDocument fragment) => m_fragment = fragment;
+    internal GraphClipboardData(GraphDocument fragment)
+    {
+        m_fragment = fragment;
+    }
 
     private readonly GraphDocument m_fragment;
 
@@ -365,12 +368,12 @@ public sealed class GraphDocumentController
     /// <param name="offset">
     /// Offset added to every copied node position.
     /// </param>
-    /// <returns>
-    /// New node identities in clipboard document order.
-    /// </returns>
     /// <param name="remapNode">
     /// Optional synchronous domain remapping of neutral node values after identity allocation. The callback is never stored in History.
     /// </param>
+    /// <returns>
+    /// New node identities in clipboard document order.
+    /// </returns>
     public IReadOnlyList<GraphNodeId> Paste(
         GraphClipboardData clipboard,
         GraphPosition offset,
@@ -431,7 +434,7 @@ public sealed class GraphDocumentController
                 return;
             }
 
-            var change = GraphHistoryData.CreateChange(documentId, before, after, mergeKey);
+            EditorHistoryChange change = GraphHistoryData.CreateChange(documentId, before, after, mergeKey);
             try
             {
                 m_history.RecordApplied(name, change);

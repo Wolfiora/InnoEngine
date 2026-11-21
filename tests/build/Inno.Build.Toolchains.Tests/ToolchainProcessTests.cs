@@ -34,8 +34,8 @@ public sealed class ToolchainProcessTests : IDisposable
                 Directory.Delete(root, recursive: true);
                 return;
             }
-            catch (IOException exception) when ((exception.HResult is unchecked((int)0x80070020)
-                                                 or unchecked((int)0x80070021))
+            catch (IOException exception) when ((exception.HResult is unchecked((int)0x8007_0020)
+                                                 or unchecked((int)0x8007_0021))
                                                 && Stopwatch.GetElapsedTime(started).TotalMilliseconds < C_RETIREMENT_WINDOW_MILLISECONDS)
             {
                 // Process termination does not promise that filesystem observers have released the directory.

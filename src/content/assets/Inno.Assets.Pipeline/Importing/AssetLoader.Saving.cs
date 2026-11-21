@@ -23,7 +23,7 @@ using IOFile = System.IO.File;
 
 namespace Inno.Assets.Pipeline;
 
-sealed partial class AssetLoader
+public sealed partial class AssetLoader
 {
     /// <summary>
     /// Saves an asset back to its current source path.
@@ -197,11 +197,9 @@ sealed partial class AssetLoader
     private void RestoreAssetState(
         AssetObject asset,
         ReadOnlySpan<byte> state
-    ) {
-        m_serialization.Decode(state, reader =>
-        {
-            reader.RestoreProperties(asset);
-            return true;
-        }, m_serializationContext);
-    }
+    ) => m_serialization.Decode(state, reader =>
+    {
+        reader.RestoreProperties(asset);
+        return true;
+    }, m_serializationContext);
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,7 +33,7 @@ internal static class BgfxBindingProject
             build,
             "inno_bgfx_binding" + context.RequireToolchain().linkPlan.GetFileExtension(NativeLibraryKind.Static)
         );
-        var linking = profile.CreateBindingLinkSettings(archive);
+        (string reference, IReadOnlyList<string> arguments) linking = profile.CreateBindingLinkSettings(archive);
         string script = Path.Combine(context.GetNativeBuildRoot(request.component), "BindingProject.lua");
         string text = "dofile(" + Literal(Path.Combine(source, "scripts", "genie.lua")) + ")\n"
                       + "project \"bgfx-shared-lib\"\nconfiguration {}\n"
