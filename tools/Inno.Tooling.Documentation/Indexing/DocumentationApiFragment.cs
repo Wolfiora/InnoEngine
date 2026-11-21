@@ -74,7 +74,7 @@ internal sealed record DocumentationApiFragment(
         description = Summaries("").Select(value => value.ReplaceLineEndings("\n").Trim())
     }));
 
-    private static bool IsNull(YamlNode node)
+    internal static bool IsNull(YamlNode node)
         => node is YamlScalarNode { Style: YamlDotNet.Core.ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };
 
     internal string[] Summaries(string documentation)
