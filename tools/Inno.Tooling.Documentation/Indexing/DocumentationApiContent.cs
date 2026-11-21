@@ -283,6 +283,77 @@ internal static class DocumentationApiContent
         }
     }
 
+    internal static string Contract(
+        IEnumerable<DocumentationApiFact> contexts,
+        bool normalizeXml = false
+    ) => DocumentationMarkdown.Hash(
+        string.Join(
+            '\n',
+            contexts
+                .Select(fact => (
+                    fact.signatureHash + "\0"
+                    + (normalizeXml ? fact.documentation.ReplaceLineEndings("\n") : fact.documentation)
+                    + "\0" + fact.scope + "\0" + fact.configuration + "\0" + fact.target + "\0" + fact.surface
+                ))
+                .Distinct(StringComparer.Ordinal)
+                .Order(StringComparer.Ordinal)
+        )
+    );
+
+    internal static string Title(DocumentationApiFact fact)
+    {
+        if (fact.kind != "NamedType") return PathName(fact);
+        string qualified = QualifiedTitle(fact);
+        return qualified[(qualified.LastIndexOf('.') + 1)..];
+    }
+
+    internal static string QualifiedTitle(DocumentationApiFact fact)
+    {
+        string identity = fact.id[2..];
+        if (!identity.Contains('`')) return identity;
+        // Match the exact qualified type in the captured declaration. Type parameter names
+        // come from source facts, never from editable XML prose or an invented T1/T2 list.
+        string pattern = string.Join(
+            @"\.",
+            identity.Split('.').Select(part => ("@?" + Regex.Replace(Regex.Escape(part), "`[0-9]+", "<[^<>]+>")))
+        );
+        Match declaration = Regex.Match(fact.signature, @"(?<![\w.])" + pattern + @"(?=[\s(:]|$)", RegexOptions.CultureInvariant);
+        if (!declaration.Success)
+        {
+            throw new InvalidDataException("API type identity cannot be located in its declaration: " + fact.id);
+        }
+        return declaration.Value;
+    }
+
+    internal static string Slug(string text) => Regex.Replace(text.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
+
+    internal static string TypePath(DocumentationApiFact fact)
+    {
+        string category = fact.family == "scripting"
+            ? "scripting/" + fact.scope!.ToLowerInvariant()
+            : "engine/"
+              + string.Join(
+                  '/',
+                  (fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project).Split('.').Select(Slug)
+              );
+        return "content/en/api/" + category + "/" + Slug(PathName(fact)) + "/index.md";
+    }
+
+    internal static string RequireApiPath(
+        string root,
+        string path
+    ) {
+        string resolved = DocumentationApiFacts.Resolve(root, path);
+        if (!path.StartsWith("content/en/api/engine/", StringComparison.Ordinal)
+            && !path.StartsWith("content/en/api/scripting/", StringComparison.Ordinal)
+            || !path.EndsWith(".md", StringComparison.Ordinal)
+            || path != Path.GetRelativePath(root, resolved).Replace('\\', '/')
+        ) {
+            throw new InvalidDataException("Synchronization is restricted to registered engine/script API content: " + path);
+        }
+        return resolved;
+    }
+
     private static string Fragment(
         DocumentationApiContentEntry entry,
         DocumentationApiFact fact,
@@ -345,83 +416,12 @@ internal static class DocumentationApiContent
         return text.EndsWith("\n...", StringComparison.Ordinal) ? text[..^4] : text;
     }
 
-    internal static string Contract(
-        IEnumerable<DocumentationApiFact> contexts,
-        bool normalizeXml = false
-    ) => DocumentationMarkdown.Hash(
-        string.Join(
-            '\n',
-            contexts
-                .Select(fact => (
-                    fact.signatureHash + "\0"
-                    + (normalizeXml ? fact.documentation.ReplaceLineEndings("\n") : fact.documentation)
-                    + "\0" + fact.scope + "\0" + fact.configuration + "\0" + fact.target + "\0" + fact.surface
-                ))
-                .Distinct(StringComparer.Ordinal)
-                .Order(StringComparer.Ordinal)
-        )
-    );
-
-    internal static string Title(DocumentationApiFact fact)
-    {
-        if (fact.kind != "NamedType") return PathName(fact);
-        string qualified = QualifiedTitle(fact);
-        return qualified[(qualified.LastIndexOf('.') + 1)..];
-    }
-
-    internal static string QualifiedTitle(DocumentationApiFact fact)
-    {
-        string identity = fact.id[2..];
-        if (!identity.Contains('`')) return identity;
-        // Match the exact qualified type in the captured declaration. Type parameter names
-        // come from source facts, never from editable XML prose or an invented T1/T2 list.
-        string pattern = string.Join(
-            @"\.",
-            identity.Split('.').Select(part => ("@?" + Regex.Replace(Regex.Escape(part), "`[0-9]+", "<[^<>]+>")))
-        );
-        Match declaration = Regex.Match(fact.signature, @"(?<![\w.])" + pattern + @"(?=[\s(:]|$)", RegexOptions.CultureInvariant);
-        if (!declaration.Success)
-        {
-            throw new InvalidDataException("API type identity cannot be located in its declaration: " + fact.id);
-        }
-        return declaration.Value;
-    }
-
     private static string PathName(DocumentationApiFact fact)
     {
         string name = fact.id[2..].Split('(')[0];
         return Regex.Replace(name[(name.LastIndexOf('.') + 1)..], "`+[0-9]+", string.Empty)
             .Replace("#ctor", "Constructor", StringComparison.Ordinal)
             .Replace("#cctor", "Static constructor", StringComparison.Ordinal);
-    }
-
-    internal static string Slug(string text) => Regex.Replace(text.ToLowerInvariant(), "[^a-z0-9]+", "-").Trim('-');
-
-    internal static string TypePath(DocumentationApiFact fact)
-    {
-        string category = fact.family == "scripting"
-            ? "scripting/" + fact.scope!.ToLowerInvariant()
-            : "engine/"
-              + string.Join(
-                  '/',
-                  (fact.project.StartsWith("Inno.", StringComparison.Ordinal) ? fact.project[5..] : fact.project).Split('.').Select(Slug)
-              );
-        return "content/en/api/" + category + "/" + Slug(PathName(fact)) + "/index.md";
-    }
-
-    internal static string RequireApiPath(
-        string root,
-        string path
-    ) {
-        string resolved = DocumentationApiFacts.Resolve(root, path);
-        if (!path.StartsWith("content/en/api/engine/", StringComparison.Ordinal)
-            && !path.StartsWith("content/en/api/scripting/", StringComparison.Ordinal)
-            || !path.EndsWith(".md", StringComparison.Ordinal)
-            || path != Path.GetRelativePath(root, resolved).Replace('\\', '/')
-        ) {
-            throw new InvalidDataException("Synchronization is restricted to registered engine/script API content: " + path);
-        }
-        return resolved;
     }
 
     private static string Normalize(string text) => Regex.Replace(text, "\\s+", " ").Trim();

@@ -20,9 +20,6 @@ public sealed class DocumentationEvidenceTests : IDisposable
         Guid.NewGuid().ToString("N")
     );
 
-    private string cache => Path.Combine(m_root, "cache");
-    private string source => Path.Combine(m_root, "source");
-
     public void Dispose()
     {
         if (Directory.Exists(m_root)) Directory.Delete(m_root, recursive: true);
@@ -236,6 +233,9 @@ public sealed class DocumentationEvidenceTests : IDisposable
         certificate["scriptReferences"] = new JsonArray();
         await Assert.ThrowsAsync<InvalidDataException>(() => ReadAsync(certificate));
     }
+
+    private string cache => Path.Combine(m_root, "cache");
+    private string source => Path.Combine(m_root, "source");
 
     private async Task<JsonNode> PrepareAsync()
     {

@@ -31,6 +31,26 @@ public sealed class DocumentationSnapshot : IDisposable
     private readonly ConcurrentDictionary<string, DocumentationPage> m_pages = new(StringComparer.Ordinal);
     private bool m_disposed;
 
+    internal DocumentationSnapshot(
+        string cache,
+        DocumentationManifest manifest,
+        FileLease reading,
+        string? expectedSourceTree,
+        DocumentationEvidence? sourceEvidence
+    ) {
+        m_cache = cache;
+        m_manifest = manifest;
+        m_reading = reading;
+        m_expectedSourceTree = expectedSourceTree;
+        m_sourceEvidence = sourceEvidence;
+        m_paths = manifest.pages.ToDictionary(static pair => pair.Value.pageId, static pair => pair.Key, StringComparer.Ordinal);
+        m_symbols = manifest.symbols.GroupBy(static symbol => symbol.id, StringComparer.Ordinal)
+            .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
+        m_references = manifest.references!.ToDictionary(static reference => reference.path, StringComparer.Ordinal);
+        m_origins = (manifest.apiOrigins ?? []).ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
+        m_terms = new(() => CreateSearchPostings(manifest), LazyThreadSafetyMode.ExecutionAndPublication);
+    }
+
     /// <summary>
     /// Gets the exact generation shared by every result in this session.
     /// </summary>
@@ -173,26 +193,6 @@ public sealed class DocumentationSnapshot : IDisposable
         return bytes;
     }
 
-    internal DocumentationSnapshot(
-        string cache,
-        DocumentationManifest manifest,
-        FileLease reading,
-        string? expectedSourceTree,
-        DocumentationEvidence? sourceEvidence
-    ) {
-        m_cache = cache;
-        m_manifest = manifest;
-        m_reading = reading;
-        m_expectedSourceTree = expectedSourceTree;
-        m_sourceEvidence = sourceEvidence;
-        m_paths = manifest.pages.ToDictionary(static pair => pair.Value.pageId, static pair => pair.Key, StringComparer.Ordinal);
-        m_symbols = manifest.symbols.GroupBy(static symbol => symbol.id, StringComparer.Ordinal)
-            .ToDictionary(static group => group.Key, static group => group.ToArray(), StringComparer.Ordinal);
-        m_references = manifest.references!.ToDictionary(static reference => reference.path, StringComparer.Ordinal);
-        m_origins = (manifest.apiOrigins ?? []).ToDictionary(origin => origin.page + "\0" + origin.id, StringComparer.Ordinal);
-        m_terms = new(() => CreateSearchPostings(manifest), LazyThreadSafetyMode.ExecutionAndPublication);
-    }
-
     /// <summary>
     /// Searches, reads, resolves symbols or resources, or reports binding status without mutating the index.
     /// </summary>
@@ -231,6 +231,19 @@ public sealed class DocumentationSnapshot : IDisposable
             sourceApiStatus = "Verified",
             sourceEvidenceIdentity = m_sourceEvidence.identity
         };
+    }
+
+    /// <summary>
+    /// Releases this generation's shared reading protection after all its queries finish.
+    /// </summary>
+    public void Dispose()
+    {
+        if (m_disposed)
+        {
+            return;
+        }
+        m_disposed = true;
+        m_reading.Dispose();
     }
 
     private async Task<DocumentationResult> QueryCoreAsync(
@@ -360,19 +373,6 @@ public sealed class DocumentationSnapshot : IDisposable
         );
     }
 
-    /// <summary>
-    /// Releases this generation's shared reading protection after all its queries finish.
-    /// </summary>
-    public void Dispose()
-    {
-        if (m_disposed)
-        {
-            return;
-        }
-        m_disposed = true;
-        m_reading.Dispose();
-    }
-
     private async Task<DocumentationResult> SearchAsync(
         DocumentationRequest request,
         CancellationToken cancellation
@@ -451,19 +451,6 @@ public sealed class DocumentationSnapshot : IDisposable
                 nextRequest = request.offset + hits.Count < ranked.Length ? request with { offset = request.offset + hits.Count } : null
             };
     }
-
-    private static Dictionary<string, int[]> CreateSearchPostings(DocumentationManifest manifest)
-        => manifest.search
-            .SelectMany((
-                entry,
-                index
-            ) => entry.tokens.Select(token => (token, index)))
-            .GroupBy(static pair => pair.token, StringComparer.Ordinal)
-            .ToDictionary(
-                static group => group.Key,
-                static group => group.Select(static pair => pair.index).Distinct().ToArray(),
-                StringComparer.Ordinal
-            );
 
     private (int score, bool taskGuide, string reason) Score(
         DocumentationSearchEntry entry,
@@ -675,6 +662,19 @@ public sealed class DocumentationSnapshot : IDisposable
         string message,
         IReadOnlyList<DocumentationHit>? hits = null
     ) => new(status, identity, "Unverified", message, hits ?? [], []);
+
+    private static Dictionary<string, int[]> CreateSearchPostings(DocumentationManifest manifest)
+        => manifest.search
+            .SelectMany((
+                entry,
+                index
+            ) => entry.tokens.Select(token => (token, index)))
+            .GroupBy(static pair => pair.token, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static pair => pair.index).Distinct().ToArray(),
+                StringComparer.Ordinal
+            );
 
     private static bool Scope(
         DocumentationMetadata metadata,

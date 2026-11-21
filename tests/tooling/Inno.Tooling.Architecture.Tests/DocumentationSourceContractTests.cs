@@ -16,8 +16,9 @@ namespace Inno.Tooling.Architecture.Tests;
 [Collection("Architecture diagnostics")]
 public sealed class DocumentationSourceContractTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDocumentationSourceContracts", Guid.NewGuid().ToString("N"));
     private const string C_PROJECT = "tests/support/Contract/Contract.csproj";
+
+    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDocumentationSourceContracts", Guid.NewGuid().ToString("N"));
 
     private readonly string m_host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
                                      ?? throw new InvalidOperationException("The source contract fixture requires its selected SDK host.");

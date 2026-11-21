@@ -17,8 +17,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
 {
     private const string C_SYMBOL = "M:Inno.Probe.Read(System.String)";
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDocumentationSnapshots", Guid.NewGuid().ToString("N"));
-    private string source => Path.Combine(m_root, "source");
-    private string cache => Path.Combine(m_root, "artifacts", "documentation");
 
     public DocumentationSnapshotTests()
     {
@@ -692,8 +690,6 @@ public sealed class DocumentationSnapshotTests : IDisposable
         Assert.Equal("Found", (await current.QueryAsync(new("read", "new-23"))).status);
     }
 
-    private Task<DocumentationResult> IndexAsync() => DocumentationStore.IndexAsync(m_root, source, cache);
-
     [Theory]
     [InlineData("exampleMode: guessed\nexampleProjects: [Inno.Probe]\n")]
     [InlineData("exampleMode: host\n")]
@@ -925,6 +921,11 @@ public sealed class DocumentationSnapshotTests : IDisposable
             (await snapshot.QueryAsync(new("read", "long-contract", section: "second"))).hits.Single().text
         );
     }
+
+    private string source => Path.Combine(m_root, "source");
+    private string cache => Path.Combine(m_root, "artifacts", "documentation");
+
+    private Task<DocumentationResult> IndexAsync() => DocumentationStore.IndexAsync(m_root, source, cache);
 
     private void SetProjectInventory(JsonNode projects)
     {

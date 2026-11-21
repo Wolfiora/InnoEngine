@@ -23,6 +23,42 @@ internal sealed record DocumentationApiFragment(
 ) {
     private static readonly MarkdownPipeline S_PIPELINE = new MarkdownPipelineBuilder().UseYamlFrontMatter().Build();
 
+    internal bool ExplicitlyOutdated => outdated && !metadata.Children.ContainsKey(new YamlScalarNode("reviewed"));
+
+    // Compare the prose that was present at the source change with the text being displayed.
+    // Ordinary Markdown edits take effect immediately without writing generated metadata.
+    internal string? StaleProse(
+        string contract,
+        string? legacyContract = null
+    ) {
+        if (source == "xml") return null;
+        bool changed = !string.IsNullOrEmpty(sourceFingerprint) && sourceFingerprint != contract && sourceFingerprint != legacyContract;
+        bool legacyStale = metadata.Children.ContainsKey(new YamlScalarNode("reviewed")) && outdated;
+        return changed || legacyStale ? ProseFingerprint() : outdatedFor;
+    }
+
+    internal bool IsOutdated(string? staleProse)
+        => source != "xml"
+           && (outdated || (staleProse is not null && staleProse == ProseFingerprint()));
+
+    internal string[] Summaries(string documentation)
+    {
+        if (metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? value)
+            && value is YamlSequenceNode sequence
+        ) {
+            return sequence.Children.Cast<YamlScalarNode>().Select(item => item.Value!).ToArray();
+        }
+        return DocumentationXml.Read(documentation).summaries.ToArray();
+    }
+
+    internal string TableDescription(string documentation)
+        => string.Join(
+            "<br><br>",
+            Summaries(documentation).Select(summary => DocumentationApiPresentation.Cell(
+                Markdown.ToPlainText(summary).Trim()
+            ))
+        );
+
     internal static DocumentationApiFragment? Read(
         string path,
         string text
@@ -74,53 +110,8 @@ internal sealed record DocumentationApiFragment(
                : null;
     }
 
-    // Compare the prose that was present at the source change with the text being displayed.
-    // Ordinary Markdown edits take effect immediately without writing generated metadata.
-    internal string? StaleProse(
-        string contract,
-        string? legacyContract = null
-    ) {
-        if (source == "xml") return null;
-        bool changed = !string.IsNullOrEmpty(sourceFingerprint) && sourceFingerprint != contract && sourceFingerprint != legacyContract;
-        bool legacyStale = metadata.Children.ContainsKey(new YamlScalarNode("reviewed")) && outdated;
-        return changed || legacyStale ? ProseFingerprint() : outdatedFor;
-    }
-
-    internal bool IsOutdated(string? staleProse)
-        => source != "xml"
-           && (outdated || (staleProse is not null && staleProse == ProseFingerprint()));
-
-    internal bool ExplicitlyOutdated => outdated && !metadata.Children.ContainsKey(new YamlScalarNode("reviewed"));
-
-    private string ProseFingerprint()
-        => DocumentationMarkdown.Hash(
-            JsonSerializer.Serialize(new
-            {
-                body = body.ReplaceLineEndings("\n").Trim(),
-                description = Summaries(string.Empty).Select(value => value.ReplaceLineEndings("\n").Trim())
-            })
-        );
-
     internal static bool IsNull(YamlNode node)
         => node is YamlScalarNode { Style: ScalarStyle.Plain, Value: null or "" or "~" or "null" or "Null" or "NULL" };
-
-    internal string[] Summaries(string documentation)
-    {
-        if (metadata.Children.TryGetValue(new YamlScalarNode("description"), out YamlNode? value)
-            && value is YamlSequenceNode sequence
-        ) {
-            return sequence.Children.Cast<YamlScalarNode>().Select(item => item.Value!).ToArray();
-        }
-        return DocumentationXml.Read(documentation).summaries.ToArray();
-    }
-
-    internal string TableDescription(string documentation)
-        => string.Join(
-            "<br><br>",
-            Summaries(documentation).Select(summary => DocumentationApiPresentation.Cell(
-                Markdown.ToPlainText(summary).Trim()
-            ))
-        );
 
     internal static YamlMappingNode ReadMetadata(
         string path,
@@ -131,6 +122,15 @@ internal sealed record DocumentationApiFragment(
                ? throw new InvalidDataException("Documentation requires identity metadata: " + path)
                : ReadMetadata(path, block);
     }
+
+    private string ProseFingerprint()
+        => DocumentationMarkdown.Hash(
+            JsonSerializer.Serialize(new
+            {
+                body = body.ReplaceLineEndings("\n").Trim(),
+                description = Summaries(string.Empty).Select(value => value.ReplaceLineEndings("\n").Trim())
+            })
+        );
 
     private static YamlMappingNode ReadMetadata(
         string path,

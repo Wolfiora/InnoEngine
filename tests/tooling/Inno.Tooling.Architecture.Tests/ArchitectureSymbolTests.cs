@@ -449,6 +449,14 @@ public sealed class ArchitectureSymbolTests
                 """);
         }
 
+        public void Dispose()
+        {
+            if (Directory.Exists(m_root))
+            {
+                Directory.Delete(m_root, recursive: true);
+            }
+        }
+
         internal string Compile(
             string relative,
             string assemblyName,
@@ -517,14 +525,6 @@ public sealed class ArchitectureSymbolTests
             // These fixtures deliberately omit the complete product composition.
             Assert.Equal(1, exitCode);
             return output;
-        }
-
-        public void Dispose()
-        {
-            if (Directory.Exists(m_root))
-            {
-                Directory.Delete(m_root, recursive: true);
-            }
         }
     }
 }

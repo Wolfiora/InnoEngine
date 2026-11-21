@@ -524,6 +524,26 @@ public static class DocumentationReferences
         return 0;
     }
 
+    internal static string ComparableSymbol(JsonElement symbol)
+    {
+        var ordered = new SortedDictionary<string, JsonNode?>(StringComparer.Ordinal);
+        foreach (JsonProperty property in symbol.EnumerateObject())
+        {
+            // Source offsets and the retired Wiki page field do not change an API contract.
+            if (property.Name is "line" or "page")
+            {
+                continue;
+            }
+            ordered.Add(
+                property.Name,
+                property.Name == "documentation"
+                ? JsonValue.Create(property.Value.GetString()!.ReplaceLineEndings("\n"))
+                : JsonNode.Parse(property.Value.GetRawText())
+            );
+        }
+        return JsonSerializer.Serialize(ordered);
+    }
+
     private static IReadOnlyList<ApiProject> CaptureApi(
         string root,
         string dotnet,
@@ -625,26 +645,6 @@ public static class DocumentationReferences
         }
         cache.Report();
         return inventory;
-    }
-
-    internal static string ComparableSymbol(JsonElement symbol)
-    {
-        var ordered = new SortedDictionary<string, JsonNode?>(StringComparer.Ordinal);
-        foreach (JsonProperty property in symbol.EnumerateObject())
-        {
-            // Source offsets and the retired Wiki page field do not change an API contract.
-            if (property.Name is "line" or "page")
-            {
-                continue;
-            }
-            ordered.Add(
-                property.Name,
-                property.Name == "documentation"
-                ? JsonValue.Create(property.Value.GetString()!.ReplaceLineEndings("\n"))
-                : JsonNode.Parse(property.Value.GetRawText())
-            );
-        }
-        return JsonSerializer.Serialize(ordered);
     }
 
     private sealed record ApiProject(

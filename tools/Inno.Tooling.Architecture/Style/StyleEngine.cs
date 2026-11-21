@@ -59,7 +59,15 @@ internal static class StyleEngine
         new NumericLiteralStyleRule(),
         new AttributeStyleRule(),
         new DocumentationLayoutStyleRule(),
-        new CommentStyleRule()
+        new CommentStyleRule(),
+        new AccessModifierStyleRule(),
+        new ModifierOrderStyleRule(),
+        new SealedClassStyleRule(),
+        new RecordStructStyleRule(),
+        new NamespaceStyleRule(),
+        new UsingPlacementStyleRule(),
+        new BuiltInTypeStyleRule(),
+        new MemberOrderStyleRule()
     ];
 
     internal static IEnumerable<string> EnumerateSources(string root)
@@ -98,13 +106,6 @@ internal static class StyleEngine
         if (hasHeader && root.GetFirstToken(includeZeroWidth: true).LeadingTrivia.Any(IsGeneratedHeader)) return false;
         return !hasAttribute || !root.DescendantNodes().OfType<AttributeSyntax>().Any(IsGeneratedAttribute);
     }
-
-    private static bool IsGeneratedHeader(SyntaxTrivia trivia)
-        => (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) || trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
-           && trivia.ToString().Contains(C_GENERATED_HEADER, StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsGeneratedAttribute(AttributeSyntax attribute)
-        => attribute.Name.ToString().Split('.')[^1] is "GeneratedCode" or "GeneratedCodeAttribute";
 
     internal static StyleReport Run(
         string root,
@@ -219,6 +220,13 @@ internal static class StyleEngine
         rejections.Add(new("*", relativePath, "The fixes did not converge."));
         return content;
     }
+
+    private static bool IsGeneratedHeader(SyntaxTrivia trivia)
+        => (trivia.IsKind(SyntaxKind.SingleLineCommentTrivia) || trivia.IsKind(SyntaxKind.MultiLineCommentTrivia))
+           && trivia.ToString().Contains(C_GENERATED_HEADER, StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsGeneratedAttribute(AttributeSyntax attribute)
+        => attribute.Name.ToString().Split('.')[^1] is "GeneratedCode" or "GeneratedCodeAttribute";
 
     private static string? Preservation(
         StyleRuleKind kind,

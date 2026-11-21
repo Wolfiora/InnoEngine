@@ -17,9 +17,10 @@ namespace Inno.Tooling.Documentation.Tests;
 
 public sealed class DocumentationApiSynchronizationTests : IDisposable
 {
-    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoApiSynchronization", Guid.NewGuid().ToString("N"));
     private const string C_TYPE = "T:Inno.Probe.Value";
     private const string C_MEMBER = "P:Inno.Probe.Value.count";
+
+    private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoApiSynchronization", Guid.NewGuid().ToString("N"));
 
     public DocumentationApiSynchronizationTests()
     {
@@ -363,8 +364,6 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.DoesNotContain("reviewed:", File.ReadAllText(member));
     }
 
-    private static string Body(string text) => text[(text.IndexOf("\n---", 4, StringComparison.Ordinal) + 4)..];
-
     [Fact]
     public async Task MissingSourceRemainsGeneratorOwned()
     {
@@ -669,8 +668,6 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.EndsWith(")", page.markdown.TrimEnd());
     }
 
-    private Task<int> Sync() => Sync(CancellationToken.None);
-
     [Fact]
     public async Task ElementsAreIndependentPagesWithNestedContainmentAndOverloadLinks()
     {
@@ -758,15 +755,6 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         string after = File.ReadAllText(current);
         await Sync();
         Assert.Equal(after, File.ReadAllText(current));
-    }
-
-    private void SaveFacts(JsonNode facts)
-    {
-        string text = facts.ToJsonString();
-        Write("reference/api/probe.json", text);
-        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
-        binding["apiManifests"]![0]!["sha256"] = Hash(text);
-        Write("reference/engine.lock.json", binding.ToJsonString());
     }
 
     [Fact]
@@ -1237,6 +1225,20 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Assert.DoesNotContain("Excluded.Probe", registry.ToJsonString());
     }
 
+    private Task<int> Sync() => Sync(CancellationToken.None);
+
+    private Task<int> Sync(CancellationToken cancellation)
+        => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);
+
+    private void SaveFacts(JsonNode facts)
+    {
+        string text = facts.ToJsonString();
+        Write("reference/api/probe.json", text);
+        JsonNode binding = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/engine.lock.json")))!;
+        binding["apiManifests"]![0]!["sha256"] = Hash(text);
+        Write("reference/engine.lock.json", binding.ToJsonString());
+    }
+
     private void SetTypes(params (string id, string signature)[] types)
     {
         JsonNode facts = JsonNode.Parse(File.ReadAllText(Path.Combine(m_root, "reference/api/probe.json")))!;
@@ -1301,9 +1303,6 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         binding["apiManifests"]![0]!["sha256"] = Hash(text);
         Write("reference/engine.lock.json", binding.ToJsonString());
     }
-
-    private Task<int> Sync(CancellationToken cancellation)
-        => DocumentationCommand.ExecuteAsync(["api-sync", "--docs-root", m_root], cancellation);
 
     private string Fragment(string id)
     {
@@ -1393,6 +1392,8 @@ public sealed class DocumentationApiSynchronizationTests : IDisposable
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         File.WriteAllText(path, text);
     }
+
+    private static string Body(string text) => text[(text.IndexOf("\n---", 4, StringComparison.Ordinal) + 4)..];
 
     private static string Hash(string text) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
 }

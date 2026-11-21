@@ -115,7 +115,7 @@ public sealed class ArchitectureCommandTests
     [InlineData("internal sealed class Probe { void Apply(int first, int second) { } }", true)]
     [InlineData("internal sealed class Probe(int first, int second) { }", true)]
     [InlineData("internal sealed class Probe { System.Func<int,int,int> factory = (first, second) => first + second; }", true)]
-    [InlineData("internal sealed class Probe\n{\n    void Apply(\n        int first,\n        int second\n    ) { }\n}", false)]
+    [InlineData("internal sealed class Probe\n{\n    private void Apply(\n        int first,\n        int second\n    ) { }\n}", false)]
     public void CliChecksHandwrittenMultiParameterDeclarations(
         string source,
         bool rejected
@@ -156,7 +156,7 @@ public sealed class ArchitectureCommandTests
     [InlineData("tests/Probe.cs", "using System; // global using is prohibited\n\ninternal class Probe;\n", "global using", false)]
     [InlineData(
         "tests/Probe.cs",
-        "internal class Probe\n{\n    const string Message = \"global using System;\";\n}\n",
+        "internal sealed class Probe\n{\n    const string Message = \"global using System;\";\n}\n",
         "global using",
         false
     )]
@@ -215,7 +215,7 @@ public sealed class ArchitectureCommandTests
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal class Probe\n{\n    void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            try\n            {\n                DrawRow();\n                if (i == 1) break;\n            }\n            finally\n            {\n                Ui.PopId();\n            }\n        }\n    }\n}\n",
+        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            try\n            {\n                DrawRow();\n                if (i == 1) break;\n            }\n            finally\n            {\n                Ui.PopId();\n            }\n        }\n    }\n}\n",
         "presentation loop ID scopes",
         false
     )]
@@ -227,7 +227,7 @@ public sealed class ArchitectureCommandTests
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "using NativeUi = Inno.Native.ImGui.ImGui;\nusing Ui = Inno.Editor.ImGui.ImGui;\n\ninternal class Probe;\n",
+        "using NativeUi = Inno.Native.ImGui.ImGui;\nusing Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe;\n",
         "multiple presentation aliases",
         false
     )]
@@ -239,19 +239,19 @@ public sealed class ArchitectureCommandTests
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "/// <summary>\n/// Actual section.\n/// </summary>\ninternal class Probe;\n",
+        "/// <summary>\n/// Actual section.\n/// </summary>\ninternal sealed class Probe;\n",
         "multiple XML summary elements",
         false
     )]
     [InlineData(
         "src/services/Probe.cs",
-        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal class Probe\n{\n    void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            DrawRow();\n            Ui.PopId();\n        }\n    }\n}\n",
+        "using Ui = Inno.Editor.ImGui.ImGui;\n\ninternal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            Ui.PushId(i);\n            DrawRow();\n            Ui.PopId();\n        }\n    }\n}\n",
         "presentation loop ID scopes",
         false
     )]
     [InlineData(
         "src/composition/editor/panels/Probe.cs",
-        "internal class Probe\n{\n    void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            collector.PushId(i);\n            DrawRow();\n            collector.PopId();\n        }\n    }\n}\n",
+        "internal sealed class Probe\n{\n    private void Draw()\n    {\n        for (int i = 0; i < 2; i++)\n        {\n            collector.PushId(i);\n            DrawRow();\n            collector.PopId();\n        }\n    }\n}\n",
         "presentation loop ID scopes",
         false
     )]
@@ -269,7 +269,7 @@ public sealed class ArchitectureCommandTests
     )]
     [InlineData(
         "src/services/audio/Probe.cs",
-        "internal class Probe\n{\n    void Release()\n    {\n        try\n        {\n            Run();\n        }\n        catch (Exception error) when (RetirementPendingException.Find(error) is not null)\n        {\n            throw;\n        }\n    }\n}\n",
+        "internal sealed class Probe\n{\n    private void Release()\n    {\n        try\n        {\n            Run();\n        }\n        catch (Exception error) when (RetirementPendingException.Find(error) is not null)\n        {\n            throw;\n        }\n    }\n}\n",
         "wrapped pending ownership",
         false
     )]

@@ -15,10 +15,21 @@ namespace Inno.Tooling.Architecture;
 
 internal static class DocumentationApiExtractor
 {
-    internal sealed record ScriptExport(
-        string assembly,
-        string type,
-        string scope
+    private static readonly SymbolDisplayFormat S_SIGNATURE = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeTypeConstraints,
+        delegateStyle: SymbolDisplayDelegateStyle.NameAndSignature,
+        kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword,
+        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType | SymbolDisplayMemberOptions.IncludeParameters
+                       | SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeModifiers
+                       | SymbolDisplayMemberOptions.IncludeAccessibility | SymbolDisplayMemberOptions.IncludeConstantValue
+                       | SymbolDisplayMemberOptions.IncludeExplicitInterface | SymbolDisplayMemberOptions.IncludeRef,
+        parameterOptions: SymbolDisplayParameterOptions.IncludeType | SymbolDisplayParameterOptions.IncludeName
+                          | SymbolDisplayParameterOptions.IncludeDefaultValue | SymbolDisplayParameterOptions.IncludeParamsRefOut,
+        propertyStyle: SymbolDisplayPropertyStyle.ShowReadWriteDescriptor,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
+        | SymbolDisplayMiscellaneousOptions.UseSpecialTypes | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
     );
 
     internal static IReadOnlyList<ScriptExport> ReadExports(Compilation? compilation)
@@ -47,23 +58,6 @@ internal static class DocumentationApiExtractor
             .ThenBy(export => export.type, StringComparer.Ordinal)
             .ToArray();
     }
-
-    private static readonly SymbolDisplayFormat S_SIGNATURE = new(
-        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Omitted,
-        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
-        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters | SymbolDisplayGenericsOptions.IncludeTypeConstraints,
-        delegateStyle: SymbolDisplayDelegateStyle.NameAndSignature,
-        kindOptions: SymbolDisplayKindOptions.IncludeTypeKeyword,
-        memberOptions: SymbolDisplayMemberOptions.IncludeContainingType | SymbolDisplayMemberOptions.IncludeParameters
-                       | SymbolDisplayMemberOptions.IncludeType | SymbolDisplayMemberOptions.IncludeModifiers
-                       | SymbolDisplayMemberOptions.IncludeAccessibility | SymbolDisplayMemberOptions.IncludeConstantValue
-                       | SymbolDisplayMemberOptions.IncludeExplicitInterface | SymbolDisplayMemberOptions.IncludeRef,
-        parameterOptions: SymbolDisplayParameterOptions.IncludeType | SymbolDisplayParameterOptions.IncludeName
-                          | SymbolDisplayParameterOptions.IncludeDefaultValue | SymbolDisplayParameterOptions.IncludeParamsRefOut,
-        propertyStyle: SymbolDisplayPropertyStyle.ShowReadWriteDescriptor,
-        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
-        | SymbolDisplayMiscellaneousOptions.UseSpecialTypes | SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers
-    );
 
     internal static IReadOnlyList<DocumentationApiEntry> Capture(
         string root,
@@ -139,23 +133,6 @@ internal static class DocumentationApiExtractor
             }
         }
         return result;
-    }
-
-    private static bool HasUnresolvedContract(ISymbol symbol)
-    {
-        IEnumerable<ITypeSymbol> types = symbol switch
-        {
-            INamedTypeSymbol type => type.Interfaces.Cast<ITypeSymbol>()
-                .Concat(type.BaseType is null ? [] : new ITypeSymbol[] { type.BaseType })
-                .Concat(type.TypeParameters.SelectMany(static parameter => parameter.ConstraintTypes)),
-            IMethodSymbol method => new[] { method.ReturnType }.Concat(method.Parameters.Select(static parameter => parameter.Type))
-                .Concat(method.TypeParameters.SelectMany(static parameter => parameter.ConstraintTypes)),
-            IPropertySymbol property => new[] { property.Type }.Concat(property.Parameters.Select(static parameter => parameter.Type)),
-            IFieldSymbol field => [field.Type],
-            IEventSymbol signal => [signal.Type],
-            _ => []
-        };
-        return types.Any(IsUnresolved);
     }
 
     internal static IReadOnlyList<DocumentationApiEntry> CaptureReference(
@@ -242,6 +219,23 @@ internal static class DocumentationApiExtractor
                 VisitType(child);
             }
         }
+    }
+
+    private static bool HasUnresolvedContract(ISymbol symbol)
+    {
+        IEnumerable<ITypeSymbol> types = symbol switch
+        {
+            INamedTypeSymbol type => type.Interfaces.Cast<ITypeSymbol>()
+                .Concat(type.BaseType is null ? [] : new ITypeSymbol[] { type.BaseType })
+                .Concat(type.TypeParameters.SelectMany(static parameter => parameter.ConstraintTypes)),
+            IMethodSymbol method => new[] { method.ReturnType }.Concat(method.Parameters.Select(static parameter => parameter.Type))
+                .Concat(method.TypeParameters.SelectMany(static parameter => parameter.ConstraintTypes)),
+            IPropertySymbol property => new[] { property.Type }.Concat(property.Parameters.Select(static parameter => parameter.Type)),
+            IFieldSymbol field => [field.Type],
+            IEventSymbol signal => [signal.Type],
+            _ => []
+        };
+        return types.Any(IsUnresolved);
     }
 
     private static bool IsUnresolved(ITypeSymbol type)
@@ -375,6 +369,12 @@ internal static class DocumentationApiExtractor
         }
         return true;
     }
+
+    internal sealed record ScriptExport(
+        string assembly,
+        string type,
+        string scope
+    );
 
     internal sealed record DocumentationApiEntry(
         string project,

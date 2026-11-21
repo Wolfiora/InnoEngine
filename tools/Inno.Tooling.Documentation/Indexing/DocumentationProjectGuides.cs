@@ -149,36 +149,6 @@ internal static class DocumentationProjectGuides
         return new(edits, warnings, 0);
     }
 
-    private static bool IsGuidePath(string path)
-        => path.StartsWith(C_GUIDES, StringComparison.Ordinal)
-           || path.StartsWith(C_BACKEND_GUIDES, StringComparison.Ordinal)
-           || path.StartsWith(C_TEST_GUIDES, StringComparison.Ordinal);
-
-    // Plans a synchronized guide for each reader-facing project that no project page owns yet.
-    // Authored project pages own their projects without a registry entry; synchronization never claims them.
-    private static DocumentationProjectGuide[] NewGuides(
-        string root,
-        IEnumerable<DocumentationProject> projects,
-        DocumentationProjectGuide[] registered
-    ) {
-        var owned = new HashSet<string>(registered.Select(entry => entry.project), StringComparer.Ordinal);
-        owned.UnionWith(DocumentationApiPresentation.ProjectDescriptions(root).Keys);
-        var guides = new List<DocumentationProjectGuide>();
-        foreach (DocumentationProject project in projects.OrderBy(project => project.name, StringComparer.Ordinal))
-        {
-            if (project.path.StartsWith("platforms/", StringComparison.Ordinal) || owned.Contains(project.name))
-            {
-                continue;
-            }
-            string slug = project.name.ToLowerInvariant().Replace('.', '-');
-            string directory = project.path.StartsWith("tests/", StringComparison.Ordinal)
-                               ? C_TEST_GUIDES
-                               : project.path.StartsWith("backends/", StringComparison.Ordinal) ? C_BACKEND_GUIDES : C_GUIDES;
-            guides.Add(new(directory + slug + ".md", "project." + slug, project.name));
-        }
-        return guides.ToArray();
-    }
-
     internal static void Compose(
         string root,
         DocumentationBinding binding,
@@ -266,6 +236,36 @@ internal static class DocumentationProjectGuides
             }
             pages[entry.path] = text.ToString();
         }
+    }
+
+    private static bool IsGuidePath(string path)
+        => path.StartsWith(C_GUIDES, StringComparison.Ordinal)
+           || path.StartsWith(C_BACKEND_GUIDES, StringComparison.Ordinal)
+           || path.StartsWith(C_TEST_GUIDES, StringComparison.Ordinal);
+
+    // Plans a synchronized guide for each reader-facing project that no project page owns yet.
+    // Authored project pages own their projects without a registry entry; synchronization never claims them.
+    private static DocumentationProjectGuide[] NewGuides(
+        string root,
+        IEnumerable<DocumentationProject> projects,
+        DocumentationProjectGuide[] registered
+    ) {
+        var owned = new HashSet<string>(registered.Select(entry => entry.project), StringComparer.Ordinal);
+        owned.UnionWith(DocumentationApiPresentation.ProjectDescriptions(root).Keys);
+        var guides = new List<DocumentationProjectGuide>();
+        foreach (DocumentationProject project in projects.OrderBy(project => project.name, StringComparer.Ordinal))
+        {
+            if (project.path.StartsWith("platforms/", StringComparison.Ordinal) || owned.Contains(project.name))
+            {
+                continue;
+            }
+            string slug = project.name.ToLowerInvariant().Replace('.', '-');
+            string directory = project.path.StartsWith("tests/", StringComparison.Ordinal)
+                               ? C_TEST_GUIDES
+                               : project.path.StartsWith("backends/", StringComparison.Ordinal) ? C_BACKEND_GUIDES : C_GUIDES;
+            guides.Add(new(directory + slug + ".md", "project." + slug, project.name));
+        }
+        return guides.ToArray();
     }
 
     private static DocumentationApiFragment Read(

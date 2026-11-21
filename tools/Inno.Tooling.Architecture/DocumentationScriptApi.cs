@@ -396,12 +396,6 @@ internal static class DocumentationScriptApi
         }
     }
 
-    private static Regex IdentityPattern(IEnumerable<string> names)
-        => new(
-            @"(?<![\w.])(?:" + string.Join('|', names.OrderByDescending(static name => name.Length).Select(Regex.Escape)) + @")(?!\w)",
-            RegexOptions.CultureInvariant
-        );
-
     internal static async Task<IReadOnlyList<Comparison>> CompareAsync(
         DocumentationSnapshot snapshot,
         DocumentationCatalogReport catalog,
@@ -524,6 +518,12 @@ internal static class DocumentationScriptApi
         }
         return results;
     }
+
+    private static Regex IdentityPattern(IEnumerable<string> names)
+        => new(
+            @"(?<![\w.])(?:" + string.Join('|', names.OrderByDescending(static name => name.Length).Select(Regex.Escape)) + @")(?!\w)",
+            RegexOptions.CultureInvariant
+        );
 
     internal sealed record Comparison(
         string path,

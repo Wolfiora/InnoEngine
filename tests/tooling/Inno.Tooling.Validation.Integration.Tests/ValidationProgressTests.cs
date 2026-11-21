@@ -85,8 +85,6 @@ public sealed class ValidationProgressTests
     {
         private readonly object m_sync = new();
 
-        internal TaskCompletionSource<string> activity { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
         public override void WriteLine(string? value)
         {
             lock (m_sync)
@@ -98,6 +96,8 @@ public sealed class ValidationProgressTests
                 }
             }
         }
+
+        internal TaskCompletionSource<string> activity { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         internal string Read()
         {

@@ -8,13 +8,13 @@ namespace Inno.Tooling.Architecture;
 
 internal static class RepositorySourceInventory
 {
-    internal static bool IsTestPath(string relative)
-        => relative.Replace('\\', '/').StartsWith("tests/", StringComparison.Ordinal);
-
     private static readonly HashSet<string> ExcludedDirectories = new(StringComparer.OrdinalIgnoreCase)
     {
         "bin", "obj", "Generated", "extern", "artifacts", ".git"
     };
+
+    internal static bool IsTestPath(string relative)
+        => relative.Replace('\\', '/').StartsWith("tests/", StringComparison.Ordinal);
 
     internal static IEnumerable<string> Projects(string root) => Files(root, "*.csproj");
 

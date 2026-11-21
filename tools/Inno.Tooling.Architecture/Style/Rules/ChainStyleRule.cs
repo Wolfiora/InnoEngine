@@ -42,6 +42,62 @@ internal sealed class ChainStyleRule : StyleRule
         return edits;
     }
 
+    // F-04: the outermost call chain of an over-long line breaks before each of its calls on that line. The
+    // receiver and, for a static call, the first call keep the statement line.
+    internal static (TextSpan span, List<StyleEdit> edits)? BreakOnLine(
+        StyleSource source,
+        TextLine line
+    ) {
+        IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
+        (TextSpan span, List<StyleEdit> edits)? best = null;
+        IEnumerable<IGrouping<ExpressionSyntax, ExpressionSyntax>> chains = source.root
+            .DescendantNodes(TextSpan.FromBounds(line.Start, line.End))
+            .Where(static node => node is MemberAccessExpressionSyntax or MemberBindingExpressionSyntax)
+            .Cast<ExpressionSyntax>()
+            .GroupBy(Top);
+        foreach (IGrouping<ExpressionSyntax, ExpressionSyntax> chain in chains)
+        {
+            ExpressionSyntax top = chain.Key;
+            if (best is { } current && top.Span.Length <= current.span.Length) continue;
+            if (StyleLayout.IsInInterpolation(top)) continue;
+            ExpressionSyntax[] links = chain.OrderBy(static link => Dot(link).SpanStart).ToArray();
+            int calls = links.Count(IsCall);
+            if (IsCall(links[^1]) && Name(links[^1]) == "ConfigureAwait") calls--;
+            if (calls < 2) continue;
+            int indent = source.Indentation(top.SpanStart) + StyleLayout.C_INDENT;
+            string lineBreak = "\n" + new string(' ', indent);
+            int delta = indent - source.Indentation(line.Start);
+            bool isFirstCall = true;
+            var edits = new List<StyleEdit>();
+            foreach (ExpressionSyntax link in links)
+            {
+                if (!IsCall(link)) continue;
+                bool keepsLine = isFirstCall && IsStaticReceiver(links[0]);
+                isFirstCall = false;
+                SyntaxToken lead = Lead(Dot(link));
+                SyntaxToken previous = lead.GetPreviousToken();
+                if (keepsLine || lead.SpanStart < line.Start || lead.SpanStart >= line.End || source.IsFirstOnLine(lead))
+                {
+                    continue;
+                }
+                if (!StyleLayout.IsBlank(source.content, previous.Span.End, lead.SpanStart)) continue;
+                edits.Add(new(previous.Span.End, lead.SpanStart, lineBreak));
+
+                // The lines of arguments that continue below keep their offset from the line the call now starts.
+                int closeLine = source.LineNumber(link.Parent!.Span.End);
+                for (int below = line.LineNumber + 1; below <= closeLine && delta != 0; below++)
+                {
+                    StyleEdit? shift = StyleLayout.Shift(source, below, delta, protectedSpans);
+                    if (shift is not null) edits.Add(shift);
+                }
+            }
+
+            if (edits.Count > 0) best = (top.Span, edits);
+        }
+
+        return best;
+    }
+
     private static IEnumerable<(int position, string message, List<StyleEdit> edits)> Violations(StyleSource source)
     {
         IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
@@ -133,62 +189,6 @@ internal sealed class ChainStyleRule : StyleRule
 
             if (message is not null) yield return (edits.Min(static edit => edit.start), message, edits);
         }
-    }
-
-    // F-04: the outermost call chain of an over-long line breaks before each of its calls on that line. The
-    // receiver and, for a static call, the first call keep the statement line.
-    internal static (TextSpan span, List<StyleEdit> edits)? BreakOnLine(
-        StyleSource source,
-        TextLine line
-    ) {
-        IReadOnlyList<TextSpan> protectedSpans = source.ProtectedSpans();
-        (TextSpan span, List<StyleEdit> edits)? best = null;
-        IEnumerable<IGrouping<ExpressionSyntax, ExpressionSyntax>> chains = source.root
-            .DescendantNodes(TextSpan.FromBounds(line.Start, line.End))
-            .Where(static node => node is MemberAccessExpressionSyntax or MemberBindingExpressionSyntax)
-            .Cast<ExpressionSyntax>()
-            .GroupBy(Top);
-        foreach (IGrouping<ExpressionSyntax, ExpressionSyntax> chain in chains)
-        {
-            ExpressionSyntax top = chain.Key;
-            if (best is { } current && top.Span.Length <= current.span.Length) continue;
-            if (StyleLayout.IsInInterpolation(top)) continue;
-            ExpressionSyntax[] links = chain.OrderBy(static link => Dot(link).SpanStart).ToArray();
-            int calls = links.Count(IsCall);
-            if (IsCall(links[^1]) && Name(links[^1]) == "ConfigureAwait") calls--;
-            if (calls < 2) continue;
-            int indent = source.Indentation(top.SpanStart) + StyleLayout.C_INDENT;
-            string lineBreak = "\n" + new string(' ', indent);
-            int delta = indent - source.Indentation(line.Start);
-            bool isFirstCall = true;
-            var edits = new List<StyleEdit>();
-            foreach (ExpressionSyntax link in links)
-            {
-                if (!IsCall(link)) continue;
-                bool keepsLine = isFirstCall && IsStaticReceiver(links[0]);
-                isFirstCall = false;
-                SyntaxToken lead = Lead(Dot(link));
-                SyntaxToken previous = lead.GetPreviousToken();
-                if (keepsLine || lead.SpanStart < line.Start || lead.SpanStart >= line.End || source.IsFirstOnLine(lead))
-                {
-                    continue;
-                }
-                if (!StyleLayout.IsBlank(source.content, previous.Span.End, lead.SpanStart)) continue;
-                edits.Add(new(previous.Span.End, lead.SpanStart, lineBreak));
-
-                // The lines of arguments that continue below keep their offset from the line the call now starts.
-                int closeLine = source.LineNumber(link.Parent!.Span.End);
-                for (int below = line.LineNumber + 1; below <= closeLine && delta != 0; below++)
-                {
-                    StyleEdit? shift = StyleLayout.Shift(source, below, delta, protectedSpans);
-                    if (shift is not null) edits.Add(shift);
-                }
-            }
-
-            if (edits.Count > 0) best = (top.Span, edits);
-        }
-
-        return best;
     }
 
     private static string Name(ExpressionSyntax link)

@@ -35,16 +35,6 @@ internal sealed class NumericLiteralStyleRule : StyleRule
     internal override IReadOnlyList<StyleEdit> Fix(StyleSource source)
         => Violations(source.root).Select(static item => new StyleEdit(item.token.SpanStart, item.token.Span.End, item.normal)).ToArray();
 
-    private static IEnumerable<(SyntaxToken token, string normal)> Violations(SyntaxNode root)
-    {
-        foreach (SyntaxToken token in root.DescendantTokens())
-        {
-            if (!token.IsKind(SyntaxKind.NumericLiteralToken)) continue;
-            string normal = Normalize(token.Text);
-            if (!string.Equals(normal, token.Text, StringComparison.Ordinal)) yield return (token, normal);
-        }
-    }
-
     internal static string Normalize(string text)
     {
         bool isHex = text.StartsWith("0x", StringComparison.OrdinalIgnoreCase);
@@ -91,6 +81,16 @@ internal sealed class NumericLiteralStyleRule : StyleRule
         string integer = text[..suffixStart];
         if (!integer.Contains('_') && integer.Length >= C_MIN_GROUPED_DIGITS) integer = Group(integer, C_DECIMAL_GROUP);
         return integer + IntegerSuffix(text[suffixStart..]);
+    }
+
+    private static IEnumerable<(SyntaxToken token, string normal)> Violations(SyntaxNode root)
+    {
+        foreach (SyntaxToken token in root.DescendantTokens())
+        {
+            if (!token.IsKind(SyntaxKind.NumericLiteralToken)) continue;
+            string normal = Normalize(token.Text);
+            if (!string.Equals(normal, token.Text, StringComparison.Ordinal)) yield return (token, normal);
+        }
     }
 
     private static string IntegerSuffix(string suffix)

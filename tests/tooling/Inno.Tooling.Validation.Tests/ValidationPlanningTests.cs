@@ -1704,9 +1704,6 @@ public sealed class ValidationPlanningTests
         Assert.Contains("uncommitted inputs", failure.Message, StringComparison.Ordinal);
     }
 
-    private static string[] Owners(JsonDocument document)
-        => document.RootElement.GetProperty("owners").EnumerateArray().Select(value => value.GetString()!).ToArray();
-
     [Theory]
     [InlineData("Debug")]
     [InlineData("Release")]
@@ -1818,6 +1815,9 @@ public sealed class ValidationPlanningTests
             )
         );
     }
+
+    private static string[] Owners(JsonDocument document)
+        => document.RootElement.GetProperty("owners").EnumerateArray().Select(value => value.GetString()!).ToArray();
 
     private static string[] Changes(JsonDocument document)
         => document.RootElement.GetProperty("changes").EnumerateArray().Select(value => value.GetString()!).ToArray();

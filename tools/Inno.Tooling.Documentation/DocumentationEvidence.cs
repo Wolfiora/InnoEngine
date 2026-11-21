@@ -18,11 +18,6 @@ public sealed class DocumentationEvidence
 {
     private readonly Certificate m_certificate;
 
-    /// <summary>
-    /// Gets the SHA-256 identity authenticated by the caller's preparation boundary.
-    /// </summary>
-    public string identity { get; }
-
     private DocumentationEvidence(
         string identity,
         Certificate certificate
@@ -30,6 +25,11 @@ public sealed class DocumentationEvidence
         this.identity = identity;
         m_certificate = certificate;
     }
+
+    /// <summary>
+    /// Gets the SHA-256 identity authenticated by the caller's preparation boundary.
+    /// </summary>
+    public string identity { get; }
 
     /// <summary>
     /// Reads one bounded certificate whose digest was obtained independently from a trusted producer.
@@ -246,6 +246,7 @@ public sealed class DocumentationEvidence
 
     private sealed record InputProof(int? sourceSet);
 
+    // Open: the evidence record below derives from it.
     private record Context(
         string platform,
         string configuration,

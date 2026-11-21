@@ -12,11 +12,6 @@ namespace Inno.Tooling.Documentation.Indexing;
 
 internal static class DocumentationReferenceStore
 {
-    internal sealed record Prepared(
-        IReadOnlyList<DocumentationReferenceInfo> references,
-        IReadOnlyDictionary<string, byte[]> inputs
-    );
-
     internal static async Task<Prepared> PrepareAsync(
         string root,
         string output,
@@ -146,4 +141,9 @@ internal static class DocumentationReferenceStore
         }
         return path;
     }
+
+    internal sealed record Prepared(
+        IReadOnlyList<DocumentationReferenceInfo> references,
+        IReadOnlyDictionary<string, byte[]> inputs
+    );
 }

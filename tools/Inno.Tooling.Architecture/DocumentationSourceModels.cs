@@ -130,17 +130,17 @@ internal sealed class DocumentationSourceModels
         }).ToArray();
     }
 
+    internal IReadOnlyList<MetadataReference> frameworkReferences
+        => m_projectReferences is null
+           ? m_frameworkReferences
+           : m_projectReferences.GetFrameworkReferences(m_cancellation);
+
     internal bool OwnsAssembly(IAssemblySymbol assembly) => m_projectNames.Contains(assembly.Name);
 
     internal bool IsUnavailable(string projectDirectory) => m_unavailableProjects.Contains(projectDirectory);
 
     internal bool IsExcludedProduct(string projectDirectory)
         => m_projectReferences?.IsExcludedProduct(Directory.EnumerateFiles(projectDirectory, "*.csproj").Single()) == true;
-
-    internal IReadOnlyList<MetadataReference> frameworkReferences
-        => m_projectReferences is null
-           ? m_frameworkReferences
-           : m_projectReferences.GetFrameworkReferences(m_cancellation);
 
     internal SemanticModel? GetModel(string path)
     {

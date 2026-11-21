@@ -79,6 +79,8 @@ public sealed class ValidationRepository : IDisposable
         Git("commit", "-m", "Validation fixture baseline");
     }
 
+    public string dotnet => m_dotnet;
+
     public void Dispose()
     {
         string root = Path.GetFullPath(m_root);
@@ -101,8 +103,6 @@ public sealed class ValidationRepository : IDisposable
     public string PathOf(string path) => Path.GetFullPath(path, m_root);
 
     public string BindWorkspace(string value) => value.Replace("${workspace}", m_root, StringComparison.Ordinal);
-
-    public string dotnet => m_dotnet;
 
     public void Write(
         string path,

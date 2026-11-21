@@ -23,19 +23,6 @@ namespace Inno.Tooling.Architecture.Tests;
 public sealed class DocumentationExampleTests : IDisposable
 {
     private readonly string m_root = Path.Combine(Path.GetTempPath(), "InnoDocumentationExamples", Guid.NewGuid().ToString("N"));
-    private string cache => Path.Combine(m_root, "cache");
-    private string source => Path.Combine(m_root, "documentation");
-
-    private string host
-        => Path.GetFullPath(
-            Path.Combine(
-                RuntimeEnvironment.GetRuntimeDirectory(),
-                "..",
-                "..",
-                "..",
-                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
-            )
-        );
 
     public DocumentationExampleTests()
     {
@@ -620,6 +607,20 @@ public sealed class DocumentationExampleTests : IDisposable
             );
         }
     }
+
+    private string cache => Path.Combine(m_root, "cache");
+    private string source => Path.Combine(m_root, "documentation");
+
+    private string host
+        => Path.GetFullPath(
+            Path.Combine(
+                RuntimeEnvironment.GetRuntimeDirectory(),
+                "..",
+                "..",
+                "..",
+                OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"
+            )
+        );
 
     private async Task AssertReceiptAsync(
         string snapshotId,

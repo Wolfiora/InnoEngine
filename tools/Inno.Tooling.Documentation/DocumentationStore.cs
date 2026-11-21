@@ -20,23 +20,6 @@ namespace Inno.Tooling.Documentation;
 /// </summary>
 public static class DocumentationStore
 {
-    internal static JsonSerializerOptions json { get; } = new() { WriteIndented = false };
-    // Snapshot format compatibility is a parser/index protocol, not a compilation artifact identity.
-    // MVID includes build provenance and can differ between adapters compiling identical parser sources.
-    internal static string schema { get; } = CreateSchemaIdentity();
-
-    private static string parserSchema { get; } = CreateSchemaIdentity(
-        "DocumentationMarkdown.cs",
-        "DocumentationPage.cs",
-        "DocumentationCodeBlockInfo.cs",
-        "DocumentationExampleContext.cs",
-        "DocumentationApiComposition.cs",
-        "DocumentationApiFragment.cs",
-        "DocumentationApiPresentation.cs",
-        "DocumentationXml.cs",
-        "Inno.Tooling.Documentation.csproj"
-    );
-
     /// <summary>
     /// Explicitly scans a Docs checkout and publishes a consistent generation using reusable parsed pages.
     /// </summary>
@@ -412,6 +395,11 @@ public static class DocumentationStore
         }
     }
 
+    internal static JsonSerializerOptions json { get; } = new() { WriteIndented = false };
+    // Snapshot format compatibility is a parser/index protocol, not a compilation artifact identity.
+    // MVID includes build provenance and can differ between adapters compiling identical parser sources.
+    internal static string schema { get; } = CreateSchemaIdentity();
+
     internal static T Deserialize<T>(byte[] bytes)
         => JsonSerializer.Deserialize<T>(bytes, json) ?? throw new InvalidDataException("Documentation payload is null.");
 
@@ -426,6 +414,18 @@ public static class DocumentationStore
             throw new InvalidDataException("Invalid " + label + " identity.");
         }
     }
+
+    private static string parserSchema { get; } = CreateSchemaIdentity(
+        "DocumentationMarkdown.cs",
+        "DocumentationPage.cs",
+        "DocumentationCodeBlockInfo.cs",
+        "DocumentationExampleContext.cs",
+        "DocumentationApiComposition.cs",
+        "DocumentationApiFragment.cs",
+        "DocumentationApiPresentation.cs",
+        "DocumentationXml.cs",
+        "Inno.Tooling.Documentation.csproj"
+    );
 
     private static string[] EnumerateContent(string content)
         => PathBoundary.EnumerateFiles(content)

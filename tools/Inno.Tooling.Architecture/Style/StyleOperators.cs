@@ -69,6 +69,15 @@ internal static class StyleOperators
     };
 
     private static void Collect(
+        BinaryPatternSyntax pattern,
+        List<SyntaxToken> operators
+    ) {
+        if (pattern.Left is BinaryPatternSyntax left && left.Kind() == pattern.Kind()) Collect(left, operators);
+        operators.Add(pattern.OperatorToken);
+        if (pattern.Right is BinaryPatternSyntax right && right.Kind() == pattern.Kind()) Collect(right, operators);
+    }
+
+    private static void Collect(
         BinaryExpressionSyntax binary,
         int tier,
         List<SyntaxToken> operators
@@ -82,14 +91,5 @@ internal static class StyleOperators
         {
             Collect(right, tier, operators);
         }
-    }
-
-    private static void Collect(
-        BinaryPatternSyntax pattern,
-        List<SyntaxToken> operators
-    ) {
-        if (pattern.Left is BinaryPatternSyntax left && left.Kind() == pattern.Kind()) Collect(left, operators);
-        operators.Add(pattern.OperatorToken);
-        if (pattern.Right is BinaryPatternSyntax right && right.Kind() == pattern.Kind()) Collect(right, operators);
     }
 }

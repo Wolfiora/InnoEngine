@@ -17,43 +17,10 @@ internal sealed class ValidationDependencyInputs(
     private readonly Dictionary<string, string> m_hashes = new(StringComparer.Ordinal);
     private readonly Dictionary<string, KeyValuePair<string, string>[]> m_packages = new(StringComparer.Ordinal);
 
-    internal static bool Required(ValidationCheck check)
-        => check.kind is "build"
-           or "test"
-           or "api"
-           or "documentation-api"
-           or "documentation-examples"
-           or "products"
-           or "support-pack"
-           or "release-bundle"
-           && check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"));
-
     internal void Reset()
     {
         m_hashes.Clear();
         m_packages.Clear();
-    }
-
-    internal static string[] RestoredPackageDirectories(
-        IEnumerable<ValidationContext> contexts,
-        CancellationToken cancellation
-    ) {
-        var packages = new HashSet<string>(
-            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
-        );
-        foreach (string assets in contexts.SelectMany(static context => context.sdkGraph.EnumerateArray())
-            .SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
-            .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
-            .Where(static path => !string.IsNullOrWhiteSpace(path))
-            .Distinct(StringComparer.Ordinal)
-        ) {
-            cancellation.ThrowIfCancellationRequested();
-            if (File.Exists(assets))
-            {
-                packages.UnionWith(ReadPackages(assets, allowMissing: true).Select(static package => package.Value));
-            }
-        }
-        return packages.Order(StringComparer.Ordinal).ToArray();
     }
 
     internal bool Matches(
@@ -114,6 +81,68 @@ internal sealed class ValidationDependencyInputs(
         return ValidationInputs.Identity(inputs);
     }
 
+    internal Dictionary<string, string> CapturePackages(ValidationCheck check)
+    {
+        var packages = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (string assets in ValidationCompiledGraph.Select(plan, check)
+            .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
+            .Distinct(StringComparer.Ordinal)
+        ) {
+            cancellation.ThrowIfCancellationRequested();
+            if (string.IsNullOrWhiteSpace(assets) || !File.Exists(assets))
+            {
+                throw new InvalidDataException("Documentation source provenance requires actual restored dependency inputs.");
+            }
+            foreach (KeyValuePair<string, string> package in Packages(assets, false))
+            {
+                if (!Directory.Exists(package.Value))
+                {
+                    throw new InvalidDataException("A documented source dependency is unavailable: " + package.Key);
+                }
+                string identity = Hash(package.Value);
+                if (packages.TryGetValue(package.Key, out string? previous) && previous != identity)
+                {
+                    throw new InvalidDataException("The same restored package identity resolves to conflicting contents: " + package.Key);
+                }
+                packages[package.Key] = identity;
+            }
+        }
+        return packages;
+    }
+
+    internal static bool Required(ValidationCheck check)
+        => check.kind is "build"
+           or "test"
+           or "api"
+           or "documentation-api"
+           or "documentation-examples"
+           or "products"
+           or "support-pack"
+           or "release-bundle"
+           && check.inputs.Any(static input => input.StartsWith('@') && input is not ("@tooling" or "@native-sources"));
+
+    internal static string[] RestoredPackageDirectories(
+        IEnumerable<ValidationContext> contexts,
+        CancellationToken cancellation
+    ) {
+        var packages = new HashSet<string>(
+            OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal
+        );
+        foreach (string assets in contexts.SelectMany(static context => context.sdkGraph.EnumerateArray())
+            .SelectMany(static snapshot => snapshot.GetProperty("Instances").EnumerateArray())
+            .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
+            .Where(static path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.Ordinal)
+        ) {
+            cancellation.ThrowIfCancellationRequested();
+            if (File.Exists(assets))
+            {
+                packages.UnionWith(ReadPackages(assets, allowMissing: true).Select(static package => package.Value));
+            }
+        }
+        return packages.Order(StringComparer.Ordinal).ToArray();
+    }
+
     private string HashAssets(string path)
     {
         string key = "logical-assets:" + path;
@@ -153,35 +182,6 @@ internal sealed class ValidationDependencyInputs(
         return node?.DeepClone();
     }
 
-    internal Dictionary<string, string> CapturePackages(ValidationCheck check)
-    {
-        var packages = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (string assets in ValidationCompiledGraph.Select(plan, check)
-            .Select(static instance => instance.GetProperty("ProjectAssetsFile").GetString()!)
-            .Distinct(StringComparer.Ordinal)
-        ) {
-            cancellation.ThrowIfCancellationRequested();
-            if (string.IsNullOrWhiteSpace(assets) || !File.Exists(assets))
-            {
-                throw new InvalidDataException("Documentation source provenance requires actual restored dependency inputs.");
-            }
-            foreach (KeyValuePair<string, string> package in Packages(assets, false))
-            {
-                if (!Directory.Exists(package.Value))
-                {
-                    throw new InvalidDataException("A documented source dependency is unavailable: " + package.Key);
-                }
-                string identity = Hash(package.Value);
-                if (packages.TryGetValue(package.Key, out string? previous) && previous != identity)
-                {
-                    throw new InvalidDataException("The same restored package identity resolves to conflicting contents: " + package.Key);
-                }
-                packages[package.Key] = identity;
-            }
-        }
-        return packages;
-    }
-
     private KeyValuePair<string, string>[] Packages(
         string assets,
         bool allowMissing
@@ -193,35 +193,6 @@ internal sealed class ValidationDependencyInputs(
         packages = ReadPackages(assets, allowMissing);
         m_packages.Add(assets, packages);
         return packages;
-    }
-
-    private static KeyValuePair<string, string>[] ReadPackages(
-        string assets,
-        bool allowMissing
-    ) {
-        using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(assets));
-        string[] folders = document.RootElement.GetProperty("packageFolders")
-            .EnumerateObject()
-            .Select(static folder => Path.GetFullPath(folder.Name))
-            .ToArray();
-        var selected = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (JsonProperty library in document.RootElement.GetProperty("libraries").EnumerateObject())
-        {
-            if (library.Value.GetProperty("type").GetString() != "package")
-            {
-                continue;
-            }
-            string relative = library.Value.GetProperty("path").GetString()!;
-            string[] candidates = folders.Select(folder => PathBoundary.Resolve(folder, relative)).ToArray();
-            selected.Add(
-                relative,
-                candidates.FirstOrDefault(Directory.Exists)
-                ?? (allowMissing && candidates.Length != 0
-                    ? candidates[0]
-                    : throw new InvalidDataException("A restored package is unavailable: " + library.Name))
-            );
-        }
-        return selected.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
     }
 
     private string Hash(string path)
@@ -254,5 +225,34 @@ internal sealed class ValidationDependencyInputs(
         }
         m_hashes.Add(path, identity);
         return identity;
+    }
+
+    private static KeyValuePair<string, string>[] ReadPackages(
+        string assets,
+        bool allowMissing
+    ) {
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllBytes(assets));
+        string[] folders = document.RootElement.GetProperty("packageFolders")
+            .EnumerateObject()
+            .Select(static folder => Path.GetFullPath(folder.Name))
+            .ToArray();
+        var selected = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (JsonProperty library in document.RootElement.GetProperty("libraries").EnumerateObject())
+        {
+            if (library.Value.GetProperty("type").GetString() != "package")
+            {
+                continue;
+            }
+            string relative = library.Value.GetProperty("path").GetString()!;
+            string[] candidates = folders.Select(folder => PathBoundary.Resolve(folder, relative)).ToArray();
+            selected.Add(
+                relative,
+                candidates.FirstOrDefault(Directory.Exists)
+                ?? (allowMissing && candidates.Length != 0
+                    ? candidates[0]
+                    : throw new InvalidDataException("A restored package is unavailable: " + library.Name))
+            );
+        }
+        return selected.OrderBy(static pair => pair.Key, StringComparer.Ordinal).ToArray();
     }
 }

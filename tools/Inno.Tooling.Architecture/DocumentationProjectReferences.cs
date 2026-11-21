@@ -230,6 +230,41 @@ internal sealed class DocumentationProjectReferences
         );
     }
 
+    internal static bool HasNoPublicTypes(
+        string[] sources,
+        CSharpParseOptions parse,
+        CancellationToken cancellationToken
+    ) {
+        foreach (string source in sources)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!File.Exists(source))
+            {
+                throw new InvalidDataException($"The evaluated Documentation source is missing: '{source}'.");
+            }
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(
+                File.ReadAllText(source),
+                parse,
+                source,
+                cancellationToken: cancellationToken
+            );
+            if (tree.GetDiagnostics(cancellationToken).Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
+            {
+                throw new InvalidDataException($"The evaluated Documentation source has invalid C# syntax: '{source}'.");
+            }
+            if (tree.GetRoot(cancellationToken).DescendantNodes().Any(static node => node switch
+                {
+                    BaseTypeDeclarationSyntax type => type.Modifiers.Any(SyntaxKind.PublicKeyword),
+                    DelegateDeclarationSyntax type => type.Modifiers.Any(SyntaxKind.PublicKeyword),
+                    _ => false
+                })
+            ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private PortableExecutableReference FreezeReference(string path)
     {
         if (m_frozenReferences.TryGetValue(path, out FrozenReference? retained))
@@ -250,13 +285,6 @@ internal sealed class DocumentationProjectReferences
         m_frozenReferences.Add(path, new(reference, identity));
         return reference;
     }
-
-    private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
-
-    private sealed record FrozenReference(
-        PortableExecutableReference reference,
-        string identity
-    );
 
     private CSharpCompilation Evaluate(
         string project,
@@ -406,38 +434,10 @@ internal sealed class DocumentationProjectReferences
         return compilation;
     }
 
-    internal static bool HasNoPublicTypes(
-        string[] sources,
-        CSharpParseOptions parse,
-        CancellationToken cancellationToken
-    ) {
-        foreach (string source in sources)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            if (!File.Exists(source))
-            {
-                throw new InvalidDataException($"The evaluated Documentation source is missing: '{source}'.");
-            }
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(
-                File.ReadAllText(source),
-                parse,
-                source,
-                cancellationToken: cancellationToken
-            );
-            if (tree.GetDiagnostics(cancellationToken).Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error))
-            {
-                throw new InvalidDataException($"The evaluated Documentation source has invalid C# syntax: '{source}'.");
-            }
-            if (tree.GetRoot(cancellationToken).DescendantNodes().Any(static node => node switch
-                {
-                    BaseTypeDeclarationSyntax type => type.Modifiers.Any(SyntaxKind.PublicKeyword),
-                    DelegateDeclarationSyntax type => type.Modifiers.Any(SyntaxKind.PublicKeyword),
-                    _ => false
-                })
-            ) {
-                return false;
-            }
-        }
-        return true;
-    }
+    private static string Hash(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
+
+    private sealed record FrozenReference(
+        PortableExecutableReference reference,
+        string identity
+    );
 }

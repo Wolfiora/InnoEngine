@@ -12,26 +12,6 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationDocumentation
 {
-    internal sealed record SourceFacts(
-        string identity,
-        bool empty
-    );
-
-    internal sealed record Owner(
-        string path,
-        bool test,
-        bool nativeReference
-    );
-
-    internal sealed record Selection(
-        ValidationDocumentationBinding binding,
-        DocumentationCatalogReport catalog,
-        IReadOnlyDictionary<string, Owner> owners,
-        IReadOnlyDictionary<string, SourceFacts> sourceIdentities,
-        IReadOnlySet<string> changedPages,
-        IReadOnlySet<string> changedReferenceOwners
-    );
-
     internal static async Task<Selection?> CaptureAsync(
         string? cache,
         string? identity,
@@ -278,4 +258,24 @@ internal static class ValidationDocumentation
             ))
         ).Select(static reference => reference.path).Order(StringComparer.Ordinal).ToArray();
     }
+
+    internal sealed record SourceFacts(
+        string identity,
+        bool empty
+    );
+
+    internal sealed record Owner(
+        string path,
+        bool test,
+        bool nativeReference
+    );
+
+    internal sealed record Selection(
+        ValidationDocumentationBinding binding,
+        DocumentationCatalogReport catalog,
+        IReadOnlyDictionary<string, Owner> owners,
+        IReadOnlyDictionary<string, SourceFacts> sourceIdentities,
+        IReadOnlySet<string> changedPages,
+        IReadOnlySet<string> changedReferenceOwners
+    );
 }

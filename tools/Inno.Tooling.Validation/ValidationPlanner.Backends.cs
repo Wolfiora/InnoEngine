@@ -213,64 +213,6 @@ internal static partial class ValidationPlanner
         static bool Digest(string? value) => value is { Length: 64 } && value.All(static c => char.IsAsciiHexDigitLower(c));
     }
 
-    private static string[] MissingNativeProducts(
-        ValidationPlan plan,
-        string target,
-        string configuration,
-        byte[]? selection
-    ) {
-        string[] required = (plan.nativeRequests ?? []).Where(request => request.target == target && request.configuration == configuration)
-            .Select(static request => request.product)
-            .Distinct(StringComparer.Ordinal)
-            .Order(StringComparer.Ordinal)
-            .ToArray();
-        if (required.Length == 0 || selection is null)
-        {
-            return required;
-        }
-        using JsonDocument document = JsonDocument.Parse(selection);
-        if (!document.RootElement.TryGetProperty("requests", out JsonElement requests))
-        {
-            return required;
-        }
-        var available = new HashSet<(string? product, string? digest)>();
-        foreach (string family in new[] { "assets", "aggregates" })
-        {
-        foreach (JsonElement asset in document.RootElement.GetProperty(family).EnumerateArray())
-        {
-            if (asset.GetProperty("target").GetString() == target)
-            {
-                available.Add((asset.GetProperty("product").GetString(), asset.GetProperty("sha256").GetString()));
-            }
-        }
-        }
-        var certified = new HashSet<string>(StringComparer.Ordinal);
-        foreach (JsonElement request in requests.EnumerateArray())
-        {
-            if (request.GetProperty("target").GetString() != target || request.GetProperty("configuration").GetString() != configuration)
-            {
-                continue;
-            }
-            string product = request.GetProperty("product").GetString()!;
-            JsonElement digests = request.GetProperty("digests");
-            if (digests.GetArrayLength() == 0 || digests.EnumerateArray().Any(digest => !available.Contains((product, digest.GetString()))))
-            {
-                throw new InvalidDataException($"Incomplete certified native closure for {target}/{product}/{configuration}.");
-            }
-            if (!certified.Add(product))
-            {
-                throw new InvalidDataException($"Duplicate native closure for {target}/{product}/{configuration}.");
-            }
-        }
-        return required.Where(product => !certified.Contains(product)).ToArray();
-    }
-
-    private sealed record BackendNativeProduct(
-        string product,
-        string target,
-        string configuration
-    );
-
     internal static async Task<BackendInputPlan> BackendInputsAsync(
         ValidationPlan plan,
         string target,
@@ -549,4 +491,62 @@ internal static partial class ValidationPlanner
 
         static bool IsBackend(string path) => path.StartsWith("backends/", StringComparison.Ordinal);
     }
+
+    private static string[] MissingNativeProducts(
+        ValidationPlan plan,
+        string target,
+        string configuration,
+        byte[]? selection
+    ) {
+        string[] required = (plan.nativeRequests ?? []).Where(request => request.target == target && request.configuration == configuration)
+            .Select(static request => request.product)
+            .Distinct(StringComparer.Ordinal)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
+        if (required.Length == 0 || selection is null)
+        {
+            return required;
+        }
+        using JsonDocument document = JsonDocument.Parse(selection);
+        if (!document.RootElement.TryGetProperty("requests", out JsonElement requests))
+        {
+            return required;
+        }
+        var available = new HashSet<(string? product, string? digest)>();
+        foreach (string family in new[] { "assets", "aggregates" })
+        {
+        foreach (JsonElement asset in document.RootElement.GetProperty(family).EnumerateArray())
+        {
+            if (asset.GetProperty("target").GetString() == target)
+            {
+                available.Add((asset.GetProperty("product").GetString(), asset.GetProperty("sha256").GetString()));
+            }
+        }
+        }
+        var certified = new HashSet<string>(StringComparer.Ordinal);
+        foreach (JsonElement request in requests.EnumerateArray())
+        {
+            if (request.GetProperty("target").GetString() != target || request.GetProperty("configuration").GetString() != configuration)
+            {
+                continue;
+            }
+            string product = request.GetProperty("product").GetString()!;
+            JsonElement digests = request.GetProperty("digests");
+            if (digests.GetArrayLength() == 0 || digests.EnumerateArray().Any(digest => !available.Contains((product, digest.GetString()))))
+            {
+                throw new InvalidDataException($"Incomplete certified native closure for {target}/{product}/{configuration}.");
+            }
+            if (!certified.Add(product))
+            {
+                throw new InvalidDataException($"Duplicate native closure for {target}/{product}/{configuration}.");
+            }
+        }
+        return required.Where(product => !certified.Contains(product)).ToArray();
+    }
+
+    private sealed record BackendNativeProduct(
+        string product,
+        string target,
+        string configuration
+    );
 }

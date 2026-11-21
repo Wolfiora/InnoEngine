@@ -14,7 +14,6 @@ namespace Inno.Testing.Validation;
 public sealed class ValidationDocumentationFixture(ValidationRepository repository)
 {
     public string cache => repository.PathOf("artifacts/documentation");
-    private string source => repository.PathOf("artifacts/docs-source");
 
     public void Initialize()
     {
@@ -135,4 +134,6 @@ public sealed class ValidationDocumentationFixture(ValidationRepository reposito
     ) => "---\nuid: task-" + owner.ToLowerInvariant() + "\nkind: how-to\nowners: [" + owner + "]\n"
          + (mode is null ? string.Empty : "exampleMode: " + mode + "\nexampleProjects: [" + owner + "]\n")
          + "---\n# Work with " + owner + "\n\n" + body;
+
+    private string source => repository.PathOf("artifacts/docs-source");
 }

@@ -15,14 +15,6 @@ namespace Inno.Tooling.Validation;
 
 internal static partial class ValidationPlanner
 {
-    private static JsonElement? DevelopmentProject(
-        JsonElement graph,
-        string root
-    ) => graph.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot => (
-        Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!)
-            .Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
-    ));
-
     internal static async Task<ValidationPlanningResult> CreateAsync(
         string root,
         string baseline,
@@ -1667,6 +1659,14 @@ internal static partial class ValidationPlanner
             previousStage = now;
         }
     }
+
+    private static JsonElement? DevelopmentProject(
+        JsonElement graph,
+        string root
+    ) => graph.EnumerateArray().Cast<JsonElement?>().FirstOrDefault(snapshot => (
+        Path.GetRelativePath(root, snapshot!.Value.GetProperty("Path").GetString()!)
+            .Replace('\\', '/') == "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
+    ));
 
     private static string DirectoryOf(string project) => project[..(project.LastIndexOf('/') + 1)];
 

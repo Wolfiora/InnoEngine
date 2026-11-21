@@ -14,12 +14,6 @@ namespace Inno.Tooling.Validation;
 
 internal static class ValidationEnvironment
 {
-    internal sealed record ToolSnapshot(
-        DotNetSdkDescriptor sdk,
-        Dictionary<string, string> inputs,
-        Dictionary<string, string> contents
-    );
-
     internal static async Task<ToolSnapshot> CaptureToolsAsync(
         string root,
         string dotnet,
@@ -241,4 +235,10 @@ internal static class ValidationEnvironment
         return path.Equals(parent, comparison) || Directory.Exists(parent)
             && path.StartsWith(parent.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, comparison);
     }
+
+    internal sealed record ToolSnapshot(
+        DotNetSdkDescriptor sdk,
+        Dictionary<string, string> inputs,
+        Dictionary<string, string> contents
+    );
 }

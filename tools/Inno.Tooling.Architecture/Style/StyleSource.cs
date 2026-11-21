@@ -13,16 +13,6 @@ internal sealed class StyleSource
 {
     private static readonly CSharpParseOptions PARSE_OPTIONS = new(LanguageVersion.CSharp14);
 
-    internal string path { get; }
-
-    internal string content { get; }
-
-    internal SyntaxTree tree { get; }
-
-    internal SyntaxNode root { get; }
-
-    internal SourceText text { get; }
-
     internal StyleSource(
         string path,
         string content
@@ -33,6 +23,19 @@ internal sealed class StyleSource
         this.root = this.tree.GetRoot();
         this.text = this.tree.GetText();
     }
+
+    internal string path { get; }
+
+    internal string content { get; }
+
+    internal SyntaxTree tree { get; }
+
+    internal SyntaxNode root { get; }
+
+    internal SourceText text { get; }
+
+    internal bool hasSyntaxErrors
+        => tree.GetDiagnostics().Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 
     internal int LineNumber(int position) => text.Lines.GetLineFromPosition(position).LineNumber;
 
@@ -117,9 +120,6 @@ internal sealed class StyleSource
     // The token texts in source order. Layout rules must leave this sequence unchanged.
     internal IReadOnlyList<string> TokenTexts()
         => root.DescendantTokens(descendIntoTrivia: false).Select(static token => token.Text).ToArray();
-
-    internal bool hasSyntaxErrors
-        => tree.GetDiagnostics().Any(static diagnostic => diagnostic.Severity == DiagnosticSeverity.Error);
 
     internal static string Apply(
         string content,

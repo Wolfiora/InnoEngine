@@ -85,6 +85,35 @@ internal static class PublicApiDocumentationValidator
         }
     }
 
+    internal static IEnumerable<ISymbol> InheritedMembers(ISymbol symbol)
+    {
+        ISymbol? overridden = symbol switch
+        {
+            IMethodSymbol method => method.OverriddenMethod,
+            IPropertySymbol property => property.OverriddenProperty,
+            IEventSymbol signal => signal.OverriddenEvent,
+            _ => null
+        };
+        if (overridden is not null)
+        {
+            yield return overridden;
+        }
+        if (symbol.ContainingType is not INamedTypeSymbol owner)
+        {
+            yield break;
+        }
+        foreach (INamedTypeSymbol contract in owner.AllInterfaces)
+        {
+            foreach (ISymbol member in contract.GetMembers())
+            {
+                if (SymbolEqualityComparer.Default.Equals(owner.FindImplementationForInterfaceMember(member), symbol))
+                {
+                    yield return member;
+                }
+            }
+        }
+    }
+
     private static bool HasInheritedContract(
         ISymbol symbol,
         DocumentationSourceModels models,
@@ -153,35 +182,6 @@ internal static class PublicApiDocumentationValidator
             return true;
         }
         return false;
-    }
-
-    internal static IEnumerable<ISymbol> InheritedMembers(ISymbol symbol)
-    {
-        ISymbol? overridden = symbol switch
-        {
-            IMethodSymbol method => method.OverriddenMethod,
-            IPropertySymbol property => property.OverriddenProperty,
-            IEventSymbol signal => signal.OverriddenEvent,
-            _ => null
-        };
-        if (overridden is not null)
-        {
-            yield return overridden;
-        }
-        if (symbol.ContainingType is not INamedTypeSymbol owner)
-        {
-            yield break;
-        }
-        foreach (INamedTypeSymbol contract in owner.AllInterfaces)
-        {
-            foreach (ISymbol member in contract.GetMembers())
-            {
-                if (SymbolEqualityComparer.Default.Equals(owner.FindImplementationForInterfaceMember(member), symbol))
-                {
-                    yield return member;
-                }
-            }
-        }
     }
 
     private static bool RequiresDocumentation(MemberDeclarationSyntax member)

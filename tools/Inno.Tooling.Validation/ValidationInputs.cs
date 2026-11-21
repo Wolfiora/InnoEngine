@@ -283,6 +283,20 @@ internal static class ValidationInputs
             .Append(new("definition", JsonSerializer.Serialize(check)))
     );
 
+    internal static string Resolve(
+        string root,
+        string relative
+    ) {
+        string path = Path.GetFullPath(relative, root);
+        if (!path.StartsWith(
+            Path.GetFullPath(root) + Path.DirectorySeparatorChar,
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
+        )) {
+            throw new InvalidDataException($"Validation input escapes the repository: {relative}");
+        }
+        return PathBoundary.RequireUnlinkedPath(Path.GetFullPath(root), path);
+    }
+
     private static IEnumerable<KeyValuePair<string, string>> BackendPayloads(
         ValidationPlan plan,
         ValidationCheck check
@@ -329,20 +343,6 @@ internal static class ValidationInputs
         {
             yield return new("backend:" + owner, plan.backendOwnerPayloads![owner]);
         }
-    }
-
-    internal static string Resolve(
-        string root,
-        string relative
-    ) {
-        string path = Path.GetFullPath(relative, root);
-        if (!path.StartsWith(
-            Path.GetFullPath(root) + Path.DirectorySeparatorChar,
-            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal
-        )) {
-            throw new InvalidDataException($"Validation input escapes the repository: {relative}");
-        }
-        return PathBoundary.RequireUnlinkedPath(Path.GetFullPath(root), path);
     }
 
     private static async Task<string> CaptureSubmoduleAsync(
